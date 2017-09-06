@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,19 +6,36 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using Moq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.Commands.Test
 {
     public class MSBuildRestoreUtilityTests
     {
+        [Theory]
+        [InlineData("a", "", "a")]
+        [InlineData("a|b", "", "a|b")]
+        [InlineData("a|b", "a|b", "")]
+        [InlineData("a|b", "a|b|c", "")]
+        [InlineData("", "a", "")]
+        [InlineData("a", "A", "a")]
+        public void MSBuildRestoreUtility_AggregateSources(string values, string exclude, string expected)
+        {
+            var inputValues = values.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            var excludeValues = exclude.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            var expectedValues = expected.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+            MSBuildRestoreUtility.AggregateSources(inputValues, excludeValues)
+                .ShouldBeEquivalentTo(expectedValues);
+        }
+
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_VerifyInvalidProjectReferencesAreIgnored()
         {
@@ -1476,7 +1493,7 @@ namespace NuGet.Commands.Test
 
                 var items = new List<IDictionary<string, string>>();
 
-                
+
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "ProjectSpec" },
@@ -1525,7 +1542,7 @@ namespace NuGet.Commands.Test
 
                 var items = new List<IDictionary<string, string>>();
 
-                
+
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "ProjectSpec" },
@@ -1827,6 +1844,109 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreUtility_FixSourcePath(string input, string expected)
         {
             MSBuildRestoreUtility.FixSourcePath(input).Should().Be(expected);
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_ReplayWarningsAndErrors_Minimal()
+        {
+            // Arrange
+            var logger = new Mock<ILogger>();
+            var lockFile = new LockFile()
+            {
+                LogMessages = new List<IAssetsLogMessage>()
+                {
+                    new AssetsLogMessage(LogLevel.Warning, NuGetLogCode.NU1500, "Test Warning"),
+                    new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Test Error")
+                }
+            };
+
+            // Act
+            var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile, logger.Object);
+
+            // Assert
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && l.Message == "Test Warning" && l.Code == NuGetLogCode.NU1500)),
+                Times.Once);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Error && l.Message == "Test Error" && l.Code == NuGetLogCode.NU1000)),
+                Times.Once);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Debug)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Information)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Minimal)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Verbose)), Times.Never);
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_ReplayWarningsAndErrors_Full()
+        {
+            // Arrange
+            var logger = new Mock<ILogger>();
+            var number = 10;
+            var targetGraphs = new List<string>() { "target1", "target2" };
+            var lockFile = new LockFile()
+            {
+                LogMessages = new List<IAssetsLogMessage>()
+                {
+                    new AssetsLogMessage(LogLevel.Warning, NuGetLogCode.NU1500, "Test Warning")
+                    {
+                        EndColumnNumber = number,
+                        EndLineNumber = number,
+                        StartColumnNumber = number,
+                        StartLineNumber = number,
+                        FilePath = "Warning File Path",
+                        LibraryId = "Warning Package",
+                        ProjectPath = "Warning Project Path",
+                        TargetGraphs = targetGraphs,
+                        WarningLevel = WarningLevel.Important
+                    },
+                    new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Test Error")
+                    {
+                        EndColumnNumber = number,
+                        EndLineNumber = number,
+                        StartColumnNumber = number,
+                        StartLineNumber = number,
+                        FilePath = "Error File Path",
+                        LibraryId = "Error Package",
+                        ProjectPath = "Error Project Path",
+                        TargetGraphs = targetGraphs,
+                        WarningLevel = WarningLevel.Important
+                    },
+                }
+            };
+
+            // Act
+            var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile, logger.Object);
+
+            // Assert
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning &&
+            l.Message == "Test Warning" &&
+            l.Code == NuGetLogCode.NU1500 &&
+            l.EndColumnNumber == number &&
+            l.StartColumnNumber == number &&
+            l.EndLineNumber == number &&
+            l.StartLineNumber == number &&
+            l.FilePath == "Warning File Path" &&
+            l.LibraryId == "Warning Package" &&
+            l.ProjectPath == "Warning Project Path" &&
+            l.TargetGraphs.SequenceEqual(targetGraphs) &&
+            l.WarningLevel == WarningLevel.Important)),
+                Times.Once);
+
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Error &&
+            l.Message == "Test Error" &&
+            l.Code == NuGetLogCode.NU1000 &&
+            l.EndColumnNumber == number &&
+            l.StartColumnNumber == number &&
+            l.EndLineNumber == number &&
+            l.StartLineNumber == number &&
+            l.FilePath == "Error File Path" &&
+            l.LibraryId == "Error Package" &&
+            l.ProjectPath == "Error Project Path" &&
+            l.TargetGraphs.SequenceEqual(targetGraphs))),
+                Times.Once);
+
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Debug)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Information)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Minimal)), Times.Never);
+            logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Verbose)), Times.Never);
         }
 
         [PlatformFact(Platform.Windows)]

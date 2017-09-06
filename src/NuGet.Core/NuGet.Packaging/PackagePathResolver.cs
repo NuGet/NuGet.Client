@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,14 +34,14 @@ namespace NuGet.Packaging
             get { return _rootDirectory; }
         }
 
-        public string GetPackageDirectoryName(PackageIdentity packageIdentity)
+        public virtual string GetPackageDirectoryName(PackageIdentity packageIdentity)
         {
             var directory = GetPathBase(packageIdentity);
 
             return directory.ToString();
         }
 
-        public string GetPackageFileName(PackageIdentity packageIdentity)
+        public virtual string GetPackageFileName(PackageIdentity packageIdentity)
         {
             var fileNameBase = GetPathBase(packageIdentity);
 
@@ -65,19 +65,19 @@ namespace NuGet.Packaging
             return GetId(packageIdentity) + PackagingCoreConstants.NuspecExtension;
         }
 
-        public string GetInstallPath(PackageIdentity packageIdentity)
+        public virtual string GetInstallPath(PackageIdentity packageIdentity)
         {
             return Path.Combine(_rootDirectory, GetPackageDirectoryName(packageIdentity));
         }
 
-        public string GetInstalledPath(PackageIdentity packageIdentity)
+        public virtual string GetInstalledPath(PackageIdentity packageIdentity)
         {
             var installedPackageFilePath = GetInstalledPackageFilePath(packageIdentity);
 
             return string.IsNullOrEmpty(installedPackageFilePath) ? null : Path.GetDirectoryName(installedPackageFilePath);
         }
 
-        public string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
+        public virtual string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
         {
             return PackagePathHelper.GetInstalledPackageFilePath(packageIdentity, this);
         }

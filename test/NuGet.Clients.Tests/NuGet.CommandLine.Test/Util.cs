@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
@@ -23,9 +23,6 @@ namespace NuGet.CommandLine.Test
     public static class Util
     {
         private static readonly string NupkgFileFormat = "{0}.{1}.nupkg";
-
-        [DllImport("libc")]
-        static extern int uname(IntPtr buf);
 
         public static string GetMockServerResource()
         {
@@ -1159,47 +1156,6 @@ EndProject");
         public static string GetHintPath(string path)
         {
             return @"<HintPath>.." + Path.DirectorySeparatorChar + path + @"</HintPath>";
-        }
-
-        public static bool IsRunningOnMac()
-        {
-
-            IntPtr buf = IntPtr.Zero;
-
-            try
-            {
-
-                buf = Marshal.AllocHGlobal(8192);
-
-                // This is a hacktastic way of getting sysname from uname ()
-
-                if (uname(buf) == 0)
-                {
-
-                    string os = Marshal.PtrToStringAnsi(buf);
-
-                    if (os == "Darwin")
-
-                        return true;
-
-                }
-
-            }
-            catch
-            {
-
-            }
-            finally
-            {
-
-                if (buf != IntPtr.Zero)
-
-                    Marshal.FreeHGlobal(buf);
-
-            }
-
-            return false;
-
         }
 
         private static bool IsProjectJson(string configFileName)

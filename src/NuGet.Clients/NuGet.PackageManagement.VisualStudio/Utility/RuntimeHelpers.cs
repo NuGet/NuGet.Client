@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var redirects = Enumerable.Empty<AssemblyBinding>();
-            var msBuildNuGetProjectSystem = GetMSBuildNuGetProjectSystem(solutionManager, vsProjectAdapter);
+            var msBuildNuGetProjectSystem = await GetMSBuildNuGetProjectSystemAsync(solutionManager, vsProjectAdapter);
 
             // If no msBuildNuGetProjectSystem, no binding redirects. Bail
             if (msBuildNuGetProjectSystem == null)
@@ -142,16 +142,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 return redirects;
             }
 
-            // Get the full path from envDTEProject
-            var root = vsProjectAdapter.FullPath;
-
             IEnumerable<string> assemblies = EnvDTEProjectUtility.GetAssemblyClosure(vsProjectAdapter.Project, projectAssembliesCache);
             redirects = BindingRedirectResolver.GetBindingRedirects(assemblies, domain);
 
             if (frameworkMultiTargeting != null)
             {
                 // filter out assemblies that already exist in the target framework (CodePlex issue #3072)
-                var targetFrameworkName = EnvDTEProjectInfoUtility.GetDotNetFrameworkName(vsProjectAdapter.Project);
+                var targetFrameworkName = await vsProjectAdapter.GetDotNetFrameworkNameAsync();
                 redirects = redirects.Where(p => !FrameworkAssemblyResolver.IsHigherAssemblyVersionInFramework(p.Name, p.AssemblyNewVersion, targetFrameworkName));
             }
 
@@ -164,9 +161,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return redirects;
         }
 
-        private static IMSBuildProjectSystem GetMSBuildNuGetProjectSystem(ISolutionManager solutionManager, IVsProjectAdapter vsProjectAdapter)
+        private async static Task<IMSBuildProjectSystem> GetMSBuildNuGetProjectSystemAsync(ISolutionManager solutionManager, IVsProjectAdapter vsProjectAdapter)
         {
-            var nuGetProject = solutionManager.GetNuGetProject(vsProjectAdapter.ProjectName);
+            var nuGetProject = await solutionManager.GetNuGetProjectAsync(vsProjectAdapter.ProjectName);
             if (nuGetProject != null)
             {
                 var msBuildNuGetProject = nuGetProject as MSBuildNuGetProject;

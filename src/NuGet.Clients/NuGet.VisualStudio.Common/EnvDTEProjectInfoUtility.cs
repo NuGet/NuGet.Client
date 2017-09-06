@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -297,20 +297,6 @@ namespace NuGet.VisualStudio
             return string.Join("\\", nameParts);
         }
 
-        public static NuGetFramework GetTargetNuGetFramework(EnvDTE.Project envDTEProject)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
-
-            if (!string.IsNullOrEmpty(targetFrameworkMoniker))
-            {
-                return NuGetFramework.Parse(targetFrameworkMoniker);
-            }
-
-            return NuGetFramework.UnsupportedFramework;
-        }
-
         /// <summary>
         /// Determine the project framework string based on the project properties.
         /// </summary>
@@ -353,19 +339,6 @@ namespace NuGet.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
 
             return IsWebProject(envDTEProject) ? WebConfig : AppConfig;
-        }
-
-        public static FrameworkName GetDotNetFrameworkName(EnvDTE.Project envDTEProject)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
-            if (!string.IsNullOrEmpty(targetFrameworkMoniker))
-            {
-                return new FrameworkName(targetFrameworkMoniker);
-            }
-
-            return null;
         }
 
         private class PathComparer : IEqualityComparer<string>

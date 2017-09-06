@@ -1051,28 +1051,14 @@ namespace Proj2
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
 
-                string proj1SymbolsFileName;
-                string proj2SymbolsFileName;
-
-                if (RuntimeEnvironmentHelper.IsMono)
-                {
-                    proj1SymbolsFileName = "proj1.dll.mdb";
-                    proj2SymbolsFileName = "proj2.dll.mdb";
-                }
-                else
-                {
-                    proj1SymbolsFileName = "proj1.pdb";
-                    proj2SymbolsFileName = "proj2.pdb";
-                }
-
                 Assert.Equal(
                     new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
                         Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", proj1SymbolsFileName),
+                        Path.Combine("lib", "net40", "proj1.pdb"),
                         Path.Combine("lib", "net40", "proj2.dll"),
-                        Path.Combine("lib", "net40", proj2SymbolsFileName),
+                        Path.Combine("lib", "net40", "proj2.pdb"),
                         Path.Combine("src", "proj1", "proj1_file1.cs"),
                         Path.Combine("src", "proj2", "proj2_file1.cs"),
                     },
@@ -1125,13 +1111,11 @@ namespace Proj2
                 var files = package.GetFiles().Select(file => file.Path).ToArray();
                 Array.Sort(files);
 
-                var symbolsFileName = RuntimeEnvironmentHelper.IsMono ? "A.dll.mdb" : "A.pdb";
-
                 Assert.Equal(
                     new string[]
                     {
                         Path.Combine("lib", "net40", "A.dll"),
-                        Path.Combine("lib", "net40", symbolsFileName),
+                        Path.Combine("lib", "net40", "A.pdb"),
                         Path.Combine("src", "B.cs")
                     },
                     files);
@@ -1185,13 +1169,11 @@ public class B
                 var files = package.GetFiles().Select(file => file.Path).ToArray();
                 Array.Sort(files);
 
-                var symbolsFileName = RuntimeEnvironmentHelper.IsMono ? "A.exe.mdb" : "A.pdb";
-
                 Assert.Equal(
                     new string[]
                     {
                         Path.Combine("lib", "net40", "A.exe"),
-                        Path.Combine("lib", "net40", symbolsFileName),
+                        Path.Combine("lib", "net40", "A.pdb"),
                         Path.Combine("src", "B.cs")
                     },
                     files);
@@ -3629,7 +3611,7 @@ namespace Proj2
     }
 }");
                 var msbuildPath = Util.GetMsbuildPathOnWindows();
-                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
+                if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
                 {
                     msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
                 }
@@ -3758,7 +3740,7 @@ namespace Proj2
     }
 }");
                 var msbuildPath = Util.GetMsbuildPathOnWindows();
-                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
+                if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
                 {
                     msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
                 }
@@ -4586,14 +4568,7 @@ stuff \n <<".Replace("\r\n", "\n");
                 Assert.Equal(1, r.Item1);
 
                 // Assert
-                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
-                {
-                    Assert.Contains("Failed to build 'proj1.csproj'.", r.Item3);
-                }
-                else
-                {
-                    Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
-                }
+                Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
             }
         }
 

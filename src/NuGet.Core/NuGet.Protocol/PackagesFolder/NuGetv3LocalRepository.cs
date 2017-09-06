@@ -5,9 +5,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Protocol;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Repositories
@@ -23,31 +24,47 @@ namespace NuGet.Repositories
             = new ConcurrentDictionary<string, LocalPackageInfo>(PathUtility.GetStringComparerBasedOnOS());
 
         // Id -> Packages
-        private readonly ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>> _cache
-            = new ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, List<LocalPackageInfo>> _cache
+            = new ConcurrentDictionary<string, List<LocalPackageInfo>>(StringComparer.OrdinalIgnoreCase);
 
         // Per package id locks
         private readonly ConcurrentDictionary<string, object> _idLocks
             = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         // Cache nuspecs lazily
-        private readonly ConcurrentDictionary<string, Lazy<NuspecReader>> _nuspecCache
-            = new ConcurrentDictionary<string, Lazy<NuspecReader>>(PathUtility.GetStringComparerBasedOnOS());
+        private readonly LocalNuspecCache _nuspecCache = null;
 
         public VersionFolderPathResolver PathResolver { get; }
 
+        public string RepositoryRoot { get; }
+
         public NuGetv3LocalRepository(string path)
+            : this(path, nuspecCache: null)
+        {
+        }
+
+        public NuGetv3LocalRepository(string path, LocalNuspecCache nuspecCache)
         {
             RepositoryRoot = path;
             PathResolver = new VersionFolderPathResolver(path);
+            _nuspecCache = nuspecCache ?? new LocalNuspecCache();
         }
-
-        public string RepositoryRoot { get; }
 
         public LocalPackageInfo FindPackage(string packageId, NuGetVersion version)
         {
-            var package = FindPackagesById(packageId)
-                .FirstOrDefault(localPackage => localPackage.Version == version);
+            LocalPackageInfo package = null;
+
+            var packages = FindPackagesByIdImpl(packageId);
+            var count = packages.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var candidatePackage = packages[i];
+                if (candidatePackage.Version == version)
+                {
+                    package = candidatePackage;
+                    break;
+                }
+            }
 
             if (package == null)
             {
@@ -56,13 +73,13 @@ namespace NuGet.Repositories
 
             // Check for an exact match on casing
             if (StringComparer.Ordinal.Equals(packageId, package.Id)
-                && StringComparer.Ordinal.Equals(version.ToNormalizedString(), package.Version.ToNormalizedString()))
+                && EqualityUtility.SequenceEqualWithNullCheck(version.ReleaseLabels, package.Version.ReleaseLabels, StringComparer.Ordinal))
             {
                 return package;
             }
 
             // nuspec
-            var nuspec = _nuspecCache.GetOrAdd(package.ExpandedPath, new Lazy<NuspecReader>(() => GetNuspec(package.ManifestPath, package.ExpandedPath)));
+            var nuspec = _nuspecCache.GetOrAdd(package.ManifestPath, package.ExpandedPath);
 
             // Create a new info to match the given id/version
             return new LocalPackageInfo(
@@ -75,6 +92,9 @@ namespace NuGet.Repositories
         }
 
         public IEnumerable<LocalPackageInfo> FindPackagesById(string packageId)
+            => FindPackagesByIdImpl(packageId);
+
+        private List<LocalPackageInfo> FindPackagesByIdImpl(string packageId)
         {
             if (string.IsNullOrEmpty(packageId))
             {
@@ -125,7 +145,7 @@ namespace NuGet.Repositories
                         var manifestPath = PathResolver.GetManifestFilePath(id, version);
                         var zipPath = PathResolver.GetPackageFilePath(id, version);
 
-                        var nuspec = _nuspecCache.GetOrAdd(fullVersionDir, new Lazy<NuspecReader>(() => GetNuspec(manifestPath, fullVersionDir)));
+                        var nuspec = _nuspecCache.GetOrAdd(manifestPath, fullVersionDir);
 
                         package = new LocalPackageInfo(id, version, fullVersionDir, manifestPath, zipPath, nuspec);
 
@@ -157,8 +177,7 @@ namespace NuGet.Repositories
                 // Clearers must wait for all requests to complete
                 lock (GetLockObj(packageId))
                 {
-                    IEnumerable<LocalPackageInfo> packages;
-                    _cache.TryRemove(packageId, out packages);
+                    _cache.TryRemove(packageId, out _);
                 }
             }
         }
@@ -166,27 +185,6 @@ namespace NuGet.Repositories
         private object GetLockObj(string privateId)
         {
             return _idLocks.GetOrAdd(privateId, new object());
-        }
-
-        private static NuspecReader GetNuspec(string manifest, string expanded)
-        {
-            NuspecReader nuspec = null;
-
-            // Verify that the nuspec has the correct name before opening it
-            if (File.Exists(manifest))
-            {
-                nuspec = new NuspecReader(File.OpenRead(manifest));
-            }
-            else
-            {
-                // Scan the folder for the nuspec
-                var folderReader = new PackageFolderReader(expanded);
-
-                // This will throw if the nuspec is not found
-                nuspec = new NuspecReader(folderReader.GetNuspec());
-            }
-
-            return nuspec;
         }
     }
 }

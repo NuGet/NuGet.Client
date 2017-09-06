@@ -492,6 +492,18 @@ namespace NuGet.Frameworks
                 case "netstandard15":
                     framework = FrameworkConstants.CommonFrameworks.NetStandard15;
                     break;
+                case "netstandard1.6":
+                case "netstandard16":
+                    framework = FrameworkConstants.CommonFrameworks.NetStandard16;
+                    break;
+                case "netstandard1.7":
+                case "netstandard17":
+                    framework = FrameworkConstants.CommonFrameworks.NetStandard17;
+                    break;
+                case "netstandard2.0":
+                case "netstandard20":
+                    framework = FrameworkConstants.CommonFrameworks.NetStandard20;
+                    break;
                 case "netstandardapp1.5":
                 case "netstandardapp15":
                     framework = FrameworkConstants.CommonFrameworks.NetStandardApp15;
@@ -499,6 +511,10 @@ namespace NuGet.Frameworks
                 case "netcoreapp1.0":
                 case "netcoreapp10":
                     framework = FrameworkConstants.CommonFrameworks.NetCoreApp10;
+                    break;
+                case "netcoreapp2.0":
+                case "netcoreapp20":
+                    framework = FrameworkConstants.CommonFrameworks.NetCoreApp20;
                     break;
             }
 

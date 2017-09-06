@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement.UI
         public IItemLoaderState State => _state;
 
         public bool IsMultiSource => _packageFeed.IsMultiSource;
+        public bool IsOnlyLoadingFromNuGetOrg => _packageFeed.IsOnlyLoadingFromNuGetOrg;
 
         private class PackageFeedSearchState : IItemLoaderState
         {
@@ -240,6 +241,14 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
+            // check if there is already a running initialization task for SolutionManager. If yes,
+            // search should wait until this is completed. This would usually happen when opening manager
+            //ui is the first nuget operation under LSL mode where it might take some time to initialize.
+            if (_context.SolutionManager.InitializationTask != null && !_context.SolutionManager.InitializationTask.IsCompleted)
+            {
+                await _context.SolutionManager.InitializationTask;
+            }
+
             if (continuationToken != null)
             {
                 return await _packageFeed.ContinueSearchAsync(continuationToken, cancellationToken);
@@ -306,7 +315,8 @@ namespace NuGet.PackageManagement.UI
                         DownloadCount = metadata.DownloadCount,
                         Summary = metadata.Summary,
                         Versions = AsyncLazy.New(() => metadata.GetVersionsAsync()),
-                        AllowedVersions = allowedVersions
+                        AllowedVersions = allowedVersions,
+                        PrefixReserved = metadata.PrefixReserved && IsOnlyLoadingFromNuGetOrg
                     };
                     listItem.UpdatePackageStatus(_installedPackages);
 

@@ -64,6 +64,7 @@ FunctionsToExport = '*'
 CmdletsToExport = @(
     'Enable-LightweightSolutionLoad',
     'Get-InstalledPackage',
+    'Invoke-ShellCommand',
     'Test-InstalledPackage',
     'Test-Project')
 

@@ -42,7 +42,7 @@ namespace NuGet.LibraryModel
                 return true;
             }
 
-            return Equals(Type, other.Type)
+            return Type.Equals(other.Type)
                     && Equals(Version, other.Version)
                     && string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
         }

@@ -84,5 +84,8 @@ namespace NuGet.Protocol
         }
 
         public bool IsListed => true;
+
+        // The prefix reservation is not applicable to local packages
+        public bool PrefixReserved => false;
     }
 }

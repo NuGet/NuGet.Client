@@ -6123,4 +6123,14 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="PackageRestoreConsentCheckBoxText" xml:space="preserve">
     <value>&amp;Allow NuGet to download missing packages</value>
   </data>
+  <data name="InstallCommandUnknownDependencyVersion" xml:space="preserve">
+    <value>Invalid value given for 'DependencyVersion': "{0}".</value>
+    <comment>Please don't localize "DependencyVersion".</comment>
+  </data>
+  <data name="UnsupportedFramework" xml:space="preserve">
+    <value>'{0}' is not a valid target framework.</value>
+  </data>
+  <data name="InstallPackageMessage" xml:space="preserve">
+    <value>Installing package '{0}' to '{1}'.</value>
+  </data>
 </root>

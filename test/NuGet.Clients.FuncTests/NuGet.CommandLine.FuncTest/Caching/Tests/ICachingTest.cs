@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Threading.Tasks;
 using NuGet.Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
@@ -13,6 +16,12 @@ namespace NuGet.CommandLine.Test.Caching
         /// Gets the display name for this test.
         /// </summary>
         string Description { get; }
+
+        /// <summary>
+        /// Iteration count. How many times should the same commmand be executed.
+        /// </summary>
+        /// 
+        int IterationCount { get;  }
 
         /// <summary>
         /// Prepares the test context or file system for the nuget.exe command.

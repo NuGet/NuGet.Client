@@ -198,7 +198,7 @@
     <value>Dependency specified was {0} {1} but ended up with {2} {3}.</value>
   </data>
   <data name="Log_ImportsFallbackWarning" xml:space="preserve">
-    <value>Package '{0}' was restored using '{1}' instead of the project target framework '{2}'. This may cause compatibility problems.</value>
+    <value>Package '{0}' was restored using '{1}' instead of the project target framework '{2}'. This package may not be fully compatible with your project.</value>
   </data>
   <data name="Log_CycleDetected" xml:space="preserve">
     <value>Cycle detected.</value>
@@ -590,5 +590,14 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="Error_InvalidATF" xml:space="preserve">
     <value>PackageTargetFallback and AssetTargetFallback cannot be used together. Remove PackageTargetFallback(deprecated) references from the project environment.</value>
+  </data>
+  <data name="UnsupportedProject" xml:space="preserve">
+    <value>Skipping restore for project '{0}'. The project file may be invalid or missing targets required for restore.</value>
+  </data>
+  <data name="Error_EmptySourceFilePath" xml:space="preserve">
+    <value>A source file was added with an empty path.</value>
+  </data>
+  <data name="Error_EmptySourceFileProjectDirectory" xml:space="preserve">
+    <value>The project directory for the source file '{0}' could not be found.</value>
   </data>
 </root>

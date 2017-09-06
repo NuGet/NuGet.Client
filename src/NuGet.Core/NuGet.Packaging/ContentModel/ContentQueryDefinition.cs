@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
+using NuGet.ContentModel.Infrastructure;
 
 namespace NuGet.ContentModel
 {
@@ -17,6 +17,8 @@ namespace NuGet.ContentModel
             GroupPatterns = groupPatterns?.ToList()?.AsReadOnly() ?? Enumerable.Empty<PatternDefinition>();
             PathPatterns = pathPatterns?.ToList()?.AsReadOnly() ?? Enumerable.Empty<PatternDefinition>();
             PropertyDefinitions = properties;
+            GroupExpressions = GroupPatterns.Select(pattern => new PatternExpression(pattern)).ToArray();
+            PathExpressions = PathPatterns.Select(pattern => new PatternExpression(pattern)).ToArray();
         }
 
         /// <summary>
@@ -25,9 +27,19 @@ namespace NuGet.ContentModel
         public IEnumerable<PatternDefinition> GroupPatterns { get; }
 
         /// <summary>
+        /// Pattern expressions.
+        /// </summary>
+        internal PatternExpression[] GroupExpressions { get; }
+
+        /// <summary>
         /// Patterns used to select individual items that match the criteria
         /// </summary>
         public IEnumerable<PatternDefinition> PathPatterns { get; }
+
+        /// <summary>
+        /// Path expressions.
+        /// </summary>
+        internal PatternExpression[] PathExpressions { get; }
 
         /// <summary>
         /// Property definitions used for matching patterns
@@ -72,7 +84,7 @@ namespace NuGet.ContentModel
             Pattern = pattern;
 
             Table = table;
-            Defaults = new ReadOnlyDictionary<string, object>(defaults.ToDictionary(p => p.Key, p => p.Value));
+            Defaults = defaults.ToDictionary(p => p.Key, p => p.Value);
         }
 
         public static implicit operator PatternDefinition(string pattern)

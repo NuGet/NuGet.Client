@@ -381,6 +381,114 @@ namespace ProjectManagement.Test
             }
         }
 
+        [Fact]
+        public async Task BuildIntegratedNuGetProject_GetPackageSpec_WithImports()
+        {
+            // Arrange
+
+            var configJson = @"
+                {
+                    ""dependencies"": {
+                    },
+                    ""frameworks"": {
+                        ""dotnet"": {
+                            ""imports"": ""portable-net452+win81"",
+                            ""warn"": false
+                        }
+                    }
+                }";
+
+            using (var randomProjectFolderPath = TestDirectory.Create())
+            {
+                var projectJsonPath = Path.Combine(randomProjectFolderPath, "project.json");
+                File.WriteAllText(projectJsonPath, configJson);
+
+                var FallbackTargetFramework = NuGetFramework.Parse("portable-net452+win81");
+                var projectTargetFramework = NuGetFramework.Parse("dotnet");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new ProjectJsonNuGetProject(projectJsonPath, projectFilePath);
+
+                var referenceContext = new DependencyGraphCacheContext(new TestLogger(), NullSettings.Instance);
+
+                // Act
+                var actual = (await buildIntegratedProject.GetPackageSpecsAsync(referenceContext)).SingleOrDefault();
+
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.Name);
+                Assert.Equal(projectJsonPath, actual.FilePath);
+                Assert.NotNull(actual.RestoreMetadata);
+                Assert.Equal(ProjectStyle.ProjectJson, actual.RestoreMetadata.ProjectStyle);
+                Assert.Equal(projectFilePath, actual.RestoreMetadata.ProjectPath);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.RestoreMetadata.ProjectName);
+                Assert.Equal(projectFilePath, actual.RestoreMetadata.ProjectUniqueName);
+                Assert.Equal(1, actual.TargetFrameworks.Count);
+                Assert.Equal(projectTargetFramework, actual.TargetFrameworks[0].FrameworkName);
+                Assert.Equal(1, actual.TargetFrameworks[0].Imports.Count);
+                Assert.Equal(FallbackTargetFramework, actual.TargetFrameworks[0].Imports[0]);
+
+                Assert.Empty(actual.Dependencies);
+                Assert.Empty(actual.TargetFrameworks[0].Dependencies);
+                Assert.Empty(actual.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences));
+            }
+        }
+
+        [Fact]
+        public async Task BuildIntegratedNuGetProject_GetPackageSpec_UAPWithImports()
+        {
+            // Arrange
+
+            var configJson = @"
+                {
+                    ""dependencies"": {
+                    },
+                    ""frameworks"": {
+                        ""uap10.0"": {
+                            ""imports"": ""netstandard1.3"",
+                            ""warn"": false
+                        }
+                    }
+                }";
+
+            using (var randomProjectFolderPath = TestDirectory.Create())
+            {
+                var projectJsonPath = Path.Combine(randomProjectFolderPath, "project.json");
+                File.WriteAllText(projectJsonPath, configJson);
+
+                var FallbackTargetFramework = NuGetFramework.Parse("netstandard1.3");
+                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new ProjectJsonNuGetProject(projectJsonPath, projectFilePath);
+
+                var referenceContext = new DependencyGraphCacheContext(new TestLogger(), NullSettings.Instance);
+
+                // Act
+                var actual = (await buildIntegratedProject.GetPackageSpecsAsync(referenceContext)).SingleOrDefault();
+
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.Name);
+                Assert.Equal(projectJsonPath, actual.FilePath);
+                Assert.NotNull(actual.RestoreMetadata);
+                Assert.Equal(ProjectStyle.ProjectJson, actual.RestoreMetadata.ProjectStyle);
+                Assert.Equal(projectFilePath, actual.RestoreMetadata.ProjectPath);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.RestoreMetadata.ProjectName);
+                Assert.Equal(projectFilePath, actual.RestoreMetadata.ProjectUniqueName);
+                Assert.Equal(1, actual.TargetFrameworks.Count);
+                Assert.Equal(projectTargetFramework, actual.TargetFrameworks[0].FrameworkName);
+                Assert.Equal(1, actual.TargetFrameworks[0].Imports.Count);
+                Assert.Equal(FallbackTargetFramework, actual.TargetFrameworks[0].Imports[0]);
+
+                Assert.Empty(actual.Dependencies);
+                Assert.Empty(actual.TargetFrameworks[0].Dependencies);
+                Assert.Empty(actual.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences));
+            }
+        }
+
         private static void CreateConfigJson(string path)
         {
             using (var writer = new StreamWriter(path))

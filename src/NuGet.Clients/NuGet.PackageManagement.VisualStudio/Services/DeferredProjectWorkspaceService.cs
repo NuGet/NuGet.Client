@@ -44,6 +44,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
+        public async Task<bool> EntityExistsAsync(string filePath)
+        {
+            var workspace = SolutionWorkspaceService.CurrentWorkspace;
+            var indexService = workspace.GetIndexWorkspaceService();
+            var filePathExists = await indexService.EntityExists(filePath);
+            return filePathExists;
+        }
+
         public async Task<IEnumerable<string>> GetProjectReferencesAsync(string projectFilePath)
         {
             var workspace = SolutionWorkspaceService.CurrentWorkspace;
@@ -75,6 +83,28 @@ namespace NuGet.PackageManagement.VisualStudio
                 return await factory.GetMSBuildProjectDataServiceAsync(
                     projectFilePath, projectProperties: projectProperties);
             }
+        }
+
+        public async Task<string> GetProjectTypeGuidAsync(string projectFilePath)
+        {
+            var workspace = SolutionWorkspaceService.CurrentWorkspace;
+            var solutionPath = SolutionWorkspaceService.SolutionFile;
+            var indexService = workspace.GetIndexWorkspaceService();
+            var indexedSolutionProjectTypes = (await indexService.GetFileDataValuesAsync<ProjectBaseTypesInSolution>(solutionPath,
+                ProjectBaseTypesInSolution.TypeGuid, refreshOption: true)).FirstOrDefault();
+
+            if (indexedSolutionProjectTypes != null)
+            {
+                var relativeProjectPath = Common.PathUtility.GetRelativePath(solutionPath, projectFilePath);
+
+                if (!string.IsNullOrEmpty(relativeProjectPath)
+                    && indexedSolutionProjectTypes.Value.Types.TryGetValue(relativeProjectPath, out Guid projectTypeGuid))
+                {
+                    return projectTypeGuid.ToString("B");
+                }
+            }
+
+            return string.Empty;
         }
     }
 }

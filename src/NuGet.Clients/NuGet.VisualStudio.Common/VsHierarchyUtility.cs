@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,6 +18,11 @@ namespace NuGet.VisualStudio
     public static class VsHierarchyUtility
     {
         private const string VsWindowKindSolutionExplorer = "3AE79031-E1BC-11D0-8F78-00A0C9110057";
+
+        private static readonly string[] UnsupportedProjectCapabilities = new string[]
+            {
+                "SharedAssetsProject", // This is true for shared projects in universal apps
+            };
 
         public static IVsHierarchy ToVsHierarchy(EnvDTE.Project project)
         {
@@ -54,6 +59,30 @@ namespace NuGet.VisualStudio
             var projectTypeGuids = GetProjectTypeGuids(hierarchy, project.Kind);
 
             return projectTypeGuids;
+        }
+
+        public static bool IsSupported(IVsHierarchy hierarchy, string projectTypeGuid)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (IsProjectCapabilityCompliant(hierarchy))
+            {
+                return true;
+            }
+
+            return !string.IsNullOrEmpty(projectTypeGuid) && SupportedProjectTypes.IsSupported(projectTypeGuid) && !HasUnsupportedProjectCapability(hierarchy);
+        }
+
+        public static bool IsProjectCapabilityCompliant(IVsHierarchy hierarchy)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            return hierarchy.IsCapabilityMatch("AssemblyReferences + DeclaredSourceItems + UserSourceItems");
+        }
+
+        public static bool HasUnsupportedProjectCapability(IVsHierarchy hierarchy)
+        {
+            return UnsupportedProjectCapabilities.Any(c => hierarchy.IsCapabilityMatch(c));
         }
 
         public static string[] GetProjectTypeGuids(IVsHierarchy hierarchy, string defaultType = "")

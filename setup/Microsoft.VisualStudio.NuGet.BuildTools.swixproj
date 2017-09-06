@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="$(MicroBuildDirectory)MicroBuild.Core.props" />
+
+  <PropertyGroup>
+    <OutputArchitecture>neutral</OutputArchitecture>
+    <OutputLocalized>false</OutputLocalized>
+    <OutputName>$(MSBuildProjectName)</OutputName>
+    <OutputType>vsix</OutputType>
+    <IsPackage>true</IsPackage>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ReferenceOutputPath>$(ArtifactsDirectory)NuGet.VisualStudio.Client\15.0\bin\$(Configuration)\</ReferenceOutputPath>
+    <NuGetTargetsPath>$(RepositoryRootDirectory)src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets</NuGetTargetsPath>
+    <XmlTransformPath>$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\</XmlTransformPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Variables added here will be usable in the swr file.  This is a semi colon delimited
+          list of name=value items.  Use $(name) in the swr file to reference the variable.
+    -->
+    <PackagePreprocessorDefinitions>$(PackagePreprocessorDefinitions);ReferenceOutputPath=$(ReferenceOutputPath);NuGetTargetsPath=$(NuGetTargetsPath);XmlTransformPath=$(XmlTransformPath);BuildNumber=$(BuildNumber)</PackagePreprocessorDefinitions>
+  </PropertyGroup>
+
+  <!-- Needed for the MicroBuild signing plugin -->
+  <ItemGroup>
+    <SigningTarget Include="$(OutputPath)$(OutputName)"/>
+    <FilesToSign Include="@(SigningTarget)">
+      <Authenticode>100040160</Authenticode>
+    </FilesToSign>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Package Include="Microsoft.VisualStudio.NuGet.BuildTools.swr" />
+  </ItemGroup>
+
+  <!-- MicroBuild plugin fails if GetNativeManifest is not found for some reason -->
+  <Target Name="GetNativeManifest" />
+  <Import Project="$(MicroBuildDirectory)MicroBuild.Core.targets" />
+</Project>

@@ -2,7 +2,6 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-
   <PropertyGroup>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
@@ -16,8 +15,8 @@
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
-
   <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -27,7 +26,6 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
   </ItemGroup>
-
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -55,7 +53,6 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime">
@@ -75,21 +72,18 @@
     <Reference Include="WindowsBase" />
     <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
-
   <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <Reference Include="Microsoft.Build">
       <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <Reference Include="Microsoft.Build">
       <HintPath>$(SolutionPackagesFolder)Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <Compile Include="Projects\LegacyPackageReferenceProject.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProjectProvider.cs" />
@@ -108,8 +102,8 @@
     <Compile Include="ProjectServices\GlobalProjectServiceProvider.cs" />
     <Compile Include="ProjectServices\NetCoreProjectSystemServices.cs" />
     <Compile Include="ProjectServices\VsCoreProjectSystemReferenceReader.cs" />
+    <Compile Include="ProjectSystems\VsCoreProjectSystem.cs" />
     <Compile Include="Projects\VsMSBuildProjectSystemServices.cs" />
-    <Compile Include="Utility\SupportedProjectTypes.cs" />
     <Compile Include="Common\VersionCollectionExtensions.cs" />
     <Compile Include="DefaultVSCredentialServiceProvider.cs" />
     <Compile Include="Handlers\ProjectRetargetingHandler.cs" />
@@ -196,6 +190,7 @@
     <Compile Include="Utility\SettingsHelper.cs" />
     <Compile Include="Utility\TaskCombinators.cs" />
     <Compile Include="Utility\VCProjectHelper.cs" />
+    <Compile Include="Utility\VSRestoreSettingsUtilities.cs" />
     <Compile Include="VisualStudioAccountProvider.cs" />
     <Compile Include="VisualStudioActivityLogger.cs" />
     <Compile Include="VisualStudioCredentialProvider.cs" />
@@ -227,9 +222,6 @@
     <Compile Include="VSSettings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="CommonResources.resx">
       <DependentUpon>CommonResources.cs</DependentUpon>
     </EmbeddedResource>
@@ -240,18 +232,23 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj">
+      <Project>{a2b06fa8-bdbc-4459-a92a-161862b2aa97}</Project>
+      <Name>NuGet.Indexing</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NuGet.Credentials\NuGet.Credentials.csproj">
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
+      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
+      <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>NuGet.VisualStudio</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Commands\NuGet.Commands.csproj">
       <Project>{567e8582-0e73-4a34-a7d3-ed9486415523}</Project>
@@ -298,13 +295,22 @@
       <Name>NuGet.Versioning</Name>
     </ProjectReference>
   </ItemGroup>
-
   <ItemGroup>
     <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs">
       <Link>HashCodeCombiner.cs</Link>
     </Compile>
   </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration">
+      <Version>15.0.198-pre</Version>
+    </PackageReference>
+    <PackageReference Include="VSLangProj110">
+      <Version>11.0.61030</Version>
+    </PackageReference>
+    <PackageReference Include="VSLangProj2">
+      <Version>7.0.5000</Version>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

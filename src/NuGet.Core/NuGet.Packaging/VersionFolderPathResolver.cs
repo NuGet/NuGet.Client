@@ -48,7 +48,7 @@ namespace NuGet.Packaging
         /// <param name="packageId">The package ID.</param>
         /// <param name="version">The package version.</param>
         /// <returns>The package install path.</returns>
-        public string GetInstallPath(string packageId, NuGetVersion version)
+        public virtual string GetInstallPath(string packageId, NuGetVersion version)
         {
             return Path.Combine(
                 RootPath,
@@ -123,7 +123,7 @@ namespace NuGet.Packaging
         /// </summary>
         /// <param name="packageId">The package ID.</param>
         /// <returns>The version list directory.</returns>
-        public string GetVersionListDirectory(string packageId)
+        public virtual string GetVersionListDirectory(string packageId)
         {
             return Normalize(packageId);
         }
@@ -134,7 +134,7 @@ namespace NuGet.Packaging
         /// <param name="packageId">The package ID.</param>
         /// <param name="version">The package version.</param>
         /// <returns>The package directory.</returns>
-        public string GetPackageDirectory(string packageId, NuGetVersion version)
+        public virtual string GetPackageDirectory(string packageId, NuGetVersion version)
         {
             return Path.Combine(
                 GetVersionListDirectory(packageId),
@@ -147,7 +147,7 @@ namespace NuGet.Packaging
         /// <param name="packageId">The package ID.</param>
         /// <param name="version">The package version.</param>
         /// <returns>The package file name.</returns>
-        public string GetPackageFileName(string packageId, NuGetVersion version)
+        public virtual string GetPackageFileName(string packageId, NuGetVersion version)
         {
             return $"{Normalize(packageId)}.{Normalize(version)}{PackagingCoreConstants.NupkgExtension}";
         }
@@ -168,7 +168,7 @@ namespace NuGet.Packaging
         /// <param name="packageId">The package ID.</param>
         /// <param name="version">The package version.</param>
         /// <returns>The manifest file name.</returns>
-        public string GetManifestFileName(string packageId, NuGetVersion version)
+        public virtual string GetManifestFileName(string packageId, NuGetVersion version)
         {
             return $"{Normalize(packageId)}{PackagingCoreConstants.NuspecExtension}";
         }

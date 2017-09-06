@@ -481,7 +481,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
 
             var msbuildPath = Util.GetMsbuildPathOnWindows();
-            if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
+            if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
             {
                 msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
             }
@@ -539,7 +539,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
 
             var msbuildPath = Util.GetMsbuildPathOnWindows();
-            if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
+            if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
             {
                 msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
             }
@@ -2150,6 +2150,81 @@ EndProject");
                 var match = Regex.Match(r.Item2, @" from source '(.*)'");
                 Assert.True(match.Success);
                 Assert.Contains(globalPackagesFolder, match.Groups[1].Value);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_ProjectContainsSolutionDirs()
+        {
+            using (var randomRepositoryPath = TestDirectory.Create())
+            using (var randomSolutionFolder = TestDirectory.Create())
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                Util.CreateTestPackage("packageA", "1.1.0", randomRepositoryPath);
+
+                Util.CreateFile(randomSolutionFolder, "nuget.config",
+$@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""GlobalPackages"" />
+  </config>
+</configuration>");
+
+                var solutionFile = Path.Combine(randomSolutionFolder, "A.sln");
+                var targetFile = Path.Combine(randomSolutionFolder, "MSBuild.Community.Tasks.Targets");
+                var solutionFileContents
+                    = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") " +
+@"= ""proj"", ""proj\proj.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
+EndProject";
+                var targetFileContents
+                    = @"
+<Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+<Target Name=""test"">  
+    <Message Text = ""test"" />
+</Target>
+</Project>";
+
+                File.WriteAllText(solutionFile, solutionFileContents);
+                File.WriteAllText(targetFile, targetFileContents);
+
+                var projectDirectory = Path.Combine(randomSolutionFolder, "proj");
+                Directory.CreateDirectory(projectDirectory);
+
+                File.WriteAllText(
+                    Path.Combine(projectDirectory, "proj.csproj"),
+@"<Project ToolsVersion='15.0' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+<Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props""
+ Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
+  <PropertyGroup>
+    <ProjectGuid>{AA9CA553-8E25-477C-824F-0E5DFE3703DC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+  </PropertyGroup>
+   <ItemGroup>
+    <PackageReference Include=""packageA"">
+      <Version>1.1.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project=""$(SolutionDir)\MSBuild.Community.Tasks.Targets"" />
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    randomSolutionFolder,
+                    "restore  -Source " + randomRepositoryPath,
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);               
+                var packageFileA = Path.Combine(randomSolutionFolder, "GlobalPackages", "packagea","1.1.0", "packageA.1.1.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
             }
         }
     }

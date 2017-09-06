@@ -29,13 +29,12 @@ namespace NuGet.SolutionRestoreManager.Test
         [Fact]
         public async Task QueryDelayBuildAction_CleanBuild()
         {
-            var lockService = Mock.Of<INuGetLockService>();
             var settings = Mock.Of<ISettings>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
             var buildManager = Mock.Of<IVsSolutionBuildManager3>();
             var buildAction = (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_CLEAN;
 
-            using (var handler = new SolutionRestoreBuildHandler(lockService, settings, restoreWorker, buildManager))
+            using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager))
             {
                 await _jtf.SwitchToMainThreadAsync();
 
@@ -45,7 +44,7 @@ namespace NuGet.SolutionRestoreManager.Test
             }
 
             Mock.Get(restoreWorker)
-                .Verify(x => x.CleanCache(), Times.Once);
+                .Verify(x => x.CleanCacheAsync(), Times.Once);
  
             Mock.Get(restoreWorker)
                 .Verify(x => x.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -54,7 +53,6 @@ namespace NuGet.SolutionRestoreManager.Test
         [Fact]
         public async Task QueryDelayBuildAction_ShouldNotRestoreOnBuild_NoOps()
         {
-            var lockService = Mock.Of<INuGetLockService>();
             var settings = Mock.Of<ISettings>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
             var buildManager = Mock.Of<IVsSolutionBuildManager3>();
@@ -65,7 +63,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Setup(x => x.GetValue("packageRestore", "automatic", false))
                 .Returns(bool.FalseString);
 
-            using (var handler = new SolutionRestoreBuildHandler(lockService, settings, restoreWorker, buildManager))
+            using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager))
             {
                 await _jtf.SwitchToMainThreadAsync();
 
@@ -81,7 +79,6 @@ namespace NuGet.SolutionRestoreManager.Test
         [Fact]
         public async Task QueryDelayBuildAction_ShouldNotRestoreOnBuild_ProjectUpToDateMark()
         {
-            var lockService = Mock.Of<INuGetLockService>();
             var settings = Mock.Of<ISettings>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
             var buildManager = Mock.Of<IVsSolutionBuildManager3>();
@@ -92,7 +89,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Setup(x => x.GetValue("packageRestore", "automatic", false))
                 .Returns(bool.TrueString);
 
-            using (var handler = new SolutionRestoreBuildHandler(lockService, settings, restoreWorker, buildManager))
+            using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager))
             {
                 await _jtf.SwitchToMainThreadAsync();
 
@@ -108,7 +105,6 @@ namespace NuGet.SolutionRestoreManager.Test
         [Fact]
         public async Task QueryDelayBuildAction_ShouldRestoreOnBuild()
         {
-            var lockService = Mock.Of<INuGetLockService>();
             var settings = Mock.Of<ISettings>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
             var buildManager = Mock.Of<IVsSolutionBuildManager3>();
@@ -125,7 +121,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Setup(x => x.RestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
-            using (var handler = new SolutionRestoreBuildHandler(lockService, settings, restoreWorker, buildManager))
+            using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager))
             {
                 await _jtf.SwitchToMainThreadAsync();
 

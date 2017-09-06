@@ -123,7 +123,7 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("1.0.0-*");
 
-            Assert.Equal("1.0.0--", range.MinVersion.ToNormalizedString());
+            Assert.Equal("1.0.0-0", range.MinVersion.ToNormalizedString());
             Assert.Equal(NuGetVersionFloatBehavior.Prerelease, range.FloatBehavior);
         }
 

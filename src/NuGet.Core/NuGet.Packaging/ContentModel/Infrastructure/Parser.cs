@@ -3,19 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace NuGet.ContentModel.Infrastructure
 {
     public class PatternExpression
     {
         private readonly List<Segment> _segments = new List<Segment>();
-        private readonly IReadOnlyDictionary<string, object> _defaults;
+        private readonly Dictionary<string, object> _defaults;
         private readonly PatternTable _table;
 
         public PatternExpression(PatternDefinition pattern)
         {
             _table = pattern.Table;
-            _defaults = pattern.Defaults;
+            _defaults = pattern.Defaults.ToDictionary(p => p.Key, p => p.Value);
             Initialize(pattern.Pattern);
         }
 
@@ -23,16 +25,32 @@ namespace NuGet.ContentModel.Infrastructure
         {
             for (var scanIndex = 0; scanIndex < pattern.Length;)
             {
-                var beginToken = (pattern + '{').IndexOf('{', scanIndex);
-                var endToken = (pattern + '}').IndexOf('}', beginToken);
+                var beginToken = pattern.Length;
+                var endToken = pattern.Length;
+                for (var i = scanIndex; i < pattern.Length; i++)
+                {
+                    var ch = pattern[i];
+                    if (beginToken == pattern.Length)
+                    {
+                        if (ch == '{')
+                        {
+                            beginToken = i;
+                        }
+                    }
+                    else if (ch == '}')
+                    {
+                        endToken = i;
+                        break;
+                    }
+                }
+
                 if (scanIndex != beginToken)
                 {
-                    var literal = pattern.Substring(scanIndex, beginToken - scanIndex);
-                    _segments.Add(new LiteralSegment(literal));
+                    _segments.Add(new LiteralSegment(pattern, scanIndex, beginToken - scanIndex));
                 }
                 if (beginToken != endToken)
                 {
-                    var delimiter = (pattern + '\0')[endToken + 1];
+                    var delimiter = endToken + 1 < pattern.Length ? pattern[endToken + 1] : '\0';
                     var matchOnly = pattern[endToken - 1] == '?';
 
                     var beginName = beginToken + 1;
@@ -47,15 +65,12 @@ namespace NuGet.ContentModel.Infrastructure
 
         public ContentItem Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
         {
-            var item = new ContentItem
-                {
-                    Path = path
-                };
+            ContentItem item = null;
             var startIndex = 0;
             foreach (var segment in _segments)
             {
                 int endIndex;
-                if (segment.TryMatch(item, propertyDefinitions, startIndex, out endIndex))
+                if (segment.TryMatch(ref item, path, propertyDefinitions, startIndex, out endIndex))
                 {
                     startIndex = endIndex;
                     continue;
@@ -67,9 +82,22 @@ namespace NuGet.ContentModel.Infrastructure
             {
                 // Successful match!
                 // Apply defaults from the pattern
-                foreach (var pair in _defaults)
+                if (item == null)
                 {
-                    item.Properties[pair.Key] = pair.Value;
+                    // item not created, use shared defaults
+                    item = new ContentItem
+                    {
+                        Path = path,
+                        Properties = _defaults
+                    };
+                }
+                else
+                {
+                    // item already created, append defaults
+                    foreach (var pair in _defaults)
+                    {
+                        item.Properties[pair.Key] = pair.Value;
+                    }
                 }
                 return item;
             }
@@ -78,30 +106,35 @@ namespace NuGet.ContentModel.Infrastructure
 
         private abstract class Segment
         {
-            internal abstract bool TryMatch(ContentItem item, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions, int startIndex, out int endIndex);
+            internal abstract bool TryMatch(ref ContentItem item, string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions, int startIndex, out int endIndex);
         }
 
+        [DebuggerDisplay("{_pattern.Substring(_start, _length)}")]
         private class LiteralSegment : Segment
         {
-            private readonly string _literal;
+            private readonly string _pattern;
+            private readonly int _start;
+            private readonly int _length;
 
-            public LiteralSegment(string literal)
+            public LiteralSegment(string pattern, int start, int length)
             {
-                _literal = literal;
+                _pattern = pattern;
+                _start = start;
+                _length = length;
             }
 
             internal override bool TryMatch(
-                ContentItem item,
+                ref ContentItem item,
+                string path,
                 IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions,
                 int startIndex,
                 out int endIndex)
             {
-                if (item.Path.Length >= startIndex + _literal.Length)
+                if (path.Length >= startIndex + _length)
                 {
-                    var substring = item.Path.Substring(startIndex, _literal.Length);
-                    if (string.Equals(_literal, substring, StringComparison.OrdinalIgnoreCase))
+                    if (string.Compare(path, startIndex, _pattern, _start, _length, StringComparison.OrdinalIgnoreCase) == 0)
                     {
-                        endIndex = startIndex + _literal.Length;
+                        endIndex = startIndex + _length;
                         return true;
                     }
                 }
@@ -110,6 +143,7 @@ namespace NuGet.ContentModel.Infrastructure
             }
         }
 
+        [DebuggerDisplay("Token = {_token}, Delimiter = {_delimiter}, MatchOnly = {_matchOnly}")]
         private class TokenSegment : Segment
         {
             private readonly string _token;
@@ -125,27 +159,51 @@ namespace NuGet.ContentModel.Infrastructure
                 _table = table;
             }
 
-            internal override bool TryMatch(ContentItem item, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions, int startIndex, out int endIndex)
+            internal override bool TryMatch(
+                ref ContentItem item,
+                string path,
+                IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions,
+                int startIndex,
+                out int endIndex)
             {
                 ContentPropertyDefinition propertyDefinition;
                 if (!propertyDefinitions.TryGetValue(_token, out propertyDefinition))
                 {
                     throw new Exception(string.Format("Unable to find property definition for {{{0}}}", _token));
                 }
-                for (var scanIndex = startIndex; scanIndex != item.Path.Length;)
+
+                for (var scanIndex = startIndex; scanIndex != path.Length;)
                 {
-                    var delimiterIndex = (item.Path + _delimiter).IndexOf(_delimiter, scanIndex + 1);
-                    if (delimiterIndex == item.Path.Length
+                    var delimiterIndex = path.Length;
+                    for (var i = scanIndex + 1; i < path.Length; i++)
+                    {
+                        if (path[i] == _delimiter)
+                        {
+                            delimiterIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (delimiterIndex == path.Length
                         && _delimiter != '\0')
                     {
                         break;
                     }
-                    var substring = item.Path.Substring(startIndex, delimiterIndex - startIndex);
+                    var substring = path.Substring(startIndex, delimiterIndex - startIndex);
                     object value;
                     if (propertyDefinition.TryLookup(substring, _table, out value))
                     {
                         if (!_matchOnly)
                         {
+                            // Adding property, create item if not already created
+                            if (item == null)
+                            {
+                                item = new ContentItem
+                                {
+                                    Path = path
+                                };
+                            }
+
                             item.Properties.Add(_token, value);
                         }
                         endIndex = delimiterIndex;

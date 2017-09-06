@@ -246,22 +246,6 @@ function Test-GetProjectAfterDefaultProjectRemoved
 	Assert-DefaultProject $p2
 }
 
-function Test-GetProjectForDNXClassLibrary
-{
-	param($context)
-
-	if ((Get-VSVersion) -ge '14.0') {
-		# Arrange
-		$p1 = New-DNXClassLibrary
-
-		#Act
-		$name = @(Get-Project)
-
-		# Assert
-		Assert-NotNull $name
-	}
-}
-
 function Assert-DefaultProject($p) {
     Assert-AreEqual $p (Get-Project) "Default project is actually $($p.UniqueName)"
 }

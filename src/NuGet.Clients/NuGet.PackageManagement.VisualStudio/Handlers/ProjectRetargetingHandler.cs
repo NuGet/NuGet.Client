@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -131,18 +131,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (Action != vsBuildAction.vsBuildActionClean)
                 {
-                    ShowWarningsForPackageReinstallation(_dte.Solution);
+                    await ShowWarningsForPackageReinstallationAsync(_dte.Solution);
                 }
             });
         }
 
-        private void ShowWarningsForPackageReinstallation(Solution solution)
+        private async System.Threading.Tasks.Task ShowWarningsForPackageReinstallationAsync(Solution solution)
         {
             Debug.Assert(solution != null);
 
             foreach (Project project in solution.Projects)
             {
-                var nuGetProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
+                var nuGetProject = await EnvDTEProjectUtility.GetNuGetProjectAsync(project, _solutionManager);
                 if (ProjectRetargetingUtility.IsProjectRetargetable(nuGetProject))
                 {
                     var packageReferencesToBeReinstalled = ProjectRetargetingUtility.GetPackageReferencesMarkedForReinstallation(nuGetProject);
@@ -160,8 +160,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Debug.Assert(packagesToBeReinstalled != null && packagesToBeReinstalled.Any());
 
-            var errorText = String.Format(CultureInfo.CurrentCulture, Strings.ProjectUpgradeAndRetargetErrorMessage,
-                    String.Join(", ", packagesToBeReinstalled));
+            var errorText = string.Format(CultureInfo.CurrentCulture, Strings.ProjectUpgradeAndRetargetErrorMessage,
+                    string.Join(", ", packagesToBeReinstalled));
             MessageHelper.ShowError(_errorListProvider, errorCategory, priority, errorText, projectHierarchy);
         }
 
@@ -175,7 +175,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 _errorListProvider.Tasks.Clear();
                 var project = VsHierarchyUtility.GetProjectFromHierarchy(pAfterChangeHier);
-                retargetedProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
+                retargetedProject = await EnvDTEProjectUtility.GetNuGetProjectAsync(project, _solutionManager);
 
                 if (ProjectRetargetingUtility.IsProjectRetargetable(retargetedProject))
                 {
@@ -264,20 +264,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         if (project != null)
                         {
-                            nuGetProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
+                            nuGetProject = await EnvDTEProjectUtility.GetNuGetProjectAsync(project, _solutionManager);
 
                             if (ProjectRetargetingUtility.IsProjectRetargetable(nuGetProject))
                             {
                                 var frameworkName = EnvDTEProjectInfoUtility.GetTargetFrameworkString(project);
                                 if (NETCore451.Equals(frameworkName, StringComparison.OrdinalIgnoreCase) || Windows81.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    IList<PackageIdentity> packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(nuGetProject);
+                                    var packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(nuGetProject);
                                     if (packagesToBeReinstalled.Count > 0)
                                     {
                                         // By asserting that NuGet is in use, we are also asserting that NuGet.VisualStudio.dll is already loaded
                                         // Hence, it is okay to call project.ToVsHierarchy()
                                         Debug.Assert(ProjectRetargetingUtility.IsNuGetInUse(project));
-                                        IVsHierarchy projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                                        var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
                                         ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), projectHierarchy, TaskErrorCategory.Error, TaskPriority.High);
                                     }
 // NuGet/Home#4833 Baseline

@@ -314,6 +314,11 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 throw new NotImplementedException();
             }
 
+            public override Task<string> GetCacheFilePathAsync()
+            {
+                throw new NotImplementedException();
+            }
+
             public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
             {
                 throw new NotImplementedException();

@@ -49,5 +49,6 @@ namespace NuGet.Protocol
         public const string Language = "language";
         public const string PackageContent = "packageContent";
         public const string Versions = "versions";
+        public const string PrefixReserved = "verified";
     }
 }

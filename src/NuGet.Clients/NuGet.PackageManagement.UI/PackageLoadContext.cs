@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -31,6 +31,8 @@ namespace NuGet.PackageManagement.UI
 
         public PackageSearchMetadataCache CachedPackages { get; set; }
 
+        public IVsSolutionManager SolutionManager { get; private set; }
+
         public PackageLoadContext(
             IEnumerable<SourceRepository> sourceRepositories,
             bool isSolution,
@@ -41,6 +43,7 @@ namespace NuGet.PackageManagement.UI
             PackageManager = uiContext.PackageManager;
             Projects = (uiContext.Projects ?? Enumerable.Empty<NuGetProject>()).ToArray();
             PackageManagerProviders = uiContext.PackageManagerProviders;
+            SolutionManager = uiContext.SolutionManager;
 
             _installedPackagesTask = PackageCollection.FromProjectsAsync(Projects, CancellationToken.None);
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,9 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
+using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
@@ -57,12 +59,15 @@ namespace NuGet.VisualStudio
                     {
                         InitializePackageManagerAndPackageFolderPath();
 
-                        var pathContext = NuGetPathContext.Create(_settings);
-                        var pathResolver = new FallbackPackagePathResolver(pathContext);
-                        var globalPackagesFolderResolver = new VersionFolderPathResolver(pathContext.UserPackageFolder);
-
-                        foreach (var project in _solutionManager.GetNuGetProjects())
+                        foreach (var project in (await _solutionManager.GetNuGetProjectsAsync()))
                         {
+                            FallbackPackagePathResolver pathResolver = null;
+                            var buildIntegratedProject = project as BuildIntegratedNuGetProject;
+                            if (buildIntegratedProject != null)
+                            {
+                                pathResolver = await GetPackagesPathResolverAsync(buildIntegratedProject);
+                            }
+
                             var installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
 
                             foreach (var package in installedPackages)
@@ -78,10 +83,9 @@ namespace NuGet.VisualStudio
 
                                 // find packages using the solution level packages folder
                                 string installPath;
-                                if (project is INuGetIntegratedProject)
+                                if (buildIntegratedProject != null)
                                 {
-                                    installPath = pathResolver.GetPackageDirectory(identity.Id, identity.Version) ??
-                                        globalPackagesFolderResolver.GetInstallPath(identity.Id, identity.Version);
+                                    installPath = pathResolver.GetPackageDirectory(identity.Id, identity.Version);
                                 }
                                 else
                                 {
@@ -99,6 +103,21 @@ namespace NuGet.VisualStudio
 
                     return packages;
                 });
+        }
+
+        private async Task<FallbackPackagePathResolver> GetPackagesPathResolverAsync(BuildIntegratedNuGetProject project)
+        {
+            // To get packagesPath for build integrated projects, first read the packageSpec to know if
+            // RestorePackagesPath property was specified. If yes, then use that property to get packages path
+            // otherwise use global user cache folder from _settings.
+            var context = new DependencyGraphCacheContext();
+            var packageSpecs = await project.GetPackageSpecsAsync(context);
+            var packageSpec = packageSpecs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
+                || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson);
+
+            var packagesPath = VSRestoreSettingsUtilities.GetPackagesPath(_settings, packageSpec);
+
+            return new FallbackPackagePathResolver(packagesPath, VSRestoreSettingsUtilities.GetFallbackFolders(_settings, packageSpec));
         }
 
         private async Task<IEnumerable<Packaging.PackageReference>> GetInstalledPackageReferencesAsync(
@@ -149,19 +168,34 @@ namespace NuGet.VisualStudio
 
                         if (nuGetProject != null)
                         {
+                            FallbackPackagePathResolver pathResolver = null;
+                            var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+                            if (buildIntegratedProject != null)
+                            {
+                                pathResolver = await GetPackagesPathResolverAsync(buildIntegratedProject);
+                            }
+
                             var installedPackages = await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
                             foreach (var package in installedPackages)
                             {
-                                // Get the install path for package
-                                string installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(
-                                                        package.PackageIdentity);
-
-                                if (!string.IsNullOrEmpty(installPath))
+                                string installPath;
+                                if (buildIntegratedProject != null)
                                 {
-                                    // normalize the path and take the dir if the nupkg path was given
-                                    var dir = new DirectoryInfo(installPath);
-                                    installPath = dir.FullName;
+                                    installPath = pathResolver.GetPackageDirectory(package.PackageIdentity.Id, package.PackageIdentity.Version);
+                                }
+                                else
+                                {
+                                    // Get the install path for package
+                                    installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(
+                                                            package.PackageIdentity);
+
+                                    if (!string.IsNullOrEmpty(installPath))
+                                    {
+                                        // normalize the path and take the dir if the nupkg path was given
+                                        var dir = new DirectoryInfo(installPath);
+                                        installPath = dir.FullName;
+                                    }
                                 }
 
                                 var metadata = new VsPackageMetadata(package.PackageIdentity, installPath);

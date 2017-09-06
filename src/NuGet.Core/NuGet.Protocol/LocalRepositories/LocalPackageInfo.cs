@@ -37,11 +37,6 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(path));
             }
 
-            if (lastWriteTimeUtc == null)
-            {
-                throw new ArgumentNullException(nameof(lastWriteTimeUtc));
-            }
-
             if (nuspec == null)
             {
                 throw new ArgumentNullException(nameof(nuspec));

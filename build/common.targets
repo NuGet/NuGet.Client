@@ -189,8 +189,35 @@
     <ItemGroup>
       <DllsToLocalizeWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' == '.dll' OR '%(Filename)' == 'NuGet.CommandLine.XPlat'" KeepDuplicates="false">
         <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
-	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(Filename).resources.dll.lci</LciCommentFile>
+	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
       </DllsToLocalizeWithMetadata>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    GetLocalizedFiles - gathers the list of files that have been
+    localized from each project
+    ============================================================
+  -->
+  <!--Target is invoked by build\build.proj\MoveLocalizedFilesToLocalizedArtifacts to get all the localized files from all projects-->
+  <Target Name="GetNetCoreLocalizedFilesInProjectOutputPath" Returns="@(_LocalizedNetCoreDllsWithRelativeTargetPath)" Condition=" '$(PackProject)' == 'true' ">
+    <ItemGroup>
+      <_LocalizedDllsNetCoreApp Include="$(OutputPath)netcoreapp1.0\**\$(AssemblyName).resources.dll"/>
+      <_LocalizedDllsNetStandard13 Include="$(OutputPath)netstandard1.3\**\$(AssemblyName).resources.dll"/>
+      <_LocalizedDllsNetStandard10 Include="$(OutputPath)netstandard1.0\**\$(AssemblyName).resources.dll"/>
+
+      <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetCoreApp)" Condition=" '@(_LocalizedDllsNetCoreApp)' != '' ">
+        <RelativeTargetPath>netstandard1.3\%(_LocalizedDllsNetCoreApp.RecursiveDir)%(_LocalizedDllsNetCoreApp.FileName)%(_LocalizedDllsNetCoreApp.Extension)</RelativeTargetPath>
+      </_LocalizedNetCoreDllsWithRelativeTargetPath>
+
+      <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetStandard10)" Condition=" '@(_LocalizedDllsNetStandard10)' != '' ">
+        <RelativeTargetPath>netstandard1.3\%(_LocalizedDllsNetStandard10.RecursiveDir)%(_LocalizedDllsNetStandard10.FileName)%(_LocalizedDllsNetStandard10.Extension)</RelativeTargetPath>
+      </_LocalizedNetCoreDllsWithRelativeTargetPath>
+
+      <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetStandard13)" Condition=" '@(_LocalizedDllsNetStandard13)' != '' ">
+        <RelativeTargetPath>netstandard1.3\%(_LocalizedDllsNetStandard13.RecursiveDir)%(_LocalizedDllsNetStandard13.FileName)%(_LocalizedDllsNetStandard13.Extension)</RelativeTargetPath>
+      </_LocalizedNetCoreDllsWithRelativeTargetPath>
     </ItemGroup>
   </Target>
 

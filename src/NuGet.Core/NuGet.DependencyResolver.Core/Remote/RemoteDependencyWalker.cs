@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.DependencyResolver
@@ -36,8 +37,9 @@ namespace NuGet.DependencyResolver
             Func<LibraryRange, DependencyResult> predicate,
             GraphEdge<RemoteResolveResult> outerEdge)
         {
-            var dependencies = new List<LibraryDependency>();
-            var runtimeDependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            List<LibraryDependency> dependencies = null;
+            HashSet<string> runtimeDependencies = null;
+            List<Task<GraphNode<RemoteResolveResult>>> tasks = null;
 
             if (runtimeGraph != null && !string.IsNullOrEmpty(runtimeName))
             {
@@ -68,6 +70,13 @@ namespace NuGet.DependencyResolver
                     else
                     {
                         // Otherwise it's a dependency of this node
+                        if (dependencies == null)
+                        {
+                            // Init dependency lists
+                            dependencies = new List<LibraryDependency>(1);
+                            runtimeDependencies = new HashSet<string>();
+                        }
+
                         dependencies.Add(libraryDependency);
                         runtimeDependencies.Add(libraryDependency.Name);
                     }
@@ -88,10 +97,19 @@ namespace NuGet.DependencyResolver
 
             Debug.Assert(node.Item != null, "FindLibraryCached should return an unresolved item instead of null");
 
-            var tasks = new List<Task<GraphNode<RemoteResolveResult>>>();
-
-            if (dependencies.Count > 0)
+            // Merge in runtime dependencies
+            if (dependencies?.Count > 0)
             {
+                var nodeDependencies = node.Item.Data.Dependencies.AsList();
+
+                foreach (var nodeDep in nodeDependencies)
+                {
+                    if (runtimeDependencies?.Contains(nodeDep.Name, StringComparer.OrdinalIgnoreCase) != true)
+                    {
+                        dependencies.Add(nodeDep);
+                    }
+                }
+
                 // Create a new item on this node so that we can update it with the new dependencies from
                 // runtime.json files
                 // We need to clone the item since they can be shared across multiple nodes
@@ -99,7 +117,7 @@ namespace NuGet.DependencyResolver
                 {
                     Data = new RemoteResolveResult()
                     {
-                        Dependencies = dependencies.Concat(node.Item.Data.Dependencies.Where(d => !runtimeDependencies.Contains(d.Name))).ToList(),
+                        Dependencies = dependencies,
                         Match = node.Item.Data.Match
                     }
                 };
@@ -114,10 +132,22 @@ namespace NuGet.DependencyResolver
                 {
                     var result = predicate(dependency.LibraryRange);
 
+                    // Check for a cycle, this is needed for A (project) -> A (package)
+                    // since the predicate will not be called for leaf nodes.
+                    if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, libraryRange.Name))
+                    {
+                        result = DependencyResult.Cycle;
+                    }
+
                     if (result == DependencyResult.Acceptable)
                     {
                         // Dependency edge from the current node to the dependency
                         var innerEdge = new GraphEdge<RemoteResolveResult>(outerEdge, node.Item, dependency);
+
+                        if (tasks == null)
+                        {
+                            tasks = new List<Task<GraphNode<RemoteResolveResult>>>(1);
+                        }
 
                         tasks.Add(CreateGraphNode(
                             dependency.LibraryRange,
@@ -145,7 +175,7 @@ namespace NuGet.DependencyResolver
                 }
             }
 
-            while (tasks.Count > 0)
+            while (tasks?.Count > 0)
             {
                 // Wait for any node to finish resolving
                 var task = await Task.WhenAny(tasks);
@@ -220,7 +250,7 @@ namespace NuGet.DependencyResolver
                     }
 
                     nearMinVersion = GetReleaseLabelFreeVersion(nearVersion);
-                    nearRelease = nearVersion.Float.MinVersion.Release;
+                    nearRelease = nearVersion.Float.OriginalReleasePrefix;
                 }
                 else
                 {
@@ -237,7 +267,7 @@ namespace NuGet.DependencyResolver
                     }
 
                     farMinVersion = GetReleaseLabelFreeVersion(farVersion);
-                    farRelease = farVersion.Float.MinVersion.Release;
+                    farRelease = farVersion.Float.OriginalReleasePrefix;
                 }
                 else
                 {
@@ -251,8 +281,6 @@ namespace NuGet.DependencyResolver
                     return result > 0;
                 }
 
-                nearRelease = nearRelease?.Trim('-');
-                farRelease = farRelease?.Trim('-');
                 if (string.IsNullOrEmpty(nearRelease))
                 {
                     // near is 1.0.0-*

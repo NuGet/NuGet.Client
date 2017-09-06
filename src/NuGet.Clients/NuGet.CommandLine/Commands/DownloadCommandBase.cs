@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,6 +44,11 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "CommandPackageSaveMode")]
         public string PackageSaveMode { get; set; }
+
+        /// <summary>
+        /// If true the global packages folder NOT will be added as a source.
+        /// </summary>
+        internal bool ExcludeCacheAsSource { get; set; }
 
         internal void CalculateEffectivePackageSaveMode()
         {
@@ -117,7 +122,7 @@ namespace NuGet.CommandLine
             var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             var packageSources = new List<Configuration.PackageSource>();
 
-            if (!NoCache)
+            if (!NoCache && !ExcludeCacheAsSource)
             {
                 // Add the v3 global packages folder
                 var globalPackageFolder = SettingsUtility.GetGlobalPackagesFolder(settings);

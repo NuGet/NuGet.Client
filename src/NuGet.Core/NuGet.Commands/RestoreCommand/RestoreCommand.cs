@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -53,16 +53,9 @@ namespace NuGet.Commands
             var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors
                 || request.HideWarningsAndErrors;
 
-            var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors)
-            {
-                ProjectPath = _request.Project.RestoreMetadata?.ProjectPath,
-                WarningPropertiesCollection = new WarningPropertiesCollection()
-                {
-                    ProjectWideWarningProperties = request.Project.RestoreMetadata?.ProjectWideWarningProperties,
-                    PackageSpecificWarningProperties = PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(request.Project),
-                    ProjectFrameworks = request.Project.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly()
-                }
-            };
+            var collectorLogger = new RestoreCollectorLogger(_request.Log, collectorLoggerHideWarningsAndErrors);
+
+            collectorLogger.ApplyRestoreInputs(_request.Project);
 
             _logger = collectorLogger;
         }
@@ -96,7 +89,7 @@ namespace NuGet.Commands
                     if (NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
                     {
                         // Replay Warnings and Errors from an existing lock file in case of a no-op.
-                        ReplayWarningsAndErrors();
+                        await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile, _logger);
 
                         restoreTime.Stop();
 
@@ -210,29 +203,6 @@ namespace NuGet.Commands
                 _request.ProjectStyle,
                 restoreTime.Elapsed);
         }
-        
-        private void ReplayWarningsAndErrors()
-        {
-            var logMessages = _request.ExistingLockFile?.LogMessages ?? Enumerable.Empty<IAssetsLogMessage>();
-
-            foreach (var logMessage in logMessages)
-            {
-                var restoreLogMessage = new RestoreLogMessage(logMessage.Level, logMessage.Code, logMessage.Message)
-                {
-                    ProjectPath = logMessage.ProjectPath,
-                    WarningLevel = logMessage.WarningLevel,
-                    FilePath = logMessage.FilePath,
-                    LibraryId = logMessage.LibraryId,
-                    TargetGraphs = logMessage.TargetGraphs,
-                    StartLineNumber = logMessage.StartLineNumber,
-                    StartColumnNumber = logMessage.StartColumnNumber,
-                    EndLineNumber = logMessage.EndLineNumber,
-                    EndColumnNumber = logMessage.EndColumnNumber
-                };
-
-                _logger.LogAsync(restoreLogMessage);
-            }
-        }
 
         private KeyValuePair<CacheFile, bool> EvaluateCacheFile()
         {
@@ -271,7 +241,7 @@ namespace NuGet.Commands
             {
                 if (noOp) // Only if the hash matches, then load the lock file. This is a performance hit, so we need to delay it as much as possible.
                 { 
-                    _request.ExistingLockFile = LockFileUtilities.GetLockFile(_request.LockFilePath, _request.Log);
+                    _request.ExistingLockFile = LockFileUtilities.GetLockFile(_request.LockFilePath, _logger);
                 }
                 else
                 {
@@ -591,7 +561,7 @@ namespace NuGet.Commands
 
             var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
 
-            var result = await projectRestoreCommand.TryRestore(
+            var result = await projectRestoreCommand.TryRestoreAsync(
                 projectRange,
                 projectFrameworkRuntimePairs,
                 allInstalledPackages,
@@ -638,7 +608,7 @@ namespace NuGet.Commands
             // Walk additional runtime graphs for supports checks
             if (_success && _request.CompatibilityProfiles.Any())
             {
-                var compatibilityResult = await projectRestoreCommand.TryRestore(
+                var compatibilityResult = await projectRestoreCommand.TryRestoreAsync(
                     projectRange,
                     _request.CompatibilityProfiles,
                     allInstalledPackages,

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -150,10 +151,10 @@ namespace NuGet.ProjectManagement.Projects
             return packages;
         }
 
-        protected virtual async Task<string> GetBaseIntermediatePathAsync()
+        protected virtual Task<string> GetBaseIntermediatePathAsync()
         {
             // Extending class will implement the functionality.
-            return null;
+            return Task.FromResult((string) null);
         }
        
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
@@ -176,18 +177,33 @@ namespace NuGet.ProjectManagement.Projects
                 metadata.ProjectJsonPath = packageSpec.FilePath;
                 metadata.ProjectName = packageSpec.Name;
                 metadata.ProjectUniqueName = MSBuildProjectPath;
+                metadata.CacheFilePath = await GetCacheFilePathAsync();
 
                 // Reload the target framework from csproj and update the target framework in packageSpec for restore
                 await UpdateInternalTargetFrameworkAsync();
 
-                if (TryGetInternalFramework(out var internalTargetFramework))
+                if (TryGetInternalFramework(out var targetFramework))
                 {
-                    // Ensure the project json has only one target framework
-                    if (packageSpec.TargetFrameworks != null && packageSpec.TargetFrameworks.Count == 1)
+                    var nuGetFramework = targetFramework as NuGetFramework;
+                    if (IsUAPFramework(nuGetFramework))
                     {
-                        var replaceTargetFramework = new TargetFrameworkInformation();
-                        replaceTargetFramework.FrameworkName = internalTargetFramework as NuGetFramework;
-                        packageSpec.TargetFrameworks[0] = replaceTargetFramework;
+                        // Ensure the project json has only one target framework
+                        if (packageSpec.TargetFrameworks != null && packageSpec.TargetFrameworks.Count == 1)
+                        {
+                            var tfi = packageSpec.TargetFrameworks.First();
+                            if (tfi.Imports.Count > 0)
+                            {
+                                if (tfi.AssetTargetFallback)
+                                {
+                                    nuGetFramework = new AssetTargetFallbackFramework(nuGetFramework, tfi.Imports.AsList());
+                                }
+                                else
+                                {
+                                    nuGetFramework = new FallbackFramework(nuGetFramework, tfi.Imports.AsList());
+                                }
+                            }
+                            tfi.FrameworkName = nuGetFramework;
+                        }
                     }
                 }
 
@@ -351,6 +367,12 @@ namespace NuGet.ProjectManagement.Projects
         private bool TryGetInternalFramework(out object internalTargetFramework)
         {
             return InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.TargetFramework, out internalTargetFramework);
+        }
+
+        // Overriding class wil implement the method
+        public override Task<string> GetCacheFilePathAsync()
+        {
+            return Task.FromResult((string)null);
         }
     }
 }

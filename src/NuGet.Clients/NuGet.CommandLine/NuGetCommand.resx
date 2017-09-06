@@ -3871,7 +3871,7 @@ nuget spec -a MyAssembly.dll</value>
     <value>Aktualizuje balíčky na nejnovější dostupné verze. Tento příkaz rovněž aktualizuje vlastní soubor NuGet.exe.</value>
   </data>
   <data name="UpdateCommandDescription_deu" xml:space="preserve">
-    <value>Pakete auf die aktuellsten verfügbaren Versionen aktualisieren. Dieser Befehl aktualisiert auch sie Datei "NuGet.exe" selbst.</value>
+    <value>Pakete auf die aktuellsten verfügbaren Versionen aktualisieren. Dieser Befehl aktualisiert auch die Datei "NuGet.exe" selbst.</value>
   </data>
   <data name="UpdateCommandDescription_esp" xml:space="preserve">
     <value>Actualizar paquetes a las últimas versiones disponibles. Este comando también actualiza NuGet.exe.</value>
@@ -5338,5 +5338,11 @@ nuget locals global-packages -list</value>
   </data>
   <data name="ForceRestoreCommand" xml:space="preserve">
     <value>Forces all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json. (Does not apply to packages.config)</value>
+  </data>
+  <data name="InstallCommandDependencyVersion" xml:space="preserve">
+    <value>Overrides the default dependency resolution behavior.</value>
+  </data>
+  <data name="InstallCommandFrameworkDescription" xml:space="preserve">
+    <value>Target framework used for selecting dependencies. Defaults to 'Any' if not specified.</value>
   </data>
 </root>

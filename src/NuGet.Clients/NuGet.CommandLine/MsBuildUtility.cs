@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.VisualStudio.Setup.Configuration;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -22,8 +23,8 @@ namespace NuGet.CommandLine
     {
         internal const int MsBuildWaitTime = 2 * 60 * 1000; // 2 minutes in milliseconds
 
-        private const string NuGetTargets =
-            "NuGet.CommandLine.NuGet.targets";
+        private const string NuGetTargets = "NuGet.CommandLine.NuGet.targets";
+        private static readonly XNamespace MSBuildNamespace = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
 
         private readonly static string[] MSBuildVersions = new string[] { "14", "12", "4" };
 
@@ -35,7 +36,7 @@ namespace NuGet.CommandLine
         public static int Build(string msbuildDirectory,
                                     string args)
         {
-            string msbuildPath = GetMsbuild(msbuildDirectory);
+            var msbuildPath = GetMsbuild(msbuildDirectory);
 
             if (!File.Exists(msbuildPath))
             {
@@ -98,155 +99,34 @@ namespace NuGet.CommandLine
                 nugetExePath = buildTasksPath;
             }
 
-            using (var entryPointTargetPath = new TempFile(".targets"))
-            using (var resultsPath = new TempFile(".result"))
+            using (var inputTargetPath = new TempFile(".nugetinputs.targets"))
+            using (var entryPointTargetPath = new TempFile(".nugetrestore.targets"))
+            using (var resultsPath = new TempFile(".output.dg"))
             {
+                // Read NuGet.targets from nuget.exe and write it to disk for msbuild.exe
                 ExtractResource(NuGetTargets, entryPointTargetPath);
 
-                // Use RestoreUseCustomAfterTargets=true to allow recursion
-                // for scenarios where NuGet is not part of ImportsAfter.
-                var argumentBuilder = new StringBuilder(
-                    "/t:GenerateRestoreGraphFile " +
-                    "/nologo /nr:false /p:RestoreUseCustomAfterTargets=true " +
-                    "/p:BuildProjectReferences=false");
-
-                // Set the msbuild verbosity level if specified
-                var msbuildVerbosity = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_VERBOSITY");
-
-                if (string.IsNullOrEmpty(msbuildVerbosity))
+                // Build a .targets file of all restore inputs, this is needed to avoid going over the limit on command line arguments.
+                var properties = new Dictionary<string, string>()
                 {
-                    argumentBuilder.Append(" /v:q ");
-                }
-                else
-                {
-                    argumentBuilder.Append($" /v:{msbuildVerbosity} ");
-                }
+                    { "RestoreUseCustomAfterTargets", "true" },
+                    { "RestoreGraphOutputPath", resultsPath },
+                    { "RestoreRecursive", recursive.ToString().ToLowerInvariant() },
+                    { "RestoreProjectFilterMode", "exclusionlist" }
+                };
 
-                // Add additional args to msbuild if needed
-                var msbuildAdditionalArgs = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_ARGS");
+                var inputTargetXML = GetRestoreInputFile(entryPointTargetPath, properties, projectPaths);
 
-                if (!string.IsNullOrEmpty(msbuildAdditionalArgs))
-                {
-                    argumentBuilder.Append($" {msbuildAdditionalArgs} ");
-                }
+                inputTargetXML.Save(inputTargetPath);
 
-                // Override the target under ImportsAfter with the current NuGet.targets version.
-                argumentBuilder.Append(" /p:NuGetRestoreTargets=");
-                AppendQuoted(argumentBuilder, entryPointTargetPath);
-
-                // Set path to nuget.exe or the build task
-                argumentBuilder.Append(" /p:RestoreTaskAssemblyFile=");
-                AppendQuoted(argumentBuilder, nugetExePath);
-
-                // dg file output path
-                argumentBuilder.Append(" /p:RestoreGraphOutputPath=");
-                AppendQuoted(argumentBuilder, resultsPath);
-
-                // Disallow the import of targets/props from packages
-                argumentBuilder.Append(" /p:ExcludeRestorePackageImports=true ");
-
-                if (!string.IsNullOrEmpty(solutionDirectory))
-                {
-                    argumentBuilder.Append(" /p:RestoreSolutionDirectory=");
-                    argumentBuilder.Append(EscapeQuoted(solutionDirectory));
-                }
-
-                if (!string.IsNullOrEmpty(restoreConfigFile))
-                {
-                    argumentBuilder.Append(" /p:RestoreConfigFile=");
-                    argumentBuilder.Append(EscapeQuoted(restoreConfigFile));
-                }
-
-                var isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
-
-                if (sources.Length != 0)
-                {
-                    if (isMono)
-                    {
-                        argumentBuilder.Append(" /p:RestoreSources=\\\"");
-                    }
-                    else
-                    {
-                        argumentBuilder.Append(" /p:RestoreSources=\"");
-                    }
-
-                    for (var i = 0; i < sources.Length; i++)
-                    {
-                        if (isMono)
-                        {
-                            argumentBuilder.Append(sources[i])
-                                .Append("\\;");
-                        }
-                        else
-                        {
-                            argumentBuilder.Append(sources[i])
-                                .Append(";");
-                        }
-                    }
-
-                    if (isMono)
-                    {
-                        argumentBuilder.Append("\\\" ");
-                    }
-                    else
-                    {
-                        argumentBuilder.Append("\" ");
-                    }
-                }
-                if (!string.IsNullOrEmpty(packagesDirectory))
-                {
-                    argumentBuilder.Append(" /p:RestorePackagesPath=");
-                    AppendQuoted(argumentBuilder, packagesDirectory);
-                }
-
-                // Add all depenencies as top level restore projects if recursive is set
-                argumentBuilder.Append($" /p:RestoreRecursive={recursive} ");
-
-                // Filter out unknown project types and avoid errors from projects that do not support CustomAfterTargets
-                argumentBuilder.Append($" /p:RestoreProjectFilterMode=exclusionlist /p:RestoreContinueOnError=WarnAndContinue ");
-
-                // /p: foo = "bar;baz" doesn't work on bash.
-                // /p: foo = /"bar/;baz/" works.
-                // Need to escape quotes and semicolon on bash.
-                if (isMono)
-                {
-                    argumentBuilder.Append(" /p:RestoreGraphProjectInput=\\\"");
-                }
-                else
-                {
-                    argumentBuilder.Append(" /p:RestoreGraphProjectInput=\"");
-                }
-
-                for (var i = 0; i < projectPaths.Length; i++)
-                {
-                    if (isMono)
-                    {
-                        argumentBuilder.Append(projectPaths[i])
-                            .Append("\\;");
-                    }
-                    else
-                    {
-                        argumentBuilder.Append(projectPaths[i])
-                            .Append(";");
-                    }
-                }
-
-                if (isMono)
-                {
-                    argumentBuilder.Append("\\\" ");
-                }
-                else
-                {
-                    argumentBuilder.Append("\" ");
-                }
-
-                AppendQuoted(argumentBuilder, entryPointTargetPath);
+                // Create msbuild parameters and include global properties that cannot be set in the input targets path
+                var arguments = GetMSBuildArguments(entryPointTargetPath, inputTargetPath, nugetExePath, solutionDirectory, restoreConfigFile, sources, packagesDirectory);
 
                 var processStartInfo = new ProcessStartInfo
                 {
                     UseShellExecute = false,
                     FileName = msbuildPath,
-                    Arguments = argumentBuilder.ToString(),
+                    Arguments = arguments,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true
                 };
@@ -334,6 +214,126 @@ namespace NuGet.CommandLine
 
                 return spec;
             }
+        }
+
+        public static string GetMSBuildArguments(
+            string entryPointTargetPath,
+            string inputTargetPath,
+            string nugetExePath,
+            string solutionDirectory,
+            string restoreConfigFile,
+            string[] sources,
+            string packagesDirectory)
+        {
+            // args for MSBuild.exe
+            var args = new List<string>()
+            {
+                EscapeQuoted(inputTargetPath),
+                "/t:GenerateRestoreGraphFile",
+                "/nologo",
+                "/nr:false"
+            };
+
+            // Set the msbuild verbosity level if specified
+            var msbuildVerbosity = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_VERBOSITY");
+
+            if (string.IsNullOrEmpty(msbuildVerbosity))
+            {
+                args.Add("/v:q");
+            }
+            else
+            {
+                args.Add($"/v:{msbuildVerbosity} ");
+            }
+
+            // Override the target under ImportsAfter with the current NuGet.targets version.
+            AddProperty(args, "NuGetRestoreTargets", entryPointTargetPath);
+
+            // Set path to nuget.exe or the build task
+            AddProperty(args, "RestoreTaskAssemblyFile", nugetExePath);
+
+            // Settings
+            AddRestoreSources(args, sources);
+            AddPropertyIfHasValue(args, "RestoreSolutionDirectory", solutionDirectory);
+            AddPropertyIfHasValue(args, "RestoreConfigFile", restoreConfigFile);
+            AddPropertyIfHasValue(args, "RestorePackagesPath", packagesDirectory);
+            AddPropertyIfHasValue(args, "SolutionDir", solutionDirectory);
+
+            // Add additional args to msbuild if needed
+            var msbuildAdditionalArgs = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_ARGS");
+
+            if (!string.IsNullOrEmpty(msbuildAdditionalArgs))
+            {
+                args.Add(msbuildAdditionalArgs);
+            }
+
+            return string.Join(" ", args);
+        }
+
+        private static void AddRestoreSources(List<string> args, string[] sources)
+        {
+            if (sources.Length != 0)
+            {
+                var isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
+
+                var sourceBuilder = new StringBuilder();
+
+                if (isMono)
+                {
+                    sourceBuilder.Append("/p:RestoreSources=\\\"");
+                }
+                else
+                {
+                    sourceBuilder.Append("/p:RestoreSources=\"");
+                }
+
+                for (var i = 0; i < sources.Length; i++)
+                {
+                    if (isMono)
+                    {
+                        sourceBuilder.Append(sources[i])
+                            .Append("\\;");
+                    }
+                    else
+                    {
+                        sourceBuilder.Append(sources[i])
+                            .Append(";");
+                    }
+                }
+
+                if (isMono)
+                {
+                    sourceBuilder.Append("\\\" ");
+                }
+                else
+                {
+                    sourceBuilder.Append("\" ");
+                }
+
+                args.Add(sourceBuilder.ToString());
+            }
+        }
+
+        public static XDocument GetRestoreInputFile(string restoreTargetPath, Dictionary<string, string> properties, IEnumerable<string> projectPaths)
+        {
+            return GenerateMSBuildFile(
+                new XElement(MSBuildNamespace + "PropertyGroup", properties.Select(e => new XElement(MSBuildNamespace + e.Key, e.Value))),
+                new XElement(MSBuildNamespace + "ItemGroup", projectPaths.Select(GetRestoreGraphProjectInputItem)),
+                new XElement(MSBuildNamespace + "Import", new XAttribute(XName.Get("Project"), restoreTargetPath)));
+        }
+
+        public static XDocument GenerateMSBuildFile(params XElement[] elements)
+        {
+            return new XDocument(
+                new XDeclaration("1.0", "utf-8", "no"),
+                new XElement(MSBuildNamespace + "Project",
+                    new XAttribute("ToolsVersion", "14.0"),
+                    elements));
+        }
+
+        private static XElement GetRestoreGraphProjectInputItem(string path)
+        {
+            return new XElement(MSBuildNamespace + "RestoreGraphProjectInputItems", new XAttribute(XName.Get("Include"), path));
         }
 
         private static bool IsIgnoredOutput(string line, string[] excluded)
@@ -456,7 +456,7 @@ namespace NuGet.CommandLine
         {
             var currentDirectoryCache = Directory.GetCurrentDirectory();
             var msBuildDirectory = string.Empty;
-            List<MsBuildToolset> installedToolsets = new List<MsBuildToolset>();
+            var installedToolsets = new List<MsBuildToolset>();
 
             // If Mono, test well known paths and bail if found
             var toolset = GetMsBuildFromMonoPaths(userVersion);
@@ -471,7 +471,7 @@ namespace NuGet.CommandLine
                 var installed = ((dynamic)projectCollection)?.Toolsets;
                 if (installed != null)
                 {
-                    foreach (dynamic item in installed)
+                    foreach (var item in installed)
                     {
                         installedToolsets.Add(new MsBuildToolset(version: item.ToolsVersion, path: item.ToolsPath));
                     }
@@ -554,7 +554,7 @@ namespace NuGet.CommandLine
                 try
                 {
                     var msBuildTypesAssembly = Assembly.Load($"Microsoft.Build, Version={version}.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
-                    Type projectCollectionType = msBuildTypesAssembly.GetType("Microsoft.Build.Evaluation.ProjectCollection", throwOnError: true);
+                    var projectCollectionType = msBuildTypesAssembly.GetType("Microsoft.Build.Evaluation.ProjectCollection", throwOnError: true);
                     return Activator.CreateInstance(projectCollectionType) as IDisposable;
                 }
                 catch (Exception)
@@ -682,11 +682,11 @@ namespace NuGet.CommandLine
             IEnumerable<MsBuildToolset> installedToolsets)
         {
             // Force version string to 1 decimal place
-            string userVersionString = userVersion;
+            var userVersionString = userVersion;
             decimal parsedVersion = 0;
             if (decimal.TryParse(userVersion, out parsedVersion))
             {
-                decimal adjustedVersion = (decimal)(((int)(parsedVersion * 10)) / 10F);
+                var adjustedVersion = (decimal)(((int)(parsedVersion * 10)) / 10F);
                 userVersionString = adjustedVersion.ToString("F1");
             }
 
@@ -787,12 +787,22 @@ namespace NuGet.CommandLine
             }
         }
 
-        private static void AppendQuoted(StringBuilder builder, string targetPath)
+        private static void AddProperty(List<string> args, string property, string value)
         {
-            builder
-                .Append('"')
-                .Append(targetPath)
-                .Append('"');
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new ArgumentException(nameof(value));
+            }
+
+            AddPropertyIfHasValue(args, property, value);
+        }
+
+        private static void AddPropertyIfHasValue(List<string> args, string property, string value)
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                args.Add($"/p:{property}={EscapeQuoted(value)}");
+            }
         }
 
         private static void ExtractResource(string resourceName, string targetPath)
@@ -841,7 +851,7 @@ namespace NuGet.CommandLine
                 }
 
                 // fetched will return the value 3 even if only one instance returned
-                int index = 0;
+                var index = 0;
                 while (index < fetched)
                 {
                     if (fetchedInstances[index] != null)
@@ -899,7 +909,7 @@ namespace NuGet.CommandLine
             if (RuntimeEnvironmentHelper.IsMono)
             {
                 // Try to find msbuild or xbuild in $Path.
-                string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+                var pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
 
                 if (pathDirs?.Length > 0)
                 {
@@ -951,11 +961,11 @@ namespace NuGet.CommandLine
                     throw new ArgumentNullException(nameof(extension));
                 }
 
-                var tempDirectory = Path.Combine(Path.GetTempPath(), "NuGet-Scratch");
+                var tempDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp);
 
                 Directory.CreateDirectory(tempDirectory);
 
-                int count = 0;
+                var count = 0;
                 do
                 {
                     _filePath = Path.Combine(tempDirectory, Path.GetRandomFileName() + extension);
@@ -974,6 +984,7 @@ namespace NuGet.CommandLine
                         }
                         catch
                         {
+                            // Ignore and try again
                         }
                     }
 
@@ -992,15 +1003,13 @@ namespace NuGet.CommandLine
 
             public void Dispose()
             {
-                if (File.Exists(_filePath))
+                try
                 {
-                    try
-                    {
-                        File.Delete(_filePath);
-                    }
-                    catch
-                    {
-                    }
+                    FileUtility.Delete(_filePath);
+                }
+                catch
+                {
+                    // Ignore failures
                 }
             }
         }

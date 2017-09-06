@@ -172,7 +172,7 @@ namespace NuGet.Versioning.Test
         [InlineData("1.0.0-*", "1.0.0")]
         [InlineData("2.0.0-*", "2.0.0")]
         [InlineData("1.0.0-rc1-*", "1.0.0-rc1")]
-        [InlineData("1.0.0-5.1.*", "1.0.0-5.1.0")]
+        [InlineData("1.0.0-5.1.*", "1.0.0-5.1")]
         [InlineData("1.0.0-5.1.0-*", "1.0.0-5.1.0")]
         [InlineData("1.0.*", "1.0.0")]
         [InlineData("1.*", "1.0.0")]

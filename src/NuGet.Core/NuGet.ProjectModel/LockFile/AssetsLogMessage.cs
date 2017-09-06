@@ -102,8 +102,8 @@ namespace NuGet.ProjectModel
             var combiner = new HashCodeCombiner();
 
             combiner.AddStringIgnoreCase(Message);
-            combiner.AddInt32((int) Level);
-            combiner.AddInt32((int) Code);
+            combiner.AddObject((int) Level);
+            combiner.AddObject((int) Code);
 
             return combiner.CombinedHash;
         }

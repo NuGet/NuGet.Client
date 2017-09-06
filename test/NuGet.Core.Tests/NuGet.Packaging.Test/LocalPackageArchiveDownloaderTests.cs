@@ -145,7 +145,32 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task CopyNupkgFileToAsync_ReturnsPackageHash()
+        public async Task CopyNupkgFileToAsync_ReturnsFalseIfExceptionHandled()
+        {
+            using (var test = LocalPackageArchiveDownloaderTest.Create())
+            {
+                var destinationFilePath = Path.Combine(test.TestDirectory.Path, "a");
+
+                // Locking the destination file path will cause the copy operation to throw.
+                using (var fileLock = new FileStream(
+                    destinationFilePath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None))
+                {
+                    test.Downloader.SetExceptionHandler(exception => Task.FromResult(true));
+
+                    var wasCopied = await test.Downloader.CopyNupkgFileToAsync(
+                        destinationFilePath,
+                        CancellationToken.None);
+
+                    Assert.False(wasCopied);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CopyNupkgFileToAsync_ReturnsTrueOnSuccess()
         {
             using (var test = LocalPackageArchiveDownloaderTest.Create())
             {
@@ -161,6 +186,76 @@ namespace NuGet.Packaging.Test
                 var destinationBytes = File.ReadAllBytes(destinationFilePath);
 
                 Assert.Equal(sourceBytes, destinationBytes);
+            }
+        }
+
+        [Fact]
+        public async Task CopyNupkgFileToAsync_RespectsThrottle()
+        {
+            using (var test = LocalPackageArchiveDownloaderTest.Create())
+            using (var throttle = new SemaphoreSlim(initialCount: 0, maxCount: 1))
+            {
+                var destinationFilePath = Path.Combine(test.TestDirectory.Path, "copied.nupkg");
+
+                test.Downloader.SetThrottle(throttle);
+
+                var wasCopied = false;
+
+                var copyTask = Task.Run(async () =>
+                {
+                    wasCopied = await test.Downloader.CopyNupkgFileToAsync(
+                        destinationFilePath,
+                        CancellationToken.None);
+                });
+
+                await Task.Delay(100);
+
+                Assert.False(wasCopied);
+                Assert.False(File.Exists(destinationFilePath));
+
+                throttle.Release();
+
+                await copyTask;
+
+                Assert.True(wasCopied);
+                Assert.True(File.Exists(destinationFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task CopyNupkgFileToAsync_ReleasesThrottleOnException()
+        {
+            using (var test = LocalPackageArchiveDownloaderTest.Create())
+            using (var throttle = new SemaphoreSlim(initialCount: 1, maxCount: 1))
+            {
+                var destinationFilePath = Path.Combine(test.TestDirectory.Path, "a");
+
+                // Locking the destination file path will cause the copy operation to throw.
+                using (var fileLock = new FileStream(
+                    destinationFilePath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None))
+                {
+                    test.Downloader.SetThrottle(throttle);
+
+                    var copyTask = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await test.Downloader.CopyNupkgFileToAsync(
+                                destinationFilePath,
+                                CancellationToken.None);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    });
+
+                    await copyTask;
+
+                    Assert.Equal(1, throttle.CurrentCount);
+                }
             }
         }
 
@@ -220,6 +315,27 @@ namespace NuGet.Packaging.Test
                     CancellationToken.None);
 
                 Assert.Equal(expectedPackageHash, actualPackageHash);
+            }
+        }
+
+        [Fact]
+        public void SetExceptionHandler_ThrowsForNullHandler()
+        {
+            using (var test = LocalPackageArchiveDownloaderTest.Create())
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => test.Downloader.SetExceptionHandler(handleExceptionAsync: null));
+
+                Assert.Equal("handleExceptionAsync", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public void SetThrottle_AcceptsNullThrottle()
+        {
+            using (var test = LocalPackageArchiveDownloaderTest.Create())
+            {
+                test.Downloader.SetThrottle(throttle: null);
             }
         }
 

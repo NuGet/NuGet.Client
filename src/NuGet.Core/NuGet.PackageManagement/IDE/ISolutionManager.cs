@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -51,11 +51,11 @@ namespace NuGet.PackageManagement
         /// For solutions with only BuildIntegratedProject(s), and a globalPackagesFolder which is
         /// not a relative path, it will return true, even if the solution file is not available.
         /// </summary>
-        bool IsSolutionAvailable { get; }
+        Task<bool> IsSolutionAvailableAsync();
 
         INuGetProjectContext NuGetProjectContext { get; set; }
 
-        IEnumerable<NuGetProject> GetNuGetProjects();
+        Task<IEnumerable<NuGetProject>> GetNuGetProjectsAsync();
 
         /// <summary>
         /// Get the safe name of the specified <see cref="NuGetProject" /> which guarantees not to conflict with other
@@ -64,7 +64,7 @@ namespace NuGet.PackageManagement
         /// <returns>
         /// Returns the simple name if there are no conflicts. Otherwise returns the unique name.
         /// </returns>
-        string GetNuGetProjectSafeName(NuGetProject nuGetProject);
+        Task<string> GetNuGetProjectSafeNameAsync(NuGetProject nuGetProject);
 
         /// <summary>
         /// Gets the <see cref="NuGetProject" /> corresponding to the safe name passed in
@@ -77,7 +77,7 @@ namespace NuGet.PackageManagement
         /// Returns the <see cref="NuGetProject" /> in this solution manager corresponding to the safe name
         /// passed in.
         /// </returns>
-        NuGetProject GetNuGetProject(string nuGetProjectSafeName);
+        Task<NuGetProject> GetNuGetProjectAsync(string nuGetProjectSafeName);
 
         /// <summary>
         /// Fires ActionsExecuted event.
@@ -91,6 +91,12 @@ namespace NuGet.PackageManagement
         /// This will only be applicable for VS15 and will do nothing for VS14.
         /// </summary>
         void EnsureSolutionIsLoaded();
+
+        /// <summary>
+        /// It's a quick check to know if NuGet supports any prokect of current solution
+        /// without initializing whole VSSolutionManager.
+        /// </summary>
+        Task<bool> DoesNuGetSupportsAnyProjectAsync();
     }
 
     public class NuGetProjectEventArgs : EventArgs

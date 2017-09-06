@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -45,6 +45,11 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsSolution = new Lazy<IVsSolution>(() => serviceProvider.GetService<SVsSolution, IVsSolution>());
         }
 
+        public async Task<bool> EntityExistsAsync(string filePath)
+        {
+            return await _workspaceService.Value.EntityExistsAsync(filePath);
+        }
+
         public IVsProjectAdapter CreateAdapterForFullyLoadedProject(EnvDTE.Project dteProject)
         {
             return _threadingService.ExecuteSynchronously(
@@ -78,6 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 vsHierarchyItem,
                 projectNames,
                 fullProjectPath,
+                dteProject.Kind,
                 loadDteProject,
                 vsBuildProperties,
                 _threadingService);
@@ -104,10 +110,13 @@ namespace NuGet.PackageManagement.VisualStudio
             var workspaceBuildProperties = new WorkspaceProjectBuildProperties(
                 fullProjectPath, _workspaceService.Value, _threadingService);
 
+            var projectTypeGuid = await _workspaceService.Value.GetProjectTypeGuidAsync(fullProjectPath);
+
             return new VsProjectAdapter(
                 vsHierarchyItem,
                 projectNames,
                 fullProjectPath,
+                projectTypeGuid,
                 EnsureProjectIsLoaded,
                 workspaceBuildProperties,
                 _threadingService,

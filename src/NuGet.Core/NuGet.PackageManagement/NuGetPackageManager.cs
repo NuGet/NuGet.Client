@@ -1941,7 +1941,7 @@ namespace NuGet.PackageManagement
                 // get all build integrated projects of the solution which will be used to map project references
                 // of the target projects
                 var allBuildIntegratedProjects =
-                    SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
+                    (await SolutionManager.GetNuGetProjectsAsync()).OfType<BuildIntegratedNuGetProject>().ToList();
 
                 var dgFile = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, referenceContext);
                 _buildIntegratedProjectsCache = dgFile;
@@ -2448,6 +2448,15 @@ namespace NuGet.PackageManagement
                     token);
             }
 
+            // If HideWarningsAndErrors is true then restore will not display the warnings and errors.
+            // Further, replay errors and warnings only if restore failed because the assets file will not be committed.
+            // If there were only warnings then those are written to assets file and committed. The design time build will replay them.
+            if (updatedPackageSpec.RestoreSettings.HideWarningsAndErrors &&
+                !restoreResult.Result.Success)
+            {
+                await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(restoreResult.Result.LockFile, logger);
+            }
+
             // Build the installation context
             var originalFrameworks = updatedPackageSpec
                 .RestoreMetadata
@@ -2639,7 +2648,7 @@ namespace NuGet.PackageManagement
                     token);
 
                 // find list of buildintegrated projects
-                var projects = SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
+                var projects = (await SolutionManager.GetNuGetProjectsAsync()).OfType<BuildIntegratedNuGetProject>().ToList();
 
                 // build reference cache if not done already
                 if (_buildIntegratedProjectsCache == null)
@@ -2905,7 +2914,7 @@ namespace NuGet.PackageManagement
             }
 
             var nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
-            foreach (var otherNuGetProject in solutionManager.GetNuGetProjects())
+            foreach (var otherNuGetProject in (await solutionManager.GetNuGetProjectsAsync()))
             {
                 var otherNuGetProjectName = NuGetProject.GetUniqueNameOrName(otherNuGetProject);
                 if (!otherNuGetProjectName.Equals(nuGetProjectName, StringComparison.OrdinalIgnoreCase))

@@ -29,19 +29,16 @@ namespace NuGet.ProjectManagement
 
         private PackagePathResolver PackagePathResolver { get; set; }
 
+        private readonly NuGetFramework _framework;
+
         /// <summary>
         /// Initializes a new <see cref="FolderNuGetProject" /> class.
         /// </summary>
         /// <param name="root">The folder project root path.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="root" /> is <c>null</c>.</exception>
         public FolderNuGetProject(string root)
+            : this(root, new PackagePathResolver(root))
         {
-            if (root == null)
-            {
-                throw new ArgumentNullException(nameof(root));
-            }
-
-            Initialize(root, new PackagePathResolver(root));
         }
 
         /// <summary>
@@ -53,18 +50,32 @@ namespace NuGet.ProjectManagement
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packagePathResolver" />
         /// is <c>null</c>.</exception>
         public FolderNuGetProject(string root, PackagePathResolver packagePathResolver)
+            : this(root, packagePathResolver, NuGetFramework.AnyFramework)
         {
-            if (root == null)
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="FolderNuGetProject" /> class.
+        /// </summary>
+        /// <param name="root">The folder project root path.</param>
+        /// <param name="packagePathResolver">A package path resolver.</param>
+        /// <param name="targetFramework">Project target framework.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="root" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packagePathResolver" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="targetFramework" /> is <c>null</c>.</exception>
+        public FolderNuGetProject(string root, PackagePathResolver packagePathResolver, NuGetFramework targetFramework)
+        {
+            if (targetFramework == null)
             {
-                throw new ArgumentNullException(nameof(root));
+                throw new ArgumentNullException(nameof(targetFramework));
             }
 
-            if (packagePathResolver == null)
-            {
-                throw new ArgumentNullException(nameof(packagePathResolver));
-            }
+            Root = root ?? throw new ArgumentNullException(nameof(root));
+            PackagePathResolver = packagePathResolver ?? throw new ArgumentNullException(nameof(packagePathResolver));
 
-            Initialize(root, packagePathResolver);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, root);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, targetFramework);
+            _framework = targetFramework;
         }
 
         /// <summary>
@@ -262,8 +273,29 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            var packageExists = !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
-            var manifestExists = !string.IsNullOrEmpty(GetInstalledManifestFilePath(packageIdentity));
+            var nupkgPath = GetInstalledPackageFilePath(packageIdentity);
+            var nuspecPath = GetInstalledManifestFilePath(packageIdentity);
+
+            var packageExists = !string.IsNullOrEmpty(nupkgPath);
+            var manifestExists = !string.IsNullOrEmpty(nuspecPath);
+
+            // When using -ExcludeVersion check that the actual package version matches.
+            if (!PackagePathResolver.UseSideBySidePaths)
+            {
+                if (packageExists)
+                {
+                    using (var reader = new PackageArchiveReader(nupkgPath))
+                    {
+                        packageExists = packageIdentity.Equals(reader.NuspecReader.GetIdentity());
+                    }
+                }
+
+                if (manifestExists)
+                {
+                    var reader = new NuspecReader(nuspecPath);
+                    packageExists = packageIdentity.Equals(reader.GetIdentity());
+                }
+            }
 
             if (!packageExists)
             {
@@ -302,7 +334,17 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            return !string.IsNullOrEmpty(GetInstalledManifestFilePath(packageIdentity));
+            var path = GetInstalledManifestFilePath(packageIdentity);
+
+            var exists = !string.IsNullOrEmpty(path);
+
+            if (exists && !PackagePathResolver.UseSideBySidePaths)
+            {
+                var reader = new NuspecReader(path);
+                exists = packageIdentity.Equals(reader.GetIdentity());
+            }
+
+            return exists;
         }
 
         /// <summary>
@@ -605,14 +647,6 @@ namespace NuGet.ProjectManagement
         private PackageSaveMode GetPackageSaveMode(INuGetProjectContext nuGetProjectContext)
         {
             return nuGetProjectContext.PackageExtractionContext?.PackageSaveMode ?? PackageSaveMode.Defaultv2;
-        }
-
-        private void Initialize(string root, PackagePathResolver resolver)
-        {
-            Root = root;
-            PackagePathResolver = resolver;
-            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, root);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.AnyFramework);
         }
     }
 }

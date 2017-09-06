@@ -29,6 +29,7 @@ namespace NuGet.Commands
         private readonly SourceRepository _sourceRepository;
         private readonly ILogger _logger;
         private readonly SourceCacheContext _cacheContext;
+        private readonly LocalNuspecCache _nuspecCache;
         private FindPackageByIdResource _findPackagesByIdResource;
         private bool _ignoreFailedSources;
         private bool _ignoreWarning;
@@ -67,6 +68,30 @@ namespace NuGet.Commands
             SourceCacheContext cacheContext,
             bool ignoreFailedSources,
             bool ignoreWarning)
+            : this(sourceRepository, logger, cacheContext, ignoreFailedSources, ignoreWarning, nuspecCache: null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="SourceRepositoryDependencyProvider" /> class.
+        /// </summary>
+        /// <param name="sourceRepository">A source repository.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="ignoreFailedSources"><c>true</c> to ignore failed sources; otherwise <c>false</c>.</param>
+        /// <param name="ignoreWarning"><c>true</c> to ignore warnings; otherwise <c>false</c>.</param>
+        /// <param name="nuspecCache">Optional nuspec cache.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="sourceRepository" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> is <c>null</c>.</exception>
+        public SourceRepositoryDependencyProvider(
+        SourceRepository sourceRepository,
+        ILogger logger,
+        SourceCacheContext cacheContext,
+        bool ignoreFailedSources,
+        bool ignoreWarning,
+        LocalNuspecCache nuspecCache)
         {
             if (sourceRepository == null)
             {
@@ -88,6 +113,7 @@ namespace NuGet.Commands
             _cacheContext = cacheContext;
             _ignoreFailedSources = ignoreFailedSources;
             _ignoreWarning = ignoreWarning;
+            _nuspecCache = nuspecCache;
         }
 
         /// <summary>
@@ -374,11 +400,33 @@ namespace NuGet.Commands
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                return await _findPackagesByIdResource.GetPackageDownloaderAsync(
+                var packageDownloader = await _findPackagesByIdResource.GetPackageDownloaderAsync(
                     packageIdentity,
                     cacheContext,
                     logger,
                     cancellationToken);
+
+                packageDownloader.SetThrottle(_throttle);
+                packageDownloader.SetExceptionHandler(async exception =>
+                {
+                    if (exception is FatalProtocolException && _ignoreFailedSources)
+                    {
+                        if (!_ignoreWarning)
+                        {
+                            await _logger.LogAsync(
+                                RestoreLogMessage.CreateWarning(
+                                    NuGetLogCode.NU1801,
+                                    exception.Message,
+                                    packageIdentity.Id));
+                        }
+
+                        return true;
+                    }
+
+                    return false;
+                });
+
+                return packageDownloader;
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources)
             {
@@ -432,8 +480,23 @@ namespace NuGet.Commands
                 {
                     if (_findPackagesByIdResource == null)
                     {
+                        AddNuspecCache(resource);
+
                         _findPackagesByIdResource = resource;
                     }
+                }
+            }
+        }
+
+        private void AddNuspecCache(FindPackageByIdResource resource)
+        {
+            // Link the nuspec cache to the new resource if it exists.
+            if (_nuspecCache != null)
+            {
+                var localV3 = resource as LocalV3FindPackageByIdResource;
+                if (localV3 != null)
+                {
+                    localV3.NuspecCache = _nuspecCache;
                 }
             }
         }

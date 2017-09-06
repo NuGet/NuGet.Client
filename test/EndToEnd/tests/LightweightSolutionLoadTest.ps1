@@ -186,7 +186,7 @@ function Test-DeferredProjectJsonProjectUpdatePackage {
 }
 
 function Test-DeferredNativeProjectInstallPackage {
-    [SkipTest('VS hangs')]
+    [SkipTest('Hang on open solution. Internal bug 456357.')]
     param()
 
     $projectT = New-Project NativeConsoleApplication | Select-Object UniqueName, ProjectName
@@ -201,7 +201,7 @@ function Test-DeferredNativeProjectInstallPackage {
 }
 
 function Test-DeferredNativeProjectUninstallPackage {
-    [SkipTest('VS hangs')]
+    [SkipTest('Hang on open solution. Internal bug 456357.')]
     param()
 
     $projectT = New-Project NativeConsoleApplication | Select-Object UniqueName, ProjectName
@@ -244,7 +244,7 @@ function TestCases-DeferredProjectInvokeInitScript {
 }
 
 function BuildProjectTemplateTestCases([string[]]$ProjectTemplates) {
-    $ProjectTemplates | %{
+    $ProjectTemplates | ForEach-Object{
         $testCase = New-Object System.Object
         $testCase | Add-Member -Type NoteProperty -Name ProjectTemplate -Value $_
         $testCase

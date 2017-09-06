@@ -22,32 +22,6 @@ namespace NuGet.Commands
         private static readonly string ReferenceFolder = PackagingConstants.Folders.Lib;
         private static readonly string ToolsFolder = PackagingConstants.Folders.Tools;
         private static readonly string SourcesFolder = PackagingConstants.Folders.Source;
-        
-        // List of extensions to allow in the output path
-        private static readonly HashSet<string> _allowedOutputExtensions
-            = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".dll",
-            ".exe",
-            ".xml",
-            ".json",
-            ".winmd",
-            ".pri"
-        };
-
-        // List of extensions to allow in the output path if IncludeSymbols is set
-        private static readonly HashSet<string> _allowedOutputExtensionsForSymbols
-            = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".dll",
-            ".exe",
-            ".xml",
-            ".winmd",
-            ".json",
-            ".pri",
-            ".pdb",
-            ".mdb"
-        };
 
         private MSBuildPackTargetArgs PackTargetArgs { get; set; }
         private PackArgs PackArgs { get; set; }
@@ -142,13 +116,9 @@ namespace NuGet.Commands
         {
             if (PackTargetArgs.IncludeBuildOutput)
             {
-                if (IncludeSymbols)
-                {
-                    // Include pdbs for symbol packages
-                    AddOutputLibFiles(PackTargetArgs.TargetPathsToSymbols, _allowedOutputExtensionsForSymbols);
-                }
+                AddOutputLibFiles(PackTargetArgs.TargetPathsToSymbols, IncludeSymbols ? PackTargetArgs.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder : PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder);
 
-                AddOutputLibFiles(PackTargetArgs.TargetPathsToAssemblies, _allowedOutputExtensions);
+                AddOutputLibFiles(PackTargetArgs.TargetPathsToAssemblies, PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder);
             }
         }
 
@@ -241,32 +211,54 @@ namespace NuGet.Commands
             foreach (var sourcePath in PackTargetArgs.SourceFiles.Keys)
             {
                 var projectDirectory = PackTargetArgs.SourceFiles[sourcePath];
-                if (projectDirectory.EndsWith("\\"))
-                {
-                    projectDirectory = projectDirectory.Substring(0, projectDirectory.LastIndexOf("\\"));
-                }
-                var projectName = Path.GetFileName(projectDirectory);
-                string targetPath = Path.Combine(SourcesFolder, projectName);
-                if (sourcePath.Contains(projectDirectory))
-                {
-                    var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectory, string.Empty);
-                    if (relativePath.StartsWith("\\"))
-                    {
-                        relativePath = relativePath.Substring(1, relativePath.Length - 1);
-                    }
-                    if (relativePath.EndsWith("\\"))
-                    {
-                        relativePath = relativePath.Substring(0, relativePath.LastIndexOf("\\"));
-                    }
-                    targetPath = Path.Combine(targetPath, relativePath);
-                }
+                var finalTargetPath = GetTargetPathForSourceFile(sourcePath, projectDirectory);
+
                 var packageFile = new ManifestFile()
                 {
                     Source = sourcePath,
-                    Target = Path.Combine(targetPath, Path.GetFileName(sourcePath))
+                    Target = finalTargetPath
                 };
                 AddFileToBuilder(packageFile);
             }
+        }
+
+        public static string GetTargetPathForSourceFile(string sourcePath, string projectDirectory)
+        {
+            if(string.IsNullOrEmpty(sourcePath))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourceFilePath));
+            }
+
+            if (string.IsNullOrEmpty(projectDirectory))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourceFileProjectDirectory, sourcePath));
+            }
+
+            if (PathUtility.HasTrailingDirectorySeparator(projectDirectory))
+            {
+                projectDirectory = projectDirectory.Substring(0, projectDirectory.Length - 1);
+            }
+            var projectName = Path.GetFileName(projectDirectory);
+            var targetPath = Path.Combine(SourcesFolder, projectName);
+            if (sourcePath.Contains(projectDirectory))
+            {
+                // This is needed because Path.GetDirectoryName returns a path with Path.DirectorySepartorChar
+                var projectDirectoryWithSeparatorChar = PathUtility.GetPathWithDirectorySeparator(projectDirectory);
+
+                var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectoryWithSeparatorChar, string.Empty);
+                if (!string.IsNullOrEmpty(relativePath) && PathUtility.IsDirectorySeparatorChar(relativePath[0]))
+                {
+                    relativePath = relativePath.Substring(1, relativePath.Length - 1);
+                }
+                if (PathUtility.HasTrailingDirectorySeparator(relativePath))
+                {
+                    relativePath = relativePath.Substring(0, relativePath.Length - 1);
+                }
+                targetPath = Path.Combine(targetPath, relativePath);
+            }
+
+            var finalTargetPath = Path.Combine(targetPath, Path.GetFileName(sourcePath));
+            return finalTargetPath;
         }
 
         private static bool IsContentFile(string contentFileTargetPath)

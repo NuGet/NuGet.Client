@@ -140,27 +140,27 @@ function Test-InstallXunit210WithEmptyBuildFolderSucceeds
 function Test-SinglePackageInstallIntoSingleProject {
     # Arrange
     $project = New-ConsoleApplication
-    
+
     # Act
     Install-Package FakeItEasy -ProjectName $project.Name -version 1.8.0
-    
+
     # Assert
     Assert-Reference $project Castle.Core
-    Assert-Reference $project FakeItEasy   
+    Assert-Reference $project FakeItEasy
     Assert-Package $project FakeItEasy
     Assert-Package $project Castle.Core
     Assert-SolutionPackage FakeItEasy
     Assert-SolutionPackage Castle.Core
 }
 
-# Test install-package -WhatIf to downgrade an installed package.       
-function Test-PackageInstallWithFileUri {      
-    # Arrange      
-    $project = New-ConsoleApplication 
- 
-    $uri = $context.RepositoryRoot  
-    $uri = $uri.replace("\", "/")     
-    $uri = "file:///" + $uri  
+# Test install-package -WhatIf to downgrade an installed package.
+function Test-PackageInstallWithFileUri {
+    # Arrange
+    $project = New-ConsoleApplication
+
+    $uri = $context.RepositoryRoot
+    $uri = $uri.replace("\", "/")
+    $uri = "file:///" + $uri
 
     # Act
     Install-Package TestUpdatePackage -Version 2.0.0.0 -Source $uri
@@ -173,10 +173,10 @@ function Test-PackageInstallWithFileUri {
 function Test-PackageInstallWhatIf {
     # Arrange
     $project = New-ConsoleApplication
-    
+
     # Act
     Install-Package FakeItEasy -Project $project.Name -version 1.8.0 -WhatIf
-    
+
     # Assert: no packages are installed
     Assert-Null (Get-ProjectPackage $project FakeItEasy)
 }
@@ -184,9 +184,9 @@ function Test-PackageInstallWhatIf {
 # Test install-package -WhatIf to downgrade an installed package.
 function Test-PackageInstallDowngradeWhatIf {
     # Arrange
-    $project = New-ConsoleApplication    
-    
-    Install-Package TestUpdatePackage -Version 2.0.0.0 -Source $context.RepositoryRoot    
+    $project = New-ConsoleApplication
+
+    Install-Package TestUpdatePackage -Version 2.0.0.0 -Source $context.RepositoryRoot
     Assert-Package $project TestUpdatePackage '2.0.0.0'
 
     # Act
@@ -203,17 +203,17 @@ function Test-WebsiteSimpleInstall {
     )
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     Install-Package -Source $context.RepositoryPath -Project $p.Name MyAwesomeLibrary
-    
+
     # Assert
     Assert-Package $p MyAwesomeLibrary
     Assert-SolutionPackage MyAwesomeLibrary
-    
+
     $refreshFilePath = Join-Path (Get-ProjectDir $p) "bin\MyAwesomeLibrary.dll.refresh"
     $content = Get-Content $refreshFilePath
-    
+
     Assert-AreEqual "..\packages\MyAwesomeLibrary.1.0\lib\net40\MyAwesomeLibrary.dll" $content
 }
 
@@ -221,44 +221,44 @@ function Test-DiamondDependencies {
     param(
         $context
     )
-    
+
     # Scenario:
     # D 1.0 -> B 1.0, C 1.0
-    # B 1.0 -> A 1.0 
+    # B 1.0 -> A 1.0
     # C 1.0 -> A 2.0
     #     D 1.0
     #      /  \
     #  B 1.0   C 1.0
     #     |    |
     #  A 1.0   A 2.0
-    
-    # Arrange 
+
+    # Arrange
     $packages = @("A", "B", "C", "D")
     $project = New-ClassLibrary
-    
+
     # Act
     Install-Package D -Project $project.Name -Source $context.RepositoryPath
-    
+
     # Assert
     $packages | %{ Assert-SolutionPackage $_ }
     $packages | %{ Assert-Package $project $_ }
     $packages | %{ Assert-Reference $project $_ }
     Assert-Package $project A 2.0
     Assert-Reference $project A 2.0.0.0
-    Assert-Null (Get-ProjectPackage $project A 1.0.0.0) 
+    Assert-Null (Get-ProjectPackage $project A 1.0.0.0)
     Assert-Null (Get-SolutionPackage A 1.0.0.0)
 }
 
 function Test-WebsiteWillNotDuplicateConfigOnReInstall {
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     Install-Package elmah -Project $p.Name -Version 1.1
     $item = Get-ProjectItem $p packages.config
     $item.Delete()
     Install-Package elmah -Project $p.Name -Version 1.1
-    
+
     # Assert
     $config = [xml](Get-Content (Get-ProjectItemPath $p web.config))
     Assert-AreEqual 4 $config.configuration.configSections.sectionGroup.section.count
@@ -267,7 +267,7 @@ function Test-WebsiteWillNotDuplicateConfigOnReInstall {
 function Test-WebsiteConfigElementsAreRemovedEvenIfReordered {
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     Install-Package elmah -Project $p.Name -Version 1.1
     $configPath = Get-ProjectItemPath $p web.config
@@ -279,7 +279,7 @@ function Test-WebsiteConfigElementsAreRemovedEvenIfReordered {
     $config.Save($configPath)
     Uninstall-Package elmah
     $config = [xml](Get-Content $configPath)
-    
+
     # Assert
     Assert-Null $config.configuration.configSections
 }
@@ -316,7 +316,7 @@ function Test-InstallPackageInvokeInstallScriptAndInitScript {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ConsoleApplication
 
@@ -336,7 +336,7 @@ function Test-InstallPackageInvokeInstallScriptAndInitScript {
 #    param(
 #        $context
 #    )
-#    
+#
 #    # Arrange
 #    $p = New-ConsoleApplication
 #
@@ -348,7 +348,7 @@ function Test-InstallPackageInvokeInstallScriptAndInitScript {
 #    Close-Solution
 #    Remove-Item function:\Get-World
 #    Assert-False (Test-Path function:\Get-World)
-#    
+#
 #    Open-Solution $solutionDir
 #
 #    # This asserts init.ps1 gets called
@@ -359,7 +359,7 @@ function Test-InstallPackageResolvesDependenciesAcrossSources {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ConsoleApplication
 
@@ -377,7 +377,7 @@ function Test-VariablesPassedToInstallScriptsAreValidWithWebSite {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-WebSite
 
@@ -436,10 +436,10 @@ function Test-FSharpSimpleInstallWithContentFiles {
 
     # Arrange
     $p = New-FSharpLibrary
-    
+
     # Act
     Install-Package jquery -Version 1.5 -Project $p.Name -Source $context.RepositoryPath
-    
+
     # Assert
     Assert-Package $p jquery
     Assert-SolutionPackage jquery
@@ -450,10 +450,10 @@ function Test-FSharpSimpleInstallWithContentFiles {
 function Test-FSharpSimpleWithAssemblyReference {
     # Arrange
     $p = New-FSharpLibrary
-    
+
     # Act
     Install-Package Antlr -Project $p.Name -Source $context.RepositoryPath
-    
+
     # Assert
     Assert-Package $p Antlr
     Assert-SolutionPackage Antlr
@@ -467,7 +467,7 @@ function Test-WebsiteInstallPackageWithRootNamespace {
 
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     Install-Package PackageWithRootNamespaceFileTransform -Source $context.RepositoryRoot
 
@@ -481,7 +481,7 @@ function Test-WebsiteInstallPackageWithRootNamespace {
 function Test-AddBindingRedirectToWebsiteWithNonExistingOutputPath {
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     Add-BindingRedirect -ProjectName $p.Name
 
@@ -513,7 +513,7 @@ Write-Host 'Installation successful'
     # Assert
     $projects | %{ Assert-Package $_ elmah }
 
-Write-Host 'Assertion successful'    
+Write-Host 'Assertion successful'
 }
 
 function Test-InstallPackageWithNestedContentFile {
@@ -546,7 +546,7 @@ function Test-InstallPackageWithNestedAspxContentFiles {
     Install-Package PackageWithNestedAspxFiles -Source $context.RepositoryRoot
 
     # Assert
-    $files | %{ 
+    $files | %{
         $item = Get-ProjectItem $p $_
         Assert-NotNull $item
         Assert-NotNull $item.ProjectItems.Item("$_.cs")
@@ -563,7 +563,7 @@ function Test-InstallPackageWithNestedReferences {
 
     # Arrange
     $p = New-WebApplication
-    
+
     # Act
     Install-Package PackageWithNestedReferenceFolders -Source $context.RepositoryRoot
 
@@ -581,11 +581,11 @@ function Test-InstallPackageWithUnsupportedReference {
 
     # Arrange
     $p = New-ClassLibrary
-    
+
     # Act
     Install-Package PackageWithUnsupportedReferences -Source $context.RepositoryRoot
 
-    # Assert    
+    # Assert
     Assert-NotNull (Get-ProjectPackage $p PackageWithUnsupportedReferences)
     Assert-NotNull (Get-SolutionPackage PackageWithUnsupportedReferences)
 }
@@ -597,11 +597,11 @@ function Test-InstallPackageWithExeReference {
 
     # Arrange
     $p = New-ClassLibrary
-    
+
     # Act
     Install-Package PackageWithExeReference -Source $context.RepositoryRoot
-    
-    # Assert    
+
+    # Assert
     Assert-Reference $p NuGet
 }
 
@@ -612,10 +612,10 @@ function Test-InstallPackageWithResourceAssemblies {
 
     # Arrange
     $p = New-ClassLibrary
-    
+
     # Act
     Install-Package FluentValidation -Source $context.RepositoryPath
-    
+
     # Assert
     Assert-Reference $p FluentValidation
     Assert-Null (Get-AssemblyReference $p FluentValidation.resources)
@@ -631,17 +631,17 @@ function Test-InstallPackageWithGacReferencesIntoMultipleProjectTypes {
     $b = New-WebSite
     $c = New-FSharpLibrary
     $projects = @($a, $b, $c)
-    
+
     # Act
     $a | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
     $b | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
     $c | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
-    
+
     # Assert
     $projects | %{ Assert-Reference $_ System.Web }
 }
 
-function Test-InstallPackageWithGacReferenceIntoWindowsPhoneProject {   
+function Test-InstallPackageWithGacReferenceIntoWindowsPhoneProject {
     param(
         $context
     )
@@ -654,10 +654,10 @@ function Test-InstallPackageWithGacReferenceIntoWindowsPhoneProject {
 
     # Arrange
     $p = New-WindowsPhoneClassLibrary
-    
+
     # Act
     $p | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
-    
+
     # Assert
     Assert-Reference $p System.ComponentModel.DataAnnotations
 }
@@ -677,7 +677,7 @@ function Test-PackageWithClientProfileAndFullFrameworkPicksClient {
     # Assert
     Assert-Reference $p MyAwesomeLibrary
     $reference = Get-AssemblyReference $p MyAwesomeLibrary
-    Assert-True ($reference.Path.Contains("net40-client") -or ($reference.Path.Contains("net4-client"))) 
+    Assert-True ($reference.Path.Contains("net40-client") -or ($reference.Path.Contains("net4-client")))
 }
 #>
 
@@ -773,7 +773,7 @@ function Test-SimpleBindingRedirects {
     # Arrange
     $a = New-WebApplication
     $b = New-WebSite
-    
+
     $projects = @($a, $b)
 
     # Act
@@ -783,7 +783,7 @@ function Test-SimpleBindingRedirects {
     $b | Install-Package A -Version 1.0 -Source $context.RepositoryPath
 
     # Assert
-    $projects | %{ Assert-Reference $_ A 1.0.0.0; 
+    $projects | %{ Assert-Reference $_ A 1.0.0.0;
                    Assert-Reference $_ B 2.0.0.0; }
 
     Assert-BindingRedirect $a web.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
@@ -801,7 +801,7 @@ function Test-SimpleBindingRedirectsMultipleConfigs {
 
     # Add a another web.config under directory test
     $testDirectory = Join-Path (Get-ProjectDir $a) "test"
-    $file = Join-Path $testDirectory "web.config"    
+    $file = Join-Path $testDirectory "web.config"
     New-Item $testDirectory -ItemType Directory
     "<configuration></configuration>" > $file
     $a.ProjectItems.AddFromFile($file)
@@ -809,8 +809,8 @@ function Test-SimpleBindingRedirectsMultipleConfigs {
     # Act
     $a | Install-Package B -Version 2.0 -Source $context.RepositoryPath
     $a | Install-Package A -Version 1.0 -Source $context.RepositoryPath
-    
-    # Assert    
+
+    # Assert
     # the binding redirect should be added to web.config directly under the project directory,
     # not to file test\web.config.
     Assert-BindingRedirect $a web.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
@@ -819,7 +819,7 @@ function Test-SimpleBindingRedirectsMultipleConfigs {
 function Test-SimpleBindingRedirectsClassLibraryUpdatePackage {
     # Arrange
     $a = New-ClassLibrary
-      
+
     # Act
     $a | Install-Package E -Source $context.RepositoryPath
 
@@ -845,7 +845,7 @@ function Test-SimpleBindingRedirectsClassLibraryReference {
     $b = New-WebSite
     $d = New-ClassLibrary
     $e = New-ClassLibrary
-    
+
     Add-ProjectReference $a $d
     Add-ProjectReference $b $e
 
@@ -909,7 +909,7 @@ function Test-SimpleBindingRedirectsNonWeb {
     $b | Update-Package F -Safe -Source $context.RepositoryPath
 
     # Assert
-    $projects | %{ Assert-Package $_ E; 
+    $projects | %{ Assert-Package $_ E;
                    Assert-BindingRedirect $_ app.config F '0.0.0.0-1.0.5.0' '1.0.5.0' }
 }
 
@@ -931,7 +931,7 @@ function Test-BindingRedirectComplex {
     $c | Install-Package E -Source $context.RepositoryPath
     $c | Update-Package F -Safe -Source $context.RepositoryPath
 
-    Assert-Package $c E; 
+    Assert-Package $c E;
 
     # Assert
     Assert-BindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
@@ -950,7 +950,7 @@ function Test-SimpleBindingRedirectsWebsite {
     $a | Update-Package F -Safe -Source $context.RepositoryPath
 
     # Assert
-    Assert-Package $a E; 
+    Assert-Package $a E;
     Assert-BindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
@@ -992,7 +992,7 @@ function Test-BindingRedirectDuplicateReferences {
     $c | Install-Package E -Source $context.RepositoryPath
     $c | Update-Package F -Safe -Source $context.RepositoryPath
 
-    Assert-Package $c E 
+    Assert-Package $c E
 
     # Assert
     Assert-BindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
@@ -1069,11 +1069,11 @@ function Test-BindingRedirectsMixNonStrongNameAndStrongNameAssemblies {
     Assert-Package $a PackageWithNonStrongNamedLibA
     Assert-Package $a PackageWithNonStrongNamedLibA
     Assert-Package $a PackageWithStrongNamedLib 1.1
-    Assert-Reference $a A 1.0.0.0 
+    Assert-Reference $a A 1.0.0.0
     Assert-Reference $a B 1.0.0.0
     Assert-Reference $a Core 1.1.0.0
 
-    Assert-BindingRedirect $a app.config Core '0.0.0.0-1.1.0.0' '1.1.0.0'    
+    Assert-BindingRedirect $a app.config Core '0.0.0.0-1.1.0.0' '1.1.0.0'
 }
 
 function Test-BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembly {
@@ -1088,7 +1088,7 @@ function Test-BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembl
 
     $a | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
     $b | Install-Package A -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
-    
+
     Add-ProjectReference $a $b
     Add-ProjectReference $b $c
 
@@ -1127,12 +1127,12 @@ function Test-InstallPackageSkipsBindingRedirectWhenSetOnConfig
         $a | Update-Package F -Safe -Source $context.RepositoryPath
 
         # Assert
-        Assert-Package $a E; 
+        Assert-Package $a E;
         Assert-NoBindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
     }
     finally {
         $setting.DeleteSection('bindingRedirects')
-    }    
+    }
 }
 
 # Tests the case when Skip is specified in nuget.config under bindingRedirects section
@@ -1168,7 +1168,7 @@ function InstallPackageThrowWithLockedConfigFileIfSuccessRequired
     finally
     {
         $setting.DeleteSection('bindingRedirects')
-    } 
+    }
 }
 
 # Tests the case when Skip is specified in nuget.config under bindingRedirects section
@@ -1200,7 +1200,7 @@ function Test-InstallPackageSucceedsWithLockedFileAndSkipsBindingRedirectSet
         $a | Update-Package F -Safe -Source $context.RepositoryPath
 
         # Assert
-        Assert-Package $a E; 
+        Assert-Package $a E;
         # Unlock and close the stream of Web.Config so that it can be examined.
         $stream.Unlock(0, 10)
         $stream.Close()
@@ -1208,7 +1208,7 @@ function Test-InstallPackageSucceedsWithLockedFileAndSkipsBindingRedirectSet
     }
     finally {
         $setting.DeleteSection('bindingRedirects')
-    }    
+    }
 }
 
 function Test-InstallingPackageDoesNotOverwriteFileIfExistsOnDiskButNotInProject {
@@ -1276,7 +1276,7 @@ function Test-InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRo
     if ((Get-VSVersion) -ge "15.0") {
         Write-Host "Skipping InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRollbackIfInUse"
         return
-    }    
+    }
 
     # Arrange
     $p1 = New-WebApplication
@@ -1304,7 +1304,7 @@ function Test-InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRo
 
     Assert-Throws { $p2 | Install-Package NuGet.Core -Version 1.4.20615.9012 } "Could not install package 'NuGet.Core 1.4.20615.9012'. You are trying to install this package into a project that targets '$Profile', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
 
-    # Assert    
+    # Assert
     Assert-Package $p1 NuGet.Core
     Assert-SolutionPackage NuGet.Core
     Assert-Null (Get-ProjectPackage $p2 NuGet.Core)
@@ -1334,10 +1334,10 @@ function Test-WebsiteInstallPackageWithPPCSSourceFiles {
     )
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     $p | Install-Package PackageWithPPCSSourceFiles -Source $context.RepositoryRoot
-    
+
     # Assert
     Assert-Package $p PackageWithPPCSSourceFiles
     Assert-SolutionPackage PackageWithPPCSSourceFiles
@@ -1351,10 +1351,10 @@ function Test-WebsiteInstallPackageWithPPVBSourceFiles {
     )
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     $p | Install-Package PackageWithPPVBSourceFiles -Source $context.RepositoryRoot
-    
+
     # Assert
     Assert-Package $p PackageWithPPVBSourceFiles
     Assert-SolutionPackage PackageWithPPVBSourceFiles
@@ -1368,10 +1368,10 @@ function Test-WebsiteInstallPackageWithCSSourceFiles {
     )
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     $p | Install-Package PackageWithCSSourceFiles -Source $context.RepositoryRoot
-    
+
     # Assert
     Assert-Package $p PackageWithCSSourceFiles
     Assert-SolutionPackage PackageWithCSSourceFiles
@@ -1385,10 +1385,10 @@ function Test-WebsiteInstallPackageWithVBSourceFiles {
     )
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     $p | Install-Package PackageWithVBSourceFiles -Source $context.RepositoryRoot
-    
+
     # Assert
     Assert-Package $p PackageWithVBSourceFiles
     Assert-SolutionPackage PackageWithVBSourceFiles
@@ -1402,10 +1402,10 @@ function Test-WebsiteInstallPackageWithSourceFileUnderAppCode {
     )
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     $p | Install-Package PackageWithSourceFileUnderAppCode -Source $context.RepositoryRoot
-    
+
     # Assert
     Assert-Package $p PackageWithSourceFileUnderAppCode
     Assert-SolutionPackage PackageWithSourceFileUnderAppCode
@@ -1418,10 +1418,10 @@ function Test-WebSiteInstallPackageWithNestedSourceFiles {
     )
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     $p | Install-Package netfx-Guard -Source $context.RepositoryRoot
-    
+
     # Assert
     Assert-Package $p netfx-Guard
     Assert-SolutionPackage netfx-Guard
@@ -1434,10 +1434,10 @@ function Test-WebSiteInstallPackageWithFileNamedAppCode {
     )
     # Arrange
     $p = New-WebSite
-    
+
     # Act
     $p | Install-Package PackageWithFileNamedAppCode -Source $context.RepositoryRoot
-    
+
     # Assert
     Assert-Package $p PackageWithFileNamedAppCode
     Assert-SolutionPackage PackageWithFileNamedAppCode
@@ -1447,10 +1447,10 @@ function Test-WebSiteInstallPackageWithFileNamedAppCode {
 function Test-PackageInstallAcceptsSourceName {
     # Arrange
     $project = New-ConsoleApplication
-    
+
     # Act
     Install-Package FakeItEasy -Project $project.Name -Source $SourceNuGet -Version 1.8.0
-    
+
     # Assert
     Assert-Reference $project Castle.Core
     Assert-Reference $project FakeItEasy
@@ -1463,10 +1463,10 @@ function Test-PackageInstallAcceptsSourceName {
 function PackageInstallAcceptsAllAsSourceName {
     # Arrange
     $project = New-ConsoleApplication
-    
+
     # Act
     Install-Package FakeItEasy -Project $project.Name -Source 'All' -Version 1.8.0
-    
+
     # Assert
     Assert-Reference $project Castle.Core
     Assert-Reference $project FakeItEasy
@@ -1482,10 +1482,10 @@ function Test-PackageWithNoVersionInFolderName {
     )
     # Arrange
     $p = New-ClassLibrary
-    
+
     # Act
     $p | Install-Package PackageWithNoVersionInFolderName -Source $context.RepositoryRoot
-    
+
     # Assert
     Assert-Package $p PackageWithNoVersionInFolderName
     Assert-SolutionPackage PackageWithNoVersionInFolderName
@@ -1501,13 +1501,13 @@ function Test-PackageInstallAcceptsRelativePathSource {
 
     # Arrange
     $project = New-ConsoleApplication
-    
+
     # Act
     cd $context.TestRoot
     Assert-AreEqual $context.TestRoot $pwd
-     
+
     Install-Package PackageWithExeReference -Project $project.Name -Source '..\'
-    
+
     # Assert
     Assert-Reference $project NuGet
     Assert-Package $project PackageWithExeReference
@@ -1528,15 +1528,15 @@ function Test-PackageInstallAcceptsRelativePathSource2 {
     $relativePath = Split-Path $repositoryRoot -Leaf
 
     $project = New-ConsoleApplication
-    
+
     # Act
     cd $parentOfRoot
     Assert-AreEqual $parentOfRoot $pwd
     Install-Package PackageWithExeReference -Project $project.Name -Source $relativePath
-    
+
     # Assert
     Assert-Reference $project NuGet
- 
+
     Assert-Package $project PackageWithExeReference
 
     popd
@@ -1556,7 +1556,7 @@ function Test-InstallPackageTargetingNetClientAndNet {
     Assert-Package $p PackageTargetingNetClientAndNet
     Assert-SolutionPackage PackageTargetingNetClientAndNet
     $reference = Get-AssemblyReference $p ClassLibrary1
-    Assert-NotNull $reference    
+    Assert-NotNull $reference
     Assert-True ($reference.Path.Contains("net40-client"))
 }
 
@@ -1593,7 +1593,7 @@ function Test-InstallPackageWithBadFileInMachineCache {
 
 function Test-InstallPackageThrowsWhenSourceIsInvalid {
     # Arrange
-    $p = New-WebApplication 
+    $p = New-WebApplication
 
     # Act & Assert
     Assert-Throws { Install-Package jQuery -source "d:package" } "Unsupported type of source 'd:package'. Please provide an HTTP or local source."
@@ -1603,7 +1603,7 @@ function Test-InstallPackageInvokeInstallScriptWhenProjectNameHasApostrophe {
     param(
         $context
     )
-    
+
     # Arrange
     New-Solution "Gun 'n Roses"
     $p = New-ConsoleApplication
@@ -1625,7 +1625,7 @@ function Test-InstallPackageInvokeInstallScriptWhenProjectNameHasBrakets {
     param(
         $context
     )
-    
+
     # Arrange
     New-Solution "Gun [] Roses"
     $p = New-ConsoleApplication
@@ -1647,13 +1647,13 @@ function SinglePackageInstallIntoSingleProjectWhenSolutionPathHasComma {
     # Arrange
     New-Solution "Tom , Jerry"
     $project = New-ConsoleApplication
-    
+
     # Act
     Install-Package FakeItEasy -Project $project.Name -Version 1.8.0
-    
+
     # Assert
     Assert-Reference $project Castle.Core
-    Assert-Reference $project FakeItEasy   
+    Assert-Reference $project FakeItEasy
     Assert-Package $project FakeItEasy
     Assert-Package $project Castle.Core
     Assert-SolutionPackage FakeItEasy
@@ -1666,14 +1666,14 @@ function Test-WebsiteInstallPackageWithNestedAspxFilesShouldNotGoUnderAppCode {
     )
     # Arrange
     $p = New-WebSite
-    
+
     $files = @('Global.asax', 'Site.master', 'About.aspx')
 
     # Act
     $p | Install-Package PackageWithNestedAspxFiles -Source $context.RepositoryRoot
 
     # Assert
-    $files | %{ 
+    $files | %{
         $item = Get-ProjectItem $p $_
         Assert-NotNull $item
         $codeItem = Get-ProjectItem $p "$_.cs"
@@ -1688,10 +1688,10 @@ function Test-InstallPackageWithReferences {
     param(
         $context
     )
-    
+
     # Arrange - 1
     $p1 = New-ConsoleApplication
-    
+
     # Act - 1
     $p1 | Install-Package -Source $context.RepositoryRoot -Id PackageWithReferences
 
@@ -1701,7 +1701,7 @@ function Test-InstallPackageWithReferences {
     New-Solution "Test"
     # Arrange - 2
     $p2 = New-ClassLibrary
-    
+
     # Act - 2
     $p2 | Install-Package -Source $context.RepositoryRoot -Id PackageWithReferences
 
@@ -1713,10 +1713,10 @@ function Test-InstallPackageNormalizesVersionBeforeCompare {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ClassLibrary
-    
+
     # Act
     $p | Install-Package PackageWithContentFileAndDependency -Source $context.RepositoryRoot -Version 1.0.0.0
 
@@ -1789,21 +1789,21 @@ function Test-InstallPackageInstallsHighestPackageIfItIsReleaseWhenPreReleaseFla
     Assert-Package $a 'PreReleaseTestPackage.A' '1.0.0'
 }
 
-function Test-InstallingPackagesWorksInTurkishLocaleWhenPackageIdContainsLetterI 
+function Test-InstallingPackagesWorksInTurkishLocaleWhenPackageIdContainsLetterI
 {
     # Arrange
     $p = New-ClassLibrary
 
     $currentCulture = [System.Threading.Thread]::CurrentThread.CurrentCulture
 
-    try 
+    try
     {
         [System.Threading.Thread]::CurrentThread.CurrentCulture = New-Object 'System.Globalization.CultureInfo' 'tr-TR'
 
         # Act
         $p | Install-Package 'YUICompressor.NET'
     }
-    finally 
+    finally
     {
          # Restore culture
         [System.Threading.Thread]::CurrentThread.CurrentCulture = $currentCulture
@@ -1826,13 +1826,13 @@ function Test-InstallPackageConsidersPrereleasePackagesWhenResolvingDependencyWh
 }
 
 <#
-function Test-InstallPackageDontMakeExcessiveNetworkRequests 
+function Test-InstallPackageDontMakeExcessiveNetworkRequests
 {
     # Arrange
     $a = New-ClassLibrary
 
     $nugetsource = "https://www.nuget.org/api/v2/"
-    
+
     $repository = Get-PackageRepository $nugetsource
     Assert-NotNull $repository
 
@@ -1842,7 +1842,7 @@ function Test-InstallPackageDontMakeExcessiveNetworkRequests
     $global:numberOfRequests = 0
     $eventId = "__DataServiceSendingRequest"
 
-    try 
+    try
     {
         Register-ObjectEvent $packageDownloader "SendingRequest" $eventId { $global:numberOfRequests++; }
 
@@ -1853,7 +1853,7 @@ function Test-InstallPackageDontMakeExcessiveNetworkRequests
         Assert-Package $a 'nugetpackageexplorer.types' '1.0'
         Assert-AreEqual 1 $global:numberOfRequests
     }
-    finally 
+    finally
     {
         Unregister-Event $eventId -ea SilentlyContinue
         Remove-Variable 'numberOfRequests' -Scope 'Global' -ea SilentlyContinue
@@ -1901,7 +1901,7 @@ function Test-InstallingPackageaAfterNuGetDirectoryIsRenamedContinuesUsingDirect
     $solutionDir = Split-Path $solutionFile -Parent
 
     $configFile = "$solutionDir\.nuget\packages.config"
-    
+
     Assert-True (Test-Path $configFile)
 
     $content = Get-Content $configFile
@@ -1990,8 +1990,8 @@ function Test-InstallWithConflictDoesNotUpdateToPrerelease {
     $a | Install-Package B -Version 1.0.0 -Source $context.RepositoryPath
 
     # Assert 2
-    Assert-Package $a A 1.1.0 
-    Assert-Package $a B 1.0.0 
+    Assert-Package $a A 1.1.0
+    Assert-Package $a B 1.0.0
 }
 
 function Test-ReinstallingAnUninstallPackageIsNotExcessivelyCached {
@@ -2018,7 +2018,7 @@ function Test-ReinstallingAnUninstallPackageIsNotExcessivelyCached {
     $a | Install-Package netfx-Guard -Version 1.2.0 -Source $context.RepositoryRoot
 
     # Assert 3
-    Assert-Package $a netfx-Guard 1.2 
+    Assert-Package $a netfx-Guard 1.2
 }
 
 function Test-InstallPackageInstallContentFilesAccordingToTargetFramework {
@@ -2026,10 +2026,10 @@ function Test-InstallPackageInstallContentFilesAccordingToTargetFramework {
 
     # Arrange
     $project = New-ConsoleApplication
-    
+
     # Act
     Install-Package TestTargetFxContentFiles -Project $project.Name -Source $context.RepositoryPath
-    
+
     # Assert
     Assert-Package $project TestTargetFxContentFiles
     Assert-NotNull (Get-ProjectItem $project "Sub\one.txt")
@@ -2041,10 +2041,10 @@ function Test-InstallPackageInstallContentFilesAccordingToTargetFramework2 {
 
     # Arrange
     $project = New-ClassLibrary
-    
+
     # Act
     Install-Package TestTargetFxContentFiles -Project $project.Name -Source $context.RepositoryPath
-    
+
     # Assert
     Assert-Package $project TestTargetFxContentFiles
     Assert-NotNull (Get-ProjectItem $project "Sub\one.txt")
@@ -2059,11 +2059,11 @@ function Test-InstallPackageThrowsIfThereIsNoCompatibleContentFiles
     if ((Get-VSVersion) -ge "15.0") {
         Write-Host "Skipping InstallPackageThrowsIfThereIsNoCompatibleContentFiles"
         return
-    }    
+    }
 
     # Arrange
     $project = New-JavaScriptApplication
-    
+
     # Act & Assert
 
     Assert-Throws { Install-Package TestTargetFxContentFiles -Project $project.Name -Source $context.RepositoryPath } "Could not install package 'TestTargetFxContentFiles 1.0.0'. You are trying to install this package into a project that targets 'Windows,Version=v8.1', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
@@ -2075,12 +2075,12 @@ function Test-InstallPackageExecuteCorrectInstallScriptsAccordingToTargetFramewo
 
     # Arrange
     $project = New-ConsoleApplication
-    
+
     $global:InstallVar = 0
 
     # Act
     Install-Package TestTargetFxPSScripts -Project $project.Name -Source $context.RepositoryPath
-    
+
     # Assert
     Assert-Package $project TestTargetFxPSScripts
     Assert-True ($global:InstallVar -eq 1)
@@ -2094,12 +2094,12 @@ function Test-InstallPackageExecuteCorrectInstallScriptsAccordingToTargetFramewo
 
     # Arrange
     $project = New-ConsoleApplication
-    
+
     $global:InstallVar = 0
 
     # Act
     Install-Package TestTargetFxPSScripts -Project $project.Name -Source $context.RepositoryPath
-    
+
     # Assert
     Assert-Package $project TestTargetFxPSScripts
     Write-Host 'net40 folder will be chosen over silverlight'
@@ -2114,12 +2114,12 @@ function Test-InstallPackageIgnoreInitScriptIfItIsNotDirectlyUnderTools {
 
     # Arrange
     $project = New-ConsoleApplication
-    
+
     $global:InitVar = 0
 
     # Act
     Install-Package TestTargetFxInvalidInitScript -Project $project.Name -Source $context.RepositoryPath
-    
+
     # Assert
     Assert-Package $project TestTargetFxInvalidInitScript
     Assert-True ($global:InitVar -eq 0)
@@ -2133,12 +2133,12 @@ function Test-InstallPackageIgnoreInitScriptIfItIsNotDirectlyUnderTools2 {
 
     # Arrange
     $project = New-ConsoleApplication
-    
+
     $global:InitVar = 0
 
     # Act
     Install-Package TestTargetFxInvalidInitScript -Project $project.Name -Source $context.RepositoryPath
-    
+
     # Assert
     Assert-Package $project TestTargetFxInvalidInitScript
     Assert-True ($global:InitVar -eq 0)
@@ -2147,7 +2147,7 @@ function Test-InstallPackageIgnoreInitScriptIfItIsNotDirectlyUnderTools2 {
     Remove-Variable InitVar -Scope Global
 }
 
-function Test-InstallPackageWithEmptyContentFrameworkFolder 
+function Test-InstallPackageWithEmptyContentFrameworkFolder
 {
     param($context)
 
@@ -2162,7 +2162,7 @@ function Test-InstallPackageWithEmptyContentFrameworkFolder
     Assert-Null (Get-ProjectItem $project NewFile.txt)
 }
 
-function Test-InstallPackageWithEmptyLibFrameworkFolder 
+function Test-InstallPackageWithEmptyLibFrameworkFolder
 {
     param($context)
 
@@ -2191,7 +2191,7 @@ function Test-InstallPackageWithEmptyToolsFrameworkFolder
 
     # Assert
     Assert-Package $project TestEmptyToolsFolder
-     
+
     Assert-AreEqual 0 $global:InstallVar
 
     Remove-Variable InstallVar -Scope Global
@@ -2230,7 +2230,7 @@ function Test-InstallingSatellitePackageToWebsiteCopiesResourcesToBin
     # Assert
     Assert-Package $p Test.fr-FR
     Assert-Package $p Test
-    
+
     $projectPath = Get-ProjectDir $p
     Assert-PathExists (Join-Path $projectPath "bin\Test.dll.refresh")
     Assert-PathExists (Join-Path $projectPath "bin\Test.dll")
@@ -2246,7 +2246,7 @@ function Test-InstallPackagePersistTargetFrameworkToPackagesConfig
 
     # Act
     $p | Install-Package PackageA -Source $context.RepositoryPath
-    
+
     # Assert
     Assert-Package $p 'packageA'
     Assert-Package $p 'packageB'
@@ -2267,7 +2267,7 @@ function Test-ToolsPathForInitAndInstallScriptPointToToolsFolder
     # Arrange
     $p = New-ClassLibrary
 
-    # Act 
+    # Act
     $p | Install-Package PackageA -Version 1.0.0 -Source $context.RepositoryPath
 
     # Assert
@@ -2306,7 +2306,7 @@ function Test-InstallPackageWithNonNestedPS1InsideTools
     Assert-PathExists (Join-Path $solutionDir packages\TestPackage.SupportingMultipleFrameworksNonNestedPS1.1.2.0\version.txt)
 }
 
-function Test-InstallFailCleansUpSatellitePackageFiles 
+function Test-InstallFailCleansUpSatellitePackageFiles
 {
     # Verification for work item 2311
     # This also verifies "Fresh Install Of Parent Package Throws When Dependency Package Already Has A Newer Version Installed"
@@ -2315,12 +2315,12 @@ function Test-InstallFailCleansUpSatellitePackageFiles
     # Arrange
     $p = New-ClassLibrary
 
-    # Act 
+    # Act
     $p | Install-Package A -Version 1.2.0 -Source $context.RepositoryPath
     try {
     $p | Install-Package A.fr -Source $context.RepositoryPath
     } catch {}
-    
+
     # Assert
     Assert-Package $p A 1.2.0
 
@@ -2334,7 +2334,7 @@ function Test-FileTransformWorksOnDependentFile
 {
     param($context)
 
-    # Arrange 
+    # Arrange
     $p = New-WebApplication
     Install-Package TTFile -Source $context.RepositoryPath
 
@@ -2366,10 +2366,10 @@ function Test-InstallMetaPackageWorksAsExpected
     Assert-Package $p Dependency
 }
 
-function Test-InstallPackageDoNotUninstallDependenciesWhenSafeUpdatingDependency 
+function Test-InstallPackageDoNotUninstallDependenciesWhenSafeUpdatingDependency
 {
     # The InstallWalker used to compensate for packages that were already installed by attempting to remove
-    # an uninstall operation. Consequently any uninstall operation that occurred later in the graph would cause 
+    # an uninstall operation. Consequently any uninstall operation that occurred later in the graph would cause
     # the package to be uninstalled. This test verifies that this behavior does not occur.
 
     param ($context)
@@ -2386,10 +2386,10 @@ function Test-InstallPackageDoNotUninstallDependenciesWhenSafeUpdatingDependency
     Assert-Package $p NuGet.Core 1.6.2
     Assert-Package $p Microsoft.AspNet.WebPages 2.0.20710.0
     Assert-Package $p Microsoft.AspNet.Razor 2.0.20710.0
-    
+
     # Act - 2
     $p | Install-Package microsoft-web-helpers -Source $context.RepositoryPath -Verbose
-    
+
     # Assert - 2
     Assert-Package $p microsoft-web-helpers 2.0.20710.0
     Assert-Package $p Microsoft.AspNet.WebPages.Administration 2.0.20710.0
@@ -2420,7 +2420,7 @@ function Test-InstallPackageRespectAssemblyReferenceFilterOnDependencyPackages
 function Test-InstallPackageRespectAssemblyReferenceFilterOnSecondProject
 {
     param ($context)
-    
+
     # Arrange
     $p = New-ClassLibrary
 
@@ -2433,7 +2433,7 @@ function Test-InstallPackageRespectAssemblyReferenceFilterOnSecondProject
     Assert-Null (Get-AssemblyReference $p 'Ookii.Dialogs.Wpf')
 
     $q = New-ConsoleApplication
-    
+
     # Act
     $q | Install-Package B -Source $context.RepositoryPath
 
@@ -2498,7 +2498,7 @@ function Test-ReinstallSolutionLevelPackageWorks
     # Arrange
     $p = New-ClassLibrary
     $p | Install-Package SolutionLevelPkg -Source $context.RepositoryRoot
-    
+
     Assert-SolutionPackage SolutionLevelPkg
 
     # Act
@@ -2512,7 +2512,7 @@ function Test-InstallSolutionLevelPackageAddPackagesConfigToProject
 {
     param($context)
 
-    # Arrange 
+    # Arrange
     $p = new-ConsoleApplication
     $p | Install-Package SolutionLevelPkg -Source $context.RepositoryRoot
 
@@ -2528,7 +2528,7 @@ function Test-InstallMetadataPackageAddPackageToProject
 
     # Arrange
     $p = new-ClassLibrary
-    
+
     # Act
     $p | Install-Package MetadataPackage -Source $context.RepositoryPath
 
@@ -2551,7 +2551,7 @@ function Test-FrameworkAssemblyReferenceShouldNotHaveBindingRedirect
     # Change it to v4.5
     $p1.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5"
 
-    # after project retargetting, the $p1 reference is no longer valid. Needs to find it again. 
+    # after project retargetting, the $p1 reference is no longer valid. Needs to find it again.
 
     $p1 = Get-Project -Name Hello
 
@@ -2602,44 +2602,40 @@ function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
 
 # Temporarily comment out the test that's hang VS (during Javascript project creation)
 # NuGet is not involved in that step. We may need to update the template.
-function InstallPackageIntoJavaScriptApplication
-{
+function InstallPackageIntoJavaScriptApplication {
     # Windows 8.x/Phone tests irrelevant post-VS14
-    if ((Get-VSVersion) -ge "15.0") {
-        Write-Host "Skipping InstallPackageIntoJavaScriptApplication"
-        return
-    }
+    [SkipTestForVS15()]
+    param()
 
     # Arrange
     $p = New-JavaScriptApplication
 
     # Act
-    Install-Package jQuery -ProjectName $p.Name 
+    Install-Package jQuery -ProjectName $p.Name
 
     # Assert
     Assert-Package $p "jQuery"
 }
 
-function Test-InstallPackageIntoJavaScriptWindowsPhoneApp
-{
+function Test-InstallPackageIntoJavaScriptWindowsPhoneApp {
     # Windows 8.x/Phone tests irrelevant post-VS14
-    if ((Get-VSVersion) -ge "15.0") {
-        Write-Host "Skipping InstallPackageIntoJavaScriptWindowsPhoneApp"
-        return
-    }
+    [SkipTestForVS15()]
+    param()
 
     # Arrange
     $p = New-JavaScriptWindowsPhoneApp81
 
     # Act
-    Install-Package jQuery -ProjectName $p.Name 
+    Install-Package jQuery -ProjectName $p.Name
 
     # Assert
     Assert-Package $p "jQuery"
 }
 
-function Test-InstallPackageIntoNativeWinStoreApplication
-{
+function Test-InstallPackageIntoNativeWinStoreApplication {
+    [SkipTestForVS15()]
+    param()
+
     if ((Get-VSVersion) -eq "10.0")
     {
         return
@@ -2655,15 +2651,10 @@ function Test-InstallPackageIntoNativeWinStoreApplication
     Assert-Package $p "zlib"
 }
 
-function Test-InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder
-{
-    param($context)
-
+function Test-InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder {
     # Windows 8.x/Phone tests irrelevant post-VS14
-    if ((Get-VSVersion) -ge "15.0") {
-        Write-Host "Skipping InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder"
-        return
-    }
+    [SkipTestForVS15()]
+    param($context)
 
     # Arrange
     $p = New-JavaScriptApplication81
@@ -2673,20 +2664,15 @@ function Test-InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder
 
     # Assert
     Assert-Package $p Java
-    
+
     Assert-NotNull (Get-ProjectItem $p 'windows81.txt')
     Assert-Null (Get-ProjectItem $p 'windows8.txt')
 }
 
-function Test-InstallPackageIntoJSWindowsPhoneAppOnWin81UseTheCorrectFxFolder
-{
-    param($context)
-
+function Test-InstallPackageIntoJSWindowsPhoneAppOnWin81UseTheCorrectFxFolder {
     # Windows 8.x/Phone tests irrelevant post-VS14
-    if ((Get-VSVersion) -ge "15.0") {
-        Write-Host "Skipping InstallPackageIntoJSWindowsPhoneAppOnWin81UseTheCorrectFxFolder"
-        return
-    }
+    [SkipTestForVS15()]
+    param($context)
 
     # Arrange
     $p = New-JavaScriptWindowsPhoneApp81
@@ -2696,7 +2682,7 @@ function Test-InstallPackageIntoJSWindowsPhoneAppOnWin81UseTheCorrectFxFolder
 
     # Assert
     Assert-Package $p Java
-    
+
     Assert-NotNull (Get-ProjectItem $p 'phone.txt')
     Assert-NotNull (Get-ProjectItem $p 'phone2.txt')
     Assert-Null (Get-ProjectItem $p 'store.txt')
@@ -2706,7 +2692,7 @@ function Test-SpecifyDifferentVersionThenServerVersion
 {
     # In this test, we explicitly set the version as "2.0",
     # whereas the server version is "2.0.0"
-    # this test is to make sure the DataServicePackageRepository 
+    # this test is to make sure the DataServicePackageRepository
     # checks for all variations of "2.0" (2.0, 2.0.0 and 2.0.0.0)
 
     # Arrange
@@ -2771,7 +2757,7 @@ function Test-PackageWithConfigTransformInstallToWinJsProject
     if ((Get-VSVersion) -ge "15.0") {
         Write-Host "Skipping PackageWithConfigTransformInstallToWinJsProject"
         return
-    }    
+    }
 
     # Arrange
     $p = New-JavaScriptApplication
@@ -2785,7 +2771,7 @@ function Test-PackageWithConfigTransformInstallToWinJsProject
     Assert-NotNull (Get-ProjectItem $p 'b.config')
 }
 
-function Test-InstallPackageIntoLightSwitchApplication 
+function Test-InstallPackageIntoLightSwitchApplication
 {
     param($context)
 
@@ -2808,7 +2794,7 @@ function Test-InstallPackageIntoLightSwitchApplication
     # Act
     Install-Package PackageWithPPVBSourceFiles -Source $context.RepositoryRoot -ProjectName $clientProject.Name
     Install-Package NonStrongNameA -Source $context.RepositoryRoot -ProjectName $serverProject.Name
-    
+
     # Assert
     Assert-Package $clientProject PackageWithPPVBSourceFiles
     Assert-Package $serverProject NonStrongNameA
@@ -2867,7 +2853,7 @@ function Test-InstallPackagePreservesProjectConfigFile
 
     $projectPath = $p.Properties.Item("FullPath").Value
     $packagesConfigPath = Join-Path $projectPath 'packages.CoolProject.config'
-    
+
     # create file and add to project
     $newFile = New-Item $packagesConfigPath -ItemType File
     '<packages></packages>' > $newFile
@@ -2885,7 +2871,7 @@ function Test-InstallPackagePreservesProjectConfigFile
 function Test-InstallPackageToWebsitePreservesProjectConfigFile
 {
     param($context)
-    
+
     # Arrange
     $p = New-Website "CoolProject"
     $packagesConfigFileName = "packages.CoolProject.config"
@@ -2898,8 +2884,8 @@ function Test-InstallPackageToWebsitePreservesProjectConfigFile
     }
 
     $projectPath = $p.Properties.Item("FullPath").Value
-    $packagesConfigPath = Join-Path $projectPath $packagesConfigFileName    
-    
+    $packagesConfigPath = Join-Path $projectPath $packagesConfigFileName
+
     # create file and add to project
     $newFile = New-Item $packagesConfigPath -ItemType File
     '<packages></packages>' > $newFile
@@ -3036,17 +3022,17 @@ function Test-InstallPackageWithDependencyVersionHighestInNuGetConfig
 
         # Arrange
         $p = New-ClassLibrary
-        
+
         # Act
         $p | Install-Package jquery.validation -version 1.10
-        
+
         # Assert
         Assert-Package $p jquery.validation 1.10
         Assert-Package $p jquery 1.4.4
     }
     finally {
         $setting.SetValue('config', 'dependencyversion', $null)
-    }    
+    }
 }
 
 # Tests that when -DependencyVersion is not specified, the dependency with
@@ -3069,7 +3055,7 @@ function Test-InstallPackageWithoutDependencyVersion
     Assert-Package $p B 1.0.0
 }
 
-# Tests that passing in online path to a packages.config file to 
+# Tests that passing in online path to a packages.config file to
 # Install-Package works.
 function Test-InstallPackagesConfigOnline
 {
@@ -3086,7 +3072,7 @@ function Test-InstallPackagesConfigOnline
     Assert-Package $p Newtonsoft.Json 4.0.1
 }
 
-# Tests that passing in local path to a packages.config file to 
+# Tests that passing in local path to a packages.config file to
 # Install-Package works.
 function Test-InstallPackagesConfigLocal
 {
@@ -3105,7 +3091,7 @@ function Test-InstallPackagesConfigLocal
     Assert-Package $p EntityFramework 6.1.3-beta1
 }
 
-# Tests that passing in online path to a .nupkg file to 
+# Tests that passing in online path to a .nupkg file to
 # Install-Package works.
 function Test-InstallPackagesNupkgOnline
 {
@@ -3124,7 +3110,7 @@ function Test-InstallPackagesNupkgOnline
     Assert-Package $p microsoft.web.infrastructure 1.0.0
 }
 
-# Tests that passing in local path to a .nupkg file to 
+# Tests that passing in local path to a .nupkg file to
 # Install-Package works.
 function Test-InstallPackagesNupkgLocal
 {
@@ -3223,7 +3209,7 @@ function Test-InstallPackageWithEscapedSymbolInPath()
     param($context)
 
     # Arrange
-    $p = New-ClassLibrary 
+    $p = New-ClassLibrary
 
     #Act
     $p | Install-Package Xam.Plugin.Connectivity -version 1.0.2

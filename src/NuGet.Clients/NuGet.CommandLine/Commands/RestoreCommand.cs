@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -333,7 +333,7 @@ namespace NuGet.CommandLine
                     Settings.Priority.Select(x => Path.Combine(x.Root, x.FileName)),
                     packageSources.Select(x => x.Source),
                     installCount,
-                    collectorLogger.Errors.Concat(failedEvents.Select(e => new RestoreLogMessage(LogLevel.Error, e.Exception.Message))));
+                    collectorLogger.Errors.Concat(failedEvents.Select(e => new RestoreLogMessage(LogLevel.Error, NuGetLogCode.Undefined, e.Exception.Message))));
             }
         }
 
@@ -674,7 +674,7 @@ namespace NuGet.CommandLine
 
         private static bool IsSolutionOrProjectFile(string fileName)
         {
-            if (!String.IsNullOrEmpty(fileName))
+            if (!string.IsNullOrEmpty(fileName))
             {
                 var extension = Path.GetExtension(fileName);
                 var lastFourCharacters = string.Empty;

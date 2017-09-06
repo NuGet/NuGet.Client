@@ -9,8 +9,12 @@ namespace NuGet.VisualStudio
 {
     public interface IDeferredProjectWorkspaceService
     {
+        Task<bool> EntityExistsAsync(string filePath);
+
         Task<IEnumerable<string>> GetProjectReferencesAsync(string projectFilePath);
 
         Task<IMSBuildProjectDataService> GetMSBuildProjectDataServiceAsync(string projectFilePath, string targetFramework = null);
+
+        Task<string> GetProjectTypeGuidAsync(string projectFilePath);
     }
 }

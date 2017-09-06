@@ -54,5 +54,23 @@ namespace NuGet.Packaging
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         Task<string> GetPackageHashAsync(string hashAlgorithm, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets an exception handler for package downloads.
+        /// </summary>
+        /// <remarks>The exception handler returns a task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="bool" />
+        /// indicating whether or not the exception was handled.  To handle an exception and stop its
+        /// propagation, the task should return <c>true</c>.  Otherwise, the exception will be rethrown.</remarks>
+        /// <param name="handleExceptionAsync">An exception handler.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handleExceptionAsync" />
+        /// is <c>null</c>.</exception>
+        void SetExceptionHandler(Func<Exception, Task<bool>> handleExceptionAsync);
+
+        /// <summary>
+        /// Sets a throttle for package downloads.
+        /// </summary>
+        /// <param name="throttle">A throttle.  Can be <c>null</c>.</param>
+        void SetThrottle(SemaphoreSlim throttle);
     }
 }

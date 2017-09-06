@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
@@ -14,6 +15,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -304,8 +306,13 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        public void CleanCache()
+        public async Task CleanCacheAsync()
         {
+            // get all build integrated based nuget projects and delete the cache file.
+            await Task.WhenAll(
+                (await SolutionManager.GetNuGetProjectsAsync()).OfType<BuildIntegratedNuGetProject>().Select(async e =>
+                    Common.FileUtility.Delete(await e.GetCacheFilePathAsync())));
+
             Interlocked.Exchange(ref _restoreJobContext, new SolutionRestoreJobContext());
         }
 
@@ -346,7 +353,7 @@ namespace NuGet.SolutionRestoreManager
                             SolutionRestoreRequest next;
 
                             // check if there are pending nominations
-                            var isAllProjectsNominated = _solutionManager.Value.IsAllProjectsNominated();
+                            var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
 
                             if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token))
                             {
@@ -358,7 +365,7 @@ namespace NuGet.SolutionRestoreManager
                             }
 
                             // Upgrade request if necessary
-                            if (next.RestoreSource != request.RestoreSource)
+                            if (next != null && next.RestoreSource != request.RestoreSource)
                             {
                                 // there could be requests of two types: Auto-Restore or Explicit
                                 // Explicit is always preferred.

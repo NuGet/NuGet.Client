@@ -1,4 +1,4 @@
-﻿param([parameter(Mandatory = $true)]
+param([parameter(Mandatory = $true)]
       [string]$OutputPath,
       [parameter(Mandatory = $true)]
       [string]$TemplatePath)
@@ -146,6 +146,26 @@ function New-NetStandardClassLibrary
     }
 }
 
+function New-NetCoreConsoleAppWithCustomRestorePackagesPath
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        $project = New-Project NetCoreConsoleAppWithCustomRestorePackagesPath $ProjectName $SolutionFolder
+        Wait-OnNetCoreRestoreCompletion $project
+        return $project
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
+
 function New-CpsApp
 {
     param(
@@ -281,6 +301,15 @@ function New-ClassLibrary {
     )
 
     New-Project ClassLibrary $ProjectName $SolutionFolderName
+}
+
+function New-ClassLibraryNET46 {
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolderName
+    )
+
+    New-Project ClassLibrary46 $ProjectName $SolutionFolderName
 }
 
 function New-LightSwitchApplication
@@ -605,6 +634,12 @@ function Build-Solution {
     [API.Test.VSSolutionHelper]::BuildSolution()
 }
 
+function Rebuild-Solution {
+    Write-Verbose "Rebuild and wait for it to complete"
+
+    [API.Test.VSSolutionHelper]::RebuildSolution()
+}
+
 function Get-AssemblyReference {
     param(
         [parameter(Mandatory = $true)]
@@ -873,4 +908,20 @@ function Check-NuGetConfig {
 
 function Get-BuildOutput {
     return [API.Test.VSHelper]::GetBuildOutput()
+}
+
+function AdviseSolutionEvents {
+    Write-Verbose "Advise for Solution build events"
+
+    [API.Test.VSSolutionHelper]::AdviseSolutionEvents()
+}
+
+function UnadviseSolutionEvents {
+    Write-Verbose "Unadvise for solution build events"
+
+    [API.Test.VSSolutionHelper]::UnadviseSolutionEvents()
+}
+
+function WaitUntilRebuildCompleted {
+    [API.Test.VSSolutionHelper]::WaitUntilRebuildCompleted()
 }

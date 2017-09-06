@@ -77,7 +77,7 @@
         Grid.Row="0"
         Grid.Column="1"
         Visibility="{Binding Path=Version,Converter={StaticResource NullToVisibilityConverter}}"
-        Text="{Binding Path=Version,Converter={StaticResource VersionToStringConverter}}"
+        Text="{Binding Path=Version,Converter={StaticResource VersionToStringConverter},ConverterParameter=F}"
         Margin="8,8,0,0"
         TextWrapping="Wrap" />
 

@@ -13,6 +13,7 @@ using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
@@ -49,6 +50,7 @@ namespace NuGet.SolutionRestoreManager
         private const string RestoreSources = nameof(RestoreSources);
         private const string RestoreFallbackFolders = nameof(RestoreFallbackFolders);
         private const string AssetTargetFallback = nameof(AssetTargetFallback);
+        private const string RestoreAdditionalProjectFallbackFoldersExcludes = nameof(RestoreAdditionalProjectFallbackFoldersExcludes);
         private const string RestoreAdditionalProjectFallbackFolders = nameof(RestoreAdditionalProjectFallbackFolders);
         private const string RestoreAdditionalProjectSources = nameof(RestoreAdditionalProjectSources);
         private const string TreatWarningsAsErrors = nameof(TreatWarningsAsErrors);
@@ -244,7 +246,10 @@ namespace NuGet.SolutionRestoreManager
                 // cross-targeting is always ON even in case of a single tfm in the list.
                 crossTargeting = true;
             }
-
+            var outputPath = Path.GetFullPath(
+                        Path.Combine(
+                            projectDirectory,
+                            projectRestoreInfo.BaseIntermediatePath));
             var packageSpec = new PackageSpec(tfis)
             {
                 Name = GetPackageId(projectNames, projectRestoreInfo.TargetFrameworks),
@@ -255,10 +260,7 @@ namespace NuGet.SolutionRestoreManager
                     ProjectName = projectNames.ShortName,
                     ProjectUniqueName = projectFullPath,
                     ProjectPath = projectFullPath,
-                    OutputPath = Path.GetFullPath(
-                        Path.Combine(
-                            projectDirectory,
-                            projectRestoreInfo.BaseIntermediatePath)),
+                    OutputPath = outputPath,
                     ProjectStyle = ProjectStyle.PackageReference,
                     TargetFrameworks = projectRestoreInfo.TargetFrameworks
                         .Cast<IVsTargetFrameworkInfo>()
@@ -277,7 +279,8 @@ namespace NuGet.SolutionRestoreManager
                     ProjectWideWarningProperties = MSBuildRestoreUtility.GetWarningProperties(
                         treatWarningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, TreatWarningsAsErrors, e => e),
                         warningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, WarningsAsErrors, e => e),
-                        noWarn: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, NoWarn, e => e))
+                        noWarn: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, NoWarn, e => e)),
+                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: outputPath, projectPath: projectFullPath)
                 },
                 RuntimeGraph = GetRuntimeGraph(projectRestoreInfo),
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
@@ -307,26 +310,38 @@ namespace NuGet.SolutionRestoreManager
             return GetNonEvaluatedPropertyOrNull(tfms, RestorePackagesPath, e => e);
         }
 
-        private static string[] GetRestoreSources(IVsTargetFrameworks tfms)
+        /// <summary>
+        /// The result will contain CLEAR and no sources specified in RestoreSources if the clear keyword is in it.
+        /// If there are additional sources specified, the value AdditionalValue will be set in the result and then all the additional sources will follow
+        /// </summary>
+        private static IEnumerable<string> GetRestoreSources(IVsTargetFrameworks tfms)
         {
-            var sources = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreSources, e => e));
+            var sources = HandleClear(MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreSources, e => e)));
 
-            sources = HandleClear(sources);
+            // Read RestoreAdditionalProjectSources from the inner build, these may be different between frameworks.
+            // Exclude is not allowed for sources
+            var additional = MSBuildRestoreUtility.AggregateSources(
+                values: GetAggregatePropertyValues(tfms, RestoreAdditionalProjectSources),
+                excludeValues: Enumerable.Empty<string>());
 
-            var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectSources, e => e));
-            sources = sources.Concat(additional).ToArray();
-
-            return sources;
+            return VSRestoreSettingsUtilities.GetEntriesWithAdditional(sources, additional.ToArray());
         }
 
+        /// <summary>
+        /// The result will contain CLEAR and no sources specified in RestoreFallbackFolders if the clear keyword is in it.
+        /// If there are additional fallback folders specified, the value AdditionalValue will be set in the result and then all the additional fallback folders will follow
+        /// </summary>
         private static IEnumerable<string> GetRestoreFallbackFolders(IVsTargetFrameworks tfms)
         {
-            var folders = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreFallbackFolders, e => e));
+            var folders = HandleClear(MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreFallbackFolders, e => e)));
 
-            folders = HandleClear(folders);
+            // Read RestoreAdditionalProjectFallbackFolders from the inner build.
+            // Remove all excluded fallback folders listed in RestoreAdditionalProjectFallbackFoldersExcludes.
+            var additional = MSBuildRestoreUtility.AggregateSources(
+                values: GetAggregatePropertyValues(tfms, RestoreAdditionalProjectFallbackFolders),
+                excludeValues: GetAggregatePropertyValues(tfms, RestoreAdditionalProjectFallbackFoldersExcludes));
 
-            var additional = MSBuildStringUtility.Split(GetNonEvaluatedPropertyOrNull(tfms, RestoreAdditionalProjectFallbackFolders, e => e));
-            return folders.Concat(additional);
+            return VSRestoreSettingsUtilities.GetEntriesWithAdditional(folders, additional.ToArray());
         }
 
         private static string[] HandleClear(string[] input)
@@ -355,6 +370,19 @@ namespace NuGet.SolutionRestoreManager
                 })
                 .Distinct()
                 .SingleOrDefault();
+        }
+
+        /// <summary>
+        /// Fetch all property values from each target framework and combine them.
+        /// </summary>
+        private static IEnumerable<string> GetAggregatePropertyValues(
+                IVsTargetFrameworks tfms,
+                string propertyName)
+        {
+            // Only non-null values are added to the list as part of the split.
+            return tfms
+                .Cast<IVsTargetFrameworkInfo>()
+                .SelectMany(tfm => MSBuildStringUtility.Split(GetPropertyValueOrNull(tfm.Properties, propertyName)));
         }
 
         private static RuntimeGraph GetRuntimeGraph(IVsProjectRestoreInfo projectRestoreInfo)

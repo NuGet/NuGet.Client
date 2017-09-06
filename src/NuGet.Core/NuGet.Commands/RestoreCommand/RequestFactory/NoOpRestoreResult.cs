@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,15 +16,16 @@ namespace NuGet.Commands
     public class NoOpRestoreResult : RestoreResult
     {
         public NoOpRestoreResult(bool success, LockFile lockFile, LockFile previousLockFile, string lockFilePath, CacheFile cacheFile, string cacheFilePath, ProjectStyle projectStyle, TimeSpan elapsedTime) :
-            base(success : success, restoreGraphs : null, compatibilityCheckResults : null , 
+            base(success : success, restoreGraphs : null, compatibilityCheckResults : new List<CompatibilityCheckResult>() , 
                 msbuildFiles : null, lockFile : lockFile, previousLockFile : previousLockFile, lockFilePath: lockFilePath,
                 cacheFile: cacheFile, cacheFilePath: cacheFilePath, projectStyle: projectStyle, elapsedTime: elapsedTime)
         {
         }
 
         //We override this method because in the case of a no op we don't need to update anything
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "CS1998", Justification = "This is intended.")]
+#pragma warning disable CS1998 // This async method lacks 'await' operators and will run synchronously.
         public override async Task CommitAsync(ILogger log, CancellationToken token)
+#pragma warning restore CS1998 // This async method lacks 'await' operators and will run synchronously.
         {
             var isTool = ProjectStyle == ProjectStyle.DotnetCliTool;
 

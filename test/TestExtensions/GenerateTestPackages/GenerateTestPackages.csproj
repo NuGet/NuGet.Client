@@ -5,16 +5,16 @@
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
     <OutputType>Exe</OutputType>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>ToolTestKey.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>false</DelaySign>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
 
@@ -27,14 +27,13 @@
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>AssemblySourceFileGenerator.cs</LastGenOutput>
     </None>
-    <None Include="project.json" />
     <None Include="Test.dgml">
       <SubType>Designer</SubType>
     </None>
     <EmbeddedResource Include="TestPackageKey.snk" />
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
 
   <Target Name="DeployToArtifacts" AfterTargets="Build;Rebuild">
   <!--
@@ -46,9 +45,6 @@
     </PropertyGroup>
     <Message Text="Publishing test extension artifacts..." Importance="high" />
     <Message Text="$(TargetPath) -&gt; $(PublishDestination)" Importance="high" />
-    <Copy
-      SourceFiles="$(TargetPath)"
-      DestinationFolder="$(PublishDestination)"
-      OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
   </Target>
 </Project>

@@ -1,13 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Globalization;
 using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.Commands;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -51,7 +49,7 @@ namespace NuGet.CommandLine.XPlat
                 var frameworks = addpkg.Option(
                     "-f|--framework",
                     Strings.AddPkg_FrameworksDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.MultipleValue);
 
                 var noRestore = addpkg.Option(
                     "-n|--no-restore",
@@ -61,7 +59,7 @@ namespace NuGet.CommandLine.XPlat
                 var sources = addpkg.Option(
                     "-s|--source",
                     Strings.AddPkg_SourcesDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.MultipleValue);
 
                 var packageDirectory = addpkg.Option(
                     "--package-directory",
@@ -83,8 +81,8 @@ namespace NuGet.CommandLine.XPlat
                     var packageDependency = new PackageDependency(id.Values[0], VersionRange.Parse(packageVersion));
                     var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), packageDependency, logger)
                     {
-                        Frameworks = MSBuildStringUtility.Split(frameworks.Value()),
-                        Sources = MSBuildStringUtility.Split(sources.Value()),
+                        Frameworks = CommandLineUtility.SplitAndJoinAcrossMultipleValues(frameworks.Values),
+                        Sources = CommandLineUtility.SplitAndJoinAcrossMultipleValues(sources.Values),
                         PackageDirectory = packageDirectory.Value(),
                         NoRestore = noRestore.HasValue(),
                         NoVersion = noVersion,

@@ -19,11 +19,13 @@ namespace NuGet.Protocol
     {
         private readonly SourceCacheContext _cacheContext;
         private string _destinationFilePath;
+        private Func<Exception, Task<bool>> _handleExceptionAsync;
         private bool _isDisposed;
         private readonly ILogger _logger;
         private readonly PackageIdentity _packageIdentity;
         private Lazy<PackageArchiveReader> _packageReader;
         private readonly FindPackageByIdResource _resource;
+        private SemaphoreSlim _throttle;
 
         /// <summary>
         /// Gets an asynchronous package content reader.
@@ -97,6 +99,7 @@ namespace NuGet.Protocol
             _cacheContext = cacheContext;
             _logger = logger;
             _packageReader = new Lazy<PackageArchiveReader>(GetPackageReader);
+            _handleExceptionAsync = exception => Task.FromResult(false);
         }
 
         /// <summary>
@@ -139,28 +142,49 @@ namespace NuGet.Protocol
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(destinationFilePath));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            using (var destination = new FileStream(
-                destinationFilePath,
-                FileMode.Create,
-                FileAccess.ReadWrite,
-                FileShare.ReadWrite | FileShare.Delete,
-                bufferSize: 4096,
-                useAsync: true))
+            try
             {
-                var result = await _resource.CopyNupkgToStreamAsync(
-                    _packageIdentity.Id,
-                    _packageIdentity.Version,
-                    destination,
-                    _cacheContext,
-                    _logger,
-                    cancellationToken);
+                if (_throttle != null)
+                {
+                    await _throttle.WaitAsync();
+                }
 
-                _destinationFilePath = destinationFilePath;
+                cancellationToken.ThrowIfCancellationRequested();
 
-                return result;
+                using (var destination = new FileStream(
+                    destinationFilePath,
+                    FileMode.Create,
+                    FileAccess.ReadWrite,
+                    FileShare.ReadWrite | FileShare.Delete,
+                    bufferSize: 4096,
+                    useAsync: true))
+                {
+                    var result = await _resource.CopyNupkgToStreamAsync(
+                        _packageIdentity.Id,
+                        _packageIdentity.Version,
+                        destination,
+                        _cacheContext,
+                        _logger,
+                        cancellationToken);
+
+                    _destinationFilePath = destinationFilePath;
+
+                    return result;
+                }
             }
+            catch (Exception ex)
+            {
+                if (!await _handleExceptionAsync(ex))
+                {
+                    throw;
+                }
+            }
+            finally
+            {
+                _throttle?.Release();
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -194,6 +218,35 @@ namespace NuGet.Protocol
 
                 return Task.FromResult(packageHash);
             }
+        }
+
+        /// <summary>
+        /// Sets an exception handler for package downloads.
+        /// </summary>
+        /// <remarks>The exception handler returns a task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="bool" />
+        /// indicating whether or not the exception was handled.  To handle an exception and stop its
+        /// propagation, the task should return <c>true</c>.  Otherwise, the exception will be rethrown.</remarks>
+        /// <param name="handleExceptionAsync">An exception handler.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handleExceptionAsync" />
+        /// is <c>null</c>.</exception>
+        public void SetExceptionHandler(Func<Exception, Task<bool>> handleExceptionAsync)
+        {
+            if (handleExceptionAsync == null)
+            {
+                throw new ArgumentNullException(nameof(handleExceptionAsync));
+            }
+
+            _handleExceptionAsync = handleExceptionAsync;
+        }
+
+        /// <summary>
+        /// Sets a throttle for package downloads.
+        /// </summary>
+        /// <param name="throttle">A throttle.  Can be <c>null</c>.</param>
+        public void SetThrottle(SemaphoreSlim throttle)
+        {
+            _throttle = throttle;
         }
 
         private PackageArchiveReader GetPackageReader()

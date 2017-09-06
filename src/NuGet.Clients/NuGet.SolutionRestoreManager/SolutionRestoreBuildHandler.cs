@@ -35,9 +35,6 @@ namespace NuGet.SolutionRestoreManager
         private const uint VSCOOKIE_NIL = 0;
 
         [Import]
-        private Lazy<INuGetLockService> LockService { get; set; }
-
-        [Import]
         private Lazy<ISettings> Settings { get; set; }
 
         [Import]
@@ -53,27 +50,30 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         private uint _updateSolutionEventsCookieEx;
 
+        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider _serviceProvider;
+
+        private bool _isMEFInitialized;
+
         private SolutionRestoreBuildHandler()
         {
         }
 
         // A constructor utilized for running unit-tests
         public SolutionRestoreBuildHandler(
-            INuGetLockService lockService,
             ISettings settings,
             ISolutionRestoreWorker restoreWorker,
             IVsSolutionBuildManager3 buildManager)
         {
-            Assumes.Present(lockService);
             Assumes.Present(settings);
             Assumes.Present(restoreWorker);
             Assumes.Present(buildManager);
 
-            LockService = new Lazy<INuGetLockService>(() => lockService);
             Settings = new Lazy<ISettings>(() => settings);
             SolutionRestoreWorker = new Lazy<ISolutionRestoreWorker>(() => restoreWorker);
 
             _solutionBuildManager = buildManager;
+
+            _isMEFInitialized = true;
         }
 
         public void Dispose()
@@ -94,9 +94,6 @@ namespace NuGet.SolutionRestoreManager
 
             var instance = new SolutionRestoreBuildHandler();
 
-            var componentModel = await serviceProvider.GetComponentModelAsync();
-            componentModel.DefaultCompositionService.SatisfyImportsOnce(instance);
-
             await instance.SubscribeAsync(serviceProvider);
 
             return instance;
@@ -106,6 +103,8 @@ namespace NuGet.SolutionRestoreManager
         {
             // Don't use CPS thread helper because of RPS perf regression
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            _serviceProvider = serviceProvider;
 
             _solutionBuildManager = await serviceProvider.GetServiceAsync<SVsSolutionBuildManager, IVsSolutionBuildManager3>();
             Assumes.Present(_solutionBuildManager);
@@ -117,6 +116,17 @@ namespace NuGet.SolutionRestoreManager
 
         public void UpdateSolution_QueryDelayBuildAction(uint dwAction, out IVsTask pDelayTask)
         {
+            if (!_isMEFInitialized)
+            {
+                ThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    var componentModel = await _serviceProvider.GetComponentModelAsync();
+                    componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
+                });
+
+                _isMEFInitialized = true;
+            }
+
             pDelayTask = SolutionRestoreWorker.Value.JoinableTaskFactory.RunAsyncAsVsTask(
                 VsTaskRunContext.UIThreadBackgroundPriority, (token) => RestoreAsync(dwAction, token));
         }
@@ -132,7 +142,7 @@ namespace NuGet.SolutionRestoreManager
                 (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK) == 0)
             {
                 // Clear the project.json restore cache on clean to ensure that the next build restores again
-                SolutionRestoreWorker.Value.CleanCache();
+                await SolutionRestoreWorker.Value.CleanCacheAsync();
             }
             else if ((buildAction & (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD) != 0 &&
                     (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK) == 0 &&

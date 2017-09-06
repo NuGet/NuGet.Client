@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,18 +36,23 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "projectName");
             }
 
-            var solutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
-            if (solutionManager != null)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                var project = solutionManager.GetVsProjectAdapter(projectName);
-                if (project == null)
-                {
-                    throw new InvalidOperationException();
-                }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
-                dte.Solution.Remove(project.Project);
-            }
+                var solutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
+                if (solutionManager != null)
+                {
+                    var project = await solutionManager.GetVsProjectAdapterAsync(projectName);
+                    if (project == null)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+                    dte.Solution.Remove(project.Project);
+                }
+            });
         }
     }
 }

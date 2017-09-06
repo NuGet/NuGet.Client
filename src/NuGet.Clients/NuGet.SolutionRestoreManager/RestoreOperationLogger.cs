@@ -1,20 +1,21 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
-using Task = System.Threading.Tasks.Task;
 using MSBuildVerbosityLevel = NuGet.SolutionRestoreManager.VerbosityLevel;
-using Microsoft;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -28,9 +29,14 @@ namespace NuGet.SolutionRestoreManager
         private readonly IServiceProvider _serviceProvider;
         private readonly IOutputConsoleProvider _outputConsoleProvider;
 
+        // Queue of (bool reportProgress, bool showAsOutputMessage, ILogMessage logMessage)
+        private readonly ConcurrentQueue<Tuple<bool, bool, ILogMessage>> _loggedMessages = new ConcurrentQueue<Tuple<bool, bool, ILogMessage>>();
+
         private Lazy<ErrorListTableDataSource> _errorListDataSource;
         private RestoreOperationSource _operationSource;
         private JoinableTaskFactory _taskFactory;
+        private JoinableTaskCollection _jtc;
+
         private CancellationTokenSource _externalCts;
         private Func<CancellationToken, Task<RestoreOperationProgressUI>> _progressFactory;
         private IOutputConsole _outputConsole;
@@ -70,7 +76,10 @@ namespace NuGet.SolutionRestoreManager
 
             _operationSource = operationSource;
             _errorListDataSource = errorListDataSource;
-            _taskFactory = jtf;
+
+            _jtc = jtf.Context.CreateCollection();
+            _taskFactory = jtf.Context.CreateFactory(_jtc);
+
             _externalCts = cts;
             _externalCts.Token.Register(() => _cancelled = true);
 
@@ -82,7 +91,7 @@ namespace NuGet.SolutionRestoreManager
 
             await _taskFactory.RunAsync(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await _taskFactory.SwitchToMainThreadAsync();
 
                 OutputVerbosity = GetMSBuildOutputVerbositySetting();
 
@@ -110,15 +119,15 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        public Task StopAsync()
+        public async Task StopAsync()
         {
+            await _jtc.JoinTillEmptyAsync();
+
             if (_showErrorList)
             {
                 // Give the error list focus
                 _errorListDataSource.Value.BringToFront();
             }
-
-            return Task.FromResult(true);
         }
 
         public override void LogInformationSummary(string data)
@@ -130,7 +139,7 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// Same as LogAsync but uses Do instead of DoAsync.
         /// </summary>
-        public override void Log(ILogMessage logMessage)
+        public sealed override void Log(ILogMessage logMessage)
         {
             HandleErrorsAndWarnings(logMessage);
 
@@ -145,10 +154,24 @@ namespace NuGet.SolutionRestoreManager
                 // Avoid moving to the UI thread unless there is work to do
                 if (reportProgress || showAsOutputMessage)
                 {
+                    // Make sure the message is queued in order of calls to LogAsync, but don't wait for the UI thread
+                    // to actually show it.
+                    _loggedMessages.Enqueue(Tuple.Create(reportProgress, showAsOutputMessage, logMessage));
+
                     // Run on the UI thread
-                    Do((_, progress) =>
+                    var _ = _taskFactory.RunAsync(async () =>
                     {
-                        LogToVS(reportProgress, showAsOutputMessage, logMessage, progress);
+                        // capture current progress from the current execution context
+                        var progress = RestoreOperationProgressUI.Current;
+
+                        await _taskFactory.SwitchToMainThreadAsync();
+
+                        // This might be a different message than the one enqueued above, but overall the printing order
+                        // will match the order of calls to LogAsync.
+                        if (_loggedMessages.TryDequeue(out var message))
+                        {
+                            LogToVS(reportProgress: message.Item1, showAsOutputMessage: message.Item2, logMessage: message.Item3, progress: progress);
+                        }
                     });
                 }
             }
@@ -157,32 +180,12 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// Log messages to VS. This is optimized to determine
         /// if the message needs to be logged before moving to the
-        /// UI thread. 
+        /// UI thread.
         /// </summary>
-        public override Task LogAsync(ILogMessage logMessage)
+        public sealed override Task LogAsync(ILogMessage logMessage)
         {
-            HandleErrorsAndWarnings(logMessage);
-
-            if (DisplayMessage(logMessage.Level))
-            {
-                var verbosityLevel = GetMSBuildLevel(logMessage.Level);
-                var reportProgress = ShouldReportProgress(logMessage);
-
-                // Write to the output window if the verbosity level is high enough.
-                var showAsOutputMessage = ShouldShowMessageAsOutput(verbosityLevel);
-
-                // Avoid moving to the UI thread unless there is work to do
-                if (reportProgress || showAsOutputMessage)
-                {
-                    // Run on the UI thread
-                    return DoAsync((_, progress) =>
-                    {
-                        LogToVS(reportProgress, showAsOutputMessage, logMessage, progress);
-                    });
-                }
-            }
-
-            return Task.FromResult(0);
+            Log(logMessage);
+            return Task.CompletedTask;
         }
 
         private void LogToVS(bool reportProgress, bool showAsOutputMessage, ILogMessage logMessage, RestoreOperationProgressUI progress)
@@ -406,11 +409,8 @@ namespace NuGet.SolutionRestoreManager
             // capture current progress from the current execution context
             var progress = RestoreOperationProgressUI.Current;
 
-            await _taskFactory.RunAsync(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                action(this, progress);
-            });
+            await _taskFactory.SwitchToMainThreadAsync();
+            action(this, progress);
         }
 
         /// <summary>
@@ -424,7 +424,7 @@ namespace NuGet.SolutionRestoreManager
 
             _taskFactory.Run(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await _taskFactory.SwitchToMainThreadAsync();
                 action(this, progress);
             });
         }
@@ -537,32 +537,29 @@ namespace NuGet.SolutionRestoreManager
                 JoinableTaskFactory jtf,
                 CancellationToken token)
             {
-                return await jtf.RunAsync(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await jtf.SwitchToMainThreadAsync();
 
-                    var waitDialogFactory = serviceProvider.GetService<
-                        SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
+                var waitDialogFactory = serviceProvider.GetService<
+                    SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
 
-                    var session = waitDialogFactory.StartWaitDialog(
-                        waitCaption: Resources.DialogTitle,
-                        initialProgress: new ThreadedWaitDialogProgressData(
-                            Resources.RestoringPackages,
-                            progressText: string.Empty,
-                            statusBarText: string.Empty,
-                            isCancelable: true,
-                            currentStep: 0,
-                            totalSteps: 0));
+                var session = waitDialogFactory.StartWaitDialog(
+                    waitCaption: Resources.DialogTitle,
+                    initialProgress: new ThreadedWaitDialogProgressData(
+                        Resources.RestoringPackages,
+                        progressText: string.Empty,
+                        statusBarText: string.Empty,
+                        isCancelable: true,
+                        currentStep: 0,
+                        totalSteps: 0));
 
-                    return new WaitDialogProgress(session, jtf);
-                });
+                return new WaitDialogProgress(session, jtf);
             }
 
             public override void Dispose()
             {
                 _taskFactory.Run(async () =>
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await _taskFactory.SwitchToMainThreadAsync();
                     _session.Dispose();
                 });
             }
@@ -589,16 +586,16 @@ namespace NuGet.SolutionRestoreManager
 
         private class StatusBarProgress : RestoreOperationProgressUI
         {
-            private static object icon = (short)Constants.SBAI_General;
+            private static object Icon = (short)Constants.SBAI_General;
             private readonly JoinableTaskFactory _taskFactory;
-            private readonly IVsStatusbar StatusBar;
-            private uint cookie = 0;
+            private readonly IVsStatusbar _statusBar;
+            private uint _cookie = 0;
 
             private StatusBarProgress(
                 IVsStatusbar statusBar,
                 JoinableTaskFactory taskFactory)
             {
-                StatusBar = statusBar;
+                _statusBar = statusBar;
                 _taskFactory = taskFactory;
             }
 
@@ -607,40 +604,37 @@ namespace NuGet.SolutionRestoreManager
                 JoinableTaskFactory jtf,
                 CancellationToken token)
             {
-                return await jtf.RunAsync(async () =>
+                await jtf.SwitchToMainThreadAsync();
+
+                var statusBar = serviceProvider.GetService<SVsStatusbar, IVsStatusbar>();
+
+                // Make sure the status bar is not frozen
+                int frozen;
+                statusBar.IsFrozen(out frozen);
+
+                if (frozen != 0)
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    statusBar.FreezeOutput(0);
+                }
 
-                    var statusBar = serviceProvider.GetService<SVsStatusbar, IVsStatusbar>();
+                statusBar.Animation(1, ref Icon);
 
-                    // Make sure the status bar is not frozen
-                    int frozen;
-                    statusBar.IsFrozen(out frozen);
+                RestoreOperationProgressUI progress = new StatusBarProgress(statusBar, jtf);
+                progress.ReportProgress(Resources.RestoringPackages);
 
-                    if (frozen != 0)
-                    {
-                        statusBar.FreezeOutput(0);
-                    }
-
-                    statusBar.Animation(1, ref icon);
-
-                    RestoreOperationProgressUI progress = new StatusBarProgress(statusBar, jtf);
-                    progress.ReportProgress(Resources.RestoringPackages);
-
-                    return progress;
-                });
+                return progress;
             }
 
             public override void Dispose()
             {
                 _taskFactory.Run(async () =>
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await _taskFactory.SwitchToMainThreadAsync();
 
-                    StatusBar.Animation(0, ref icon);
-                    StatusBar.Progress(ref cookie, 0, "", 0, 0);
-                    StatusBar.FreezeOutput(0);
-                    StatusBar.Clear();
+                    _statusBar.Animation(0, ref Icon);
+                    _statusBar.Progress(ref _cookie, 0, "", 0, 0);
+                    _statusBar.FreezeOutput(0);
+                    _statusBar.Clear();
                 });
             }
 
@@ -653,18 +647,18 @@ namespace NuGet.SolutionRestoreManager
 
                 // Make sure the status bar is not frozen
                 int frozen;
-                StatusBar.IsFrozen(out frozen);
+                _statusBar.IsFrozen(out frozen);
 
                 if (frozen != 0)
                 {
-                    StatusBar.FreezeOutput(0);
+                    _statusBar.FreezeOutput(0);
                 }
 
-                StatusBar.SetText(progressMessage);
+                _statusBar.SetText(progressMessage);
 
                 if (totalSteps != 0)
                 {
-                    StatusBar.Progress(ref cookie, 1, "", currentStep, totalSteps);
+                    _statusBar.Progress(ref _cookie, 1, "", currentStep, totalSteps);
                 }
             }
         }

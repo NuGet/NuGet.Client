@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -78,6 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }, _cts.Token));
 
             Assert.False(_lockService.IsLockHeld);
+            Assert.Equal(0, _lockService.LockCount);
         }
 
         [Fact]
@@ -92,6 +93,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }, _cts.Token);
 
             Assert.False(_lockService.IsLockHeld);
+            Assert.Equal(0, _lockService.LockCount);
         }
 
         [Fact]

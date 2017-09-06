@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,8 +41,8 @@ namespace NuGet.SolutionRestoreManager
         private readonly IRestoreEventsPublisher _restoreEventsPublisher;
 
         private RestoreOperationLogger _logger;
-        private string _dependencyGraphProjectCacheHash;
         private INuGetProjectContext _nuGetProjectContext;
+        private PackageRestoreConsent _packageRestoreConsent;
 
         private NuGetOperationStatus _status;
         private int _packageCount;
@@ -75,6 +75,7 @@ namespace NuGet.SolutionRestoreManager
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _restoreEventsPublisher = restoreEventsPublisher;
             _settings = settings;
+            _packageRestoreConsent = new PackageRestoreConsent(_settings);
         }
 
         /// <summary>
@@ -104,7 +105,6 @@ namespace NuGet.SolutionRestoreManager
             _logger = logger;
 
             // update instance attributes with the shared context values
-            _dependencyGraphProjectCacheHash = jobContext.DependencyGraphProjectCacheHash;
             _nuGetProjectContext = jobContext.NuGetProjectContext;
 
             using (var ctr1 = token.Register(() => _status = NuGetOperationStatus.Cancelled))
@@ -120,11 +120,6 @@ namespace NuGet.SolutionRestoreManager
                 {
                     // Log the exception to the console and activity log
                     await _logger.LogExceptionAsync(e);
-                }
-                finally
-                {
-                    // update shared context values with instance attributes
-                    jobContext.DependencyGraphProjectCacheHash = _dependencyGraphProjectCacheHash;
                 }
             }
 
@@ -147,7 +142,7 @@ namespace NuGet.SolutionRestoreManager
             try
             {
                 var solutionDirectory = _solutionManager.SolutionDirectory;
-                var isSolutionAvailable = _solutionManager.IsSolutionAvailable;
+                var isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
 
                 if (solutionDirectory == null)
                 {
@@ -162,7 +157,7 @@ namespace NuGet.SolutionRestoreManager
 
                 // Get the projects from the SolutionManager
                 // Note that projects that are not supported by NuGet, will not show up in this list
-                projects = _solutionManager.GetNuGetProjects();
+                projects = await _solutionManager.GetNuGetProjectsAsync();
 
                 // Check if there are any projects that are not INuGetIntegratedProject, that is,
                 // projects with packages.config. OR 
@@ -172,6 +167,7 @@ namespace NuGet.SolutionRestoreManager
                     await RestorePackagesOrCheckForMissingPackagesAsync(
                         solutionDirectory,
                         isSolutionAvailable,
+                        restoreSource,
                         token);
                 }
 
@@ -183,20 +179,17 @@ namespace NuGet.SolutionRestoreManager
                     dependencyGraphProjects,
                     forceRestore,
                     isSolutionAvailable,
+                    restoreSource,
                     token);
 
+#if !VS14
                 // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
                 // project in the solution. Extending this behavior to all solutions is tracked here:
                 // NuGet/Home#4478
-#if !VS14
-                if (projects.OfType<NetCorePackageReferenceProject>().Any() &&
-                    !string.IsNullOrEmpty(_dependencyGraphProjectCacheHash))
+                if (projects.OfType<NetCorePackageReferenceProject>().Any())
                 {
-                    // A no-op restore is considered successful. A cancellation is considered unsuccessful.
-                    var args = new SolutionRestoredEventArgs(
-                        isSuccess: _status == NuGetOperationStatus.Succeeded || _status == NuGetOperationStatus.NoOp,
-                        solutionSpecHash: _dependencyGraphProjectCacheHash);
-                    _restoreEventsPublisher.OnSolutionRestoreCompleted(args);
+                    _restoreEventsPublisher.OnSolutionRestoreCompleted(
+                        new SolutionRestoredEventArgs(_status, solutionDirectory));
                 }
 #endif
             }
@@ -206,10 +199,17 @@ namespace NuGet.SolutionRestoreManager
                 _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
 
                 TelemetryUtility.StopTimer();
-
                 var duration = TelemetryUtility.GetTimerElapsedTime();
-                await _logger.WriteSummaryAsync(_status, duration);
 
+                // Do not log any restore message if user disabled restore.
+                if (_packageRestoreConsent.IsGranted)
+                {
+                    await _logger.WriteSummaryAsync(_status, duration);
+                }
+                else
+                {
+                    _logger.LogDebug(Resources.PackageRefNotRestoredBecauseOfNoConsent);
+                }
                 // Emit telemetry event for restore operation
                 EmitRestoreTelemetryEvent(
                     projects,
@@ -247,6 +247,7 @@ namespace NuGet.SolutionRestoreManager
             List<IDependencyGraphProject> projects,
             bool forceRestore,
             bool isSolutionAvailable,
+            RestoreOperationSource restoreSource,
             CancellationToken token)
         {
             // Only continue if there are some build integrated type projects.
@@ -255,7 +256,7 @@ namespace NuGet.SolutionRestoreManager
                 return;
             }
 
-            if (IsConsentGranted(_settings))
+            if (_packageRestoreConsent.IsGranted)
             {
                 if (!isSolutionAvailable)
                 {
@@ -332,6 +333,14 @@ namespace NuGet.SolutionRestoreManager
                         token);
                 }
             }
+            else if (restoreSource == RestoreOperationSource.Explicit)
+            {
+                // Log an error when restore is disabled and user explicitly restore.
+                await _logger.DoAsync((l, _) =>
+                {
+                    l.ShowError(Resources.PackageRefNotRestoredBecauseOfNoConsent);
+                });
+            }
         }
 
         private bool IsProjectBuildIntegrated(PackageSpec packageSpec)
@@ -404,6 +413,7 @@ namespace NuGet.SolutionRestoreManager
         private async Task RestorePackagesOrCheckForMissingPackagesAsync(
             string solutionDirectory,
             bool isSolutionAvailable,
+            RestoreOperationSource restoreSource,
             CancellationToken token)
         {
             if (string.IsNullOrEmpty(solutionDirectory))
@@ -415,7 +425,7 @@ namespace NuGet.SolutionRestoreManager
             var packages = (await _packageRestoreManager.GetPackagesInSolutionAsync(
                 solutionDirectory, token)).ToList();
 
-            if (IsConsentGranted(_settings))
+            if (_packageRestoreConsent.IsGranted)
             {
                 _currentCount = 0;
 
@@ -455,12 +465,12 @@ namespace NuGet.SolutionRestoreManager
                     _status = NuGetOperationStatus.Succeeded;
                 }
             }
-            else
+            else if (restoreSource == RestoreOperationSource.Explicit)
             {
                 // When the user consent is not granted, missing packages may not be restored.
                 // So, we just check for them, and report them as warning(s) on the error list window
                 await _logger.RunWithProgressAsync(
-                    (_, __, ___) => CheckForMissingPackages(packages),
+                    (_, __, ___) => CheckForMissingPackagesAsync(packages),
                     token);
             }
 
@@ -473,16 +483,18 @@ namespace NuGet.SolutionRestoreManager
         /// Checks if there are missing packages that should be restored. If so, a warning will
         /// be added to the error list.
         /// </summary>
-        private void CheckForMissingPackages(IEnumerable<PackageRestoreData> missingPackages)
+        private async Task CheckForMissingPackagesAsync(IEnumerable<PackageRestoreData> installedPackages)
         {
+            var missingPackages = installedPackages.Where(p => p.IsMissing);
+
             if (missingPackages.Any())
             {
-                _logger.Do((l, _) =>
+                await _logger.DoAsync((l, _) =>
                 {
                     var errorText = string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.PackageNotRestoredBecauseOfNoConsent,
-                        string.Join(", ", missingPackages.Select(p => p.ToString())));
+                        string.Join(", ", missingPackages.Select(p => p.PackageReference.PackageIdentity.ToString())));
                     l.ShowError(errorText);
                 });
             }

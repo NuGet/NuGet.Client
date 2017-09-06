@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
+using NuGet.ContentModel;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -137,17 +138,11 @@ namespace NuGet.Commands
                         previousLibrary.Sha512 != sha512 ||
                         previousLibrary.Path != path)
                     {
+                        // The existing library did not match, create a new one.
                         lockFileLib = CreateLockFileLibrary(
                             package,
                             sha512,
                             path);
-                    }
-                    else if (Path.DirectorySeparatorChar != LockFile.DirectorySeparatorChar)
-                    {
-                        // Fix slashes for content model patterns
-                        lockFileLib.Files = lockFileLib.Files
-                            .Select(p => p.Replace(Path.DirectorySeparatorChar, LockFile.DirectorySeparatorChar))
-                            .ToList();
                     }
 
                     lockFile.Libraries.Add(lockFileLib);
@@ -163,14 +158,19 @@ namespace NuGet.Commands
 
             var rootProjectStyle = project.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
+            // Cache package data and selection criteria across graphs.
+            var builderCache = new LockFileBuilderCache();
+
             // Add the targets
             foreach (var targetGraph in targetGraphs
                 .OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal)
                 .ThenBy(graph => graph.RuntimeIdentifier, StringComparer.Ordinal))
             {
-                var target = new LockFileTarget();
-                target.TargetFramework = targetGraph.Framework;
-                target.RuntimeIdentifier = targetGraph.RuntimeIdentifier;
+                var target = new LockFileTarget
+                {
+                    TargetFramework = targetGraph.Framework,
+                    RuntimeIdentifier = targetGraph.RuntimeIdentifier
+                };
 
                 var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(_includeFlagGraphs, project, targetGraph);
 
@@ -227,7 +227,8 @@ namespace NuGet.Commands
                             targetGraph,
                             dependencyType: includeFlags,
                             targetFrameworkOverride: null,
-                            dependencies: graphItem.Data.Dependencies);
+                            dependencies: graphItem.Data.Dependencies,
+                            cache: builderCache);
 
                         target.Libraries.Add(targetLibrary);
 
@@ -242,7 +243,8 @@ namespace NuGet.Commands
                                 targetGraph,
                                 targetFrameworkOverride: nonFallbackFramework,
                                 dependencyType: includeFlags,
-                                dependencies: graphItem.Data.Dependencies);
+                                dependencies: graphItem.Data.Dependencies,
+                                cache: builderCache);
 
                             if (!targetLibrary.Equals(targetLibraryWithoutFallback))
                             {
@@ -368,52 +370,26 @@ namespace NuGet.Commands
 
         private static LockFileLibrary CreateLockFileLibrary(LocalPackageInfo package, string sha512, string path)
         {
-            var lockFileLib = new LockFileLibrary();
-            
-            lockFileLib.Name = package.Id;
-            lockFileLib.Version = package.Version;
-            lockFileLib.Type = LibraryType.Package;
-            lockFileLib.Sha512 = sha512;
-
-            // This is the relative path, appended to the global packages folder path. All
-            // of the paths in the in the Files property should be appended to this path along
-            // with the global packages folder path to get the absolute path to each file in the
-            // package.
-            lockFileLib.Path = path;
-
-            using (var packageReader = new PackageFolderReader(package.ExpandedPath))
+            var lockFileLib = new LockFileLibrary
             {
-                // Get package files, excluding directory entries and OPC files
-                // This is sorted before it is written out
-                lockFileLib.Files = packageReader
-                    .GetFiles()
-                    .Where(file => IsAllowedLibraryFile(file))
-                    .ToList();
+                Name = package.Id,
+                Version = package.Version,
+                Type = LibraryType.Package,
+                Sha512 = sha512,
+
+                // This is the relative path, appended to the global packages folder path. All
+                // of the paths in the in the Files property should be appended to this path along
+                // with the global packages folder path to get the absolute path to each file in the
+                // package.
+                Path = path
+            };
+
+            foreach (var file in package.Files)
+            {
+                lockFileLib.Files.Add(file);
             }
 
             return lockFileLib;
-        }
-
-        /// <summary>
-        /// True if the file should be added to the lock file library
-        /// Fale if it is an OPC file or empty directory
-        /// </summary>
-        private static bool IsAllowedLibraryFile(string path)
-        {
-            switch (path)
-            {
-                case "_rels/.rels":
-                case "[Content_Types].xml":
-                    return false;
-            }
-
-            if (path.EndsWith("/", StringComparison.Ordinal)
-                || path.EndsWith(".psmdcp", StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            return true;
         }
     }
 }

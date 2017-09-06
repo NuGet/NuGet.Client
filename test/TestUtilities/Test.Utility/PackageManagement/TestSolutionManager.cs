@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,7 +44,9 @@ namespace Test.Utility
 
         public MSBuildNuGetProject AddNewMSBuildProject(string projectName = null, NuGetFramework projectTargetFramework = null, string packagesConfigName = null)
         {
-            if (GetNuGetProject(projectName) != null)
+            var existingProject = Task.Run(async () => await GetNuGetProjectAsync(projectName));
+            existingProject.Wait();
+            if (existingProject.IsCompleted && existingProject.Result != null)
             {
                 throw new ArgumentException("Project with " + projectName + " already exists");
             }
@@ -64,7 +66,9 @@ namespace Test.Utility
 
         public NuGetProject AddBuildIntegratedProject(string projectName = null, NuGetFramework projectTargetFramework = null)
         {
-            if (GetNuGetProject(projectName) != null)
+            var existingProject = Task.Run(async () => await GetNuGetProjectAsync(projectName));
+            existingProject.Wait();
+            if (existingProject.IsCompleted && existingProject.Result != null)
             {
                 throw new ArgumentException("Project with " + projectName + " already exists");
             }
@@ -117,21 +121,21 @@ namespace Test.Utility
             }
         }
 
-        public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
+        public Task<NuGetProject> GetNuGetProjectAsync(string nuGetProjectSafeName)
         {
-            return NuGetProjects.
+            return Task.FromResult(NuGetProjects.
                 Where(p => string.Equals(nuGetProjectSafeName, p.GetMetadata<string>(NuGetProjectMetadataKeys.Name), StringComparison.OrdinalIgnoreCase))
-                .FirstOrDefault();
+                .FirstOrDefault());
         }
 
-        public string GetNuGetProjectSafeName(NuGetProject nuGetProject)
+        public Task<string> GetNuGetProjectSafeNameAsync(NuGetProject nuGetProject)
         {
-            return nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+            return Task.FromResult(nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
         }
 
-        public IEnumerable<NuGetProject> GetNuGetProjects()
+        public Task<IEnumerable<NuGetProject>> GetNuGetProjectsAsync()
         {
-            return NuGetProjects;
+            return Task.FromResult(NuGetProjects.AsEnumerable());
         }
 
         public bool IsSolutionOpen
@@ -139,14 +143,19 @@ namespace Test.Utility
             get { return NuGetProjects.Count > 0; }
         }
 
-        public bool IsSolutionAvailable
+        public Task<bool> IsSolutionAvailableAsync()
         {
-            get { return IsSolutionOpen; }
+            return Task.FromResult(IsSolutionOpen);
         }
 
         public void EnsureSolutionIsLoaded()
         {
             // do nothing
+        }
+
+        public Task<bool> DoesNuGetSupportsAnyProjectAsync()
+        {
+            return Task.FromResult(true);
         }
 
 #pragma warning disable 0067

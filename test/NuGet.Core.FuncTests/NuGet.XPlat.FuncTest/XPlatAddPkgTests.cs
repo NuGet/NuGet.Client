@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
@@ -12,6 +13,7 @@ using NuGet.Commands;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
@@ -20,7 +22,7 @@ namespace NuGet.XPlat.FuncTest
     [Collection("NuGet XPlat Test Collection")]
     public class XPlatAddPkgTests
     {
-        private static readonly string projectName = "test_project_addpkg";
+        private static readonly string ProjectName = "test_project_addpkg";
 
         private static MSBuildAPIUtility MsBuild => new MSBuildAPIUtility(new TestCommandOutputLogger());
 
@@ -45,7 +47,10 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange
             var projectPath = Path.Combine(Path.GetTempPath(), project);
+            var frameworks = MSBuildStringUtility.Split(frameworkString);
+            var sources = MSBuildStringUtility.Split(sourceString);
             File.Create(projectPath).Dispose();
+
 
             var argList = new List<string>() {
                 "add",
@@ -60,13 +65,19 @@ namespace NuGet.XPlat.FuncTest
 
             if (!string.IsNullOrEmpty(frameworkOption))
             {
-                argList.Add(frameworkOption);
-                argList.Add(frameworkString);
+                foreach(var framework in frameworks)
+                {
+                    argList.Add(frameworkOption);
+                    argList.Add(framework);
+                }
             }
             if (!string.IsNullOrEmpty(sourceOption))
             {
-                argList.Add(sourceOption);
-                argList.Add(sourceString);
+                foreach (var source in sources)
+                {
+                    argList.Add(sourceOption);
+                    argList.Add(source);
+                }
             }
             if (!string.IsNullOrEmpty(packageDirectoryOption))
             {
@@ -101,7 +112,7 @@ namespace NuGet.XPlat.FuncTest
             p.ProjectPath == projectPath &&
             p.DgFilePath == dgFilePath &&
             p.NoRestore == !string.IsNullOrEmpty(noRestoreSwitch) &&
-            (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(MSBuildStringUtility.Split(frameworkString))) &&
+            (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(frameworks)) &&
             (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(MSBuildStringUtility.Split(sourceString))) &&
             (string.IsNullOrEmpty(packageDirectoryOption) || !string.IsNullOrEmpty(packageDirectoryOption) && p.PackageDirectory == packageDirectory)),
             It.IsAny<MSBuildAPIUtility>()));
@@ -122,7 +133,45 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+                var packageX = XPlatTestUtils.CreatePackage();
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, userInputVersion, projectA);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild).Result;
+                var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+                var itemGroup = XPlatTestUtils.GetItemGroupForAllFrameworks(projectXmlRoot);
+
+                // Assert
+                Assert.Equal(0, result);
+                Assert.NotNull(itemGroup);
+                Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, userInputVersion));
+            }
+        }
+
+        [Theory]
+        [InlineData("1.0.0")]
+        [InlineData("*")]
+        [InlineData("1.*")]
+        [InlineData("1.0.*")]
+        public async void AddPkg_UnconditionalAddIntoExeProject_Success(string userInputVersion)
+        {
+            // Arrange
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+                projectA.Properties.Add("OutputType", "exe");
+                projectA.Save();
+
                 var packageX = XPlatTestUtils.CreatePackage();
 
                 // Generate Package
@@ -173,7 +222,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageY);
 
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
 
                 projectA.DotnetCLIToolReferences.Add(packageDotnetCliToolX);
 
@@ -208,6 +257,16 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
         [InlineData("net46", "net46; netcoreapp1.0", "1.*")]
         [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
+        [InlineData("net46", "net46; netcoreapp2.0", "1.*")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "1.*")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "1.*")]
+        [InlineData("net46", "net46; netcoreapp2.0", "1.*")]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "1.*")]
+        [InlineData("net46", "net46; netstandard2.0", "1.*")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "1.*")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "1.*")]
+        [InlineData("net46", "net46; netstandard2.0", "1.*")]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "1.*")]
         public async void AddPkg_UnconditionalAddWithNoRestore_Success(string packageFrameworks,
             string projectFrameworks,
             string userInputVersion)
@@ -216,7 +275,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package
@@ -250,6 +309,16 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
         [InlineData("net46", "net46; netcoreapp1.0", "1.*")]
         [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
+        [InlineData("net46", "net46; netcoreapp2.0", "1.*")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "1.*")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "1.*")]
+        [InlineData("net46", "net46; netcoreapp2.0", "1.*")]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "1.*")]
+        [InlineData("net46", "net46; netstandard2.0", "1.*")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "1.*")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "1.*")]
+        [InlineData("net46", "net46; netstandard2.0", "1.*")]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "1.*")]
         public async void AddPkg_UnconditionalAddWithDotnetCliToolAndNoRestore_Success(string packageFrameworks,
             string projectFrameworks,
             string userInputVersion)
@@ -274,7 +343,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageY);
 
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
 
                 projectA.DotnetCLIToolReferences.Add(packageDotnetCliToolX);
 
@@ -309,7 +378,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
                 var packageX = XPlatTestUtils.CreatePackage();
 
                 // Generate Package
@@ -338,6 +407,10 @@ namespace NuGet.XPlat.FuncTest
         [Theory]
         [InlineData("net46", "net46; netcoreapp1.0", "1.0.0")]
         [InlineData("net46", "net46; netcoreapp1.0", "*")]
+        [InlineData("net46", "net46; netcoreapp2.0", "1.0.0")]
+        [InlineData("net46", "net46; netcoreapp2.0", "*")]
+        [InlineData("net46", "net46; netstandard2.0", "1.0.0")]
+        [InlineData("net46", "net46; netstandard2.0", "*")]
         public async void AddPkg_ConditionalAddWithoutUserInputFramework_Success(string packageFrameworks,
             string projectFrameworks, string userInputVersion)
         {
@@ -345,7 +418,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package
@@ -377,13 +450,22 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0")]
         [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0")]
         [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0")]
+        [InlineData("netcoreapp2.0", "net461; netcoreapp2.0", "net461;  netcoreapp2.0")]
+        [InlineData("net46", "net46; netstandard2.0", "net46")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0")]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0")]
         public async void AddPkg_ConditionalAddWithUserInputFramework_Success(string packageFrameworks, string projectFrameworks, string userInputFrameworks)
         {
             // Arrange
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46; netcoreapp1.0");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package
@@ -398,7 +480,7 @@ namespace NuGet.XPlat.FuncTest
                 var commonFramework = XPlatTestUtils.GetCommonFramework(packageFrameworks, projectFrameworks, userInputFrameworks);
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
+                 var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
                     .Result;
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
                 var itemGroup = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, commonFramework);
@@ -416,6 +498,15 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0")]
         [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0")]
         [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0")]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0")]
+        [InlineData("net46", "net46; netstandard2.0", "net46")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0")]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0")]
         public async void AddPkg_ConditionalAddWithoutVersion_Success(string packageFrameworks,
             string projectFrameworks,
             string userInputFrameworks)
@@ -424,7 +515,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package
@@ -469,7 +560,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46; netcoreapp1.0");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46; netcoreapp1.0");
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package
@@ -500,7 +591,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46; netcoreapp1.0");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46; netcoreapp1.0");
                 var packageX = XPlatTestUtils.CreatePackage();
 
                 // Generate Package
@@ -531,7 +622,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
                 var packageX = XPlatTestUtils.CreatePackage("PkgX");
                 var packageY = XPlatTestUtils.CreatePackage("PkgY");
 
@@ -572,12 +663,22 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0")]
         [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0")]
         [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0")]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0")]
+        [InlineData("net46", "net46; netstandard2.0", "net46")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0")]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0")]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0")]
         public async void AddPkg_ConditionalAddTwoPackages_Success(string packageFrameworks, string projectFrameworks, string userInputFrameworks)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage("PkgX", frameworkString: packageFrameworks);
                 var packageY = XPlatTestUtils.CreatePackage("PkgY", frameworkString: packageFrameworks);
 
@@ -628,7 +729,7 @@ namespace NuGet.XPlat.FuncTest
             using (var tempGlobalPackagesDirectory = TestDirectory.Create())
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
                 var packageX = XPlatTestUtils.CreatePackage();
 
                 // Generate Package
@@ -674,7 +775,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46; netcoreapp1.0");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46; netcoreapp1.0");
                 var packageX = XPlatTestUtils.CreatePackage();
 
                 // Generate Package
@@ -739,6 +840,66 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "*", "1.*")]
         [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.*")]
         [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.*")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46", "0.0.5", "1.0.0")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "0.0.5", "1.0.0")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "0.0.5", "1.0.0")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "1.0.0")]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "1.0.0")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46", "0.0.5", "0.9")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "0.0.5", "0.9")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "0.0.5", "0.9")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "0.9")]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "0.9")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46", "0.0.5", "*")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "0.0.5", "*")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "0.0.5", "*")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "*")]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "*")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46", "*", "1.0.0")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "*", "1.0.0")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "*", "1.0.0")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "1.0.0")]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "1.0.0")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46", "*", "0.9")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "*", "0.9")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "*", "0.9")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "0.9")]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "0.9")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46", "*", "1.*")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "*", "1.*")]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "*", "1.*")]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "1.*")]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "1.*")]
+        [InlineData("net46", "net46; netstandard2.0", "net46", "0.0.5", "1.0.0")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "0.0.5", "1.0.0")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "0.0.5", "1.0.0")]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "1.0.0")]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "1.0.0")]
+        [InlineData("net46", "net46; netstandard2.0", "net46", "0.0.5", "0.9")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "0.0.5", "0.9")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "0.0.5", "0.9")]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "0.9")]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "0.9")]
+        [InlineData("net46", "net46; netstandard2.0", "net46", "0.0.5", "*")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "0.0.5", "*")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "0.0.5", "*")]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "*")]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "*")]
+        [InlineData("net46", "net46; netstandard2.0", "net46", "*", "1.0.0")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "*", "1.0.0")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "*", "1.0.0")]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.0.0")]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.0.0")]
+        [InlineData("net46", "net46; netstandard2.0", "net46", "*", "0.9")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "*", "0.9")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "*", "0.9")]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "*", "0.9")]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "*", "0.9")]
+        [InlineData("net46", "net46; netstandard2.0", "net46", "*", "1.*")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "*", "1.*")]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "*", "1.*")]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.*")]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.*")]
         public async void AddPkg_ConditionalAddAsUpdate_Succcess(string packageFrameworks, string projectFrameworks,
             string userInputFrameworks, string userInputVersionOld, string userInputVersionNew)
         {
@@ -746,7 +907,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package

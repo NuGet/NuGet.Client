@@ -15,6 +15,8 @@ namespace NuGet.Build.Tasks.Pack
     /// </typeparam>
     public interface IPackTaskRequest<TItem>
     {
+        string[] AllowedOutputExtensionsInPackageBuildOutputFolder { get; }
+        string[] AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder { get; }
         string AssemblyName { get; }
         string[] Authors { get; }
         TItem[] BuildOutputInPackage { get; }

@@ -70,8 +70,7 @@ $miscFiles = @(
     "src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.nuspec",
     "build\common.props",
     "build\common.ps1",
-    ".teamcity.properties",
-    "appveyor.yml"
+    ".teamcity.properties"
 )
 
 $miscFiles | %{ Join-Path $NuGetRoot $_ -Resolve } |

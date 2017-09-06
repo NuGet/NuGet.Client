@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -191,7 +191,7 @@ namespace NuGet.Protocol
 
             private static string TrimNamespace(string packageEntityName)
             {
-                int lastIndex = packageEntityName.LastIndexOf('.');
+                var lastIndex = packageEntityName.LastIndexOf('.');
                 if (lastIndex > 0 && lastIndex < packageEntityName.Length)
                 {
                     packageEntityName = packageEntityName.Substring(lastIndex + 1);

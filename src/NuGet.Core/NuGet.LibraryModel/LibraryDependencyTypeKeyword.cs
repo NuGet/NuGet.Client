@@ -102,6 +102,7 @@ namespace NuGet.LibraryModel
             DeclareOnOff("MainSource", LibraryDependencyTypeFlag.MainSource, emptyFlags);
             DeclareOnOff("MainExport", LibraryDependencyTypeFlag.MainExport, emptyFlags);
             DeclareOnOff("PreprocessReference", LibraryDependencyTypeFlag.PreprocessReference, emptyFlags);
+            DeclareOnOff("SharedFramework", LibraryDependencyTypeFlag.SharedFramework, emptyFlags);
 
             DeclareOnOff("RuntimeComponent", LibraryDependencyTypeFlag.RuntimeComponent, emptyFlags);
             DeclareOnOff("DevComponent", LibraryDependencyTypeFlag.DevComponent, emptyFlags);

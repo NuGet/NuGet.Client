@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,6 +39,8 @@ namespace NuGet.PackageManagement.UI
         // used to prevent starting new search when we update the package sources
         // list in response to PackageSourcesChanged event.
         private bool _dontStartNewSearch;
+
+        private PackagesErrorBar _errorBar;
 
         private PackageRestoreBar _restoreBar;
 
@@ -115,6 +117,8 @@ namespace NuGet.PackageManagement.UI
 
             AddRestartRequestBar(vsShell);
 
+            AddPackagesErrorBar();
+
             _packageDetail.Control = this;
             _packageDetail.Visibility = Visibility.Hidden;
 
@@ -160,6 +164,20 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
+        }
+
+        private void PackagesErrorBar_RefreshUI(object sender, EventArgs e)
+        {
+            Refresh();
+        }
+
+        private void PackagesErrorBar_InitializationCompleted(object sender, EventArgs e)
+        {
+            _detailModel.CreateProjectLists();
+
+            Model.Context.Projects = _detailModel.NuGetProjects;
+
+            Refresh();
         }
 
         private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
@@ -419,6 +437,29 @@ namespace NuGet.PackageManagement.UI
             return settings;
         }
 
+        private void AddPackagesErrorBar()
+        {
+            _errorBar = new PackagesErrorBar(Model.Context.SolutionManager);
+            DockPanel.SetDock(_errorBar, Dock.Top);
+
+            // attach to RefreshUI event of PackagesErrorBar
+            _errorBar.RefreshUI += PackagesErrorBar_RefreshUI;
+
+            _errorBar.InitializationCompleted += PackagesErrorBar_InitializationCompleted;
+
+            _root.Children.Insert(0, _errorBar);
+        }
+
+        private void RemovePackagesConfigErrorBar()
+        {
+            if (_errorBar != null)
+            {
+                _errorBar.RefreshUI -= PackagesErrorBar_RefreshUI;
+                _errorBar.InitializationCompleted -= PackagesErrorBar_InitializationCompleted;
+                _errorBar.CleanUp();
+            }
+        }
+
         private void AddRestoreBar()
         {
             if (Model.Context.PackageRestoreManager != null)
@@ -617,6 +658,7 @@ namespace NuGet.PackageManagement.UI
                         _topPanel._labelUpgradeAvailable.Count = 0;
 
                         var searchResult = await searchResultTask;
+
                         Model.CachedUpdates = new PackageSearchMetadataCache
                         {
                             Packages = searchResult.Items,
@@ -713,9 +755,6 @@ namespace NuGet.PackageManagement.UI
 
         private static async Task<IPackageFeed> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger)
         {
-            // Go off the UI thread to perform non-UI operations
-            await TaskScheduler.Default;
-
             var logger = new VisualStudioActivityLogger();
 
             if (filter == ItemFilter.All)
@@ -948,6 +987,7 @@ namespace NuGet.PackageManagement.UI
             _windowSearchHost.TerminateSearch();
             RemoveRestoreBar();
             RemoveRestartBar();
+            RemovePackagesConfigErrorBar();
 
             var solutionManager = Model.Context.SolutionManager;
             solutionManager.NuGetProjectAdded -= SolutionManager_ProjectsChanged;

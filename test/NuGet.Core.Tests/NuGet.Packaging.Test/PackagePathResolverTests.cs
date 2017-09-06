@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -184,6 +184,123 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(expectedFilePath, actualFilePath);
             }
+        }
+
+        [Fact]
+        public void GetPackageDirectoryName_ReturnsOverridenValue()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var expectedFilePath = Path.Combine(testDirectory.Path, "abc.txt");
+
+                File.WriteAllText(expectedFilePath, string.Empty);
+
+                var target = new PackagePathResolverExtended(testDirectory.Path, useSideBySidePaths: true);
+
+                var actualFilePath = target.GetPackageDirectoryName(PackageIdentity);
+
+                Assert.Equal("", actualFilePath);
+            }
+        }
+
+        [Fact]
+        public void GetPackageFileName_ReturnsOverridenValue()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var expectedFilePath = Path.Combine(testDirectory.Path, "abc.txt");
+
+                File.WriteAllText(expectedFilePath, string.Empty);
+
+                var target = new PackagePathResolverExtended(testDirectory.Path, useSideBySidePaths: true);
+
+                var actualFilePath = target.GetPackageFileName(PackageIdentity);
+
+                Assert.Equal("", actualFilePath);
+            }
+        }
+
+        [Fact]
+        public void GetInstallPath_ReturnsOverridenValue()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var expectedFilePath = Path.Combine(testDirectory.Path, "abc.txt");
+
+                File.WriteAllText(expectedFilePath, string.Empty);
+
+                var target = new PackagePathResolverExtended(testDirectory.Path, useSideBySidePaths: true);
+
+                var actualFilePath = target.GetInstallPath(PackageIdentity);
+
+                Assert.Equal("", actualFilePath);
+            }
+        }
+
+        [Fact]
+        public void GetInstalledPath_ReturnsOverridenValue()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var expectedFilePath = Path.Combine(testDirectory.Path, "abc.txt");
+
+                File.WriteAllText(expectedFilePath, string.Empty);
+
+                var target = new PackagePathResolverExtended(testDirectory.Path, useSideBySidePaths: true);
+
+                var actualFilePath = target.GetInstalledPath(PackageIdentity);
+
+                Assert.Equal("", actualFilePath);
+            }
+        }
+
+        [Fact]
+        public void GetInstalledPackageFilePath_ReturnsOverridenValue()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var expectedFilePath = Path.Combine(testDirectory.Path, "abc.txt");
+
+                File.WriteAllText(expectedFilePath, string.Empty);
+
+                var target = new PackagePathResolverExtended(testDirectory.Path, useSideBySidePaths: true);
+
+                var actualFilePath = target.GetInstalledPackageFilePath(PackageIdentity);
+
+                Assert.Equal("", actualFilePath);
+            }
+        }
+    }
+
+    internal class PackagePathResolverExtended : PackagePathResolver
+    {
+        public PackagePathResolverExtended(string rootDirectory, bool useSideBySidePaths = true) : base(rootDirectory, useSideBySidePaths)
+        {
+        }
+
+        public override string GetPackageDirectoryName(PackageIdentity packageIdentity)
+        {
+            return string.Empty;
+        }
+
+        public override string GetPackageFileName(PackageIdentity packageIdentity)
+        {
+            return string.Empty;
+        }
+
+        public override string GetInstallPath(PackageIdentity packageIdentity)
+        {
+            return string.Empty;
+        }
+
+        public override string GetInstalledPath(PackageIdentity packageIdentity)
+        {
+            return string.Empty;
+        }
+
+        public override string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
+        {
+            return string.Empty;
         }
     }
 }

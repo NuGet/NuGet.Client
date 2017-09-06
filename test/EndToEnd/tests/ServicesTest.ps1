@@ -69,6 +69,52 @@ function Test-VsPackageInstallerServices {
     Assert-NotNull $package.InstallPath
 }
 
+function Test-GetInstalledPackagesWithCustomRestorePackagesPath {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-NetCoreConsoleAppWithCustomRestorePackagesPath ConsoleApp
+    $cm = Get-VsComponentModel
+    $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
+    Assert-NetCoreProjectCreation $p
+
+    # Act
+    $packages = @($installerServices.GetInstalledPackages())
+
+    # Assert    
+    Assert-NotNull $packages
+    Assert-NotNull $packages[0].InstallPath
+    $packagesPath = Get-MsBuildPropertyValue $p 'RestorePackagesPath'
+    Assert-NotNull $packagesPath
+    $expectedInstallPath = (Join-Path $packagesPath (Join-Path $packages[0].Id $packages[0].Version))
+    Assert-AreEqual $expectedInstallPath $packages[0].InstallPath
+}
+
+function Test-GetInstalledPackagesForProjectWithCustomRestorePackagesPath {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-NetCoreConsoleAppWithCustomRestorePackagesPath ConsoleApp
+    $cm = Get-VsComponentModel
+    $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
+    Assert-NetCoreProjectCreation $p
+
+    # Act
+    $packages = @($installerServices.GetInstalledPackages($p))
+
+    # Assert    
+    Assert-NotNull $packages
+    Assert-NotNull $packages[0].InstallPath
+    $packagesPath = Get-MsBuildPropertyValue $p 'RestorePackagesPath'
+    Assert-NotNull $packagesPath
+    $expectedInstallPath = (Join-Path $packagesPath (Join-Path $packages[0].Id $packages[0].Version))
+    Assert-AreEqual $expectedInstallPath $packages[0].InstallPath
+}
+
 function Test-GetInstalledPackagesMultipleProjectsSameVersion {
     param($context)
 

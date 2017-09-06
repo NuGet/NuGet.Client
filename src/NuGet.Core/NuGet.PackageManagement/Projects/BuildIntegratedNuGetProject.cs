@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,6 +43,8 @@ namespace NuGet.ProjectManagement.Projects
         /// determined.
         /// </summary>
         public abstract Task<string> GetAssetsFilePathAsync();
+
+        public abstract Task<string> GetCacheFilePathAsync();
 
         /// <summary>
         /// Returns the path to the assets file or the lock file. Returns null if the assets file path cannot be

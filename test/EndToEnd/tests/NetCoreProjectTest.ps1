@@ -408,24 +408,6 @@ function Test-NetCoreWebApp10ProjectReference {
     Assert-NetCoreProjectReference $projectA $projectB
 }
 
-function Test-NetCoreWebAppExecuteInitScriptsOnlyOnce
-{
-    param($context)
-
-    # Arrange
-    $global:PackageInitPS1Var = 0
-    $p = New-NetCoreWebApp10 WebApp
-
-    # Act & Assert
-    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
-    Build-Solution
-    Assert-True ($global:PackageInitPS1Var -eq 1)
-
-    $p | Install-Package jquery -Version 1.9
-    Build-Solution
-    Assert-True ($global:PackageInitPS1Var -eq 1)
-}
-
 # VSSolutionManager and ProjectSystemCache event test for .net core
 function Test-NetCoreProjectSystemCacheUpdateEvent {
 
@@ -768,7 +750,7 @@ function Test-NetCoreConsoleAppClean {
     $project = New-NetCoreConsoleApp ConsoleApp
 
     Build-Solution
-    
+
     Assert-ProjectCacheFileExists $project
 
     #Act
@@ -776,4 +758,23 @@ function Test-NetCoreConsoleAppClean {
 
     #Assert
     Assert-ProjectCacheFileNotExists $project
+}
+
+function Test-NetCoreConsoleAppRebuildDoesNotDeleteCacheFile {
+    # Arrange & Act
+    $project = New-NetCoreConsoleApp ConsoleApp
+    Build-Solution
+
+    Assert-ProjectCacheFileExists $project
+
+    AdviseSolutionEvents
+
+    #Act
+    Rebuild-Solution
+
+    WaitUntilRebuildCompleted
+    UnadviseSolutionEvents
+
+    #Assert
+    Assert-ProjectCacheFileExists $project
 }

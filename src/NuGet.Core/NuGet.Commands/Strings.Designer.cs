@@ -107,6 +107,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A source file was added with an empty path..
+        /// </summary>
+        internal static string Error_EmptySourceFilePath {
+            get {
+                return ResourceManager.GetString("Error_EmptySourceFilePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project directory for the source file &apos;{0}&apos; could not be found..
+        /// </summary>
+        internal static string Error_EmptySourceFileProjectDirectory {
+            get {
+                return ResourceManager.GetString("Error_EmptySourceFileProjectDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PackageTargetFallback and AssetTargetFallback cannot be used together. Remove PackageTargetFallback(deprecated) references from the project environment..
         /// </summary>
         internal static string Error_InvalidATF {
@@ -603,7 +621,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; was restored using &apos;{1}&apos; instead of the project target framework &apos;{2}&apos;. This may cause compatibility problems..
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; was restored using &apos;{1}&apos; instead of the project target framework &apos;{2}&apos;. This package may not be fully compatible with your project..
         /// </summary>
         internal static string Log_ImportsFallbackWarning {
             get {
@@ -1247,6 +1265,15 @@ namespace NuGet.Commands {
         internal static string UnableToFindBuildOutput {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skipping restore for project &apos;{0}&apos;. The project file may be invalid or missing targets required for restore..
+        /// </summary>
+        internal static string UnsupportedProject {
+            get {
+                return ResourceManager.GetString("UnsupportedProject", resourceCulture);
             }
         }
         

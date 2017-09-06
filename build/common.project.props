@@ -14,7 +14,7 @@
     <ArtifactsDirectory>$(RepositoryRootDirectory)artifacts\</ArtifactsDirectory>
     <DotnetExePath>$(RepositoryRootDirectory)cli\dotnet.exe</DotnetExePath>
     <DotnetExePath Condition=" '$(IsXPlat)' == 'true' ">$(RepositoryRootDirectory)cli\dotnet</DotnetExePath>
-    <DotnetSharedSDKDirectory>$(RepositoryRootDirectory)cli\shared\Microsoft.NETCore.App\1.0.4\</DotnetSharedSDKDirectory>
+    <DotnetSharedSDKDirectory>$(RepositoryRootDirectory)cli1.0.4\shared\Microsoft.NETCore.App\1.0.4\</DotnetSharedSDKDirectory>
     <NuGetExePath>$(RepositoryRootDirectory).nuget\nuget.exe</NuGetExePath>
     <SharedDirectory>$(BuildCommonDirectory)Shared</SharedDirectory>
     <NuGetCoreSrcDirectory>$(RepositoryRootDirectory)src\NuGet.Core\</NuGetCoreSrcDirectory>
@@ -31,11 +31,14 @@
     <TestUtilitiesDirectory>$(RepositoryRootDirectory)test\TestUtilities\</TestUtilitiesDirectory>
     <NuGetBuildLocalizationRepository>$(RepositoryRootDirectory)submodules\NuGet.Build.Localization\</NuGetBuildLocalizationRepository>
     <LocalizationRootDirectory>$(NuGetBuildLocalizationRepository)localize</LocalizationRootDirectory>
+    <LocalizationFilesDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationFilesDirectory>
+    <MicroBuildDirectory>$(SolutionPackagesFolder)MicroBuild.Core.0.2.0\build\</MicroBuildDirectory>
   </PropertyGroup>
 
   <!-- Defaults -->
   <PropertyGroup>
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
 
   <!-- Default project configuration -->
@@ -58,10 +61,11 @@
     <NoWarn>$(NoWarn);1762</NoWarn>
     <!-- Code Analysis is OFF by default -->
     <RunCodeAnalysis Condition=" '$(RunCodeAnalysis)' == ''">false</RunCodeAnalysis>
-    <!--This property ensures that if you build the exact sources twice, 
+    <!--This property ensures that if you build the exact sources twice,
     you get exactly the same output, so the .pdb from the second build will match the .dll
      from the first build!-->
     <Deterministic>true</Deterministic>
+    <Features>strict</Features>
   </PropertyGroup>
 
   <!-- DEBUG specific configuration settings -->
@@ -90,7 +94,7 @@
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <DefineConstants>$(DefineConstants);VS15</DefineConstants>
-    <VSSDKRoot>$(RepositoryRootDirectory)packages\Microsoft.VSSDK.BuildTools.15.0.26201</VSSDKRoot>
+    <VSSDKRoot>$(RepositoryRootDirectory)packages\Microsoft.VSSDK.BuildTools.15.1.192</VSSDKRoot>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
     <VsixOutputDirName>VS15</VsixOutputDirName>
     <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.ruleset</CodeAnalysisRuleSet>
@@ -134,12 +138,14 @@
     <Version>$(SemanticVersion)$(PreReleaseInformationVersion)</Version>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <BuildVariationFolder>$(VisualStudioVersion)</BuildVariationFolder>
+    <BuildVariationFolder Condition=" '$(BuildRTM)' == 'true' ">$(BuildVariationFolder)-RTM</BuildVariationFolder>
+  </PropertyGroup>
   <!-- Set the output location for all non-test projects -->
   <!-- Test projects currently fail when the output dir is moved -->
   <PropertyGroup Condition=" '$(TestProject)' != 'true' ">
     <!-- Create different folders for 14.0, 15.0, 15.0-RTM -->
-    <BuildVariationFolder>$(VisualStudioVersion)</BuildVariationFolder>
-    <BuildVariationFolder Condition=" '$(BuildRTM)' == 'true' ">$(BuildVariationFolder)-RTM</BuildVariationFolder>
 
     <!-- output paths -->
     <BaseIntermediateOutputPath>$(ArtifactsDirectory)$(MSBuildProjectName)\$(BuildVariationFolder)\obj\</BaseIntermediateOutputPath>
@@ -237,7 +243,8 @@
   <!-- All projects in the repository -->
   <ItemGroup Condition=" '$(IsXPlat)' != 'true' ">
     <SolutionProjects Include="$(RepositoryRootDirectory)test\*\*\*.csproj"
-                      Exclude="$(RepositoryRootDirectory)test\EndToEnd\*\*.csproj"
+                      Exclude="$(RepositoryRootDirectory)test\EndToEnd\*\*.csproj;
+                               $(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj"
                       Condition=" '$(ExcludeTestProjects)' != 'true' " />
 
     <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
