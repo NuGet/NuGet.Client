@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,19 +16,16 @@ namespace NuGet.XPlat.FuncTest
     [Collection("NuGet XPlat Test Collection")]
     public class XPlatRemovePkgTests
     {
-        private static readonly string projectName = "test_project_removepkg";
+        private static readonly string ProjectName = "test_project_removepkg";
 
-        private static MSBuildAPIUtility MsBuild
-        {
-            get { return new MSBuildAPIUtility(new TestCommandOutputLogger()); }
-        }
+        private static MSBuildAPIUtility MsBuild => new MSBuildAPIUtility(new TestCommandOutputLogger());
 
         // Argument parsing related tests
 
         [Theory]
         [InlineData("--package", "package_foo", "--project", "project_foo.csproj")]
         [InlineData("--package", "package_foo", "-p", "project_foo.csproj")]
-        public void AddPkg_ArgParsing(string packageOption, string package,
+        public void AddPkg_RemoveParsing(string packageOption, string package,
             string projectOption, string project)
         {
             // Arrange
@@ -83,7 +80,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, packageX, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, packageX, "net46");
 
                 // Verify that the package reference exists before removing.
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
@@ -113,7 +110,7 @@ namespace NuGet.XPlat.FuncTest
             var unknownPackageId = "package_foo";
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
 
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(unknownPackageId, projectA);
                 var commandRunner = new RemovePackageReferenceCommandRunner();
@@ -147,7 +144,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, packageX, "net46; netcoreapp1.0", packageframework);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, packageX, "net46; netcoreapp1.0", packageframework);
 
                 // Verify that the package reference exists before removing.
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
