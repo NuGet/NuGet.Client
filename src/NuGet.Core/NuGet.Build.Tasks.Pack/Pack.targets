@@ -207,6 +207,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               PackageVersion="$(PackageVersion)"
               PackageId="$(PackageId)"
               Title="$(Title)"
+              VersionSuffix="$(VersionSuffix)"
               Authors="$(Authors)"
               Description="$(PackageDescription)"
               Copyright="$(Copyright)"
