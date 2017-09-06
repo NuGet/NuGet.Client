@@ -303,7 +303,7 @@ function New-ClassLibrary {
     New-Project ClassLibrary $ProjectName $SolutionFolderName
 }
 
-function New-ClassLibrary46 {
+function New-ClassLibraryNET46 {
     param(
         [string]$ProjectName,
         [string]$SolutionFolderName
