@@ -314,6 +314,15 @@ namespace NuGet.Packaging
             set;
         }
 
+        /// <summary>
+        /// Gets the package manifest which is available after WriteManifest
+        /// </summary>
+        public Manifest PackageManifest
+        {
+            get;
+            private set;
+        }
+
         public void Save(Stream stream)
         {
             // Make sure we're saving a valid package id
@@ -550,8 +559,8 @@ namespace NuGet.Packaging
 
             using (Stream stream = entry.Open())
             {
-                Manifest manifest = Manifest.Create(this);
-                manifest.Save(stream, minimumManifestVersion);
+                PackageManifest = Manifest.Create(this);
+                PackageManifest.Save(stream, minimumManifestVersion);
             }
         }
 
