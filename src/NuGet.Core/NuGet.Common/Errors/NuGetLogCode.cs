@@ -167,6 +167,10 @@ namespace NuGet.Common
         /// </summary>
         NU1605 = 1605,
 
+        // These codes have been moved and should not be reused.
+        // NU1606 -> NU1108
+        // NU1607 -> NU1107
+
         /// <summary>
         /// Version is higher than upper bound.
         /// </summary>
