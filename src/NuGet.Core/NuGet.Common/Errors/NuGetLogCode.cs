@@ -93,6 +93,16 @@ namespace NuGet.Common
         NU1106 = 1106,
 
         /// <summary>
+        /// Version conflict.
+        /// </summary>
+        NU1107 = 1107,
+
+        /// <summary>
+        /// Circular dependency.
+        /// </summary>
+        NU1108 = 1108,
+
+        /// <summary>
         /// Dependency project has an incompatible framework.
         /// </summary>
         NU1201 = 1201,
@@ -157,16 +167,6 @@ namespace NuGet.Common
         /// Package dependency downgraded.
         /// </summary>
         NU1605 = 1605,
-
-        /// <summary>
-        /// Circular dependency.
-        /// </summary>
-        NU1606 = 1606,
-
-        /// <summary>
-        /// Version conflict.
-        /// </summary>
-        NU1607 = 1607,
 
         /// <summary>
         /// Version is higher than upper bound.
