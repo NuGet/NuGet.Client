@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -15,6 +16,69 @@ namespace NuGet.CommandLine.Test
 {
     public class RestoreLoggingTests
     {
+        [Fact]
+        public void RestoreLogging_VerifyNU1605DowngradeWarning()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = NuGetFramework.Parse("netcoreapp1.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1);
+
+                var packageZ1 = new SimpleTestPackageContext("z", "1.5.0");
+                var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");
+                packageX.Dependencies.Add(packageZ2);
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX, packageZ1, packageZ2, packageZ1);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var doc = projectA.GetXML();
+
+                // z 1.*
+                ProjectFileUtils.AddItem(doc,
+                    "PackageReference", "z",
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, string>() { { "Version", "1.*" } });
+
+                // x *
+                ProjectFileUtils.AddItem(doc,
+                    "PackageReference", "x",
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, string>() { { "Version", "*" } });
+
+                doc.Save(projectA.ProjectPath);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                var message = projectA.AssetsFile.LogMessages.Single(e => e.Code == NuGetLogCode.NU1605);
+                message.Level.Should().Be(LogLevel.Warning);
+
+                // Verify message contains the actual 1.5.0 version instead of the lower bound of 1.0.0.
+                message.Message.Should().Contain("Detected package downgrade: z from 2.0.0 to 1.5.0. Reference the package directly from the project to select a different version.");
+
+                // Verify that x display the version instead of the range which is >= 0.0.0
+                message.Message.Should().Contain("a -> x 1.0.0 -> z (>= 2.0.0)");
+
+                // Verify non-snapshot range is displayed for the downgradedBy path.
+                message.Message.Should().Contain("a -> z (>= 1.0.0)");
+            }
+        }
+
         [Fact]
         public async Task RestoreLogging_VerifyNU1608Message()
         {
@@ -139,17 +203,11 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
-                // var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1107 && e.TargetGraphs.All(g => !g.Contains("/")));
 
                 // Assert
                 r.Success.Should().BeFalse();
                 r.AllOutput.Should().Contain("NU1107");
                 r.AllOutput.Should().NotContain("NU1608");
-                //log.FilePath.Should().Be(projectA.ProjectPath);
-                //log.LibraryId.Should().Be("z");
-                //log.Level.Should().Be(LogLevel.Error);
-                //log.TargetGraphs.Single().Should().Contain(netcoreapp1.DotNetFrameworkName);
-                //log.Message.Should().Contain("Version conflict detected for z");
             }
         }
 
@@ -320,7 +378,7 @@ namespace NuGet.CommandLine.Test
                 log.LibraryId.Should().Be("x");
                 log.Level.Should().Be(LogLevel.Error);
                 log.TargetGraphs.Single().Should().Contain(netcoreapp1.DotNetFrameworkName);
-                log.Message.Should().Contain("Cycle detected.");
+                log.Message.Should().Contain("a -> x 1.0.0 -> y 1.0.0 -> x (>= 1.0.0)");
             }
         }
 
@@ -397,6 +455,8 @@ namespace NuGet.CommandLine.Test
                 log.Level.Should().Be(LogLevel.Error);
                 log.TargetGraphs.Single().Should().Contain(netcoreapp1.DotNetFrameworkName);
                 log.Message.Should().Contain("Version conflict detected for z");
+                log.Message.Should().Contain("a -> y 1.0.0 -> z (= 2.0.0)");
+                log.Message.Should().Contain("a -> x 1.0.0 -> z (= 1.0.0).");
             }
         }
 
