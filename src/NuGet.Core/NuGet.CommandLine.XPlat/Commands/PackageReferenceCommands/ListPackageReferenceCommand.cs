@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -42,7 +42,7 @@ namespace NuGet.CommandLine.XPlat
                 var frameworks = listPkg.Option(
                     "-f|--framework",
                     Strings.ListPkg_FrameworksDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.MultipleValue);
 
 
                 listPkg.OnExecute(() =>
@@ -55,7 +55,7 @@ namespace NuGet.CommandLine.XPlat
                     var packageReferenceArgs = new PackageReferenceArgs(projectPath.Value(), logger)
                     {
                         PackageDependency = id.HasValue() ? new PackageDependency(id.Value(), VersionRange.Parse("*")) : null,
-                        Frameworks = MSBuildStringUtility.Split(frameworks.Value()),
+                        Frameworks = CommandLineUtility.SplitAndJoinAcrossMultipleValues(frameworks.Values)
                     };
 
                     var msBuild = new MSBuildAPIUtility(logger);
