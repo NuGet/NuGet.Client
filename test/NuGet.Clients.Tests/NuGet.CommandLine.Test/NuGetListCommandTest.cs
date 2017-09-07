@@ -1227,7 +1227,6 @@ namespace NuGet.CommandLine.Test
                     feed2Packages.Add(new ZipPackage(Util.CreateTestPackage(IdAndVersion[0], IdAndVersion[1], packageDirectory)));
                 }
 
-
                 using (var server = new MockServer())
                 using (var server2 = new MockServer())
                 {
@@ -1252,21 +1251,33 @@ namespace NuGet.CommandLine.Test
                         new Action<HttpListenerResponse>(response =>
                         {
                             response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
-                            var feed = server.ToODataFeed(feed1Packages.ToArray(), "Search");
+                            var feed = server.ToODataFeed(feed2Packages.ToArray(), "Search");
                             MockServer.SetResponseContent(response, feed);
                         }));
                     server2.Get.Add("/nuget", r => "OK");
 
                     server2.Start();
-
+                    @"<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="Source1" value="serverUri" />
+  </packageSources>
+  <disabledPackageSources>
+     <clear />
+  </disabledPackageSources>
+</configuration>"
                     // Act
-                    var args = "list test -AllVersions -Prerelease -Source " + server.Uri + "nuget";
+                    var args = "list test -AllVersions -Prerelease -Source " + server.Uri + "nuget " + server2.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         randomTestFolder,
                         args,
                         waitForExit: true);
                     server.Stop();
+                    server2.Stop();
+
+
 
                     // Assert
                     Assert.Equal(0, r1.Item1);
