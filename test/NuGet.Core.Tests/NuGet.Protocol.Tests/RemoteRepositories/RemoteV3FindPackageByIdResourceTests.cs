@@ -155,7 +155,7 @@ namespace NuGet.Protocol.Tests
         public async Task GetAllVersionsAsync_NoErrorsOnNoContent()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress();
+            var serviceAddress = ProtocolUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "FindPackagesById()?id='a'", "204");
@@ -624,7 +624,7 @@ namespace NuGet.Protocol.Tests
 
             internal static RemoteV3FindPackageByIdResourceTest Create()
             {
-                var serviceAddress = TestUtility.CreateServiceAddress();
+                var serviceAddress = ProtocolUtility.CreateServiceAddress();
                 var packageIdentity = new PackageIdentity(
                     id: "xunit",
                     version: NuGetVersion.Parse("2.2.0-beta1-build3239"));
@@ -680,7 +680,7 @@ namespace NuGet.Protocol.Tests
                         request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(
-                                TestUtility.GetResource(
+                                ProtocolUtility.GetResource(
                                     "NuGet.Protocol.Tests.compiler.resources.XunitFindPackagesById.xml",
                                     typeof(RemoteV3FindPackageByIdResourceTest)))
                         })
@@ -690,7 +690,7 @@ namespace NuGet.Protocol.Tests
                         request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(
-                                TestUtility.GetResource(
+                                ProtocolUtility.GetResource(
                                     "NuGet.Protocol.Tests.compiler.resources.XunitFindPackagesById.xml",
                                     typeof(RemoteV3FindPackageByIdResourceTest)))
                         })

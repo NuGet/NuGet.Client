@@ -20,7 +20,7 @@ namespace NuGet.Protocol.Tests
             // Arrange
             var responses = new Dictionary<string, string>();
             responses.Add("https://api-v3search-0.nuget.org/query?q=entityframework&skip=0&take=1&prerelease=false&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.EntityFrameworkSearch.json", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.EntityFrameworkSearch.json", GetType()));
             responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
@@ -54,7 +54,7 @@ namespace NuGet.Protocol.Tests
             // Arrange
             var responses = new Dictionary<string, string>();
             responses.Add("https://api-v3search-0.nuget.org/query?q=entityframework&skip=0&take=1&prerelease=false&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.SearchV3WithDuplicateBesidesVersion.json", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.SearchV3WithDuplicateBesidesVersion.json", GetType()));
             responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
@@ -83,7 +83,7 @@ namespace NuGet.Protocol.Tests
             // Arrange
             var responses = new Dictionary<string, string>();
             responses.Add("https://api-v3search-0.nuget.org/query?q=yabbadabbadoo&skip=0&take=1&prerelease=false&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.EmptySearchResponse.json", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.EmptySearchResponse.json", GetType()));
             responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);

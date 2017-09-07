@@ -679,7 +679,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Uncheck</value>
   </data>
   <data name="Tooltip_PrefixReserved" xml:space="preserve">
-    <value>The identity of this package has been verified by nuget.org</value>
+    <value>The ID prefix of this package has been reserved for the owner of the package by the currently selected feed</value>
   </data>
   <data name="RefreshButtonLabel" xml:space="preserve">
     <value>Refresh</value>

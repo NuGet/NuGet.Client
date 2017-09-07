@@ -28,8 +28,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool IsMultiSource => _sourceRepositories.Length > 1;
 
-        public bool IsOnlyLoadingFromNuGetOrg => !IsMultiSource && StringComparer.OrdinalIgnoreCase.Equals(_sourceRepositories.First<SourceRepository>().ToString(), NuGetConstants.FeedName);
-
         private class AggregatedContinuationToken : ContinuationToken
         {
             public string SearchString { get; set; }

@@ -26,7 +26,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         // No, it's not.
         public bool IsMultiSource => false;
-        public bool IsOnlyLoadingFromNuGetOrg => false;
 
         public Task<SearchResult<IPackageSearchMetadata>> SearchAsync(string searchText, SearchFilter searchFilter, CancellationToken cancellationToken)
         {
