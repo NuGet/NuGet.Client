@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using NuGet.Test.Utility;
 using Xunit;
 using System.Text;
 using NuGet.Common;
+using System.Linq;
 
 namespace NuGet.CommandLine.Test
 {
@@ -1094,6 +1095,7 @@ namespace NuGet.CommandLine.Test
                 }
             }
         }
+
         [Fact]
         public void ListCommand_WithAuthenticatedSourceV2_AppliesCredentialsFromSettings()
         {
@@ -1197,6 +1199,129 @@ namespace NuGet.CommandLine.Test
 
                 }
             }
+        }
+
+        [Theory]
+        [MemberData(nameof(GetMultiFeedAggregationData))]
+        public void ListCommand_MultiFeedAggregation(string[] feed1PackagesNames, string[] feed2PackagesNames, string expectedOutput)
+        {
+            Util.ClearWebCache();
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var packageDirectory = TestDirectory.Create())
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                // Arrange
+
+                var feed1Packages = new List<ZipPackage>();
+                foreach(var package in feed1PackagesNames)
+                {
+                    var IdAndVersion = package.Split(' ');
+                    feed1Packages.Add(new ZipPackage(Util.CreateTestPackage(IdAndVersion[0], IdAndVersion[1], packageDirectory)));
+                }
+
+                var feed2Packages = new List<ZipPackage>();
+                foreach (var package in feed2PackagesNames)
+                {
+                    var IdAndVersion = package.Split(' ');
+                    feed2Packages.Add(new ZipPackage(Util.CreateTestPackage(IdAndVersion[0], IdAndVersion[1], packageDirectory)));
+                }
+
+
+                using (var server = new MockServer())
+                using (var server2 = new MockServer())
+                {
+
+
+                    server.Get.Add("/nuget/$metadata", r =>
+                        Util.GetMockServerResource());
+                    server.Get.Add("/nuget/Search()", r =>
+                        new Action<HttpListenerResponse>(response =>
+                        {
+                            response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
+                            var feed = server.ToODataFeed(feed1Packages.ToArray(), "Search");
+                            MockServer.SetResponseContent(response, feed);
+                        }));
+                    server.Get.Add("/nuget", r => "OK");
+
+                    server.Start();
+
+                    server2.Get.Add("/nuget/$metadata", r =>
+                        Util.GetMockServerResource());
+                    server2.Get.Add("/nuget/Search()", r =>
+                        new Action<HttpListenerResponse>(response =>
+                        {
+                            response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
+                            var feed = server.ToODataFeed(feed1Packages.ToArray(), "Search");
+                            MockServer.SetResponseContent(response, feed);
+                        }));
+                    server2.Get.Add("/nuget", r => "OK");
+
+                    server2.Start();
+
+                    // Act
+                    var args = "list test -AllVersions -Prerelease -Source " + server.Uri + "nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        randomTestFolder,
+                        args,
+                        waitForExit: true);
+                    server.Stop();
+
+                    // Assert
+                    Assert.Equal(0, r1.Item1);
+
+                    // verify that the output is detailed
+                    Assert.Equal(expectedOutput, r1.Item2);
+                }
+            }
+        }
+
+        public static IEnumerable<object[]> GetMultiFeedAggregationData()
+        {
+            yield return new object[] {
+                GetRangeOfPackages('A',1,2),
+                GetRangeOfPackages('A',3,4),
+                string.Concat(ToListPrintFormat(GetRangeOfPackages('A',1,4)))
+            };
+
+            yield return new object[] {
+                GetRangeOfPackages('A',1,2),
+                GetRangeOfPackages('A',3,5).Concat(GetRangeOfPackages('B',1,5)),
+                string.Concat(ToListPrintFormat(GetRangeOfPackages('A',1,5)), Environment.NewLine, ToListPrintFormat(GetRangeOfPackages('B',1,5)))
+            };
+
+            yield return new object[] {
+                GetRangeOfPackages('A',1,2).Concat(GetRangeOfPackages('B',6,10)),
+                GetRangeOfPackages('A',3,5).Concat(GetRangeOfPackages('B',1,5)),
+                string.Concat(ToListPrintFormat(GetRangeOfPackages('A',1,5)), Environment.NewLine, ToListPrintFormat(GetRangeOfPackages('B',1,10)))
+            };
+
+            yield return new object[] {
+                GetRangeOfPackages('A',1,2).Concat(GetRangeOfPackages('B',3,9)),
+                GetRangeOfPackages('A',1,3).Concat(GetRangeOfPackages('B',2,5)),
+                string.Concat(ToListPrintFormat(GetRangeOfPackages('A',1,3)), Environment.NewLine, ToListPrintFormat(GetRangeOfPackages('B',2,9)))
+            };
+
+            yield return new object[] {
+                GetRangeOfPackages('A',1,3).Concat(GetRangeOfPackages('A',5,7)),
+                GetRangeOfPackages('A',4,5),
+                string.Concat(ToListPrintFormat(GetRangeOfPackages('A',1,7)))
+            };
+        }
+
+        private static IEnumerable<string> GetRangeOfPackages(char name, int min, int max)
+        {
+            while (min <= max)
+            {
+                yield return name + " " + min + ".0.0";
+                min++;
+            }
+        }
+
+        private static string ToListPrintFormat(IEnumerable<string> packages)
+        {
+            return string.Join(Environment.NewLine, packages);
         }
     }
 }

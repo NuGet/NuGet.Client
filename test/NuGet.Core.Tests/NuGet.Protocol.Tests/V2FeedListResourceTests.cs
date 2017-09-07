@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -102,8 +102,8 @@ namespace NuGet.Protocol.Tests
             var enumerable = await resource.ListAsync(searchTerm: "newton",
                 prerelease: false, allVersions: false, includeDelisted: false, logger: NullLogger.Instance, token: CancellationToken.None);
 
-            int ExpectedCount = 0;
-            int ActualCount = 0;
+            var ExpectedCount = 0;
+            var ActualCount = 0;
             var enumerator = enumerable.GetEnumeratorAsync();
 
 
@@ -153,8 +153,8 @@ namespace NuGet.Protocol.Tests
             var enumerable = await resource.ListAsync(searchTerm: "newton",
                 prerelease: false, allVersions: false, includeDelisted: false, logger: NullLogger.Instance, token: CancellationToken.None);
 
-            int ExpectedCount = 33;
-            int ActualCount = 0;
+            var ExpectedCount = 33;
+            var ActualCount = 0;
             var enumerator = enumerable.GetEnumeratorAsync();
 
 
