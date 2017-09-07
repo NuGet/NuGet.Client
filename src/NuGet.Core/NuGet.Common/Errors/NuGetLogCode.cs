@@ -117,7 +117,6 @@ namespace NuGet.Common
         /// </summary>
         NU1203 = 1203,
 
-
         /// <summary>
         /// Package MinClientVersion did not match.
         /// </summary>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,11 +7,14 @@ using System.Diagnostics;
 using System.Text;
 using NuGet.LibraryModel;
 using NuGet.Shared;
+using NuGet.Versioning;
 
 namespace NuGet.DependencyResolver
 {
     public static class GraphOperations
     {
+        private const string NodeArrow = " -> ";
+
         private enum WalkState
         {
             Walking,
@@ -145,18 +148,40 @@ namespace NuGet.DependencyResolver
             node.OuterNode.InnerNodes.Remove(node);
         }
 
+        /// <summary>
+        /// A 1.0.0 -> B 1.0.0 -> C 2.0.0
+        /// </summary>
         public static string GetPath<TItem>(this GraphNode<TItem> node)
         {
-            var result = "";
+            var nodeStrings = new Stack<string>();
             var current = node;
 
             while (current != null)
             {
-                result = current.PrettyPrint() + (string.IsNullOrEmpty(result) ? "" : " -> " + result);
+                nodeStrings.Push(current.GetIdAndVersionOrRange());
                 current = current.OuterNode;
             }
 
-            return result;
+            return string.Join(NodeArrow, nodeStrings);
+        }
+
+        /// <summary>
+        /// A 1.0.0 -> B 1.0.0 -> C (= 2.0.0)
+        /// </summary>
+        public static string GetPathWithLastRange<TItem>(this GraphNode<TItem> node)
+        {
+            var nodeStrings = new Stack<string>();
+            var current = node;
+
+            while (current != null)
+            {
+                // Display the range for the last node, show the version of all parents.
+                var nodeString = nodeStrings.Count == 0 ? current.GetIdAndRange() : current.GetIdAndVersionOrRange();
+                nodeStrings.Push(nodeString);
+                current = current.OuterNode;
+            }
+
+            return string.Join(NodeArrow, nodeStrings);
         }
 
         // A helper to navigate the graph nodes
@@ -188,16 +213,104 @@ namespace NuGet.DependencyResolver
             return node;
         }
 
-        private static string PrettyPrint<TItem>(this GraphNode<TItem> node)
+        /// <summary>
+        /// Prints the id and version constraint for a node.
+        /// </summary>
+        /// <remarks>Projects will not display a range.</remarks>
+        public static string GetIdAndRange<TItem>(this GraphNode<TItem> node)
         {
-            var key = node.Item?.Key ?? node.Key;
+            var id = node.GetId();
 
-            if (key.VersionRange == null)
+            // Ignore constraints for projects, they are not useful since
+            // only one instance of the id may exist in the graph.
+            if (node.IsPackage())
             {
-                return key.Name;
+                // Remove floating versions
+                var range = node.GetVersionRange().ToNonSnapshotRange();
+
+                // Print the version range if it has an upper or lower bound to display.
+                if (range.HasLowerBound || range.HasUpperBound)
+                {
+                    return $"{id} {range.PrettyPrint()}";
+                }
             }
 
-            return key.Name + " " + key.VersionRange.ToNonSnapshotRange().PrettyPrint();
+            return id;
+        }
+
+        /// <summary>
+        /// Prints the id and version of a node. If the version does not exist use the range.
+        /// </summary>
+        /// <remarks>Projects will not display a version or range.</remarks>
+        public static string GetIdAndVersionOrRange<TItem>(this GraphNode<TItem> node)
+        {
+            var id = node.GetId();
+
+            // Ignore versions for projects, they are not useful since
+            // only one instance of the id may exist in the graph.
+            if (node.IsPackage())
+            {
+                var version = node.GetVersionOrDefault();
+
+                // Print the version if it exists, otherwise use the id.
+                if (version != null)
+                {
+                    return $"{id} {version.ToNormalizedString()}";
+                }
+                else
+                {
+                    // The node was unresolved, use the range instead.
+                    return node.GetIdAndRange();
+                }
+            }
+
+            return id;
+        }
+
+        /// <summary>
+        /// Id of the node.
+        /// </summary>
+        public static string GetId<TItem>(this GraphNode<TItem> node)
+        {
+            // Prefer the name of the resolved item, this will have
+            // the correct casing. If it was not resolved use the parent
+            // dependency for the name.
+            return node.Item?.Key?.Name ?? node.Key.Name;
+        }
+
+        /// <summary>
+        /// Version of the resolved node version if it exists.
+        /// </summary>
+        public static NuGetVersion GetVersionOrDefault<TItem>(this GraphNode<TItem> node)
+        {
+            // Prefer the name of the resolved item, this will have
+            // the correct casing. If it was not resolved use the parent
+            // dependency for the name.
+            return node.Item?.Key?.Version;
+        }
+
+        /// <summary>
+        /// Dependency range for the node.
+        /// </summary>
+        /// <remarks>Defaults to All</remarks>
+        public static VersionRange GetVersionRange<TItem>(this GraphNode<TItem> node)
+        {
+            return node.Key.VersionRange ?? VersionRange.All;
+        }
+
+        /// <summary>
+        /// True if the node is resolved to a package or allows a package if unresolved.
+        /// </summary>
+        public static bool IsPackage<TItem>(this GraphNode<TItem> node)
+        {
+            if ((node.Item?.Key?.Type == LibraryType.Package) == true)
+            {
+                // The resolved item is a package.
+                return true;
+            }
+
+            // The node was unresolved but allows packages.
+            return node.Key.TypeConstraintAllowsAnyOf(LibraryDependencyTarget.Package);
         }
 
         private static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root, List<VersionConflictResult<TItem>> versionConflicts)
@@ -693,7 +806,7 @@ namespace NuGet.DependencyResolver
                 output.Append(" ");
             }
 
-            output.Append($"{node.PrettyPrint()} ({node.Disposition})");
+            output.Append($"{node.GetIdAndRange()} ({node.Disposition})");
 
             if (node.Item != null
                 && node.Item.Key != null)

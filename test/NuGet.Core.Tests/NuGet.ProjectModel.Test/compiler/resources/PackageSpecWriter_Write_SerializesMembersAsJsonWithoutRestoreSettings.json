@@ -1,4 +1,4 @@
-﻿{
+{
   "title": "title",
   "version": "1.2.3",
   "description": "description",
@@ -99,7 +99,7 @@
       "version": "[1.2.3, )",
       "noWarn": [
         "NU1500",
-        "NU1107"
+        "NU1608"
       ]
     }
   },
