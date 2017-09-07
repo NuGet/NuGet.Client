@@ -681,18 +681,16 @@ namespace NuGet.CommandLine
             string userVersion,
             IEnumerable<MsBuildToolset> installedToolsets)
         {
-            // Force version string to 1 decimal place
-            var userVersionString = userVersion;
-            decimal parsedVersion = 0;
-            if (decimal.TryParse(userVersion, out parsedVersion))
-            {
-                var adjustedVersion = (decimal)(((int)(parsedVersion * 10)) / 10F);
-                userVersionString = adjustedVersion.ToString("F1");
-            }
+            // Version.TryParse only take decimal string like "14.0", "14" need to be converted.
+            var versionParts = userVersion.Split('.');
+            var major = versionParts.Length > 0 ? versionParts[0] : "0";
+            var minor = versionParts.Length > 1 ? versionParts[1] : "0";
+
+            var userVersionString = string.Join(".", major, minor);
 
             // First match by string comparison
             var selectedToolset = installedToolsets.FirstOrDefault(
-                t => string.Equals(userVersionString, t.Version, StringComparison.OrdinalIgnoreCase));
+                t => string.Equals(userVersion, t.Version, StringComparison.OrdinalIgnoreCase));
 
             if (selectedToolset != null)
             {

@@ -417,7 +417,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
         }
 
-        [CIOnlyTheory]
+        [Theory]
         [InlineData("packages.config")]
         [InlineData("packages.proj2.config")]
         public void RestoreCommand_FromSolutionFileWithMsbuild12(string configFileName)
