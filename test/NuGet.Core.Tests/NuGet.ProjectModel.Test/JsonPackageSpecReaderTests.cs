@@ -558,7 +558,7 @@ namespace NuGet.ProjectModel.Test
                                     ""version"": ""1.0.0"",
                                     ""noWarn"": [
                                         ""NU1500"",
-                                        ""NU1607""
+                                        ""NU1107""
                                       ]
                                 }
                             },
@@ -575,7 +575,7 @@ namespace NuGet.ProjectModel.Test
             Assert.NotNull(dep.NoWarn);
             Assert.Equal(dep.NoWarn.Count, 2);
             Assert.True(dep.NoWarn.Contains(NuGetLogCode.NU1500));
-            Assert.True(dep.NoWarn.Contains(NuGetLogCode.NU1607));
+            Assert.True(dep.NoWarn.Contains(NuGetLogCode.NU1107));
         }
 
         [Fact]

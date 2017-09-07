@@ -255,7 +255,7 @@ namespace NuGet.Commands
 
                                 if (VersionComparer.VersionRelease.Compare(actualVersion, upperBound) >= compare)
                                 {
-                                    // True if the package already has an NU1607 error, NU1608 would be redundant here.
+                                    // True if the package already has an NU1107 error, NU1608 would be redundant here.
                                     if (!indexedGraph.HasErrors(dependencyId))
                                     {
                                         var parent = DiagnosticUtility.FormatIdentity(node.Key);

@@ -1030,7 +1030,7 @@ namespace NuGet.Commands.Test
             collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, frameworkString));
             collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId, frameworkString));
             collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, "Warning", libraryId, frameworkString));
-            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1607, "Warning", libraryId, frameworkString));
+            collector.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1107, "Warning", libraryId, frameworkString));
             collector.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1000, "Error") { ShouldDisplay = true });
 
             // Assert
@@ -1038,7 +1038,7 @@ namespace NuGet.Commands.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Once(), NuGetLogCode.NU1607);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Once(), NuGetLogCode.NU1107);
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
         }
 

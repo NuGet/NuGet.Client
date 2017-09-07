@@ -78,9 +78,9 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var packageId = "test_package";
-            var expectedNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601 , NuGetLogCode.NU1603, NuGetLogCode.NU1605, NuGetLogCode.NU1607 };
+            var expectedNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601 , NuGetLogCode.NU1603, NuGetLogCode.NU1605, NuGetLogCode.NU1107 };
             var projectWideNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1605 };
-            var packageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1607 };
+            var packageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1107 };
             var otherPackageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1701 };
 
             var pathWarningProperties = new TransitiveNoWarnUtils.NodeWarningProperties(
@@ -374,8 +374,8 @@ namespace NuGet.Commands.Test
         [InlineData("", "NU1603, NU1605", "NU1603, NU1605")]
         [InlineData("NU1603, NU1605", "NU1603", "NU1603, NU1605")]
         [InlineData("NU1603, NU1605", "NU1701", "NU1603, NU1605, NU1701")]
-        [InlineData("NU1603, NU1605", "NU1603, NU1607, NU1701", "NU1603, NU1605, NU1607, NU1701")]
-        [InlineData("NU1605, NU1603", "NU1607, NU1701, NU1603", "NU1603, NU1605, NU1607, NU1701")]
+        [InlineData("NU1603, NU1605", "NU1603, NU1107, NU1701", "NU1603, NU1605, NU1107, NU1701")]
+        [InlineData("NU1605, NU1603", "NU1107, NU1701, NU1603", "NU1603, NU1605, NU1107, NU1701")]
         public void MergeProjectWideWarningProperties_MergesNonEmptyCollections(
             string firstNoWarn,
             string secondNoWarn,
@@ -699,14 +699,14 @@ namespace NuGet.Commands.Test
             var firstProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1603 };
             var firstPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
             {
-                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 }},
+                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1108 }},
                     {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
             };
 
             var secondProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1603 };
             var secondPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
             {
-                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 }},
+                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1108 }},
                     {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
             };
 
@@ -798,14 +798,14 @@ namespace NuGet.Commands.Test
             var firstProjectWideNoWarn = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstNoWarn));
             var firstPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
             {
-                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 }},
+                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1108 }},
                     {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
             };
 
             var secondProjectWideNoWarn = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondNoWarn));
             var secondPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
             {
-                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 }},
+                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1108 }},
                     {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
             };
 
@@ -844,14 +844,14 @@ namespace NuGet.Commands.Test
             var packageId2 = "test_id2";
 
             // Arrange
-            var firstProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 };
+            var firstProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1108 };
             var firstPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
             {
-                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 }},
+                    {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1108 }},
                     {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
             };
 
-            var secondProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 };
+            var secondProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1108 };
             var secondPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
             {
                     {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }},
@@ -893,13 +893,13 @@ namespace NuGet.Commands.Test
             var packageId2 = "test_id2";
 
             // Arrange
-            var firstProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 };
+            var firstProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1108 };
             var firstPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
             {
                     {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
             };
 
-            var secondProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1606 };
+            var secondProjectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1108 };
             var secondPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
             {
                     {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}

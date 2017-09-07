@@ -65,7 +65,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeTrue();
-                r.AllOutput.Should().NotContain("NU1607");
+                r.AllOutput.Should().NotContain("NU1107");
                 r.AllOutput.Should().Contain("NU1608");
                 log.FilePath.Should().Be(projectA.ProjectPath);
                 log.LibraryId.Should().Be("z");
@@ -76,7 +76,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyNU1607DoesNotDisplayNU1608Also()
+        public async Task RestoreLogging_VerifyNU1107DoesNotDisplayNU1608Also()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -139,11 +139,11 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
-                // var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1607 && e.TargetGraphs.All(g => !g.Contains("/")));
+                // var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1107 && e.TargetGraphs.All(g => !g.Contains("/")));
 
                 // Assert
                 r.Success.Should().BeFalse();
-                r.AllOutput.Should().Contain("NU1607");
+                r.AllOutput.Should().Contain("NU1107");
                 r.AllOutput.Should().NotContain("NU1608");
                 //log.FilePath.Should().Be(projectA.ProjectPath);
                 //log.LibraryId.Should().Be("z");
@@ -311,11 +311,11 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
-                var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1606 && e.TargetGraphs.All(g => !g.Contains("/")));
+                var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1108 && e.TargetGraphs.All(g => !g.Contains("/")));
 
                 // Assert
                 r.Success.Should().BeFalse();
-                r.AllOutput.Should().Contain("NU1606");
+                r.AllOutput.Should().Contain("NU1108");
                 log.FilePath.Should().Be(projectA.ProjectPath);
                 log.LibraryId.Should().Be("x");
                 log.Level.Should().Be(LogLevel.Error);
@@ -387,11 +387,11 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
-                var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1607 && e.TargetGraphs.All(g => !g.Contains("/")));
+                var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1107 && e.TargetGraphs.All(g => !g.Contains("/")));
 
                 // Assert
                 r.Success.Should().BeFalse();
-                r.AllOutput.Should().Contain("NU1607");
+                r.AllOutput.Should().Contain("NU1107");
                 log.FilePath.Should().Be(projectA.ProjectPath);
                 log.LibraryId.Should().Be("z");
                 log.Level.Should().Be(LogLevel.Error);
@@ -802,7 +802,7 @@ namespace NuGet.CommandLine.Test
                     netcoreapp2);
 
                 projectA.Properties.Add("TreatWarningsAsErrors", "true");
-                projectA.Properties.Add("NoWarn", "NU1607");
+                projectA.Properties.Add("NoWarn", "NU1107");
 
                 // Referenced but not created
                 var packageX = new SimpleTestPackageContext()
@@ -904,7 +904,7 @@ namespace NuGet.CommandLine.Test
                     netcoreapp2);
 
                 projectA.Properties.Add("WarningsAsErrors", "NU1603");
-                projectA.Properties.Add("NoWarn", "NU1607");
+                projectA.Properties.Add("NoWarn", "NU1107");
 
                 // Referenced but not created
                 var packageX = new SimpleTestPackageContext()
@@ -1110,7 +1110,7 @@ namespace NuGet.CommandLine.Test
                 {
                     Id = "x",
                     Version = "1.0.0",
-                    NoWarn = "NU1607"
+                    NoWarn = "NU1107"
                 };
 
                 // Created in the source
@@ -1571,7 +1571,7 @@ namespace NuGet.CommandLine.Test
                     netcoreapp2);
 
                 projectA.Properties.Add("TreatWarningsAsErrors", "true");
-                projectA.Properties.Add("NoWarn", "NU1607");
+                projectA.Properties.Add("NoWarn", "NU1107");
 
                 // Referenced but not created
                 var packageX = new SimpleTestPackageContext()
@@ -1673,7 +1673,7 @@ namespace NuGet.CommandLine.Test
                     netcoreapp2);
 
                 projectA.Properties.Add("WarningsAsErrors", "NU1603");
-                projectA.Properties.Add("NoWarn", "NU1607");
+                projectA.Properties.Add("NoWarn", "NU1107");
 
                 // Referenced but not created
                 var packageX = new SimpleTestPackageContext()
@@ -1777,7 +1777,7 @@ namespace NuGet.CommandLine.Test
                 {
                     Id = "x",
                     Version = "1.0.0",
-                    NoWarn = "NU1607"
+                    NoWarn = "NU1107"
                 };
 
                 // Created in the source

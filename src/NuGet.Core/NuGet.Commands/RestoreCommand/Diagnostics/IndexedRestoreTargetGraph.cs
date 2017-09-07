@@ -37,7 +37,7 @@ namespace NuGet.Commands
                 }
             }
 
-            // Index NU1607 version conflict errors
+            // Index NU1107 version conflict errors
             var versionConflicts = graph.AnalyzeResult?.VersionConflicts;
             if (versionConflicts != null)
             {

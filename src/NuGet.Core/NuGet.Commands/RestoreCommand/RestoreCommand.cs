@@ -377,7 +377,7 @@ namespace NuGet.Commands
                 foreach (var cycle in graph.AnalyzeResult.Cycles)
                 {
                     var text = Strings.Log_CycleDetected + $" {Environment.NewLine}  {cycle.GetPath()}.";
-                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1606, text, cycle.Key?.Name, graph.TargetGraphName));
+                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1108, text, cycle.Key?.Name, graph.TargetGraphName));
                     return false;
                 }
             }
@@ -400,7 +400,7 @@ namespace NuGet.Commands
                             versionConflict.Selected.Key.Name)
                         + $" {Environment.NewLine} {versionConflict.Selected.GetPath()} {Environment.NewLine} {versionConflict.Conflicting.GetPath()}.";
 
-                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1607, message, versionConflict.Selected.Key.Name, graph.TargetGraphName));
+                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1107, message, versionConflict.Selected.Key.Name, graph.TargetGraphName));
                     return false;
                 }
             }
