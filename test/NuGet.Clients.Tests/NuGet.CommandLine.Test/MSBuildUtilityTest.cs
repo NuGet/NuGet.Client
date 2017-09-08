@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
@@ -31,6 +31,23 @@ namespace NuGet.CommandLine.Test
         [Theory]
         [MemberData("PathMatchData", MemberType = typeof(ToolsetDataSource))]
         public void VersionSelectedThatMatchesPathMsBuildVersion(List<MsBuildToolset> toolsets, string expectedPath)
+        {
+            // Arrange
+            // Act
+            var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
+                userVersion: null,
+                console: null,
+                installedToolsets: toolsets.OrderByDescending(t => t),
+                getMsBuildPathInPathVar: () => expectedPath);
+
+            // Assert
+            Assert.Equal(expectedPath, directory);
+        }
+
+        // Test that GetMsBuildDirectoryInternal deals with invalid toolsets (for example ones created from SKUs that don't ship MSBuild like VS Test Agent SKU) See https://github.com/NuGet/Home/issues/5840 for more info
+        [Theory]
+        [MemberData("InvalidToolsetData", MemberType = typeof(ToolsetDataSource))]
+        public void HandlesToolsetsWithInvalidPaths(List<MsBuildToolset> toolsets, string expectedPath)
         {
             // Arrange
             // Act
@@ -214,6 +231,10 @@ namespace NuGet.CommandLine.Test
                 version: "15.1.137.25382",
                 path: @"c:\vs\25557.01",
                 installDate: new DateTime(2016, 9, 17));
+            private static readonly MsBuildToolset InvalidToolsetVSTest = new MsBuildToolset(
+                version: null,
+                path: null,
+                installDate: new DateTime(2017, 9, 7));
 
             // Toolset collections
 
@@ -275,6 +296,11 @@ namespace NuGet.CommandLine.Test
                 Toolset14,
                 Toolset12,
                 Toolset4
+            };
+
+            private static List<MsBuildToolset> CombinedToolsets_MsBuild15AndVSTestToolsets = new List<MsBuildToolset> {
+                Toolset15_Wed_LongVersion,
+                InvalidToolsetVSTest
             };
 
             // Test data sets
@@ -342,12 +368,20 @@ namespace NuGet.CommandLine.Test
                     new object[] { LegacyToolsets_NonNumericVersion, "0" },
                 };
 
+            private static readonly List<object[]> _invalidToolsetData
+                = new List<object[]>
+                {
+                    new object[] { CombinedToolsets_MsBuild15AndVSTestToolsets, Toolset15_Wed_LongVersion.Path}
+                };
+
             public static IEnumerable<object[]> HighestPathData => _highestPathData;
             public static IEnumerable<object[]> PathMatchData => _pathMatchData;
             public static IEnumerable<object[]> VersionMatchData => _versionMatchData;
             public static IEnumerable<object[]> IntegerVersionMatchData => _integerVersionMatchData;
             public static IEnumerable<object[]> NonNumericVersionMatchData => _nonNumericVersionMatchData;
             public static IEnumerable<object[]> NonNumericVersionMatchFailureData => _nonNumericVersionMatchFailureData;
+            public static IEnumerable<object[]> InvalidToolsetData => _invalidToolsetData;
+
         }
     }
 }
