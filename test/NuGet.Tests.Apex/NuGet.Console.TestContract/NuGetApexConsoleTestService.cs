@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.ComponentModel.Composition;
 using NuGet.VisualStudio;
 using NuGetConsole;
@@ -11,18 +12,11 @@ namespace NuGet.Console.TestContract
     [Export(typeof(NuGetApexConsoleTestService))]
     public class NuGetApexConsoleTestService
     {
-        private IWpfConsole _wpfConsole;
-        public IWpfConsole WpfConsole
+        private Lazy<IWpfConsole> _wpfConsole => new Lazy<IWpfConsole>(GetWpfConsole);
+        private IWpfConsole GetWpfConsole()
         {
-            get
-            {
-                if (_wpfConsole == null)
-                {
-                    var outputConsoleWindow = ServiceLocator.GetInstance<IPowerConsoleWindow>() as PowerConsoleWindow;
-                    _wpfConsole = outputConsoleWindow.ActiveHostInfo.WpfConsole;
-                }
-                return _wpfConsole;
-            }
+            var outputConsoleWindow = ServiceLocator.GetInstance<IPowerConsoleWindow>() as PowerConsoleWindow;
+            return outputConsoleWindow.ActiveHostInfo.WpfConsole;
         }
 
         public NuGetApexConsoleTestService()
@@ -31,7 +25,7 @@ namespace NuGet.Console.TestContract
 
         public ApexTestConsole GetApexTestConsole()
         {
-            return new ApexTestConsole(WpfConsole);
+            return new ApexTestConsole(_wpfConsole.Value);
         }
     }
 }
