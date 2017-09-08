@@ -540,13 +540,10 @@ namespace NuGet.Commands
 
         private static bool AddDependencyIfNotExist(PackageSpec spec, LibraryDependency dependency)
         {
-            if (!spec.Dependencies
-                   .Select(d => d.Name)
-                   .Contains(dependency.Name, StringComparer.OrdinalIgnoreCase))
-            {
-                spec.Dependencies.Add(dependency);
 
-                return true;
+            foreach (var framework in spec.TargetFrameworks.Select(e => e.FrameworkName))
+            {
+                AddDependencyIfNotExist(spec, framework, dependency);
             }
 
             return false;

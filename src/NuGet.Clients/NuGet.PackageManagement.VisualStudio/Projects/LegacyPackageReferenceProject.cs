@@ -330,7 +330,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 Owners = new string[] { },
                 Tags = new string[] { },
                 ContentFiles = new string[] { },
-                Dependencies = packageReferences,
                 FilePath = _projectFullPath,
                 RuntimeGraph = runtimeGraph,
                 RestoreMetadata = new ProjectRestoreMetadata

@@ -1875,6 +1875,62 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_LegacyPackageReference_DependenciesArePerFramework()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46" },
+                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
+                });
+
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "Id", "x" },
+                    { "VersionRange", "1.0.0" },
+                    { "IncludeAssets", "build;compile" },
+                    { "CrossTargeting", "true" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single();
+
+                // Assert
+                Assert.Equal(project1Path, project1Spec.FilePath);
+                Assert.Equal("a", project1Spec.Name);
+                Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
+                Assert.Equal("net46", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
+                Assert.Equal("net46", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
+                Assert.Equal("x", project1Spec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.SingleOrDefault().Name);
+                Assert.Empty(project1Spec.Dependencies);
+            }
+        }
+
         [Theory]
         [InlineData("a", "a")]
         [InlineData("", "")]
