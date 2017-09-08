@@ -651,41 +651,59 @@ namespace NuGet.PackageManagement
             var buildIntegratedProjects = nuGetProjects.OfType<BuildIntegratedNuGetProject>().ToList();
             var nonBuildIntegratedProjects = nuGetProjects.Except(buildIntegratedProjects).ToList();
 
+            var shouldFilterProjectsForUpdate = false;
+            if (packageIdentities.Count > 0)
+            {
+                shouldFilterProjectsForUpdate = true;
+            }
+
             // add tasks for all build integrated projects
             foreach (var project in buildIntegratedProjects)
             {
-                var packagesToUpdateInProject = await GetPackagesToUpdateInProject(project, packageIdentities, token);
-                if (packagesToUpdateInProject.Count > 0)
+                var packagesToUpdateInProject = packageIdentities;
+                var updatedResolutionContext = resolutionContext;
+
+                if (shouldFilterProjectsForUpdate)
                 {
-                    var includePrerelease = packagesToUpdateInProject.Any(
+                    packagesToUpdateInProject = await GetPackagesToUpdateInProject(project, packageIdentities, token);
+                    if (packagesToUpdateInProject.Count > 0)
+                    {
+                        var includePrerelease = packagesToUpdateInProject.Any(
                         package => package.Version.IsPrerelease);
 
-                    var updatedResolutionContext = new ResolutionContext(
-                        dependencyBehavior: resolutionContext.DependencyBehavior,
-                        includePrelease: includePrerelease,
-                        includeUnlisted: resolutionContext.IncludeUnlisted,
-                        versionConstraints: resolutionContext.VersionConstraints,
-                        gatherCache: resolutionContext.GatherCache);
-
-                    // if tasks count reachs max then wait until an existing task is completed
-                    if (tasks.Count >= maxTasks)
-                    {
-                        var actions = await CompleteTaskAsync(tasks);
-                        nugetActions.AddRange(actions);
+                        updatedResolutionContext = new ResolutionContext(
+                            dependencyBehavior: resolutionContext.DependencyBehavior,
+                            includePrelease: includePrerelease,
+                            includeUnlisted: resolutionContext.IncludeUnlisted,
+                            versionConstraints: resolutionContext.VersionConstraints,
+                            gatherCache: resolutionContext.GatherCache);
                     }
-
-                    // project.json based projects are handled here
-                    tasks.Add(Task.Run(async ()
-                        => await PreviewUpdatePackagesForBuildIntegratedAsync(
-                            packageId,
-                            packagesToUpdateInProject,
-                            project,
-                            updatedResolutionContext,
-                            nuGetProjectContext,
-                            primarySources,
-                            secondarySources,
-                            token)));
+                    else
+                    {
+                        // skip running update preview for this project, since it doesn't have any package installed
+                        // which is being updated.
+                        continue;
+                    }
                 }
+
+                // if tasks count reachs max then wait until an existing task is completed
+                if (tasks.Count >= maxTasks)
+                {
+                    var actions = await CompleteTaskAsync(tasks);
+                    nugetActions.AddRange(actions);
+                }
+
+                // project.json based projects are handled here
+                tasks.Add(Task.Run(async ()
+                    => await PreviewUpdatePackagesForBuildIntegratedAsync(
+                        packageId,
+                        packagesToUpdateInProject,
+                        project,
+                        updatedResolutionContext,
+                        nuGetProjectContext,
+                        primarySources,
+                        secondarySources,
+                        token)));
             }
 
             // Wait for all restores to finish
@@ -694,30 +712,42 @@ namespace NuGet.PackageManagement
 
             foreach (var project in nonBuildIntegratedProjects)
             {
-                var packagesToUpdateInProject = await GetPackagesToUpdateInProject(project, packageIdentities, token);
-                if (packagesToUpdateInProject.Count > 0)
+                var packagesToUpdateInProject = packageIdentities;
+                var updatedResolutionContext = resolutionContext;
+
+                if (shouldFilterProjectsForUpdate)
                 {
-                    var includePrerelease = packagesToUpdateInProject.Any(
+                    packagesToUpdateInProject = await GetPackagesToUpdateInProject(project, packageIdentities, token);
+                    if (packagesToUpdateInProject.Count > 0)
+                    {
+                        var includePrerelease = packagesToUpdateInProject.Any(
                         package => package.Version.IsPrerelease);
 
-                    var updatedResolutionContext = new ResolutionContext(
-                        dependencyBehavior: resolutionContext.DependencyBehavior,
-                        includePrelease: includePrerelease,
-                        includeUnlisted: resolutionContext.IncludeUnlisted,
-                        versionConstraints: resolutionContext.VersionConstraints,
-                        gatherCache: resolutionContext.GatherCache);
-
-                    // packages.config based projects are handled here
-                    nugetActions.AddRange(await PreviewUpdatePackagesForClassicAsync(
-                    packageId,
-                    packagesToUpdateInProject,
-                    project,
-                    updatedResolutionContext,
-                    nuGetProjectContext,
-                    primarySources,
-                    secondarySources,
-                    token));
+                        updatedResolutionContext = new ResolutionContext(
+                            dependencyBehavior: resolutionContext.DependencyBehavior,
+                            includePrelease: includePrerelease,
+                            includeUnlisted: resolutionContext.IncludeUnlisted,
+                            versionConstraints: resolutionContext.VersionConstraints,
+                            gatherCache: resolutionContext.GatherCache);
+                    }
+                    else
+                    {
+                        // skip running update preview for this project, since it doesn't have any package installed
+                        // which is being updated.
+                        continue;
+                    }
                 }
+
+                // packages.config based projects are handled here
+                nugetActions.AddRange(await PreviewUpdatePackagesForClassicAsync(
+                packageId,
+                packagesToUpdateInProject,
+                project,
+                updatedResolutionContext,
+                nuGetProjectContext,
+                primarySources,
+                secondarySources,
+                token));
             }
 
             return nugetActions;
