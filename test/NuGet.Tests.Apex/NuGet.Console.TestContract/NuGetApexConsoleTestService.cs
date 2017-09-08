@@ -12,16 +12,26 @@ namespace NuGet.Console.TestContract
     public class NuGetApexConsoleTestService
     {
         private IWpfConsole _wpfConsole;
+        public IWpfConsole WpfConsole
+        {
+            get
+            {
+                if (_wpfConsole == null)
+                {
+                    var outputConsoleWindow = ServiceLocator.GetInstance<IPowerConsoleWindow>() as PowerConsoleWindow;
+                    _wpfConsole = outputConsoleWindow.ActiveHostInfo.WpfConsole;
+                }
+                return _wpfConsole;
+            }
+        }
 
         public NuGetApexConsoleTestService()
         {
-            var outputConsoleWindow = ServiceLocator.GetInstance<IPowerConsoleWindow>() as PowerConsoleWindow;
-            _wpfConsole = outputConsoleWindow.ActiveHostInfo.WpfConsole;
         }
 
         public ApexTestConsole GetApexTestConsole()
         {
-            return new ApexTestConsole(_wpfConsole);
+            return new ApexTestConsole(WpfConsole);
         }
     }
 }
