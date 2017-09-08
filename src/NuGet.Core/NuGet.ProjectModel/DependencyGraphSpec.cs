@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -291,26 +291,10 @@ namespace NuGet.ProjectModel
             using (var hashFunc = new Sha512HashFunction())
             using (var writer = new HashObjectWriter(hashFunc))
             {
-                Write(writer, PackageSpecWriter.WriteHashingPackageSpec);
+                Write(writer, PackageSpecWriter.Write);
                 return writer.GetHash();
             }
         }
-
-        public void SaveHashingDGSpec(string path)
-        {
-            var writer = new RuntimeModel.JsonObjectWriter();
-
-            Write(writer, PackageSpecWriter.WriteHashingPackageSpec);
-
-            var json = writer.GetJson();
-
-            using (var fileStream = new FileStream(path, FileMode.Create))
-            using (var textWriter = new StreamWriter(fileStream))
-            {
-                textWriter.Write(json);
-            }
-        }
-
 
         private void Write(RuntimeModel.IObjectWriter writer, Action<PackageSpec, RuntimeModel.IObjectWriter> writeAction)
         {

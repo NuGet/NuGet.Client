@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -63,44 +63,6 @@ namespace NuGet.ProjectModel
 
             SetFrameworks(writer, packageSpec.TargetFrameworks);
 
-            JsonRuntimeFormat.WriteRuntimeGraph(writer, packageSpec.RuntimeGraph);
-        }
-
-        /// <summary>
-        /// Writes a PackageSpec with only the restore info that's important for hashing/no-op to an <c>NuGet.Common.IObjectWriter</c> instance. 
-        /// </summary>
-        /// <param name="packageSpec">A <c>PackageSpec</c> instance.</param>
-        /// <param name="writer">An <c>NuGet.Common.IObjectWriter</c> instance.</param>
-        public static void WriteHashingPackageSpec(PackageSpec packageSpec, IObjectWriter writer)
-        {
-            if (packageSpec == null)
-            {
-                throw new ArgumentNullException(nameof(packageSpec));
-            }
-
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            SetValue(writer, "title", packageSpec.Title);
-
-            if (!packageSpec.IsDefaultVersion)
-            {
-                SetValue(writer, "version", packageSpec.Version?.ToFullString());
-            }
-            // We don't need details like Description, Authors, Copyright, Language, scripts
-            // We do not need pack related thing, PackInclude & packOptions
-            SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles);
-            SetRestoreSettings(writer, packageSpec);
-            SetHashingMSBuildMetadata(writer, packageSpec);
-
-            if (packageSpec.Dependencies.Count > 0)
-            {
-                SetHashingDependencies(writer, packageSpec.Dependencies);
-            }
-
-            SetHashingFrameworks(writer, packageSpec.TargetFrameworks);
             JsonRuntimeFormat.WriteRuntimeGraph(writer, packageSpec.RuntimeGraph);
         }
 
@@ -171,43 +133,6 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// This method sets the msbuild metadata that's important for restore. Ensures that frameworks regardless of which way they're stores in the metadata(full name or short tfm name) are written out the same.
         /// </summary>
-        private static void SetHashingMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
-        {
-            var msbuildMetadata = packageSpec.RestoreMetadata;
-
-            if (!IsMetadataValid(msbuildMetadata))
-            {
-                return;
-            }
-
-            writer.WriteObjectStart(JsonPackageSpecReader.RestoreOptions);
-
-            SetValue(writer, "projectUniqueName", msbuildMetadata.ProjectUniqueName);
-            SetValue(writer, "projectName", msbuildMetadata.ProjectName);
-            SetValue(writer, "projectPath", msbuildMetadata.ProjectPath);
-            SetValue(writer, "projectJsonPath", msbuildMetadata.ProjectJsonPath);
-            SetValue(writer, "packagesPath", msbuildMetadata.PackagesPath);
-            SetValue(writer, "outputPath", msbuildMetadata.OutputPath);
-
-            if (msbuildMetadata.ProjectStyle != ProjectStyle.Unknown)
-            {
-                SetValue(writer, "projectStyle", msbuildMetadata.ProjectStyle.ToString());
-            }
-
-            WriteMetadataBooleans(writer, msbuildMetadata);
-
-            SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
-            SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
-            SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.Select(e => NuGetFramework.Parse(e).GetShortFolderName()));
-
-            WriteMetadataSources(writer, msbuildMetadata);
-            WriteMetadataFiles(writer, msbuildMetadata);
-            WriteMetadataTargetFrameworks(writer, msbuildMetadata);
-            SetWarningProperties(writer, msbuildMetadata);
-
-            writer.WriteObjectEnd();
-        }
-
         private static void SetMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
         {
             var msbuildMetadata = packageSpec.RestoreMetadata;
@@ -235,7 +160,7 @@ namespace NuGet.ProjectModel
 
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
             SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
-            SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks);
+            SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.Select(e => NuGetFramework.Parse(e).GetShortFolderName()));
 
             WriteMetadataSources(writer, msbuildMetadata);
             WriteMetadataFiles(writer, msbuildMetadata);
@@ -427,17 +352,11 @@ namespace NuGet.ProjectModel
             SetDependencies(writer, "frameworkAssemblies", libraryDependencies.Where(dependency => dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference));
         }
 
-        private static void SetHashingDependencies(IObjectWriter writer, IList<LibraryDependency> libraryDependencies)
-        {
-            SetHashingDependencies(writer, "dependencies", libraryDependencies.Where(dependency => dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference));
-            SetHashingDependencies(writer, "frameworkAssemblies", libraryDependencies.Where(dependency => dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference));
-        }
-
         /// <summary>
         /// This method sorts the libraries based on the name
         /// This method also writes out the normalized versions to avoid cases where original string is set because it was gotten through project system vs being installed from PM UI
         /// </summary>
-        private static void SetHashingDependencies(IObjectWriter writer, string name, IEnumerable<LibraryDependency> libraryDependencies)
+        private static void SetDependencies(IObjectWriter writer, string name, IEnumerable<LibraryDependency> libraryDependencies)
         {
             if (!libraryDependencies.Any())
             {
@@ -457,92 +376,6 @@ namespace NuGet.ProjectModel
 
                 var versionRange = dependency.LibraryRange.VersionRange ?? VersionRange.All;
                 var versionString = versionRange.ToNormalizedString();
-
-                if (expandedMode)
-                {
-                    writer.WriteObjectStart(dependency.Name);
-
-                    if (dependency.IncludeType != LibraryIncludeFlags.All)
-                    {
-                        SetValue(writer, "include", dependency.IncludeType.ToString());
-                    }
-
-                    if (dependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent)
-                    {
-                        SetValue(writer, "suppressParent", dependency.SuppressParent.ToString());
-                    }
-
-                    if (dependency.Type != LibraryDependencyType.Default)
-                    {
-                        SetValue(writer, "type", dependency.Type.ToString());
-                    }
-
-                    if (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference
-                        && dependency.LibraryRange.TypeConstraint != (LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference))
-                    {
-                        SetValue(writer, "target", dependency.LibraryRange.TypeConstraint.ToString());
-                    }
-
-                    if (VersionRange.All.Equals(versionRange)
-                        && !dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
-                        && !dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Reference)
-                        && !dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.ExternalProject))
-                    {
-                        // Allow this specific case to skip the version property
-                    }
-                    else
-                    {
-                        SetValue(writer, "version", versionString);
-                    }
-
-                    SetValueIfTrue(writer, "autoReferenced", dependency.AutoReferenced);
-
-                    if (dependency.NoWarn.Count > 0)
-                    {
-                        SetArrayValue(writer, "noWarn", dependency
-                            .NoWarn
-                            .OrderBy(c => c)
-                            .Distinct()
-                            .Select(code => code.GetName())
-                            .Where(s => !string.IsNullOrEmpty(s)));
-                    }
-
-                    writer.WriteObjectEnd();
-                }
-                else
-                {
-                    writer.WriteNameValue(dependency.Name, versionString);
-                }
-            }
-
-            writer.WriteObjectEnd();
-        }
-
-        private static void SetDependencies(IObjectWriter writer, string name, IEnumerable<LibraryDependency> libraryDependencies)
-        {
-            if (!libraryDependencies.Any())
-            {
-                return;
-            }
-
-            writer.WriteObjectStart(name);
-
-            foreach (var dependency in libraryDependencies)
-            {
-                var expandedMode = dependency.IncludeType != LibraryIncludeFlags.All
-                    || dependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent
-                    || dependency.Type != LibraryDependencyType.Default
-                    || dependency.AutoReferenced
-                    || (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference
-                        && dependency.LibraryRange.TypeConstraint != (LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference));
-
-                var versionRange = dependency.LibraryRange.VersionRange ?? VersionRange.All;
-                var versionString = versionRange.OriginalString;
-
-                if (string.IsNullOrEmpty(versionString))
-                {
-                    versionString = versionRange.ToNormalizedString();
-                }
 
                 if (expandedMode)
                 {
@@ -625,28 +458,6 @@ namespace NuGet.ProjectModel
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
 
                     SetDependencies(writer, framework.Dependencies);
-                    SetImports(writer, framework.Imports);
-                    SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
-                    SetValueIfTrue(writer, "warn", framework.Warn);
-
-                    writer.WriteObjectEnd();
-                }
-
-                writer.WriteObjectEnd();
-            }
-        }
-
-        private static void SetHashingFrameworks(IObjectWriter writer, IList<TargetFrameworkInformation> frameworks)
-        {
-            if (frameworks.Any())
-            {
-                writer.WriteObjectStart("frameworks");
-
-                foreach (var framework in frameworks)
-                {
-                    writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
-
-                    SetHashingDependencies(writer, framework.Dependencies);
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfTrue(writer, "warn", framework.Warn);
