@@ -524,14 +524,17 @@ namespace NuGet.CommandLine
             Func<string> getMsBuildPathInPathVar)
         {
             MsBuildToolset toolset;
+
+            var toolsetsContainingMSBuild = GetToolsetsContainingValidMSBuildInstallation(installedToolsets);
+
             if (string.IsNullOrEmpty(userVersion))
             {
                 var msbuildPathInPath = getMsBuildPathInPathVar();
-                toolset = GetToolsetFromPath(msbuildPathInPath, installedToolsets);
+                toolset = GetToolsetFromPath(msbuildPathInPath, toolsetsContainingMSBuild);
             }
             else
             {
-                toolset = GetToolsetFromUserVersion(userVersion, installedToolsets);
+                toolset = GetToolsetFromUserVersion(userVersion, toolsetsContainingMSBuild);
             }
 
             if (toolset == null)
@@ -541,6 +544,11 @@ namespace NuGet.CommandLine
 
             LogToolsetToConsole(console, toolset);
             return toolset.Path;
+        }
+
+        private static IEnumerable<MsBuildToolset> GetToolsetsContainingValidMSBuildInstallation(IEnumerable<MsBuildToolset> installedToolsets)
+        {
+            return installedToolsets.Where(e => e.IsValid);
         }
 
         /// <summary>
