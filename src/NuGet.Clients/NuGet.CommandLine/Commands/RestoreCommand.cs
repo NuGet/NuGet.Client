@@ -350,7 +350,7 @@ namespace NuGet.CommandLine
                         LocalizedResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage"),
                         NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
 
-                    Console.LogMinimal(message);
+                    Console.LogInformation(message);
                 }
                 else
                 {
