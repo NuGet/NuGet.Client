@@ -17,7 +17,7 @@ namespace NuGet.ProjectModel
         private readonly SortedSet<string> _restore = new SortedSet<string>(StringComparer.Ordinal);
         private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(StringComparer.Ordinal);
 
-        private static readonly int _version = 1;
+        private const int _version = 1;
 
         public DependencyGraphSpec(JObject json)
         {
@@ -113,10 +113,10 @@ namespace NuGet.ProjectModel
             var projectDependencyGraphSpec = new DependencyGraphSpec();
             projectDependencyGraphSpec.AddRestore(projectUniqueName);
             foreach (var spec in GetClosure(projectUniqueName))
-            { 
+            {
                 projectDependencyGraphSpec.AddProject(spec.Clone());
             }
-            
+
             return projectDependencyGraphSpec;
         }
 
@@ -302,7 +302,7 @@ namespace NuGet.ProjectModel
 
             Write(writer, PackageSpecWriter.WriteHashingPackageSpec);
 
-            var json =  writer.GetJson();
+            var json = writer.GetJson();
 
             using (var fileStream = new FileStream(path, FileMode.Create))
             using (var textWriter = new StreamWriter(fileStream))

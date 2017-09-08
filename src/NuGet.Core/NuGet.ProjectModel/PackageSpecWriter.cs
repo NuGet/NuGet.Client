@@ -89,14 +89,13 @@ namespace NuGet.ProjectModel
             {
                 SetValue(writer, "version", packageSpec.Version?.ToFullString());
             }
-            // We don't need details like Description, Authors, Copyright, Language
+            // We don't need details like Description, Authors, Copyright, Language, scripts
             // We do not need pack related thing, PackInclude & packOptions
             SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles);
             SetRestoreSettings(writer, packageSpec);
             SetHashingMSBuildMetadata(writer, packageSpec);
-            SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
 
-            if (packageSpec.Dependencies.Any())
+            if (packageSpec.Dependencies.Count > 0)
             {
                 SetHashingDependencies(writer, packageSpec.Dependencies);
             }

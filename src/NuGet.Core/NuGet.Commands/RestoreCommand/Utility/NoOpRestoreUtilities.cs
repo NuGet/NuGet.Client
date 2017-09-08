@@ -259,11 +259,7 @@ namespace NuGet.Commands
                     DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(path));
                 }
 
-                log.LogMinimal(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.PersistNoOpDGFile,
-                        path));
+                log.LogMinimal($"Persisting no-op dg to {path}");
 
                 spec.SaveHashingDGSpec(path);
             }
