@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -84,13 +84,16 @@ namespace NuGet.Protocol
             }
             else if (_regResource != null)
             {
-                // Read the url from the registration information
-                var blob = await _regResource.GetPackageMetadata(identity, log, token);
-
-                if (blob != null
-                    && blob["packageContent"] != null)
+                using (var sourceCacheContext = new SourceCacheContext())
                 {
-                    downloadUri = new Uri(blob["packageContent"].ToString());
+                    // Read the url from the registration information
+                    var blob = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
+
+                    if (blob != null
+                        && blob["packageContent"] != null)
+                    {
+                        downloadUri = new Uri(blob["packageContent"].ToString());
+                    }
                 }
             }
 

@@ -291,84 +291,86 @@ namespace NuGet.CommandLine
 
             var dependencyBehavior = GetDependencyBehavior();
 
-            var resolutionContext = new ResolutionContext(
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var resolutionContext = new ResolutionContext(
                 dependencyBehavior,
                 includePrelease: allowPrerelease,
                 includeUnlisted: true,
-                versionConstraints: VersionConstraints.None);
+                versionConstraints: VersionConstraints.None,
+                gatherCache: new GatherCache(),
+                sourceCacheContext: sourceCacheContext);
 
-            if (version == null)
-            {
-                // Write out a helpful message before the http messages are shown
-                Console.Log(LogLevel.Minimal, string.Format(
-                    CultureInfo.CurrentCulture,
-                    LocalizedResourceManager.GetString("InstallPackageMessage"), packageId, installPath));
+                if (version == null)
+                {
+                    // Write out a helpful message before the http messages are shown
+                    Console.Log(LogLevel.Minimal, string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("InstallPackageMessage"), packageId, installPath));
 
-                // Find the latest version using NuGetPackageManager
-                var resolvePackage = await NuGetPackageManager.GetLatestVersionAsync(
-                    packageId,
-                    project,
-                    resolutionContext,
-                    primaryRepositories,
-                    Console,
-                    CancellationToken.None);
+                    // Find the latest version using NuGetPackageManager
+                    var resolvePackage = await NuGetPackageManager.GetLatestVersionAsync(
+                        packageId,
+                        project,
+                        resolutionContext,
+                        primaryRepositories,
+                        Console,
+                        CancellationToken.None);
 
-                if (resolvePackage == null || resolvePackage.LatestVersion == null)
+                    if (resolvePackage == null || resolvePackage.LatestVersion == null)
+                    {
+                        var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            LocalizedResourceManager.GetString("InstallCommandUnableToFindPackage"),
+                            packageId);
+
+                        throw new CommandLineException(message);
+                    }
+
+                    version = resolvePackage.LatestVersion;
+                }
+
+                // Get a list of packages already in the folder.
+                var installedPackages = await project.GetFolderPackagesAsync(CancellationToken.None);
+
+                // Find existing versions of the package
+                var alreadyInstalledVersions = new HashSet<NuGetVersion>(installedPackages
+                    .Where(e => StringComparer.OrdinalIgnoreCase.Equals(packageId, e.PackageIdentity.Id))
+                    .Select(e => e.PackageIdentity.Version));
+
+                var packageIdentity = new PackageIdentity(packageId, version);
+
+                // Check if the package already exists or a higher version exists already.
+                var skipInstall = project.PackageExists(packageIdentity);
+
+                // For SxS allow other versions to install. For non-SxS skip if a higher version exists.
+                skipInstall |= (ExcludeVersion && alreadyInstalledVersions.Any(e => e >= version));
+
+                if (skipInstall)
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
-                        LocalizedResourceManager.GetString("InstallCommandUnableToFindPackage"),
-                        packageId);
+                        LocalizedResourceManager.GetString("InstallCommandPackageAlreadyExists"),
+                        packageIdentity);
 
-                    throw new CommandLineException(message);
+                    Console.LogMinimal(message);
                 }
-
-                version = resolvePackage.LatestVersion;
-            }
-
-            // Get a list of packages already in the folder.
-            var installedPackages = await project.GetFolderPackagesAsync(CancellationToken.None);
-
-            // Find existing versions of the package
-            var alreadyInstalledVersions = new HashSet<NuGetVersion>(installedPackages
-                .Where(e => StringComparer.OrdinalIgnoreCase.Equals(packageId, e.PackageIdentity.Id))
-                .Select(e => e.PackageIdentity.Version));
-
-            var packageIdentity = new PackageIdentity(packageId, version);
-
-            // Check if the package already exists or a higher version exists already.
-            var skipInstall = project.PackageExists(packageIdentity);
-
-            // For SxS allow other versions to install. For non-SxS skip if a higher version exists.
-            skipInstall |= (ExcludeVersion && alreadyInstalledVersions.Any(e => e >= version));
-
-            if (skipInstall)
-            {
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    LocalizedResourceManager.GetString("InstallCommandPackageAlreadyExists"),
-                    packageIdentity);
-
-                Console.LogMinimal(message);
-            }
-            else
-            {
-                var projectContext = new ConsoleProjectContext(Console)
+                else
                 {
-                    PackageExtractionContext = new PackageExtractionContext(Console)
-                };
+                    var projectContext = new ConsoleProjectContext(Console)
+                    {
+                        PackageExtractionContext = new PackageExtractionContext(Console)
+                    };
 
-                if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
-                {
-                    projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
-                }
+                    if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+                    {
+                        projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
+                    }
 
-                using (var cacheContext = new SourceCacheContext())
-                {
-                    cacheContext.NoCache = NoCache;
-                    cacheContext.DirectDownload = DirectDownload;
+                    resolutionContext.SourceCacheContext.NoCache = NoCache;
+                    resolutionContext.SourceCacheContext.DirectDownload = DirectDownload;
 
-                    var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload);
+                    var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload);
 
                     await packageManager.InstallPackageAsync(
                         project,

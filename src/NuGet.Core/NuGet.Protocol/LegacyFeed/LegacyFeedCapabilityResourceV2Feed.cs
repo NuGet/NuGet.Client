@@ -77,7 +77,9 @@ namespace NuGet.Protocol
             {
                 document = await _feedParser.LoadXmlAsync(
                     metadataUri,
+                    cacheKey: null,
                     ignoreNotFounds: true,
+                    sourceCacheContext: null,
                     log: log,
                     token: token);
 

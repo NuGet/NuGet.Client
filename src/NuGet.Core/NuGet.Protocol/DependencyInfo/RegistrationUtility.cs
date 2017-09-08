@@ -3,11 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -29,14 +32,27 @@ namespace NuGet.Protocol
         public async static Task<IEnumerable<JObject>> LoadRanges(
             HttpSource httpSource,
             Uri registrationUri,
+            string packageId,
             VersionRange range,
+            SourceCacheContext cacheContext,
             ILogger log,
             CancellationToken token)
         {
-            var index = await httpSource.GetJObjectAsync(
-                new HttpSourceRequest(registrationUri, log)
+            var packageIdLowerCase = packageId.ToLowerInvariant();
+
+            var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, 0);
+
+            var index = await httpSource.GetAsync(
+                new HttpSourceCachedRequest(
+                    registrationUri.OriginalString,
+                    $"list_{packageIdLowerCase}_index",
+                    httpSourceCacheContext)
                 {
-                    IgnoreNotFounds = true
+                    IgnoreNotFounds = true,
+                },
+                async httpSourceResult =>
+                {
+                    return await httpSourceResult.Stream.AsJObjectAsync();
                 },
                 log,
                 token);
@@ -59,12 +75,19 @@ namespace NuGet.Protocol
                     JToken items;
                     if (!item.TryGetValue("items", out items))
                     {
-                        var rangeUri = item["@id"].ToObject<Uri>();
+                        var rangeUri = item["@id"].ToString();
 
-                        rangeTasks.Add(httpSource.GetJObjectAsync(
-                            new HttpSourceRequest(rangeUri, log)
+                        rangeTasks.Add(httpSource.GetAsync(
+                            new HttpSourceCachedRequest(
+                                rangeUri,
+                                $"list_{packageIdLowerCase}_range_{lower.ToNormalizedString()}-{upper.ToNormalizedString()}",
+                                httpSourceCacheContext)
                             {
-                                IgnoreNotFounds = true
+                                IgnoreNotFounds = true,
+                            },
+                            async httpSourceResult =>
+                            {
+                                return await httpSourceResult.Stream.AsJObjectAsync();
                             },
                             log,
                             token));

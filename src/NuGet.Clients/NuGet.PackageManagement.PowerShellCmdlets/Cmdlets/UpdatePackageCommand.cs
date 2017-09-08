@@ -10,6 +10,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -19,7 +20,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [Cmdlet(VerbsData.Update, "Package", DefaultParameterSetName = "All")]
     public class UpdatePackageCommand : PackageActionBaseCommand
     {
-        private ResolutionContext _context;
         private UninstallationContext _uninstallcontext;
         private string _id;
         private string _projectName;
@@ -157,25 +157,36 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             try
             {
-                // if the source is explicitly specified we will use exclusively that source otherwise use ALL enabled sources
-                var actions = await PackageManager.PreviewUpdatePackagesAsync(
-                    Projects,
-                    ResolutionContext,
-                    this,
-                    PrimarySourceRepositories,
-                    PrimarySourceRepositories,
-                    Token);
-
-                if (!actions.Any())
+                using (var sourceCacheContext = new SourceCacheContext())
                 {
-                    _status = NuGetOperationStatus.NoOp;
-                }
-                else
-                {
-                    _packageCount = actions.Select(action => action.PackageIdentity.Id).Distinct().Count();
-                }
+                    var resolutionContext = new ResolutionContext(
+                        GetDependencyBehavior(),
+                        _allowPrerelease,
+                        false,
+                        DetermineVersionConstraints(),
+                        new GatherCache(),
+                        sourceCacheContext);
 
-                await ExecuteActions(actions);
+                    // if the source is explicitly specified we will use exclusively that source otherwise use ALL enabled sources
+                    var actions = await PackageManager.PreviewUpdatePackagesAsync(
+                        Projects,
+                        resolutionContext,
+                        this,
+                        PrimarySourceRepositories,
+                        PrimarySourceRepositories,
+                        Token);
+
+                    if (!actions.Any())
+                    {
+                        _status = NuGetOperationStatus.NoOp;
+                    }
+                    else
+                    {
+                        _packageCount = actions.Select(action => action.PackageIdentity.Id).Distinct().Count();
+                    }
+
+                    await ExecuteActions(actions, sourceCacheContext);
+                }
             }
             catch (Exception ex)
             {
@@ -229,41 +240,52 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             var actions = Enumerable.Empty<NuGetProjectAction>();
 
-            // If -Version switch is specified
-            if (!string.IsNullOrEmpty(Version))
+            using (var sourceCacheContext = new SourceCacheContext())
             {
-                actions = await PackageManager.PreviewUpdatePackagesAsync(
-                    new PackageIdentity(Id, PowerShellCmdletsUtility.GetNuGetVersionFromString(Version)),
-                    Projects,
-                    ResolutionContext,
-                    this,
-                    PrimarySourceRepositories,
-                    EnabledSourceRepositories,
-                    Token);
-            }
-            else
-            {
-                actions = await PackageManager.PreviewUpdatePackagesAsync(
-                    Id,
-                    Projects,
-                    ResolutionContext,
-                    this,
-                    PrimarySourceRepositories,
-                    EnabledSourceRepositories,
-                    Token);
-            }
+                var resolutionContext = new ResolutionContext(
+                    GetDependencyBehavior(),
+                    _allowPrerelease,
+                    false,
+                    DetermineVersionConstraints(),
+                    new GatherCache(),
+                    sourceCacheContext);
 
-            if (!actions.Any())
-            {
-                _status = NuGetOperationStatus.NoOp;
-            }
-            else
-            {
-                _packageCount = actions.Select(
-                    action => action.PackageIdentity.Id).Distinct().Count();
-            }
+                // If -Version switch is specified
+                if (!string.IsNullOrEmpty(Version))
+                {
+                    actions = await PackageManager.PreviewUpdatePackagesAsync(
+                        new PackageIdentity(Id, PowerShellCmdletsUtility.GetNuGetVersionFromString(Version)),
+                        Projects,
+                        resolutionContext,
+                        this,
+                        PrimarySourceRepositories,
+                        EnabledSourceRepositories,
+                        Token);
+                }
+                else
+                {
+                    actions = await PackageManager.PreviewUpdatePackagesAsync(
+                        Id,
+                        Projects,
+                        resolutionContext,
+                        this,
+                        PrimarySourceRepositories,
+                        EnabledSourceRepositories,
+                        Token);
+                }
 
-            await ExecuteActions(actions);
+                if (!actions.Any())
+                {
+                    _status = NuGetOperationStatus.NoOp;
+                }
+                else
+                {
+                    _packageCount = actions.Select(
+                        action => action.PackageIdentity.Id).Distinct().Count();
+                }
+
+                await ExecuteActions(actions, sourceCacheContext);
+            }
         }
 
         /// <summary>
@@ -291,7 +313,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="actions"></param>
         /// <returns></returns>
-        private async Task ExecuteActions(IEnumerable<NuGetProjectAction> actions)
+        private async Task ExecuteActions(IEnumerable<NuGetProjectAction> actions, SourceCacheContext sourceCacheContext)
         {
             // stop telemetry event timer to avoid ui interaction
             TelemetryUtility.StopTimer();
@@ -314,7 +336,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             else
             {
                 // Execute project actions by Package Manager
-                await PackageManager.ExecuteNuGetProjectActionsAsync(Projects, actions, this, Token);
+                await PackageManager.ExecuteNuGetProjectActionsAsync(Projects, actions, this, sourceCacheContext, Token);
             }
         }
 
@@ -333,23 +355,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
             }
             _allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
-        }
-
-        /// <summary>
-        /// Resolution Context for Update-Package command
-        /// </summary>
-        public ResolutionContext ResolutionContext
-        {
-            get
-            {
-                // ResolutionContext contains a cache, this should only be created once per command
-                if (_context == null)
-                {
-                    _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, DetermineVersionConstraints());
-                }
-
-                return _context;
-            }
         }
 
         /// <summary>

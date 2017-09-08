@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
@@ -93,6 +94,7 @@ namespace NuGet.Protocol.FuncTest
                     new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
                     new PackageDownloadContext(cacheContext),
                     packagesFolder,
+                    cacheContext,
                     NullLogger.Instance,
                     CancellationToken.None))
                 {
@@ -115,7 +117,7 @@ namespace NuGet.Protocol.FuncTest
             var parser = new V2FeedParser(httpSource, packageSource);
 
             // Act
-            var package = await parser.GetPackage(new PackageIdentity("owin", new NuGetVersion("1.0")), NullLogger.Instance, CancellationToken.None);
+            var package = await parser.GetPackage(new PackageIdentity("owin", new NuGetVersion("1.0")), NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal("Owin", package.Id);
@@ -141,6 +143,7 @@ namespace NuGet.Protocol.FuncTest
                     new PackageIdentity("newtonsoft.json", new NuGetVersion("8.0.3")),
                     new PackageDownloadContext(cacheContext),
                     packagesFolder,
+                    cacheContext,
                     NullLogger.Instance,
                     CancellationToken.None))
                 {
@@ -236,7 +239,7 @@ namespace NuGet.Protocol.FuncTest
             var parser = new V2FeedParser(httpSource, packageSource.Source);
 
             // Act
-            var package = await parser.GetPackage(new PackageIdentity("owin", new NuGetVersion("1.0")), NullLogger.Instance, CancellationToken.None);
+            var package = await parser.GetPackage(new PackageIdentity("owin", new NuGetVersion("1.0")), NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal("Owin", package.Id);
@@ -262,6 +265,7 @@ namespace NuGet.Protocol.FuncTest
                     new PackageIdentity("newtonsoft.json", new NuGetVersion("8.0.3")),
                     new PackageDownloadContext(cacheContext),
                     packagesFolder,
+                    cacheContext,
                     NullLogger.Instance,
                     CancellationToken.None))
                 {

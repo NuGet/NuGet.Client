@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,11 +29,13 @@ namespace NuGet.Protocol
         public static async Task<IEnumerable<RemoteSourceDependencyInfo>> GetDependencies(
             HttpSource httpClient,
             Uri registrationUri,
+            string packageId,
             VersionRange range,
+            SourceCacheContext cacheContext,
             ILogger log,
             CancellationToken token)
         {
-            var ranges = await RegistrationUtility.LoadRanges(httpClient, registrationUri, range, log, token);
+            var ranges = await RegistrationUtility.LoadRanges(httpClient, registrationUri, packageId, range, cacheContext, log, token);
 
             var results = new HashSet<RemoteSourceDependencyInfo>();
             foreach (var rangeObj in ranges)
@@ -115,14 +117,16 @@ namespace NuGet.Protocol
         public static async Task<RegistrationInfo> GetRegistrationInfo(
             HttpSource httpClient,
             Uri registrationUri,
+            string packageId,
             VersionRange range,
+            SourceCacheContext cacheContext,
             NuGetFramework projectTargetFramework,
             ILogger log,
             CancellationToken token)
         {
             var frameworkComparer = new NuGetFrameworkFullComparer();
             var frameworkReducer = new FrameworkReducer();
-            var dependencies = await GetDependencies(httpClient, registrationUri, range, log, token);
+            var dependencies = await GetDependencies(httpClient, registrationUri, packageId, range, cacheContext, log, token);
 
             var result = new HashSet<RegistrationInfo>();
             var registrationInfo = new RegistrationInfo();

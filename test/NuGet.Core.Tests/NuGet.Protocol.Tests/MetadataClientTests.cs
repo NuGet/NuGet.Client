@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -30,14 +31,17 @@ namespace NuGet.Protocol.Tests
             var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
-            var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), Common.NullLogger.Instance, CancellationToken.None);
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
-            var target = results.Where(p => p.Version == NuGetVersion.Parse("1.4.0")).Single();
+                var target = results.Where(p => p.Version == NuGetVersion.Parse("1.4.0")).Single();
 
-            // Assert
-            Assert.Equal(19, results.Count());
+                // Assert
+                Assert.Equal(19, results.Count());
 
-            Assert.Equal(0, target.Dependencies.Count());
+                Assert.Equal(0, target.Dependencies.Count());
+            }
         }
 
         [Fact]
@@ -55,10 +59,13 @@ namespace NuGet.Protocol.Tests
             var package = new PackageIdentity("deepequal", NuGetVersion.Parse("0.9.0"));
 
             // Act
-            var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), Common.NullLogger.Instance, CancellationToken.None);
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
-            // Assert
-            Assert.Equal(result.Version, package.Version);
+                // Assert
+                Assert.Equal(result.Version, package.Version);
+            }
         }
 
         [Fact]
@@ -74,11 +81,14 @@ namespace NuGet.Protocol.Tests
             var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
-            var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), Common.NullLogger.Instance, CancellationToken.None);
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
-            // Assert
-            Assert.Equal(19, results.Count());
-            Assert.Equal(1, results.Count(package => package.Version.IsPrerelease));
+                // Assert
+                Assert.Equal(19, results.Count());
+                Assert.Equal(1, results.Count(package => package.Version.IsPrerelease));
+            }
         }
 
         [Fact]
@@ -95,11 +105,14 @@ namespace NuGet.Protocol.Tests
             var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
-            var results = await resource.ResolvePackages("microsoft.owin", NuGetFramework.Parse("net45"), Common.NullLogger.Instance, CancellationToken.None);
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var results = await resource.ResolvePackages("microsoft.owin", NuGetFramework.Parse("net45"), sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
-            // Assert
-            Assert.Equal(14, results.Count());
-            Assert.True(results.All(p => p.Id.Equals("microsoft.owin", StringComparison.OrdinalIgnoreCase)));
+                // Assert
+                Assert.Equal(14, results.Count());
+                Assert.True(results.All(p => p.Id.Equals("microsoft.owin", StringComparison.OrdinalIgnoreCase)));
+            }
         }
 
         [Fact]
@@ -116,10 +129,13 @@ namespace NuGet.Protocol.Tests
             var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
-            var results = await resource.ResolvePackages("owin", NuGetFramework.Parse("net45"), Common.NullLogger.Instance, CancellationToken.None);
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var results = await resource.ResolvePackages("owin", NuGetFramework.Parse("net45"), sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
-            // Assert
-            Assert.Equal(0, results.Count());
+                // Assert
+                Assert.Equal(0, results.Count());
+            }
         }
 
         [Fact]
@@ -138,10 +154,13 @@ namespace NuGet.Protocol.Tests
             var package = new PackageIdentity("owin", NuGetVersion.Parse("1.0.0"));
 
             // Act
-            var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), Common.NullLogger.Instance, CancellationToken.None);
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
-            // Assert
-            Assert.Null(result);
+                // Assert
+                Assert.Null(result);
+            }
         }
 
         [Fact]
@@ -162,10 +181,13 @@ namespace NuGet.Protocol.Tests
             var projectFramework = NuGetFramework.Parse("net45");
 
             // Act
-            var result = await resource.ResolvePackage(package, projectFramework, Common.NullLogger.Instance, CancellationToken.None);
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var result = await resource.ResolvePackage(package, projectFramework, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
-            // Assert
-            Assert.False(result.Listed);
+                // Assert
+                Assert.False(result.Listed);
+            }
         }
 
         [Fact]
@@ -187,10 +209,13 @@ namespace NuGet.Protocol.Tests
             var projectFramework = NuGetFramework.Parse("net45");
 
             // Act
-            var result = await resource.ResolvePackage(package, projectFramework, Common.NullLogger.Instance, CancellationToken.None);
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var result = await resource.ResolvePackage(package, projectFramework, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
-            // Assert
-            Assert.True(result.Listed);
+                // Assert
+                Assert.True(result.Listed);
+            }
         }
     }
 }

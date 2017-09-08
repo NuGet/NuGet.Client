@@ -390,39 +390,42 @@ namespace NuGet.VisualStudio
             // find the highest version within the ranges
             var idToIdentity = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var dep in packages)
+            using (var sourceCacheContext = new SourceCacheContext())
             {
-                NuGetVersion highestVersion = null;
-
-                if (dep.VersionRange != null
-                    && VersionComparer.Default.Equals(dep.VersionRange.MinVersion, dep.VersionRange.MaxVersion)
-                    && dep.VersionRange.MinVersion != null)
+                foreach (var dep in packages)
                 {
-                    // this is a single version, not a range
-                    highestVersion = dep.VersionRange.MinVersion;
-                }
-                else
-                {
-                    var tasks = new List<Task<IEnumerable<NuGetVersion>>>();
+                    NuGetVersion highestVersion = null;
 
-                    foreach (var resource in metadataResources)
+                    if (dep.VersionRange != null
+                        && VersionComparer.Default.Equals(dep.VersionRange.MinVersion, dep.VersionRange.MaxVersion)
+                        && dep.VersionRange.MinVersion != null)
                     {
-                        tasks.Add(resource.GetVersions(dep.Id, NullLogger.Instance, token));
+                        // this is a single version, not a range
+                        highestVersion = dep.VersionRange.MinVersion;
+                    }
+                    else
+                    {
+                        var tasks = new List<Task<IEnumerable<NuGetVersion>>>();
+
+                        foreach (var resource in metadataResources)
+                        {
+                            tasks.Add(resource.GetVersions(dep.Id, sourceCacheContext, NullLogger.Instance, token));
+                        }
+
+                        var versions = await Task.WhenAll(tasks.ToArray());
+
+                        highestVersion = versions.SelectMany(v => v).Where(v => dep.VersionRange.Satisfies(v)).Max();
                     }
 
-                    var versions = await Task.WhenAll(tasks.ToArray());
+                    if (highestVersion == null)
+                    {
+                        throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, VsResources.UnknownPackage, dep.Id));
+                    }
 
-                    highestVersion = versions.SelectMany(v => v).Where(v => dep.VersionRange.Satisfies(v)).Max();
-                }
-
-                if (highestVersion == null)
-                {
-                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, VsResources.UnknownPackage, dep.Id));
-                }
-
-                if (!idToIdentity.ContainsKey(dep.Id))
-                {
-                    idToIdentity.Add(dep.Id, new PackageIdentity(dep.Id, highestVersion));
+                    if (!idToIdentity.ContainsKey(dep.Id))
+                    {
+                        idToIdentity.Add(dep.Id, new PackageIdentity(dep.Id, highestVersion));
+                    }
                 }
             }
 
@@ -467,12 +470,6 @@ namespace NuGet.VisualStudio
             try
             {
                 var depBehavior = ignoreDependencies ? DependencyBehavior.Ignore : DependencyBehavior.Lowest;
-
-                var resolution = new ResolutionContext(
-                    depBehavior,
-                    includePrerelease,
-                    includeUnlisted: false,
-                    versionConstraints: VersionConstraints.None);
 
                 var packageManager = CreatePackageManager(repoProvider);
 
@@ -537,21 +534,25 @@ namespace NuGet.VisualStudio
 
             var depBehavior = ignoreDependencies ? DependencyBehavior.Ignore : DependencyBehavior.Lowest;
 
-            var resolution = new ResolutionContext(
-                depBehavior,
-                includePrerelease,
-                includeUnlisted: false,
-                versionConstraints: VersionConstraints.None,
-                gatherCache: gatherCache);
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                ResolutionContext resolution = new ResolutionContext(
+                    depBehavior,
+                    includePrerelease,
+                    includeUnlisted: false,
+                    versionConstraints: VersionConstraints.None,
+                    gatherCache: gatherCache,
+                    sourceCacheContext: sourceCacheContext);
 
-            // install the package
-            if (package.Version == null)
-            {
-                await packageManager.InstallPackageAsync(nuGetProject, package.Id, resolution, projectContext, sources, Enumerable.Empty<SourceRepository>(), token);
-            }
-            else
-            {
-                await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, sources, Enumerable.Empty<SourceRepository>(), token);
+                // install the package
+                if (package.Version == null)
+                {
+                    await packageManager.InstallPackageAsync(nuGetProject, package.Id, resolution, projectContext, sources, Enumerable.Empty<SourceRepository>(), token);
+                }
+                else
+                {
+                    await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, sources, Enumerable.Empty<SourceRepository>(), token);
+                }
             }
         }
 

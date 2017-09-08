@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -263,7 +263,7 @@ namespace NuGet.Protocol
                     return await _httpSource.GetAsync(
                         new HttpSourceCachedRequest(
                             url,
-                            "nupkg_" + identity.Id + "." + identity.Version.ToNormalizedString(),
+                            "nupkg_" + identity.Id.ToLowerInvariant() + "." + identity.Version.ToNormalizedString(),
                             httpSourceCacheContext)
                         {
                             EnsureValidContents = stream => HttpStreamValidation.ValidateNupkg(url, stream),

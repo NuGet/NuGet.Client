@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,8 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -172,7 +174,7 @@ namespace NuGet.Protocol.Tests
                 var resource = new LocalAutoCompleteResource(localResource);
 
                 // Act
-                var versions = (await resource.VersionStartsWith("packageA", string.Empty, includePrerelease: true, log: testLogger, token: CancellationToken.None)).ToList();
+                var versions = (await resource.VersionStartsWith("packageA", string.Empty, includePrerelease: true, sourceCacheContext: NullSourceCacheContext.Instance, log: testLogger, token: CancellationToken.None)).ToList();
 
                 // Assert
                 Assert.Equal(2, versions.Count);
@@ -200,7 +202,7 @@ namespace NuGet.Protocol.Tests
                 var resource = new LocalAutoCompleteResource(localResource);
 
                 // Act
-                var versions = (await resource.VersionStartsWith("packageA", "1.0", includePrerelease: true, log: testLogger, token: CancellationToken.None)).ToList();
+                var versions = (await resource.VersionStartsWith("packageA", "1.0", includePrerelease: true, sourceCacheContext: NullSourceCacheContext.Instance, log: testLogger, token: CancellationToken.None)).ToList();
 
                 // Assert
                 Assert.Equal(1, versions.Count);
@@ -227,7 +229,7 @@ namespace NuGet.Protocol.Tests
                 var resource = new LocalAutoCompleteResource(localResource);
 
                 // Act
-                var versions = (await resource.VersionStartsWith("packageA", "1.1.0-alpha.1.2.3+a.b", includePrerelease: true, log: testLogger, token: CancellationToken.None)).ToList();
+                var versions = (await resource.VersionStartsWith("packageA", "1.1.0-alpha.1.2.3+a.b", includePrerelease: true, sourceCacheContext: NullSourceCacheContext.Instance, log: testLogger, token: CancellationToken.None)).ToList();
 
                 // Assert
                 Assert.Equal(1, versions.Count);
@@ -254,7 +256,7 @@ namespace NuGet.Protocol.Tests
                 var resource = new LocalAutoCompleteResource(localResource);
 
                 // Act
-                var versions = (await resource.VersionStartsWith("packageA", "1.1.0-alpha.1.2.3+a.b", includePrerelease: false, log: testLogger, token: CancellationToken.None)).ToList();
+                var versions = (await resource.VersionStartsWith("packageA", "1.1.0-alpha.1.2.3+a.b", includePrerelease: false, sourceCacheContext: NullSourceCacheContext.Instance, log: testLogger, token: CancellationToken.None)).ToList();
 
                 // Assert
                 Assert.Equal(0, versions.Count);
@@ -278,7 +280,7 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 var ids = (await resource.IdStartsWith(string.Empty, includePrerelease: true, log: testLogger, token: CancellationToken.None)).ToList();
-                var versions = (await resource.VersionStartsWith(string.Empty, string.Empty, includePrerelease: true, log: testLogger, token: CancellationToken.None)).ToList();
+                var versions = (await resource.VersionStartsWith(string.Empty, string.Empty, includePrerelease: true, sourceCacheContext: NullSourceCacheContext.Instance, log: testLogger, token: CancellationToken.None)).ToList();
 
                 // Assert
                 Assert.Equal(0, ids.Count);

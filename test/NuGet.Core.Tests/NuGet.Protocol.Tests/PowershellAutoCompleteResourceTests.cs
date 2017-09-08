@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
@@ -53,18 +54,22 @@ namespace NuGet.Protocol.Tests
             Assert.NotNull(resource);
 
             // Act
-            var versions = await resource.VersionStartsWith(
-                "NuGet.Versioning",
-                "3.",
-                includePrerelease: true,
-                log: NullLogger.Instance,
-                token: CancellationToken.None);
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var versions = await resource.VersionStartsWith(
+                    "NuGet.Versioning",
+                    "3.",
+                    includePrerelease: true,
+                    sourceCacheContext: sourceCacheContext,
+                    log: NullLogger.Instance,
+                    token: CancellationToken.None);
 
-            // Assert
-            Assert.NotNull(versions);
-            Assert.Equal(2, versions.Count());
-            Assert.Contains(new NuGetVersion("3.5.0-rc1-final"), versions);
-            Assert.Contains(new NuGetVersion("3.5.0"), versions);
+                // Assert
+                Assert.NotNull(versions);
+                Assert.Equal(2, versions.Count());
+                Assert.Contains(new NuGetVersion("3.5.0-rc1-final"), versions);
+                Assert.Contains(new NuGetVersion("3.5.0"), versions);
+            }
         }
 
         [Theory]

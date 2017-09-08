@@ -469,4 +469,9 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   <data name="Log_LocalSourceNotExist" xml:space="preserve">
     <value>The local source '{0}' doesn't exist.</value>
   </data>
+  <data name="Log_FailedToFetchV2FeedHttp" xml:space="preserve">
+    <value>Failed to fetch results from V2 feed at '{0}' with following message : {1}</value>
+    <comment>{0} is the URL that failed.
+{1} is the message returned from HTTP call.</comment>
+  </data>
 </root>

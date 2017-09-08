@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,6 +32,7 @@ namespace NuGet.Protocol
             IEnumerable<string> packageIds,
             bool includePrerelease,
             bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {
@@ -42,7 +43,7 @@ namespace NuGet.Protocol
             // fetch all ids in parallel
             foreach (var id in packageIds)
             {
-                var task = new KeyValuePair<string, Task<IEnumerable<NuGetVersion>>>(id, GetVersions(id, includePrerelease, includeUnlisted, log, token));
+                var task = new KeyValuePair<string, Task<IEnumerable<NuGetVersion>>>(id, GetVersions(id, includePrerelease, includeUnlisted, sourceCacheContext, log, token));
                 tasks.Push(task);
             }
 
@@ -72,6 +73,7 @@ namespace NuGet.Protocol
             string packageId,
             bool includePrerelease,
             bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {
@@ -101,6 +103,7 @@ namespace NuGet.Protocol
         public override Task<bool> Exists(
             PackageIdentity identity,
             bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {
@@ -113,6 +116,7 @@ namespace NuGet.Protocol
             string packageId,
             bool includePrerelease,
             bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {
