@@ -363,6 +363,88 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedWarningPropertiesJson, actualWarningPropertiesJson);
         }
 
+        [Fact]
+        public void Write_ReadWriteDependenciesAreSorted()
+        {
+            // Arrange
+            var json = @"{
+                    ""dependencies"": {
+                        ""b"": {
+                                ""version"": ""[1.0.0, )"",
+                        },
+                        ""a"": {
+                            ""version"": ""[1.0.0, )"",
+                        }
+                    },
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""b"": {
+                                ""version"": ""[1.0.0, )"",
+                            },
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                            }
+                        }
+                    }
+                  }
+                }";
+
+            var expectedJson = @"{
+                  ""dependencies"": {
+                    ""a"": ""[1.0.0, )"",
+                    ""b"": ""[1.0.0, )""
+                  },
+                  ""frameworks"": {
+                    ""net46"": {
+                      ""dependencies"": {
+                        ""a"": ""[1.0.0, )"",
+                        ""b"": ""[1.0.0, )""
+                      }
+                    }
+                  }
+                }";
+            // Act & Assert
+            VerifyPackageSpecWrite(json, expectedJson);
+        }
+
+        [Fact]
+        public void Write_ReadWriteVersionsAreNormalized()
+        {
+            // Arrange
+            var json = @"{
+                    ""dependencies"": {
+                        ""a"": {
+                                ""version"": ""1.0.0"",
+                        },
+                    },
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""1.0.0"",
+                            },
+                        }
+                    }
+                  }
+                }";
+
+            var expectedJson = @"{
+                  ""dependencies"": {
+                    ""a"": ""[1.0.0, )""
+                  },
+                  ""frameworks"": {
+                    ""net46"": {
+                      ""dependencies"": {
+                        ""a"": ""[1.0.0, )""
+                      }
+                    }
+                  }
+                }";
+            // Act & Assert
+            VerifyPackageSpecWrite(json, expectedJson);
+        }
+
         private static string GetJsonString(PackageSpec packageSpec)
         {
             var writer = new JsonObjectWriter();
@@ -531,6 +613,22 @@ namespace NuGet.ProjectModel.Test
             var actualResult = writer.GetJson();
 
             var expected = JObject.Parse(json).ToString();
+
+            // Assert
+            Assert.Equal(expected, actualResult);
+        }
+
+        private static void VerifyPackageSpecWrite(string json, string expectedJson)
+        {
+            // Arrange & Act
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "testName", @"C:\fake\path");
+
+            var writer = new JsonObjectWriter();
+            PackageSpecWriter.Write(spec, writer);
+
+            var actualResult = writer.GetJson();
+
+            var expected = JObject.Parse(expectedJson).ToString();
 
             // Assert
             Assert.Equal(expected, actualResult);
