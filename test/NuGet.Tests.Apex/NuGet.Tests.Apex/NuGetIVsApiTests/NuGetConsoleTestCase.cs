@@ -25,21 +25,22 @@ namespace NuGet.Tests.Apex
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
-
                 dte.ExecuteCommand("View.PackageManagerConsole");
-                var nugetTestService = GetNuGetTestService();
-                var nugetConsole = nugetTestService.GetPackageManagerConsole(project.UniqueName);
+                var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
 
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
                 CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion);
+
+                var nugetTestService = GetNuGetTestService();
+                var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
                 Assert.True(nugetTestService.Verify.PackageIsInstalled(project.UniqueName, packageName));
                 Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion));
 
+                nugetConsole.Clear();
                 solutionService.Close();
             }
         }
@@ -55,18 +56,20 @@ namespace NuGet.Tests.Apex
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
+                dte.ExecuteCommand("View.PackageManagerConsole");
                 var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
 
-                dte.ExecuteCommand("View.PackageManagerConsole");
                 var nugetTestService = GetNuGetTestService();
                 var nugetConsole = nugetTestService.GetPackageManagerConsole(project.UniqueName);
 
                 var packageName = "newtonsoft.json";
                 var packageVersion = "9.0.1";
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion, "https://api.nuget.org/v3/index.json");
+
                 nugetTestService.Verify.PackageIsInstalled(project.UniqueName, packageName);
                 Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion));
 
+                nugetConsole.Clear();
                 solutionService.Close();
             }
         }
@@ -82,15 +85,15 @@ namespace NuGet.Tests.Apex
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
-
                 dte.ExecuteCommand("View.PackageManagerConsole");
-                var nugetTestService = GetNuGetTestService();
-                var nugetConsole = nugetTestService.GetPackageManagerConsole(project.UniqueName);
+                var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
 
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
                 CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion);
+
+                var nugetTestService = GetNuGetTestService();
+                var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
                 nugetTestService.Verify.PackageIsInstalled(project.UniqueName, packageName);
@@ -100,6 +103,7 @@ namespace NuGet.Tests.Apex
                 nugetTestService.Verify.PackageIsNotInstalled(project.UniqueName, packageName);
                 Assert.False(nugetConsole.IsPackageInstalled(packageName, packageVersion));
 
+                nugetConsole.Clear();
                 solutionService.Close();
             }
         }
@@ -115,17 +119,17 @@ namespace NuGet.Tests.Apex
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
-
                 dte.ExecuteCommand("View.PackageManagerConsole");
-                var nugetTestService = GetNuGetTestService();
-                var nugetConsole = nugetTestService.GetPackageManagerConsole(project.UniqueName);
+                var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
 
                 var packageName = "TestPackage";
                 var packageVersion1 = "1.0.0";
                 var packageVersion2 = "2.0.0";
                 CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion1);
                 CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion2);
+
+                var nugetTestService = GetNuGetTestService();
+                var nugetConsole = nugetTestService.GetPackageManagerConsole(project.UniqueName);
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
                 nugetTestService.Verify.PackageIsInstalled(project.UniqueName, packageName, packageVersion1);
@@ -136,6 +140,7 @@ namespace NuGet.Tests.Apex
                 Assert.False(nugetConsole.IsPackageInstalled(packageName, packageVersion1));
                 Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion2));
 
+                nugetConsole.Clear();
                 solutionService.Close();
             }
         }
