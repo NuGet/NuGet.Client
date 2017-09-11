@@ -675,8 +675,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
         // Tests that when package restore is enabled and -RequireConsent is specified,
         // the opt out message is displayed.
-        // TODO: renable the test once this is implemented
-        // [Theory]
+        [Theory]
         [InlineData("packages.config")]
         [InlineData("packages.proj1.config")]
         public void RestoreCommand_OptOutMessage(string configFileName)
@@ -687,8 +686,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             using (var workingPath = TestDirectory.Create())
             {
                 Util.CreateFile(workingPath, "my.config",
-                    @"
-<?xml version=""1.0"" encoding=""utf-8""?>
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageRestore>
     <add key=""enabled"" value=""True"" />
