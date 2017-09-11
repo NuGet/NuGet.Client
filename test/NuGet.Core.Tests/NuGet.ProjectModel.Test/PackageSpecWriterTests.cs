@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -28,7 +28,7 @@ namespace NuGet.ProjectModel.Test
             var json = @"{
                     ""dependencies"": {
                         ""b"": {
-                            ""version"": ""[1.0.0,)"",
+                            ""version"": ""[1.0.0, )"",
                             ""autoReferenced"": true
                         }
                     },
@@ -36,7 +36,7 @@ namespace NuGet.ProjectModel.Test
                     ""net46"": {
                         ""dependencies"": {
                             ""a"": {
-                                ""version"": ""[1.0.0,)"",
+                                ""version"": ""[1.0.0, )"",
                                 ""autoReferenced"": true
                             }
                         }
@@ -446,7 +446,7 @@ namespace NuGet.ProjectModel.Test
                     FallbackFolders = unsortedReadOnlyList,
                     ConfigFilePaths = unsortedReadOnlyList,
                     LegacyPackagesDirectory = false,
-                    OriginalTargetFrameworks = unsortedReadOnlyList,
+                    OriginalTargetFrameworks = new[] { "net45", "net46", "net40" },
                     OutputPath = "outputPath",
                     ProjectStyle = ProjectStyle.PackageReference,
                     PackagesPath = "packagesPath",
