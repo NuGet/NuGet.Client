@@ -394,14 +394,14 @@ namespace NuGet.ProjectModel.Test
     ""frameworks"": {
       ""netcoreapp1.0"": {
         ""dependencies"": {
+         ""Microsoft.NET.Sdk"": {
+                ""suppressParent"": ""All"",
+                ""target"": ""Package"",
+                ""version"": ""[1.0.0-alpha-20161104-2, )""
+          },
           ""Microsoft.NETCore.App"": {
             ""target"": ""Package"",
-            ""version"": ""1.0.1""
-          },
-          ""Microsoft.NET.Sdk"": {
-            ""suppressParent"": ""All"",
-            ""target"": ""Package"",
-            ""version"": ""1.0.0-alpha-20161104-2""
+            ""version"": ""[1.0.1, )""
           }
         }
       }

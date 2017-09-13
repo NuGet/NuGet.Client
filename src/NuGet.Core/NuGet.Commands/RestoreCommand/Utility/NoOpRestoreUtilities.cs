@@ -210,26 +210,80 @@ namespace NuGet.Commands
 
                 var uniqueName = request.DependencyGraphSpec.Restore.First();
                 var dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
-                var projectSpec = dgSpec.GetProjectSpec(uniqueName);
 
-                // The project path where the tool is declared does not affect restore and is only used for logging and transparency.
-                if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
-                {
-                    projectSpec.RestoreMetadata.ProjectPath = null;
-                    projectSpec.FilePath = null;
+                foreach (var projectSpec in dgSpec.Projects){
+                    // The project path where the tool is declared does not affect restore and is only used for logging and transparency.
+                    if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
+                    {
+                        projectSpec.RestoreMetadata.ProjectPath = null;
+                        projectSpec.FilePath = null;
+                    }
+
+                    //Ignore the restore settings for package ref projects.
+                    //This is set by default for net core projects in VS while it's not set in commandline.
+                    //This causes a discrepancy and the project does not cross-client no - op.MSBuild / NuGet.exe vs VS.
+                    else if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                    {
+                        projectSpec.RestoreSettings = null;
+                    }
                 }
 
-                //Ignore the restore settings for package ref projects.
-                //This is set by default for net core projects in VS while it's not set in commandline.
-                //This causes a discrepancy and the project does not cross-client no - op.MSBuild / NuGet.exe vs VS.
-                else if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
-                {
-                    projectSpec.RestoreSettings = null;
-                }
+                PersistHashedDGFileIfDebugging(dgSpec, request.Log);
                 return dgSpec.GetHash();
             }
 
+            PersistHashedDGFileIfDebugging(request.DependencyGraphSpec, request.Log);
             return request.DependencyGraphSpec.GetHash();
+        }
+
+
+        /// <summary>
+        /// Write the dg file to a temp location if NUGET_PERSIST_NOOP_DG.
+        /// </summary>
+        /// <remarks>This is a noop if NUGET_PERSIST_NOOP_DG is not set to true.</remarks>
+        private static void PersistHashedDGFileIfDebugging(DependencyGraphSpec spec, ILogger log)
+        {
+            if (_isPersistDGSet.Value)
+            {
+                string path;
+                var envPath = Environment.GetEnvironmentVariable("NUGET_PERSIST_NOOP_DG_PATH");
+                if (!string.IsNullOrEmpty(envPath))
+                {
+                    path = envPath;
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                }
+                else
+                {
+                    path = Path.Combine(
+                        NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
+                        "nuget-dg",
+                        $"{spec.GetProjectSpec(spec.Restore.FirstOrDefault()).RestoreMetadata.ProjectName}-{DateTime.Now.ToString("yyyyMMddHHmmss")}.dg");
+                    DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(path));
+                }
+
+                log.LogMinimal($"Persisting no-op dg to {path}");
+
+                spec.Save(path);
+            }
+        }
+
+        private static readonly Lazy<bool> _isPersistDGSet = new Lazy<bool>(() => IsPersistDGSet());
+
+        /// <summary>
+        /// True if NUGET_PERSIST_NOOP_DG is set to true.
+        /// </summary>
+        private static bool IsPersistDGSet()
+        {
+            var settingValue = Environment.GetEnvironmentVariable("NUGET_PERSIST_NOOP_DG");
+
+            bool val;
+            if (!string.IsNullOrEmpty(settingValue)
+                && bool.TryParse(settingValue, out val))
+            {
+                return val;
+            }
+
+            return false;
         }
 
         /// <summary>
