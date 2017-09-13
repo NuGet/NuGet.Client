@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -210,22 +210,24 @@ namespace NuGet.Commands
 
                 var uniqueName = request.DependencyGraphSpec.Restore.First();
                 var dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
-                var projectSpec = dgSpec.GetProjectSpec(uniqueName);
 
-                // The project path where the tool is declared does not affect restore and is only used for logging and transparency.
-                if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
-                {
-                    projectSpec.RestoreMetadata.ProjectPath = null;
-                    projectSpec.FilePath = null;
+                foreach (var projectSpec in dgSpec.Projects){
+                    // The project path where the tool is declared does not affect restore and is only used for logging and transparency.
+                    if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
+                    {
+                        projectSpec.RestoreMetadata.ProjectPath = null;
+                        projectSpec.FilePath = null;
+                    }
+
+                    //Ignore the restore settings for package ref projects.
+                    //This is set by default for net core projects in VS while it's not set in commandline.
+                    //This causes a discrepancy and the project does not cross-client no - op.MSBuild / NuGet.exe vs VS.
+                    else if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                    {
+                        projectSpec.RestoreSettings = null;
+                    }
                 }
 
-                //Ignore the restore settings for package ref projects.
-                //This is set by default for net core projects in VS while it's not set in commandline.
-                //This causes a discrepancy and the project does not cross-client no - op.MSBuild / NuGet.exe vs VS.
-                else if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
-                {
-                    projectSpec.RestoreSettings = null;
-                }
                 PersistHashedDGFileIfDebugging(dgSpec, request.Log);
                 return dgSpec.GetHash();
             }
@@ -255,7 +257,7 @@ namespace NuGet.Commands
                     path = Path.Combine(
                         NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
                         "nuget-dg",
-                        $"{spec.Projects.FirstOrDefault().RestoreMetadata.ProjectName}-{DateTime.Now.ToString("yyyyMMddHHmmss")}.dg");
+                        $"{spec.GetProjectSpec(spec.Restore.FirstOrDefault()).RestoreMetadata.ProjectName}-{DateTime.Now.ToString("yyyyMMddHHmmss")}.dg");
                     DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(path));
                 }
 
