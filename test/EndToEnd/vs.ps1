@@ -925,3 +925,33 @@ function UnadviseSolutionEvents {
 function WaitUntilRebuildCompleted {
     [API.Test.VSSolutionHelper]::WaitUntilRebuildCompleted()
 }
+
+function Get-VSFolderPath
+{
+    $ProgramFilesPath = ${env:ProgramFiles}
+    if (Test-Path ${env:ProgramFiles(x86)})
+    {
+        $ProgramFilesPath = ${env:ProgramFiles(x86)}
+    }
+
+    $VS15PreviewRelativePath = "Microsoft Visual Studio\Preview\Enterprise"
+    $VS15StableRelativePath = "Microsoft Visual Studio\2017\Enterprise"
+
+    # Give preference to preview installation of VS2017
+    if (Test-Path (Join-Path $ProgramFilesPath $VS15PreviewRelativePath))
+    {
+        $VSFolderPath = Join-Path $ProgramFilesPath $VS15PreviewRelativePath
+    }
+    elseif (Test-Path (Join-Path $ProgramFilesPath $VS15StableRelativePath))
+    {
+        $VSFolderPath = Join-Path $ProgramFilesPath $VS15StableRelativePath
+    }
+    
+    return $VSFolderPath
+}
+
+function Get-MSBuildExe {
+    
+    $MSBuildRoot = Get-VSFolderPath
+    Join-Path $MSBuildRoot "MsBuild\15.0\bin\msbuild.exe"
+}

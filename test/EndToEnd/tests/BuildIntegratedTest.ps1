@@ -682,7 +682,9 @@ function Test-BuildIntegratedVSandMSBuildNoOp {
 
     $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
     
-    msbuild /t:restore
+    $MSBuildExe = Get-MSBuildExe
+
+    & "$MSBuildExe" /t:restore
 
     $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
 
