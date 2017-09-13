@@ -27,7 +27,6 @@ namespace NuGet.Tests.Apex
 
         public NuGetApexTestService()
         {
-            //_nuGetApexUITestService = new NuGetApexUITestService();
         }
 
         /// <summary>
