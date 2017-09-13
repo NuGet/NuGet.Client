@@ -670,3 +670,22 @@ function Test-PackageReferenceProjectGetPackageTransitive {
 function TestCases-PackageReferenceProjectGetPackageTransitive{
     BuildProjectTemplateTestCases 'ClassLibrary' , 'PackageReferenceClassLibrary', 'BuildIntegratedClassLibrary'
 }
+
+function Test-BuildIntegratedVSandMSBuildNoOp {
+    # Arrange
+    $project = New-Project PackageReferenceClassLibrary
+    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    Assert-ProjectCacheFileExists $project
+    $cacheFile = Get-ProjectCacheFilePath $project
+    
+    Build-Solution
+
+    $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+    
+    msbuild /t:restore
+
+    $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+
+    #Assert
+    Assert-True ($MsBuildRestoreTimestamp -eq $VSRestoreTimestamp)
+}

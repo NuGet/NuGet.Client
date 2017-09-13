@@ -778,3 +778,24 @@ function Test-NetCoreConsoleAppRebuildDoesNotDeleteCacheFile {
     #Assert
     Assert-ProjectCacheFileExists $project
 }
+
+
+function Test-NetCoreVSandMSBuildNoOp {
+
+    # Arrange
+    $project = New-NetCoreConsoleApp ConsoleApp
+
+    Assert-ProjectCacheFileExists $project
+
+    #Act
+    Build-Solution
+
+    $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+    
+    msbuild /t:restore
+
+    $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+
+    #Assert
+    Assert-True ($MsBuildRestoreTimestamp -eq $VSRestoreTimestamp)
+}
