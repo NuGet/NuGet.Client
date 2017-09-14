@@ -18,7 +18,6 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System.Core" />
-    <Reference Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
@@ -29,6 +28,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Frameworks\NuGet.Frameworks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Compression" Version="4.1.0" />
   </ItemGroup>
   
   <ItemGroup>
