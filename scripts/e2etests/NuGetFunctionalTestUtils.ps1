@@ -39,7 +39,10 @@ function WriteToTeamCity
         $testName = $parts[1];
         $duration = $parts[2];
 
+        $guid = New-Guid
+
         Write-Host "##teamcity[testStarted name='$testName']";
+        Write-Host "##vso[task.logdetail id=$guid;name='$testName';type=test;order=1]Test $testName started"
 
         if (($status -eq "Failed") -or ($status -eq "Skipped"))
         {
@@ -53,15 +56,18 @@ function WriteToTeamCity
                 if ($status -eq "Failed")
                 {
                     Write-Host "##teamcity[testFailed name='$testName' message='$result']"
+                    Write-Host "##vso[task.logdetail id=$guid;progres=100;state=Failed]Test $testName failed"
                 }
                 else
                 {
                     Write-Host "##teamcity[testIgnored name='$testName' message='$result']"
+                    Write-Host "##vso[task.logdetail id=$guid;progres=100;state=Skipped]Test $testName skipped"
                 }
             }
         }
 
         Write-Host "##teamcity[testFinished name='$testName' duration='$duration']"
+        Write-Host "##vso[task.logdetail id=$guid;progres=100;state=Succeeded]Test $testName passed"
     }
 
     return $true
