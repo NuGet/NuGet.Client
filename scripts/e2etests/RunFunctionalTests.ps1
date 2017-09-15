@@ -18,6 +18,7 @@ param (
 trap
 {
     Write-Host "RunFunctionalTests.ps1 threw an exception: " $_.Exception -ForegroundColor Red
+    KillRunningInstancesOfVS
     exit 1
 }
 
@@ -39,6 +40,7 @@ $dte2 = GetDTE2 $VSVersion
 if (!$dte2)
 {
     Write-Error 'DTE could not be obtained'
+    KillRunningInstancesOfVS
     exit 1
 }
 
@@ -66,6 +68,8 @@ ExecuteCommand $dte2 "View.PackageManagerConsole" $PMCCommand "Running command: 
 Write-Host "Starting functional tests with command '$PMCCommand'"
 $resultsHtmlFile = RealTimeLogResults $NuGetTestPath $EachTestTimoutInSecs
 
+KillRunningInstancesOfVS
+
 if (!$resultsHtmlFile)
 {
     exit 1
@@ -74,9 +78,6 @@ else
 {
     Write-Host 'Run has completed. Copying the results file to CI'
     CopyResultsToCI $NuGetDropPath $RunCounter $resultsHtmlFile
-
-    # Only kill VS if run has completed, otherwise, we might need to investigate
-    KillRunningInstancesOfVS
 }
 
 Write-Host -ForegroundColor Cyan "THE END!"
