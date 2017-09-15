@@ -180,7 +180,6 @@ function RealTimeLogResults
                 $resultsFile = Join-Path $currentBinFolder results.html
                 if (Test-Path $resultsFile)
                 {
-                    Start-Process $resultsFile
                     return $resultsFile
                 }
                 else
@@ -191,6 +190,12 @@ function RealTimeLogResults
         }
     }
 
+    $resultsFile = Join-Path $currentBinFolder results.html
+    if (Test-Path $resultsFile)
+    {
+        return $resultsFile
+    }
+    
     $errorMessage = 'Run Failed - Results.html did not get created. ' `
     + 'This indicates that the tests did not finish running. It could be that the VS crashed. Please investigate.'
 
