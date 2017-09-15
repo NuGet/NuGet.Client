@@ -39,7 +39,7 @@ function WriteToTeamCity
         $testName = $parts[1];
         $duration = $parts[2];
 
-        $guid = New-Guid
+        $guid = [System.Guid]::NewGuid().ToString("d")
 
         Write-Host "##teamcity[testStarted name='$testName']";
         Write-Host "##vso[task.logdetail id=$guid;name='$testName';type=test;order=1]Test $testName started"
@@ -56,18 +56,18 @@ function WriteToTeamCity
                 if ($status -eq "Failed")
                 {
                     Write-Host "##teamcity[testFailed name='$testName' message='$result']"
-                    Write-Host "##vso[task.logdetail id=$guid;progres=100;state=Failed]Test $testName failed"
+                    Write-Host "##vso[task.logdetail id=$guid;progress=100;state=Failed]Test $testName failed"
                 }
                 else
                 {
                     Write-Host "##teamcity[testIgnored name='$testName' message='$result']"
-                    Write-Host "##vso[task.logdetail id=$guid;progres=100;state=Skipped]Test $testName skipped"
+                    Write-Host "##vso[task.logdetail id=$guid;progress=100;state=Skipped]Test $testName skipped"
                 }
             }
         }
 
         Write-Host "##teamcity[testFinished name='$testName' duration='$duration']"
-        Write-Host "##vso[task.logdetail id=$guid;progres=100;state=Succeeded]Test $testName passed"
+        Write-Host "##vso[task.logdetail id=$guid;progress=100;state=Succeeded]Test $testName passed"
     }
 
     return $true
@@ -195,7 +195,7 @@ function RealTimeLogResults
     {
         return $resultsFile
     }
-    
+
     $errorMessage = 'Run Failed - Results.html did not get created. ' `
     + 'This indicates that the tests did not finish running. It could be that the VS crashed. Please investigate.'
 
