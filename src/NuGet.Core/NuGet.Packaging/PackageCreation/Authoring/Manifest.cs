@@ -51,11 +51,6 @@ namespace NuGet.Packaging
         public bool HasFilesNode { get; }
 
         /// <summary>
-        /// Gets the resolved manifest XDocument populated after save
-        /// </summary>
-        public XDocument ResolvedManifest { get; private set; }
-
-        /// <summary>
         /// Saves the current manifest to the specified stream.
         /// </summary>
         /// <param name="stream">The target stream.</param>
@@ -90,7 +85,7 @@ namespace NuGet.Packaging
             int version = Math.Max(minimumManifestVersion, ManifestVersionUtility.GetManifestVersion(Metadata));
             var schemaNamespace = (XNamespace)ManifestSchemaUtility.GetSchemaNamespace(version);
 
-            ResolvedManifest = new XDocument(
+            new XDocument(
                 new XElement(schemaNamespace + "package",
                     Metadata.ToXElement(schemaNamespace),
                     Files.Any() ?
@@ -98,9 +93,7 @@ namespace NuGet.Packaging
                             Files.Select(file => new XElement(schemaNamespace + "file",
                                 new XAttribute("src", file.Source),
                                 file.Target != null ? new XAttribute("target", file.Target) : null,
-                                file.Exclude != null ? new XAttribute("exclude", file.Exclude) : null))) : null));
-
-            ResolvedManifest.Save(stream);
+                                file.Exclude != null ? new XAttribute("exclude", file.Exclude) : null))) : null)).Save(stream);
         }
 
         public static Manifest ReadFrom(Stream stream, bool validateSchema)

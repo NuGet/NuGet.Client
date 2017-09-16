@@ -79,11 +79,8 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandMSBuildPath")]
         public string MSBuildPath { get; set; }
 
-        [Option(typeof(NuGetCommand), "PackageCommandOutputResolvedNuSpec")]
-        public bool OutputResolvedNuSpec { get; set; }
-
-        [Option(typeof(NuGetCommand), "PackageCommandOutputSHA512PackageHash")]
-        public bool OutputSHA512PackageHash { get; set; }
+        [Option(typeof(NuGetCommand), "PackageCommandInstallPackageToV3Feed")]
+        public bool InstallPackageToV3Feed { get; set; }
 
         // TODO: Temporarily hide the real ConfigFile parameter from the help text.
         // When we fix #3230, we should remove this property.
@@ -146,8 +143,7 @@ namespace NuGet.CommandLine
             packArgs.Suffix = Suffix;
             packArgs.Symbols = Symbols;
             packArgs.Tool = Tool;
-            packArgs.OutputResolvedNuSpec = OutputResolvedNuSpec;
-            packArgs.OutputSHA512PackageHash = OutputSHA512PackageHash;
+            packArgs.InstallPackageToV3Feed = InstallPackageToV3Feed;
 
             if (!string.IsNullOrEmpty(Version))
             {

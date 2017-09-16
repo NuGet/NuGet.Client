@@ -2121,7 +2121,7 @@ public class B
                 var commandRunner = CommandRunner.Run(
                     Util.GetNuGetExePath(),
                     workingDirectory,
-                    "pack packageA.nuspec -OutputResolvedNuSpec",
+                    "pack packageA.nuspec -InstallPackageToV3Feed",
                     waitForExit: true);
 
                 // Assert
@@ -2140,13 +2140,13 @@ public class B
         }
 
         [Fact]
-        public void PackCommand_OutputResolvedNuSpecFile()
+        public void PackCommand_InstallPackageToV3Feed()
         {
             using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
-                string packageName = "packageA.nuspec";
-                string originalDirectory = Path.Combine(workingDirectory, "Original");
+                var packageName = "packageA.nuspec";
+                var originalDirectory = Path.Combine(workingDirectory, "Original");
                 Directory.CreateDirectory(originalDirectory);
 
                 Util.CreateFile(
@@ -2175,7 +2175,7 @@ public class B
                 // Execute the pack command and feed in some properties for token replacements and 
                 // set the flag to save the resolved nuspec to output directory.\
                 var arguments = string.Format(
-                    "pack {0} -properties tagVar=CustomTag;author=test1@microsoft.com -OutputResolvedNuSpec",
+                    "pack {0} -properties tagVar=CustomTag;author=test1@microsoft.com -InstallPackageToV3Feed",
                     Path.Combine(originalDirectory, packageName));
 
                 var commandRunner = CommandRunner.Run(
@@ -2249,58 +2249,12 @@ public class B
                 var resolvedNuSpecContents = File.ReadAllText(resolveNuSpecPath);
                 var packageOutputDirectoryNuSpecXml = XDocument.Parse(resolvedNuSpecContents);
                 Assert.Equal(nuspecZipXml.ToString(), packageOutputDirectoryNuSpecXml.ToString());
-            }
-        }
-
-        [Fact]
-        public void PackCommand_OutputSHA512PackageHash()
-        {
-            using (var workingDirectory = TestDirectory.Create())
-            {
-                // Arrange
-                Util.CreateFile(
-                    workingDirectory,
-                    "packageA.nuspec",
-@"<?xml version=""1.0"" encoding=""utf-8""?>
-<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
-  <metadata minClientVersion=""3.3"">
-    <id>packageA</id>
-    <version>1.2.3.4</version>
-    <title>packageATitle</title>
-    <authors>test</authors>
-    <owners>testOwner</owners>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>the description</description>
-    <copyright>Copyright (C) Microsoft 2013</copyright>
-    <tags>Microsoft,Sample</tags>
-    <frameworkAssemblies>
-      <frameworkAssembly assemblyName=""System"" />
-    </frameworkAssemblies>
-  </metadata>
-</package>");
-
-                // Act
-
-                // Execute the pack command and attempt to create the .nupkg.sha512 file
-                var commandRunner = CommandRunner.Run(
-                    Util.GetNuGetExePath(),
-                    workingDirectory,
-                    "pack packageA.nuspec -OutputSHA512PackageHash",
-                    waitForExit: true);
-
-                // Assert
-
-                // Verify the nuget pack command exit code
-                Assert.NotNull(commandRunner);
-                Assert.True(
-                    0 == commandRunner.Item1,
-                    string.Format("{0} {1}", commandRunner.Item2 ?? "null", commandRunner.Item3 ?? "null"));
 
                 // Verify the package directory has the sha512 file
                 var sha512File = Path.Combine(workingDirectory, "packageA.1.2.3.4.nupkg.sha512");
                 Assert.True(File.Exists(sha512File));
 
-                string sha512FileContents = File.ReadAllText(sha512File);
+                var sha512FileContents = File.ReadAllText(sha512File);
                 Assert.False(string.IsNullOrWhiteSpace(sha512FileContents));
                 Assert.True(sha512FileContents.EndsWith("="));
             }

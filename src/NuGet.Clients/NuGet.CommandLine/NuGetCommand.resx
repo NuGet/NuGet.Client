@@ -5345,10 +5345,7 @@ nuget locals global-packages -list</value>
   <data name="InstallCommandFrameworkDescription" xml:space="preserve">
     <value>Target framework used for selecting dependencies. Defaults to 'Any' if not specified.</value>
   </data>
-  <data name="PackageCommandOutputResolvedNuSpec" xml:space="preserve">
-    <value>Specify if the command should save the resolved nuspec file to the package directory after building the package.</value>
-  </data>
-  <data name="PackageCommandOutputSHA512PackageHash" xml:space="preserve">
-    <value>Specify if the command should create a sha512 package hash file to the package directory after building the package.</value>
+  <data name="PackageCommandInstallPackageToV3Feed " xml:space="preserve">
+    <value>Specify if the command should prepare the package output directory to support share as feed.</value>
   </data>
 </root>

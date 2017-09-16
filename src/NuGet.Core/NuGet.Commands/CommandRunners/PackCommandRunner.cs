@@ -131,13 +131,9 @@ namespace NuGet.Commands
                 PrintVerbose(outputPath, builder);
             }
 
-            if (_packArgs.OutputResolvedNuSpec)
+            if (_packArgs.InstallPackageToV3Feed)
             {
                 WriteResolvedNuSpecToPackageOutputDirectory(outputPath, builder);
-            }
-
-            if (_packArgs.OutputSHA512PackageHash)
-            {
                 WriteSHA512PackageHash(outputPath, builder);
             }
 
@@ -164,12 +160,10 @@ namespace NuGet.Commands
                         _packArgs.Path));
             }
 
-            using (FileStream fileStream = new FileStream(resolvedNuSpecOutputPath, FileMode.Create))
+            Manifest manifest = new Manifest(new ManifestMetadata(packageBuilder), null);
+            using (Stream stream = new FileStream(resolvedNuSpecOutputPath, FileMode.Create))
             {
-                using (StreamWriter streamWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8))
-                {
-                    packageBuilder.PackageManifest.ResolvedManifest.Save(streamWriter, System.Xml.Linq.SaveOptions.None);
-                }
+                manifest.Save(stream);
             }
         }
 
