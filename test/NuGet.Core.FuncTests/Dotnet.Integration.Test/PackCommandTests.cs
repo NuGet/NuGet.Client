@@ -639,7 +639,7 @@ namespace Dotnet.Integration.Test
                 }
                 else if(sourcePath.StartsWith("{AbsolutePath}"))
                 {
-                    sourcePath.Replace("{AbsolutePath}", Environment.GetEnvironmentVariable("temp").Replace('\\','/'));
+                    sourcePath = sourcePath.Replace("{AbsolutePath}", Path.GetTempPath().Replace('\\','/'));
                 }
 
                 // Create the subdirectory structure for testing possible source paths for the content file
@@ -672,11 +672,16 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                var pathToContent = Path.Combine(workingDirectory, sourcePath);
+                var pathToContent = string.Empty;
                 if (Path.IsPathRooted(sourcePath))
                 {
                     pathToContent = sourcePath;
                 }
+                else
+                {
+                    pathToContent = Path.Combine(workingDirectory, sourcePath);
+                }
+                
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
@@ -1353,7 +1358,7 @@ namespace Dotnet.Integration.Test
                 }
                 else if (sourcePath.StartsWith("{AbsolutePath}"))
                 {
-                    sourcePath.Replace("{AbsolutePath}", Environment.GetEnvironmentVariable("temp").Replace('\\', '/'));
+                    sourcePath = sourcePath.Replace("{AbsolutePath}", Path.GetTempPath().Replace('\\', '/'));
                 }
 
                 // Create the subdirectory structure for testing possible source paths for the content file
@@ -1383,10 +1388,14 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                var pathToContent = Path.Combine(workingDirectory, sourcePath);
+                var pathToContent = string.Empty;
                 if (Path.IsPathRooted(sourcePath))
                 {
                     pathToContent = sourcePath;
+                }
+                else
+                {
+                    pathToContent = Path.Combine(workingDirectory, sourcePath);
                 }
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
