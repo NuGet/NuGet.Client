@@ -312,15 +312,6 @@ function New-ClassLibraryNET46 {
     New-Project ClassLibrary46 $ProjectName $SolutionFolderName
 }
 
-function New-LightSwitchApplication
-{
-    param(
-        [string]$ProjectName,
-        [string]$SolutionFolder
-    )
-
-    New-Project JScriptVisualBasicLightSwitchProjectTemplate $ProjectName $SolutionFolder
-}
 
 function New-PortableLibrary
 {
