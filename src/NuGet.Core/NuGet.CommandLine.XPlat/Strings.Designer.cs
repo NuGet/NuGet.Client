@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.XPlat {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -341,7 +341,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error while adding package &apos;{0}&apos; to project &apos;{1}&apos;. dotnet add package command supports adding package to one project at a time. But no project was found at the project path &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Error while adding package &apos;{0}&apos; to project &apos;{1}&apos;. dotnet add package command supports adding package to one project at a time. But no project was found at the project path &apos;{1}&apos;..
         /// </summary>
         internal static string Error_NoProjectFound {
             get {

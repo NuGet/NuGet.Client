@@ -41,7 +41,9 @@ namespace NuGet.CommandLine.XPlat
             var dgSpec = ReadProjectDependencyGraph(packageReferenceArgs);
             if (dgSpec == null)
             {
-                throw new Exception(Strings.Error_NoDgSpec);
+                packageReferenceArgs.Logger.LogDebug(Strings.Error_NoDgSpec);
+
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.Error_NoDgSpec));
             }
             packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Read");
 
@@ -57,13 +59,25 @@ namespace NuGet.CommandLine.XPlat
             // Throw otherwise since we cannot proceed further.
             if (!matchingPackageSpecs.Any())
             {
-                packageReferenceArgs.Logger.LogDebug(Strings.Error_NoMatchingSpecs);
-                throw new Exception(Strings.Error_NoProjectFound);
+                packageReferenceArgs.Logger.LogDebug(string.Format(Strings.Error_NoMatchingSpecs,
+                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.ProjectPath));
+
+                throw new Exception(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_NoMatchingSpecs,
+                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.ProjectPath));
             }
             else if (matchingPackageSpecs.Count() > 1)
             {
-                packageReferenceArgs.Logger.LogDebug(Strings.Error_MultipleMatchingSpecs);
-                throw new Exception(Strings.Error_MultipleProjectsFound);
+                packageReferenceArgs.Logger.LogDebug(string.Format(Strings.Error_MultipleMatchingSpecs,
+                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.ProjectPath));
+
+                throw new Exception(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_MultipleMatchingSpecs,
+                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.ProjectPath));
             }
 
             // Parse the user specified frameworks once to avoid re-do's
