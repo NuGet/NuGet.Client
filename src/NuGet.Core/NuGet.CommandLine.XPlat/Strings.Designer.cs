@@ -305,24 +305,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple matching package specs found when attempting to add package &apos;{0}&apos; to project &apos;{1}&apos;. Number of matching package specs found are  &apos;{2}&apos;..
-        /// </summary>
-        internal static string Error_MultipleMatchingSpecs {
-            get {
-                return ResourceManager.GetString("Error_MultipleMatchingSpecs", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Error while adding package &apos;{0}&apos; to project &apos;{1}&apos;. dotnet add package command supports adding package to one project at a time. But multiple projects were found at the project path &apos;{1}&apos;..
-        /// </summary>
-        internal static string Error_MultipleProjectsFound {
-            get {
-                return ResourceManager.GetString("Error_MultipleProjectsFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to None or invalid DgSpec was passed to NuGet add package command..
         /// </summary>
         internal static string Error_NoDgSpec {
@@ -341,15 +323,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error while adding package &apos;{0}&apos; to project &apos;{1}&apos;. dotnet add package command supports adding package to one project at a time. But no project was found at the project path &apos;{1}&apos;..
-        /// </summary>
-        internal static string Error_NoProjectFound {
-            get {
-                return ResourceManager.GetString("Error_NoProjectFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unable to {0} package. Argument &apos;{1}&apos; not provided..
         /// </summary>
         internal static string Error_PkgMissingArgument {
@@ -364,6 +337,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_PkgMissingOrInvalidProjectFile {
             get {
                 return ResourceManager.GetString("Error_PkgMissingOrInvalidProjectFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error while adding package &apos;{0}&apos; to project &apos;{1}&apos;. The project does not support adding package reference through add package command..
+        /// </summary>
+        internal static string Error_UnsupportedProject {
+            get {
+                return ResourceManager.GetString("Error_UnsupportedProject", resourceCulture);
             }
         }
         

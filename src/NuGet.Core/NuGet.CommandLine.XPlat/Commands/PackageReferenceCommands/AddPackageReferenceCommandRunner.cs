@@ -41,6 +41,7 @@ namespace NuGet.CommandLine.XPlat
             var dgSpec = ReadProjectDependencyGraph(packageReferenceArgs);
             if (dgSpec == null)
             {
+                // Logging non localized error on debug stream.
                 packageReferenceArgs.Logger.LogDebug(Strings.Error_NoDgSpec);
 
                 throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.Error_NoDgSpec));
@@ -57,25 +58,10 @@ namespace NuGet.CommandLine.XPlat
 
             // This ensures that the DG specs generated in previous steps contain exactly 1 project with the same path as the project requesting add package.
             // Throw otherwise since we cannot proceed further.
-            if (!matchingPackageSpecs.Any())
+            if (matchingPackageSpecs.Length != 1)
             {
-                packageReferenceArgs.Logger.LogDebug(string.Format(Strings.Error_NoMatchingSpecs,
-                    packageReferenceArgs.PackageDependency.Id,
-                    packageReferenceArgs.ProjectPath));
-
-                throw new Exception(string.Format(CultureInfo.CurrentCulture,
-                    Strings.Error_NoMatchingSpecs,
-                    packageReferenceArgs.PackageDependency.Id,
-                    packageReferenceArgs.ProjectPath));
-            }
-            else if (matchingPackageSpecs.Count() > 1)
-            {
-                packageReferenceArgs.Logger.LogDebug(string.Format(Strings.Error_MultipleMatchingSpecs,
-                    packageReferenceArgs.PackageDependency.Id,
-                    packageReferenceArgs.ProjectPath));
-
-                throw new Exception(string.Format(CultureInfo.CurrentCulture,
-                    Strings.Error_MultipleMatchingSpecs,
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_UnsupportedProject,
                     packageReferenceArgs.PackageDependency.Id,
                     packageReferenceArgs.ProjectPath));
             }
