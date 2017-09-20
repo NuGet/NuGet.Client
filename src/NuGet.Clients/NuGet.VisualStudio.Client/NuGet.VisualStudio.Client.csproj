@@ -1,8 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.props" />
+  <ItemDefinitionGroup>
+    <ProjectReference>      
+      <Ngen>True</Ngen>
+      <NgenArchitecture>All</NgenArchitecture>
+      <NgenPriority>2</NgenPriority>
+    </ProjectReference>
+  </ItemDefinitionGroup>
   <PropertyGroup>
     <Shipping>true</Shipping>
     <ProjectGuid>{3B96F91B-3B58-40ED-B06E-5CD133A79A63}</ProjectGuid>
@@ -311,7 +318,7 @@
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'"/>
+    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'" />
   </Target>
   <Target Name="PublishVS15" Condition="'$(IsInsertable)' != 'true' AND '$(VisualStudioVersion)' == '15.0'">
     <ItemGroup>
@@ -326,7 +333,7 @@
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'"/>
+    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'" />
   </Target>
   <Target Name="PublishVS15Insertable" Condition="'$(IsInsertable)' == 'true' AND '$(VisualStudioVersion)' == '15.0'">
     <ItemGroup>
@@ -341,7 +348,7 @@
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'"/>
+    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'" />
   </Target>
   <Target Name="ReadVsixIncludeListFromFile">
     <ReadLinesFromFile File="@(VsixIncludeFile)">
@@ -382,10 +389,7 @@
   </Target>
   <!--The IsCIBuild property is passed on the VSTS CI-->
   <Target Name="GetLocalizedDlls" AfterTargets="GetVsixSourceItems" Condition="'$(IsCIBuild)' =='true'">
-    <MSBuild
-      Projects="@(SolutionProjectsWithoutVSIX)"
-      Targets="GetLocalizedFilesForVsix"
-      Properties="IsVsixBuild=true;BuildProjectReferences=false;">
+    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)" Targets="GetLocalizedFilesForVsix" Properties="IsVsixBuild=true;BuildProjectReferences=false;">
       <Output TaskParameter="TargetOutputs" ItemName="LocalizedFilesForVsix" />
     </MSBuild>
     <ItemGroup>
