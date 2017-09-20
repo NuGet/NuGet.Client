@@ -464,7 +464,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
 {1} - Project path</comment>
   </data>
   <data name="Error_UnsupportedProject" xml:space="preserve">
-    <value>Error while adding package '{0}' to project '{1}'. The project does not support adding package reference through add package command.</value>
+    <value>Error while adding package '{0}' to project '{1}'. The project does not support adding package references through add package command.</value>
     <comment>{0} - Package Id
 {1} - Project path</comment>
   </data>

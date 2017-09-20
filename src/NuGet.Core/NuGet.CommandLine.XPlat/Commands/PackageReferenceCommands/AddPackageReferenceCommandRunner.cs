@@ -44,7 +44,7 @@ namespace NuGet.CommandLine.XPlat
                 // Logging non localized error on debug stream.
                 packageReferenceArgs.Logger.LogDebug(Strings.Error_NoDgSpec);
 
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.Error_NoDgSpec));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_NoDgSpec));
             }
             packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Read");
 

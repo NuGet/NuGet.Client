@@ -341,7 +341,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error while adding package &apos;{0}&apos; to project &apos;{1}&apos;. The project does not support adding package reference through add package command..
+        ///   Looks up a localized string similar to Error while adding package &apos;{0}&apos; to project &apos;{1}&apos;. The project does not support adding package references through add package command..
         /// </summary>
         internal static string Error_UnsupportedProject {
             get {

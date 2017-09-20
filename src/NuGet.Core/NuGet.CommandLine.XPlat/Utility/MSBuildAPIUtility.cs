@@ -40,7 +40,7 @@ namespace NuGet.CommandLine.XPlat
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
             {
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
             }
             return new Project(projectRootElement);
         }
@@ -56,7 +56,7 @@ namespace NuGet.CommandLine.XPlat
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
             {
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
             }
             return new Project(projectRootElement, globalProperties, toolsVersion: null);
         }
@@ -250,7 +250,7 @@ namespace NuGet.CommandLine.XPlat
                         importedPackageReference.UnevaluatedInclude,
                         importedPackageReference.Xml.ContainingProject.FullPath));
                 }
-                throw new Exception(string.Format(CultureInfo.CurrentCulture,
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AddPkgFailOnImportEdit,
                     operationType,
                     packageDependency.Id,
