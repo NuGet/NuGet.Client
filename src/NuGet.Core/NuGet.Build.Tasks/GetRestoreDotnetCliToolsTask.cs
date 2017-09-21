@@ -93,6 +93,7 @@ namespace NuGet.Build.Tasks
                 var properties = new Dictionary<string, string>();
                 properties.Add("Type", "ProjectSpec");
                 properties.Add("ProjectPath", ProjectPath);
+                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version");
                 properties.TryGetValue("Version", out string value);
                 var uniqueName = ToolRestoreUtility.GetUniqueName(msbuildItem.ItemSpec, ToolFramework, value != null ? VersionRange.Parse(value) : VersionRange.All);
                 properties.Add("ProjectUniqueName", uniqueName);
@@ -104,7 +105,6 @@ namespace NuGet.Build.Tasks
                 BuildTasksUtility.AddPropertyIfExists(properties, "PackagesPath", RestorePackagesPath);
                 properties.Add("TargetFrameworks", ToolFramework);
                 properties.Add("ProjectStyle", ProjectStyle.DotnetCliTool.ToString());
-                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version");
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
 

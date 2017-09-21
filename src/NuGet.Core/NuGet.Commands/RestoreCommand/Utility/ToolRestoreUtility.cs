@@ -22,7 +22,7 @@ namespace NuGet.Commands
         public static PackageSpec GetSpec(string projectFilePath, string id, VersionRange versionRange, NuGetFramework framework, string packagesPath, IList<string> fallbackFolders, IList<PackageSource> sources, WarningProperties projectWideWarningProperties)
 
         {
-            var name = GetUniqueName(id, framework.Framework, versionRange);
+            var name = GetUniqueName(id, framework.GetShortFolderName(), versionRange);
 
             return new PackageSpec()
             {
@@ -53,7 +53,7 @@ namespace NuGet.Commands
                     FallbackFolders = fallbackFolders,
                     Sources = sources,
                     OriginalTargetFrameworks = {
-                        framework.Framework
+                        framework.GetShortFolderName()
                     },
                     TargetFrameworks =
                     {
