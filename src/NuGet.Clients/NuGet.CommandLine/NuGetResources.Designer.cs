@@ -10070,7 +10070,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to Restoring NuGet packages...
-        ///To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck &apos;{0}&apos;..
+        ///To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck &apos;{0}&apos;..
         /// </summary>
         public static string RestoreCommandPackageRestoreOptOutMessage {
             get {
