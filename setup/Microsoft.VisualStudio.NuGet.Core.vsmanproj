@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <MergeManifest Include="$(VsixPublishDestination)Insertable\Microsoft.VisualStudio.NuGet.Core.json" />
+    <MergeManifest Include="$(VsixPublishDestination)Microsoft.VisualStudio.NuGet.Core.json" />
   </ItemGroup>
 
   <Import Project="$(MicroBuildDirectory)MicroBuild.Core.targets"/>
