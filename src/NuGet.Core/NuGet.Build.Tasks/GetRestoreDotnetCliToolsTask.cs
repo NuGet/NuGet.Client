@@ -93,7 +93,11 @@ namespace NuGet.Build.Tasks
                 var properties = new Dictionary<string, string>();
                 properties.Add("Type", "ProjectSpec");
                 properties.Add("ProjectPath", ProjectPath);
-                properties.Add("ProjectName", $"DotnetCliToolReference-{msbuildItem.ItemSpec}");
+                properties.TryGetValue("Version", out string value);
+                var uniqueName = ToolRestoreUtility.GetUniqueName(msbuildItem.ItemSpec, ToolFramework, value != null ? VersionRange.Parse(value) : VersionRange.All);
+                properties.Add("ProjectUniqueName", uniqueName);
+                properties.Add("ProjectName", uniqueName);
+
                 BuildTasksUtility.AddPropertyIfExists(properties, "Sources", RestoreSources);
                 BuildTasksUtility.AddPropertyIfExists(properties, "FallbackFolders", RestoreFallbackFolders);
                 BuildTasksUtility.AddPropertyIfExists(properties, "ConfigFilePaths", RestoreConfigFilePaths);
@@ -101,10 +105,6 @@ namespace NuGet.Build.Tasks
                 properties.Add("TargetFrameworks", ToolFramework);
                 properties.Add("ProjectStyle", ProjectStyle.DotnetCliTool.ToString());
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version");
-
-                properties.TryGetValue("Version", out string value);
-                var uniqueName = ToolRestoreUtility.GetUniqueName(msbuildItem.ItemSpec, ToolFramework, value != null ? VersionRange.Parse(value) : VersionRange.All);
-                properties.Add("ProjectUniqueName", uniqueName);
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
 
@@ -117,7 +117,7 @@ namespace NuGet.Build.Tasks
                 packageProperties.Add("TargetFrameworks", ToolFramework);
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), packageProperties));
-
+                 
                 // Add restore spec to ensure this is executed during restore
                 var restoreProperties = new Dictionary<string, string>();
                 restoreProperties.Add("ProjectUniqueName", uniqueName);
