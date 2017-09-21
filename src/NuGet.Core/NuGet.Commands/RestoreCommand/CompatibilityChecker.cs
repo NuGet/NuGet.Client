@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -243,17 +243,21 @@ namespace NuGet.Commands
             {
                 foreach (var group in contentItems.FindItemGroups(pattern))
                 {
-                    object tfmObj = null;
-                    object ridObj = null;
-                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out ridObj);
-                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out tfmObj);
-
-                    var tfm = tfmObj as NuGetFramework;
-
-                    // RID specific items should be ignored here since they are only used in the runtime assem check
-                    if (ridObj == null && tfm?.IsSpecificFramework == true)
+                    // lib/net45/subfolder/a.dll will be returned as a group with zero items since sub
+                    // folders are not allowed. Completely empty groups are not compatible, a group with
+                    // _._ would contain _._ as an item.
+                    if (group.Items.Count > 0)
                     {
-                        available.Add(tfm);
+                        group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out var ridObj);
+                        group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out var tfmObj);
+
+                        var tfm = tfmObj as NuGetFramework;
+
+                        // RID specific items should be ignored here since they are only used in the runtime assembly check
+                        if (ridObj == null && tfm?.IsSpecificFramework == true)
+                        {
+                            available.Add(tfm);
+                        }
                     }
                 }
             }
