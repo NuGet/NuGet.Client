@@ -801,3 +801,24 @@ function Test-NetCoreVSandMSBuildNoOp {
     #Assert
     Assert-True ($MsBuildRestoreTimestamp -eq $VSRestoreTimestamp)
 }
+
+function Test-NetCoreToolsVSandMSBuildNoOp {
+    
+    # Arrange
+    $project = New-NetCoreWebApp10 ConsoleApp
+    Assert-NetCoreProjectCreation $project
+
+    $ToolsCacheFile = Get-ProjectToolsCacheFilePath $project
+    
+    #Act
+    $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $ToolsCacheFile -Name LastWriteTime).lastwritetime).Ticks
+    
+    $MSBuildExe = Get-MSBuildExe
+    
+    & "$MSBuildExe" /t:restore
+
+    $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $ToolsCacheFile -Name LastWriteTime).lastwritetime).Ticks
+
+    #Assert
+    Assert-True ($MsBuildRestoreTimestamp -eq $VSRestoreTimestamp)
+}

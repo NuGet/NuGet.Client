@@ -22,7 +22,8 @@ namespace NuGet.Commands
         public static PackageSpec GetSpec(string projectFilePath, string id, VersionRange versionRange, NuGetFramework framework, string packagesPath, IList<string> fallbackFolders, IList<PackageSource> sources, WarningProperties projectWideWarningProperties)
 
         {
-            var name = GetUniqueName(id, framework.Framework, versionRange);
+            var frameworkShortFolderName = framework.GetShortFolderName();
+            var name = GetUniqueName(id, frameworkShortFolderName, versionRange);
 
             return new PackageSpec()
             {
@@ -52,6 +53,17 @@ namespace NuGet.Commands
                     PackagesPath = packagesPath,
                     FallbackFolders = fallbackFolders,
                     Sources = sources,
+                    OriginalTargetFrameworks = {
+                        frameworkShortFolderName
+                    },
+                    TargetFrameworks =
+                    {
+                        new ProjectRestoreMetadataFrameworkInfo
+                        {
+                            FrameworkName = framework,
+                            ProjectReferences = { }
+                        }
+                    },
                     ProjectWideWarningProperties = projectWideWarningProperties
                 }
             };
@@ -59,9 +71,9 @@ namespace NuGet.Commands
 
         public static string GetUniqueName(string id, string framework, VersionRange versionRange)
         {
-            return $"{id}-{framework}-{versionRange.ToNormalizedString()}".ToLowerInvariant(); 
+            return $"{id}-{framework}-{versionRange.ToNormalizedString()}".ToLowerInvariant();
         }
-        
+
         /// <summary>
         /// Only one output can win per packages folder/version range. Between colliding requests take
         /// the intersection of the inputs used.
