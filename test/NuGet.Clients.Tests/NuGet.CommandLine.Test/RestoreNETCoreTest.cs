@@ -1414,8 +1414,10 @@ namespace NuGet.CommandLine.Test
                 Assert.False(File.Exists(path), r2.Item2);
                 Assert.False(File.Exists(cacheFile), r2.Item2);
                 Assert.DoesNotContain("NU1603", r2.Item2);
-                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
-
+                for (var i = 1; i <= testCount; i++)
+                {
+                    Assert.Contains($"The restore inputs for 'z-netcoreapp1.0-[{i}.0.0, )' have not changed. No further actions are required to complete the restore.", r2.Item2);
+                }
                 // Each project should have its own tool verion
                 Assert.Equal(testCount, Directory.GetDirectories(zPath).Length);
             }
@@ -1729,8 +1731,8 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(1, Directory.GetDirectories(zPath).Length);
                 // This is expected because all the projects keep overwriting the cache file for the tool.
 
-                Assert.Contains("The restore inputs for 'DotnetCliToolReference-z' have changed. Continuing restore.", r2.Item2);
-                var count = Regex.Matches(r2.Item2, ("The restore inputs for 'DotnetCliToolReference-z' have changed. Continuing restore.")).Count;
+                Assert.Contains(@"have changed. Continuing restore.", r2.Item2);
+                var count = Regex.Matches(r2.Item2, (@"have changed. Continuing restore.")).Count;
                 Assert.True(count == 9 || count == 10, $"{ count } needs to be 9 or 10 in \n: { r2.Item2 }");
             }
         }
@@ -1867,7 +1869,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(cachePath));
                 // This is expected, because despite the fact that both projects resolve to the same tool, the version range they request is different so they will keep overwriting each other
                 // Basically, it is impossible for both tools to no-op.
-                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have changed. Continuing restore.", r2.Item2);
+                Assert.Contains($"Writing tool lock file to disk", r2.Item2);
                 r = Util.RestoreSolution(pathContext);
 
             }
@@ -1948,7 +1950,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(cachePath));
                 // This is a more complex scenario, since when we dedup 2.0.0 and 2.0.* we only look for 2.0.*...if 2.0.0 package exists, the 2.0.* would resolve to 2.0.0 so both cases would be covered
                 // The issue is ofc when you have 2.5 package in your local, and a package with 2.0.0 was added remotely. Then we re-download
-                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
+                Assert.Contains($"The restore inputs for 'z-netcoreapp1.0-[2.0.*, )' have not changed. No further actions are required to complete the restore.", r2.Item2);
             }
         }
 
@@ -2047,7 +2049,7 @@ namespace NuGet.CommandLine.Test
                 // The issue is ofc when you have 2.5 package in your local, and a package with 2.0.0 was added remotely. Then we won't redownload
                 Assert.False(File.Exists(assetsPath20));
                 Assert.False(File.Exists(cachePath20));
-                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
+                Assert.Contains($"The restore inputs for 'z-netcoreapp1.0-[2.0.*, )' have not changed. No further actions are required to complete the restore.", r2.Item2);
                 r = Util.RestoreSolution(pathContext);
             }
         }
@@ -2114,7 +2116,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
-                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
+                Assert.Contains($"The restore inputs for 'z-netcoreapp1.0-[1.0.0, )' have not changed. No further actions are required to complete the restore", r2.Item2);
 
                 r = Util.RestoreSolution(pathContext);
 
@@ -2249,7 +2251,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
-                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-z' have not changed. No further actions are required to complete the restore.", r2.Item2);
+                Assert.Contains($"The restore inputs for 'z-netcoreapp1.0-[1.0.0, )' have not changed. No further actions are required to complete the restore.", r2.Item2);
 
                 r = Util.RestoreSolution(pathContext);
             }
@@ -2372,7 +2374,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
-                Assert.Contains($"The restore inputs for 'DotnetCliToolReference-x' have not changed. No further actions are required to complete the restore.", r2.Item2);
+                Assert.Contains($"The restore inputs for 'x-netcoreapp1.0-[1.0.0, )' have not changed. No further actions are required to complete the restore.", r2.Item2);
                 Assert.Contains($"The restore inputs for 'a' have not changed. No further actions are required to complete the restore.", r2.Item2);
                 Assert.Contains($"The restore inputs for 'b' have not changed. No further actions are required to complete the restore.", r2.Item2);
 

@@ -117,7 +117,7 @@ namespace NuGet.Build.Tasks
                 packageProperties.Add("TargetFrameworks", ToolFramework);
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), packageProperties));
-                 
+
                 // Add restore spec to ensure this is executed during restore
                 var restoreProperties = new Dictionary<string, string>();
                 restoreProperties.Add("ProjectUniqueName", uniqueName);
