@@ -340,11 +340,6 @@ function Get-ToolsReference {
     $ns.AddNamespace("ns", $doc.DocumentElement.NamespaceURI)
     $node = $doc.SelectSingleNode("//ns:DotNetCliToolReference",$ns)
     return $node
-
-    $includeValue = $node.Attributes['Include'].Value
-    $versionValue = $node.Attributes['Version'].Value
-    Write-Host $includeValue
-    Write-Host $versionValue
 }
 
 
