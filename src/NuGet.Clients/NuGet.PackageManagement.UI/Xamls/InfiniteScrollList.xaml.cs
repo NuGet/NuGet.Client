@@ -155,7 +155,7 @@ namespace NuGet.PackageManagement.UI
             LoadItems(selectedPackageItem, token);
         }
 
-        private void UpdateSelectedItem(PackageItemListViewModel selectedItem)
+        internal void UpdateSelectedItem(PackageItemListViewModel selectedItem)
         {
             if (selectedItem != null)
             {
@@ -524,7 +524,17 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public PackageItemListViewModel SelectedItem => _list.SelectedItem as PackageItemListViewModel;
+        public PackageItemListViewModel SelectedItem
+        {
+            get
+            {
+                return _list.SelectedItem as PackageItemListViewModel;
+            }
+            internal set
+            {
+                _list.SelectedItem = value;
+            }
+        }
 
         private void List_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
