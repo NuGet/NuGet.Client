@@ -4,23 +4,23 @@ package name=Microsoft.VisualStudio.NuGet.BuildTools
         version=15.0.40500.$(BuildNumber)
 
 folder "InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet"
-        file source="$(NuGetTargetsPath)"
-        file source="$(ReferenceOutputPath)Microsoft.Web.XmlTransform.dll"
-        file source="$(ReferenceOutputPath)Newtonsoft.Json.dll"
-        file source="$(ReferenceOutputPath)NuGet.Build.Tasks.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.Commands.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.Common.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.Configuration.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.DependencyResolver.Core.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.Frameworks.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.LibraryModel.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.PackageManagement.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.Packaging.Core.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.Packaging.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.ProjectModel.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.Protocol.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.Resolver.dll vs.file.ngenArchitecture=all"
-        file source="$(ReferenceOutputPath)NuGet.Versioning.dll vs.file.ngenArchitecture=all"
+        file source=$(NuGetTargetsPath)
+        file source=$(ReferenceOutputPath)Microsoft.Web.XmlTransform.dll
+        file source=$(ReferenceOutputPath)Newtonsoft.Json.dll
+        file source=$(ReferenceOutputPath)NuGet.Build.Tasks.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.Commands.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.Common.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.Configuration.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.DependencyResolver.Core.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.Frameworks.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.LibraryModel.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.PackageManagement.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.Packaging.Core.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.Packaging.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.ProjectModel.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.Protocol.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.Resolver.dll vs.file.ngenArchitecture=all
+        file source=$(ReferenceOutputPath)NuGet.Versioning.dll vs.file.ngenArchitecture=all
 
 folder "InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\cs"
         file source="$(XmlTransformPath)cs\Microsoft.Web.XmlTransform.resources.dll"
