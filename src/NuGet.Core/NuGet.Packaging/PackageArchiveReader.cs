@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,9 +7,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.Packaging
 {
@@ -19,6 +23,11 @@ namespace NuGet.Packaging
     public class PackageArchiveReader : PackageReaderBase
     {
         private readonly ZipArchive _zipArchive;
+
+        /// <summary>
+        /// Underlying zip archive.
+        /// </summary>
+        protected ZipArchive Zip => _zipArchive;
 
         /// <summary>
         /// Nupkg package reader
@@ -198,6 +207,50 @@ namespace NuGet.Packaging
                 var entry = GetEntry(packageFile);
                 yield return new ZipFilePair(packageFileFullPath, entry);
             }
+        }
+
+        public override Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
+        {
+            var signatures = new List<Signature>();
+
+            var sigFile = GetSignManifestEntry();
+
+            if (sigFile != null)
+            {
+                signatures.AddRange(SigningUtility.GetTestSignatures(sigFile.Open()));
+            }
+
+            return Task.FromResult<IReadOnlyList<Signature>>(signatures.AsReadOnly());
+        }
+
+        public override Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<PackageContentManifest> CreateManifestAsync(CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<bool> IsSignedAsync(CancellationToken token)
+        {
+            return Task.FromResult(GetSignManifestEntry() != null);
+        }
+
+        private const string SignManifestPath = "testsigned/signed.json";
+
+        private ZipArchiveEntry GetSignManifestEntry()
+        {
+            var entry = _zipArchive.GetEntry(SignManifestPath);
+
+            if (entry != null && !StringComparer.Ordinal.Equals(SignManifestPath, entry.FullName))
+            {
+                // The entry casing did not match.
+                entry = null;
+            }
+
+            return entry;
         }
     }
 }
