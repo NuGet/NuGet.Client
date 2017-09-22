@@ -115,7 +115,7 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to One or more NuGet packages need to be restored but couldn&apos;t be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the Package Manager node and check &apos;Allow NuGet to download missing packages during build.&apos; You can also give consent by setting the environment variable &apos;EnableNuGetPackageRestore&apos; to &apos;true&apos;.
+        ///   Looks up a localized string similar to One or more NuGet packages need to be restored but couldn&apos;t be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the NuGet Package Manager node and check &apos;Allow NuGet to download missing packages during build.&apos; You can also give consent by setting the environment variable &apos;EnableNuGetPackageRestore&apos; to &apos;true&apos;.
         ///
         ///Missing packages: {0}.
         /// </summary>
@@ -126,7 +126,7 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet restore is currently disabled. To enable it, open the Visual Studio Options dialog, click on the Package Manager node and check &apos;Allow NuGet to download missing packages during build.&apos; You can also enable it by setting the environment variable &apos;EnableNuGetPackageRestore&apos; to &apos;true&apos;..
+        ///   Looks up a localized string similar to NuGet restore is currently disabled. To enable it, open the Visual Studio Options dialog, click on the NuGet Package Manager node and check &apos;Allow NuGet to download missing packages during build.&apos; You can also enable it by setting the environment variable &apos;EnableNuGetPackageRestore&apos; to &apos;true&apos;..
         /// </summary>
         internal static string PackageRefNotRestoredBecauseOfNoConsent {
             get {
@@ -181,7 +181,7 @@ namespace NuGet.SolutionRestoreManager {
         
         /// <summary>
         ///   Looks up a localized string similar to Restoring NuGet packages...
-        ///To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck &apos;Allow NuGet to download missing packages during build.&apos;.
+        ///To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck &apos;Allow NuGet to download missing packages during build.&apos;.
         /// </summary>
         internal static string PackageRestoreOptOutMessage {
             get {
