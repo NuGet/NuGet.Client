@@ -9,7 +9,7 @@
     <FinalizeSkipLayout>true</FinalizeSkipLayout>
     <BuildNumber>$(SemanticVersion).$(BuildNumber)</BuildNumber>
     <TargetName>$(MSBuildProjectName)</TargetName>
-    <DropFolder>$(VsixPublishDestination)Insertable</DropFolder>
+    <DropFolder>$(VsixPublishDestination)</DropFolder>
     <IsPackage>true</IsPackage>
     <FinalizeValidate>false</FinalizeValidate>
     <ValidateManifest>false</ValidateManifest>
