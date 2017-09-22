@@ -117,7 +117,7 @@ function Run-Test {
 		[parameter(ParameterSetName="Exclude", Mandatory=$true, Position=2)]
         [string]$Exclude,
         [parameter(Position=3)]
-        [bool]$LaunchResultsOnFailure=$true
+        [bool]$LaunchResultsOnFailure=$false
     )
 
     Write-Verbose "Loading test extensions modules"

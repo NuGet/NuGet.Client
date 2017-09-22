@@ -41,8 +41,7 @@ function WriteToTeamCity
 
         $guid = [System.Guid]::NewGuid().ToString("d")
 
-        Write-Host "##teamcity[testStarted name='$testName']";
-        Write-Host "##vso[task.logdetail id=$guid;name='$testName';type=test;order=1]Test $testName started"
+        Write-Host "##vso[task.logdetail id=$guid;name='$testName';type=build;order=1]Test $testName started"
 
         if (($status -eq "Failed") -or ($status -eq "Skipped"))
         {
@@ -52,21 +51,17 @@ function WriteToTeamCity
             }
             else
             {
-                $result = EscapeContentForTeamCity([string]::Join(" ", ($parts | select -skip 3)))
                 if ($status -eq "Failed")
                 {
-                    Write-Host "##teamcity[testFailed name='$testName' message='$result']"
                     Write-Host "##vso[task.logdetail id=$guid;progress=100;state=Failed]Test $testName failed"
                 }
                 else
                 {
-                    Write-Host "##teamcity[testIgnored name='$testName' message='$result']"
                     Write-Host "##vso[task.logdetail id=$guid;progress=100;state=Skipped]Test $testName skipped"
                 }
             }
         }
 
-        Write-Host "##teamcity[testFinished name='$testName' duration='$duration']"
         Write-Host "##vso[task.logdetail id=$guid;progress=100;state=Succeeded]Test $testName passed"
     }
 
@@ -75,30 +70,6 @@ function WriteToTeamCity
 
 function New-Guid {
     [System.Guid]::NewGuid().ToString("d").Substring(0, 4).Replace("-", "")
-}
-
-function Get-Tests
-{
-    param(
-    [Parameter(Mandatory=$true)]
-    [string]$NuGetTestPath)
-
-    # Get the path where tests are located
-    $testPath = Join-Path $NuGetTestPath tests
-
-    # Load all the test scripts
-    Get-ChildItem $testPath -Filter "*.ps1" | %{
-        . $_.FullName
-    }
-
-    # Get the test methods
-    $tests = Get-ChildItem function:\Test-*
-
-    # Apparently, running PackageRestore tests on Dev12 RTM causes hang problem.
-    # They have always been disabled. Need to investigate this later.
-    $tests = $tests | ? {!($_.Name -like 'Test-PackageRestore*') }
-
-    return $tests
 }
 
 # This function requires a rewrite. This is a first cut
