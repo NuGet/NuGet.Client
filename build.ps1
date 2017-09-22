@@ -148,7 +148,7 @@ Invoke-BuildStep 'Running Restore for VS 15.0' {
 Invoke-BuildStep $VS15Message {
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS 15.0
-Trace-Log ". `"$MSBuildExe`" build\build.proj /t:$VS15Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
+    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:$VS15Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
     & $MSBuildExe build\build.proj /t:$VS15Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
 
     if (-not $?)
