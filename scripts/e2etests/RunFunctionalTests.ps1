@@ -70,7 +70,7 @@ $resultsHtmlFile = RealTimeLogResults $NuGetTestPath $EachTestTimoutInSecs
 
 KillRunningInstancesOfVS
 
-if (!Test-Path $resultsHtmlFile)
+if (-not (Test-Path $resultsHtmlFile))
 {
     exit 1
 }

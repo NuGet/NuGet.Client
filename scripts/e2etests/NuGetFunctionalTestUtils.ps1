@@ -135,7 +135,7 @@ function RealTimeLogResults
             $logContent = Get-Content $log
             $logContentLastLine = $logContent[-1]
             if (($logContentLastLine -is [string]) -and $logContentLastLine.Contains("Tests and/or Test cases, ")`
-                    -and $content.Count -eq $currentTestId -and $logContent.Length -eq (2 + $currentTestId))
+                    -and $content.Count -eq $currentTestId)
             {
                 # RUN HAS COMPLETED
 
