@@ -157,11 +157,13 @@ function RealTimeLogResults
                 {
                     CopyResultsToCI $NuGetDropPath $RunCounter $testResults
                 }
+                break
             }
         }
     }
 
     $resultsFile = Join-Path $currentBinFolder results.html
+    Write-Host "Checking for results.html at $resultsFile"
     if (Test-Path $resultsFile)
     {
         return $resultsFile
@@ -192,5 +194,6 @@ function CopyResultsToCI
 
     $DestinationFileName = 'Run-' + $RunCounter + '-' + (Split-Path $resultsFile -Leaf)
     $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
+    Write-Host "Copying results file from $resultsFile to $DestinationPath"
     Copy-Item $resultsFile $DestinationPath
 }
