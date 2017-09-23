@@ -148,7 +148,7 @@ function RealTimeLogResults
                     Write-Error $logContentLastLine
                 }
 
-                $resultsFile = Join-Path $currentBinFolder results.html
+                $resultsFile = Join-Path $currentBinFolder.FullName results.html
                 if (Test-Path $resultsFile)
                 {                    
                     CopyResultsToCI $NuGetDropPath $RunCounter $resultsFile
@@ -162,7 +162,7 @@ function RealTimeLogResults
         }
     }
 
-    $resultsFile = Join-Path $currentBinFolder results.html
+    $resultsFile = Join-Path $currentBinFolder.FullName results.html
     Write-Host "Checking for results.html at $resultsFile"
     if (Test-Path $resultsFile)
     {
