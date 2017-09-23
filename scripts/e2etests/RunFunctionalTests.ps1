@@ -66,18 +66,10 @@ Write-Host "Executing the provided Package manager console command: ""$PMCComman
 ExecuteCommand $dte2 "View.PackageManagerConsole" $PMCCommand "Running command: $PMCCommand ..."
 
 Write-Host "Starting functional tests with command '$PMCCommand'"
-$resultsHtmlFile = RealTimeLogResults $NuGetTestPath $EachTestTimoutInSecs
+RealTimeLogResults $NuGetTestPath $EachTestTimoutInSecs
 
 KillRunningInstancesOfVS
 
-if (-not (Test-Path $resultsHtmlFile))
-{
-    exit 1
-}
-else
-{
-    Write-Host 'Run has completed. Copying the results file to CI'
-    CopyResultsToCI $NuGetDropPath $RunCounter $resultsHtmlFile
-}
+
 
 Write-Host -ForegroundColor Cyan "THE END!"

@@ -138,7 +138,7 @@ function RealTimeLogResults
                     -and $content.Count -eq $currentTestId)
             {
                 # RUN HAS COMPLETED
-
+                Write-Host 'Run has completed. Copying the results file to CI'
                 if ($logContentLastLine.Contains(", 0 Failed"))
                 {
                     Write-Host -ForegroundColor Green $logContentLastLine
@@ -150,12 +150,12 @@ function RealTimeLogResults
 
                 $resultsFile = Join-Path $currentBinFolder results.html
                 if (Test-Path $resultsFile)
-                {
-                    return $resultsFile
+                {                    
+                    CopyResultsToCI $NuGetDropPath $RunCounter $resultsFile
                 }
                 else
                 {
-                    return $testResults
+                    CopyResultsToCI $NuGetDropPath $RunCounter $testResults
                 }
             }
         }
@@ -182,7 +182,7 @@ function CopyResultsToCI
     [Parameter(Mandatory=$true)]
     [int]$RunCounter,
     [Parameter(Mandatory=$true)]
-    [string]$resultsHtmlFile)
+    [string]$resultsFile)
 
     $DropPathFileInfo = Get-Item $NuGetDropPath
     $DropPathParent = $DropPathFileInfo.Parent
@@ -190,8 +190,7 @@ function CopyResultsToCI
     $TestResultsPath = Join-Path $DropPathParent.FullName 'testresults'
     mkdir $TestResultsPath -ErrorAction Ignore
 
-    $DestinationFileName = 'Run-' + $RunCounter + '-Results.html'
+    $DestinationFileName = 'Run-' + $RunCounter + '-' + (Split-Path $resultsFile -Leaf)
     $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
-    Copy-Item $resultsHtmlFile $DestinationPath
-    Copy-Item $resultsHtmlFile (Join-Path $TestResultsPath 'LatestResults.html')
+    Copy-Item $resultsFile $DestinationPath
 }
