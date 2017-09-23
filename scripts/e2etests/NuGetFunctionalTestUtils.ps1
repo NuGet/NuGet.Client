@@ -118,6 +118,10 @@ function RealTimeLogResults
                     $result = WriteToTeamCity $_
                     if ($result -eq $false)
                     {
+                        Write-Host "Parsing failed with following in content : \n"
+                        Write-Host $content
+                        Write-Host "CurrentTestId : $currentTestId  Content count: " + $content.Count
+                        Write-Host $_
                         # continues the while loop so that it can be tried again
                         continue
                     }
