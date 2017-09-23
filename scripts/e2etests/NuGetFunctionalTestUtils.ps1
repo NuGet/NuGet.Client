@@ -168,6 +168,10 @@ function RealTimeLogResults
     {
         return $resultsFile
     }
+    else
+    {
+        CopyResultsToCI $NuGetDropPath $RunCounter $testResults
+    }
 
     $errorMessage = 'Run Failed - Results.html did not get created. ' `
     + 'This indicates that the tests did not finish running. It could be that the VS crashed. Please investigate.'
