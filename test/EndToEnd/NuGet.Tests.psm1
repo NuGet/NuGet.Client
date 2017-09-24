@@ -190,24 +190,24 @@ function Run-Test {
     }
 
     $tests = $tests | ?{ ShouldRunTest $_ }
-    # $numberOfTests = 0
-    # $tests | %{
-    #     $numberOfTests++
-    #     $testObject = $_
-    #     # Trim the Test- prefix
-    #     $testName = $testObject.Name.Substring(5)
-    #     $testCasesFactory = @(Get-ChildItem "function:\TestCases-$testName")
+    $numberOfTests = 0
+    $tests | %{
+        $numberOfTests++
+        $testObject = $_
+        # Trim the Test- prefix
+        $testName = $testObject.Name.Substring(5)
+        $testCasesFactory = @(Get-ChildItem "function:\TestCases-$testName")
 
-    #     if($testCasesFactory.Count -eq 1)
-    #     {
-    #         $testCases = & $testCasesFactory[0]
-    #         if($testCases -and $testCases.Count -gt 0)
-    #         {
-    #             $numberOfTests = $numberOfTests + $testCases.Count -1
-    #         }
-    #     }
+        if($testCasesFactory.Count -eq 1)
+        {
+            $testCases = & $testCasesFactory[0]
+            if($testCases -and $testCases.Count -gt 0)
+            {
+                $numberOfTests = $numberOfTests + $testCases.Count -1
+            }
+        }
 
-    # }
+    }
     $results = @{}
 
     # Add a reference to the msbuild assembly in case it isn't there
@@ -260,9 +260,8 @@ function Run-Test {
                 $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"
             }
 
-            "Running Test " + $testName + " ($testIndex / $($tests.Count))" + $testCasesInfoString
 
-            $testCaseIndex = 0
+            $testCaseIndex = -1
             $testCases | %{
 
                 # set name to test name. If this is a test case, we will add that info to the name
@@ -277,9 +276,14 @@ function Run-Test {
                         $name += "(" + [system.string]::join("_", $noteProperties) + ")"
                     }
                     $testCaseIndex++
-                    "Running Test case $name... ($testIndex / $numberOfTests)"
+                    $testIndexToPrint = $testIndex + $testCaseIndex
+                    "Running Test case $name... ($testIndexToPrint / $numberOfTests)"
                     # Write to log file as we run tests
-                    "Running Test case $name... ($testIndex / $numberOfTests)" >> $testLogFile
+                    "Running Test case $name... ($testIndexToPrint / $numberOfTests)" >> $testLogFile
+                    if ($testCaseIndex -eq $testCases.Count)
+                    {
+                        $testIndex = $testIndex + $testCaseIndex
+                    }
                 }
                 else
                 {
