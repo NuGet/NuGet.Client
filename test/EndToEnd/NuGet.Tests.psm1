@@ -204,28 +204,28 @@ function Run-Test {
     {
     }
 
-    try {
-        $numberOfTests = 0
+    
+    $numberOfTests = 0
     $tests | %{
         $numberOfTests++
         $testObject = $_
         # Trim the Test- prefix
         $testName = $testObject.Name.Substring(5)
-        $testCasesFactory = @(Get-ChildItem "function:\TestCases-$testName")
+        try {
+            $testCasesFactory = @(Get-ChildItem "function:\TestCases-$testName")
 
-        if($testCasesFactory.Count -eq 1)
-        {
-            $testCases = & $testCasesFactory[0]
-            if($testCases -and $testCases.Count -gt 0)
+            if($testCasesFactory -and $testCasesFactory.Count -eq 1)
             {
-                $numberOfTests = $numberOfTests + $testCases.Count -1
-            }
+                $testCases = & $testCasesFactory[0]
+                if($testCases -and $testCases.Count -gt 0)
+                {
+                    $numberOfTests = $numberOfTests + $testCases.Count -1
+                }
+            }        
         }
-
-    }    
-    }
-    catch {
-        
+        catch {
+            
+        }
     }
     
 	$startTime = Get-Date
@@ -286,7 +286,7 @@ function Run-Test {
                     "Running Test case $name... ($testIndexToPrint / $numberOfTests)"
                     # Write to log file as we run tests
                     "Running Test case $name... ($testIndexToPrint / $numberOfTests)" >> $testLogFile
-                    if ($testCaseIndex -eq $testCases.Count)
+                    if ($testCaseIndex -eq $testCases.Count + 1)
                     {
                         $testIndex = $testIndex + $testCaseIndex
                     }
