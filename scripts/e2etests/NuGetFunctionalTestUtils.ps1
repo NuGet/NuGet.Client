@@ -140,7 +140,7 @@ function RealTimeLogResults
             else
             {                               
                 $logContent = Get-Content $log
-                Write-Host $logContent[$currentTestId] + "Test Id: ${currentTestId} and current test time is ${currentTestTime}" 
+                Write-Host $logContent[$currentTestId] "Test Id: ${currentTestId} and current test time is ${currentTestTime}" 
             }
 
             $logContent = Get-Content $log
@@ -180,6 +180,7 @@ function RealTimeLogResults
         $errorMessage = 'Run Failed - Results.html did not get created. ' `
         + 'This indicates that the tests did not finish running. It could be that the VS crashed or a test timed out. Please investigate.'
         CopyResultsToCI $NuGetDropPath $RunCounter $testResults
+        Write-Error $errorMessage
         return $null
     }
 }
