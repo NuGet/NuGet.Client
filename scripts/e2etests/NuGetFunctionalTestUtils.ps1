@@ -286,6 +286,43 @@ function CopyResultsToCI
 # function Get-ResultFromResultRow
 # {
 #     param(
-
+#         [Parameter(Mandatory=$true)]
+#         [string]$SingleResult        
 #     )
+
+#     $parts = $SingleResult -split " "
+
+#     if ($parts.Length -lt 3)
+#     {
+#         Write-Host -ForegroundColor Red "WARNING: PARSING ISSUES. CANNOT PARSE TEST RESULT: $singleResult"
+#         return $null
+#     }
+#     else
+#     {
+#         $status = $parts[0];
+#         $testName = $parts[1];
+#         $duration = $parts[2];
+#         $failureMessage = $null
+
+#         if (($status -eq "Failed") -or ($status -eq "Skipped"))
+#         {
+#             if ($parts.Length -lt 4)
+#             {
+#                Write-Host -ForegroundColor Red "WARNING: PARSING ISSUES. CANNOT WRITE TEST FAILURE:  $singleResult"
+#             }
+#             else
+#             {
+#                 $failureMessage = $parts[3..$parts.Count - 1]
+#             }
+#         }
+
+#         $result = @{
+#             Status = $status
+#             Name = $testName
+#             Time = $duration
+#             Failure = $failureMessage
+#         }
+
+#         return $result
+#     }
 # }

@@ -204,7 +204,8 @@ function Run-Test {
     {
     }
 
-    $numberOfTests = 0
+    try {
+        $numberOfTests = 0
     $tests | %{
         $numberOfTests++
         $testObject = $_
@@ -221,7 +222,12 @@ function Run-Test {
             }
         }
 
+    }    
     }
+    catch {
+        
+    }
+    
 	$startTime = Get-Date
     try {
         # Run all tests
