@@ -261,12 +261,12 @@ function Run-Test {
                     $testCaseIndex++
                     "Running Test case $name... ($testCaseIndex / $($testCases.Count))"
                     # Write to log file as we run tests
-                    "$(Get-Date -format o) Running Test case $name... ($testCaseIndex / $($testCases.Count))" >> $testLogFile
+                    "Running Test case $name... ($testCaseIndex / $($testCases.Count))" >> $testLogFile
                 }
                 else
                 {
                     # Write to log file as we run tests
-                    "$(Get-Date -format o) Running Test $testName... ($testIndex / $($tests.Count))" + $testCasesInfoString >> $testLogFile            
+                    "Running Test $testName... ($testIndex / $($tests.Count))" >> $testLogFile            
                 }
 
                 $repositoryPath = Join-Path $testRepositoryPath $name

@@ -130,12 +130,11 @@ function RealTimeLogResults
 
                 $currentTestTime = 0
                 $currentTestId = $content.Count
-                $logContent = Get-Content $log
-                Write-Host $logContent[-1]
             }
             else
-            {
-                Write-Host "Current Test is ${currentTestId} and current test time is ${currentTestTime}"
+            {                               
+                $logContent = Get-Content $log
+                Write-Host $logContent[$currentTestId] + "Test Id: ${currentTestId} and current test time is ${currentTestTime}" 
             }
 
             $logContent = Get-Content $log
