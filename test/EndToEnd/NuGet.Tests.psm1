@@ -190,7 +190,24 @@ function Run-Test {
     }
 
     $tests = $tests | ?{ ShouldRunTest $_ }
+    # $numberOfTests = 0
+    # $tests | %{
+    #     $numberOfTests++
+    #     $testObject = $_
+    #     # Trim the Test- prefix
+    #     $testName = $testObject.Name.Substring(5)
+    #     $testCasesFactory = @(Get-ChildItem "function:\TestCases-$testName")
 
+    #     if($testCasesFactory.Count -eq 1)
+    #     {
+    #         $testCases = & $testCasesFactory[0]
+    #         if($testCases -and $testCases.Count -gt 0)
+    #         {
+    #             $numberOfTests = $numberOfTests + $testCases.Count -1
+    #         }
+    #     }
+
+    # }
     $results = @{}
 
     # Add a reference to the msbuild assembly in case it isn't there
@@ -220,6 +237,7 @@ function Run-Test {
 
             $testCases = @( $null )
             $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"
+        
 
             try {
                 Write-Host 'Getting the test cases factory for ' $testName
@@ -259,14 +277,14 @@ function Run-Test {
                         $name += "(" + [system.string]::join("_", $noteProperties) + ")"
                     }
                     $testCaseIndex++
-                    "Running Test case $name... ($testCaseIndex / $($testCases.Count))"
+                    "Running Test case $name... ($testIndex / $numberOfTests)"
                     # Write to log file as we run tests
-                    "Running Test case $name... ($testCaseIndex / $($testCases.Count))" >> $testLogFile
+                    "Running Test case $name... ($testIndex / $numberOfTests)" >> $testLogFile
                 }
                 else
                 {
                     # Write to log file as we run tests
-                    "Running Test $testName... ($testIndex / $($tests.Count))" >> $testLogFile            
+                    "Running Test $testName... ($testIndex / $numberOfTests)" >> $testLogFile            
                 }
 
                 $repositoryPath = Join-Path $testRepositoryPath $name

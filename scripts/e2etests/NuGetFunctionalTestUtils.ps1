@@ -116,9 +116,11 @@ function RealTimeLogResults
             {
                 $content[($currentTestId)..($content.Count - 1)] | % {
                     $result = $false
+                    $contentLine = $_
                     if($content.Count -eq 1)
                     {
                         $result = WriteToTeamCity $content
+                        $contentLine = $content
                     }
                     else
                     {
@@ -127,11 +129,10 @@ function RealTimeLogResults
                     
                     if ($result -eq $false)
                     {
-                        Write-Host $_
                         # continues the while loop so that it can be tried again
                         continue
                     }
-                    Write-Host $_
+                    Write-Host $contentLine
                 }
 
                 $currentTestTime = 0
