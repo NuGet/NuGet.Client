@@ -190,6 +190,20 @@ function Run-Test {
     }
 
     $tests = $tests | ?{ ShouldRunTest $_ }
+    $results = @{}
+
+    # Add a reference to the msbuild assembly in case it isn't there
+    Add-Type -AssemblyName "Microsoft.Build, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
+
+    # The vshost that VS launches caues the functional tests to freeze sometimes so disable it
+    try
+    {
+        [Microsoft.Build.Evaluation.ProjectCollection]::GlobalProjectCollection.SetGlobalProperty("UseVSHostingProcess", "false")
+    }
+    catch
+    {
+    }
+
     $numberOfTests = 0
     $tests | %{
         $numberOfTests++
@@ -208,20 +222,6 @@ function Run-Test {
         }
 
     }
-    $results = @{}
-
-    # Add a reference to the msbuild assembly in case it isn't there
-    Add-Type -AssemblyName "Microsoft.Build, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
-
-    # The vshost that VS launches caues the functional tests to freeze sometimes so disable it
-    try
-    {
-        [Microsoft.Build.Evaluation.ProjectCollection]::GlobalProjectCollection.SetGlobalProperty("UseVSHostingProcess", "false")
-    }
-    catch
-    {
-    }
-
 	$startTime = Get-Date
     try {
         # Run all tests

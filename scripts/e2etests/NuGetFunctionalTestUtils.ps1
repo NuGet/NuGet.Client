@@ -226,8 +226,14 @@ function CopyResultsToCI
 #     $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
 # }
 
-# Function Write-JunitXml([System.Collections.ArrayList] $Results, [System.Collections.HashTable] $HeaderData, [System.Collections.HashTable] $Statistics, $ResultFilePath)
+# Function Write-JunitXml
 # {
+#     param (
+#         [Parameter(Mandatory=$true)]
+#         [string]$RealTimeResultsFile,
+#         [Parameter(Mandatory=$true)]
+#         [string]$XmlResultsFilePath
+#     )
 # $template = @'
 # <testsuite name="" file="">
 # <testcase classname="" name="" time="">
@@ -246,10 +252,10 @@ function CopyResultsToCI
 #     # grab template user
 #     $newTestCaseTemplate = (@($xml.testsuite.testcase)[0]).Clone()  
 
-#     $className = [System.IO.Path]::GetFileNameWithoutExtension($HeaderData.TestFileName)
+#     $className = "NuGet.Client.EndToEndTests"
 #     $xml.testsuite.name = $className
 #     $xml.testsuite.file = $HeaderData.TestFileName
-
+#     $Results = Get-Content $RealTimeResults
 #     foreach($result in $Results) 
 #     {   
 #         $newTestCase = $newTestCaseTemplate.clone()
@@ -272,7 +278,14 @@ function CopyResultsToCI
 #     # save xml to file
 #     Write-Host "Path" $ResultFilePath
 
-#     $xml.Save($ResultFilePath)
+#     $xml.Save($XmlResultFilePath)
 
 #     Remove-Item $templatePath #clean up
+# }
+
+# function Get-ResultFromResultRow
+# {
+#     param(
+
+#     )
 # }
