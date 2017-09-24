@@ -242,8 +242,6 @@ function Run-Test {
                 $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"
             }
 
-            # Write to log file as we run tests
-            "$(Get-Date -format o) Running Test $testName... ($testIndex / $($tests.Count))" + $testCasesInfoString >> $testLogFile
             "Running Test " + $testName + " ($testIndex / $($tests.Count))" + $testCasesInfoString
 
             $testCaseIndex = 0
@@ -264,6 +262,11 @@ function Run-Test {
                     "Running Test case $name... ($testCaseIndex / $($testCases.Count))"
                     # Write to log file as we run tests
                     "$(Get-Date -format o) Running Test case $name... ($testCaseIndex / $($testCases.Count))" >> $testLogFile
+                }
+                else
+                {
+                    # Write to log file as we run tests
+                    "$(Get-Date -format o) Running Test $testName... ($testIndex / $($tests.Count))" + $testCasesInfoString >> $testLogFile            
                 }
 
                 $repositoryPath = Join-Path $testRepositoryPath $name

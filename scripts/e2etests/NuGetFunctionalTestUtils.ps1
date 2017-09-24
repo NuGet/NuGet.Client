@@ -130,6 +130,8 @@ function RealTimeLogResults
 
                 $currentTestTime = 0
                 $currentTestId = $content.Count
+                $logContent = Get-Content $log
+                Write-Host $logContent[-1]
             }
             else
             {
@@ -166,22 +168,15 @@ function RealTimeLogResults
         }
     }
 
-    $resultsFile = Join-Path $currentBinFolder.FullName results.html
-    Write-Host "Checking for results.html at $resultsFile"
-    if (Test-Path $resultsFile)
+    #$resultsFile = Join-Path $currentBinFolder.FullName results.html
+    #Write-Host "Checking for results.html at $resultsFile"
+    if ($currentTestTime -gt $EachTestTimoutInSecs)
     {
-        return $resultsFile
-    }
-    else
-    {
+        $errorMessage = 'Run Failed - Results.html did not get created. ' `
+        + 'This indicates that the tests did not finish running. It could be that the VS crashed or a test timed out. Please investigate.'
         CopyResultsToCI $NuGetDropPath $RunCounter $testResults
+        return $null
     }
-
-    $errorMessage = 'Run Failed - Results.html did not get created. ' `
-    + 'This indicates that the tests did not finish running. It could be that the VS crashed. Please investigate.'
-
-    Write-Error $errorMessage
-    return $null
 }
 
 function CopyResultsToCI
