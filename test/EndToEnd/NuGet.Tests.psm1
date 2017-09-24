@@ -286,7 +286,7 @@ function Run-Test {
                     "Running Test case $name... ($testIndexToPrint / $numberOfTests)"
                     # Write to log file as we run tests
                     "Running Test case $name... ($testIndexToPrint / $numberOfTests)" >> $testLogFile
-                    if ($testCaseIndex -eq $testCases.Count + 1)
+                    if ($testCaseIndex + 1 -eq $testCases.Count)
                     {
                         $testIndex = $testIndex + $testCaseIndex
                     }
