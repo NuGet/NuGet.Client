@@ -115,7 +115,16 @@ function RealTimeLogResults
             if (($content.Count -gt 0) -and ($content.Count -gt $currentTestId))
             {
                 $content[($currentTestId)..($content.Count - 1)] | % {
-                    $result = WriteToTeamCity $_
+                    $result = $false
+                    if($content.Count -eq 1)
+                    {
+                        $result = WriteToTeamCity $content
+                    }
+                    else
+                    {
+                        $result = WriteToTeamCity $_
+                    }
+                    
                     if ($result -eq $false)
                     {
                         Write-Host "Parsing failed with following in content : \n"
