@@ -191,7 +191,9 @@ function CopyResultsToCI
     $DropPathParent = $DropPathFileInfo.Parent
     $ResultsFileInfo = Get-Item $resultsFile
     $ResultsFileParent = $ResultsFileInfo.Directory
-
+    $EndToEndPath = Join-Path $NuGetDropPath "EndToEnd"
+    $FullLogFileName = "FullLog_" + $RunCounter + ".txt"
+    $FullLogFilePath = Join-Path $EndToEndPath $FullLogFileName
     $RealTimeResultsFilePath = Join-Path $ResultsFileParent.FullName 'Realtimeresults.txt'
 
     $TestResultsPath = Join-Path $DropPathParent.FullName 'testresults'
@@ -201,6 +203,17 @@ function CopyResultsToCI
     $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
     Write-Host "Copying results file from $resultsFile to $DestinationPath"
     Copy-Item $resultsFile $DestinationPath
+    if($env:CI -and $env:EndToEndArtifactsDropPath)
+    {
+        Write-Host "Copying full log file from $FullLogFilePath to $env:EndToEndArtifactsDropPath"
+        if(-not (Test-Path $env:EndToEndArtifactsDropPath))
+        {
+            New-Item -Path $env:EndToEndArtifactsDropPath -Force
+        }
+        Copy-Item $FullLogFilePath -Destination $env:EndToEndArtifactsDropPath -Force  -ErrorAction SilentlyContinue
+        Write-Host "Copying test results file from $resultsFile to $env:EndToEndArtifactsDropPath"
+        Copy-Item $resultsFile -Destination $env:EndToEndArtifactsDropPath -Force -ErrorAction SilentlyContinue
+    }
 
     OutputResultsForCI -NuGetDropPath $NuGetDropPath -RunCounter $RunCounter -RealTimeResultsFilePath $RealTimeResultsFilePath
 }
