@@ -192,7 +192,7 @@ function CopyResultsToCI
     $ResultsFileInfo = Get-Item $resultsFile
     $ResultsFileParent = $ResultsFileInfo.Parent
 
-    $RealTimeResultsFilePath = Join-Path $ResultsFileParent "Realtimeresults.txt"
+    $RealTimeResultsFilePath = Join-Path $ResultsFileParent.FullName 'Realtimeresults.txt'
 
     $TestResultsPath = Join-Path $DropPathParent.FullName 'testresults'
     mkdir $TestResultsPath -ErrorAction Ignore
@@ -202,7 +202,7 @@ function CopyResultsToCI
     Write-Host "Copying results file from $resultsFile to $DestinationPath"
     Copy-Item $resultsFile $DestinationPath
 
-    OutputResultsForCI -NuGetDropPath $NuGetDropPath -RunCounter $RunCounter -RealTimeResultsFile $RealTimeResultsFilePath
+    OutputResultsForCI -NuGetDropPath $NuGetDropPath -RunCounter $RunCounter -RealTimeResultsFilePath $RealTimeResultsFilePath
 }
 
 function OutputResultsForCI
@@ -213,7 +213,7 @@ function OutputResultsForCI
     [Parameter(Mandatory=$true)]
     [int]$RunCounter,
     [Parameter(Mandatory=$true)]
-    [string]$RealTimeResultsFile)
+    [string]$RealTimeResultsFilePath)
 
     $DropPathFileInfo = Get-Item $NuGetDropPath
     $DropPathParent = $DropPathFileInfo.Parent
