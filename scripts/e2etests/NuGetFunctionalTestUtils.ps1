@@ -196,6 +196,10 @@ function CopyResultsToCI
 
     $DropPathFileInfo = Get-Item $NuGetDropPath
     $DropPathParent = $DropPathFileInfo.Parent
+    $ResultsFileInfo = Get-Item $resultsFile
+    $ResultsFileParent = $ResultsFileInfo.Parent
+
+    $RealTimeResultsFilePath = Join-Path $ResultsFileParent "Realtimeresults.txt"
 
     $TestResultsPath = Join-Path $DropPathParent.FullName 'testresults'
     mkdir $TestResultsPath -ErrorAction Ignore
@@ -204,6 +208,8 @@ function CopyResultsToCI
     $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
     Write-Host "Copying results file from $resultsFile to $DestinationPath"
     Copy-Item $resultsFile $DestinationPath
+
+    OutputResultsForCI -NuGetDropPath $NuGetDropPath -RunCounter $RunCounter -RealTimeResultsFile $RealTimeResultsFilePath
 }
 
 function OutputResultsForCI
@@ -222,6 +228,7 @@ function OutputResultsForCI
     $TestResultsPath = Join-Path $DropPathParent.FullName 'testresults'
     $DestinationFileName = 'E2EResults-' + $RunCounter + '.xml'
     $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
+    Write-JunitXml -RealTimeResultsFile $RealTimeResultsFilePath -XmlResultsFilePath $DestinationPath
 }
 
 Function Write-JunitXml
@@ -256,17 +263,18 @@ $template = @'
     $Results = Get-Content $RealTimeResults
     foreach($result in $Results) 
     {   
+        $parsedResult = Get-ResultFromResultRow -SingleResult $result
         $newTestCase = $newTestCaseTemplate.clone()
         $newTestCase.classname = $className
-        $newTestCase.name = $result.Test.ToString()
-        $newTestCase.time = $result.Time.ToString()
-        if($result.Result -eq "PASS")
+        $newTestCase.name = $parsedResult.Name
+        $newTestCase.time = $parsedResult.Time
+        if($result.Result -eq "Passed")
         {   #Remove the failure node
             $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
         }
         else
         {
-            $newTestCase.failure.InnerText = Format-ErrorRecord $result.Reason
+            $newTestCase.failure.InnerText = Format-ErrorRecord $parsedResult.Failure
         }
         $xml.testsuite.AppendChild($newTestCase) > $null
     }   
