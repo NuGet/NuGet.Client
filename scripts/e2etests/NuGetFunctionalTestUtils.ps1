@@ -14,7 +14,7 @@ function EscapeContentForTeamCity
     return $content.Replace("|", "||").Replace("'", "|'").Replace("`n", "|r|n").Replace("`r", "|r").Replace("]", "|]");
 }
 
-function WriteToTeamCity
+function WriteToCI
 {
     param (
     [Parameter(Mandatory=$true)]
@@ -40,7 +40,7 @@ function WriteToTeamCity
         $duration = $parts[2];
 
         $guid = [System.Guid]::NewGuid().ToString("d")
-
+        # The below Write-Host commands are no-oping right now in the release environment.
         Write-Host "##vso[task.logdetail id=$guid;name='$testName';type=build;order=1]Test $testName started"
 
         if (($status -eq "Failed") -or ($status -eq "Skipped"))
@@ -119,12 +119,12 @@ function RealTimeLogResults
                     $contentLine = $_
                     if($content.Count -eq 1)
                     {
-                        $result = WriteToTeamCity $content
+                        $result = WriteToCI $content
                         $contentLine = $content
                     }
                     else
                     {
-                        $result = WriteToTeamCity $_
+                        $result = WriteToCI $_
                     }
                     
                     if ($result -eq $false)
@@ -141,7 +141,7 @@ function RealTimeLogResults
             else
             {                               
                 $logContent = Get-Content $log
-                Write-Host $logContent[$currentTestId] "Test Id: ${currentTestId} and current test time is ${currentTestTime}" 
+                Write-Host $logContent[$currentTestId] " and current test time is ${currentTestTime}" 
             }
 
             $logContent = Get-Content $log
@@ -174,8 +174,6 @@ function RealTimeLogResults
         }
     }
 
-    #$resultsFile = Join-Path $currentBinFolder.FullName results.html
-    #Write-Host "Checking for results.html at $resultsFile"
     if ($currentTestTime -gt $EachTestTimoutInSecs)
     {
         $errorMessage = 'Run Failed - Results.html did not get created. ' `
@@ -208,121 +206,121 @@ function CopyResultsToCI
     Copy-Item $resultsFile $DestinationPath
 }
 
-# function OutputResultsForCI
-# {
-#     param (
-#     [Parameter(Mandatory=$true)]
-#     [string]$NuGetDropPath,
-#     [Parameter(Mandatory=$true)]
-#     [int]$RunCounter,
-#     [Parameter(Mandatory=$true)]
-#     [string]$RealTimeResultsFile)
+function OutputResultsForCI
+{
+    param (
+    [Parameter(Mandatory=$true)]
+    [string]$NuGetDropPath,
+    [Parameter(Mandatory=$true)]
+    [int]$RunCounter,
+    [Parameter(Mandatory=$true)]
+    [string]$RealTimeResultsFile)
 
-#     $DropPathFileInfo = Get-Item $NuGetDropPath
-#     $DropPathParent = $DropPathFileInfo.Parent
+    $DropPathFileInfo = Get-Item $NuGetDropPath
+    $DropPathParent = $DropPathFileInfo.Parent
 
-#     $TestResultsPath = Join-Path $DropPathParent.FullName 'testresults'
-#     $DestinationFileName = 'E2EResults-' + $RunCounter + '.xml'
-#     $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
-# }
+    $TestResultsPath = Join-Path $DropPathParent.FullName 'testresults'
+    $DestinationFileName = 'E2EResults-' + $RunCounter + '.xml'
+    $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
+}
 
-# Function Write-JunitXml
-# {
-#     param (
-#         [Parameter(Mandatory=$true)]
-#         [string]$RealTimeResultsFile,
-#         [Parameter(Mandatory=$true)]
-#         [string]$XmlResultsFilePath
-#     )
-# $template = @'
-# <testsuite name="" file="">
-# <testcase classname="" name="" time="">
-#     <failure type=""></failure>
-# </testcase>
-# </testsuite>
-# '@
+Function Write-JunitXml
+{
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$RealTimeResultsFile,
+        [Parameter(Mandatory=$true)]
+        [string]$XmlResultsFilePath
+    )
+$template = @'
+<testsuite name="" file="">
+<testcase classname="" name="" time="">
+    <failure type=""></failure>
+</testcase>
+</testsuite>
+'@
 
-#     $guid = [System.Guid]::NewGuid().ToString("N")
-#     $templatePath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), $guid + ".txt");
+    $guid = [System.Guid]::NewGuid().ToString("N")
+    $templatePath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), $guid + ".txt");
 
-#     $template | Out-File $templatePath -encoding UTF8
-#     # load template into XML object
-#     $xml = New-Object xml
-#     $xml.Load($templatePath)
-#     # grab template user
-#     $newTestCaseTemplate = (@($xml.testsuite.testcase)[0]).Clone()  
+    $template | Out-File $templatePath -encoding UTF8
+    # load template into XML object
+    $xml = New-Object xml
+    $xml.Load($templatePath)
+    # grab template user
+    $newTestCaseTemplate = (@($xml.testsuite.testcase)[0]).Clone()  
 
-#     $className = "NuGet.Client.EndToEndTests"
-#     $xml.testsuite.name = $className
-#     $xml.testsuite.file = $HeaderData.TestFileName
-#     $Results = Get-Content $RealTimeResults
-#     foreach($result in $Results) 
-#     {   
-#         $newTestCase = $newTestCaseTemplate.clone()
-#         $newTestCase.classname = $className
-#         $newTestCase.name = $result.Test.ToString()
-#         $newTestCase.time = $result.Time.ToString()
-#         if($result.Result -eq "PASS")
-#         {   #Remove the failure node
-#             $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
-#         }
-#         else
-#         {
-#             $newTestCase.failure.InnerText = Format-ErrorRecord $result.Reason
-#         }
-#         $xml.testsuite.AppendChild($newTestCase) > $null
-#     }   
+    $className = "NuGet.Client.EndToEndTests"
+    $xml.testsuite.name = $className
+    $xml.testsuite.file = $HeaderData.TestFileName
+    $Results = Get-Content $RealTimeResults
+    foreach($result in $Results) 
+    {   
+        $newTestCase = $newTestCaseTemplate.clone()
+        $newTestCase.classname = $className
+        $newTestCase.name = $result.Test.ToString()
+        $newTestCase.time = $result.Time.ToString()
+        if($result.Result -eq "PASS")
+        {   #Remove the failure node
+            $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
+        }
+        else
+        {
+            $newTestCase.failure.InnerText = Format-ErrorRecord $result.Reason
+        }
+        $xml.testsuite.AppendChild($newTestCase) > $null
+    }   
 
-#     # remove users with undefined name (remove template)
-#     $xml.testsuite.testcase | Where-Object { $_.Name -eq "" } | ForEach-Object  { [void]$xml.testsuite.RemoveChild($_) }
-#     # save xml to file
-#     Write-Host "Path" $ResultFilePath
+    # remove users with undefined name (remove template)
+    $xml.testsuite.testcase | Where-Object { $_.Name -eq "" } | ForEach-Object  { [void]$xml.testsuite.RemoveChild($_) }
+    # save xml to file
+    Write-Host "Path" $ResultFilePath
 
-#     $xml.Save($XmlResultFilePath)
+    $xml.Save($XmlResultFilePath)
 
-#     Remove-Item $templatePath #clean up
-# }
+    Remove-Item $templatePath #clean up
+}
 
-# function Get-ResultFromResultRow
-# {
-#     param(
-#         [Parameter(Mandatory=$true)]
-#         [string]$SingleResult        
-#     )
+function Get-ResultFromResultRow
+{
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$SingleResult        
+    )
 
-#     $parts = $SingleResult -split " "
+    $parts = $SingleResult -split " "
 
-#     if ($parts.Length -lt 3)
-#     {
-#         Write-Host -ForegroundColor Red "WARNING: PARSING ISSUES. CANNOT PARSE TEST RESULT: $singleResult"
-#         return $null
-#     }
-#     else
-#     {
-#         $status = $parts[0];
-#         $testName = $parts[1];
-#         $duration = $parts[2];
-#         $failureMessage = $null
+    if ($parts.Length -lt 3)
+    {
+        Write-Host -ForegroundColor Red "WARNING: PARSING ISSUES. CANNOT PARSE TEST RESULT: $singleResult"
+        return $null
+    }
+    else
+    {
+        $status = $parts[0];
+        $testName = $parts[1];
+        $duration = $parts[2];
+        $failureMessage = $null
 
-#         if (($status -eq "Failed") -or ($status -eq "Skipped"))
-#         {
-#             if ($parts.Length -lt 4)
-#             {
-#                Write-Host -ForegroundColor Red "WARNING: PARSING ISSUES. CANNOT WRITE TEST FAILURE:  $singleResult"
-#             }
-#             else
-#             {
-#                 $failureMessage = $parts[3..$parts.Count - 1]
-#             }
-#         }
+        if (($status -eq "Failed") -or ($status -eq "Skipped"))
+        {
+            if ($parts.Length -lt 4)
+            {
+               Write-Host -ForegroundColor Red "WARNING: PARSING ISSUES. CANNOT WRITE TEST FAILURE:  $singleResult"
+            }
+            else
+            {
+                $failureMessage = $parts[3..$parts.Count - 1]
+            }
+        }
 
-#         $result = @{
-#             Status = $status
-#             Name = $testName
-#             Time = $duration
-#             Failure = $failureMessage
-#         }
+        $result = @{
+            Status = $status
+            Name = $testName
+            Time = $duration
+            Failure = $failureMessage
+        }
 
-#         return $result
-#     }
-# }
+        return $result
+    }
+}
