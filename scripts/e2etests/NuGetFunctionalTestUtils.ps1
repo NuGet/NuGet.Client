@@ -26,18 +26,15 @@ function WriteToCI
         return $false
     }
 
-    $parts = $singleResult -split " "
-
-    if ($parts.Length -lt 3)
+    $parsedResult = Get-ResultFromResultRow $singleResult
+    if(-not $parsedResult)
     {
-        Write-Host -ForegroundColor Red "WARNING: PARSING ISSUES. CANNOT WRITE TO TEAM CITY! Result is $singleResult"
         return $false
     }
     else
     {
-        $status = $parts[0];
-        $testName = $parts[1];
-        $duration = $parts[2];
+        $status = $parsedResult.Status
+        $testName = $parsedResult.Name
 
         $guid = [System.Guid]::NewGuid().ToString("d")
         # The below Write-Host commands are no-oping right now in the release environment.
@@ -45,11 +42,7 @@ function WriteToCI
 
         if (($status -eq "Failed") -or ($status -eq "Skipped"))
         {
-            if ($parts.Length -lt 4)
-            {
-               Write-Host -ForegroundColor Red "WARNING: PARSING ISSUES. CANNOT WRITE TEST FAILURE TO TEAM CITY! Result is $singleResult"
-            }
-            else
+            if ($parts.Length -eq 4)
             {
                 if ($status -eq "Failed")
                 {
@@ -64,7 +57,7 @@ function WriteToCI
 
         Write-Host "##vso[task.logdetail id=$guid;progress=100;state=Succeeded]Test $testName passed"
     }
-
+    
     return $true
 }
 
@@ -242,7 +235,7 @@ Function Write-JunitXml
 $template = @'
 <testsuite name="" file="">
 <testcase classname="" name="" time="">
-    <failure type=""></failure>
+    <failure type="failure"></failure>
 </testcase>
 </testsuite>
 '@
@@ -259,8 +252,8 @@ $template = @'
 
     $className = "NuGet.Client.EndToEndTests"
     $xml.testsuite.name = $className
-    $xml.testsuite.file = $HeaderData.TestFileName
-    $Results = Get-Content $RealTimeResults
+    $xml.testsuite.file = $className
+    $Results = Get-Content $RealTimeResultsFile
     foreach($result in $Results) 
     {   
         $parsedResult = Get-ResultFromResultRow -SingleResult $result
@@ -268,13 +261,13 @@ $template = @'
         $newTestCase.classname = $className
         $newTestCase.name = $parsedResult.Name
         $newTestCase.time = $parsedResult.Time
-        if($result.Result -eq "Passed")
+        if($parsedResult.Status -eq "Passed")
         {   #Remove the failure node
             $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
         }
         else
         {
-            $newTestCase.failure.InnerText = Format-ErrorRecord $parsedResult.Failure
+            $newTestCase.failure.InnerText = $parsedResult.Failure
         }
         $xml.testsuite.AppendChild($newTestCase) > $null
     }   
@@ -282,10 +275,9 @@ $template = @'
     # remove users with undefined name (remove template)
     $xml.testsuite.testcase | Where-Object { $_.Name -eq "" } | ForEach-Object  { [void]$xml.testsuite.RemoveChild($_) }
     # save xml to file
-    Write-Host "Path" $ResultFilePath
+    Write-Host "Path: " $XmlResultsFilePath
 
-    $xml.Save($XmlResultFilePath)
-
+    $xml.Save($XmlResultsFilePath)
     Remove-Item $templatePath #clean up
 }
 
@@ -318,7 +310,8 @@ function Get-ResultFromResultRow
             }
             else
             {
-                $failureMessage = $parts[3..$parts.Count - 1]
+                $endIndex = $parts.Length - 1
+                $failureMessage = $parts[3..$endIndex]
             }
         }
 
