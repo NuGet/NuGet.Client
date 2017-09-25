@@ -190,7 +190,7 @@ function CopyResultsToCI
     $DropPathFileInfo = Get-Item $NuGetDropPath
     $DropPathParent = $DropPathFileInfo.Parent
     $ResultsFileInfo = Get-Item $resultsFile
-    $ResultsFileParent = $ResultsFileInfo.Parent
+    $ResultsFileParent = $ResultsFileInfo.Directory
 
     $RealTimeResultsFilePath = Join-Path $ResultsFileParent.FullName 'Realtimeresults.txt'
 
@@ -314,11 +314,11 @@ function Get-ResultFromResultRow
                 $failureMessage = $parts[3..$endIndex]
             }
         }
-
+        $DurationInSeconds = New-TimeSpan -Seconds ($duration/1000.0)
         $result = @{
             Status = $status
             Name = $testName
-            Time = $duration
+            Time = $DurationInSeconds.Seconds.ToString()
             Failure = $failureMessage
         }
 
