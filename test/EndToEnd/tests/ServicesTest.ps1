@@ -36,8 +36,12 @@ function Test-MigrateVanilaUwpProjectJsonToPackageReference {
     Assert-True !(Test-Path (Join-Path $projectDir project.json))
 
     # Check if backup was created
-    Assert-True (Test-Path (Join-Path $projectDir (Join-Path Backup project.json)))
-    Assert-True (Test-Path (Join-Path $projectDir (Join-Path Backup UwpClassLibrary1.csproj)))
+    $backupProjectJsonPath = [System.IO.Path]::Combine($projectDir, "Backup", "project.json")
+    $backupCsprojPath = [System.IO.Path]::Combine($projectDir, "Backup", "UwpClassLibrary1.csproj")
+    Write-Host "Project json backup path: $backupProjectJsonPath"
+    Write-Host "Csproj backup path: $backupCsprojPath"
+    Assert-True (Test-Path $backupProjectJsonPath)
+    Assert-True (Test-Path $backupCsprojPath)
 
     # Check if package reference was added correctly
     $packageRefs = @(Get-MsBuildItems $p 'PackageReference')
