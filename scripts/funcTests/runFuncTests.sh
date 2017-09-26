@@ -84,6 +84,8 @@ NuGetExe="$DIR/.nuget/nuget.exe"
 #Get NuGet.exe
 curl -o $NuGetExe https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe
 
+mono --version
+
 #restore solution packages
 mono $NuGetExe restore  "$DIR/.nuget/packages.config" -SolutionDirectory "$DIR"
 if [ $? -ne 0 ]; then

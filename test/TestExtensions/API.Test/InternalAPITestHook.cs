@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -151,6 +152,12 @@ namespace API.Test
                            batchEndIds.Count == 1 &&
                            batchStartIds[0].Equals(batchEndIds[0], StringComparison.Ordinal);
                 });
+        }
+
+        public static async Task<IVsProjectJsonToPackageReferenceMigrateResult> MigrateJsonProject(string projectName)
+        {
+            var migrator = ServiceLocator.GetComponent<IVsProjectJsonToPackageReferenceMigrator>();
+            return (IVsProjectJsonToPackageReferenceMigrateResult)await migrator.MigrateProjectJsonToPackageReferenceAsync(projectName);
         }
     }
 }

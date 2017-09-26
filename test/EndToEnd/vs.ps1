@@ -13,7 +13,7 @@ function Get-VSVersion
     return $version
 }
 
-function New-UwpClassLibrary
+function New-UwpClassLibraryProjectJson
 {
     param(
         [string]$ProjectName,
@@ -22,7 +22,7 @@ function New-UwpClassLibrary
 
     if ((Get-VSVersion) -ge '15.0')
     {
-        New-Project UwpClassLibrary $ProjectName $SolutionFolder
+        New-Project UwpClassLibraryProjectJson $ProjectName $SolutionFolder
     }
     else
     {
