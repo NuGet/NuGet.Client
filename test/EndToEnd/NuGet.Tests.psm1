@@ -242,8 +242,7 @@ function Run-Test {
             $testName = $testObject.Name.Substring(5)
 
             $testCases = @( $null )
-            $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"
-        
+            $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"        
 
             try {
                 Write-Host 'Getting the test cases factory for ' $testName
