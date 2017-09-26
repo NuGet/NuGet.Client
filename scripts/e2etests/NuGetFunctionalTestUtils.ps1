@@ -354,15 +354,16 @@ function Get-ScreenCapture
 
     begin {
         Add-Type -AssemblyName System.Drawing
+        Add-Type -AssemblyName System.Windows.Forms
         $jpegCodec = [Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | 
             Where-Object { $_.FormatDescription -eq "JPEG" }
     }
     process {
         Start-Sleep -Milliseconds 250
         if ($OfWindow) {            
-            [Windows.Forms.Sendkeys]::SendWait("%{PrtSc}")        
+            [System.Windows.Forms.Sendkeys]::SendWait("%{PrtSc}")        
         } else {
-            [Windows.Forms.Sendkeys]::SendWait("{PrtSc}")        
+            [System.Windows.Forms.Sendkeys]::SendWait("{PrtSc}")        
         }
         Start-Sleep -Milliseconds 250
         $bitmap = [Windows.Forms.Clipboard]::GetImage()    
