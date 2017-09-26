@@ -84,10 +84,6 @@ NuGetExe="$DIR/.nuget/nuget.exe"
 #Get NuGet.exe
 curl -o $NuGetExe https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe
 
-#add mono to path
-PATH=$PATH:/Library/Frameworks/Mono.framework/Versions/Current/Commands
-echo $PATH
-
 mono --version
 
 #restore solution packages
