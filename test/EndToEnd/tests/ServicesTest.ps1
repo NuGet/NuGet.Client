@@ -19,7 +19,7 @@ function Test-MigrateVanilaUwpProjectJsonToPackageReference {
     )
 
     # Arrange
-    $p = New-UwpClassLibrary UwpClassLibrary1
+    $p = New-UwpClassLibraryProjectJson UwpClassLibrary1
     $cm = Get-VsComponentModel
     $projectDir = Get-ProjectDir $p
     $result = [API.Test.InternalAPITestHook]::MigrateJsonProject($p.FullName)
