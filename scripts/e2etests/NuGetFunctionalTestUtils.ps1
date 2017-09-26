@@ -172,7 +172,11 @@ function RealTimeLogResults
         $errorMessage = 'Run Failed - Results.html did not get created. ' `
         + 'This indicates that the tests did not finish running. It could be that the VS crashed or a test timed out. Please investigate.'
         CopyResultsToCI $NuGetDropPath $RunCounter $testResults
-        Get-ScreenCapture -OfWindow -OutputPath $env:EndToEndResultsDropPath
+        if($env:CI)
+        {
+            Get-ScreenCapture -OfWindow -OutputPath $env:EndToEndResultsDropPath
+        }
+        
         Write-Error $errorMessage
         return $null
     }
