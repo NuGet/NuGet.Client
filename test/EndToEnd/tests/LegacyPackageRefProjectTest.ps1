@@ -22,5 +22,8 @@ function Test-UwpPackageRefClassLibInstallPackage {
     $project.Save($project.FullName)
 
     # Assert
-    Assert-NetCorePackageInstall $project $id $version
+    $packageRefs = @(Get-MsBuildItems $project 'PackageReference')
+    Assert-AreEqual 2 $packageRefs.Count
+    Assert-AreEqual $packageRefs[1].GetMetadataValue("Identity") 'Nuget.Versioning' 
+    Assert-AreEqual $packageRefs[1].GetMetadataValue("Version") '3.5.0'
 }
