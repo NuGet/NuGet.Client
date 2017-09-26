@@ -208,7 +208,7 @@ function CopyResultsToCI
         Write-Host "Copying full log file from $FullLogFilePath to $env:EndToEndArtifactsDropPath"
         if(-not (Test-Path $env:EndToEndArtifactsDropPath))
         {
-            New-Item -Path $env:EndToEndArtifactsDropPath -Force
+            New-Item -Path $env:EndToEndArtifactsDropPath -ItemType Directory -Force
         }
         Copy-Item $FullLogFilePath -Destination $env:EndToEndArtifactsDropPath -Force  -ErrorAction SilentlyContinue
         Write-Host "Copying test results file from $resultsFile to $env:EndToEndArtifactsDropPath"
