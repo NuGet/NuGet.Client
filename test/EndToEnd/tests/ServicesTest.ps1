@@ -23,7 +23,7 @@ function Test-MigrateVanilaUwpProjectJsonToPackageReference {
     $cm = Get-VsComponentModel
     $projectDir = Get-ProjectDir $p
     $result = [API.Test.InternalAPITestHook]::MigrateJsonProject($p.FullName)
-
+    Start-Sleep -Seconds 3
     # Assert
 
     # Check if runtimes were migrated correctly

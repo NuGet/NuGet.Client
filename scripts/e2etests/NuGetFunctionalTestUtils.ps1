@@ -203,16 +203,16 @@ function CopyResultsToCI
     $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
     Write-Host "Copying results file from $resultsFile to $DestinationPath"
     Copy-Item $resultsFile $DestinationPath
-    if($env:CI -and $env:EndToEndArtifactsDropPath)
+    if($env:CI -and $env:EndToEndResultsDropPath)
     {
-        Write-Host "Copying full log file from $FullLogFilePath to $env:EndToEndArtifactsDropPath"
-        if(-not (Test-Path $env:EndToEndArtifactsDropPath))
+        Write-Host "Copying full log file from $FullLogFilePath to $env:EndToEndResultsDropPath"
+        if(-not (Test-Path $env:EndToEndResultsDropPath))
         {
-            New-Item -Path $env:EndToEndArtifactsDropPath -ItemType Directory -Force
+            New-Item -Path $env:EndToEndResultsDropPath -ItemType Directory -Force
         }
-        Copy-Item $FullLogFilePath -Destination $env:EndToEndArtifactsDropPath -Force  -ErrorAction SilentlyContinue
-        Write-Host "Copying test results file from $resultsFile to $env:EndToEndArtifactsDropPath"
-        Copy-Item $resultsFile -Destination $env:EndToEndArtifactsDropPath -Force -ErrorAction SilentlyContinue
+        Copy-Item $FullLogFilePath -Destination $env:EndToEndResultsDropPath -Force  -ErrorAction SilentlyContinue
+        Write-Host "Copying test results file from $resultsFile to $env:EndToEndResultsDropPath"
+        Copy-Item $resultsFile -Destination $env:EndToEndResultsDropPath -Force -ErrorAction SilentlyContinue
     }
 
     OutputResultsForCI -NuGetDropPath $NuGetDropPath -RunCounter $RunCounter -RealTimeResultsFilePath $RealTimeResultsFilePath
