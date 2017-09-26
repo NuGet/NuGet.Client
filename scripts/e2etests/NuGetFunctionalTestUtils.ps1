@@ -172,6 +172,7 @@ function RealTimeLogResults
         $errorMessage = 'Run Failed - Results.html did not get created. ' `
         + 'This indicates that the tests did not finish running. It could be that the VS crashed or a test timed out. Please investigate.'
         CopyResultsToCI $NuGetDropPath $RunCounter $testResults
+        Get-ScreenCapture -OfWindow -OutputPath $env:EndToEndResultsDropPath
         Write-Error $errorMessage
         return $null
     }
@@ -336,5 +337,38 @@ function Get-ResultFromResultRow
         }
 
         return $result
+    }
+}
+
+function Get-ScreenCapture
+{
+    param(    
+    [Switch]$OfWindow,
+    [Parameter(Mandatory=$true)]
+    [string]$OutputPath  
+    )
+
+    begin {
+        Add-Type -AssemblyName System.Drawing
+        $jpegCodec = [Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | 
+            Where-Object { $_.FormatDescription -eq "JPEG" }
+    }
+    process {
+        Start-Sleep -Milliseconds 250
+        if ($OfWindow) {            
+            [Windows.Forms.Sendkeys]::SendWait("%{PrtSc}")        
+        } else {
+            [Windows.Forms.Sendkeys]::SendWait("{PrtSc}")        
+        }
+        Start-Sleep -Milliseconds 250
+        $bitmap = [Windows.Forms.Clipboard]::GetImage()    
+        $ep = New-Object Drawing.Imaging.EncoderParameters  
+        $ep.Param[0] = New-Object Drawing.Imaging.EncoderParameter ([System.Drawing.Imaging.Encoder]::Quality, [long]100)  
+        $screenCapturePathBase = "$OutputPath\ScreenCapture"
+        $c = 0
+        while (Test-Path "${screenCapturePathBase}${c}.jpg") {
+            $c++
+        }
+        $bitmap.Save("${screenCapturePathBase}${c}.jpg", $jpegCodec, $ep)
     }
 }
