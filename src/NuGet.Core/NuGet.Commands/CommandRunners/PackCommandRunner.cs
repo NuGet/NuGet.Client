@@ -131,8 +131,61 @@ namespace NuGet.Commands
                 PrintVerbose(outputPath, builder);
             }
 
+            if (_packArgs.InstallPackageToV3Feed)
+            {
+                WriteResolvedNuSpecToPackageOutputDirectory(outputPath, builder);
+                WriteSHA512PackageHash(outputPath, builder);
+            }
+
             _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath));
             return new PackageArchiveReader(outputPath);
+        }
+
+        /// <summary>
+        /// Writes the resolved NuSpec file to the package output directory.
+        /// </summary>
+        /// <param name="packageOutputPath">The output package path</param>
+        /// <param name="packageBuilder">The package builder</param>
+        private void WriteResolvedNuSpecToPackageOutputDirectory(string packageOutputPath, PackageBuilder packageBuilder)
+        {
+            string packageOutputDirectory = Path.GetDirectoryName(packageOutputPath);
+            string resolvedNuSpecOutputPath = Path.Combine(packageOutputDirectory, packageBuilder.Id + PackagingConstants.ManifestExtension);
+
+            if (string.Equals(_packArgs.Path, resolvedNuSpecOutputPath, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new PackagingException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        "Unable to output resolved nuspec file because it would overwrite the original at '{0}'",
+                        _packArgs.Path));
+            }
+
+            Manifest manifest = new Manifest(new ManifestMetadata(packageBuilder), null);
+            using (Stream stream = new FileStream(resolvedNuSpecOutputPath, FileMode.Create))
+            {
+                manifest.Save(stream);
+            }
+        }
+
+        /// <summary>
+        /// Writes the sha512 package hash file to the package output directory
+        /// </summary>
+        /// <param name="packageOutputPath">The output package path</param>
+        /// <param name="packageBuilder">The package builder</param>
+        private void WriteSHA512PackageHash(string packageOutputPath, PackageBuilder packageBuilder)
+        {
+            string packageOutputDirectory = Path.GetDirectoryName(packageOutputPath);
+            string packageFileName = Path.GetFileName(packageOutputPath);
+            string sha512OutputPath = Path.Combine(packageOutputDirectory, packageFileName + ".sha512");
+
+            byte[] sha512hash;
+            CryptoHashProvider cryptoHashProvider = new CryptoHashProvider("SHA512");
+            using (FileStream fileStream = new FileStream(packageOutputPath, FileMode.Open, FileAccess.Read))
+            {
+                sha512hash = cryptoHashProvider.CalculateHash(fileStream);
+            }
+
+            File.WriteAllText(sha512OutputPath, Convert.ToBase64String(sha512hash));
         }
 
         private void InitCommonPackageBuilderProperties(PackageBuilder builder)

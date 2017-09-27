@@ -2085,6 +2085,181 @@ public class B
             }
         }
 
+        [Fact]
+        public void PackCommand_OutputResolvedNuSpecFileAttemptToOverwriteOriginal()
+        {
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+
+                const string PackageName = "packageA.nuspec";
+
+                Util.CreateFile(
+                    workingDirectory,
+                    PackageName,
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata minClientVersion=""3.3"">
+    <id>packageA</id>
+    <version>1.2.3.4</version>
+    <title>packageATitle</title>
+    <authors>test</authors>
+    <owners>testOwner</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>the description</description>
+    <copyright>Copyright (C) Microsoft 2013</copyright>
+    <tags>Microsoft,Sample,test</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName=""System"" />
+    </frameworkAssemblies>
+  </metadata>
+</package>");
+
+                // Act
+
+                // Execute the pack command and try to output the resolved nuspec over the input nuspec
+                var commandRunner = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    workingDirectory,
+                    "pack packageA.nuspec -InstallPackageToV3Feed",
+                    waitForExit: true);
+
+                // Assert
+
+                // Verify the nuget pack command exit code
+                Assert.NotNull(commandRunner);
+                Assert.Equal(1, commandRunner.Item1);
+
+                var exepctedError = string.Format(
+                    "Unable to output resolved nuspec file because it would overwrite the original at '{0}\\{1}'\r\n",
+                    workingDirectory, 
+                    PackageName);
+
+                Assert.Equal(exepctedError, commandRunner.Item3);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_InstallPackageToV3Feed()
+        {
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var packageName = "packageA.nuspec";
+                var originalDirectory = Path.Combine(workingDirectory, "Original");
+                Directory.CreateDirectory(originalDirectory);
+
+                Util.CreateFile(
+                    originalDirectory,
+                    packageName,
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata minClientVersion=""3.3"">
+    <id>packageA</id>
+    <version>1.2.3.4</version>
+    <title>packageATitle</title>
+    <authors>$author$</authors>
+    <owners>testOwner</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>the description</description>
+    <copyright>Copyright (C) Microsoft 2013</copyright>
+    <tags>Microsoft,Sample,$tagVar$</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName=""System"" />
+    </frameworkAssemblies>
+  </metadata>
+</package>");
+
+                // Act
+
+                // Execute the pack command and feed in some properties for token replacements and 
+                // set the flag to save the resolved nuspec to output directory.\
+                var arguments = string.Format(
+                    "pack {0} -properties tagVar=CustomTag;author=test1@microsoft.com -InstallPackageToV3Feed",
+                    Path.Combine(originalDirectory, packageName));
+
+                var commandRunner = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    workingDirectory,
+                    arguments,
+                    waitForExit: true);
+
+                // Assert
+
+                // Verify the nuget pack command exit code
+                Assert.NotNull(commandRunner);
+                Assert.True(
+                    0 == commandRunner.Item1,
+                    string.Format("{0} {1}", commandRunner.Item2 ?? "null", commandRunner.Item3 ?? "null"));
+
+                // Verify the zip file has the resolved nuspec
+                XDocument nuspecZipXml = null;
+                var nupkgPath = Path.Combine(workingDirectory, "packageA.1.2.3.4.nupkg");
+                using (var zip = new ZipArchive(File.OpenRead(nupkgPath)))
+                {
+                    var manifestReader = new StreamReader(
+                        zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
+
+                    nuspecZipXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    Assert.Equal(
+                        "packageA",
+                        nuspecZipXml.Descendants().Single(e => e.Name.LocalName == "id").Value);
+
+                    Assert.Equal(
+                        "1.2.3.4",
+                        nuspecZipXml.Descendants().Single(e => e.Name.LocalName == "version").Value);
+
+                    Assert.Equal(
+                        "packageATitle",
+                        nuspecZipXml.Descendants().Single(e => e.Name.LocalName == "title").Value);
+
+                    Assert.Equal(
+                        "test1@microsoft.com",
+                        nuspecZipXml.Descendants().Single(e => e.Name.LocalName == "authors").Value);
+
+                    Assert.Equal(
+                        "testOwner",
+                        nuspecZipXml.Descendants().Single(e => e.Name.LocalName == "owners").Value);
+
+                    Assert.Equal(
+                        "false",
+                        nuspecZipXml.Descendants().Single(e => e.Name.LocalName == "requireLicenseAcceptance").Value);
+
+                    Assert.Equal(
+                        "the description",
+                        nuspecZipXml.Descendants().Single(e => e.Name.LocalName == "description").Value);
+
+                    Assert.Equal(
+                        "Copyright (C) Microsoft 2013",
+                        nuspecZipXml.Descendants().Single(e => e.Name.LocalName == "copyright").Value);
+
+                    Assert.Equal(
+                        "Microsoft,Sample,CustomTag",
+                        nuspecZipXml.Descendants().Single(e => e.Name.LocalName == "tags").Value);
+
+                }
+
+                // Verify the package directory has the resolved nuspec
+                var resolveNuSpecPath = Path.Combine(workingDirectory, packageName);
+                Assert.True(File.Exists(resolveNuSpecPath));
+
+                // Verify the nuspec contents in the zip file and the resolved nuspec side by 
+                // side with the package are the same
+                var resolvedNuSpecContents = File.ReadAllText(resolveNuSpecPath);
+                var packageOutputDirectoryNuSpecXml = XDocument.Parse(resolvedNuSpecContents);
+                Assert.Equal(nuspecZipXml.ToString(), packageOutputDirectoryNuSpecXml.ToString());
+
+                // Verify the package directory has the sha512 file
+                var sha512File = Path.Combine(workingDirectory, "packageA.1.2.3.4.nupkg.sha512");
+                Assert.True(File.Exists(sha512File));
+
+                var sha512FileContents = File.ReadAllText(sha512File);
+                Assert.False(string.IsNullOrWhiteSpace(sha512FileContents));
+                Assert.True(sha512FileContents.EndsWith("="));
+            }
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData(@"\\")]
