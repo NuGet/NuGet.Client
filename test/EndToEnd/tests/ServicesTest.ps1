@@ -88,11 +88,12 @@ function Test-GetInstalledPackagesWithCustomRestorePackagesPath {
 
     # Assert    
     Assert-NotNull $packages
-    Assert-NotNull $packages[0].InstallPath
+    $package = $packages | where Id -eq NuGet.Versioning
+    Assert-NotNull $package.InstallPath
     $packagesPath = Get-MsBuildPropertyValue $p 'RestorePackagesPath'
     Assert-NotNull $packagesPath
-    $expectedInstallPath = (Join-Path $packagesPath (Join-Path $packages[0].Id $packages[0].Version))
-    Assert-AreEqual $expectedInstallPath $packages[0].InstallPath
+    $expectedInstallPath = (Join-Path $packagesPath (Join-Path $package.Id $package.Version))
+    Assert-AreEqual $expectedInstallPath $package.InstallPath
 }
 
 function Test-GetInstalledPackagesForProjectWithCustomRestorePackagesPath {
@@ -111,11 +112,12 @@ function Test-GetInstalledPackagesForProjectWithCustomRestorePackagesPath {
 
     # Assert    
     Assert-NotNull $packages
-    Assert-NotNull $packages[0].InstallPath
+    $package = $packages | where Id -eq NuGet.Versioning
+    Assert-NotNull $package.InstallPath
     $packagesPath = Get-MsBuildPropertyValue $p 'RestorePackagesPath'
     Assert-NotNull $packagesPath
-    $expectedInstallPath = (Join-Path $packagesPath (Join-Path $packages[0].Id $packages[0].Version))
-    Assert-AreEqual $expectedInstallPath $packages[0].InstallPath
+    $expectedInstallPath = (Join-Path $packagesPath (Join-Path $package.Id $package.Version))
+    Assert-AreEqual $expectedInstallPath $package.InstallPath
 }
 
 function Test-GetInstalledPackagesMultipleProjectsSameVersion {
