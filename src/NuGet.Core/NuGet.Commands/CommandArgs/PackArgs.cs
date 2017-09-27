@@ -22,7 +22,7 @@ namespace NuGet.Commands
         public ILogger Logger { get; set; }
         public LogLevel LogLevel { get; set; }
         public bool IncludeReferencedProjects { get; set; }
-        public bool InstallPackageToV3Feed { get; set; }
+        public bool InstallPackageToOutputPath { get; set; }
         public IMachineWideSettings MachineWideSettings { get; set; }
         public Version MinClientVersion { get; set; }
         public Lazy<string> MsBuildDirectory { get; set; }

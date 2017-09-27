@@ -131,10 +131,11 @@ namespace NuGet.Commands
                 PrintVerbose(outputPath, builder);
             }
 
-            if (_packArgs.InstallPackageToV3Feed)
+            if (_packArgs.InstallPackageToOutputPath)
             {
+                _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "Package", outputPath));
                 WriteResolvedNuSpecToPackageOutputDirectory(outputPath, builder);
-                WriteSHA512PackageHash(outputPath, builder);
+                WriteSHA512PackageHash(outputPath);
             }
 
             _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath));
@@ -150,14 +151,11 @@ namespace NuGet.Commands
         {
             string packageOutputDirectory = Path.GetDirectoryName(packageOutputPath);
             string resolvedNuSpecOutputPath = Path.Combine(packageOutputDirectory, packageBuilder.Id + PackagingConstants.ManifestExtension);
+            _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "NuSpec", resolvedNuSpecOutputPath));
 
             if (string.Equals(_packArgs.Path, resolvedNuSpecOutputPath, StringComparison.OrdinalIgnoreCase))
             {
-                throw new PackagingException(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        "Unable to output resolved nuspec file because it would overwrite the original at '{0}'",
-                        _packArgs.Path));
+                throw new PackagingException(string.Format(CultureInfo.CurrentCulture, Strings.Error_WriteResolvedNuSpecOverwriteOriginal, _packArgs.Path));
             }
 
             Manifest manifest = new Manifest(new ManifestMetadata(packageBuilder), null);
@@ -171,12 +169,10 @@ namespace NuGet.Commands
         /// Writes the sha512 package hash file to the package output directory
         /// </summary>
         /// <param name="packageOutputPath">The output package path</param>
-        /// <param name="packageBuilder">The package builder</param>
-        private void WriteSHA512PackageHash(string packageOutputPath, PackageBuilder packageBuilder)
+        private void WriteSHA512PackageHash(string packageOutputPath)
         {
-            string packageOutputDirectory = Path.GetDirectoryName(packageOutputPath);
-            string packageFileName = Path.GetFileName(packageOutputPath);
-            string sha512OutputPath = Path.Combine(packageOutputDirectory, packageFileName + ".sha512");
+            string sha512OutputPath = Path.Combine(packageOutputPath + ".sha512");
+            _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "SHA512", sha512OutputPath));
 
             byte[] sha512hash;
             CryptoHashProvider cryptoHashProvider = new CryptoHashProvider("SHA512");
@@ -721,24 +717,36 @@ namespace NuGet.Commands
         {
             PackageBuilder packageBuilder = CreatePackageBuilderFromNuspec(path);
 
-            if (_packArgs.Symbols)
-            {
-                // remove source related files when building the lib package
-                ExcludeFilesForLibPackage(packageBuilder.Files);
+            PackageArchiveReader package = null;
 
-                if (!packageBuilder.Files.Any())
-                {
-                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForLibPackage, path, Strings.NuGetDocs));
-                }
+            if (_packArgs.InstallPackageToOutputPath)
+            {
+                InitCommonPackageBuilderProperties(packageBuilder);
+
+                string outputPath = GetOutputPath(packageBuilder, _packArgs, excludeVersion: true);
+                package = BuildPackage(packageBuilder, outputPath: outputPath);
             }
-
-            InitCommonPackageBuilderProperties(packageBuilder);
-
-            PackageArchiveReader package = BuildPackage(packageBuilder);
-
-            if (_packArgs.Symbols)
+            else
             {
-                BuildSymbolsPackage(path);
+                if (_packArgs.Symbols)
+                {
+                    // remove source related files when building the lib package
+                    ExcludeFilesForLibPackage(packageBuilder.Files);
+
+                    if (!packageBuilder.Files.Any())
+                    {
+                        throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForLibPackage, path, Strings.NuGetDocs));
+                    }
+                }
+
+                InitCommonPackageBuilderProperties(packageBuilder);
+
+                package = BuildPackage(packageBuilder);
+
+                if (_packArgs.Symbols)
+                {
+                    BuildSymbolsPackage(path);
+                }
             }
 
             if (package != null && !_packArgs.NoPackageAnalysis)
@@ -1028,7 +1036,7 @@ namespace NuGet.Commands
         }
 
         // Gets the full path of the resulting nuget package including the file name
-        public static string GetOutputPath(PackageBuilder builder, PackArgs packArgs, bool symbols = false, NuGetVersion nugetVersion = null, string outputDirectory = null, bool isNupkg = true)
+        public static string GetOutputPath(PackageBuilder builder, PackArgs packArgs, bool symbols = false, NuGetVersion nugetVersion = null, string outputDirectory = null, bool isNupkg = true, bool excludeVersion = false)
         {
             NuGetVersion versionToUse;
             if (nugetVersion != null)
@@ -1057,20 +1065,19 @@ namespace NuGet.Commands
                 }
             }
 
-            var outputFile = GetOutputFileName(builder.Id, versionToUse , isNupkg: isNupkg, symbols: symbols);
-            
+            var outputFile = GetOutputFileName(builder.Id, versionToUse, isNupkg: isNupkg, symbols: symbols, excludeVersion: excludeVersion);
+
 
             var finalOutputDirectory = packArgs.OutputDirectory ?? packArgs.CurrentDirectory;
             finalOutputDirectory = outputDirectory ?? finalOutputDirectory;
             return Path.Combine(finalOutputDirectory, outputFile);
         }
 
-        public static string GetOutputFileName(string packageId, NuGetVersion version, bool isNupkg, bool symbols)
+        public static string GetOutputFileName(string packageId, NuGetVersion version, bool isNupkg, bool symbols, bool excludeVersion = false)
         {
             // Output file is {id}.{version}
             var normalizedVersion = version.ToNormalizedString();
-            var outputFile = packageId + "." + normalizedVersion;
-            
+            var outputFile = excludeVersion ? packageId : packageId + "." + normalizedVersion;
 
             var extension = isNupkg ? NuGetConstants.PackageExtension : NuGetConstants.ManifestExtension;
             var symbolsExtension = isNupkg

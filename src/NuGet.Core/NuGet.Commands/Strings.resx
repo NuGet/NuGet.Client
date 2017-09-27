@@ -600,4 +600,10 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Error_EmptySourceFileProjectDirectory" xml:space="preserve">
     <value>The project directory for the source file '{0}' could not be found.</value>
   </data>
+  <data name="Error_WriteResolvedNuSpecOverwriteOriginal" xml:space="preserve">
+    <value>Unable to output resolved nuspec file because it would overwrite the original at '{0}'</value>
+  </data>
+  <data name="Log_PackageCommandInstallPackageToOutputPath" xml:space="preserve">
+    <value>Install {0} to output path '{1}'</value>
+  </data>
 </root>
