@@ -3,7 +3,7 @@
   <!-- Use NuGet SNK by default for all projects except API.Test. -->
   <PropertyGroup>
     <StrongNameKey>$(NUGET_PFX_PATH)</StrongNameKey>
-    <DefaultStrongNameCert>25</DefaultStrongNameCert>
+    <DefaultStrongNameCert>67</DefaultStrongNameCert>
   </PropertyGroup>
 
   <!-- Use MSFT SNK for all NuGet.Core test and source projects and since we do not own MSFT SNK we can only delay sign the assemblies. -->
