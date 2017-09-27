@@ -878,7 +878,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreSettingsOverrides"
-          Returns="$(_RestorePackagesPathOverride);$(_GetRestoreSourcesOverride);$(_GetRestoreFallbackFoldersOverride)">
+          Returns="$(_RestorePackagesPathOverride);$(_RestoreSourcesOverride);$(_RestoreFallbackFoldersOverride)">
 
     <!-- RestorePackagesPathOverride -->
     <MsBuild

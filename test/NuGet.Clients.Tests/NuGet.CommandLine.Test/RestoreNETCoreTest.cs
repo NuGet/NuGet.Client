@@ -5573,5 +5573,59 @@ namespace NuGet.CommandLine.Test
 
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyConfigFileWithRelativePathIsUsed()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var xml = File.ReadAllText(projectA.ProjectPath);
+                xml = xml.Replace("<TargetFrameworks>", "<TargetFramework>");
+                xml = xml.Replace("</TargetFrameworks>", "</TargetFramework>");
+                File.WriteAllText(projectA.ProjectPath, xml);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var subDir = Path.Combine(pathContext.SolutionRoot, "sub");
+                var configPath = Path.Combine(subDir, "nuget.config");
+                Directory.CreateDirectory(subDir);
+                File.Move(pathContext.NuGetConfig, configPath);
+
+                var relativePathToConfig = PathUtility.GetRelativePath(pathContext.WorkingDirectory + Path.DirectorySeparatorChar, configPath);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, 0, $"-ConfigFile {relativePathToConfig}");
+
+                // Assert
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
+                Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
+                Assert.True(File.Exists(projectA.PropsOutput), r.Item2);
+
+                Assert.Equal(NuGetFramework.Parse("net45"), projectA.AssetsFile.Targets.Single(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).TargetFramework);
+            }
+        }
     }
 }
