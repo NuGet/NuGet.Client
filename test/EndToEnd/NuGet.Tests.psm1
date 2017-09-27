@@ -479,15 +479,21 @@ function Get-TextResultRow
     )
 
     $status = 'Passed'
+    $errorMessage = $($Result.Error)
 
     if($Result.Skipped) {
         $status = 'Skipped'
     }
     elseif($Result.Error) {
         $status = 'Failed'
+        $errorMessageArray = Get-Content $errorMessage
+        if($errorMessageArray.Length -gt 1)
+        {
+            $errorMessage = [string]::Join(" ", $errorMessageArray)
+        }
     }
 
-    $row = "$status $($Result.Test) $([math]::Round($Result.Time.TotalMilliseconds)) $($Result.Error) "
+    $row = "$status $($Result.Test) $([math]::Round($Result.Time.TotalMilliseconds)) $errorMessage "
 
     return $row
 }
