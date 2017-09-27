@@ -318,7 +318,7 @@ namespace NuGet.PackageManagement.UI
             get { return _selectedVersion; }
             set
             {
-                if (_selectedVersion != value)
+                if (_selectedVersion != value && value.IsValidVersion)
                 {
                     _selectedVersion = value;
 
