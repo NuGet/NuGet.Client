@@ -51,7 +51,8 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectAdapter vsProjectAdapter,
             UnconfiguredProject unconfiguredProject,
             INuGetProjectServices projectServices,
-            string projectId)
+            string projectId) :
+            base()
         {
             Assumes.Present(projectFullPath);
             Assumes.Present(projectSystemCache);
@@ -66,6 +67,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _projectSystemCache = projectSystemCache;
             _vsProjectAdapter = vsProjectAdapter;
             _unconfiguredProject = unconfiguredProject;
+            _dependencyVersionLookup = new DependencyVersionLookup();
             ProjectServices = projectServices;
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, _projectName);
@@ -190,7 +192,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var packageSpec = GetPackageSpec();
             if (packageSpec != null)
             {
-                installedPackages = GetPackageReferences(packageSpec);
+                installedPackages = GetPackageReferences(packageSpec, _dependencyVersionLookup);
             }
             else
             {
@@ -200,23 +202,23 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.FromResult<IEnumerable<PackageReference>>(installedPackages);
         }
 
-        private static PackageReference[] GetPackageReferences(PackageSpec packageSpec)
+        private static PackageReference[] GetPackageReferences(PackageSpec packageSpec, DependencyVersionLookup lookup)
         {
             var frameworkSorter = new NuGetFrameworkSorter();
 
             return packageSpec
                 .TargetFrameworks
-                .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName))
+                .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, lookup))
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                 .ToArray();
         }
 
-        private static IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework)
+        private static IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, DependencyVersionLookup lookup)
         {
             return libraries
                 .Where(l => l.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
-                .Select(l => new BuildIntegratedPackageReference(l, targetFramework));
+                .Select(l => new BuildIntegratedPackageReference(l, targetFramework, lookup));
         }
 
         public override async Task<bool> InstallPackageAsync(
@@ -276,8 +278,21 @@ namespace NuGet.PackageManagement.VisualStudio
                 // This is the update operation
                 if (!result.Added)
                 {
-                    var existingReference = result.Reference;
-                    await existingReference.Metadata.SetPropertyValueAsync("Version", formattedRange);
+                    var existingReferenceMetadata = result.Reference.Metadata;
+                    var currentVersionString = await existingReferenceMetadata.GetEvaluatedPropertyValueAsync("Version");
+                    var currentVersion = VersionRange.Parse(currentVersionString);
+
+                    // Only update the package reference if any:
+                    // 1. The current version is not floating or a range
+                    // 2. The current version is a range and the new version is not a subset of it
+                    // 3. The current version is a float and the new version doesn't satisfies it
+                    var currentIsSingleVersion = (!currentVersion.IsFloating && !currentVersion.WasOriginallyRange);
+                    var currentIsRangeAndNewIsNotSubset = currentVersion.WasOriginallyRange && !range.IsSubSetOrEqualTo(currentVersion);
+                    var currentIsFloatAndNewDoesNotSatisfies = currentVersion.IsFloating && !currentVersion.Float.Satisfies(range.MinVersion);
+                    if (currentIsSingleVersion || currentIsRangeAndNewIsNotSubset || currentIsFloatAndNewDoesNotSatisfies)
+                    {
+                        await existingReferenceMetadata.SetPropertyValueAsync("Version", formattedRange);
+                    }
                 }
             }
 

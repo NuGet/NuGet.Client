@@ -97,7 +97,7 @@ namespace NuGetConsole.Host.PowerShell
 
             _solutionManager = solutionManager;
             _settings = settings;
-            _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
+            _getLockFileOrNullAsync = IntegratedProjectUtility.GetLockFileOrNull;
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace NuGetConsole.Host.PowerShell
 
             _solutionManager = solutionManager;
             _settings = settings;
-            _getLockFileOrNullAsync = getLockFileOrNullAsync ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
+            _getLockFileOrNullAsync = getLockFileOrNullAsync ?? IntegratedProjectUtility.GetLockFileOrNull;
         }
 
         public async Task<IEnumerable<PackageItem>> EnumeratePackagesAsync(
@@ -324,7 +324,7 @@ namespace NuGetConsole.Host.PowerShell
                 fppr = new FallbackPackagePathResolver(pathContext);
             }
 
-            foreach (var package in BuildIntegratedProjectUtility.GetOrderedLockFilePackageDependencies(lockFile))
+            foreach (var package in IntegratedProjectUtility.GetLockFilePackageDependencies(lockFile, true))
             {
                 if (!finishedPackages.Contains(package))
                 {

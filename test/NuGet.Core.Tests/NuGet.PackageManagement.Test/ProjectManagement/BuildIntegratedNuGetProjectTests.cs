@@ -100,7 +100,7 @@ namespace ProjectManagement.Test
             target.Libraries.Add(targetB);
 
             // Act
-            var ordered = BuildIntegratedProjectUtility.GetOrderedLockFileDependencies(lockFile)
+            var ordered = IntegratedProjectUtility.GetOrderedLockFileDependencies(lockFile)
                 .OrderBy(lib => lib.Name, StringComparer.Ordinal)
                 .ToList();
 
@@ -147,7 +147,7 @@ namespace ProjectManagement.Test
             target.Libraries.Add(targetB);
 
             // Act
-            var ordered = BuildIntegratedProjectUtility.GetOrderedLockFilePackageDependencies(lockFile)
+            var ordered = IntegratedProjectUtility.GetLockFilePackageDependencies(lockFile, true)
                 .OrderBy(lib => lib.Id, StringComparer.Ordinal)
                 .ToList();
 

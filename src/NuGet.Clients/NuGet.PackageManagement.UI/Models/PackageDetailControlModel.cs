@@ -99,13 +99,13 @@ namespace NuGet.PackageManagement.UI
         protected override void CreateVersions()
         {
             _versions = new List<DisplayVersion>();
-            var installedDependency = InstalledPackageDependencies.Where(p =>
-                StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id) && p.VersionRange != null && p.VersionRange.HasLowerBound)
-                .OrderByDescending(p => p.VersionRange.MinVersion)
+            var installedDependency = InstalledPackages.Where(p =>
+                StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id))
+                .OrderByDescending(p => p.Version)
                 .FirstOrDefault();
 
             // installVersion is null if the package is not installed
-            var installedVersion = installedDependency?.VersionRange?.MinVersion;
+            var installedVersion = installedDependency?.Version;
 
             var allVersions = _allPackageVersions?.OrderByDescending(v => v).ToArray();
 

@@ -14,6 +14,7 @@ namespace NuGet.Versioning
     {
         private readonly FloatRange _floatRange;
         private readonly string _originalString;
+        private readonly bool _wasOriginallyRange;
 
         /// <summary>
         /// Creates a range that is greater than or equal to the minVersion.
@@ -36,7 +37,8 @@ namespace NuGet.Versioning
                   maxVersion: null,
                   includeMaxVersion: false,
                   originalString: null,
-                  floatRange: floatRange)
+                  floatRange: floatRange,
+                  wasOriginallyRange: false)
         {
         }
 
@@ -57,12 +59,14 @@ namespace NuGet.Versioning
         /// <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
         /// <param name="floatRange">The floating range subset used to find the best version match.</param>
         /// <param name="originalString">The original string being parsed to this object.</param>
+        /// <param name="wasOriginallyRange">True if the original string was in range format.</param>
         public VersionRange(NuGetVersion minVersion = null, bool includeMinVersion = true, NuGetVersion maxVersion = null,
-            bool includeMaxVersion = false, FloatRange floatRange = null, string originalString = null)
+            bool includeMaxVersion = false, FloatRange floatRange = null, string originalString = null, bool wasOriginallyRange = false)
             : base(minVersion, includeMinVersion, maxVersion, includeMaxVersion)
         {
             _floatRange = floatRange;
             _originalString = originalString;
+            _wasOriginallyRange = wasOriginallyRange;
         }
 
         /// <summary>
@@ -88,6 +92,11 @@ namespace NuGet.Versioning
         {
             get { return _originalString; }
         }
+
+        /// <summary>
+        /// Indicates if the original string was a range before parsing
+        /// </summary>
+        public bool WasOriginallyRange => _wasOriginallyRange;
 
         /// <summary>
         /// Normalized range string.
