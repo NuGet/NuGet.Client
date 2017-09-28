@@ -97,7 +97,7 @@ function RealTimeLogResults
 
     $log = Join-Path $currentBinFolder.FullName "log.txt"
     $testResults = Join-Path $currentBinFolder.FullName "Realtimeresults.txt"
-
+    $lastLogLine = ""
     While ($currentTestTime -le $EachTestTimoutInSecs)
     {
         Start-Sleep 1
@@ -134,7 +134,8 @@ function RealTimeLogResults
             else
             {                               
                 $logContent = Get-Content $log
-                Write-Host $logContent[$currentTestId] " and current test time is ${currentTestTime}" 
+                $lastLogLine = $logContent[$currentTestId]
+                Write-Host $lastLogLine " and current test time is ${currentTestTime}" 
             }
 
             $logContent = Get-Content $log
@@ -169,18 +170,18 @@ function RealTimeLogResults
 
     if ($currentTestTime -gt $EachTestTimoutInSecs)
     {
-        $logLastLine = (Get-Content $log)[-1] -split " "
-        $currentTestName = $logLastLine[2].Replace("...", "") 
+        $logLineEntries = $lastLogLine -split " "
+        $currentTestName = $logLineEntries[2].Replace("...", "") 
         $resultRow = "Failed $currentTestName 600000 Test timed out"
-        $resultRow >> $RealTimeResultsFile
+        $resultRow >> $testResults
         $errorMessage = 'Run Failed - Results.html did not get created. ' `
         + 'This indicates that the tests did not finish running. It could be that the VS crashed or a test timed out. Please investigate.'
         CopyResultsToCI $NuGetDropPath $RunCounter $testResults
-        if($env:CI)
-        {
-            # Running into some hangs, so comment it out for now.
-            #Get-ScreenCapture -OfWindow -OutputPath $env:EndToEndResultsDropPath
-        }
+        # if($env:CI)
+        # {
+        ## Running into some hangs, so comment it out for now.
+        #     Get-ScreenCapture -OfWindow -OutputPath $env:EndToEndResultsDropPath
+        # }
         
         Write-Error $errorMessage
         return $null
