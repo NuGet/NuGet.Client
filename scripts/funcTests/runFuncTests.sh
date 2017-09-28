@@ -112,5 +112,6 @@ esac
 
 
 popd
-
+$RESULTCODE = $?
+echo "Mono tests failed!"
 exit $RESULTCODE
