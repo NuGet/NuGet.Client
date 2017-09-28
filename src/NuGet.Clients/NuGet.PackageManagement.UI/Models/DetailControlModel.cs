@@ -154,7 +154,11 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            _allPackageVersions = versions.Select(v => v.Version).ToList();
+            // Get the list of available versions, ignoring null versions
+            _allPackageVersions = versions
+                .Where(v => v?.Version != null)
+                .Select(v => v.Version)
+                .ToList();
 
             // hook event handler for dependency behavior changed
             Options.SelectedChanged += DependencyBehavior_SelectedChanged;
