@@ -68,7 +68,7 @@ function Wait-OnNetCoreRestoreCompletion{
      param(
         [parameter(Mandatory = $true)]
         $Project,
-        [int]$TimoutSeconds = 20
+        [int]$TimoutSeconds = 30
     )
 
     $NetCoreLockFilePath = Get-NetCoreLockFilePath $Project
