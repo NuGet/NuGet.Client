@@ -257,4 +257,8 @@
     <SolutionProjects Include="@(CoreFuncTestProjects)" />
   </ItemGroup>
 
+  <ItemGroup>
+   <ApexProjects Include="$(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj" />
+  </ItemGroup>
+
 </Project>
