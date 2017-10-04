@@ -165,13 +165,13 @@ namespace NuGet.ProjectModel
             return closure;
         }
 
-        private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec, Dictionary<string, PackageSpec> ProjectsByUniqueName)
+        private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec, Dictionary<string, PackageSpec> projectsByUniqueName)
         {
             // Handle projects which may not have specs, and which may not have references
             return spec?.RestoreMetadata?
                 .TargetFrameworks
                 .SelectMany(e => e.ProjectReferences)
-                .Where(project => ProjectsByUniqueName.ContainsKey(project.ProjectUniqueName))
+                .Where(project => projectsByUniqueName.ContainsKey(project.ProjectUniqueName))
                 .Select(project => project.ProjectUniqueName)
                 ?? Enumerable.Empty<string>();
         }
