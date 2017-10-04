@@ -81,6 +81,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreSolutionProjectsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreSettingsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.WarnForInvalidProjectsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.AssignReferenceProperties" AssemblyFile="$(RestoreTaskAssemblyFile)" />
 
   <!--
     ============================================================
