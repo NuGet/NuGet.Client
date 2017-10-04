@@ -5345,4 +5345,47 @@ nuget locals global-packages -list</value>
   <data name="InstallCommandFrameworkDescription" xml:space="preserve">
     <value>Target framework used for selecting dependencies. Defaults to 'Any' if not specified.</value>
   </data>
+  <data name="SignCommandCertificatePassphraseDescription" xml:space="preserve">
+    <value>Password for the certificate, if needed.</value>
+  </data>
+  <data name="SignCommandCertificatePathDescription" xml:space="preserve">
+    <value>Path to the certificate to be used while signing the certificate. The path can be a file path or a certificate path from the local store of the format cert:\certificate_context\certificate_store_name\certificate_thumb_print.</value>
+  </data>
+  <data name="SignCommandCertificateSubjectFingerprintDescription" xml:space="preserve">
+    <value>SHA-1 fingerprint of the certificate used to search the default local certificate store for the certificate.</value>
+  </data>
+  <data name="SignCommandCertificateSubjectNameDescription" xml:space="preserve">
+    <value>String representing the subject name of the certificate used to search the default local certificate store for the certificate. The search is a case-insensitive string comparison using the supplied value, which will find all certificates with the subject name containing that string, regardless of other subject values.</value>
+  </data>
+  <data name="SignCommandCryptographicServiceProviderDescription" xml:space="preserve">
+    <value>Name of the Cryptographic Service Provider which contains the Private Key Container. This option, along with -KeyContainer, can be used to specify the private key if the certificate file does not contain one.</value>
+  </data>
+  <data name="SignCommandDescription" xml:space="preserve">
+    <value>Signs a NuGet package with the specified certificate.</value>
+  </data>
+  <data name="SignCommandExamples" xml:space="preserve">
+    <value>nuget sign MyPackage.nupkg -CertificatePath /path/to/certificate
+nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -OutputDirectory ./signed/</value>
+  </data>
+  <data name="SignCommandForceDescription" xml:space="preserve">
+    <value>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</value>
+  </data>
+  <data name="SignCommandHashingAlgorithmDescription" xml:space="preserve">
+    <value>Hashing algorithm to be used while digesting the package files. Defaults to SHA512.</value>
+  </data>
+  <data name="SignCommandKeyContainerDescription" xml:space="preserve">
+    <value>Name of the Key Container which has the Private Key. This option, along with -CryptographicServiceProvider, can be used to specify the private key if the certificate file does not contain one.</value>
+  </data>
+  <data name="SignCommandOutputDirectoryDescription" xml:space="preserve">
+    <value>Directory where the signed package should be saved. By default the original package is overwritten by the signed package.</value>
+  </data>
+  <data name="SignCommandPackagePathDescription" xml:space="preserve">
+    <value>Path to the package that needs to be signed.</value>
+  </data>
+  <data name="SignCommandRSASignaturePaddingDescription" xml:space="preserve">
+    <value>RSA Padding scheme used to sign the package with an RSA certificate. Supported padding schemes are PKCS1-v1.5 and PSS. This option can be used to specify the padding scheme if the certificate is not signed with either of the two supported schemes.</value>
+  </data>
+  <data name="SignCommandSummary" xml:space="preserve">
+    <value>Signs a NuGet package.</value>
+  </data>
 </root>
