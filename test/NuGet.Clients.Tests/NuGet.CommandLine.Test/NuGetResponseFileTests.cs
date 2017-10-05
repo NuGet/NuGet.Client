@@ -119,7 +119,7 @@ namespace NuGet.CommandLine.Test
                 }
 
                 // Assert
-                Assert.Contains(errorMessage, "Response file '@responseFile1.rsp' cannot be larger than 2mb");
+                Assert.Contains("Response file '@responseFile1.rsp' cannot be larger than 2mb", errorMessage);
             }
         }
 
@@ -143,7 +143,7 @@ namespace NuGet.CommandLine.Test
                 }
 
                 // Assert
-                Assert.Contains(errorMessage, "Invalid response file, '@' does not exist");
+                Assert.Contains("Invalid response file, '@' does not exist", errorMessage);
             }
         }
 
@@ -257,7 +257,7 @@ namespace NuGet.CommandLine.Test
                 }
 
                 // Assert
-                Assert.Contains(errorMessage, "No more than 3 nested response files are allowed");
+                Assert.Contains("No more than 3 nested response files are allowed", errorMessage);
             }
         }
 

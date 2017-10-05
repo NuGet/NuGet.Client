@@ -2131,7 +2131,7 @@ public class B
                 Assert.Equal(1, commandRunner.Item1);
 
                 var exepctedError = string.Format(
-                    "error: NUPACK0024: Unable to output resolved nuspec file because it would overwrite the original at '{0}\\{1}'\r\n",
+                    "Unable to output resolved nuspec file because it would overwrite the original at '{0}\\{1}'\r\n",
                     workingDirectory,
                     nuspecName);
 
@@ -2146,6 +2146,7 @@ public class B
             {
                 // Arrange
                 var nuspecName = "packageA.nuspec";
+                var configurationFileName = "Microsoft.VisualStudio.Offline.xml";
                 var originalDirectory = Path.Combine(workingDirectory, "Original");
                 Directory.CreateDirectory(originalDirectory);
 
@@ -2170,13 +2171,24 @@ public class B
   </metadata>
 </package>");
 
+                Util.CreateFile(
+                    originalDirectory,
+                    configurationFileName,
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""Microsoft Visual Studio Offline Packages"" value = ""C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\""/>
+  </packageSources>
+</configuration>");
+
                 // Act
 
                 // Execute the pack command and feed in some properties for token replacements and 
                 // set the flag to save the resolved nuspec to output directory.\
                 var arguments = string.Format(
-                    "pack {0} -properties tagVar=CustomTag;author=test1@microsoft.com -InstallPackageToOutputPath",
-                    Path.Combine(originalDirectory, nuspecName));
+                    "pack {0} -ConfigFile {1} -properties tagVar=CustomTag;author=test1@microsoft.com -InstallPackageToOutputPath",
+                    Path.Combine(originalDirectory, nuspecName),
+                    Path.Combine(originalDirectory, configurationFileName));
 
                 var commandRunner = CommandRunner.Run(
                     Util.GetNuGetExePath(),
