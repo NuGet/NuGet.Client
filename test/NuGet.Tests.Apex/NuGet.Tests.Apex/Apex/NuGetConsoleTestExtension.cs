@@ -47,5 +47,10 @@ namespace NuGet.Tests.Apex
         {
             return _pmConsole.IsPackageInstalled(_projectName, packageId, version);
         }
+
+        public void Clear()
+        {
+            _pmConsole.Clear();
+        }
     }
 }
