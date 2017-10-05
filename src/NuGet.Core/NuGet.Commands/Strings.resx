@@ -213,7 +213,7 @@
     <value>Version conflict detected for {0}. Reference the package directly from the project to resolve this issue.</value>
   </data>
   <data name="Error_UnknownBuildAction" xml:space="preserve">
-    <value>Package '{0}' specifies an invalid build action '{1}' for file '{2}'.</value>
+    <value>error NG0012: Package '{0}' specifies an invalid build action '{1}' for file '{2}'.</value>
   </data>
   <data name="Log_ConfigFileSummary" xml:space="preserve">
     <value>NuGet Config files used:</value>
@@ -277,7 +277,7 @@
     <value>The folder '{0}' does not contain a project to restore.</value>
   </data>
   <data name="Error_MissingSourceParameter" xml:space="preserve">
-    <value>Source parameter was not specified.</value>
+    <value>error NG0003: Source parameter was not specified.</value>
   </data>
   <data name="Log_PackageCommandAddedFile" xml:space="preserve">
     <value>Added file '{0}'.</value>
@@ -295,10 +295,10 @@
     <value>Issue: {0}</value>
   </data>
   <data name="Error_PackageCommandNoFilesForLibPackage" xml:space="preserve">
-    <value>Failed to build package. Ensure '{0}' includes assembly files. For help on building symbols package, visit {1}.</value>
+    <value>error NG0007: Failed to build package. Ensure '{0}' includes assembly files. For help on building symbols package, visit {1}.</value>
   </data>
   <data name="Error_PackageCommandNoFilesForSymbolsPackage" xml:space="preserve">
-    <value>Failed to build package. Ensure '{0}' includes source and symbol files. For help on building symbols package, visit {1}.</value>
+    <value>error NG0008: Failed to build package. Ensure '{0}' includes source and symbol files. For help on building symbols package, visit {1}.</value>
   </data>
   <data name="Warning_PackageCommandPackageIssueSummary" xml:space="preserve">
     <value>Issue found with package '{0}'.</value>
@@ -337,7 +337,7 @@
     <value>Building project '{0}' for target framework '{1}'.</value>
   </data>
   <data name="Error_ProcessingNuspecFile" xml:space="preserve">
-    <value>Error occurred when processing file '{0}': {1}</value>
+    <value>error NG0010: Error occurred when processing file '{0}': {1}</value>
   </data>
   <data name="FailedToBuildProject" xml:space="preserve">
     <value>Failed to build '{0}'.</value>
@@ -402,17 +402,17 @@
   <data name="Log_ProjectsIncompatible" xml:space="preserve">
     <value>One or more projects are incompatible with {0}.</value>
   </data>
-  <data name="InputFileNotSpecified" xml:space="preserve">
-    <value>Please specify a nuspec, project.json, or project file to use</value>
+  <data name="Error_InputFileNotSpecified" xml:space="preserve">
+    <value>error NG0001: Please specify a nuspec, project.json, or project file to use</value>
   </data>
   <data name="Error_BuildFailed" xml:space="preserve">
     <value>Failed to build using '{0} {1}'.</value>
   </data>
   <data name="Error_PackFailed" xml:space="preserve">
-    <value>Failed to build package. {0}</value>
+    <value>error NG0009: Failed to build package. {0}</value>
   </data>
   <data name="Error_InvalidTargetFramework" xml:space="preserve">
-    <value>Failed to build package because of an unsupported targetFramework value on '{0}'.</value>
+    <value>error NG0002: Failed to build package because of an unsupported targetFramework value on '{0}'.</value>
   </data>
   <data name="Error_UnableToLocateRestoreTarget_Because" xml:space="preserve">
     <value>Failed to find a project to restore in the folder '{0}'.</value>
@@ -465,7 +465,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>0 is an error message specific to the validation failure.</comment>
   </data>
   <data name="Error_UnableToLocateBuildOutput" xml:space="preserve">
-    <value>No build found in {0}. Use the -Build option or build the project.</value>
+    <value>error NG0011: No build found in {0}. Use the -Build option or build the project.</value>
     <comment>{0} is the project output directory</comment>
   </data>
   <data name="InvalidRestoreInputWithFiles" xml:space="preserve">
@@ -562,13 +562,13 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Project dependency {0} does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.</value>
   </data>
   <data name="Error_NoPackageVersionsExist" xml:space="preserve">
-    <value>Unable to find package {0}. No packages exist with this id in source(s): {1}</value>
+    <value>error NG0004: Unable to find package {0}. No packages exist with this id in source(s): {1}</value>
   </data>
   <data name="Error_NoPackageVersionsExistInRange" xml:space="preserve">
-    <value>Unable to find package {0} with version {1}</value>
+    <value>error NG0005: Unable to find package {0} with version {1}</value>
   </data>
   <data name="Error_NoStablePackageVersionsExist" xml:space="preserve">
-    <value>Unable to find a stable package {0} with version {1}</value>
+    <value>error NG0006: Unable to find a stable package {0} with version {1}</value>
   </data>
   <data name="Error_ProjectDoesNotExist" xml:space="preserve">
     <value>Unable to find project '{0}'. Check that the project reference is valid and that the project file exists.</value>
@@ -599,5 +599,11 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="Error_EmptySourceFileProjectDirectory" xml:space="preserve">
     <value>The project directory for the source file '{0}' could not be found.</value>
+  </data>
+  <data name="Error_WriteResolvedNuSpecOverwriteOriginal" xml:space="preserve">
+    <value>error NG0013: Unable to output resolved nuspec file because it would overwrite the original at '{0}'</value>
+  </data>
+  <data name="Log_PackageCommandInstallPackageToOutputPath" xml:space="preserve">
+    <value>Install {0} to output path '{1}'</value>
   </data>
 </root>
