@@ -107,10 +107,9 @@ case "$(uname -s)" in
 		Darwin)
 			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Linux -xml build/TestResults/monoomac.xml"
 			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Linux -xml "build/TestResults/monoonmac.xml"
-			echo "error code $?"
-			if [ $? -ne 0 ]; then
-				echo "Mono tests failed!"
+			if [ $? -ne '0' ]; then
 				RESULTCODE=$?
+				echo "Mono tests failed!"				
 				exit 1
 			fi
 			;;
