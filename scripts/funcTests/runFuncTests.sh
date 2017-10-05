@@ -105,17 +105,19 @@ case "$(uname -s)" in
 			#mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Darwin -xml "build/TestResults/monoonlinux.xml"
 			;;
 		Darwin)
-			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Linux -xml build/TestResults/monoonlinux.xml"
+			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Linux -xml build/TestResults/monoomac.xml"
 			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Linux -xml "build/TestResults/monoonmac.xml"
 			echo "error code $?"
+			if [ $? -ne 0 ]; then
+				echo "Mono tests failed!"
+				RESULTCODE=$?
+				exit 1
+			fi
 			;;
 		*) ;;
 esac
 
 
 popd
-if [ $? -ne 0 ]; then
-	echo "Mono tests failed!"
-	exit 1
-fi
+
 exit $RESULTCODE
