@@ -955,9 +955,8 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             var pluginDirectory = Util.GetTestablePluginDirectory();
-
-            List<string> credentialForGetRequest = new List<string>();
-            List<string> credentialForPutRequest = new List<string>();
+            
+            
 
             using (var packageDirectory = TestDirectory.Create())
             {
@@ -967,12 +966,13 @@ namespace NuGet.CommandLine.Test
 
                 using (var server = new MockServer())
                 {
+                    var credentialForPutRequest = new List<string>();
                     server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
                         var h = r.Headers["Authorization"];
                         var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                        credentialForPutRequest.Add(credential);
+                        credentialForPutRequest.Insert(0, credential);
 
                         if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
                         {
@@ -1009,7 +1009,7 @@ namespace NuGet.CommandLine.Test
 
                     // Assert
                     Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
-                    
+                    Assert.Equal(1, credentialForPutRequest.Count);
                     Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
                 }
             }
@@ -1022,9 +1022,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
             var pluginDirectory = Util.GetTestablePluginDirectory();
-
-            List<string> credentialForGetRequest = new List<string>();
-            List<string> credentialForPutRequest = new List<string>();
+                        
 
             using (var packageDirectory = TestDirectory.Create())
             {
@@ -1034,12 +1032,13 @@ namespace NuGet.CommandLine.Test
 
                 using (var server = new MockServer())
                 {
+                    var credentialForPutRequest = new List<string>();
                     server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
                         var h = r.Headers["Authorization"];
                         var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                        credentialForPutRequest.Add(credential);
+                        credentialForPutRequest.Insert(0,credential);
                         if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
                         {
                             res.StatusCode = (int)HttpStatusCode.OK;
@@ -1077,6 +1076,7 @@ namespace NuGet.CommandLine.Test
 
                     // Assert
                     Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
+                    Assert.Equal(1, credentialForPutRequest.Count);
                     Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
                 }
             }
