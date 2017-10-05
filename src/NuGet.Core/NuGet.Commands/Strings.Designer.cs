@@ -188,7 +188,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG0004: Unable to find package {0}. No packages exist with this id in source(s): {1}.
+        ///   Looks up a localized string similar to Unable to find package {0}. No packages exist with this id in source(s): {1}.
         /// </summary>
         internal static string Error_NoPackageVersionsExist {
             get {
@@ -197,7 +197,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG0005: Unable to find package {0} with version {1}.
+        ///   Looks up a localized string similar to error NG0004: Unable to find package {0} with version {1}.
         /// </summary>
         internal static string Error_NoPackageVersionsExistInRange {
             get {
@@ -206,7 +206,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG0006: Unable to find a stable package {0} with version {1}.
+        ///   Looks up a localized string similar to error NG0005: Unable to find a stable package {0} with version {1}.
         /// </summary>
         internal static string Error_NoStablePackageVersionsExist {
             get {
@@ -215,7 +215,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG0007: Failed to build package. Ensure &apos;{0}&apos; includes assembly files. For help on building symbols package, visit {1}..
+        ///   Looks up a localized string similar to error NG0006: Failed to build package. Ensure &apos;{0}&apos; includes assembly files. For help on building symbols package, visit {1}..
         /// </summary>
         internal static string Error_PackageCommandNoFilesForLibPackage {
             get {
@@ -224,7 +224,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG0008: Failed to build package. Ensure &apos;{0}&apos; includes source and symbol files. For help on building symbols package, visit {1}..
+        ///   Looks up a localized string similar to error NG0007: Failed to build package. Ensure &apos;{0}&apos; includes source and symbol files. For help on building symbols package, visit {1}..
         /// </summary>
         internal static string Error_PackageCommandNoFilesForSymbolsPackage {
             get {
@@ -233,7 +233,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG0009: Failed to build package. {0}.
+        ///   Looks up a localized string similar to error NG0008: Failed to build package. {0}.
         /// </summary>
         internal static string Error_PackFailed {
             get {
@@ -242,7 +242,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG0010: Error occurred when processing file &apos;{0}&apos;: {1}.
+        ///   Looks up a localized string similar to error NG0009: Error occurred when processing file &apos;{0}&apos;: {1}.
         /// </summary>
         internal static string Error_ProcessingNuspecFile {
             get {
@@ -269,7 +269,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG0011: No build found in {0}. Use the -Build option or build the project..
+        ///   Looks up a localized string similar to error NG0010: No build found in {0}. Use the -Build option or build the project..
         /// </summary>
         internal static string Error_UnableToLocateBuildOutput {
             get {
@@ -296,7 +296,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG0012: Package &apos;{0}&apos; specifies an invalid build action &apos;{1}&apos; for file &apos;{2}&apos;..
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; specifies an invalid build action &apos;{1}&apos; for file &apos;{2}&apos;..
         /// </summary>
         internal static string Error_UnknownBuildAction {
             get {
@@ -305,7 +305,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG0013: Unable to output resolved nuspec file because it would overwrite the original at &apos;{0}&apos;.
+        ///   Looks up a localized string similar to error NG0011: Unable to output resolved nuspec file because it would overwrite the original at &apos;{0}&apos;.
         /// </summary>
         internal static string Error_WriteResolvedNuSpecOverwriteOriginal {
             get {
