@@ -7,7 +7,7 @@
     <ProjectReference>      
       <Ngen>True</Ngen>
       <NgenArchitecture>All</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>3</NgenPriority>
     </ProjectReference>
   </ItemDefinitionGroup>
   <PropertyGroup>
