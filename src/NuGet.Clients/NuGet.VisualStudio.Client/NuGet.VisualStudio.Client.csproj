@@ -3,13 +3,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.props" />
-  <ItemDefinitionGroup>
-    <ProjectReference>      
-      <Ngen>True</Ngen>
-      <NgenArchitecture>All</NgenArchitecture>
-      <NgenPriority>3</NgenPriority>
-    </ProjectReference>
-  </ItemDefinitionGroup>
   <PropertyGroup>
     <Shipping>true</Shipping>
     <ProjectGuid>{3B96F91B-3B58-40ED-B06E-5CD133A79A63}</ProjectGuid>
