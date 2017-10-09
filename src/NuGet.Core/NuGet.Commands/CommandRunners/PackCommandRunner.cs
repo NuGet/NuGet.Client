@@ -149,8 +149,10 @@ namespace NuGet.Commands
         /// <param name="packageBuilder">The package builder</param>
         private void WriteResolvedNuSpecToPackageOutputDirectory(string packageOutputPath, PackageBuilder packageBuilder)
         {
-            string packageOutputDirectory = Path.GetDirectoryName(packageOutputPath);
-            string resolvedNuSpecOutputPath = Path.Combine(packageOutputDirectory, packageBuilder.Id + PackagingConstants.ManifestExtension);
+            string resolvedNuSpecOutputPath = Path.Combine(
+                Path.GetDirectoryName(packageOutputPath), 
+                new VersionFolderPathResolver(packageOutputPath).GetManifestFileName(packageBuilder.Id, packageBuilder.Version));
+
             _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "NuSpec", resolvedNuSpecOutputPath));
 
             if (string.Equals(_packArgs.Path, resolvedNuSpecOutputPath, StringComparison.OrdinalIgnoreCase))
@@ -172,6 +174,8 @@ namespace NuGet.Commands
         private void WriteSHA512PackageHash(string packageOutputPath)
         {
             string sha512OutputPath = Path.Combine(packageOutputPath + ".sha512");
+            string sha512TempOutputPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetFileName(sha512OutputPath));
+
             _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "SHA512", sha512OutputPath));
 
             byte[] sha512hash;
@@ -181,7 +185,11 @@ namespace NuGet.Commands
                 sha512hash = cryptoHashProvider.CalculateHash(fileStream);
             }
 
-            File.WriteAllText(sha512OutputPath, Convert.ToBase64String(sha512hash));
+            FileUtility.Delete(sha512TempOutputPath);
+            File.WriteAllText(sha512TempOutputPath, Convert.ToBase64String(sha512hash));
+
+            FileUtility.Delete(sha512OutputPath);
+            FileUtility.Move(sha512TempOutputPath, sha512OutputPath);
         }
 
         private void InitCommonPackageBuilderProperties(PackageBuilder builder)

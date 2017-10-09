@@ -21,7 +21,6 @@ namespace NuGet.CommandLine
         private const string Utf8Option = "-utf8";
         private const string ForceEnglishOutputOption = "-forceEnglishOutput";
         private const string DebugOption = "--debug";
-        private static int ParseArgsResponseFileRecursionDepth = 0;
 
         private static readonly string ThisExecutableName = typeof(Program).Assembly.GetName().Name;
 
@@ -50,7 +49,7 @@ namespace NuGet.CommandLine
 #endif
 
             // Find any response files and resolve the args
-            var parsedArgs = ParseArgsResponseFiles(args);
+            var parsedArgs = CommandLineResponseFile.ParseArgsResponseFiles(args);
 
             return MainCore(Directory.GetCurrentDirectory(), parsedArgs);
         }
@@ -152,102 +151,6 @@ namespace NuGet.CommandLine
             }
 
             return 0;
-        }
-
-        /// <summary>
-        /// Takes command line args and parses response files prefixed with the @ symbol.  
-        /// Response files are text files that contain command line switches. 
-        /// Each switch can be on a separate line or all switches can be on one line.  
-        /// Multiple response files can be defined in the args. 
-        /// Nested response files are supported, but limited to a depth of 3.  
-        /// A response file cannot be larger than 2mb. 
-        /// </summary>
-        /// <param name="args">The args to parse which can contain response files</param>
-        /// <returns></returns>
-        public static string[] ParseArgsResponseFiles(string[] args)
-        {
-            if (args.Length == 0)
-            {
-                return args;
-            }
-
-            const int MaxRecursionDepth = 3;
-            List<string> parsedArgs = new List<string>();
-            foreach (string arg in args)
-            {
-                if (string.IsNullOrWhiteSpace(arg) || !arg.StartsWith("@", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    parsedArgs.Add(arg);
-                    continue;
-                }
-
-                // Response file
-                if (arg.Length < 2)
-                {
-                    throw new ArgumentException(LocalizedResourceManager.GetString("Error_ResponseFileInvalid"));
-                }
-
-                // Remove '@' symbol
-                string responseFileArg = arg.Substring(1, arg.Length - 1);
-
-                // File could be full path or relative path to working directory
-                string responseFilePath = responseFileArg.Contains(Path.DirectorySeparatorChar) ?
-                    responseFileArg :
-                    Path.Combine(Environment.CurrentDirectory, responseFileArg);
-
-                if (!File.Exists(responseFilePath))
-                {
-                    throw new ArgumentException(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileDoesNotExist")), arg);
-                }
-
-                FileInfo fileInfo = new FileInfo(responseFilePath);
-                if (fileInfo.Length == 0)
-                {
-                    throw new ArgumentException(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileNullOrEmpty"), arg));
-                }
-
-                const int TwoMegaBytesLength = 2048000;
-                if (fileInfo.Length > TwoMegaBytesLength)
-                {
-                    throw new ArgumentException(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileTooLarge"), arg, TwoMegaBytesLength / 1000000));
-                }
-
-                string responseFileContents = File.ReadAllText(responseFilePath);
-                string[] responseFileArgs = SplitArgs(responseFileContents);
-                foreach (string a in responseFileArgs)
-                {
-                    if (string.IsNullOrWhiteSpace(a))
-                    {
-                        continue;
-                    }
-
-                    if (a.StartsWith("@", StringComparison.InvariantCultureIgnoreCase))
-                    {
-
-                        if (ParseArgsResponseFileRecursionDepth > MaxRecursionDepth)
-                        {
-                            throw new ArgumentException(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileMaxRecursionDepth"), MaxRecursionDepth));
-                        }
-
-                        ParseArgsResponseFileRecursionDepth++;
-                        string[] nestedResponseFileArgs = ParseArgsResponseFiles(new string[] { a });
-                        if (nestedResponseFileArgs.Length != 0)
-                        {
-                            parsedArgs.AddRange(nestedResponseFileArgs);
-                        }
-
-                        continue;
-                    }
-
-                    string parsedResponseFileArg = a.Trim();
-                    if (!string.IsNullOrWhiteSpace(parsedResponseFileArg))
-                    {
-                        parsedArgs.Add(parsedResponseFileArg);
-                    }
-                }
-            }
-
-            return parsedArgs.ToArray();
         }
 
         private void Initialize(CoreV2.NuGet.IFileSystem fileSystem, IConsole console)
@@ -424,50 +327,6 @@ namespace NuGet.CommandLine
                 console.Verbosity = command.Verbosity;
             }
         }
-
-        /// <summary>
-        /// Splits up a string of command line arguments into an array
-        /// </summary>
-        /// <param name="unsplitArguments">The string to split</param>
-        /// <returns>An array with split command line arguments</returns>
-        private static string[] SplitArgs(string unsplitArguments)
-        {
-            if (string.IsNullOrWhiteSpace(unsplitArguments))
-            {
-                return new string[0];
-            }
-
-            IntPtr ptrToSplitArgs = CommandLineToArgvW(unsplitArguments, out int numberOfArgs);
-            if (ptrToSplitArgs == IntPtr.Zero)
-            {
-                return new string[0];
-            }
-
-            try
-            {
-                string[] splitArgs = new string[numberOfArgs];
-                for (int i = 0; i < numberOfArgs; i++)
-                {
-                    splitArgs[i] = Marshal.PtrToStringUni(Marshal.ReadIntPtr(ptrToSplitArgs, i * IntPtr.Size));
-                }
-
-                return splitArgs;
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(ptrToSplitArgs);
-            }
-        }
-
-        /// <summary>
-        /// Parses a Unicode command line string and returns an array of pointers to the command line arguments, 
-        /// along with a count of such arguments, in a way that is similar to the standard C run-time argv and argc values.
-        /// </summary>
-        /// <param name="commandLine">Unicode string that contains the full command line.</param>
-        /// <param name="argsLength">Pointer to an int that receives the number of array elements returned</param>
-        /// <returns></returns>
-        [DllImport("shell32.dll", SetLastError = true)]
-        static extern IntPtr CommandLineToArgvW([MarshalAs(UnmanagedType.LPWStr)] string commandLine, out int argsLength);
 
         private static void SetConsoleOutputEncoding(System.Text.Encoding encoding)
         {

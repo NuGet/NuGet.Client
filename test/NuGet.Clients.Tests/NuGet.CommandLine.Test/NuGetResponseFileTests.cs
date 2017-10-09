@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -357,7 +358,7 @@ namespace NuGet.CommandLine.Test
 
         private static string[] ParseArgs(string[] args)
         {
-            return Program.ParseArgsResponseFiles(args);
+            return CommandLineResponseFile.ParseArgsResponseFiles(args);
         }
     }
 }
