@@ -17,7 +17,6 @@
     <Guid>228F7591-2777-47D7-B81D-FEADFC71CEB5</Guid>
     <ComVisible>false</ComVisible>
     <authors>Microsoft</authors>
-    <owners>Microsoft</owners>
     <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
     <PackageProjectUrl	>https://github.com/NuGet/NuGet.Client</PackageProjectUrl	>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
