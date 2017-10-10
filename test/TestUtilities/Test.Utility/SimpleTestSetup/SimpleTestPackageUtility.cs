@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -81,16 +82,32 @@ namespace NuGet.Test.Utility
         {
             var id = packageContext.Id;
             var version = packageContext.Version;
-            var runtimeJson = packageContext.RuntimeJson;
-
-            var pathResolver = new VersionFolderPathResolver(null);
             var packageName = packageContext.IsSymbolPackage ? $"{id}.{version.ToString()}.symbols.nupkg" : $"{id}.{version.ToString()}.nupkg";
+
             var packagePath = Path.Combine(repositoryDir, packageName);
             var file = new FileInfo(packagePath);
 
             file.Directory.Create();
 
-            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
+            using (var stream = file.Open(FileMode.CreateNew, FileAccess.ReadWrite))
+            {
+                CreatePackage(stream, packageContext);
+            }
+
+            return file;
+        }
+
+        /// <summary>
+        /// Write a zip file to a stream.
+        /// </summary>
+        public static void CreatePackage(Stream stream, SimpleTestPackageContext packageContext)
+        {
+            var id = packageContext.Id;
+            var version = packageContext.Version;
+            var runtimeJson = packageContext.RuntimeJson;
+            var pathResolver = new VersionFolderPathResolver(null);
+
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
                 if (packageContext.Files.Any())
                 {
@@ -180,7 +197,7 @@ namespace NuGet.Test.Utility
                     }
                 }
 
-                if (packageContext.PackageTypes.Any())
+                if (packageContext.PackageTypes.Count > 0)
                 {
                     var metadata = xml.Element("package").Element("metadata");
                     var packageTypes = new XElement("packageTypes");
@@ -199,10 +216,29 @@ namespace NuGet.Test.Utility
                     }
                 }
 
+                if (packageContext.Signatures.Count > 0)
+                {
+                    var signedJson = new JObject();
+                    var signatures = new JArray();
+                    signedJson.Add(new JProperty("signatures", signatures));
+
+                    foreach (var signature in packageContext.Signatures)
+                    {
+                        var sig = new JObject();
+                        signatures.Add(sig);
+                        sig.Add(new JProperty("trust", signature.TestTrust.ToString()));
+                        sig.Add(new JProperty("type", signature.Type.ToString()));
+                        sig.Add(new JProperty("name", signature.DisplayName));
+                    }
+
+                    zip.AddEntry("testsigned/signed.json", signedJson.ToString());
+                }
+
                 zip.AddEntry($"{id}.nuspec", xml.ToString(), Encoding.UTF8);
             }
 
-            return file;
+            // Reset position
+            stream.Position = 0;
         }
 
         /// <summary>

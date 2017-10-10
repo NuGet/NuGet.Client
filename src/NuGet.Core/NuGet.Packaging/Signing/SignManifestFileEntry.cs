@@ -20,7 +20,7 @@ namespace NuGet.Packaging.Signing
             Hash = hash;
         }
 
-        public SignManifestFileEntry Create(string path, string hash)
+        public static SignManifestFileEntry Create(string path, string hash)
         {
             if (path == null)
             {

@@ -17,5 +17,13 @@ namespace NuGet.Packaging.Signing
         /// Trust result
         /// </summary>
         public SignatureTrust Trust { get; }
+
+        /// <summary>
+        /// SignatureTrustResult
+        /// </summary>
+        public SignatureTrustResult(SignatureTrust trust)
+        {
+            Trust = trust;
+        }
     }
 }

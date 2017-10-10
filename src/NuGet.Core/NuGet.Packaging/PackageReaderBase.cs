@@ -8,9 +8,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging
@@ -19,7 +22,7 @@ namespace NuGet.Packaging
     /// Abstract class that both the zip and folder package readers extend
     /// This class contains the path conventions for both zip and folder readers
     /// </summary>
-    public abstract class PackageReaderBase : IPackageCoreReader, IPackageContentReader, IAsyncPackageCoreReader, IAsyncPackageContentReader
+    public abstract class PackageReaderBase : IPackageCoreReader, IPackageContentReader, IAsyncPackageCoreReader, IAsyncPackageContentReader, ISignPackageReader
     {
         private NuspecReader _nuspecReader;
 
@@ -541,6 +544,52 @@ namespace NuGet.Packaging
         public virtual Task<string> CopyNupkgAsync(string nupkgFilePath, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
+        {
+            var signatures = new List<Signature>();
+
+            var files = await GetFilesAsync(token);
+            var sigFile = files.FirstOrDefault(e => StringComparer.Ordinal.Equals(e, "testsigned/signed.json"));
+
+            if (sigFile != null)
+            {
+                using (var stream = await GetStreamAsync(sigFile, token))
+                using (var reader = new StreamReader(stream))
+                using (var jsonReader = new JsonTextReader(reader))
+                {
+                    var json = JObject.Load(jsonReader);
+
+                    foreach (var sigEntry in json.Value<JArray>("signatures"))
+                    {
+                        signatures.Add(new Signature()
+                        {
+                            DisplayName = sigEntry.Value<string>("name"),
+                            TestTrust = sigEntry.Value<SignatureTrust>("trust"),
+                            Type = sigEntry.Value<SignatureType>("type"),
+                        });
+                    }
+                }
+            }
+
+            return signatures;
+        }
+
+        public Task<SignManifest> GetSignManifestAsync(CancellationToken token)
+        {
+            return CreateManifestAsync(token);
+        }
+
+        public Task<SignManifest> CreateManifestAsync(CancellationToken token)
+        {
+            return Task.FromResult(SignManifest.Create(new Dictionary<string, string>(), Enumerable.Empty<SignManifestFileEntry>()));
+        }
+
+        public async Task<bool> IsSignedAsync(CancellationToken token)
+        {
+            var signatures = await GetSignaturesAsync(token);
+            return signatures.Count > 0;
         }
     }
 }

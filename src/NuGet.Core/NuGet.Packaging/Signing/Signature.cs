@@ -17,5 +17,10 @@ namespace NuGet.Packaging.Signing
         /// Signature friendly name.
         /// </summary>
         public string DisplayName { get; set; }
+
+        /// <summary>
+        /// TEMPORARY - trust result to return.
+        /// </summary>
+        public SignatureTrust TestTrust { get; set; }
     }
 }
