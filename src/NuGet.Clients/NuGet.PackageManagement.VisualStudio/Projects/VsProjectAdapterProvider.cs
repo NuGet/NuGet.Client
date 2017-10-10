@@ -65,16 +65,9 @@ namespace NuGet.PackageManagement.VisualStudio
             var vsHierarchyItem = VsHierarchyItem.FromDteProject(dteProject);
             Func<IVsHierarchy, EnvDTE.Project> loadDteProject = _ => dteProject;
 
-            IProjectBuildProperties vsBuildProperties;
-            if (vsHierarchyItem.VsHierarchy is IVsBuildPropertyStorage)
-            {
-                vsBuildProperties = new VsManagedLanguagesProjectBuildProperties(
-                    vsHierarchyItem.VsHierarchy as IVsBuildPropertyStorage, _threadingService);
-            }
-            else
-            {
-                vsBuildProperties = new VsCoreProjectBuildProperties(dteProject, _threadingService);
-            }
+            var buildStorageProperty = vsHierarchyItem.VsHierarchy as IVsBuildPropertyStorage;
+            var vsBuildProperties = new VsProjectBuildProperties(
+                dteProject, buildStorageProperty, _threadingService);
 
             var projectNames = await ProjectNames.FromDTEProjectAsync(dteProject);
             var fullProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(dteProject);
