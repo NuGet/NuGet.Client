@@ -42,7 +42,7 @@ namespace NuGet.Packaging.Signing
                 foreach (var signature in signatures)
                 {
                     var sigTrustResults = await Task.WhenAll(_trustProviders.Select(e => e.GetTrustResultAsync(signature, logger, token)));
-                    signaturesAreValid &= IsValid(sigTrustResults);
+                    signaturesAreValid &= IsValid(sigTrustResults, _settings.AllowUntrusted);
                     trustResults.AddRange(sigTrustResults);
                 }
 
@@ -60,10 +60,10 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// True if a provider trusts the package signature.
         /// </summary>
-        private static bool IsValid(IEnumerable<SignatureTrustResult> trustResults)
+        private static bool IsValid(IEnumerable<SignatureTrustResult> trustResults, bool allowUntrusted)
         {
             var hasItems = trustResults.Any();
-            var valid = trustResults.Any(e => e.Trust == SignatureTrust.Trusted);
+            var valid = trustResults.Any(e => e.Trust == SignatureTrust.Trusted || (allowUntrusted && SignatureTrust.Untrusted == e.Trust));
 
             return valid && hasItems;
         }

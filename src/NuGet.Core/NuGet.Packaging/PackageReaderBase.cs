@@ -563,11 +563,14 @@ namespace NuGet.Packaging
 
                     foreach (var sigEntry in json.Value<JArray>("signatures"))
                     {
+                        Enum.TryParse<SignatureTrust>(sigEntry["trust"].Value<string>(), ignoreCase: true, result: out var testTrust);
+                        Enum.TryParse<SignatureType>(sigEntry["type"].Value<string>(), ignoreCase: true, result: out var sigType);
+
                         signatures.Add(new Signature()
                         {
                             DisplayName = sigEntry.Value<string>("name"),
-                            TestTrust = sigEntry.Value<SignatureTrust>("trust"),
-                            Type = sigEntry.Value<SignatureType>("type"),
+                            TestTrust = testTrust,
+                            Type = sigType,
                         });
                     }
                 }

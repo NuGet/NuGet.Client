@@ -1,11 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,29 +28,17 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        public Task<SignManifest> CreateManifestAsync(CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<SignManifest> GetSignManifestAsync(CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> IsSignedAsync(CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<bool> RemoveAsync(string path, CancellationToken token)
         {
-            throw new NotImplementedException();
+            var entry = Zip.GetEntry(path);
+
+            if (entry != null)
+            {
+                entry.Delete();
+                return Task.FromResult(true);
+            }
+
+            return Task.FromResult(false);
         }
     }
 }
