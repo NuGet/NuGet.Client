@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="install.ps1">
+    <None Update="NuGet.VisualStudio.targets">
       <CopyToOutputDirectory Condition=" '$(VisualStudioVersion)' == '15.0' ">PreserveNewest</CopyToOutputDirectory> <!-- TODO: Remove this when we stop building for VS14 -->
     </None>
   </ItemGroup>
@@ -35,15 +35,6 @@
     <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
   </PropertyGroup>
-
-  <!--
-  <ItemGroup>
-    <None Include="install.ps1">
-      <PackagePath>tools\</PackagePath>
-      <Pack>true</Pack>
-    </None>
-  </ItemGroup>
-  -->
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>
