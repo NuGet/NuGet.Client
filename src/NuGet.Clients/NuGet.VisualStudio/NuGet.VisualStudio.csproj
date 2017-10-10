@@ -11,7 +11,6 @@
 
   <PropertyGroup>
     <PackageId>NuGet.VisualStudio</PackageId>
-    <PackageVersion>$(Version)</PackageVersion>
     <AssemblyDescription>APIs for invoking NuGet services in Visual Studio.</AssemblyDescription>
     <Description>APIs for invoking NuGet services in Visual Studio.</Description>
     <ImportedFromTypeLib>NuGet.VisualStudio</ImportedFromTypeLib>

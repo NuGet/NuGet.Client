@@ -4,7 +4,6 @@
 
   <PropertyGroup>
     <PackageId>NuGet.SolutionRestoreManager.Interop</PackageId>
-    <PackageVersion>$(Version)</PackageVersion>
     <TargetFramework>net46</TargetFramework>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
