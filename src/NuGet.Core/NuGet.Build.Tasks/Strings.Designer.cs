@@ -62,7 +62,7 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot find a compatible framework for &apos;{0}&apos; in the following frameworks: {1}..
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; targets &apos;{2}&apos;. It cannot be referenced by a project that targets &apos;{1}&apos;..
         /// </summary>
         internal static string NoCompatibleTargetFramework {
             get {
@@ -98,7 +98,7 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The framework &apos;{0}&apos; is not supported by NuGet..
+        ///   Looks up a localized string similar to The framework &apos;{0}&apos; is not a supported target framework..
         /// </summary>
         internal static string UnsupportedTargetFramework {
             get {

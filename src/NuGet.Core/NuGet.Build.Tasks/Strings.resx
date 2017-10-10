@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NoCompatibleTargetFramework" xml:space="preserve">
-    <value>Cannot find a compatible framework for '{0}' in the following frameworks: {1}.</value>
+    <value>Project '{0}' targets '{2}'. It cannot be referenced by a project that targets '{1}'.</value>
   </data>
   <data name="NoProjectsProvidedToTask" xml:space="preserve">
     <value>Unable to find a project to restore!</value>
@@ -130,6 +130,6 @@
     <value>Restore canceled!</value>
   </data>
   <data name="UnsupportedTargetFramework" xml:space="preserve">
-    <value>The framework '{0}' is not supported by NuGet.</value>
+    <value>The framework '{0}' is not a supported target framework.</value>
   </data>
 </root>

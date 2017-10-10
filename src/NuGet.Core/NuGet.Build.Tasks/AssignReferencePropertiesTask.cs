@@ -12,6 +12,11 @@ namespace NuGet.Build.Tasks
     public class AssignReferencePropertiesTask : Task
     {
         /// <summary>
+        /// The current project's name.
+        /// </summary>
+        public string CurrentProjectName { get; set; }
+
+        /// <summary>
         /// The current project's target framework.
         /// </summary>
         [Required]
@@ -50,7 +55,12 @@ namespace NuGet.Build.Tasks
                 return false;
             }
 
-            AssignedProjects = AnnotatedProjectReferences.Select(project => AssignPropertiesForSingleReference(project, frameworkToMatch)).ToArray();
+            AssignedProjects = new ITaskItem[AnnotatedProjectReferences.Length];
+            for (var index = 0; index < AnnotatedProjectReferences.Length; index++)
+            {
+                AssignedProjects[index] = AssignPropertiesForSingleReference(AnnotatedProjectReferences[index], frameworkToMatch);
+            }
+
             BuildTasksUtility.LogOutputParam(log, nameof(AssignedProjects), string.Join(";", AssignedProjects.Select(p => p.ItemSpec)));
 
             return !Log.HasLoggedErrors;
@@ -59,7 +69,6 @@ namespace NuGet.Build.Tasks
         private ITaskItem AssignPropertiesForSingleReference(ITaskItem project, NuGetFramework currentProjectTargetFramework)
         {
             var itemWithProperties = new TaskItem(project);
-
             var targetFrameworks = project.GetMetadata("TargetFrameworks");
 
             if (string.IsNullOrEmpty(targetFrameworks))
@@ -71,29 +80,11 @@ namespace NuGet.Build.Tasks
             var possibleTargetFrameworks = MSBuildStringUtility.Split(targetFrameworks);
             var nearestNuGetFramework = NuGetFrameworkUtility.GetNearest(possibleTargetFrameworks, currentProjectTargetFramework, NuGetFramework.Parse);
 
-            if (nearestNuGetFramework != null)
-            {
-                if (MSBuildStringUtility.IsTrue(project.GetMetadata("HasSingleTargetFramework")))
-                {
-                    // If the project has only one TF, don't specify it. It will go directly to the inner build anyway and we don't
-                    // want to redundantly specify a global property, which can cause a race.
-                    var undefineProperties = itemWithProperties.GetMetadata("UndefineProperties");
+            itemWithProperties.SetMetadata("NearestTargetFramework", nearestNuGetFramework ?? FrameworkConstants.SpecialIdentifiers.Unsupported);
 
-                    itemWithProperties.SetMetadata("UndefineProperties",
-                        string.IsNullOrEmpty(undefineProperties)
-                            ? "TargetFramework"
-                            : undefineProperties + ";TargetFramework");
-                }
-                else
-                {
-                    itemWithProperties.SetMetadata("SetTargetFramework", $"TargetFramework={nearestNuGetFramework}");
-                }
-
-                itemWithProperties.SetMetadata("SkipGetTargetFrameworkProperties", "true");
-            }
-            else
+            if (nearestNuGetFramework == null)
             {
-                Log.LogError(string.Format(Strings.NoCompatibleTargetFramework, CurrentProjectTargetFramework, targetFrameworks));
+                Log.LogError(string.Format(Strings.NoCompatibleTargetFramework, project.ItemSpec, CurrentProjectTargetFramework, targetFrameworks));
             }
 
             return itemWithProperties;

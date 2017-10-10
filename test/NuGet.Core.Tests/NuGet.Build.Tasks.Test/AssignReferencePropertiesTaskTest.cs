@@ -143,8 +143,7 @@ namespace NuGet.Build.Tasks.Test
             result.Should().BeTrue();
 
             task.AssignedProjects.Should().HaveCount(1);
-            task.AssignedProjects[0].GetMetadata("UndefineProperties").Should().Be("TargetFramework");
-            task.AssignedProjects[0].GetMetadata("SkipGetTargetFrameworkProperties").Should().Be("true");
+            task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be("net46");
 
             testLogger.Warnings.Should().Be(0);
             testLogger.Errors.Should().Be(0);
@@ -174,8 +173,7 @@ namespace NuGet.Build.Tasks.Test
             result.Should().BeTrue();
 
             task.AssignedProjects.Should().HaveCount(1);
-            task.AssignedProjects[0].GetMetadata("SetTargetFramework").Should().Be("TargetFramework=net20");
-            task.AssignedProjects[0].GetMetadata("SkipGetTargetFrameworkProperties").Should().Be("true");
+            task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be("net20");
 
             testLogger.Warnings.Should().Be(0);
             testLogger.Errors.Should().Be(0);
