@@ -1,10 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -27,10 +25,16 @@ namespace NuGet.Packaging.Test.SigningTests
             {
                 var before = new List<string>(zip.Entries.Select(e => e.FullName));
                 var signer = new Signer(signPackage);
-                var signature = new Signature();
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureTrust.Trusted,
+                    Type = SignatureType.Author
+                };
 
                 await signer.SignAsync(signature, testLogger, CancellationToken.None);
 
+                // Verify sign file exists
                 zip.Entries.Select(e => e.FullName)
                     .Except(before)
                     .Should()
@@ -38,6 +42,66 @@ namespace NuGet.Packaging.Test.SigningTests
                 {
                     "testsigned/signed.json"
                 });
+            }
+        }
+
+        [Fact]
+        public async Task Signer_CreateSignedPackageAndRemoveSignatureVerifyFileRemoved()
+        {
+            var nupkg = new SimpleTestPackageContext();
+            var testLogger = new TestLogger();
+            var zip = nupkg.Create();
+
+            using (var signPackage = new SignPackageArchive(zip))
+            {
+                var before = new List<string>(zip.Entries.Select(e => e.FullName));
+                var signer = new Signer(signPackage);
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureTrust.Trusted,
+                    Type = SignatureType.Author
+                };
+
+                await signer.SignAsync(signature, testLogger, CancellationToken.None);
+
+                await signer.RemoveSignatureAsync(signature, testLogger, CancellationToken.None);
+
+                // Verify sign file exists
+                zip.Entries.Select(e => e.FullName)
+                    .Except(before)
+                    .Should()
+                    .BeEmpty();
+            }
+        }
+
+        [Fact]
+        public async Task Signer_CreateSignedPackageAndRemoveAllSignaturesVerifyFileRemoved()
+        {
+            var nupkg = new SimpleTestPackageContext();
+            var testLogger = new TestLogger();
+            var zip = nupkg.Create();
+
+            using (var signPackage = new SignPackageArchive(zip))
+            {
+                var before = new List<string>(zip.Entries.Select(e => e.FullName));
+                var signer = new Signer(signPackage);
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureTrust.Trusted,
+                    Type = SignatureType.Author
+                };
+
+                await signer.SignAsync(signature, testLogger, CancellationToken.None);
+
+                await signer.RemoveSignaturesAsync(testLogger, CancellationToken.None);
+
+                // Verify sign file exists
+                zip.Entries.Select(e => e.FullName)
+                    .Except(before)
+                    .Should()
+                    .BeEmpty();
             }
         }
     }

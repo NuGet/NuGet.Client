@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
@@ -13,6 +15,8 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class Signer
     {
+        // Temporary
+        private const string TestSignedPath = "testsigned/signed.json";
         private readonly ISignPackage _package;
 
         /// <summary>
@@ -27,9 +31,24 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Add a signature to a package.
         /// </summary>
-        public Task SignAsync(Signature signature, ILogger logger, CancellationToken token)
+        public async Task SignAsync(Signature signature, ILogger logger, CancellationToken token)
         {
-            throw new NotImplementedException();
+            var signedJson = new JObject();
+            var signatures = new JArray();
+            signedJson.Add(new JProperty("signatures", signatures));
+            var sig = new JObject();
+            signatures.Add(sig);
+            sig.Add(new JProperty("trust", signature.TestTrust.ToString()));
+            sig.Add(new JProperty("type", signature.Type.ToString()));
+            sig.Add(new JProperty("name", signature.DisplayName));
+
+            using (var stream = new MemoryStream())
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.Write(signedJson.ToString());
+                stream.Position = 0;
+                await _package.AddAsync(TestSignedPath, stream, token);
+            }
         }
 
         /// <summary>
@@ -37,7 +56,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public Task RemoveSignaturesAsync(ILogger logger, CancellationToken token)
         {
-            throw new NotImplementedException();
+            return _package.RemoveAsync(TestSignedPath, token);
         }
 
         /// <summary>
@@ -45,7 +64,8 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public Task RemoveSignatureAsync(Signature signature, ILogger logger, CancellationToken token)
         {
-            throw new NotImplementedException();
+            // TODO: counter signing support/removal of counter sign only
+            return RemoveSignaturesAsync(logger, token);
         }
     }
 }
