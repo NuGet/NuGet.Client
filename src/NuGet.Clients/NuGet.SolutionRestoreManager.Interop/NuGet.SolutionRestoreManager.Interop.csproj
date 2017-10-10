@@ -13,7 +13,7 @@
     <owners>Microsoft</owners>
     <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
     <PackageProjectUrl	>https://github.com/NuGet/NuGet.Client</PackageProjectUrl	>
-    <PackageRequireLicenseAcceptance>false</requireLicenseAcceptance>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <AssemblyDescription>APIs for invoking NuGet Restore Manager in Visual Studio.</AssemblyDescription>
     <Description>APIs for invoking NuGet Restore Manager in Visual Studio.</Description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
