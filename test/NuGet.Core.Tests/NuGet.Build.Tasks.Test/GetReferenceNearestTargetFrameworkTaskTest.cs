@@ -9,15 +9,15 @@ using Xunit;
 
 namespace NuGet.Build.Tasks.Test
 {
-    public class AssignReferencePropertiesTaskTest
+    public class GetReferenceNearestTargetFrameworkTaskTest
     {
         [Fact]
-        public void AssignReferencePropertiesTask_NoReferences()
+        public void GetReferenceNearestTargetFrameworkTask_NoReferences()
         {
             var buildEngine = new TestBuildEngine();
             var testLogger = buildEngine.TestLogger;
 
-            var task = new AssignReferencePropertiesTask
+            var task = new GetReferenceNearestTargetFrameworkTask
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "net46"
@@ -34,7 +34,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void AssignReferencePropertiesTask_BadSourceTF()
+        public void GetReferenceNearestTargetFrameworkTask_BadSourceTF()
         {
             var buildEngine = new TestBuildEngine();
             var testLogger = buildEngine.TestLogger;
@@ -44,7 +44,7 @@ namespace NuGet.Build.Tasks.Test
             reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
             references.Add(reference.Object);
 
-            var task = new AssignReferencePropertiesTask
+            var task = new GetReferenceNearestTargetFrameworkTask
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "abadframework",
@@ -62,7 +62,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void AssignReferencePropertiesTask_NoCompatibleTargetTF()
+        public void GetReferenceNearestTargetFrameworkTask_NoCompatibleTargetTF()
         {
             var buildEngine = new TestBuildEngine();
             var testLogger = buildEngine.TestLogger;
@@ -74,7 +74,7 @@ namespace NuGet.Build.Tasks.Test
             reference.Setup(e => e.GetMetadata("HasSingleTargetFramework")).Returns("true");
             references.Add(reference.Object);
 
-            var task = new AssignReferencePropertiesTask
+            var task = new GetReferenceNearestTargetFrameworkTask
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "net46",
@@ -92,7 +92,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void AssignReferencePropertiesTask_NoTargetTF()
+        public void GetReferenceNearestTargetFrameworkTask_NoTargetTF()
         {
             var buildEngine = new TestBuildEngine();
             var testLogger = buildEngine.TestLogger;
@@ -102,7 +102,7 @@ namespace NuGet.Build.Tasks.Test
             reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
             references.Add(reference.Object);
 
-            var task = new AssignReferencePropertiesTask
+            var task = new GetReferenceNearestTargetFrameworkTask
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "net46",
@@ -120,7 +120,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void AssignReferencePropertiesTask_SingleTargetTF()
+        public void GetReferenceNearestTargetFrameworkTask_SingleTargetTF()
         {
             var buildEngine = new TestBuildEngine();
             var testLogger = buildEngine.TestLogger;
@@ -132,7 +132,7 @@ namespace NuGet.Build.Tasks.Test
             reference.Setup(e => e.GetMetadata("HasSingleTargetFramework")).Returns("true");
             references.Add(reference.Object);
 
-            var task = new AssignReferencePropertiesTask
+            var task = new GetReferenceNearestTargetFrameworkTask
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "net46",
@@ -151,7 +151,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void AssignReferencePropertiesTask_MultipleTargetTF()
+        public void GetReferenceNearestTargetFrameworkTask_MultipleTargetTF()
         {
             var buildEngine = new TestBuildEngine();
             var testLogger = buildEngine.TestLogger;
@@ -162,7 +162,7 @@ namespace NuGet.Build.Tasks.Test
             reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns("net20;netstandard20");
             references.Add(reference.Object);
 
-            var task = new AssignReferencePropertiesTask
+            var task = new GetReferenceNearestTargetFrameworkTask
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "net46",
@@ -181,7 +181,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void AssignReferencePropertiesTask_BadTargetTF()
+        public void GetReferenceNearestTargetFrameworkTask_BadTargetTF()
         {
             var buildEngine = new TestBuildEngine();
             var testLogger = buildEngine.TestLogger;
@@ -192,7 +192,7 @@ namespace NuGet.Build.Tasks.Test
             reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns("abadframework");
             references.Add(reference.Object);
 
-            var task = new AssignReferencePropertiesTask
+            var task = new GetReferenceNearestTargetFrameworkTask
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "net46",

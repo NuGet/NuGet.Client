@@ -9,7 +9,7 @@ using NuGet.Frameworks;
 
 namespace NuGet.Build.Tasks
 {
-    public class AssignReferencePropertiesTask : Task
+    public class GetReferenceNearestTargetFrameworkTask : Task
     {
         /// <summary>
         /// The current project's name.
