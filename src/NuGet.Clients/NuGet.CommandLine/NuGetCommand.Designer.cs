@@ -11468,16 +11468,27 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Password for the certificate, if needed..
+        ///   Looks up a localized string similar to SHA-1 fingerprint of the certificate used to search a local certificate store for the certificate.
+        ///The certificate store can be specified by -CertificateStoreName and -CertificateStoreLocation options..
         /// </summary>
-        internal static string SignCommandCertificatePassphraseDescription {
+        internal static string SignCommandCertificateFingerprintDescription {
             get {
-                return ResourceManager.GetString("SignCommandCertificatePassphraseDescription", resourceCulture);
+                return ResourceManager.GetString("SignCommandCertificateFingerprintDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Path to the certificate to be used while signing the certificate. The path can be a file path or a certificate path from the local store of the format cert:\certificate_context\certificate_store_name\certificate_thumb_print..
+        ///   Looks up a localized string similar to Password for the certificate, if needed.
+        ///This option can be used to specify the password for the certificate. If no password is provided, the user may be prompted for a password at run time, unless the -NonInteractive  option is passed..
+        /// </summary>
+        internal static string SignCommandCertificatePasswordDescription {
+            get {
+                return ResourceManager.GetString("SignCommandCertificatePasswordDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File path to the certificate to be used while signing the package..
         /// </summary>
         internal static string SignCommandCertificatePathDescription {
             get {
@@ -11486,16 +11497,29 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SHA-1 fingerprint of the certificate used to search the default local certificate store for the certificate..
+        ///   Looks up a localized string similar to Name of the X.509 certificate store use to search for the certificate. Defaults to &quot;CurrentUser&quot;, the X.509 certificate store used by the current user.
+        ///This option should be used when specifying the certificate via -CertificateSubjectName or -CertificateFingerprint options..
         /// </summary>
-        internal static string SignCommandCertificateSubjectFingerprintDescription {
+        internal static string SignCommandCertificateStoreLocationDescription {
             get {
-                return ResourceManager.GetString("SignCommandCertificateSubjectFingerprintDescription", resourceCulture);
+                return ResourceManager.GetString("SignCommandCertificateStoreLocationDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to String representing the subject name of the certificate used to search the default local certificate store for the certificate. The search is a case-insensitive string comparison using the supplied value, which will find all certificates with the subject name containing that string, regardless of other subject values..
+        ///   Looks up a localized string similar to Name of the X.509 certificate store to use to search for the certificate. Defaults to &quot;My&quot;, the X.509 certificate store for personal certificates.
+        ///This option should be used when specifying the certificate via -CertificateSubjectName or -CertificateFingerprint options..
+        /// </summary>
+        internal static string SignCommandCertificateStoreNameDescription {
+            get {
+                return ResourceManager.GetString("SignCommandCertificateStoreNameDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subject name of the certificate used to search a local certificate store for the certificate. 
+        ///The search is a case-insensitive string comparison using the supplied value, which will find all certificates with the subject name containing that string, regardless of other subject values.
+        ///The certificate store can be specified by -CertificateStoreName and -CertificateStoreLocation options..
         /// </summary>
         internal static string SignCommandCertificateSubjectNameDescription {
             get {
@@ -11504,7 +11528,8 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name of the Cryptographic Service Provider which contains the Private Key Container. This option, along with -KeyContainer, can be used to specify the private key if the certificate file does not contain one..
+        ///   Looks up a localized string similar to Name of the cryptographic service provider which contains the private key container.
+        ///This option, along with -KeyContainer, can be used to specify the private key if the certificate file does not contain one..
         /// </summary>
         internal static string SignCommandCryptographicServiceProviderDescription {
             get {
@@ -11532,25 +11557,17 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature..
+        ///   Looks up a localized string similar to Hash algorithm to be used while generating the package manifest file. Defaults to SHA256..
         /// </summary>
-        internal static string SignCommandForceDescription {
+        internal static string SignCommandHashAlgorithmDescription {
             get {
-                return ResourceManager.GetString("SignCommandForceDescription", resourceCulture);
+                return ResourceManager.GetString("SignCommandHashAlgorithmDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hashing algorithm to be used while digesting the package files. Defaults to SHA512..
-        /// </summary>
-        internal static string SignCommandHashingAlgorithmDescription {
-            get {
-                return ResourceManager.GetString("SignCommandHashingAlgorithmDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Name of the Key Container which has the Private Key. This option, along with -CryptographicServiceProvider, can be used to specify the private key if the certificate file does not contain one..
+        ///   Looks up a localized string similar to Name of the key container which has the private key.
+        ///This option, along with -CryptographicServiceProvider, can be used to specify the private key if the certificate file does not contain one..
         /// </summary>
         internal static string SignCommandKeyContainerDescription {
             get {
@@ -11568,20 +11585,11 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Path to the package that needs to be signed..
+        ///   Looks up a localized string similar to Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature..
         /// </summary>
-        internal static string SignCommandPackagePathDescription {
+        internal static string SignCommandOverwriteDescription {
             get {
-                return ResourceManager.GetString("SignCommandPackagePathDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to RSA Padding scheme used to sign the package with an RSA certificate. Supported padding schemes are PKCS1-v1.5 and PSS. This option can be used to specify the padding scheme if the certificate is not signed with either of the two supported schemes..
-        /// </summary>
-        internal static string SignCommandRSASignaturePaddingDescription {
-            get {
-                return ResourceManager.GetString("SignCommandRSASignaturePaddingDescription", resourceCulture);
+                return ResourceManager.GetString("SignCommandOverwriteDescription", resourceCulture);
             }
         }
         
@@ -11591,6 +11599,54 @@ namespace NuGet.CommandLine {
         internal static string SignCommandSummary {
             get {
                 return ResourceManager.GetString("SignCommandSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to URL to an RFC 3161 timestamp server..
+        /// </summary>
+        internal static string SignCommandTimestamperDescription {
+            get {
+                return ResourceManager.GetString("SignCommandTimestamperDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hash algorithm to be used by the RFC 3161 time stamp server. Defaults to SHA256..
+        /// </summary>
+        internal static string SignCommandTimestampHashAlgorithmDescription {
+            get {
+                return ResourceManager.GetString("SignCommandTimestampHashAlgorithmDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Signs a NuGet package..
+        /// </summary>
+        internal static string SignCommandUsageDescription {
+            get {
+                return ResourceManager.GetString("SignCommandUsageDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget sign MyPackage.nupkg -Timestamper https://foo.bar
+        ///
+        ///nuget sign .\..\MyPackage.nupkg -Timestamper https://foo.bar -OutputDirectory .\..\Signed
+        ///.
+        /// </summary>
+        internal static string SignCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("SignCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; [-CertificatePath &lt;certificate_path&gt; | [ -CertificateStoreName &lt;certificate_store_name&gt; -CertificateStoreLocation &lt;certificate_store_location&gt; [-CertificateSubjectName &lt;certificate_subject_name&gt; | -CertificateFingerprint &lt;certificate_fingerprint&gt;]]] [options].
+        /// </summary>
+        internal static string SignCommandUsageSummary {
+            get {
+                return ResourceManager.GetString("SignCommandUsageSummary", resourceCulture);
             }
         }
         

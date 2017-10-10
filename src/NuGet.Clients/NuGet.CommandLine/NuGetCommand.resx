@@ -5345,20 +5345,25 @@ nuget locals global-packages -list</value>
   <data name="InstallCommandFrameworkDescription" xml:space="preserve">
     <value>Target framework used for selecting dependencies. Defaults to 'Any' if not specified.</value>
   </data>
-  <data name="SignCommandCertificatePassphraseDescription" xml:space="preserve">
-    <value>Password for the certificate, if needed.</value>
+  <data name="SignCommandCertificatePasswordDescription" xml:space="preserve">
+    <value>Password for the certificate, if needed.
+This option can be used to specify the password for the certificate. If no password is provided, the user may be prompted for a password at run time, unless the -NonInteractive  option is passed.</value>
   </data>
   <data name="SignCommandCertificatePathDescription" xml:space="preserve">
-    <value>Path to the certificate to be used while signing the certificate. The path can be a file path or a certificate path from the local store of the format cert:\certificate_context\certificate_store_name\certificate_thumb_print.</value>
+    <value>File path to the certificate to be used while signing the package.</value>
   </data>
-  <data name="SignCommandCertificateSubjectFingerprintDescription" xml:space="preserve">
-    <value>SHA-1 fingerprint of the certificate used to search the default local certificate store for the certificate.</value>
+  <data name="SignCommandCertificateFingerprintDescription" xml:space="preserve">
+    <value>SHA-1 fingerprint of the certificate used to search a local certificate store for the certificate.
+The certificate store can be specified by -CertificateStoreName and -CertificateStoreLocation options.</value>
   </data>
   <data name="SignCommandCertificateSubjectNameDescription" xml:space="preserve">
-    <value>String representing the subject name of the certificate used to search the default local certificate store for the certificate. The search is a case-insensitive string comparison using the supplied value, which will find all certificates with the subject name containing that string, regardless of other subject values.</value>
+    <value>Subject name of the certificate used to search a local certificate store for the certificate. 
+The search is a case-insensitive string comparison using the supplied value, which will find all certificates with the subject name containing that string, regardless of other subject values.
+The certificate store can be specified by -CertificateStoreName and -CertificateStoreLocation options.</value>
   </data>
   <data name="SignCommandCryptographicServiceProviderDescription" xml:space="preserve">
-    <value>Name of the Cryptographic Service Provider which contains the Private Key Container. This option, along with -KeyContainer, can be used to specify the private key if the certificate file does not contain one.</value>
+    <value>Name of the cryptographic service provider which contains the private key container.
+This option, along with -KeyContainer, can be used to specify the private key if the certificate file does not contain one.</value>
   </data>
   <data name="SignCommandDescription" xml:space="preserve">
     <value>Signs a NuGet package with the specified certificate.</value>
@@ -5367,25 +5372,48 @@ nuget locals global-packages -list</value>
     <value>nuget sign MyPackage.nupkg -CertificatePath /path/to/certificate
 nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -OutputDirectory ./signed/</value>
   </data>
-  <data name="SignCommandForceDescription" xml:space="preserve">
+  <data name="SignCommandOverwriteDescription" xml:space="preserve">
     <value>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</value>
   </data>
-  <data name="SignCommandHashingAlgorithmDescription" xml:space="preserve">
-    <value>Hashing algorithm to be used while digesting the package files. Defaults to SHA512.</value>
+  <data name="SignCommandHashAlgorithmDescription" xml:space="preserve">
+    <value>Hash algorithm to be used while generating the package manifest file. Defaults to SHA256.</value>
   </data>
   <data name="SignCommandKeyContainerDescription" xml:space="preserve">
-    <value>Name of the Key Container which has the Private Key. This option, along with -CryptographicServiceProvider, can be used to specify the private key if the certificate file does not contain one.</value>
+    <value>Name of the key container which has the private key.
+This option, along with -CryptographicServiceProvider, can be used to specify the private key if the certificate file does not contain one.</value>
   </data>
   <data name="SignCommandOutputDirectoryDescription" xml:space="preserve">
     <value>Directory where the signed package should be saved. By default the original package is overwritten by the signed package.</value>
   </data>
-  <data name="SignCommandPackagePathDescription" xml:space="preserve">
-    <value>Path to the package that needs to be signed.</value>
-  </data>
-  <data name="SignCommandRSASignaturePaddingDescription" xml:space="preserve">
-    <value>RSA Padding scheme used to sign the package with an RSA certificate. Supported padding schemes are PKCS1-v1.5 and PSS. This option can be used to specify the padding scheme if the certificate is not signed with either of the two supported schemes.</value>
-  </data>
   <data name="SignCommandSummary" xml:space="preserve">
     <value>Signs a NuGet package.</value>
+  </data>
+  <data name="SignCommandTimestampHashAlgorithmDescription" xml:space="preserve">
+    <value>Hash algorithm to be used by the RFC 3161 time stamp server. Defaults to SHA256.</value>
+  </data>
+  <data name="SignCommandUsageDescription" xml:space="preserve">
+    <value>Signs a NuGet package.</value>
+  </data>
+  <data name="SignCommandUsageExamples" xml:space="preserve">
+    <value>nuget sign MyPackage.nupkg -Timestamper https://foo.bar
+
+nuget sign .\..\MyPackage.nupkg -Timestamper https://foo.bar -OutputDirectory .\..\Signed
+</value>
+    <comment>Please don't localize this string</comment>
+  </data>
+  <data name="SignCommandUsageSummary" xml:space="preserve">
+    <value>&lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; [-CertificatePath &lt;certificate_path&gt; | [ -CertificateStoreName &lt;certificate_store_name&gt; -CertificateStoreLocation &lt;certificate_store_location&gt; [-CertificateSubjectName &lt;certificate_subject_name&gt; | -CertificateFingerprint &lt;certificate_fingerprint&gt;]]] [options]</value>
+    <comment>Please don't localize this string</comment>
+  </data>
+  <data name="SignCommandCertificateStoreLocationDescription" xml:space="preserve">
+    <value>Name of the X.509 certificate store use to search for the certificate. Defaults to "CurrentUser", the X.509 certificate store used by the current user.
+This option should be used when specifying the certificate via -CertificateSubjectName or -CertificateFingerprint options.</value>
+  </data>
+  <data name="SignCommandCertificateStoreNameDescription" xml:space="preserve">
+    <value>Name of the X.509 certificate store to use to search for the certificate. Defaults to "My", the X.509 certificate store for personal certificates.
+This option should be used when specifying the certificate via -CertificateSubjectName or -CertificateFingerprint options.</value>
+  </data>
+  <data name="SignCommandTimestamperDescription" xml:space="preserve">
+    <value>URL to an RFC 3161 timestamp server.</value>
   </data>
 </root>

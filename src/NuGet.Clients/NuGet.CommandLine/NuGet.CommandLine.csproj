@@ -51,16 +51,16 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>NuGetCommand.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Update="NuGetCommand.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>NuGetCommand.resx</DependentUpon>
-    </Compile>
     <EmbeddedResource Update="NuGetResources.resx">
       <!-- Strings are shared by other projects, use public strings. -->
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Compile Update="NuGetCommand.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>NuGetCommand.resx</DependentUpon>
+    </Compile>
     <Compile Update="NuGetResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

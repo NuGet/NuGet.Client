@@ -38,6 +38,12 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <PackageReference Include="System.Xml.XDocument" Version="4.0.11" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="mscorlib">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6\mscorlib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   
   <ItemGroup>
     <Compile Update="Strings.Designer.cs">

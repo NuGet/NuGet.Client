@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security;
+using NuGet.Common;
 
 namespace NuGet.Commands
 {
@@ -24,6 +26,16 @@ namespace NuGet.Commands
         /// Path to a Certificate file.
         /// </summary>
         public string CertificatePath { get; set; }
+
+        /// <summary>
+        /// Name of the store to be used when searching for a certificate.
+        /// </summary>
+        public string CertificateStoreName { get; set; }
+
+        /// <summary>
+        /// Location of the store to be used when searching for a certificate.
+        /// </summary>
+        public string CertificateStoreLocation { get; set; }
 
         /// <summary>
         /// Subject Name for the certificate that can be used to search the local certificate store.
@@ -51,19 +63,33 @@ namespace NuGet.Commands
         public string HashingAlgorithm { get; set; }
 
         /// <summary>
-        /// Password for the certificate, if needed.
+        /// URL to an RFC 3161 timestamp server.
         /// </summary>
-        public string CertificatePassphrase { get; set; }
+        public string Timestamper { get; set; }
 
         /// <summary>
-        /// RSA signature padding to be used while signing the package.
+        /// Hashing Algorithm to be used by the RFC 3161 time stamp server.
         /// </summary>
-        public string RSASignaturePadding { get; set; }
+        public string TimestampHashAlgorithm { get; set; }
+
+        /// <summary>
+        /// Password for the certificate, if needed.
+        /// </summary>
+        public SecureString CertificatePassword { get; set; }
 
         /// <summary>
         /// Switch used to indicate if an existing signature should be overwritten.
         /// </summary>
-        public bool Force { get; set; }
+        public bool Overwrite { get; set; }
 
+        /// <summary>
+        /// Switch used to indicate that we should not prompt for user input or confirmations.
+        /// </summary>
+        public bool NonInteractive { get; set; }
+
+        /// <summary>
+        /// Logger to be used to display the logs during the execution of sign command.
+        /// </summary>
+        public ILogger Logger { get; set; }
     }
 }
