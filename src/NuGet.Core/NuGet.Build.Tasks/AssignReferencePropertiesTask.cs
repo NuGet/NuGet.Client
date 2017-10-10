@@ -33,12 +33,12 @@ namespace NuGet.Build.Tasks
             var log = new MSBuildLogger(Log);
 
             BuildTasksUtility.LogInputParam(log, nameof(CurrentProjectTargetFramework), CurrentProjectTargetFramework);
+            BuildTasksUtility.LogInputParam(log, nameof(AnnotatedProjectReferences),
+                AnnotatedProjectReferences == null
+                    ? ""
+                    : string.Join(";", AnnotatedProjectReferences.Select(p => p.ItemSpec)));
 
-            if (AnnotatedProjectReferences != null)
-            {
-                log.LogDebug($"(in) AnnotatedProjectReferences '{string.Join(";", AnnotatedProjectReferences.Select(p => p.ItemSpec))}'");
-            }
-            else
+            if (AnnotatedProjectReferences == null)
             {
                 return !Log.HasLoggedErrors;
             }
@@ -51,6 +51,7 @@ namespace NuGet.Build.Tasks
             }
 
             AssignedProjects = AnnotatedProjectReferences.Select(project => AssignPropertiesForSingleReference(project, frameworkToMatch)).ToArray();
+            BuildTasksUtility.LogOutputParam(log, nameof(AssignedProjects), string.Join(";", AssignedProjects.Select(p => p.ItemSpec)));
 
             return !Log.HasLoggedErrors;
         }
@@ -59,21 +60,20 @@ namespace NuGet.Build.Tasks
         {
             var itemWithProperties = new TaskItem(project);
 
-            var targetFramework = project.GetMetadata("TargetFrameworks");
+            var targetFrameworks = project.GetMetadata("TargetFrameworks");
 
-            if (string.IsNullOrEmpty(targetFramework))
+            if (string.IsNullOrEmpty(targetFrameworks))
             {
                 // No target frameworks set, nothing to do.
                 return itemWithProperties;
             }
 
-            var possibleTargetFrameworks = MSBuildStringUtility.Split(targetFramework);
-            var possibleNuGetFrameworks = possibleTargetFrameworks.Select(ParseFramework).ToList();
+            var possibleTargetFrameworks = MSBuildStringUtility.Split(targetFrameworks);
             var nearestNuGetFramework = NuGetFrameworkUtility.GetNearest(possibleTargetFrameworks, currentProjectTargetFramework, NuGetFramework.Parse);
 
             if (nearestNuGetFramework != null)
             {
-                if (TryConvertItemMetadataToBool(project, "HasSingleTargetFramework", out var singleTargetFramework) && singleTargetFramework)
+                if (MSBuildStringUtility.IsTrue(project.GetMetadata("HasSingleTargetFramework")))
                 {
                     // If the project has only one TF, don't specify it. It will go directly to the inner build anyway and we don't
                     // want to redundantly specify a global property, which can cause a race.
@@ -93,35 +93,10 @@ namespace NuGet.Build.Tasks
             }
             else
             {
-                Log.LogError(string.Format(Strings.NoCompatibleTargetFramework, CurrentProjectTargetFramework, string.Join("; ", possibleNuGetFrameworks)));
+                Log.LogError(string.Format(Strings.NoCompatibleTargetFramework, CurrentProjectTargetFramework, targetFrameworks));
             }
 
             return itemWithProperties;
-        }
-
-        private NuGetFramework ParseFramework(string name)
-        {
-            var framework = NuGetFramework.Parse(name);
-
-            if (framework == null)
-            {
-                Log.LogError(string.Format(Strings.InvalidFrameworkName, name));
-            }
-
-            return framework;
-        }
-
-        private static bool TryConvertItemMetadataToBool(ITaskItem item, string itemMetadataName, out bool metadataFound)
-        {
-            var metadataValue = item.GetMetadata(itemMetadataName);
-            if (string.IsNullOrEmpty(metadataValue))
-            {
-                metadataFound = false;
-                return false;
-            }
-
-            metadataFound = true;
-            return MSBuildStringUtility.IsTrue(metadataValue);
         }
     }
 }

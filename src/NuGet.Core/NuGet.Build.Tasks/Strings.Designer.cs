@@ -62,15 +62,6 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The framework name &apos;{0}&apos; is invalid..
-        /// </summary>
-        internal static string InvalidFrameworkName {
-            get {
-                return ResourceManager.GetString("InvalidFrameworkName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Cannot find a compatible framework for &apos;{0}&apos; in the following frameworks: {1}..
         /// </summary>
         internal static string NoCompatibleTargetFramework {

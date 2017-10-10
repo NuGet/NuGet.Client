@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InvalidFrameworkName" xml:space="preserve">
-    <value>The framework name '{0}' is invalid.</value>
-  </data>
   <data name="NoCompatibleTargetFramework" xml:space="preserve">
     <value>Cannot find a compatible framework for '{0}' in the following frameworks: {1}.</value>
   </data>
