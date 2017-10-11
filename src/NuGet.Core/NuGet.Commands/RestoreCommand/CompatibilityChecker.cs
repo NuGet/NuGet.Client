@@ -1,8 +1,12 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using NuGet.Client;
 using NuGet.Common;
 using NuGet.ContentModel;
@@ -31,7 +35,7 @@ namespace NuGet.Commands
             _validateRuntimeAssets = validateRuntimeAssets;
         }
 
-        internal CompatibilityCheckResult Check(
+        internal async Task<CompatibilityCheckResult> CheckAsync(
             RestoreTargetGraph graph,
             Dictionary<string, LibraryIncludeFlags> includeFlags)
         {
@@ -64,7 +68,7 @@ namespace NuGet.Commands
             // Verify framework assets also as part of runtime assets validation.
             foreach (var node in graph.Flattened)
             {
-                _log.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingPackageCompatibility, node.Key.Name, node.Key.Version, graph.Name));
+                await _log.LogAsync(LogLevel.Debug, string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingPackageCompatibility, node.Key.Name, node.Key.Version, graph.Name));
 
                 // Check project compatibility
                 if (node.Key.Type == LibraryType.Project)
@@ -89,7 +93,7 @@ namespace NuGet.Commands
                             available);
 
                         issues.Add(issue);
-                        _log.LogError(issue.Format());
+                        await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1201, issue, graph));
                     }
 
                     // Skip further checks on projects
@@ -130,7 +134,7 @@ namespace NuGet.Commands
                         available);
 
                     issues.Add(issue);
-                    _log.LogError(issue.Format());
+                    await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1202, issue, graph));
                 }
 
                 // Check for matching ref/libs if we're checking a runtime-specific graph
@@ -147,7 +151,7 @@ namespace NuGet.Commands
                             .Where(p => Path.GetExtension(p.Path)
                                 .Equals(".dll", StringComparison.OrdinalIgnoreCase)))
                         {
-                            string name = Path.GetFileNameWithoutExtension(compile.Path);
+                            var name = Path.GetFileNameWithoutExtension(compile.Path);
 
                             // If we haven't already started tracking this compile-time assembly, AND there isn't already a runtime-loadable version
                             if (!compileAssemblies.ContainsKey(name) && !runtimeAssemblies.Contains(name))
@@ -162,7 +166,7 @@ namespace NuGet.Commands
                             .Where(p => Path.GetExtension(p.Path)
                                 .Equals(".dll", StringComparison.OrdinalIgnoreCase)))
                         {
-                            string name = Path.GetFileNameWithoutExtension(runtime.Path);
+                            var name = Path.GetFileNameWithoutExtension(runtime.Path);
 
                             // If there was a compile-time-only assembly under this name...
                             if (compileAssemblies.ContainsKey(name))
@@ -203,11 +207,19 @@ namespace NuGet.Commands
                         graph.RuntimeIdentifier);
 
                     issues.Add(issue);
-                    _log.LogError(issue.Format());
+                    await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1203, issue, graph));
                 }
             }
 
             return new CompatibilityCheckResult(graph, issues);
+        }
+
+        /// <summary>
+        /// Create an error message for the given issue.
+        /// </summary>
+        private static RestoreLogMessage GetErrorMessage(NuGetLogCode logCode, CompatibilityIssue issue, RestoreTargetGraph graph)
+        {
+            return RestoreLogMessage.CreateError(logCode, issue.Format(), issue.Package.Id, graph.TargetGraphName);
         }
 
         private static List<NuGetFramework> GetPackageFrameworks(
@@ -222,7 +234,7 @@ namespace NuGet.Commands
             var patterns = new[]
             {
                 graph.Conventions.Patterns.ResourceAssemblies,
-                graph.Conventions.Patterns.CompileAssemblies,
+                graph.Conventions.Patterns.CompileRefAssemblies,
                 graph.Conventions.Patterns.RuntimeAssemblies,
                 graph.Conventions.Patterns.ContentFiles
             };
@@ -231,17 +243,21 @@ namespace NuGet.Commands
             {
                 foreach (var group in contentItems.FindItemGroups(pattern))
                 {
-                    object tfmObj = null;
-                    object ridObj = null;
-                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out ridObj);
-                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out tfmObj);
-
-                    NuGetFramework tfm = tfmObj as NuGetFramework;
-
-                    // RID specific items should be ignored here since they are only used in the runtime assem check
-                    if (ridObj == null && tfm?.IsSpecificFramework == true)
+                    // lib/net45/subfolder/a.dll will be returned as a group with zero items since sub
+                    // folders are not allowed. Completely empty groups are not compatible, a group with
+                    // _._ would contain _._ as an item.
+                    if (group.Items.Count > 0)
                     {
-                        available.Add(tfm);
+                        group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out var ridObj);
+                        group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out var tfmObj);
+
+                        var tfm = tfmObj as NuGetFramework;
+
+                        // RID specific items should be ignored here since they are only used in the runtime assembly check
+                        if (ridObj == null && tfm?.IsSpecificFramework == true)
+                        {
+                            available.Add(tfm);
+                        }
                     }
                 }
             }
@@ -289,16 +305,26 @@ namespace NuGet.Commands
         {
             // A package is compatible if it has...
             return
-                compatibilityData.TargetLibrary.RuntimeAssemblies.Count > 0 ||                          // Runtime Assemblies, or
-                compatibilityData.TargetLibrary.CompileTimeAssemblies.Count > 0 ||                      // Compile-time Assemblies, or
-                compatibilityData.TargetLibrary.FrameworkAssemblies.Count > 0 ||                        // Framework Assemblies, or
-                compatibilityData.TargetLibrary.ContentFiles.Count > 0 ||                               // Shared content
-                compatibilityData.TargetLibrary.ResourceAssemblies.Count > 0 ||                         // Resources (satellite package)
-                compatibilityData.TargetLibrary.Build.Count > 0 ||                                      // Build
-                compatibilityData.TargetLibrary.BuildMultiTargeting.Count > 0 ||                        // Cross targeting build
+                HasCompatibleAssets(compatibilityData.TargetLibrary) ||
                 !compatibilityData.Files.Any(p =>
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
                     || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase));                       // No assemblies at all (for any TxM)
+        }
+
+        /// <summary>
+        /// Check if the library contains assets.
+        /// </summary>
+        internal static bool HasCompatibleAssets(LockFileTargetLibrary targetLibrary)
+        {
+            // A package is compatible if it has...
+            return
+                targetLibrary.RuntimeAssemblies.Count > 0 ||                          // Runtime Assemblies, or
+                targetLibrary.CompileTimeAssemblies.Count > 0 ||                      // Compile-time Assemblies, or
+                targetLibrary.FrameworkAssemblies.Count > 0 ||                        // Framework Assemblies, or
+                targetLibrary.ContentFiles.Count > 0 ||                               // Shared content
+                targetLibrary.ResourceAssemblies.Count > 0 ||                         // Resources (satellite package)
+                targetLibrary.Build.Count > 0 ||                                      // Build
+                targetLibrary.BuildMultiTargeting.Count > 0;                          // Cross targeting build
         }
 
         private CompatibilityData GetCompatibilityData(RestoreTargetGraph graph, LibraryIdentity libraryId)

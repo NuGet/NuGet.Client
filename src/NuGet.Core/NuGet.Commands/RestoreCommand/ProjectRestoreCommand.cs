@@ -15,16 +15,14 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
-using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
     internal class ProjectRestoreCommand
     {
-        private readonly ILogger _logger;
+        private readonly RestoreCollectorLogger _logger;
 
         private readonly ProjectRestoreRequest _request;
 
@@ -34,7 +32,7 @@ namespace NuGet.Commands
             _request = request;
         }
 
-        public async Task<Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> TryRestore(LibraryRange projectRange,
+        public async Task<Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> TryRestoreAsync(LibraryRange projectRange,
             IEnumerable<FrameworkRuntimePair> frameworkRuntimePairs,
             HashSet<LibraryIdentity> allInstalledPackages,
             NuGetv3LocalRepository userPackageFolder,
@@ -121,7 +119,15 @@ namespace NuGet.Commands
                 userPackageFolder.ClearCacheForIds(allInstalledPackages.Select(package => package.Name));
             }
 
-            var success = ResolutionSucceeded(graphs);
+            // Update the logger with the restore target graphs
+            // This allows lazy initialization for the Transitive Warning Properties
+            _logger.ApplyRestoreOutput(graphs);
+
+            // Warn for all dependencies that do not have exact matches or
+            // versions that have been bumped up unexpectedly.
+            await UnexpectedDependencyMessages.LogAsync(graphs, _request.Project, _logger);
+
+            var success = await ResolutionSucceeded(graphs, context, token);
 
             return Tuple.Create(success, graphs, allRuntimes);
         }
@@ -149,35 +155,25 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             CancellationToken token)
         {
-            var name = FrameworkRuntimePair.GetName(framework, runtimeIdentifier);
-            var graphs = new List<GraphNode<RemoteResolveResult>>();
-
-            graphs.Add(await walker.WalkAsync(
+            var name = FrameworkRuntimePair.GetTargetGraphName(framework, runtimeIdentifier);
+            var graphs = new List<GraphNode<RemoteResolveResult>>
+            {
+                await walker.WalkAsync(
                 projectRange,
                 framework,
                 runtimeIdentifier,
                 runtimeGraph,
-                recursive: true));
+                recursive: true)
+            };
 
             // Resolve conflicts
-            _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolvingConflicts, name));
+            await _logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolvingConflicts, name));
 
             // Flatten and create the RestoreTargetGraph to hold the packages
-            var result = RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
-
-            // Check if the dependencies got bumped up
-            CheckDependencies(result, _request.Project.Dependencies);
-
-            var fxInfo = _request.Project.GetTargetFramework(framework);
-            if (fxInfo != null)
-            {
-                CheckDependencies(result, fxInfo.Dependencies);
-            }
-
-            return result;
+            return RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
         }
 
-        private bool ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs)
+        private async Task<bool> ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs, RemoteWalkContext context, CancellationToken token)
         {
             var success = true;
             foreach (var graph in graphs)
@@ -185,40 +181,30 @@ namespace NuGet.Commands
                 if (graph.Conflicts.Any())
                 {
                     success = false;
-                    _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToResolveConflicts, graph.Name));
+
                     foreach (var conflict in graph.Conflicts)
                     {
-                        _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolverConflict,
+                        var graphName = DiagnosticUtility.FormatGraphName(graph);
+
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolverConflict,
                             conflict.Name,
-                            string.Join(", ", conflict.Requests)));
+                            string.Join(", ", conflict.Requests),
+                            graphName);
+
+                        _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1106, message, conflict.Name, graph.TargetGraphName));
                     }
                 }
-                if (graph.Unresolved.Any())
+
+                if (graph.Unresolved.Count > 0)
                 {
                     success = false;
-                    foreach (var unresolved in graph.Unresolved)
-                    {
-                        string packageDisplayName = null;
-                        var displayVersionRange = unresolved.VersionRange.ToNonSnapshotRange().PrettyPrint();
-
-                        // Projects may not have a version range
-                        if (string.IsNullOrEmpty(displayVersionRange))
-                        {
-                            packageDisplayName = unresolved.Name;
-                        }
-                        else
-                        {
-                            packageDisplayName = $"{unresolved.Name} {displayVersionRange}";
-                        }
-
-                        var message = string.Format(CultureInfo.CurrentCulture,
-                            Strings.Log_UnresolvedDependency,
-                            packageDisplayName,
-                            graph.Name);
-
-                        _logger.LogError(message);
-                    }
                 }
+            }
+
+            if (!success)
+            {
+                // Log message for any unresolved dependencies
+                await UnresolvedMessages.LogAsync(graphs, context, context.Logger, token);
             }
 
             return success;
@@ -263,38 +249,16 @@ namespace NuGet.Commands
                 _request.PackageSaveMode,
                 _request.XmlDocFileSaveMode);
 
-            await PackageExtractor.InstallFromSourceAsync(
-                stream => installItem.Provider.CopyToAsync(
-                    installItem.Library,
-                    stream,
-                    _request.CacheContext,
-                    _logger,
-                    token),
-                versionFolderPathContext,
-                token);
-        }
-
-        private void CheckDependencies(RestoreTargetGraph result, IEnumerable<LibraryDependency> dependencies)
-        {
-            foreach (var dependency in dependencies)
+            using (var packageDependency = await installItem.Provider.GetPackageDownloaderAsync(
+                packageIdentity,
+                _request.CacheContext,
+                _logger,
+                token))
             {
-                // Ignore floating or version-less (project) dependencies
-                // Avoid warnings for non-packages
-                if (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
-                    && dependency.LibraryRange.VersionRange != null && !dependency.LibraryRange.VersionRange.IsFloating)
-                {
-                    var match = result.Flattened.FirstOrDefault(g => g.Key.Name.Equals(dependency.LibraryRange.Name));
-                    if (match != null
-                        && LibraryType.Package == match.Key.Type
-                        && match.Key.Version > dependency.LibraryRange.VersionRange.MinVersion)
-                    {
-                        _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_DependencyBumpedUp,
-                            dependency.LibraryRange.Name,
-                            dependency.LibraryRange.VersionRange.PrettyPrint(),
-                            match.Key.Name,
-                            match.Key.Version));
-                    }
-                }
+                await PackageExtractor.InstallFromSourceAsync(
+                    packageDependency,
+                    versionFolderPathContext,
+                    token);
             }
         }
 
@@ -309,7 +273,7 @@ namespace NuGet.Commands
             var resultGraphs = new List<Task<RestoreTargetGraph>>();
             foreach (var runtimeName in runtimeIds)
             {
-                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, FrameworkRuntimePair.GetName(graph.Framework, runtimeName)));
+                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, FrameworkRuntimePair.GetTargetGraphName(graph.Framework, runtimeName)));
 
                 resultGraphs.Add(WalkDependenciesAsync(projectRange,
                     graph.Framework,
@@ -354,6 +318,12 @@ namespace NuGet.Commands
 
                 // ignore the same node again
                 if (!visitedNodes.Add(match.Library.Name))
+                {
+                    return;
+                }
+
+                // runtime.json can only exist in packages
+                if (match.Library.Type != LibraryType.Package)
                 {
                     return;
                 }

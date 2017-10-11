@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.PackageManagement;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -31,9 +31,9 @@ namespace NuGet.VisualStudio
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly Configuration.ISettings _settings;
         private readonly IVsSolutionManager _solutionManager;
-        private readonly INuGetProjectContext _projectContext;
         private readonly IVsPackageInstallerServices _packageServices;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
+        private readonly Lazy<INuGetProjectContext> _projectContext;
 
         private JoinableTaskFactory PumpingJTF { get; }
 
@@ -48,9 +48,11 @@ namespace NuGet.VisualStudio
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
             _solutionManager = solutionManager;
-            _projectContext = new VSAPIProjectContext();
             _packageServices = packageServices;
             _deleteOnRestartManager = deleteOnRestartManager;
+
+            _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext());
+
             PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
         }
 
@@ -271,10 +273,7 @@ namespace NuGet.VisualStudio
             {
                 return msg =>
                     {
-                        if (_projectContext != null)
-                        {
-                            _projectContext.Log(ProjectManagement.MessageLevel.Error, msg);
-                        }
+                        _projectContext.Value.Log(ProjectManagement.MessageLevel.Error, msg);
                     };
             }
         }
@@ -385,7 +384,7 @@ namespace NuGet.VisualStudio
 
                     foreach (var resource in metadataResources)
                     {
-                        tasks.Add(resource.GetVersions(dep.Id, Common.NullLogger.Instance, token));
+                        tasks.Add(resource.GetVersions(dep.Id, NullLogger.Instance, token));
                     }
 
                     var versions = await Task.WhenAll(tasks.ToArray());

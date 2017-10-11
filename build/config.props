@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0">
+  <!-- Version -->
+  <PropertyGroup>
+    <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">4.5.0</SemanticVersion>
+    <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
+    changes we might have made-->
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
+  </PropertyGroup>
+
+  <!-- Dependency versions -->
+  <PropertyGroup>
+    <NetStandardPackageVersion>1.6.0</NetStandardPackageVersion>
+    <NewtonsoftJsonVersionCore>9.0.1</NewtonsoftJsonVersionCore>
+    <NewtonsoftJsonVersionDeskop>6.0.4</NewtonsoftJsonVersionDeskop>
+    <XunitVersion>2.2.0</XunitVersion>
+    <TestSDKVersion>15.0.0</TestSDKVersion>
+    <MoqVersion>4.7.63</MoqVersion>
+    <FluentAssertionsVersion>4.19.2</FluentAssertionsVersion>
+    <MicrosoftBuildPackageVersion>0.1.0-preview-00038-160914</MicrosoftBuildPackageVersion>
+  </PropertyGroup>
+
+  <!-- Config -->
+  <PropertyGroup>
+    <RepositoryName>NuGet</RepositoryName>
+  </PropertyGroup>
+
+  <!-- Nuspec defaults -->
+  <PropertyGroup>
+    <Authors>NuGet</Authors>
+    <ProjectUrl>https://github.com/NuGet/NuGet.Client</ProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/NuGet/NuGet.Client</RepositoryUrl>
+    <PackageTags>nuget</PackageTags>
+    <Description>NuGet client library.</Description>
+    <Copyright>Copyright .NET Foundation. All rights reserved.</Copyright>
+    <Serviceable>true</Serviceable>
+  </PropertyGroup>
+
+  <Target Name="GetSemanticVersion">
+    <Message Text="$(SemanticVersion)" Importance="High"/>
+  </Target>
+</Project>

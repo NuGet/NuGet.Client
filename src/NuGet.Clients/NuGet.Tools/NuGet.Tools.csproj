@@ -1,60 +1,60 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
-  <Import Project="..\..\..\build\common.props" />
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.props" />
   <PropertyGroup>
-    <NuGetPackageImportStamp>d386b432</NuGetPackageImportStamp>
-    <ResolveNuGetPackages>true</ResolveNuGetPackages>
-    <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
-    <TargetFrameworkProfile />
+    <Shipping>true</Shipping>
+    <IncludeInVSIX>true</IncludeInVSIX>
     <ProjectGuid>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</ProjectGuid>
-    <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NuGetVSExtension</RootNamespace>
-    <GeneratePkgDefFile>true</GeneratePkgDefFile>
-    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
-    <IncludeCopyLocalReferencesInVSIXContainer>true</IncludeCopyLocalReferencesInVSIXContainer>
-    <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
-    <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
-    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
-    <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
-    <DeployExtension>false</DeployExtension>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <AssemblyName>NuGet.Tools</AssemblyName>
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <CreateVsixContainer>false</CreateVsixContainer>
+    <FileAlignment>512</FileAlignment>
+    <DeployExtension>false</DeployExtension>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <VsixOutputDirName>VS14</VsixOutputDirName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-    <VsixOutputDirName>VS15</VsixOutputDirName>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' And '$(BuildingInsideVisualStudio)' == 'True'">
-    <StartAction>Program</StartAction>
-    <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
-    <StartArguments>/rootsuffix Exp /log</StartArguments>
-    <CreateVsixContainer>True</CreateVsixContainer>
-    <DeployExtension>True</DeployExtension>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>14.0</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.VisualStudio.CommandBars, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime">
+      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime.14.3.25407\lib\Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Design" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Commands\ShowErrorsCommand.cs" />
     <Compile Include="DataStreamFromComStream.cs" />
     <Compile Include="FontAndColorsRegistrationAttribute.cs" />
     <Compile Include="Guids.cs" />
-    <Compile Include="NuGetSettings.cs" />
-    <Compile Include="NuGetUIFactory.cs" />
-    <Compile Include="OutputConsoleLogger.cs" />
-    <Compile Include="SolutionUserOptions.cs" />
-    <Compile Include="VsCredentialProviderImporter.cs" />
-    <Compile Include="InteractiveLoginProvider.cs" />
-    <Compile Include="IInteractiveLoginProvider.cs" />
+    <Compile Include="NuGetPackage.cs" />
     <Compile Include="NuGetSearchProvider.cs" />
     <Compile Include="NuGetSearchTask.cs" />
+    <Compile Include="NuGetSettings.cs" />
     <Compile Include="NuGetStaticSearchResult.cs" />
-    <Compile Include="PackageManagerWindowPane.cs" />
+    <Compile Include="NuGetUIFactory.cs" />
+    <Compile Include="OutputConsoleLogger.cs" />
     <Compile Include="PkgCmdID.cs" />
-    <Compile Include="NuGetPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProvideExpressLoadKeyAttribute.cs" />
     <Compile Include="ProvideSearchProviderAttribute.cs" />
@@ -63,217 +63,70 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Commands\ShowErrorsCommand.cs" />
-    <Compile Include="VisualStudioAccountProvider.cs" />
-    <Compile Include="VisualStudioCredentialProvider.cs" />
-    <Compile Include="VsCredentialProviderAdapter.cs" />
-    <Compile Include="Handlers\ProjectRetargetingHandler.cs" />
-    <Compile Include="Handlers\ProjectUpgradeHandler.cs" />
-    <Compile Include="VsUtility.cs" />
+    <Compile Include="SolutionUserOptions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.targets">
-      <Link>NuGet.targets</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
+    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt">
-      <Link>Modules\NuGet\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">
-      <Link>Modules\NuGet\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj">
+      <Project>{98bee375-a5a0-4fc2-9b7a-25db41c8045d}</Project>
+      <Name>NuGet.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Configuration\NuGet.Configuration.csproj">
+      <Project>{e3ef26e1-80a7-4573-b3a4-1d4b0042616e}</Project>
+      <Name>NuGet.Configuration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj">
+      <Project>{394aeb96-493c-4839-a5ac-8d93cd2fad40}</Project>
+      <Name>NuGet.PackageManagement</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj">
+      <Project>{bd6bbc90-60be-4e7d-8458-91e9cda66abe}</Project>
+      <Name>NuGet.Packaging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj">
+      <Project>{020f4c88-3a5c-4b89-9868-089e867cc223}</Project>
+      <Name>NuGet.Protocol</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Console\NuGet.Console.csproj">
+      <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
+      <Name>NuGet.Console</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.Credentials\NuGet.Credentials.csproj">
+      <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
+      <Name>NuGet.Credentials</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
+      <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
+      <Name>NuGet.PackageManagement.VisualStudio</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
+      <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
+      <Name>NuGet.PackageManagement.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
+      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
+      <Name>NuGet.VisualStudio.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
+      <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
+      <Name>NuGet.VisualStudio</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Resources\nuget_256.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="Resources\nuget_96.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <VSCTCompile Include="NuGetTools.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
     </VSCTCompile>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\Add-WrapperMembers.ps1">
-      <Link>Modules\NuGet\Add-WrapperMembers.ps1</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.Format.ps1xml">
-      <Link>Modules\NuGet\NuGet.Format.ps1xml</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.psd1">
-      <Link>Modules\NuGet\NuGet.psd1</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\nuget.psm1">
-      <Link>Modules\NuGet\nuget.psm1</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.Types.ps1xml">
-      <Link>Modules\NuGet\NuGet.Types.ps1xml</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <Content Include="..\VsConsole\PowerShellHost\Scripts\Profile.ps1">
-      <Link>Modules\NuGet\Profile.ps1</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <None Include="project.json" />
-    <None Include="Resources\nugetAbout.ico" />
-    <None Include="Resources\Toolbar.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\NuGet.Credentials\NuGet.Credentials.csproj">
-      <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
-      <Name>NuGet.Credentials</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj">
-      <Project>{06662133-1292-4918-90f3-36c930c0b16f}</Project>
-      <Name>NuGet.SolutionRestoreManager</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bPkgdefProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-    </ProjectReference>
-    <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
-      <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
-      <Name>NuGet.VisualStudio.Implementation</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Options\NuGet.Options.csproj">
-      <Project>{53ab7187-cdf3-48b5-b90e-8919d3cb904d}</Project>
-      <Name>NuGet.Options</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
-      <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
-      <Name>NuGet.PackageManagement.PowerShellCmdlets</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
-      <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
-      <Name>NuGet.PackageManagement.UI</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
-      <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
-      <Name>NuGet.PackageManagement.VisualStudio</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\TeamFoundationServer\NuGet.TeamFoundationServer.csproj">
-      <Project>{e961d080-f10b-4f11-bea0-056509c086cc}</Project>
-      <Name>NuGet.TeamFoundationServer</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj">
-      <Project>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</Project>
-      <Name>NuGet.VisualStudio.Interop</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
-      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
-      <Name>NuGet.VisualStudio.Facade</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
-      <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
-      <Name>NuGet.VisualStudio</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\VsConsole\Console.Types\NuGet.Console.Types.csproj">
-      <Project>{6fd11460-39a3-4a10-ba63-7541b0a7d053}</Project>
-      <Name>NuGet.Console.Types</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\VsConsole\Console\NuGet.Console.csproj">
-      <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
-      <Name>NuGet.Console</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\VsConsole\PowerShellHostProvider\NuGetConsole.Host.PowerShellProvider.csproj">
-      <Project>{a5e7aeb3-738f-4c39-a459-00f90483b2fe}</Project>
-      <Name>NuGetConsole.Host.PowerShellProvider</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\VsConsole\PowerShellHost\NuGetConsole.Host.PowerShell.csproj">
-      <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
-      <Name>NuGetConsole.Host.PowerShell</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
-  <Choose>
-    <When Condition="'$(VisualStudioVersion)' == '14.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-      </ItemGroup>
-    </When>
-    <When Condition="'$(VisualStudioVersion)' == '15.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-      </ItemGroup>
-    </When>
-  </Choose>
-  <ItemGroup>
-    <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.CSharp">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.CommandBars, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="PresentationCore">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="PresentationFramework">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.ComponentModel.Composition">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Design" />
-    <Reference Include="WindowsBase">
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
@@ -287,101 +140,8 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <Choose>
-    <When Condition="'$(Configuration)' == 'Release'">
-      <ItemGroup>
-        <Content Include="eula.rtf">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <Content Include="LICENSE.txt">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(EnlistmentRoot)\build\common.targets" />
-  <Import Project="$(EnlistmentRoot)\build\sign.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" />
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.targets" />
-  <Target Name="FindSourceVsixManifest">
-    <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-      <SourceVsixManifest Include="source.extension.vs14.vsixmanifest" />
-    </ItemGroup>
-    <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-      <SourceVsixManifest Include="source.extension.vs15.vsixmanifest" />
-    </ItemGroup>
-  </Target>
-  <ItemGroup>
-    <VsixIncludeFile Include=".vsixinclude" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <VsixIgnoreFile Include=".vsixignore.vs14" />
-    <None Include="source.extension.vs14.vsixmanifest">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-    <VsixIgnoreFile Include=".vsixignore.vs15" />
-    <None Include="source.extension.vs15.vsixmanifest">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
-  <ItemGroup />
-  <Target Name="AfterBuild">
-    <PropertyGroup>
-      <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
-    </PropertyGroup>
-    <Message Text="Publishing VSIX package files..." Importance="high" />
-    <Message Text="$(TargetVsixContainer) -&gt; $(PublishDestination)" Importance="high" />
-    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
-    <ItemGroup>
-      <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
-    </ItemGroup>
-    <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(PublishDestination)\symbols" OverwriteReadOnlyFiles="true" />
-  </Target>
-  <Target Name="ReadVsixIncludeListFromFile">
-    <ReadLinesFromFile File="@(VsixIncludeFile)">
-      <Output TaskParameter="Lines" ItemName="IncludeVsixFilesList" />
-    </ReadLinesFromFile>
-    <ItemGroup>
-      <IncludeVsixFilesList Remove="@(IncludeVsixFilesList)" Condition="'%(Identity)' != '' AND $([System.String]::new('%(Identity)').StartsWith('#'))" />
-    </ItemGroup>
-  </Target>
-  <Target Name="ReadVsixIgnoreListFromFile">
-    <ReadLinesFromFile File="@(VsixIgnoreFile)">
-      <Output TaskParameter="Lines" ItemName="IgnoreVsixFilesList" />
-    </ReadLinesFromFile>
-    <ItemGroup>
-      <IgnoreVsixFilesList Remove="@(IgnoreVsixFilesList)" Condition="'%(Identity)' != '' AND $([System.String]::new('%(Identity)').StartsWith('#'))" />
-    </ItemGroup>
-  </Target>
-  <Target Name="RemoveUnsolicitedVsixAssemblies" AfterTargets="GetVsixSourceItems" Condition="'$(IncludeCopyLocalReferencesInVSIXContainer)'=='true'" DependsOnTargets="ReadVsixIncludeListFromFile;ReadVsixIgnoreListFromFile">
-    <Message Text="Filtering VSIX package files..." Importance="high" />
-    <ItemGroup>
-      <AllVsixAssemblies Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.dll' ">
-        <SourceFile>%(VSIXSourceItem.Identity)</SourceFile>
-      </AllVsixAssemblies>
-    </ItemGroup>
-    <ItemGroup>
-      <SuppressPackaging Include="@(AllVsixAssemblies)" Exclude="@(IncludeVsixFilesList)" />
-      <MissingRequiredAssemblies Include="@(IncludeVsixFilesList)" Exclude="@(AllVsixAssemblies)" />
-      <NotListedDependencies Include="@(SuppressPackaging)" Exclude="@(IgnoreVsixFilesList)" />
-      <MissingIgnoredAssemblies Include="@(IgnoreVsixFilesList)" Exclude="@(AllVsixAssemblies)" />
-      <VSIXSourceItem Remove="@(SuppressPackaging->'%(SourceFile)')" />
-    </ItemGroup>
-    <Message Text="Suppressed file '%(SuppressPackaging.SourceFile)'" Condition=" '@(SuppressPackaging)' != '' " />
-    <Message Text="Included file '%(VSIXSourceItem.Identity)'" Condition=" '@(VSIXSourceItem)' != '' " />
-    <Error Text="Missing @(MissingRequiredAssemblies-&gt;Count()) required file(s) '@(MissingRequiredAssemblies)'" Condition=" '@(MissingRequiredAssemblies)' != '' " File="@(VsixIncludeFile)" />
-    <Error Text="Found @(NotListedDependencies-&gt;Count()) not listed file(s) '@(NotListedDependencies)'" Condition=" '@(NotListedDependencies)' != '' " File="@(VsixIncludeFile)" />
-    <Warning Text="Missing @(MissingIgnoredAssemblies-&gt;Count()) ignored file(s) '@(MissingIgnoredAssemblies)'" Condition=" '@(MissingIgnoredAssemblies)' != '' " File="@(VsixIgnoreFile)" />
-    <Message Text="Included @(VSIXSourceItem-&gt;Count()) file(s). Filtered @(SuppressPackaging-&gt;Count()) file(s)." Importance="high" />
-  </Target>
 </Project>

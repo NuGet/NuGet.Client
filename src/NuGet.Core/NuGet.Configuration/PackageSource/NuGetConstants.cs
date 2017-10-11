@@ -6,6 +6,7 @@ namespace NuGet.Configuration
     public static class NuGetConstants
     {
         public static readonly string NuGetHostName = "nuget.org";
+        public static readonly string NuGetSymbolHostName = "nuget.smbsrc.net";
 
         public static readonly string V3FeedUrl = "https://api.nuget.org/v3/index.json";
         public static readonly string V2FeedUrl = "https://www.nuget.org/api/v2/";
@@ -33,6 +34,7 @@ namespace NuGet.Configuration
         public static readonly string ManifestExtension = ".nuspec";
         public static readonly string ManifestSymbolsExtension = ".symbols" + ManifestExtension;
         public static readonly string PackageReferenceFile = "packages.config";
+        public static readonly string PackageSpecFileName = "project.json";
 
         public static readonly string FeedName = "nuget.org";
 

@@ -26,23 +26,13 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> sourceRepositories,
             int maxNumberOfParallelTasks)
         {
-            if (nuGetPackageManager == null)
-            {
-                throw new ArgumentNullException(nameof(nuGetPackageManager));
-            }
-
-            if (packages == null)
-            {
-                throw new ArgumentNullException(nameof(packages));
-            }
-
             if (maxNumberOfParallelTasks <= 0)
             {
                 throw new ArgumentException(Strings.ParameterCannotBeZeroOrNegative, nameof(maxNumberOfParallelTasks));
             }
 
-            PackageManager = nuGetPackageManager;
-            Packages = packages;
+            PackageManager = nuGetPackageManager ?? throw new ArgumentNullException(nameof(nuGetPackageManager));
+            Packages = packages ?? throw new ArgumentNullException(nameof(packages));
             Token = token;
             PackageRestoredEvent = packageRestoredEvent;
             PackageRestoreFailedEvent = packageRestoreFailedEvent;

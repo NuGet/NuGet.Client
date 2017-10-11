@@ -396,6 +396,153 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public void RestoreProjectJson_RestoreFromSlnWithCsproj_InconsitentCaseForProjectRef()
+        {
+            // Arrange
+            using (var workingPath = TestDirectory.Create())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var projectDir1 = Path.Combine(workingPath, "FolderA", "test1");
+                var projectDir2 = Path.Combine(workingPath, "FolderB", "test2");
+                var projectDir3 = Path.Combine(workingPath, "FolderB", "test3");
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(Path.Combine(workingPath, "FolderA"));
+                Directory.CreateDirectory(Path.Combine(workingPath, "FolderB"));
+                Directory.CreateDirectory(projectDir1);
+                Directory.CreateDirectory(projectDir2);
+                Directory.CreateDirectory(projectDir3);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                Util.CreateFile(projectDir1, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                                'net45': { }
+                                                            }
+                                                    }");
+                Util.CreateFile(projectDir2, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                                'net45': { }
+                                                            }
+                                                    }");
+                Util.CreateFile(projectDir3, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                                'net45': { }
+                                                            }
+                                                    }");
+
+                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
+                Util.CreateFile(projectDir2, "test2.csproj", Util.GetCSProjXML("test2"));
+                Util.CreateFile(projectDir3, "test3.csproj", Util.GetCSProjXML("test3"));
+                using (var stream = new FileStream(Path.Combine(projectDir2, "test2.csproj"), FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    var attributes = new Dictionary<string, string>();
+
+                    var properties = new Dictionary<string, string>();
+                    properties.Add("Project", "AA6279C1-B5EE-4C6B-9FA3-A794CE195136");
+                    properties.Add("Name", "test1");
+                    ProjectFileUtils.AddItem(
+                            xml,
+                            "ProjectReference",
+                            @"..\..\folderA\Test1\Test1.csproj",
+                            string.Empty,
+                            properties,
+                            attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+                using (var stream = new FileStream(Path.Combine(projectDir3, "test3.csproj"), FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    var attributes = new Dictionary<string, string>();
+
+                    var properties = new Dictionary<string, string>();
+                    properties.Add("Project", "AA6279C1-B5EE-4C6B-9FA3-A794CE195136");
+                    properties.Add("Name", "test1");
+                    ProjectFileUtils.AddItem(
+                            xml,
+                            "ProjectReference",
+                            @"..\..\FolderA\Test1\Test1.csproj",
+                            string.Empty,
+                            properties,
+                            attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+
+                var slnPath = Path.Combine(workingPath, "xyz.sln");
+
+                Util.CreateFile(workingPath, "xyz.sln",
+                           @"
+                        Microsoft Visual Studio Solution File, Format Version 12.00
+                        # Visual Studio 14
+                        VisualStudioVersion = 14.0.23107.0
+                        MinimumVisualStudioVersion = 10.0.40219.1
+                        Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test1"", ""FolderA\test1\test1.csproj"", ""{AA6279C1-B5EE-4C6B-9FA3-A794CE195136}""
+                        EndProject
+                        Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test2"", ""FolderB\test2\test2.csproj"", ""{CBDF173F-6E99-44A7-937F-E4A87BF3A3E0}""
+                        EndProject
+                        Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test3"", ""FolderB\test3\test3.csproj"", ""{D39F3B98-4518-4204-858F-3B7BF88D6DC1}""
+                        EndProject
+                        Global
+                            GlobalSection(SolutionConfigurationPlatforms) = preSolution
+                                Debug|Any CPU = Debug|Any CPU
+                                Release|Any CPU = Release|Any CPU
+                            EndGlobalSection
+                            GlobalSection(ProjectConfigurationPlatforms) = postSolution
+                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                                {CBDF173F-6E99-44A7-937F-E4A87BF3A3E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                                {CBDF173F-6E99-44A7-937F-E4A87BF3A3E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                                {D39F3B98-4518-4204-858F-3B7BF88D6DC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                                {D39F3B98-4518-4204-858F-3B7BF88D6DC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                            EndGlobalSection
+                            GlobalSection(SolutionProperties) = preSolution
+                                HideSolutionNode = FALSE
+                            EndGlobalSection
+                        EndGlobal
+                        ");
+
+                string[] args = new string[] {
+                    "restore",
+                    "-Source",
+                    repositoryPath,
+                    "-solutionDir",
+                    workingPath,
+                    slnPath
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                Assert.True(test1Lock.Exists);
+
+            }
+        }
+
         [Theory]
         [InlineData(null, 1, 2 * 60 * 1000)]
         [InlineData(null, 2, 2 * 60 * 1000)]

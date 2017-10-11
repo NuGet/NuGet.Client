@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 extern alias CoreV2;
 
@@ -172,11 +172,13 @@ namespace NuGet.CommandLine
             if (ShouldOutputNuGetVersion)
             {
                 var assemblyName = Assembly.GetExecutingAssembly().GetName();
+                var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+                var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(assemblyLocation).FileVersion;
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
                     LocalizedResourceManager.GetString("OutputNuGetVersion"),
                     assemblyName.Name,
-                    assemblyName.Version);
+                    version);
                 Console.WriteLine(message);
             }
         }

@@ -1,4 +1,4 @@
-﻿![NuGet logo](https://raw.githubusercontent.com/NuGet/Home/master/resources/nuget.png)
+﻿![NuGet logo](https://raw.githubusercontent.com/NuGet/Home/dev/resources/nuget.png)
 
 -----
 
@@ -9,9 +9,11 @@ This repo contains the following clients:
   * [NuGet Package Manager for Visual Studio 2015/2017](https://docs.nuget.org/ndocs/tools/package-manager-ui)
   * [PowerShell CmdLets](https://docs.nuget.org/ndocs/tools/powershell-reference)
 
-### Build Status
+## Build Status
 
-[![Build status](https://ci.appveyor.com/api/projects/status/1encuvwjo6k2sq68?svg=true)](https://ci.appveyor.com/project/NuGetTeam/nuget-client)
+| VSTS Build |
+|:------:|
+|[![](https://devdiv.visualstudio.com/_apis/public/build/definitions/0bdbc590-a062-4c3f-b0f6-9383f67865ee/5868/badge)](https://devdiv.visualstudio.com/DevDiv/_build?_a=completed&definitionId=5868)|
 
 ## Open Source Code of Conduct
 
@@ -20,7 +22,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 ## How to build NuGet client tools
 
 ### Prerequisites
-- [Visual Studio "15" Enterprise Preview 5](https://aka.ms/vs/15/preview/vs_enterprise)
+- [Visual Studio 2017](https://www.visualstudio.com)
   with following workloads:
     - .NET desktop development
     - Desktop development with C++
@@ -38,17 +40,18 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
     `git clone https://github.com/NuGet/NuGet.Client`
 
 2. Start PowerShell. CD into the cloned repository directory.
+
 3. Run configuration script
 
     `.\configure.ps1`
 
 4. Build with
 
-    `.\build.ps1`
-
-5. Run unit-tests
-
-    `.\runTests.ps1 -SkipFuncTests`
+    `.\build.ps1 -SkipUnitTest`
+    
+   Or Build and Unit test with 
+   
+   `.\build.ps1`
 
 6. Run all test-suites if inside Microsoft corpnet
 
@@ -60,11 +63,10 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 #### Notable `build.ps1` switches
 - `-SkipVS14` - skips building binaries targeting Visual Studio "14" (released as Visual Studio 2015)
-- `-SkipVS15` - skips building binaries targeting Visual Studio "15"
+- `-SkipVS15` - skips building binaries targeting Visual Studio "15" (released as Visual Studio 2017)
 
 > Note that if only one of Visual Studio 2015 (VS14) or Visual Studio 2017 (VS15) is installed, neither of the above switches is necessary - the script will build according to the installed version.
 
-- `-SkipXProj` - skips building the NuGet.Core XProj projects.
 - `-Fast` - runs minimal incremental build. Skips end-to-end packaging step.
 
 > Reveal all script parameters and switches by running
@@ -74,4 +76,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 ### Build artifacts location
 - `$(NuGetClientRoot)\Artifacts` - this folder will contain the Package Manager extension (`NuGet.Tools.vsix`) and NuGet command-line client application (`nuget.exe`)
-- `$(NuGetClientRoot)\Nupkgs` - this folder will contain all our projects packages
+- `$(NuGetClientRoot)\Artifacts\nupkgs` - this folder will contain all our projects packages
+
+## License
+
+Unless explicitly stated otherwise all files in this repository are licensed under the License in the root repository

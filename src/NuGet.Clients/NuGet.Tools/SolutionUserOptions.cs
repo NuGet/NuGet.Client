@@ -3,12 +3,13 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization.Formatters.Binary;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
-using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio;
 using IStream = Microsoft.VisualStudio.OLE.Interop.IStream;
 
 namespace NuGetVSExtension
@@ -79,6 +80,7 @@ namespace NuGetVSExtension
             }
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification ="NuGet/Home#4833 Baseline")]
         public bool LoadSettings()
         {
             var solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
@@ -90,6 +92,7 @@ namespace NuGetVSExtension
             return true;
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public bool PersistSettings()
         {
             var solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
@@ -104,6 +107,7 @@ namespace NuGetVSExtension
         #region IVsPersistSolutionOpts
 
         // Called by the shell when a solution is opened and the SUO file is read.
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public int LoadUserOptions(IVsSolutionPersistence pPersistence, uint grfLoadOpts)
         {
             pPersistence.LoadPackageUserOpts(this, NuGetOptionsStreamKey);
@@ -137,6 +141,7 @@ namespace NuGetVSExtension
 
         // Called by the shell when the SUO file is saved. The provider calls the shell back to let it 
         // know which options keys it will use in the suo file.
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public int SaveUserOptions(IVsSolutionPersistence pPersistence)
         {
             pPersistence.SavePackageUserOpts(this, NuGetOptionsStreamKey);

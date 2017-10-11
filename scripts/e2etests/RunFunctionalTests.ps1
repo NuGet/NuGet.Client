@@ -18,6 +18,7 @@ param (
 trap
 {
     Write-Host "RunFunctionalTests.ps1 threw an exception: " $_.Exception -ForegroundColor Red
+    KillRunningInstancesOfVS
     exit 1
 }
 
@@ -39,6 +40,7 @@ $dte2 = GetDTE2 $VSVersion
 if (!$dte2)
 {
     Write-Error 'DTE could not be obtained'
+    KillRunningInstancesOfVS
     exit 1
 }
 
@@ -51,11 +53,10 @@ ExecuteCommand $dte2 "View.PackageManagerConsole" "Set-ExecutionPolicy Bypass -S
 Write-Host "Remove any NuGet.Tests module that may have been loaded already and wait for a second. This operation is very fast"
 ExecuteCommand $dte2 "View.PackageManagerConsole" "Get-Module NuGet.Tests | Remove-Module" "Running command: 'Get-Module NuGet.Tests | Remove-Module' ..." 1
 
-$NuGetTestsModulePath = Join-Path $NuGetTestPath "NuGet.Tests.psm1"
-$NuGetTestsModulePath = Join-Path $PSScriptRoot "NuGet.Tests.psm1"
-if ((Test-Path $NuGetTestsModulePath) -eq $false)
+$NuGetTestsModulePath = Join-Path $PSScriptRoot "NuGet.Tests.psd1"
+if (-not (Test-Path $NuGetTestsModulePath))
 {
-    $NuGetTestsModulePath = Join-Path $NuGetTestPath "NuGet.Tests.psm1"
+    $NuGetTestsModulePath = Join-Path $NuGetTestPath "NuGet.Tests.psd1"
 }
 
 Write-Host "Import NuGet.Tests module from $NuGetTestPath and wait for 5 seconds."
@@ -65,19 +66,10 @@ Write-Host "Executing the provided Package manager console command: ""$PMCComman
 ExecuteCommand $dte2 "View.PackageManagerConsole" $PMCCommand "Running command: $PMCCommand ..."
 
 Write-Host "Starting functional tests with command '$PMCCommand'"
-$resultsHtmlFile = RealTimeLogResults $NuGetTestPath $EachTestTimoutInSecs
+RealTimeLogResults $NuGetTestPath $EachTestTimoutInSecs
 
-if (!$resultsHtmlFile)
-{
-    exit 1
-}
-else
-{
-    Write-Host 'Run has completed. Copying the results file to CI'
-    CopyResultsToCI $NuGetDropPath $RunCounter $resultsHtmlFile
+KillRunningInstancesOfVS
 
-    # Only kill VS if run has completed, otherwise, we might need to investigate
-    KillRunningInstancesOfVS
-}
+
 
 Write-Host -ForegroundColor Cyan "THE END!"

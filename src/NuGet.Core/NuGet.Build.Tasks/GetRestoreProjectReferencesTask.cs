@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,6 +50,10 @@ namespace NuGet.Build.Tasks
 
             var entries = new List<ITaskItem>();
 
+            // Filter obvious duplicates without considering OS case sensitivity.
+            // This will be filtered further when creating the spec.
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+
             var parentDirectory = Path.GetDirectoryName(ParentProjectPath);
 
             foreach (var project in ProjectReferences)
@@ -60,6 +67,12 @@ namespace NuGet.Build.Tasks
                 {
                     // Get the absolute path
                     var referencePath = Path.GetFullPath(Path.Combine(parentDirectory, project.ItemSpec));
+
+                    if (!seen.Add(referencePath))
+                    {
+                        // Skip already processed projects
+                        continue;
+                    }
 
                     var properties = new Dictionary<string, string>();
                     properties.Add("ProjectUniqueName", ProjectUniqueName);

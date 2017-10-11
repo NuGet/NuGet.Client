@@ -1699,7 +1699,7 @@ namespace NuGet.CommandLine.Test
                 {
                     return new Action<HttpListenerResponse>(response =>
                     {
-                        MockServer.SetResponseContent(response, MockServerResource.NuGetV2APIMetadata);
+                        MockServer.SetResponseContent(response, Util.GetMockServerResource());
                     });
                 }
                 else if (path == "/nuget")

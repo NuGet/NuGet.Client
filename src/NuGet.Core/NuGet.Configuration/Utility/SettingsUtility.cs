@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -235,6 +235,12 @@ namespace NuGet.Configuration
             return NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory);
         }
 
+        public static IEnumerable<PackageSource> GetEnabledSources(ISettings settings)
+        {
+            var provider = new PackageSourceProvider(settings);
+            return provider.LoadPackageSources().Where(e => e.IsEnabled == true).ToList();
+        }
+
         /// <summary>
         /// The DefaultPushSource can be:
         /// - An absolute URL
@@ -266,6 +272,18 @@ namespace NuGet.Configuration
             }
 
             return source;
+        }
+
+        public static IEnumerable<string> GetConfigFilePaths(ISettings settings)
+        {
+            if (!(settings is NullSettings))
+            {
+                return settings.Priority.Select(config => Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
+            }
+            else
+            {
+                return new List<string>();
+            }
         }
 
         private static string GetPathFromEnvOrConfig(string envVarName, string configKey, ISettings settings)

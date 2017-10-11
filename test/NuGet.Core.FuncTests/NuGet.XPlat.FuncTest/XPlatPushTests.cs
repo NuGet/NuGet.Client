@@ -1,9 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using NuGet.CommandLine.XPlat;
+using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -11,13 +11,12 @@ namespace NuGet.XPlat.FuncTest
 {
     public class XPlatPushTests
     {
-        [Theory]
-        [InlineData(TestServers.MyGet, nameof(TestServers.MyGet), false)]
-        [InlineData(TestServers.ProGet, nameof(TestServers.ProGet), false)]
-        [InlineData(TestServers.Nexus, nameof(TestServers.Nexus), true)]
-        // [InlineData(TestServers.Klondike, nameof(TestServers.Klondike), false)] // 500 Internal Server Error pushing
-        // [InlineData(TestServers.NuGetServer, nameof(TestServers.NuGetServer), false)] // 500 - missing manifest?
-        public async Task PushToServerSucceeds(string sourceUri, string feedName, bool mustDeleteFirst)
+        [PackageSourceTheory]
+        [PackageSourceData(TestSources.MyGet)]
+        [PackageSourceData(TestSources.ProGet)]
+        [PackageSourceData(TestSources.Klondike, Skip = "500 Internal Server Error pushing")]
+        [PackageSourceData(TestSources.NuGetServer, Skip = "500 - missing manifest?")]
+        public async Task PushToServerSucceeds(PackageSource packageSource)
         {
             // Arrange
             using (var packageDir = TestDirectory.Create())
@@ -25,35 +24,70 @@ namespace NuGet.XPlat.FuncTest
             {
                 var packageId = "XPlatPushTests.PushToServerSucceeds";
                 var packageVersion = "1.0.0";
-                var packageFile = await TestPackages.GetRuntimePackageAsync(packageDir, packageId, packageVersion);
+                var packageFile = await TestPackagesCore.GetRuntimePackageAsync(packageDir, packageId, packageVersion);
                 var configFile = XPlatTestUtils.CopyFuncTestConfig(packageDir);
                 var log = new TestCommandOutputLogger();
 
-                var apiKey = XPlatTestUtils.ReadApiKey(feedName);
+                var apiKey = XPlatTestUtils.ReadApiKey(packageSource.Name);
                 Assert.False(string.IsNullOrEmpty(apiKey));
 
-                if (mustDeleteFirst)
-                {
-                    DeletePackageBeforePush(packageId, packageVersion, sourceUri, apiKey);
-                }
-
-                var pushArgs = new List<string>()
+                var pushArgs = new List<string>
                 {
                     "push",
                     packageFile.FullName,
                     "--source",
-                    sourceUri,
+                    packageSource.Source,
                     "--api-key",
                     apiKey
                 };
 
                 // Act
-                int exitCode = Program.MainInternal(pushArgs.ToArray(), log);
+                var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), log);
 
                 // Assert
                 Assert.Equal(string.Empty, log.ShowErrors());
                 Assert.Equal(0, exitCode);
-                Assert.Contains($"PUT {sourceUri}", log.ShowMessages());
+                Assert.Contains($"PUT {packageSource.Source}", log.ShowMessages());
+                Assert.Contains("Your package was pushed.", log.ShowMessages());
+            }
+        }
+
+        [PackageSourceTheory]
+        [PackageSourceData(TestSources.Nexus)]
+        public async Task PushToServerSucceeds_DeleteFirst(PackageSource packageSource)
+        {
+            // Arrange
+            using (var packageDir = TestDirectory.Create())
+            using (TestFileSystemUtility.SetCurrentDirectory(packageDir))
+            {
+                var packageId = "XPlatPushTests.PushToServerSucceeds";
+                var packageVersion = "1.0.0";
+                var packageFile = await TestPackagesCore.GetRuntimePackageAsync(packageDir, packageId, packageVersion);
+                var configFile = XPlatTestUtils.CopyFuncTestConfig(packageDir);
+                var log = new TestCommandOutputLogger();
+
+                var apiKey = XPlatTestUtils.ReadApiKey(packageSource.Name);
+                Assert.False(string.IsNullOrEmpty(apiKey));
+
+                DeletePackageBeforePush(packageId, packageVersion, packageSource.Source, apiKey);
+
+                var pushArgs = new List<string>
+                {
+                    "push",
+                    packageFile.FullName,
+                    "--source",
+                    packageSource.Source,
+                    "--api-key",
+                    apiKey
+                };
+
+                // Act
+                var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), log);
+
+                // Assert
+                Assert.Equal(string.Empty, log.ShowErrors());
+                Assert.Equal(0, exitCode);
+                Assert.Contains($"PUT {packageSource.Source}", log.ShowMessages());
                 Assert.Contains("Your package was pushed.", log.ShowMessages());
             }
         }
@@ -64,9 +98,9 @@ namespace NuGet.XPlat.FuncTest
         /// </summary>
         private static void DeletePackageBeforePush(string packageId, string packageVersion, string sourceUri, string apiKey)
         {
-            var packageUri = $"{sourceUri}/{packageId}/{packageVersion}";
+            var packageUri = $"{sourceUri.TrimEnd('/')}/{packageId}/{packageVersion}";
             var log = new TestCommandOutputLogger();
-            var args = new List<string>()
+            var args = new List<string>
             {
                 "delete",
                 packageId,
@@ -78,7 +112,7 @@ namespace NuGet.XPlat.FuncTest
                 "--non-interactive"
             };
 
-            int exitCode = Program.MainInternal(args.ToArray(), log);
+            var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(args.ToArray(), log);
             Assert.InRange(exitCode, 0, 1);
 
             Assert.Contains($"DELETE {packageUri}", log.ShowMessages());

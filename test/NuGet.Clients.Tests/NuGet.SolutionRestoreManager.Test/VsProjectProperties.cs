@@ -15,5 +15,10 @@ namespace NuGet.SolutionRestoreManager.Test
         public VsProjectProperties(params IVsProjectProperty[] collection) : base(collection) { }
 
         protected override string GetKeyForItem(IVsProjectProperty value) => value.Name;
+
+        public void Add(string propertyName, string propertyValue)
+        {
+            Add(new VsProjectProperty(propertyName, propertyValue));
+        }
     }
 }

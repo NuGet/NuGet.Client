@@ -3,7 +3,7 @@ function New-Guid {
 }
 
 function Get-HostSemanticVersion {
-    return [NuGet.Common.ClientVersionUtility]::GetNuGetAssemblyVersion()
+    return [NuGet.Packaging.MinClientVersionUtility]::GetNuGetClientVersion()
 }
 
 function Verify-BuildIntegratedMsBuildTask {
@@ -15,4 +15,31 @@ function Verify-BuildIntegratedMsBuildTask {
     }
 
     return $true
+}
+
+class SkipTest : Attribute {
+    SkipTest([string]$Reason) { }
+    [bool] ShouldRun() { return $False }
+}
+
+class SkipTestForVS14 : Attribute {
+    [bool] ShouldRun() {
+        return $global:VSVersion -ne '14.0'
+    }
+}
+
+class SkipTestForVS15 : Attribute {
+    [bool] ShouldRun() {
+        return $global:VSVersion -ne '15.0'
+    }
+}
+
+function ShouldRunTest {
+    param(
+        [System.Management.Automation.CommandInfo]
+        $Command
+    )
+    $SkipTest = $Command.ScriptBlock.Attributes | ?{ $_.TypeID.Name -like 'SkipTest*' }
+
+    return -not $SkipTest -or $SkipTest.ShouldRun()
 }

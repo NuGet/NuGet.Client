@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -54,7 +57,7 @@ namespace NuGet.Commands.Test
                 }
             };
 
-            return await RestoreRunner.Run(restoreContext);
+            return await RestoreRunner.RunAsync(restoreContext);
         }
 
         public static PackageSpec GetProject(string projectName, string framework)

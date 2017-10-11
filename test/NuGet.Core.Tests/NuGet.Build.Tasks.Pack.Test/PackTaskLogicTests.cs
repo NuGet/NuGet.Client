@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -145,8 +145,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(null, "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
         [InlineData("", "abc.txt", "abc.txt")]
         [InlineData("folderA", "abc.txt", "folderA/abc.txt")]
@@ -190,8 +189,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
-        [Platform(Platform.Darwin)]
-        [Theory]
+        [PlatformTheory(Platform.Darwin)]
         [InlineData(null, "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
         [InlineData("", "abc.txt", "abc.txt")]
         [InlineData("folderA", "abc.txt", "folderA/abc.txt")]
@@ -234,8 +232,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
-        [Platform(Platform.Linux)]
-        [Theory]
+        [PlatformTheory(Platform.Linux)]
         [InlineData(null, "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
         [InlineData("", "abc.txt", "abc.txt")]
         [InlineData("folderA", "abc.txt", "folderA/abc.txt")]
@@ -322,6 +319,85 @@ namespace NuGet.Build.Tasks.Pack.Test
         }
 
         [Fact]
+        public void PackTaskLogic_BuildOutputWithoutFinalOutputPath_FallbackToIdentity()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+
+                var metadata = new Dictionary<string, string>()
+                {
+                    { "BuildAction", "None" },
+                    { "Identity", Path.Combine(testDir.Path, "abc.dll") },
+                    { "TargetFramework", "net45" }
+                };
+
+                var msbuildItem = tc.AddContentToProject("", "abc.dll", "hello world", metadata);
+                tc.Request.BuildOutputInPackage = new MSBuildItem[] { msbuildItem };
+                tc.Request.ContentTargetFolders = new string[] { "content", "contentFiles" };
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                Assert.True(File.Exists(tc.NuspecPath), "The intermediate .nuspec file is not in the expected place.");
+                Assert.True(File.Exists(tc.NupkgPath), "The output .nupkg file is not in the expected place.");
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/net45/abc.dll" }, libItems[0].Items);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackTaskLogic_BuildOutputWithCustomExtension_IncludedInNupkgIfSpecified()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+
+                var metadata = new Dictionary<string, string>()
+                {
+                    { "BuildAction", "None" },
+                    { "Identity", Path.Combine(testDir.Path, "abc.abc") },
+                    { "TargetFramework", "net45" }
+                };
+
+                var msbuildItem = tc.AddContentToProject("", "abc.abc", "hello world", metadata);
+
+                var metadata2 = new Dictionary<string, string>()
+                {
+                    { "BuildAction", "None" },
+                    { "Identity", Path.Combine(testDir.Path, "abc.abd") },
+                    { "TargetFramework", "net45" }
+                };
+
+                var msbuildItem2 = tc.AddContentToProject("", "abc.abd", "hello world", metadata);
+
+                tc.Request.BuildOutputInPackage = new MSBuildItem[] { msbuildItem, msbuildItem2 };
+                tc.Request.ContentTargetFolders = new string[] { "content", "contentFiles" };
+                tc.Request.AllowedOutputExtensionsInPackageBuildOutputFolder = new string[] { ".abc" };
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                Assert.True(File.Exists(tc.NuspecPath), "The intermediate .nuspec file is not in the expected place.");
+                Assert.True(File.Exists(tc.NupkgPath), "The output .nupkg file is not in the expected place.");
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/net45/abc.abc" }, libItems[0].Items);
+                }
+            }
+        }
+
+        [Fact]
         public void PackTaskLogic_SupportsContentFiles_WithPackagePath()
         {
             // Arrange
@@ -352,13 +428,103 @@ namespace NuGet.Build.Tasks.Pack.Test
 
                     Assert.Equal(contentFiles.Count, 1);
                     Assert.Equal(contentFiles[0].BuildAction, "EmbeddedResource", StringComparer.Ordinal);
-                    Assert.Equal(contentFiles[0].Include, "any/net45/abc.txt", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[0].Include, "abc.txt", StringComparer.Ordinal);
 
                     // Validate the content items
                     var contentItems = nupkgReader.GetFiles("content").ToList();
                     var contentFileItems = nupkgReader.GetFiles("contentFiles").ToList();
                     Assert.Equal(contentItems.Count, 0);
                     Assert.Equal(contentFileItems.Count, 1);
+                    Assert.Contains("contentFiles/abc.txt", contentFileItems, StringComparer.Ordinal);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackTaskLogic_SupportsContentFiles_WithPackageCopyToOutput()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+
+                var metadata = new Dictionary<string, string>()
+                {
+                    {"BuildAction", "None"},
+                    {"PackageCopyToOutput", "true" },
+                };
+
+                var msbuildItem = tc.AddContentToProject("", "abc.txt", "hello world", metadata);
+                tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
+                tc.Request.ContentTargetFolders = new string[] { "content", "contentFiles" };
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                Assert.True(File.Exists(tc.NuspecPath), "The intermediate .nuspec file is not in the expected place.");
+                Assert.True(File.Exists(tc.NupkgPath), "The output .nupkg file is not in the expected place.");
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    var contentFiles = nuspecReader.GetContentFiles().ToList();
+
+                    Assert.Equal(contentFiles.Count, 1);
+                    Assert.Equal(contentFiles[0].BuildAction, "None", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[0].Include, "any/net45/abc.txt", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[0].CopyToOutput, true);
+
+                    // Validate the content items
+                    var contentItems = nupkgReader.GetFiles("content").ToList();
+                    var contentFileItems = nupkgReader.GetFiles("contentFiles").ToList();
+                    Assert.Equal(contentItems.Count, 1);
+                    Assert.Equal(contentFileItems.Count, 1);
+                    Assert.Contains("content/abc.txt", contentItems, StringComparer.Ordinal);
+                    Assert.Contains("contentFiles/any/net45/abc.txt", contentFileItems, StringComparer.Ordinal);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackTaskLogic_SupportsContentFiles_WithPackageFlatten()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+
+                var metadata = new Dictionary<string, string>()
+                {
+                    {"BuildAction", "None"},
+                    {"PackageFlatten", "true" },
+                };
+
+                var msbuildItem = tc.AddContentToProject("", "abc.txt", "hello world", metadata);
+                tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
+                tc.Request.ContentTargetFolders = new string[] { "content", "contentFiles" };
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                Assert.True(File.Exists(tc.NuspecPath), "The intermediate .nuspec file is not in the expected place.");
+                Assert.True(File.Exists(tc.NupkgPath), "The output .nupkg file is not in the expected place.");
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    var contentFiles = nuspecReader.GetContentFiles().ToList();
+
+                    Assert.Equal(contentFiles.Count, 1);
+                    Assert.Equal(contentFiles[0].BuildAction, "None", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[0].Include, "any/net45/abc.txt", StringComparer.Ordinal);
+                    Assert.Equal(contentFiles[0].Flatten, true);
+
+                    // Validate the content items
+                    var contentItems = nupkgReader.GetFiles("content").ToList();
+                    var contentFileItems = nupkgReader.GetFiles("contentFiles").ToList();
+                    Assert.Equal(contentItems.Count, 1);
+                    Assert.Equal(contentFileItems.Count, 1);
+                    Assert.Contains("content/abc.txt", contentItems, StringComparer.Ordinal);
                     Assert.Contains("contentFiles/any/net45/abc.txt", contentFileItems, StringComparer.Ordinal);
                 }
             }
@@ -389,6 +555,8 @@ namespace NuGet.Build.Tasks.Pack.Test
                     PackageId = "SomePackage",
                     PackageVersion = "3.0.0-beta",
                     Authors = new[] { "NuGet Team", "Unit test" },
+                    AllowedOutputExtensionsInPackageBuildOutputFolder = new[] { ".dll", ".exe", ".winmd", ".json", ".pri", ".xml" },
+                    AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = new[] { ".dll", ".exe", ".winmd", ".json", ".pri", ".xml", ".pdb", ".mdb" },
                     Description = "A test package.",
                     PackItem = new MSBuildItem("project.csproj", new Dictionary<string, string>
                     {
@@ -404,8 +572,13 @@ namespace NuGet.Build.Tasks.Pack.Test
                     RestoreOutputPath = Path.Combine(testDir, "obj"),
                     ContinuePackingAfterGeneratingNuspec = true,
                     TargetFrameworks = new[] { "net45" },
-                    TargetPathsToAssemblies = new[] { dllPath },
-                    Logger = new TestLogger()
+                    BuildOutputInPackage = new[] { new MSBuildItem(dllPath, new Dictionary<string, string>
+                    {
+                        {"FinalOutputPath", dllPath },
+                        {"TargetFramework", "net45" }
+                    })},
+                    Logger = new TestLogger(),
+                    FrameworkAssemblyReferences = new MSBuildItem[]{}
                 };
             }
 
@@ -454,8 +627,13 @@ namespace NuGet.Build.Tasks.Pack.Test
                 }
 
                 var metadata = itemMetadata ?? new Dictionary<string, string>();
-                metadata["Identity"] = relativePathToFile;
+                if (!metadata.ContainsKey("Identity"))
+                {
+                    metadata["Identity"] = relativePathToFile;
+                }
+
                 metadata["FullPath"] = fullpath;
+
                 if (!metadata.ContainsKey("BuildAction"))
                 {
                     metadata["BuildAction"] = "Content";

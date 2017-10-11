@@ -1,27 +1,49 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using EnvDTE;
-using EnvDTE80;
+using Microsoft;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
-using NuGet.PackageManagement.VisualStudio;
+using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 
 namespace API.Test
 {
     public static class VSSolutionHelper
     {
-        public static async Task<Solution2> GetSolution2Async()
+        private static UpdateSolutionEventHandler _solutionEventHandler = new UpdateSolutionEventHandler();
+
+        private static uint _updateSolutionEventsCookie;
+
+        private static IVsSolutionBuildManager _solutionBuildManager;
+
+        internal static async Task<EnvDTE80.Solution2> GetDTESolutionAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = ServiceLocator.GetInstance<DTE>();
-            var dte2 = (DTE2)dte;
-            var solution2 = dte2.Solution as Solution2;
+            var dte = ServiceLocator.GetDTE();
+            var dte2 = (EnvDTE80.DTE2)dte;
+            var solution2 = dte2.Solution as EnvDTE80.Solution2;
 
             return solution2;
+        }
+
+        public static void WaitForSolutionLoad()
+        {
+            ThreadHelper.ThrowIfOnUIThread();
+
+            using (var mre = new ManualResetEvent(false))
+            {
+                KnownUIContexts.SolutionExistsAndFullyLoadedContext.WhenActivated(() => mre.Set());
+                mre.WaitOne(); 
+            }
         }
 
         public static string GetSolutionFullName()
@@ -37,7 +59,7 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution2 = await GetSolution2Async();
+            var solution2 = await GetDTESolutionAsync();
             var solutionFullName = solution2.FullName;
             return solutionFullName;
         }
@@ -57,7 +79,7 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution2 = await GetSolution2Async();
+            var solution2 = await GetDTESolutionAsync();
             solution2.Create(solutionDirectory, name);
 
             var solutionPath = Path.Combine(solutionDirectory, name);
@@ -120,11 +142,11 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution2 = await GetSolution2Async();
+            var solution2 = await GetDTESolutionAsync();
             return await IsSolutionAvailableAsync(solution2);
         }
 
-        public static async Task<bool> IsSolutionAvailableAsync(Solution2 solution2)
+        public static async Task<bool> IsSolutionAvailableAsync(EnvDTE80.Solution2 solution2)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             return solution2 != null && solution2.IsOpen;
@@ -132,17 +154,14 @@ namespace API.Test
         
         public static void CloseSolution()
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await CloseSolutionAsync();
-            });
+            ThreadHelper.JoinableTaskFactory.Run(() => CloseSolutionAsync());
         }
 
         private static async Task CloseSolutionAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution2 = await GetSolution2Async();
+            var solution2 = await GetDTESolutionAsync();
             var isSolutionAvailable = await IsSolutionAvailableAsync(solution2);
             if (isSolutionAvailable)
             {
@@ -164,7 +183,7 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution2 = await GetSolution2Async();
+            var solution2 = await GetDTESolutionAsync();
             solution2.Open(solutionFile);
         }
 
@@ -182,15 +201,15 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution2 = await GetSolution2Async();
+            var solution2 = await GetDTESolutionAsync();
             solution2.SaveAs(solutionFile);
         }
 
-        public static async Task<SolutionBuild> GetSolutionBuildAsync()
+        public static async Task<EnvDTE.SolutionBuild> GetSolutionBuildAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution2 = await VSSolutionHelper.GetSolution2Async();
+            var solution2 = await VSSolutionHelper.GetDTESolutionAsync();
             var isSolutionAvailable = await VSSolutionHelper.IsSolutionAvailableAsync(solution2);
 
             if (!isSolutionAvailable)
@@ -235,7 +254,71 @@ namespace API.Test
             solutionBuild.Clean(WaitForCleanToFinish: true);
         }
 
-        public static async Task<Project> GetSolutionFolderProjectAsync(Solution2 solution2, string solutionFolderName)
+        public static void RebuildSolution()
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await RebuildSolutionAsync();
+            });
+        }
+
+        private static async Task RebuildSolutionAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            Assumes.Present(_solutionBuildManager);
+
+            var buildFlags = (uint)(VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD | VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_CLEAN);
+
+            _solutionBuildManager.StartSimpleUpdateSolutionConfiguration(buildFlags, (uint)VSSOLNBUILDQUERYRESULTS.VSSBQR_CONTDEPLOYONERROR_QUERY_NO, 1);
+        }
+
+        public static void AdviseSolutionEvents()
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await AdviseSolutionEventsAsync();
+            });
+        }
+
+        private static async Task AdviseSolutionEventsAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            _solutionBuildManager = ServiceLocator.GetService<SVsSolutionBuildManager, IVsSolutionBuildManager>();
+            Assumes.Present(_solutionBuildManager);
+
+            _solutionBuildManager.AdviseUpdateSolutionEvents(_solutionEventHandler, out _updateSolutionEventsCookie);
+        }
+
+        public static void UnadviseSolutionEvents()
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await UnadviseSolutionEventsAsync();
+            });
+        }
+
+        private static async Task UnadviseSolutionEventsAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (_updateSolutionEventsCookie != 0)
+            {
+                _solutionBuildManager?.UnadviseUpdateSolutionEvents(_updateSolutionEventsCookie);
+                _updateSolutionEventsCookie = 0;
+            }
+        }
+
+        public static void WaitUntilRebuildCompleted()
+        {
+            while (!_solutionEventHandler.isOperationCompleted)
+            {
+                Thread.Sleep(100);
+            }
+        }
+
+        public static async Task<EnvDTE.Project> GetSolutionFolderProjectAsync(EnvDTE80.Solution2 solution2, string solutionFolderName)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -247,7 +330,7 @@ namespace API.Test
                 throw new ArgumentException("No corresponding solution folder exists", nameof(solutionFolderName));
             }
 
-            var solutionFolder = solutionFolderProject.Object as SolutionFolder;
+            var solutionFolder = solutionFolderProject.Object as EnvDTE80.SolutionFolder;
             if (solutionFolder == null)
             {
                 throw new ArgumentException("Not a valid solution folder", nameof(solutionFolderName));
@@ -256,7 +339,7 @@ namespace API.Test
             return solutionFolderProject;
         }
 
-        private static async Task<Project> GetSolutionFolderProjectAsync(
+        private static async Task<EnvDTE.Project> GetSolutionFolderProjectAsync(
             IEnumerable projectItems,
             string[] solutionFolderParts,
             int level)
@@ -279,16 +362,16 @@ namespace API.Test
             }
 
             var solutionFolderName = solutionFolderParts[level];
-            Project solutionFolderProject = null;
+            EnvDTE.Project solutionFolderProject = null;
 
             foreach (var item in projectItems)
             {
                 // Item could be a project or a projectItem
-                Project project = item as Project;
+                var project = item as EnvDTE.Project;
 
                 if (project == null)
                 {
-                    var projectItem = item as ProjectItem;
+                    var projectItem = item as EnvDTE.ProjectItem;
                     if (projectItem != null)
                     {
                         project = projectItem.SubProject;
@@ -331,7 +414,7 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution2 = await GetSolution2Async();
+            var solution2 = await GetDTESolutionAsync();
 
             
 
@@ -351,7 +434,7 @@ namespace API.Test
                 var solutionFolderName = folderPath.Substring(newSolutionFolderIndex + 1);
 
                 var parentProject = await GetSolutionFolderProjectAsync(solution2, parentName);
-                var parentSolutionFolder = (SolutionFolder)parentProject.Object;
+                var parentSolutionFolder = (EnvDTE80.SolutionFolder)parentProject.Object;
                 parentSolutionFolder.AddSolutionFolder(solutionFolderName);
             }
         }
@@ -371,10 +454,122 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution2 = await GetSolution2Async();
+            var solution2 = await GetDTESolutionAsync();
 
             var solutionFolderProject = await GetSolutionFolderProjectAsync(solution2, folderPath);
             solutionFolderProject.Name = newName;
+        }
+
+        public static async Task<EnvDTE.Project> GetProjectAsync(EnvDTE80.Solution2 solution2, string projectName)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            return solution2
+                .Projects
+                .Cast<EnvDTE.Project>()
+                .FirstOrDefault(project => project.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static async Task<EnvDTE.Project> GetProjectAsync(
+            EnvDTE.Project solutionFolderProject,
+            string projectName)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var projectItem = solutionFolderProject.ProjectItems
+                .Cast<EnvDTE.ProjectItem>()
+                .FirstOrDefault(project => project.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase));
+
+            return projectItem?.Object as EnvDTE.Project;
+        }
+
+        private static IEnumerable<IVsHierarchy> EnumerateLoadedProjects(IVsSolution vsSolution)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            IEnumHierarchies enumHierarchies;
+            var guid = Guid.Empty;
+            ErrorHandler.ThrowOnFailure(vsSolution.GetProjectEnum(
+                (uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, ref guid, out enumHierarchies));
+
+            // Loop all projects found
+            if (enumHierarchies != null)
+            {
+                // Loop projects found
+                var hierarchy = new IVsHierarchy[1];
+                uint fetched = 0;
+                while (enumHierarchies.Next(1, hierarchy, out fetched) == VSConstants.S_OK && fetched > 0)
+                {
+                    yield return hierarchy[0];
+                }
+            }
+        }
+
+        public static async Task<IVsHierarchy> FindProjectAsync(string fullName)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var vsSolution = ServiceLocator.GetService<SVsSolution, IVsSolution>();
+
+            foreach (var project in EnumerateLoadedProjects(vsSolution))
+            {
+                ErrorHandler.ThrowOnFailure(project.GetCanonicalName(
+                    VSConstants.VSITEMID_ROOT, out string projectPath));
+                if (projectPath.Equals(fullName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return project;
+                }
+            }
+
+            return null;
+        }
+
+        public static async Task<IVsHierarchy> FindProjectByUniqueNameAsync(string uniqueName)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var vsSolution = ServiceLocator.GetService<SVsSolution, IVsSolution>();
+
+            var hr = vsSolution.GetProjectOfUniqueName(uniqueName, out var project);
+            if (ErrorHandler.Succeeded(hr))
+            {
+                return project;
+            }
+
+            return null;
+        }
+    }
+
+    public sealed class UpdateSolutionEventHandler: IVsUpdateSolutionEvents
+    {
+        public bool isOperationCompleted;
+
+        public int UpdateSolution_Begin(ref int pfCancelUpdate)
+        {
+            isOperationCompleted = false;
+            return VSConstants.S_OK;
+        }
+
+        public int UpdateSolution_Done(int fSucceeded, int fModified, int fCancelCommand)
+        {
+            isOperationCompleted = true;
+            return VSConstants.S_OK;
+        }
+
+        public int UpdateSolution_StartUpdate(ref int pfCancelUpdate)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int UpdateSolution_Cancel()
+        {
+            isOperationCompleted = true;
+            return VSConstants.S_OK;
+        }
+
+        public int OnActiveProjectCfgChange(IVsHierarchy pIVsHierarchy)
+        {
+            return VSConstants.S_OK;
         }
     }
 }

@@ -1,18 +1,18 @@
 $currentPath = Split-Path $MyInvocation.MyCommand.Definition
 
 # Directory where the projects and solutions are created
-$testOutputPath = Join-Path $currentPath bin
+$TestOutputPath = Join-Path $currentPath bin
 
 # Directory where vs templates are located
-$templatePath = Join-Path $currentPath ProjectTemplates
+$TemplatePath = Join-Path $currentPath ProjectTemplates
 
 # Directory where test scripts are located
-$testPath = Join-Path $currentPath tests
+$TestPath = Join-Path $currentPath tests
 
 $utilityPath = Join-Path $currentPath utility.ps1
 
 # Directory where the test packages are (This is passed to each test method)
-$testRepositoryPath = Join-Path $currentPath Packages
+$TestRepositoryPath = Join-Path $currentPath Packages
 
 $nugetRoot = Join-Path $currentPath "..\.."
 
@@ -105,7 +105,7 @@ function Rearrange-Tests {
     $tests
 }
 
-function global:Run-Test {
+function Run-Test {
     [CmdletBinding(DefaultParameterSetName="Test")]
     param(
         [parameter(ParameterSetName="Test", Position=0)]
@@ -117,7 +117,7 @@ function global:Run-Test {
 		[parameter(ParameterSetName="Exclude", Mandatory=$true, Position=2)]
         [string]$Exclude,
         [parameter(Position=3)]
-        [bool]$LaunchResultsOnFailure=$true
+        [bool]$LaunchResultsOnFailure=$false
     )
 
     Write-Verbose "Loading test extensions modules"
@@ -189,6 +189,7 @@ function global:Run-Test {
         }
     }
 
+    $tests = $tests | ?{ ShouldRunTest $_ }
     $results = @{}
 
     # Add a reference to the msbuild assembly in case it isn't there
@@ -203,6 +204,30 @@ function global:Run-Test {
     {
     }
 
+    
+    $numberOfTests = 0
+    $tests | %{
+        $numberOfTests++
+        $testObject = $_
+        # Trim the Test- prefix
+        $testName = $testObject.Name.Substring(5)
+        try {
+            $testCasesFactory = @(Get-ChildItem "function:\TestCases-$testName")
+
+            if($testCasesFactory -and $testCasesFactory.Count -eq 1)
+            {
+                $testCases = & $testCasesFactory[0]
+                if($testCases -and $testCases.Count -gt 0)
+                {
+                    $numberOfTests = $numberOfTests + $testCases.Count -1
+                }
+            }        
+        }
+        catch {
+            
+        }
+    }
+    
 	$startTime = Get-Date
     try {
         # Run all tests
@@ -217,7 +242,7 @@ function global:Run-Test {
             $testName = $testObject.Name.Substring(5)
 
             $testCases = @( $null )
-            $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"
+            $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"        
 
             try {
                 Write-Host 'Getting the test cases factory for ' $testName
@@ -240,11 +265,8 @@ function global:Run-Test {
                 $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"
             }
 
-            # Write to log file as we run tests
-            "$(Get-Date -format o) Running Test $testName... ($testIndex / $($tests.Count))" + $testCasesInfoString >> $testLogFile
-            "Running Test " + $testName + " ($testIndex / $($tests.Count))" + $testCasesInfoString
 
-            $testCaseIndex = 0
+            $testCaseIndex = -1
             $testCases | %{
 
                 # set name to test name. If this is a test case, we will add that info to the name
@@ -259,9 +281,19 @@ function global:Run-Test {
                         $name += "(" + [system.string]::join("_", $noteProperties) + ")"
                     }
                     $testCaseIndex++
-                    "Running Test case $name... ($testCaseIndex / $($testCases.Count))"
+                    $testIndexToPrint = $testIndex + $testCaseIndex
+                    "Running Test case $name... ($testIndexToPrint / $numberOfTests)"
                     # Write to log file as we run tests
-                    "$(Get-Date -format o) Running Test case $name... ($testCaseIndex / $($testCases.Count))" >> $testLogFile
+                    "Running Test case $name... ($testIndexToPrint / $numberOfTests)" >> $testLogFile
+                    if ($testCaseIndex + 1 -eq $testCases.Count)
+                    {
+                        $testIndex = $testIndex + $testCaseIndex
+                    }
+                }
+                else
+                {
+                    # Write to log file as we run tests
+                    "Running Test $testName... ($testIndex / $numberOfTests)" >> $testLogFile            
                 }
 
                 $repositoryPath = Join-Path $testRepositoryPath $name
@@ -280,7 +312,7 @@ function global:Run-Test {
                     # Generate any packages that might be in the repository dir
                     Get-ChildItem $repositoryPath\* -Include *.dgml,*.nuspec | %{
                         Write-Host 'Running GenerateTestPackages.exe on ' $_.FullName '...'
-                        $p = Start-Process $generatePackagesExePath -wait -NoNewWindow -PassThru -ArgumentList $_.FullName
+                        $p = Start-Process $generatePackagesExePath -Wait -WindowStyle Hidden -PassThru -ArgumentList $_.FullName
                         if($p.ExitCode -ne 0)
                         {
                             $generatePackagesExitCode = $p.ExitCode
@@ -349,7 +381,7 @@ function global:Run-Test {
                             # The type might not be loaded so don't fail if it isn't
                         }
 
-                        if ($tests.Count -gt 1 -or (!$testSucceeded -and $counter -eq 0)) {
+                        if ($tests.Count -gt 1 -or $testCases.Count -gt 1 -or (!$testSucceeded -and $counter -eq 0)) {
                             [API.Test.VSSolutionHelper]::CloseSolution()
                         }
 
@@ -382,15 +414,15 @@ function global:Run-Test {
         # Deleting tests
         rm function:\Test*
 
-        # Set focus back to powershell
-        [API.Test.VSHelper]::FocusStoredPSWindow()
-
         Write-TestResults $testRunId $results.Values $testRunOutputPath $testLogFile $LaunchResultsOnFailure
 
         try
         {
             # Clear out the setting when the tests are done running
             [Microsoft.Build.Evaluation.ProjectCollection]::GlobalProjectCollection.SetGlobalProperty("UseVSHostingProcess", "")
+
+            # Set focus back to powershell
+            [API.Test.VSHelper]::FocusStoredPSWindow()
         }
         catch {}
     }
@@ -468,6 +500,12 @@ function Append-TextResult
     )
 
     $row = Get-TextResultRow $Result
+    $numLines = $row | Measure-Object -Line
+    if($numLines.Lines -gt 1)
+    {
+        $rowArray = $row.Split([environment]::NewLine)
+        $row = [string]::Join(" ", $rowArray)
+    }
     $row >> $Path
 }
 
@@ -643,3 +681,5 @@ function Get-PackageRepository
 	$packageSource = New-Object -TypeName NuGet.Configuration.PackageSource -ArgumentList @([System.String]::$source)
     $repositoryProvider.CreateRepository($packageSource)
 }
+
+Export-ModuleMember -Variable VSVersion, TemplatePath, TestPath, TestOutputPath, TestRepositoryPath -Cmdlet '*' -Function '*'

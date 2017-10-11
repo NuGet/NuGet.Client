@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -215,18 +218,6 @@ namespace NuGet.Commands
                     CultureInfo.CurrentCulture,
                     Strings.MissingRequiredPropertyForProjectType,
                     nameof(spec.RestoreMetadata.ProjectJsonPath),
-                    ProjectStyle.ProjectJson.ToString());
-
-                throw RestoreSpecException.Create(message, files);
-            }
-
-            // Do not allow changing the output path for UAP
-            if (!string.IsNullOrEmpty(spec.RestoreMetadata.OutputPath))
-            {
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.PropertyNotAllowedForProjectType,
-                    nameof(spec.RestoreMetadata.OutputPath),
                     ProjectStyle.ProjectJson.ToString());
 
                 throw RestoreSpecException.Create(message, files);

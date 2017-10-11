@@ -8,6 +8,9 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
 {
+    /// <summary>
+    /// A V2 path resolver.
+    /// </summary>
     public class PackagePathResolver
     {
         private readonly string _rootDirectory;
@@ -31,14 +34,14 @@ namespace NuGet.Packaging
             get { return _rootDirectory; }
         }
 
-        public string GetPackageDirectoryName(PackageIdentity packageIdentity)
+        public virtual string GetPackageDirectoryName(PackageIdentity packageIdentity)
         {
             var directory = GetPathBase(packageIdentity);
 
             return directory.ToString();
         }
 
-        public string GetPackageFileName(PackageIdentity packageIdentity)
+        public virtual string GetPackageFileName(PackageIdentity packageIdentity)
         {
             var fileNameBase = GetPathBase(packageIdentity);
 
@@ -47,24 +50,34 @@ namespace NuGet.Packaging
             return fileNameBase.ToString();
         }
 
+        public string GetPackageDownloadMarkerFileName(PackageIdentity packageIdentity)
+        {
+            var builder = new StringBuilder();
+
+            builder.Append(GetId(packageIdentity));
+            builder.Append(PackagingCoreConstants.PackageDownloadMarkerFileExtension);
+
+            return builder.ToString();
+        }
+
         public string GetManifestFileName(PackageIdentity packageIdentity)
         {
             return GetId(packageIdentity) + PackagingCoreConstants.NuspecExtension;
         }
 
-        public string GetInstallPath(PackageIdentity packageIdentity)
+        public virtual string GetInstallPath(PackageIdentity packageIdentity)
         {
             return Path.Combine(_rootDirectory, GetPackageDirectoryName(packageIdentity));
         }
 
-        public string GetInstalledPath(PackageIdentity packageIdentity)
+        public virtual string GetInstalledPath(PackageIdentity packageIdentity)
         {
             var installedPackageFilePath = GetInstalledPackageFilePath(packageIdentity);
 
             return string.IsNullOrEmpty(installedPackageFilePath) ? null : Path.GetDirectoryName(installedPackageFilePath);
         }
 
-        public string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
+        public virtual string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
         {
             return PackagePathHelper.GetInstalledPackageFilePath(packageIdentity, this);
         }

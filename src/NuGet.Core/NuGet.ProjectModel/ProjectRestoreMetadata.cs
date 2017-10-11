@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
 
 namespace NuGet.ProjectModel
@@ -51,9 +53,19 @@ namespace NuGet.ProjectModel
         public string PackagesPath { get; set; }
 
         /// <summary>
+        /// Cache file path
+        /// </summary>
+        public string CacheFilePath { get; set; }
+
+        /// <summary>
         /// Fallback folders.
         /// </summary>
         public IList<string> FallbackFolders { get; set; } = new List<string>();
+
+        /// <summary>
+        /// ConfigFilePaths used.
+        /// </summary>
+        public IList<string> ConfigFilePaths { get; set; } = new List<string>();
 
         /// <summary>
         /// Framework specific metadata, this may be a subset of the project's frameworks.
@@ -90,9 +102,14 @@ namespace NuGet.ProjectModel
         public bool ValidateRuntimeAssets { get; set; }
 
         /// <summary>
-        /// True if this is an XPlat PackageReference project.
+        /// True if this is a Legacy Package Reference project
         /// </summary>
         public bool SkipContentFileWrite { get; set; }
+
+        /// <summary>
+        /// Contains Project wide properties for Warnings.
+        /// </summary>
+        public WarningProperties ProjectWideWarningProperties { get; set; } = new WarningProperties();
 
         public override int GetHashCode()
         {
@@ -106,6 +123,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(ProjectUniqueName);
             hashCode.AddSequence(Sources);
             hashCode.AddObject(PackagesPath);
+            hashCode.AddSequence(ConfigFilePaths);
             hashCode.AddSequence(FallbackFolders);
             hashCode.AddSequence(TargetFrameworks);
             hashCode.AddSequence(OriginalTargetFrameworks);
@@ -114,6 +132,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(Files);
             hashCode.AddObject(ValidateRuntimeAssets);
             hashCode.AddObject(SkipContentFileWrite);
+            hashCode.AddObject(ProjectWideWarningProperties);
 
             return hashCode.CombinedHash;
         }
@@ -143,6 +162,7 @@ namespace NuGet.ProjectModel
                    ProjectUniqueName == other.ProjectUniqueName &&
                    EqualityUtility.SequenceEqualWithNullCheck(Sources, other.Sources) &&
                    PackagesPath == other.PackagesPath &&
+                   EqualityUtility.SequenceEqualWithNullCheck(ConfigFilePaths, other.ConfigFilePaths) &&
                    EqualityUtility.SequenceEqualWithNullCheck(FallbackFolders, other.FallbackFolders) &&
                    EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
                    EqualityUtility.SequenceEqualWithNullCheck(OriginalTargetFrameworks, other.OriginalTargetFrameworks) &&
@@ -150,7 +170,8 @@ namespace NuGet.ProjectModel
                    LegacyPackagesDirectory == other.LegacyPackagesDirectory &&
                    ValidateRuntimeAssets == other.ValidateRuntimeAssets &&
                    SkipContentFileWrite == other.SkipContentFileWrite &&
-                   EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files);
+                   EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files) &&
+                   EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties);
         }
     }
 }

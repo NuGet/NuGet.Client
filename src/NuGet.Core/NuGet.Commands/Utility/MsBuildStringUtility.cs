@@ -14,11 +14,20 @@ namespace NuGet.Commands
         /// </summary>
         public static string[] Split(string s)
         {
+            return Split(s, ';');
+        }
+
+        /// <summary>
+        /// Split on ; and trim. Null or empty inputs will return an
+        /// empty array.
+        /// </summary>
+        public static string[] Split(string s, params char[] chars)
+        {
             if (!string.IsNullOrEmpty(s))
             {
                 // Split on ; and trim all entries
                 // After trimming remove any entries that are now empty due to trim.
-                return s.Split(';')
+                return s.Split(chars)
                     .Select(entry => entry.Trim())
                     .Where(entry => entry.Length != 0)
                     .ToArray();
@@ -63,7 +72,7 @@ namespace NuGet.Commands
         /// </summary>
         public static bool IsTrue(string value)
         {
-            return Boolean.TrueString.Equals(TrimAndGetNullForEmpty(value), StringComparison.OrdinalIgnoreCase);
+            return bool.TrueString.Equals(TrimAndGetNullForEmpty(value), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

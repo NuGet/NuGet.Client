@@ -1,17 +1,22 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement.Projects;
+using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
@@ -26,9 +31,9 @@ namespace NuGet.SolutionRestoreManager
         private const int IdleTimeoutMs = 400;
         private const int RequestQueueLimit = 150;
         private const int PromoteAttemptsLimit = 150;
+        private const int DelayAutoRestoreRetries = 50;
 
         private readonly IServiceProvider _serviceProvider;
-        private readonly AsyncLazy<ErrorListProvider> _errorListProvider;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<INuGetLockService> _lockService;
         private readonly Lazy<Common.ILogger> _logger;
@@ -36,22 +41,31 @@ namespace NuGet.SolutionRestoreManager
 
         private EnvDTE.SolutionEvents _solutionEvents;
         private CancellationTokenSource _workerCts;
-        private Lazy<Task> _backgroundJobRunner;
+        private AsyncLazy<bool> _backgroundJobRunner;
         private Lazy<BlockingCollection<SolutionRestoreRequest>> _pendingRequests;
         private BackgroundRestoreOperation _pendingRestore;
         private Task<bool> _activeRestoreTask;
         private int _initialized;
 
+        private IVsSolution _vsSolution;
+
         private SolutionRestoreJobContext _restoreJobContext;
 
         private readonly JoinableTaskCollection _joinableCollection;
         private readonly JoinableTaskFactory _joinableFactory;
+        private readonly AsyncManualResetEvent _solutionLoadedEvent;
 
-        private ErrorListProvider ErrorListProvider => NuGetUIThreadHelper.JoinableTaskFactory.Run(_errorListProvider.GetValueAsync);
+        private IVsSolutionManager SolutionManager => _solutionManager.Value;
+
+        private Common.ILogger Logger => _logger.Value;
+
+        private Lazy<ErrorListTableDataSource> _errorListTableDataSource;
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
         public bool IsBusy => !_activeRestoreTask.IsCompleted;
+
+        public JoinableTaskFactory JoinableTaskFactory => _joinableFactory;
 
         [ImportingConstructor]
         public SolutionRestoreWorker(
@@ -59,8 +73,9 @@ namespace NuGet.SolutionRestoreManager
             IServiceProvider serviceProvider,
             Lazy<IVsSolutionManager> solutionManager,
             Lazy<INuGetLockService> lockService,
-            [Import(typeof(VisualStudioActivityLogger))]
-            Lazy<Common.ILogger> logger)
+            [Import("VisualStudioActivityLogger")]
+            Lazy<Common.ILogger> logger,
+            Lazy<ErrorListTableDataSource> errorListTableDataSource)
         {
             if (serviceProvider == null)
             {
@@ -82,21 +97,20 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            if (errorListTableDataSource == null)
+            {
+                throw new ArgumentNullException(nameof(errorListTableDataSource));
+            }
+
             _serviceProvider = serviceProvider;
             _solutionManager = solutionManager;
             _lockService = lockService;
             _logger = logger;
+            _errorListTableDataSource = errorListTableDataSource;
 
             var joinableTaskContextNode = new JoinableTaskContextNode(ThreadHelper.JoinableTaskContext);
             _joinableCollection = joinableTaskContextNode.CreateCollection();
             _joinableFactory = joinableTaskContextNode.CreateFactory(_joinableCollection);
-
-            _errorListProvider = new AsyncLazy<ErrorListProvider>(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return new ErrorListProvider(serviceProvider);
-                },
-                _joinableFactory);
 
             _componentModel = new AsyncLazy<IComponentModel>(async () =>
                 {
@@ -104,6 +118,7 @@ namespace NuGet.SolutionRestoreManager
                     return serviceProvider.GetService<SComponentModel, IComponentModel>();
                 },
                 _joinableFactory);
+            _solutionLoadedEvent = new AsyncManualResetEvent();
 
             Reset();
         }
@@ -118,44 +133,73 @@ namespace NuGet.SolutionRestoreManager
 
                     var dte = _serviceProvider.GetDTE();
                     _solutionEvents = dte.Events.SolutionEvents;
+                    _solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
                     _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
+
+                    _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
+                    Assumes.Present(_vsSolution);
 #if VS15
                     // these properties are specific to VS15 since they are use to attach to solution events
                     // which is further used to start bg job runner to schedule auto restore
-                    Advise(_serviceProvider);
+                    Advise(_vsSolution);
 #endif
                 });
+
+                // Signal the background job runner solution is loaded
+                // Needed when OnAfterBackgroundSolutionLoadComplete fires before
+                // Advise has been called.
+                if (!_solutionLoadedEvent.IsSet && await IsSolutionFullyLoadedAsync())
+                {
+                    _solutionLoadedEvent.Set();
+                }
             }
+        }
+
+        private async Task<bool> IsSolutionFullyLoadedAsync()
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            object value;
+            var hr = _vsSolution.GetProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded), out value);
+            ErrorHandler.ThrowOnFailure(hr);
+
+            return (bool)value;
         }
 
         public void Dispose()
         {
             Reset(isDisposing: true);
 
-            _joinableFactory.Run(async () =>
+            if (_initialized != 0)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
-#if VS15
-                Unadvise();
-#endif
-                if (_errorListProvider.IsValueCreated)
+                _joinableFactory.Run(async () =>
                 {
-                    (await _errorListProvider.GetValueAsync()).Dispose();
-                }
-            });
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
+#if VS15
+                    Unadvise();
+#endif
+                });
+            }
         }
 
         private void Reset(bool isDisposing = false)
         {
+            // Make sure worker restore operation is cancelled
             _workerCts?.Cancel();
 
             if (_backgroundJobRunner?.IsValueCreated == true)
             {
-                // Do not block VS for more than 5 sec.
+                // Await completion of the background work
                 _joinableFactory.Run(
-                    () => Task.WhenAny(_backgroundJobRunner.Value, Task.Delay(TimeSpan.FromSeconds(5))));
+                    async () =>
+                    {
+                        // Do not block VS forever
+                        // After the specified delay the task will disjoin.
+                        await _backgroundJobRunner.GetValueAsync().WithTimeout(TimeSpan.FromSeconds(60));
+                    },
+                    JoinableTaskCreationOptions.LongRunning);
             }
 
             _pendingRestore?.Dispose();
@@ -168,12 +212,13 @@ namespace NuGet.SolutionRestoreManager
 
             if (!isDisposing)
             {
+                _solutionLoadedEvent.Reset();
+
                 _workerCts = new CancellationTokenSource();
 
-                _backgroundJobRunner = new Lazy<Task>(
-                    valueFactory: () => Task.Run(
-                        function: () => StartBackgroundJobRunnerAsync(_workerCts.Token),
-                        cancellationToken: _workerCts.Token));
+                _backgroundJobRunner = new AsyncLazy<bool>(
+                    () => StartBackgroundJobRunnerAsync(_workerCts.Token),
+                    _joinableFactory);
 
                 _pendingRequests = new Lazy<BlockingCollection<SolutionRestoreRequest>>(
                     () => new BlockingCollection<SolutionRestoreRequest>(RequestQueueLimit));
@@ -184,64 +229,100 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
+        private void SolutionEvents_BeforeClosing()
+        {
+            // Signal background runner to terminate execution
+            _workerCts?.Cancel();
+        }
+
         private void SolutionEvents_AfterClosing()
         {
             Reset();
-            ErrorListProvider.Tasks.Clear();
+
+            // Clear warnings/errors from nuget
+            if (_errorListTableDataSource.IsValueCreated)
+            {
+                _errorListTableDataSource.Value.ClearNuGetEntries();
+            }
         }
 
         public async Task<bool> ScheduleRestoreAsync(
             SolutionRestoreRequest request, CancellationToken token)
         {
+            if (token.IsCancellationRequested)
+            {
+                return false;
+            }
+
             // Initialize if not already done.
             await InitializeAsync();
-
-            if (_solutionManager.Value.IsSolutionFullyLoaded)
-            {
-                // start background runner if not yet started
-                // ignore the value
-                var ignore = _backgroundJobRunner.Value;
-            }
 
             var pendingRestore = _pendingRestore;
 
             // on-board request onto pending restore operation
             _pendingRequests.Value.TryAdd(request);
 
-            using (_joinableCollection.Join())
+            try
             {
-                return await (Task<bool>)pendingRestore;
+                using (_joinableCollection.Join())
+                {
+                    // Await completion of the requested restore operation or
+                    // preliminary termination of the job runner.
+                    // The caller will be unblocked immediately upon
+                    // cancellation request via provided token.
+                    return await await Task
+                        .WhenAny(
+                            pendingRestore.Task,
+                            _backgroundJobRunner.GetValueAsync())
+                        .WithCancellation(token);
+                }
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                return false;
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e.ToString());
+                return false;
             }
         }
 
-        public bool Restore(SolutionRestoreRequest request)
+        public async Task<bool> RestoreAsync(SolutionRestoreRequest request, CancellationToken token)
         {
-            return _joinableFactory.Run(
-                async () =>
+            using (_joinableCollection.Join())
+            {
+                // Initialize if not already done.
+                await InitializeAsync();
+
+                using (var restoreOperation = new BackgroundRestoreOperation())
                 {
-                    // Initialize if not already done.
-                    await InitializeAsync();
-                    using (var restoreOperation = new BackgroundRestoreOperation())
-                    {
-                        await PromoteTaskToActiveAsync(restoreOperation, _workerCts.Token);
+                    await PromoteTaskToActiveAsync(restoreOperation, token);
 
-                        var result = await ProcessRestoreRequestAsync(restoreOperation, request, _workerCts.Token);
+                    var result = await ProcessRestoreRequestAsync(restoreOperation, request, token);
 
-                        return result;
-                    }
-                },
-                JoinableTaskCreationOptions.LongRunning);
+                    return result;
+                }
+            }
         }
 
-        public void CleanCache()
+        public async Task CleanCacheAsync()
         {
+            // get all build integrated based nuget projects and delete the cache file.
+            await Task.WhenAll(
+                (await SolutionManager.GetNuGetProjectsAsync()).OfType<BuildIntegratedNuGetProject>().Select(async e =>
+                    Common.FileUtility.Delete(await e.GetCacheFilePathAsync())));
+
             Interlocked.Exchange(ref _restoreJobContext, new SolutionRestoreJobContext());
         }
 
-        private async Task StartBackgroundJobRunnerAsync(CancellationToken token)
+        private async Task<bool> StartBackgroundJobRunnerAsync(CancellationToken token)
         {
             // Hops onto a background pool thread
             await TaskScheduler.Default;
+
+            // Waits until the solution is fully loaded or canceled
+            await _solutionLoadedEvent.WaitAsync().WithCancellation(token);
 
             // Loops forever until it's get cancelled
             while (!token.IsCancellationRequested)
@@ -263,14 +344,51 @@ namespace NuGet.SolutionRestoreManager
 
                         token.ThrowIfCancellationRequested();
 
+                        var retries = 0;
+
                         // Drains the queue
                         while (!_pendingRequests.Value.IsCompleted
                             && !token.IsCancellationRequested)
                         {
-                            SolutionRestoreRequest discard;
-                            if (!_pendingRequests.Value.TryTake(out discard, IdleTimeoutMs, token))
+                            SolutionRestoreRequest next;
+
+                            // check if there are pending nominations
+                            var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
+
+                            if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token))
                             {
+                                if (isAllProjectsNominated)
+                                {
+                                    // if we've got all the nominations then continue with the auto restore
+                                    break;
+                                }
+                            }
+
+                            // Upgrade request if necessary
+                            if (next != null && next.RestoreSource != request.RestoreSource)
+                            {
+                                // there could be requests of two types: Auto-Restore or Explicit
+                                // Explicit is always preferred.
+                                request = new SolutionRestoreRequest(
+                                    next.ForceRestore || request.ForceRestore,
+                                    RestoreOperationSource.Explicit);
+
+                                // we don't want to delay explicit solution restore request so just break at this time.
                                 break;
+                            }
+
+                            if (!isAllProjectsNominated)
+                            {
+                                if (retries >= DelayAutoRestoreRetries)
+                                {
+                                    // we're still missing some nominations but don't delay it indefinitely and let auto restore fail.
+                                    // we wait until 20 secs for all the projects to be nominated at solution load.
+                                    break;
+                                }
+
+                                // if we're still expecting some nominations and also haven't reached our max timeout
+                                // then increase the retries count.
+                                retries++;
                             }
                         }
 
@@ -295,11 +413,14 @@ namespace NuGet.SolutionRestoreManager
                     catch (Exception e)
                     {
                         // Writes stack to activity log
-                        _logger.Value.LogError(e.ToString());
+                        Logger.LogError(e.ToString());
                         // Do not die just yet
                     }
                 }
             }
+
+            // returns false on preliminary exit (cancellation)
+            return false;
         }
 
         private async Task<bool> ProcessRestoreRequestAsync(
@@ -321,9 +442,9 @@ namespace NuGet.SolutionRestoreManager
 
         private async Task PromoteTaskToActiveAsync(BackgroundRestoreOperation restoreOperation, CancellationToken token)
         {
-            var pendingTask = (Task<bool>)restoreOperation;
+            var pendingTask = restoreOperation.Task;
 
-            int attempt = 0;
+            var attempt = 0;
             for (var retry = true;
                 retry && !token.IsCancellationRequested && attempt != PromoteAttemptsLimit;
                 attempt++)
@@ -356,29 +477,39 @@ namespace NuGet.SolutionRestoreManager
             await TaskScheduler.Default;
 
             using (var jobCts = CancellationTokenSource.CreateLinkedTokenSource(token))
-            using (var lck = await _lockService.Value.AcquireLockAsync(jobCts.Token))
             {
-                var componentModel = await _componentModel.GetValueAsync(jobCts.Token);
+                return await _lockService.Value.ExecuteNuGetOperationAsync(async () =>
+                {
+                    var componentModel = await _componentModel.GetValueAsync(jobCts.Token);
 
-                var logger = componentModel.GetService<RestoreOperationLogger>();
-                await logger.StartAsync(
-                    request.RestoreSource,
-                    ErrorListProvider,
-                    jobCts);
+                    using (var logger = componentModel.GetService<RestoreOperationLogger>())
+                    {
+                        try
+                        {
+                            // Start logging
+                            await logger.StartAsync(
+                                request.RestoreSource,
+                                _errorListTableDataSource,
+                                _joinableFactory,
+                                jobCts);
 
-                var job = componentModel.GetService<ISolutionRestoreJob>();
-                return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+                            // Run restore
+                            var job = componentModel.GetService<ISolutionRestoreJob>();
+                            return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+                        }
+                        finally
+                        {
+                            // Complete all logging
+                            await logger.StopAsync();
+                        }
+                    }
+                }, jobCts.Token);
             }
         }
 
         public override int OnAfterBackgroundSolutionLoadComplete()
         {
-            if (_pendingRequests.IsValueCreated)
-            {
-                // ensure background runner has started
-                // ignore the value
-                var ignore = _backgroundJobRunner.Value;
-            }
+            _solutionLoadedEvent.Set();
 
             return VSConstants.S_OK;
         }
@@ -390,12 +521,11 @@ namespace NuGet.SolutionRestoreManager
 
             private TaskCompletionSource<bool> JobTcs { get; } = new TaskCompletionSource<bool>();
 
-            private Task<bool> Task => JobTcs.Task;
+            public Task<bool> Task => JobTcs.Task;
 
             public System.Runtime.CompilerServices.TaskAwaiter<bool> GetAwaiter() => Task.GetAwaiter();
 
-            public static explicit operator Task<bool>(BackgroundRestoreOperation restoreOperation) => restoreOperation.Task;
-
+            [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD002", Justification = "NuGet/Home#4833 Baseline")]
             public void ContinuationAction(Task<bool> targetTask)
             {
                 // propagate the restore target task status to the *unbound* active task.

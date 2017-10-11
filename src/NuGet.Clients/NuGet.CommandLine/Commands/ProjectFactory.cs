@@ -22,7 +22,6 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using PathUtility = NuGet.Commands.PathUtility;
 using XElementExtensions = NuGet.Packaging.XElementExtensions;
 
 namespace NuGet.CommandLine
@@ -84,12 +83,20 @@ namespace NuGet.CommandLine
 
             // Create project, allowing for assembly load failures
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
-            var project = Activator.CreateInstance(
-                _projectType,
-                path,
-                projectProperties,
-                null);
-            Initialize(project);
+
+            try
+            {
+                var project = Activator.CreateInstance(
+                    _projectType,
+                    path,
+                    projectProperties,
+                    null);
+                Initialize(project);
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(AssemblyResolve);
+            }
         }
 
         public ProjectFactory(string msbuildDirectory, dynamic project)
@@ -338,7 +345,7 @@ namespace NuGet.CommandLine
                 _properties.Add("Id", metadata.Id);
             }
 
-            _properties.Add("Version", metadata.Version.ToString());
+            _properties.Add("Version", metadata.Version.ToFullString());
 
             if (!String.IsNullOrEmpty(metadata.Title))
             {

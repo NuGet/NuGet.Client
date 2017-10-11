@@ -513,6 +513,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+
         [Fact]
         public async Task UpdateCommand_Success_Prerelease()
         {
@@ -592,6 +593,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0-BETA", "lib", "net45", "file.dll"))));
             }
         }
+
 
         [Fact]
         public async Task UpdateCommand_Success_Version_Upgrade()
@@ -935,6 +937,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+
         [Fact]
         public async Task UpdateCommand_Success_ContentFiles()
         {
@@ -1048,6 +1051,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+
         [Fact]
         public async Task UpdateCommand_Success_CustomPackagesFolder_RelativePath()
         {
@@ -1139,6 +1143,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(content1.Contains(Util.GetHintPath(Path.Combine("custom-pcks", "A.2.0.0", "lib", "net45", "file.dll"))));
             }
         }
+
 
 
         [Fact]
@@ -1233,6 +1238,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(content1.Contains(Util.GetHintPath(a2Path)));
             }
         }
+
 
         [Fact]
         public async Task UpdateCommand_Native_JS_Projects_Success()

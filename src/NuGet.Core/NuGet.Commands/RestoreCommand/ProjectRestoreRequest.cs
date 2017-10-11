@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
@@ -20,10 +20,11 @@ namespace NuGet.Commands
             PackageSpec packageSpec,
             LockFile existingLockFile,
             Dictionary<NuGetFramework, RuntimeGraph> runtimeGraphCache,
-            ConcurrentDictionary<PackageIdentity, RuntimeGraph> runtimeGraphCacheByPackage)
+            ConcurrentDictionary<PackageIdentity, RuntimeGraph> runtimeGraphCacheByPackage,
+            RestoreCollectorLogger log)
         {
             CacheContext = request.CacheContext;
-            Log = request.Log;
+            Log = log;
             PackagesDirectory = request.PackagesDirectory;
             ExistingLockFile = existingLockFile;
             RuntimeGraphCache = runtimeGraphCache;
@@ -35,7 +36,7 @@ namespace NuGet.Commands
         }
 
         public SourceCacheContext CacheContext { get; }
-        public ILogger Log { get; }
+        public RestoreCollectorLogger Log { get; }
         public string PackagesDirectory { get; }
         public int MaxDegreeOfConcurrency { get; }
         public LockFile ExistingLockFile { get; }

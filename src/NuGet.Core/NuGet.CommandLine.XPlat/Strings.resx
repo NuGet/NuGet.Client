@@ -279,7 +279,7 @@
     <value>Determines if the output files of the project should be in the tool folder.</value>
   </data>
   <data name="Restore_Switch_IgnoreFailedSource_Description" xml:space="preserve">
-    <value>Only warning failed sources if there are packages meeting version requirement</value>
+    <value>Only warn about failed sources if there are packages meeting version requirement.</value>
   </data>
   <data name="Exclude_Description" xml:space="preserve">
     <value>Specifies one or more wildcard patterns to exclude when creating a package.</value>
@@ -292,6 +292,8 @@
   </data>
   <data name="OutputNuGetVersion" xml:space="preserve">
     <value>{0} Version: {1}</value>
+    <comment>{0}: App full name
+{1}: App version</comment>
   </data>
   <data name="Serviceable_Description" xml:space="preserve">
     <value>Sets the nuspec serviceable element to true.</value>
@@ -410,7 +412,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Error while performing {0} for package '{1}'. Cannot edit items in imported files - {2}{3}</value>
     <comment>{0} - Operation Name
 {1} - packageId
-{2} - New line
+{2} - New line (this is just to hold a new line between sentences. does not need any translation)
 {3} - Error string</comment>
   </data>
   <data name="Info_AddPkgAdded" xml:space="preserve">
@@ -455,5 +457,15 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Unable to {0} package. Missing or Invalid project file '{1}'.</value>
     <comment>{0} - Operation Name
 {1} - project file path</comment>
+  </data>
+  <data name="Error_NoMatchingSpecs" xml:space="preserve">
+    <value>No matching package specs found when attempting to add package '{0}' to project '{1}'.</value>
+    <comment>{0} - Package ID
+{1} - Project path</comment>
+  </data>
+  <data name="Error_UnsupportedProject" xml:space="preserve">
+    <value>Error while adding package '{0}' to project '{1}'. The project does not support adding package references through the add package command.</value>
+    <comment>{0} - Package Id
+{1} - Project path</comment>
   </data>
 </root>

@@ -5,7 +5,13 @@ Build and run unit-tests and functional tests.
 .PARAMETER Configuration
 Build configuration (debug by default)
 
-.PARAMETER SkipXProj
+.PARAMETER ReleaseLabel
+Release label to use for package and assemblies versioning (zlocal by default)
+
+.PARAMETER BuildNumber
+Build number to use for package and assemblies versioning (auto-generated if not provided)
+
+.PARAMETER SkipCore
 Skips running NuGet.Core.Tests and NuGet.Core.FuncTests
 
 .PARAMETER SkipVS14
@@ -13,12 +19,6 @@ Skips running NuGet.Clients.Tests and NuGet.Clients.FuncTests with VS14 toolset
 
 .PARAMETER SkipVS15
 Skips running NuGet.Clients.Tests and NuGet.Clients.FuncTests with VS15 toolset
-
-.PARAMETER SkipUnitTests
-Skips running NuGet.Core.Tests and NuGet.Clients.Tests
-
-.PARAMETER SkipFuncTests
-Skips running NuGet.Core.FuncTests and NuGet.Clients.FuncTests
 
 .PARAMETER CI
 Indicates the build script is invoked from CI
@@ -40,19 +40,22 @@ Running core unit tests only
 #>
 [CmdletBinding()]
 param (
-    [ValidateSet("debug", "release")]
+    [ValidateSet('debug', 'release')]
     [Alias('c')]
     [string]$Configuration,
-    [Alias('sx')]
-    [switch]$SkipXProj,
+    [ValidatePattern('^(beta|final|preview|rc|release|rtm|xprivate|zlocal)([0-9]*)$')]
+    [Alias('l')]
+    [string]$ReleaseLabel = 'zlocal',
+    [Alias('n')]
+    [int]$BuildNumber,
+    [Alias('sb')]
+    [switch]$SkipBuild,
+    [Alias('sc')]
+    [switch]$SkipCore,
     [Alias('s14')]
     [switch]$SkipVS14,
     [Alias('s15')]
     [switch]$SkipVS15,
-    [Alias('sut')]
-    [switch]$SkipUnitTests,
-    [Alias('sft')]
-    [switch]$SkipFuncTests,
     [switch]$CI
 )
 
@@ -72,6 +75,10 @@ $startTime = [DateTime]::UtcNow
 if (-not $BuildNumber) {
     $BuildNumber = Get-BuildNumber
 }
+
+Invoke-BuildStep 'Installing .NET CLI for tests' {
+        Install-DotnetCLI -Force:$Force
+    } -ev +BuildErrors
 
 Trace-Log "Test suite run #$BuildNumber started at $startTime"
 
@@ -96,55 +103,31 @@ Invoke-BuildStep 'Cleaning package cache' {
     -skip:(-not $CI) `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Running NuGet.Core unit-tests' {
-        Test-CoreProjects $Configuration
-    } `
-    -skip:($SkipXProj -or $SkipUnitTests) `
-    -ev +BuildErrors
+Invoke-BuildStep 'Running /t:RestoreVS15' {
 
-Invoke-BuildStep 'Running NuGet.Core functional tests' {
-        Test-FuncCoreProjects $Configuration
-    } `
-    -skip:($SkipXProj -or $SkipFuncTests) `
-    -ev +BuildErrors
+    & $MSBuildExe build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
 
-Invoke-BuildStep 'Building NuGet.Clients projects - VS14 Toolset' {
-        Build-ClientsProjects $Configuration $DefaultReleaseLabel $BuildNumber -ToolsetVersion 14
-    } `
-    -skip:$SkipVS14 `
-    -ev +BuildErrors
+    if (-not $?)
+    {
+        Write-Error "Restore failed!"
+        exit 1
+    }
+} `
+-ev +BuildErrors
 
-Invoke-BuildStep 'Running NuGet.Clients unit-tests - VS14 Toolset' {
-        Test-ClientsProjects $Configuration -ToolsetVersion 14 -CI:$CI
-    } `
-    -skip:($SkipVS14 -or $SkipUnitTests) `
-    -ev +BuildErrors
 
-Invoke-BuildStep 'Running NuGet.Clients functional tests - VS14 Toolset' {
-        Test-FuncClientsProjects $Configuration -ToolsetVersion 14 -CI:$CI
-    } `
-    -skip:($SkipVS14 -or $SkipFuncTests) `
-    -ev +BuildErrors
 
-Invoke-BuildStep 'Building NuGet.Clients projects - VS15 Toolset' {
-        Build-ClientsProjects $Configuration $DefaultReleaseLabel $BuildNumber -ToolsetVersion 15
-    } `
-    -skip:$SkipVS15 `
-    -ev +BuildErrors
+Invoke-BuildStep 'Running /t:CoreFuncTests' {
 
-Invoke-BuildStep 'Running NuGet.Clients tests - VS15 Toolset' {
-        # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
-        Test-ClientsProjects $Configuration -ToolsetVersion 15 -SkipProjects 'NuGet.CommandLine.Test' -CI:$CI
-    } `
-    -skip:($SkipVS15 -or $SkipUnitTests) `
-    -ev +BuildErrors
+    & $MSBuildExe build\build.proj /t:CoreFuncTests /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
 
-Invoke-BuildStep 'Running NuGet.Clients functional tests - VS15 Toolset' {
-        # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
-        Test-FuncClientsProjects $Configuration -ToolsetVersion 15 -SkipProjects 'NuGet.CommandLine.FuncTest' -CI:$CI
-    } `
-    -skip:($SkipVS15 -or $SkipFuncTests) `
-    -ev +BuildErrors
+    if (-not $?)
+    {
+        Write-Error "CoreFuncTests failed!"
+        exit 1
+    }
+} `
+-ev +BuildErrors
 
 Invoke-BuildStep 'Cleaning package cache' {
         Clear-PackageCache

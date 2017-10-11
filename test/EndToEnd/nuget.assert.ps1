@@ -117,6 +117,28 @@ function Assert-ProjectJsonLockFilePackage {
     Assert-True $found "Package $Id $Version was not found in the lock file for $($Project.Name)"    
 }
 
+function Assert-ProjectCacheFileExists {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+
+    $cacheFile = Get-ProjectCacheFilePath $Project
+
+    Assert-PathExists $cacheFile
+}
+
+function Assert-ProjectCacheFileNotExists {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+
+    $cacheFile = Get-ProjectCacheFilePath $Project
+
+    Assert-PathNotExists $cacheFile
+}
+
 function Assert-ProjectJsonLockFilePackageNotFound {
     param(
         [parameter(Mandatory = $true)]
@@ -294,6 +316,55 @@ function Set-ProjectJsonLockFile {
 
     return $lockFileFormat.Write($projectJsonLockFilePath, $LockFile)
 }
+
+function Get-ProjectToolsCacheFilePath {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+    $node = Get-ToolsReference $Project.FullName
+
+    $includeValue = $node.Attributes['Include'].Value
+    $versionValue = $node.Attributes['Version'].Value
+
+    return "$($home)\.nuget\packages\.tools\$($includeValue)\$($versionValue)\netcoreapp2.0\$($includeValue).nuget.cache"      
+}
+
+function Get-ToolsReference {
+    param(
+        [parameter(Mandatory = $true)]
+        $projectPath
+    )
+    $doc = [xml](Get-Content $projectPath)
+    $ns = New-Object System.Xml.XmlNamespaceManager($doc.NameTable)
+    $ns.AddNamespace("ns", $doc.DocumentElement.NamespaceURI)
+    $node = $doc.SelectSingleNode("//ns:DotNetCliToolReference",$ns)
+    return $node
+}
+
+
+function Get-CacheFilePathFromProjectPath {
+        param(
+        [parameter(Mandatory = $true)]
+        $ProjectPath
+        )
+        
+    $projectCacheFilePath = Join-Path (Split-Path -parent $ProjectPath) (Join-Path "obj" "$(Split-Path -Leaf $ProjectPath).nuget.cache")
+
+    Write-Host "Evaluated cache file path:" $projectCacheFilePath
+
+    return $projectCacheFilePath
+}
+
+function Get-ProjectCacheFilePath {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+        return CacheFilePathFromProjectPath $Project.FullName
+}
+
+
 
 function Get-ProjectJsonLockFilePath {
     param(
@@ -617,6 +688,205 @@ function Assert-NoProjectImport {
             Assert-Fail "Project $($project.Name) does contain the import file `'$importFile`'"
         }
     }
+}
+
+function Get-NetCoreLockFilePath {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+    
+    $dir = Split-Path -parent $Project.FullName
+
+    $netCoreLockFilePath = Join-Path $dir (Join-Path "obj" "project.assets.json")
+
+    return $netCoreLockFilePath
+}
+
+function Get-NetCoreLockFile {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+    
+    $NetCoreLockFilePath = Get-NetCoreLockFilePath $project
+
+    Assert-PathExists $NetCoreLockFilePath "project.assets.json file does not exist"
+
+    $lockFileFormat = New-Object 'NuGet.ProjectModel.LockFileFormat'
+
+    return $lockFileFormat.Read($NetCoreLockFilePath)
+}
+
+function Get-NetCorePackageInLockFile {
+    param(
+        [parameter(Mandatory = $true)]
+        $lockFile,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [string]$Version   
+    )
+
+    $found = $false
+
+    foreach ($library in $lockFile.libraries) {
+        
+        if ($library.Name.ToUpperInvariant().Equals($Id.ToUpperInvariant()))
+        {
+            Write-Host $library.Name.ToUpperInvariant()
+            if ($Version)
+            {
+                if ($library.Version.Equals([NuGet.Versioning.NuGetVersion]::Parse($Version)))
+                {
+                    $found = $true
+                }
+            }
+            else
+            {
+                $found = $true
+            }
+        }
+    }
+}
+
+function Assert-NetCoreProjectCreation {
+    param(
+        [parameter(Mandatory = $true)]
+        $project
+        
+    )
+    Assert-PathExists ($project.FullName) "The project file $($project.FullName) not found."
+}
+
+function Assert-NetCorePackageInstall {
+    param(
+        [parameter(Mandatory = $true)]
+        $project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [parameter(Mandatory = $true)]
+        [string]$Version        
+    )
+
+    Assert-NetCorePackageReference $project $id $Version
+    Assert-NetCorePackageInLockFile $project $id $Version
+}
+
+function Assert-NetCorePackageUninstall {
+    param(
+        [parameter(Mandatory = $true)]
+        $project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [string]$Version        
+    )
+
+    Assert-NetCoreNoPackageReference $project $Id
+    Assert-NetCorePackageNotInLockFile $project $id
+}
+
+function Assert-NetCorePackageReference {
+    param(
+        [parameter(Mandatory = $true)]
+        $project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [parameter(Mandatory = $true)]
+        [string]$Version        
+    )
+
+    $doc = [xml](Get-Content $project.FullName)
+    $references = $doc.SelectNodes("./Project/ItemGroup/PackageReference[@Include = '$id' and @Version = '$Version']")
+    if($references.Count -eq 0)
+    {
+        Assert-True ($doc.SelectNodes(".//*[name()='PackageReference'][@Include=$Id]").Version -eq $Version) 
+        "Project $($project.FullName) does not contain a reference to Package $($Id) $($Version) with version as element or attribute"
+    }
+    else
+    {
+        Assert-True ($references.Count -eq 1) "Project $($project.FullName) does not contain a reference to Package $($Id) $($Version)"
+    }
+}
+
+function Assert-NetCoreProjectReference {
+    param(
+        [parameter(Mandatory = $true)]
+        $projectA,
+        [parameter(Mandatory = $true)]
+        $projectB      
+    )
+
+    $doc = [xml](Get-Content $projectA.FullName)
+    $references = $doc.SelectNodes("./Project/ItemGroup/ProjectReference[contains(@Include, $projectB.Name)]")
+    
+    Assert-True ($references.Count -eq 1) "Project $($projectA.FullName) does not contain a reference to Project $($projectB.FullName)"
+}
+
+function Assert-NetCoreNoPackageReference {
+    param(
+        [parameter(Mandatory = $true)]
+        $project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [string]$Version 
+    )
+
+    $doc = [xml](Get-Content $project.FullName)
+
+    if($version){
+        $references = $doc.SelectNodes("./Project/ItemGroup/PackageReference[@Include = '$id' and @Version = '$Version']")
+        Assert-True ($references.Count -eq 0) "Project $($project.FullName) contains a reference to Package $($Id) $($Version)"
+    }
+    else {
+        $references = $doc.SelectNodes("./Project/ItemGroup/PackageReference[@Include = '$id']")
+        Assert-True ($references.Count -eq 0) "Project $($project.FullName) contains a reference to Package $($Id)"
+    }
+}
+
+
+function Assert-NetCorePackageInLockFile {
+    param(
+        [parameter(Mandatory = $true)]
+        $project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [parameter(Mandatory = $true)]
+        [string]$Version        
+    )
+
+    $lockFile = Get-NetCoreLockFile $project
+    Assert-NetCoreLockFileLocked $lockFile
+
+    $found = Get-NetCorePackageInLockFile $project $id $Version
+
+    Assert-True $found "Project $($project.FullName) lock file $($lockFile.FullName) does not contain reference for Package $($Id) $($Version)"    
+}
+
+function Assert-NetCorePackageNotInLockFile {
+    param(
+        [parameter(Mandatory = $true)]
+        $project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [string]$Version        
+    )
+
+    $lockFile = Get-NetCoreLockFile $project
+    Assert-NetCoreLockFileLocked $lockFile
+
+    $found = Get-NetCorePackageInLockFile $project $id $Version
+
+    Assert-False $found "Project $($project.FullName) lock file $($lockFile.FullName) contains reference for Package $($Id) $($Version)"    
+}
+
+
+function Assert-NetCoreLockFileLocked{
+    param(
+        [parameter(Mandatory = $true)]
+        $lockFile
+    )
+    
+    Assert-True $lockFile.IsLocked "Project $($project.FullName) lock file $($lockFile.FullName) not locked"
 }
 
 function Get-PackagesDir {

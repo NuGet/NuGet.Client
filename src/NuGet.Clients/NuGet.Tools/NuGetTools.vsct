@@ -231,6 +231,13 @@
     <GuidSymbol name="guidNuGetDebugConsoleCmdSet" value="{DDC61543-6CA7-4A6F-A5B7-984BE723C52F}">
       <IDSymbol name="cmdidDebugConsole" value="0x0900" />
     </GuidSymbol>
+    <GuidSymbol name="PackageIconMonikers" value="{8F5EAE8F-9892-4CE2-826C-764BEDE6D2EC}">
+      <IDSymbol name="PrefixReservedIndicator" value="1" />
+      <IDSymbol name="UpdateAvailableIndicator" value="2" />
+      <IDSymbol name="UninstallIndicator" value="3" />
+      <IDSymbol name="DownloadIndicator" value="4" />
+      <IDSymbol name="InstalledIndicator" value="5" />
+    </GuidSymbol>
   </Symbols>
 
 </CommandTable>

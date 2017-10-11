@@ -9,15 +9,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.Win32;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -32,12 +31,11 @@ namespace NuGet.VisualStudio
     internal class PreinstalledPackageInstaller
     {
         private const string RegistryKeyRoot = @"SOFTWARE\NuGet\Repository";
-        //private readonly IVsWebsiteHandler _websiteHandler;
         private readonly IVsPackageInstallerServices _packageServices;
-        //private readonly IVsCommonOperations _vsCommonOperations;
         private readonly IVsSolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly VsPackageInstaller _installer;
+        private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
 
         public Action<string> InfoHandler { get; set; }
 
@@ -46,13 +44,13 @@ namespace NuGet.VisualStudio
             IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
             ISourceRepositoryProvider sourceProvider,
-            VsPackageInstaller installer)
+            VsPackageInstaller installer,
+            IVsProjectAdapterProvider vsProjectAdapterProvider)
         {
-            //_websiteHandler = websiteHandler;
             _packageServices = packageServices;
-            //_vsCommonOperations = vsCommonOperations;
             _solutionManager = solutionManager;
             _sourceProvider = sourceProvider;
+            _vsProjectAdapterProvider = vsProjectAdapterProvider;
             _installer = installer;
         }
 
@@ -160,7 +158,7 @@ namespace NuGet.VisualStudio
         /// </param>
         internal async Task PerformPackageInstallAsync(
             IVsPackageInstaller packageInstaller,
-            Project project,
+            EnvDTE.Project project,
             PreinstalledPackageConfiguration configuration,
             Action<string> warningHandler,
             Action<string> errorHandler)
@@ -270,7 +268,7 @@ namespace NuGet.VisualStudio
                 }
 
                 // RepositorySettings = null in unit tests
-                if (EnvDTEProjectUtility.IsWebSite(project))
+                if (EnvDTEProjectInfoUtility.IsWebSite(project))
                 {
                     CreateRefreshFilesInBin(
                         project,
@@ -293,7 +291,7 @@ namespace NuGet.VisualStudio
         /// <param name="project">The target Website project.</param>
         /// <param name="repositoryPath">The local repository path.</param>
         /// <param name="packageInfos">The packages that were installed.</param>
-        private void CreateRefreshFilesInBin(Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
+        private void CreateRefreshFilesInBin(EnvDTE.Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
         {
             IEnumerable<PackageIdentity> packageNames = packageInfos.Select(pi => new PackageIdentity(pi.Id, pi.Version));
             AddRefreshFilesForReferences(project, repositoryPath, packageNames);
@@ -306,7 +304,7 @@ namespace NuGet.VisualStudio
         /// <param name="project">The project.</param>
         /// <param name="repositoryPath">The file system pointing to 'packages' folder under the solution.</param>
         /// <param name="packageNames">The package names.</param>
-        private void AddRefreshFilesForReferences(Project project, string repositoryPath, IEnumerable<PackageIdentity> packageNames)
+        private void AddRefreshFilesForReferences(EnvDTE.Project project, string repositoryPath, IEnumerable<PackageIdentity> packageNames)
         {
             if (project == null)
             {
@@ -324,7 +322,7 @@ namespace NuGet.VisualStudio
             }
 
             VSAPIProjectContext context = new VSAPIProjectContext(skipAssemblyReferences: true, bindingRedirectsDisabled: true);
-            WebSiteProjectSystem projectSystem = new WebSiteProjectSystem(project, context);
+            WebSiteProjectSystem projectSystem = new WebSiteProjectSystem(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(project), context);
 
             foreach (var packageName in packageNames)
             {
@@ -365,21 +363,21 @@ namespace NuGet.VisualStudio
         /// <param name="project">The target Website project.</param>
         /// <param name="repositoryPath">The local repository path.</param>
         /// <param name="packageInfos">The packages that were installed.</param>
-        private void CopyNativeBinariesToBin(Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
+        private void CopyNativeBinariesToBin(EnvDTE.Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
         {
-            VSAPIProjectContext context = new VSAPIProjectContext();
-            VSMSBuildNuGetProjectSystem projectSystem = new VSMSBuildNuGetProjectSystem(project, context);
+            var context = new VSAPIProjectContext();
+            var projectSystem = new VsMSBuildProjectSystem(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(project), context);
 
             foreach (var packageInfo in packageInfos)
             {
-                string packagePath = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageInfo.Id, packageInfo.Version);
+                var packagePath = string.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageInfo.Id, packageInfo.Version);
 
                 CopyNativeBinaries(projectSystem, repositoryPath,
                     Path.Combine(repositoryPath, packagePath));
             }
         }
 
-        private void CopyNativeBinaries(VSMSBuildNuGetProjectSystem projectSystem, string repositoryPath, string packagePath)
+        private void CopyNativeBinaries(VsMSBuildProjectSystem projectSystem, string repositoryPath, string packagePath)
         {
             const string nativeBinariesFolder = "NativeBinaries";
             const string binFolder = "bin";

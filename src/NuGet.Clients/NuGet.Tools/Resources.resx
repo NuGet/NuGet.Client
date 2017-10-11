@@ -198,4 +198,7 @@
   <data name="Finished" xml:space="preserve">
     <value>========== Finished ==========</value>
   </data>
+  <data name="DTE_ProjectUnsupported" xml:space="preserve">
+    <value>The project '{0}' is unsupported</value>
+  </data>
 </root>

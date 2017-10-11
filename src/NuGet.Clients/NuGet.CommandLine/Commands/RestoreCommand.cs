@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -47,6 +47,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "RestoreCommandRecursive")]
         public bool Recursive { get; set; }
 
+        [Option(typeof(NuGetCommand), "ForceRestoreCommand")]
+        public bool Force { get; set; }
+
         [ImportingConstructor]
         public RestoreCommand()
         {
@@ -68,11 +71,6 @@ namespace NuGet.CommandLine
 
             _msbuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console);
 
-            if (!string.IsNullOrEmpty(PackagesDirectory))
-            {
-                PackagesDirectory = Path.GetFullPath(PackagesDirectory);
-            }
-
             if (!string.IsNullOrEmpty(SolutionDirectory))
             {
                 SolutionDirectory = Path.GetFullPath(SolutionDirectory);
@@ -81,8 +79,8 @@ namespace NuGet.CommandLine
             var restoreInputs = await DetermineRestoreInputsAsync();
 
             var hasPackagesConfigFiles = restoreInputs.PackagesConfigFiles.Count > 0;
-            var hasProjectJsonFiles = restoreInputs.RestoreV3Context.Inputs.Any();
-            if (!hasPackagesConfigFiles && !hasProjectJsonFiles)
+            var hasProjectJsonOrPackageReferences = restoreInputs.RestoreV3Context.Inputs.Any();
+            if (!hasPackagesConfigFiles && !hasProjectJsonOrPackageReferences)
             {
                 Console.LogMinimal(LocalizedResourceManager.GetString(restoreInputs.RestoringWithSolutionFile
                         ? "SolutionRestoreCommandNoPackagesConfigOrProjectJson"
@@ -97,8 +95,8 @@ namespace NuGet.CommandLine
                 restoreSummaries.Add(v2RestoreResult);
             }
 
-            // project.json
-            if (hasProjectJsonFiles)
+            // project.json and PackageReference
+            if (hasProjectJsonOrPackageReferences)
             {
                 // Read the settings outside of parallel loops.
                 ReadSettings(restoreInputs);
@@ -117,9 +115,9 @@ namespace NuGet.CommandLine
                     // Add restore args to the restore context
                     restoreContext.CacheContext = cacheContext;
                     restoreContext.DisableParallel = DisableParallelProcessing;
+                    restoreContext.AllowNoOp = !Force; // if force, no-op is not allowed
                     restoreContext.ConfigFile = ConfigFile;
                     restoreContext.MachineWideSettings = MachineWideSettings;
-                    restoreContext.Sources = Source.ToList();
                     restoreContext.Log = Console;
                     restoreContext.CachingSourceProvider = GetSourceRepositoryProvider();
 
@@ -128,14 +126,6 @@ namespace NuGet.CommandLine
                     {
                         restoreContext.PackageSaveMode = EffectivePackageSaveMode;
                     }
-
-                    // Override packages folder
-                    var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
-                    restoreContext.GlobalPackagesFolder = GetEffectiveGlobalPackagesFolder(
-                                        PackagesDirectory,
-                                        SolutionDirectory,
-                                        restoreInputs,
-                                        globalPackagesFolder);
 
                     // Providers
                     // Use the settings loaded above in ReadSettings(restoreInputs)
@@ -146,8 +136,7 @@ namespace NuGet.CommandLine
 
                         restoreContext.PreLoadedRequestProviders.Add(new DependencyGraphSpecRequestProvider(
                             providerCache,
-                            restoreInputs.ProjectReferenceLookup,
-                            Settings));
+                            restoreInputs.ProjectReferenceLookup));
                     }
                     else
                     {
@@ -156,56 +145,18 @@ namespace NuGet.CommandLine
                     }
 
                     // Run restore
-                    var v3Summaries = await RestoreRunner.Run(restoreContext);
+                    var v3Summaries = await RestoreRunner.RunAsync(restoreContext);
                     restoreSummaries.AddRange(v3Summaries);
                 }
             }
 
             // Summaries
-            RestoreSummary.Log(Console, restoreSummaries);
+            RestoreSummary.Log(Console, restoreSummaries, logErrors: true);
 
             if (restoreSummaries.Any(x => !x.Success))
             {
                 throw new ExitCodeException(exitCode: 1);
             }
-        }
-
-        private static string GetEffectiveGlobalPackagesFolder(
-            string packagesDirectoryParameter,
-            string solutionDirectoryParameter,
-            PackageRestoreInputs packageRestoreInputs,
-            string globalPackagesFolder)
-        {
-            // Return the -PackagesDirectory parameter if specified
-            if (!string.IsNullOrEmpty(packagesDirectoryParameter))
-            {
-                return packagesDirectoryParameter;
-            }
-
-            // Return the globalPackagesFolder as-is if it is a full path
-            if (Path.IsPathRooted(globalPackagesFolder))
-            {
-                return globalPackagesFolder;
-            }
-            else if (!string.IsNullOrEmpty(solutionDirectoryParameter)
-                || packageRestoreInputs.RestoringWithSolutionFile)
-            {
-                var solutionDirectory = packageRestoreInputs.RestoringWithSolutionFile ?
-                    packageRestoreInputs.DirectoryOfSolutionFile :
-                    solutionDirectoryParameter;
-
-                // -PackagesDirectory parameter was not provided and globalPackagesFolder is a relative path.
-                // Use the solutionDirectory to construct the full path
-                return Path.Combine(solutionDirectory, globalPackagesFolder);
-            }
-
-            // -PackagesDirectory parameter was not provided and globalPackagesFolder is a relative path.
-            // solution directory is not available either. Throw
-            var message = string.Format(
-                CultureInfo.CurrentCulture,
-                LocalizedResourceManager.GetString("RestoreCommandCannotDetermineGlobalPackagesFolder"));
-
-            throw new CommandLineException(message);
         }
 
         private static CachingSourceProvider _sourceProvider;
@@ -220,13 +171,23 @@ namespace NuGet.CommandLine
             return _sourceProvider;
         }
 
-        private void ReadSettings(PackageRestoreInputs packageRestoreInputs)
+        private bool IsSolutionRestore(PackageRestoreInputs packageRestoreInputs)
         {
-            if (!string.IsNullOrEmpty(SolutionDirectory) || packageRestoreInputs.RestoringWithSolutionFile)
-            {
-                var solutionDirectory = packageRestoreInputs.RestoringWithSolutionFile ?
+            return !string.IsNullOrEmpty(SolutionDirectory) || packageRestoreInputs.RestoringWithSolutionFile;
+        }
+
+        private string GetSolutionDirectory(PackageRestoreInputs packageRestoreInputs)
+        {
+            return packageRestoreInputs.RestoringWithSolutionFile ?
                     packageRestoreInputs.DirectoryOfSolutionFile :
                     SolutionDirectory;
+        }
+
+        private void ReadSettings(PackageRestoreInputs packageRestoreInputs)
+        {
+            if (IsSolutionRestore(packageRestoreInputs))
+            {
+                var solutionDirectory = GetSolutionDirectory(packageRestoreInputs);
 
                 // Read the solution-level settings
                 var solutionSettingsFile = Path.Combine(
@@ -338,7 +299,7 @@ namespace NuGet.CommandLine
 
             CheckRequireConsent();
 
-            var collectorLogger = new CollectorLogger(Console);
+            var collectorLogger = new RestoreCollectorLogger(Console);
             var projectContext = new ConsoleProjectContext(collectorLogger)
             {
                 PackageExtractionContext = new PackageExtractionContext(collectorLogger)
@@ -372,7 +333,7 @@ namespace NuGet.CommandLine
                     Settings.Priority.Select(x => Path.Combine(x.Root, x.FileName)),
                     packageSources.Select(x => x.Source),
                     installCount,
-                    collectorLogger.Errors.Concat(failedEvents.Select(e => e.Exception.Message)));
+                    collectorLogger.Errors.Concat(failedEvents.Select(e => new RestoreLogMessage(LogLevel.Error, NuGetLogCode.Undefined, e.Exception.Message))));
             }
         }
 
@@ -389,7 +350,7 @@ namespace NuGet.CommandLine
                         LocalizedResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage"),
                         NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
 
-                    Console.LogMinimal(message);
+                    Console.LogInformation(message);
                 }
                 else
                 {
@@ -467,7 +428,9 @@ namespace NuGet.CommandLine
 
                 try
                 {
-                    dgFileOutput = await GetDependencyGraphSpecAsync(projectsWithPotentialP2PReferences);
+                    dgFileOutput = await GetDependencyGraphSpecAsync(projectsWithPotentialP2PReferences,
+                        GetSolutionDirectory(packageRestoreInputs),
+                        ConfigFile);
                 }
                 catch (Exception ex)
                 {
@@ -575,8 +538,13 @@ namespace NuGet.CommandLine
         /// <summary>
         ///  Create a dg v2 file using msbuild.
         /// </summary>
-        private async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(string[] projectsWithPotentialP2PReferences)
+        private async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(string[] projectsWithPotentialP2PReferences, string solutionDirectory, string configFile)
         {
+            // Create requests based on the solution directory if a solution was used read settings for the solution.
+            // If the solution directory is null, then use config file if present
+            // Then use restore directory last
+            // If all 3 are null, then the directory of the project will be used to evaluate the settings
+
             int scaleTimeout;
 
             if (Project2ProjectTimeOut > 0)
@@ -597,7 +565,12 @@ namespace NuGet.CommandLine
                 projectsWithPotentialP2PReferences,
                 scaleTimeout,
                 Console,
-                Recursive);
+                Recursive,
+                solutionDirectory,
+                configFile,
+                Source.ToArray(),
+                PackagesDirectory
+                );
         }
 
         /// <summary>
@@ -701,7 +674,7 @@ namespace NuGet.CommandLine
 
         private static bool IsSolutionOrProjectFile(string fileName)
         {
-            if (!String.IsNullOrEmpty(fileName))
+            if (!string.IsNullOrEmpty(fileName))
             {
                 var extension = Path.GetExtension(fileName);
                 var lastFourCharacters = string.Empty;

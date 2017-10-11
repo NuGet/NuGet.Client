@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -155,12 +155,12 @@ namespace NuGet.PackageManagement
         private async Task<Dictionary<PackageReference, List<string>>> GetPackagesReferencesDictionaryAsync(CancellationToken token)
         {
             var packageReferencesDict = new Dictionary<PackageReference, List<string>>(new PackageReferenceComparer());
-            if (!SolutionManager.IsSolutionAvailable)
+            if (!await SolutionManager.IsSolutionAvailableAsync())
             {
                 return packageReferencesDict;
             }
 
-            foreach (var nuGetProject in SolutionManager.GetNuGetProjects())
+            foreach (var nuGetProject in (await SolutionManager.GetNuGetProjectsAsync()))
             {
                 // skip project k projects and build aware projects
                 if (nuGetProject is INuGetIntegratedProject)
@@ -168,17 +168,24 @@ namespace NuGet.PackageManagement
                     continue;
                 }
 
-                var nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
-                var installedPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
-                foreach (var installedPackageReference in installedPackageReferences)
+                try
                 {
-                    List<string> projectNames = null;
-                    if (!packageReferencesDict.TryGetValue(installedPackageReference, out projectNames))
+                    var nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
+                    var installedPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
+                    foreach (var installedPackageReference in installedPackageReferences)
                     {
-                        projectNames = new List<string>();
-                        packageReferencesDict.Add(installedPackageReference, projectNames);
+                        List<string> projectNames = null;
+                        if (!packageReferencesDict.TryGetValue(installedPackageReference, out projectNames))
+                        {
+                            projectNames = new List<string>();
+                            packageReferencesDict.Add(installedPackageReference, projectNames);
+                        }
+                        projectNames.Add(nuGetProjectName);
                     }
-                    projectNames.Add(nuGetProjectName);
+                }
+                catch (Exception)
+                {
+                    // ignore failed projects, and continue with other projects
                 }
             }
 

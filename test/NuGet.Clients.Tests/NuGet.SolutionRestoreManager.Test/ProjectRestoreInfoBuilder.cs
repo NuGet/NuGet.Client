@@ -13,18 +13,24 @@ namespace NuGet.SolutionRestoreManager.Test
     /// Helper class providing a method of building <see cref="IVsProjectRestoreInfo"/>
     /// out of <see cref="PackageSpec"/>.
     /// </summary>
-    internal static class ProjectRestoreInfoBuilder
+    internal class ProjectRestoreInfoBuilder
     {
+        private readonly VsProjectRestoreInfo _pri;
+
+        private ProjectRestoreInfoBuilder(VsProjectRestoreInfo pri)
+        {
+            _pri = pri;
+        }
+
         /// <summary>
         /// Creates project restore info object to be consumed by <see cref="IVsSolutionRestoreService"/>.
         /// </summary>
         /// <param name="packageSpec">Source project restore object</param>
         /// <returns>Desired project restore object</returns>
-        public static VsProjectRestoreInfo Build(
+        public static ProjectRestoreInfoBuilder FromPackageSpec(
             PackageSpec packageSpec,
             string baseIntermediatePath,
-            bool crossTargeting,
-            IEnumerable<LibraryRange> tools)
+            bool crossTargeting)
         {
             if (packageSpec == null)
             {
@@ -36,18 +42,24 @@ namespace NuGet.SolutionRestoreManager.Test
                 return null;
             }
 
+            var projectProperties = new VsProjectProperties { };
+
+            if (packageSpec.Version != null)
+            {
+                projectProperties = new VsProjectProperties
+                {
+                    { "PackageVersion", packageSpec.Version.ToString() }
+                };
+            }
+
             var targetFrameworks = new VsTargetFrameworks(
                 packageSpec
                     .TargetFrameworks
-                    .Select(ToTargetFrameworkInfo));
+                    .Select(tfm => ToTargetFrameworkInfo(tfm, projectProperties)));
 
             var pri = new VsProjectRestoreInfo(
                 baseIntermediatePath,
-                targetFrameworks)
-            {
-                ToolReferences = new VsReferenceItems(
-                    (tools ?? Enumerable.Empty<LibraryRange>()).Select(ToToolReference))
-            };
+                targetFrameworks);
 
             if (crossTargeting)
             {
@@ -57,32 +69,61 @@ namespace NuGet.SolutionRestoreManager.Test
                         .Select(tfm => tfm.FrameworkName.GetShortFolderName()));
             }
 
-            return pri;
+            return new ProjectRestoreInfoBuilder(pri);
         }
 
-        private static VsTargetFrameworkInfo ToTargetFrameworkInfo(TargetFrameworkInformation tfm)
+        public ProjectRestoreInfoBuilder WithTool(string name, string version)
         {
-            var packageReferences = new VsReferenceItems(
-                tfm.Dependencies
-                    .Where(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
-                    .Select(ToPackageReference));
+            var properties = new VsReferenceProperties
+            {
+                { "Version", version }
+            };
 
-            var projectReferences = new VsReferenceItems(
-                tfm.Dependencies
-                    .Where(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.ExternalProject)
-                    .Select(ToProjectReference));
+            _pri.ToolReferences = new VsReferenceItems
+            {
+                new VsReferenceItem(name, properties)
+            };
 
-            var projectProperties = new VsProjectProperties(
-                new VsProjectProperty(
+            return this;
+        }
+
+        public ProjectRestoreInfoBuilder WithTargetFrameworkInfo(
+            IVsTargetFrameworkInfo tfi)
+        {
+            (_pri.TargetFrameworks as VsTargetFrameworks).Add(tfi);
+
+            return this;
+        }
+
+        public VsProjectRestoreInfo Build() => _pri;
+
+        private static VsTargetFrameworkInfo ToTargetFrameworkInfo(
+            TargetFrameworkInformation tfm, 
+            IEnumerable<IVsProjectProperty> globalProperties)
+        {
+            var packageReferences = tfm
+                .Dependencies
+                .Where(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
+                .Select(ToPackageReference);
+
+            var projectReferences = tfm
+                .Dependencies
+                .Where(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.ExternalProject)
+                .Select(ToProjectReference);
+
+            var projectProperties = new VsProjectProperties
+            {
+                {
                     "PackageTargetFallback",
-                    string.Join(";", tfm.Imports.Select(x => x.GetShortFolderName())))
-            );
+                    string.Join(";", tfm.Imports.Select(x => x.GetShortFolderName()))
+                }
+            };
 
             return new VsTargetFrameworkInfo(
                 tfm.FrameworkName.ToString(),
                 packageReferences,
                 projectReferences,
-                projectProperties);
+                projectProperties.Concat(globalProperties));
         }
 
         private static IVsReferenceItem ToPackageReference(LibraryDependency library)

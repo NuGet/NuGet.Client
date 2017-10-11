@@ -333,7 +333,7 @@ nuget pack foo.nuspec -Version 2.1.0</value>
   <data name="PushCommandUsageExamples" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -497,7 +497,7 @@ nuget update -Self</value>
     <value>If a solution is specified, this command restores NuGet packages that are installed in the solution and in projects contained in the solution. Otherwise, the command restores packages listed in the specified packages.config file, Microsoft Build project, or project.json file.</value>
   </data>
   <data name="RestoreCommandUsageSummary" xml:space="preserve">
-    <value>[&lt;solution&gt; | &lt;packages.config file&gt; | &lt;project.json&gt; | &lt;Microsoft Build project&gt;] [options]</value>
+    <value>[&lt;solution&gt; | &lt;packages.config file&gt; | &lt;Microsoft Build project&gt;] [options]</value>
     <comment>Please don't localize "packages.config"</comment>
   </data>
   <data name="ConfigCommandDesc_csy" xml:space="preserve">
@@ -2986,7 +2986,7 @@ nuget pack foo.nuspec -Version 2.1.0</value>
   <data name="PushCommandUsageExamples_csy" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -2997,7 +2997,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_deu" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3008,7 +3008,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_esp" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3019,7 +3019,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_fra" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3041,7 +3041,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_jpn" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3052,7 +3052,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_kor" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3063,7 +3063,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_plk" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3074,7 +3074,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_ptb" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3085,7 +3085,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_rus" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3096,7 +3096,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_trk" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3107,7 +3107,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_chs" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3118,7 +3118,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_cht" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3871,7 +3871,7 @@ nuget spec -a MyAssembly.dll</value>
     <value>Aktualizuje balíčky na nejnovější dostupné verze. Tento příkaz rovněž aktualizuje vlastní soubor NuGet.exe.</value>
   </data>
   <data name="UpdateCommandDescription_deu" xml:space="preserve">
-    <value>Pakete auf die aktuellsten verfügbaren Versionen aktualisieren. Dieser Befehl aktualisiert auch sie Datei "NuGet.exe" selbst.</value>
+    <value>Pakete auf die aktuellsten verfügbaren Versionen aktualisieren. Dieser Befehl aktualisiert auch die Datei "NuGet.exe" selbst.</value>
   </data>
   <data name="UpdateCommandDescription_esp" xml:space="preserve">
     <value>Actualizar paquetes a las últimas versiones disponibles. Este comando también actualiza NuGet.exe.</value>
@@ -5324,7 +5324,7 @@ nuget locals global-packages -list</value>
     <value>Forces the application to run using an invariant, English-based culture.</value>
   </data>
   <data name="RestoreCommandUsageExamples" xml:space="preserve">
-    <value>nuget restore MySoluion.sln</value>
+    <value>nuget restore MySolution.sln</value>
     <comment>command line example, do not localize</comment>
   </data>
   <data name="CommandDirectDownload" xml:space="preserve">
@@ -5336,7 +5336,16 @@ nuget locals global-packages -list</value>
   <data name="RestoreCommandRecursive" xml:space="preserve">
     <value>Restore all referenced projects for UWP and NETCore projects. This does not include packages.config projects.</value>
   </data>
-  <data name="Option_TrustedHttpsCertificates" xml:space="preserve">
+  <data name="ForceRestoreCommand" xml:space="preserve">
+    <value>Forces all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json. (Does not apply to packages.config)</value>
+  </data>
+  <data name="InstallCommandDependencyVersion" xml:space="preserve">
+    <value>Overrides the default dependency resolution behavior.</value>
+  </data>
+  <data name="InstallCommandFrameworkDescription" xml:space="preserve">
+    <value>Target framework used for selecting dependencies. Defaults to 'Any' if not specified.</value>
+  </data>
+   <data name="Option_TrustedHttpsCertificates" xml:space="preserve">
     <value>One or more SHA1 thumbprints (fingerprints) of HTTPS certificates to trust, despite common name mismatch errors.</value>
   </data>
 </root>

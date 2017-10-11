@@ -1,4 +1,4 @@
-{
+﻿{
   "title": "title",
   "version": "1.2.3",
   "description": "description",
@@ -35,7 +35,10 @@
     "summary": "summary",
     "releaseNotes": "releaseNotes",
     "licenseUrl": "licenseUrl",
-    "requireLicenseAcceptance": "True"
+    "requireLicenseAcceptance": true
+  },
+  "restoreSettings": {
+    "hideWarningsAndErrors": true
   },
   "restore": {
     "projectUniqueName": "projectUniqueName",
@@ -45,16 +48,21 @@
     "packagesPath": "packagesPath",
     "outputPath": "outputPath",
     "projectStyle": "PackageReference",
-    "crossTargeting": "True",
+    "crossTargeting": true,
     "fallbackFolders": [
       "b",
       "a",
       "c"
     ],
-    "originalTargetFrameworks": [
+    "configFilePaths": [
       "b",
       "a",
       "c"
+    ],
+    "originalTargetFrameworks": [
+      "net45",
+      "net46",
+      "net40"
     ],
     "sources": {
       "source": {}
@@ -83,24 +91,43 @@
     ]
   },
   "dependencies": {
-    "range": {
+    "library": {
       "include": "Build",
       "target": "Package",
       "version": "[1.2.3, )"
+    },
+    "libraryRangeWithNoWarnGlobal": {
+      "include": "Build",
+      "target": "Package",
+      "version": "[1.2.3, )",
+      "noWarn": [
+        "NU1500",
+        "NU1608"
+      ]
     }
   },
   "frameworks": {
     "frameworkidentifier123-frameworkprofile": {
-      "dependencies": {
-        "range": {
-          "include": "Build",
-          "target": "Package",
-          "version": "[1.2.3, )"
-        }
-      },
       "imports": [
         "frameworkidentifier123-frameworkprofile"
       ]
+    },
+    "frameworkidentifierwithnowarn125-frameworkprofilewithnowarn": {
+      "dependencies": {
+        "libraryWithNoWarn": {
+          "include": "Build",
+          "target": "Package",
+          "version": "[1.2.3, )",
+          "noWarn": [
+            "NU1500",
+            "NU1601"
+          ]
+        }
+      },
+      "imports": [
+        "frameworkidentifierwithnowarn125-frameworkprofilewithnowarn"
+      ],
+      "warn": true
     }
   },
   "runtimes": {

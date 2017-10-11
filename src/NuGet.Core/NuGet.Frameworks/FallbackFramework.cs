@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Shared;
@@ -61,11 +64,11 @@ namespace NuGet.Frameworks
             {
                 var combiner = new HashCodeCombiner();
 
-                combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(this));
+                combiner.AddObject(Comparer.GetHashCode(this));
 
                 foreach (var each in Fallback)
                 {
-                    combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(each));
+                    combiner.AddObject(Comparer.GetHashCode(each));
                 }
 
                 _hashCode = combiner.CombinedHash;

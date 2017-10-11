@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,7 +15,7 @@ namespace NuGet.Packaging
 {
     public static class PackageExtractor
     {
-        public static IEnumerable<string> ExtractPackage(
+        public static async Task<IEnumerable<string>> ExtractPackageAsync(
             Stream packageStream,
             PackagePathResolver packagePathResolver,
             PackageExtractionContext packageExtractionContext,
@@ -48,13 +48,13 @@ namespace NuGet.Packaging
             var nupkgStartPosition = packageStream.Position;
             using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
             {
-                var packageIdentityFromNuspec = packageReader.GetIdentity();
+                var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(CancellationToken.None);
 
                 var installPath = packagePathResolver.GetInstallPath(packageIdentityFromNuspec);
                 var packageDirectoryInfo = Directory.CreateDirectory(installPath);
                 var packageDirectory = packageDirectoryInfo.FullName;
 
-                var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
+                var packageFiles = await packageReader.GetPackageFilesAsync(packageSaveMode, token);
 
                 if ((packageSaveMode & PackageSaveMode.Nuspec) == PackageSaveMode.Nuspec)
                 {
@@ -75,7 +75,7 @@ namespace NuGet.Packaging
 
                 var packageFileExtractor = new PackageFileExtractor(packageFiles, packageExtractionContext.XmlDocFileSaveMode);
 
-                filesAdded.AddRange(packageReader.CopyFiles(
+                filesAdded.AddRange(await packageReader.CopyFilesAsync(
                     packageDirectory,
                     packageFiles,
                     packageFileExtractor.ExtractPackageFile,
@@ -99,7 +99,7 @@ namespace NuGet.Packaging
                 // Now, copy satellite files unless requested to not copy them
                 if (packageExtractionContext.CopySatelliteFiles)
                 {
-                    filesAdded.AddRange(CopySatelliteFiles(
+                    filesAdded.AddRange(await CopySatelliteFilesAsync(
                         packageReader,
                         packagePathResolver,
                         packageSaveMode,
@@ -111,7 +111,7 @@ namespace NuGet.Packaging
             return filesAdded;
         }
 
-        public static IEnumerable<string> ExtractPackage(
+        public static async Task<IEnumerable<string>> ExtractPackageAsync(
             PackageReaderBase packageReader,
             Stream packageStream,
             PackagePathResolver packagePathResolver,
@@ -138,14 +138,14 @@ namespace NuGet.Packaging
             var nupkgStartPosition = packageStream.Position;
             var filesAdded = new List<string>();
 
-            var packageIdentityFromNuspec = packageReader.GetIdentity();
+            var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(token);
 
             var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
             var packageDirectory = packageDirectoryInfo.FullName;
 
-            var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
+            var packageFiles = await packageReader.GetPackageFilesAsync(packageSaveMode, token);
             var packageFileExtractor = new PackageFileExtractor(packageFiles, packageExtractionContext.XmlDocFileSaveMode);
-            filesAdded.AddRange(packageReader.CopyFiles(
+            filesAdded.AddRange(await packageReader.CopyFilesAsync(
                 packageDirectory,
                 packageFiles,
                 packageFileExtractor.ExtractPackageFile,
@@ -174,7 +174,74 @@ namespace NuGet.Packaging
             // Now, copy satellite files unless requested to not copy them
             if (packageExtractionContext.CopySatelliteFiles)
             {
-                filesAdded.AddRange(CopySatelliteFiles(
+                filesAdded.AddRange(await CopySatelliteFilesAsync(
+                    packageReader,
+                    packagePathResolver,
+                    packageSaveMode,
+                    packageExtractionContext,
+                    token));
+            }
+
+            return filesAdded;
+        }
+
+        public static async Task<IEnumerable<string>> ExtractPackageAsync(
+            PackageReaderBase packageReader,
+            PackagePathResolver packagePathResolver,
+            PackageExtractionContext packageExtractionContext,
+            CancellationToken token)
+        {
+            if (packageReader == null)
+            {
+                throw new ArgumentNullException(nameof(packageReader));
+            }
+
+            if (packagePathResolver == null)
+            {
+                throw new ArgumentNullException(nameof(packagePathResolver));
+            }
+
+            if (packageExtractionContext == null)
+            {
+                throw new ArgumentNullException(nameof(packageExtractionContext));
+            }
+
+            token.ThrowIfCancellationRequested();
+
+            var packageSaveMode = packageExtractionContext.PackageSaveMode;
+
+            var filesAdded = new List<string>();
+
+            var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(token);
+
+            var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
+            var packageDirectory = packageDirectoryInfo.FullName;
+
+            var packageFiles = await packageReader.GetPackageFilesAsync(packageSaveMode, token);
+            var packageFileExtractor = new PackageFileExtractor(packageFiles, packageExtractionContext.XmlDocFileSaveMode);
+
+            filesAdded.AddRange(await packageReader.CopyFilesAsync(
+                packageDirectory,
+                packageFiles,
+                packageFileExtractor.ExtractPackageFile,
+                packageExtractionContext.Logger,
+                token));
+
+            if (packageSaveMode.HasFlag(PackageSaveMode.Nupkg))
+            {
+                var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
+                var filePath = await packageReader.CopyNupkgAsync(nupkgFilePath, token);
+
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    filesAdded.Add(filePath);
+                }
+            }
+
+            // Now, copy satellite files unless requested to not copy them
+            if (packageExtractionContext.CopySatelliteFiles)
+            {
+                filesAdded.AddRange(await CopySatelliteFilesAsync(
                     packageReader,
                     packagePathResolver,
                     packageSaveMode,
@@ -215,17 +282,17 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(versionFolderPathContext));
             }
 
-            var packagePathResolver = new VersionFolderPathResolver(
-            	versionFolderPathContext.PackagesDirectory,
-            	versionFolderPathContext.IsLowercasePackagesDirectory);
+            var versionFolderPathResolver = new VersionFolderPathResolver(
+                versionFolderPathContext.PackagesDirectory,
+                versionFolderPathContext.IsLowercasePackagesDirectory);
 
             var packageIdentity = versionFolderPathContext.Package;
             var logger = versionFolderPathContext.Logger;
 
-            var targetPath = packagePathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
-            var targetNuspec = packagePathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
-            var targetNupkg = packagePathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
-            var hashPath = packagePathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
+            var targetPath = versionFolderPathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
+            var targetNuspec = versionFolderPathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
+            var targetNupkg = versionFolderPathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
+            var hashPath = versionFolderPathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
 
             logger.LogVerbose(
                 $"Acquiring lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
@@ -363,6 +430,192 @@ namespace NuGet.Packaging
                 token: token);
         }
 
+        public static async Task<bool> InstallFromSourceAsync(
+            IPackageDownloader packageDownloader,
+            VersionFolderPathContext versionFolderPathContext,
+            CancellationToken token)
+        {
+            if (packageDownloader == null)
+            {
+                throw new ArgumentNullException(nameof(packageDownloader));
+            }
+
+            if (versionFolderPathContext == null)
+            {
+                throw new ArgumentNullException(nameof(versionFolderPathContext));
+            }
+
+            var versionFolderPathResolver = new VersionFolderPathResolver(
+                versionFolderPathContext.PackagesDirectory,
+                versionFolderPathContext.IsLowercasePackagesDirectory);
+
+            var packageIdentity = versionFolderPathContext.Package;
+            var logger = versionFolderPathContext.Logger;
+
+            var targetPath = versionFolderPathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
+            var targetNuspec = versionFolderPathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
+            var targetNupkg = versionFolderPathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
+            var hashPath = versionFolderPathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
+
+            logger.LogVerbose(
+                $"Acquiring lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
+
+            // Acquire the lock on a nukpg before we extract it to prevent the race condition when multiple
+            // processes are extracting to the same destination simultaneously
+            return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(targetNupkg,
+                action: async cancellationToken =>
+                {
+                    // If this is the first process trying to install the target nupkg, go ahead
+                    // After this process successfully installs the package, all other processes
+                    // waiting on this lock don't need to install it again.
+                    if (!File.Exists(hashPath))
+                    {
+                        logger.LogVerbose(
+                            $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
+
+                        logger.LogMinimal(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Log_InstallingPackage,
+                            packageIdentity.Id,
+                            packageIdentity.Version));
+
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        // We do not stop the package extraction after this point
+                        // based on CancellationToken, but things can still be stopped if the process is killed.
+                        if (Directory.Exists(targetPath))
+                        {
+                            // If we had a broken restore, clean out the files first
+                            var info = new DirectoryInfo(targetPath);
+
+                            foreach (var file in info.GetFiles())
+                            {
+                                file.Delete();
+                            }
+
+                            foreach (var dir in info.GetDirectories())
+                            {
+                                dir.Delete(true);
+                            }
+                        }
+                        else
+                        {
+                            Directory.CreateDirectory(targetPath);
+                        }
+
+                        var targetTempNupkg = Path.Combine(targetPath, Path.GetRandomFileName());
+                        var tempHashPath = Path.Combine(targetPath, Path.GetRandomFileName());
+                        var packageSaveMode = versionFolderPathContext.PackageSaveMode;
+
+                        // Extract the nupkg
+                        var copiedNupkg = await packageDownloader.CopyNupkgFileToAsync(targetTempNupkg, cancellationToken);
+
+                        if (packageSaveMode.HasFlag(PackageSaveMode.Nuspec))
+                        {
+                            var nuspecFileNameFromReader = await packageDownloader.CoreReader.GetNuspecFileAsync(cancellationToken);
+                            var packageFiles = new[] { nuspecFileNameFromReader };
+                            var packageFileExtractor = new PackageFileExtractor(
+                                packageFiles,
+                                XmlDocFileSaveMode.None);
+                            var packageDirectoryPath = Path.GetDirectoryName(targetNuspec);
+
+                            var extractedNuspecFilePath = (await packageDownloader.CoreReader.CopyFilesAsync(
+                                    packageDirectoryPath,
+                                    packageFiles,
+                                    packageFileExtractor.ExtractPackageFile,
+                                    logger,
+                                    cancellationToken))
+                                .SingleOrDefault();
+
+                            // CopyFilesAsync(...) just extracts files to a directory.
+                            // We may have to fix up the casing of the .nuspec file name.
+                            if (!string.IsNullOrEmpty(extractedNuspecFilePath))
+                            {
+                                if (PathUtility.IsFileSystemCaseInsensitive)
+                                {
+                                    var nuspecFileName = Path.GetFileName(targetNuspec);
+                                    var actualNuspecFileName = Path.GetFileName(extractedNuspecFilePath);
+
+                                    if (!string.Equals(nuspecFileName, actualNuspecFileName, StringComparison.Ordinal))
+                                    {
+                                        var tempNuspecFilePath = Path.Combine(packageDirectoryPath, Path.GetRandomFileName());
+
+                                        File.Move(extractedNuspecFilePath, tempNuspecFilePath);
+                                        File.Move(tempNuspecFilePath, targetNuspec);
+                                    }
+                                }
+                                else if (!File.Exists(targetNuspec))
+                                {
+                                    File.Move(extractedNuspecFilePath, targetNuspec);
+                                }
+                            }
+                        }
+
+                        if (packageSaveMode.HasFlag(PackageSaveMode.Files))
+                        {
+                            var hashFileName = Path.GetFileName(hashPath);
+                            var packageFiles = (await packageDownloader.CoreReader.GetFilesAsync(cancellationToken))
+                                .Where(file => ShouldInclude(file, hashFileName));
+                            var packageFileExtractor = new PackageFileExtractor(
+                                packageFiles,
+                                versionFolderPathContext.XmlDocFileSaveMode);
+                            await packageDownloader.CoreReader.CopyFilesAsync(
+                                targetPath,
+                                packageFiles,
+                                packageFileExtractor.ExtractPackageFile,
+                                logger,
+                                token);
+                        }
+
+                        var packageHash = await packageDownloader.GetPackageHashAsync("SHA512", cancellationToken);
+
+                        File.WriteAllText(tempHashPath, packageHash);
+
+                        // Now rename the tmp file
+                        if (versionFolderPathContext.PackageSaveMode.HasFlag(PackageSaveMode.Nupkg))
+                        {
+                            if (copiedNupkg)
+                            {
+                                // Dispose of it now because it is holding a lock on the temporary .nupkg file.
+                                packageDownloader.Dispose();
+
+                                File.Move(targetTempNupkg, targetNupkg);
+                            }
+                        }
+                        else
+                        {
+                            try
+                            {
+                                File.Delete(targetTempNupkg);
+                            }
+                            catch (IOException ex)
+                            {
+                                logger.LogWarning(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.ErrorUnableToDeleteFile,
+                                    targetTempNupkg,
+                                    ex.Message));
+                            }
+                        }
+
+                        // Note: PackageRepository relies on the hash file being written out as the
+                        // final operation as part of a package install to assume a package was fully installed.
+                        // Rename the tmp hash file
+                        File.Move(tempHashPath, hashPath);
+
+                        logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
+                        return true;
+                    }
+                    else
+                    {
+                        logger.LogVerbose("Lock not required - Package already installed "
+                                            + $"{packageIdentity.Id} {packageIdentity.Version}");
+                        return false;
+                    }
+                },
+                token: token);
+        }
+
         private static bool ShouldInclude(
             string fullName,
             string hashFileName)
@@ -394,8 +647,8 @@ namespace NuGet.Packaging
             }
 
             // Skip nupkgs and nuspec files found in the root, the valid ones are already extracted
-            if (PackageHelper.IsRoot(fullName) 
-                && (PackageHelper.IsNuspec(fullName) 
+            if (PackageHelper.IsRoot(fullName)
+                && (PackageHelper.IsNuspec(fullName)
                     || fullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
@@ -404,7 +657,7 @@ namespace NuGet.Packaging
             return true;
         }
 
-        public static IEnumerable<string> CopySatelliteFiles(
+        public static async Task<IEnumerable<string>> CopySatelliteFilesAsync(
             PackageIdentity packageIdentity,
             PackagePathResolver packagePathResolver,
             PackageSaveMode packageSaveMode,
@@ -428,7 +681,7 @@ namespace NuGet.Packaging
             {
                 using (var packageReader = new PackageArchiveReader(nupkgFilePath))
                 {
-                    return CopySatelliteFiles(
+                    return await CopySatelliteFilesAsync(
                         packageReader,
                         packagePathResolver,
                         packageSaveMode,
@@ -440,7 +693,7 @@ namespace NuGet.Packaging
             return satelliteFilesCopied;
         }
 
-        private static IEnumerable<string> CopySatelliteFiles(
+        private static async Task<IEnumerable<string>> CopySatelliteFilesAsync(
             PackageReaderBase packageReader,
             PackagePathResolver packagePathResolver,
             PackageSaveMode packageSaveMode,
@@ -464,17 +717,19 @@ namespace NuGet.Packaging
 
             var satelliteFilesCopied = Enumerable.Empty<string>();
 
-            string runtimePackageDirectory;
-            var satelliteFiles = PackageHelper
-                .GetSatelliteFiles(packageReader, packagePathResolver, out runtimePackageDirectory)
+            var result = await PackageHelper.GetSatelliteFilesAsync(packageReader, packagePathResolver, token);
+
+            var runtimePackageDirectory = result.Item1;
+            var satelliteFiles = result.Item2
                 .Where(file => PackageHelper.IsPackageFile(file, packageSaveMode))
                 .ToList();
+
             if (satelliteFiles.Count > 0)
             {
                 var packageFileExtractor = new PackageFileExtractor(satelliteFiles, packageExtractionContext.XmlDocFileSaveMode);
 
                 // Now, add all the satellite files collected from the package to the runtime package folder(s)
-                satelliteFilesCopied = packageReader.CopyFiles(
+                satelliteFilesCopied = await packageReader.CopyFilesAsync(
                     runtimePackageDirectory,
                     satelliteFiles,
                     packageFileExtractor.ExtractPackageFile,

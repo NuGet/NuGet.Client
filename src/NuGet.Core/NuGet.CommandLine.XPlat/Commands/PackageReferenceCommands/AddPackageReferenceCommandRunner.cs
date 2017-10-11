@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -40,25 +41,68 @@ namespace NuGet.CommandLine.XPlat
             var dgSpec = ReadProjectDependencyGraph(packageReferenceArgs);
             if (dgSpec == null)
             {
-                throw new Exception(Strings.Error_NoDgSpec);
+                // Logging non localized error on debug stream.
+                packageReferenceArgs.Logger.LogDebug(Strings.Error_NoDgSpec);
+
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_NoDgSpec));
             }
             packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Read");
 
-            var projectName = dgSpec.Restore.FirstOrDefault();
-            var originalPackageSpec = dgSpec.GetProjectSpec(projectName);
+            var projectFullPath = Path.GetFullPath(packageReferenceArgs.ProjectPath);
+
+            var matchingPackageSpecs = dgSpec
+                .Projects
+                .Where(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference && 
+                PathUtility.GetStringComparerBasedOnOS().Equals(Path.GetFullPath(p.RestoreMetadata.ProjectPath), projectFullPath))
+                .ToArray();
+
+            // This ensures that the DG specs generated in previous steps contain exactly 1 project with the same path as the project requesting add package.
+            // Throw otherwise since we cannot proceed further.
+            if (matchingPackageSpecs.Length != 1)
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_UnsupportedProject,
+                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.ProjectPath));
+            }
+
+            // Parse the user specified frameworks once to avoid re-do's
+            var userSpecifiedFrameworks = Enumerable.Empty<NuGetFramework>();
+            if (packageReferenceArgs.Frameworks?.Any() == true)
+            {
+                userSpecifiedFrameworks = packageReferenceArgs
+                    .Frameworks
+                    .Select(f => NuGetFramework.Parse(f));
+            }
+
+
+            var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
 
             // Create a copy to avoid modifying the original spec which may be shared.
             var updatedPackageSpec = originalPackageSpec.Clone();
-            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageDependency);
+            if (packageReferenceArgs.Frameworks?.Any() == true)
+            {
+                // If user specified frameworks then just use them to add the dependency
+                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, 
+                    packageReferenceArgs.PackageDependency,
+                    userSpecifiedFrameworks);
+            }
+            else
+            {
+                // If the user has not specified a framework, then just add it to all frameworks
+                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageDependency, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
+            }
+
 
             var updatedDgSpec = dgSpec.WithReplacedSpec(updatedPackageSpec).WithoutRestores();
             updatedDgSpec.AddRestore(updatedPackageSpec.RestoreMetadata.ProjectUniqueName);
 
             // 2. Run Restore Preview
             packageReferenceArgs.Logger.LogDebug("Running Restore preview");
-            var restorePreviewResult = await PreviewAddPackageReference(packageReferenceArgs,
-                updatedDgSpec,
-                updatedPackageSpec);
+
+            var restorePreviewResult = await PreviewAddPackageReferenceAsync(packageReferenceArgs,
+                updatedDgSpec);
+
             packageReferenceArgs.Logger.LogDebug("Restore Review completed");
 
             // 3. Process Restore Result
@@ -67,17 +111,16 @@ namespace NuGet.CommandLine.XPlat
                 .Result
                 .CompatibilityCheckResults
                 .Where(t => t.Success)
-                .Select(t => t.Graph.Framework));
+                .Select(t => t.Graph.Framework), new NuGetFrameworkFullComparer());
 
             if (packageReferenceArgs.Frameworks?.Any() == true)
             {
                 // If the user has specified frameworks then we intersect that with the compatible frameworks.
-                var userSpecifiedFrameworks = new HashSet<NuGetFramework>(
-                    packageReferenceArgs
-                    .Frameworks
-                    .Select(f => NuGetFramework.Parse(f)));
+                var userSpecifiedFrameworkSet = new HashSet<NuGetFramework>(
+                    userSpecifiedFrameworks, 
+                    new NuGetFrameworkFullComparer());
 
-                compatibleFrameworks.IntersectWith(userSpecifiedFrameworks);
+                compatibleFrameworks.IntersectWith(userSpecifiedFrameworkSet);
             }
 
             // 4. Write to Project
@@ -93,7 +136,9 @@ namespace NuGet.CommandLine.XPlat
 
                 return 1;
             }
-            else if (compatibleFrameworks.Count == restorePreviewResult.Result.CompatibilityCheckResults.Count())
+            // Ignore the graphs with RID
+            else if (compatibleFrameworks.Count == 
+                restorePreviewResult.Result.CompatibilityCheckResults.Where(r => string.IsNullOrEmpty(r.Graph.RuntimeIdentifier)).Count())
             {
                 // Package is compatible with all the project TFMs
                 // Add an unconditional package reference to the project
@@ -103,7 +148,7 @@ namespace NuGet.CommandLine.XPlat
                     packageReferenceArgs.ProjectPath));
 
                 // If the user did not specify a version then update the version to resolved version
-                UpdatePackageVersionIfNeeded(restorePreviewResult, packageReferenceArgs);
+                UpdatePackageVersionIfNeeded(restorePreviewResult, packageReferenceArgs, userSpecifiedFrameworks);
 
                 msBuild.AddPackageReference(packageReferenceArgs.ProjectPath,
                     packageReferenceArgs.PackageDependency);
@@ -122,7 +167,7 @@ namespace NuGet.CommandLine.XPlat
                     .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
 
                 // If the user did not specify a version then update the version to resolved version
-                UpdatePackageVersionIfNeeded(restorePreviewResult, packageReferenceArgs);
+                UpdatePackageVersionIfNeeded(restorePreviewResult, packageReferenceArgs, userSpecifiedFrameworks);
 
                 msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath,
                     packageReferenceArgs.PackageDependency,
@@ -132,9 +177,8 @@ namespace NuGet.CommandLine.XPlat
             return 0;
         }
 
-        private static async Task<RestoreResultPair> PreviewAddPackageReference(PackageReferenceArgs packageReferenceArgs,
-            DependencyGraphSpec dgSpec,
-            PackageSpec originalPackageSpec)
+        private static async Task<RestoreResultPair> PreviewAddPackageReferenceAsync(PackageReferenceArgs packageReferenceArgs,
+            DependencyGraphSpec dgSpec)
         {
             // Set user agent and connection settings.
             XPlatUtility.ConfigureProtocol();
@@ -147,14 +191,10 @@ namespace NuGet.CommandLine.XPlat
                 cacheContext.IgnoreFailedSources = false;
 
                 // Pre-loaded request provider containing the graph file
-                var providers = new List<IPreLoadedRestoreRequestProvider>();
-
-                // Create a copy to avoid modifying the original spec which may be shared.
-                var updatedPackageSpec = originalPackageSpec.Clone();
-
-                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageDependency);
-
-                providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgSpec));
+                var providers = new List<IPreLoadedRestoreRequestProvider>
+                {
+                    new DependencyGraphSpecRequestProvider(providerCache, dgSpec)
+                };
 
                 var restoreContext = new RestoreArgs()
                 {
@@ -164,7 +204,7 @@ namespace NuGet.CommandLine.XPlat
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     GlobalPackagesFolder = packageReferenceArgs.PackageDirectory,
                     PreLoadedRequestProviders = providers,
-                    Sources = packageReferenceArgs.Sources?.ToList()
+                    Sources = packageReferenceArgs.Sources?.ToList()                    
                 };
 
                 // Generate Restore Requests. There will always be 1 request here since we are restoring for 1 project.
@@ -190,13 +230,16 @@ namespace NuGet.CommandLine.XPlat
         }
 
         private static void UpdatePackageVersionIfNeeded(RestoreResultPair restorePreviewResult,
-            PackageReferenceArgs packageReferenceArgs)
+            PackageReferenceArgs packageReferenceArgs,
+            IEnumerable<NuGetFramework> UserSpecifiedFrameworks)
         {
             // If the user did not specify a version then write the exact resolved version
             if (packageReferenceArgs.NoVersion)
             {
                 // Get the package version from the graph
-                var resolvedVersion = GetPackageVersionFromRestoreResult(restorePreviewResult, packageReferenceArgs);
+                var resolvedVersion = GetPackageVersionFromRestoreResult(restorePreviewResult, 
+                    packageReferenceArgs, 
+                    UserSpecifiedFrameworks);
 
                 if (resolvedVersion != null)
                 {
@@ -208,7 +251,8 @@ namespace NuGet.CommandLine.XPlat
         }
 
         private static NuGetVersion GetPackageVersionFromRestoreResult(RestoreResultPair restorePreviewResult,
-            PackageReferenceArgs packageReferenceArgs)
+            PackageReferenceArgs packageReferenceArgs,
+            IEnumerable<NuGetFramework> UserSpecifiedFrameworks)
         {
             // Get the restore graphs from the restore result
             var restoreGraphs = restorePreviewResult
@@ -218,13 +262,12 @@ namespace NuGet.CommandLine.XPlat
             if (packageReferenceArgs.Frameworks?.Any() == true)
             {
                 // If the user specified frameworks then we get the flattened graphs  only from the compatible frameworks.
-                var userSpecifiedFrameworks = new HashSet<NuGetFramework>(
-                    packageReferenceArgs
-                    .Frameworks
-                    .Select(f => NuGetFramework.Parse(f)));
+                var userSpecifiedFrameworkSet = new HashSet<NuGetFramework>(
+                    UserSpecifiedFrameworks, 
+                    new NuGetFrameworkFullComparer());
 
                 restoreGraphs = restoreGraphs
-                    .Where(r => userSpecifiedFrameworks.Contains(r.Framework));
+                    .Where(r => userSpecifiedFrameworkSet.Contains(r.Framework));
             }
 
             foreach (var restoreGraph in restoreGraphs)

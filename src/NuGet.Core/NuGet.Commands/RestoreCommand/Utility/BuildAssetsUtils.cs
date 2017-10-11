@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -179,7 +179,7 @@ namespace NuGet.Commands
 
                 new XElement(Namespace + "Project",
                     new XAttribute("ToolsVersion", "14.0"),
-                    new XElement(Namespace + "PropertyGroup", 
+                    new XElement(Namespace + "PropertyGroup",
                         new XElement(Namespace + "MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"))));
 
             return doc;
@@ -361,6 +361,26 @@ namespace NuGet.Commands
             return result;
         }
 
+        public static string GetMSBuildFilePath(PackageSpec project, RestoreRequest request, string extension)
+        {
+            string path;
+
+            if (request.ProjectStyle == ProjectStyle.PackageReference)
+            {
+                // PackageReference style projects
+                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
+                path = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.{extension}");
+            }
+            else
+            {
+                // Project.json style projects
+                var dir = Path.GetDirectoryName(project.FilePath);
+                path = Path.Combine(dir, $"{project.Name}.nuget.{extension}");
+            }
+            return path;
+        }
+
+
         public static List<MSBuildOutputFile> GetMSBuildOutputFiles(PackageSpec project,
             LockFile assetsFile,
             IEnumerable<RestoreTargetGraph> targetGraphs,
@@ -371,25 +391,8 @@ namespace NuGet.Commands
             ILogger log)
         {
             // Generate file names
-            var targetsPath = string.Empty;
-            var propsPath = string.Empty;
-
-            if (request.ProjectStyle == ProjectStyle.PackageReference)
-            {
-                // PackageReference style projects
-                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-
-                targetsPath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.targets");
-                propsPath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.props");
-            }
-            else
-            {
-                // Project.json style projects
-                var dir = Path.GetDirectoryName(project.FilePath);
-
-                targetsPath = Path.Combine(dir, $"{project.Name}.nuget.targets");
-                propsPath = Path.Combine(dir, $"{project.Name}.nuget.props");
-            }
+            var targetsPath = GetMSBuildFilePath(project,request,"targets");
+            var propsPath = GetMSBuildFilePath(project, request, "props");
 
             // Targets files contain a macro for the repository root. If only the user package folder was used
             // allow a replacement. If fallback folders were used the macro cannot be applied.

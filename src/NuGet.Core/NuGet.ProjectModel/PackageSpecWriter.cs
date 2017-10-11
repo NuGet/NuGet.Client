@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
@@ -51,6 +52,7 @@ namespace NuGet.ProjectModel
             SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles);
             SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
             SetPackOptions(writer, packageSpec);
+            SetRestoreSettings(writer, packageSpec);
             SetMSBuildMetadata(writer, packageSpec);
             SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
 
@@ -81,7 +83,7 @@ namespace NuGet.ProjectModel
                 throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(filePath));
             }
 
-            var writer = new RuntimeModel.JsonObjectWriter();
+            var writer = new JsonObjectWriter();
 
             Write(packageSpec, writer);
 
@@ -94,17 +96,48 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void SetMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
+        private static void SetRestoreSettings(IObjectWriter writer, PackageSpec packageSpec)
         {
-            var msbuildMetadata = packageSpec.RestoreMetadata;
-            if (msbuildMetadata == null)
+            var restoreSettings = packageSpec.RestoreSettings;
+
+            // Do not write Restore Setting if the HideWarningsAndErrors is false
+            // This should be changed in the future as more properties are added to ProjectRestoreSettings
+            if (restoreSettings == null || !restoreSettings.HideWarningsAndErrors)
             {
                 return;
+            }
+            writer.WriteObjectStart(JsonPackageSpecReader.RestoreSettings);
+
+            SetValueIfTrue(writer, JsonPackageSpecReader.HideWarningsAndErrors, restoreSettings.HideWarningsAndErrors);
+
+            writer.WriteObjectEnd();
+        }
+
+        private static bool IsMetadataValid(ProjectRestoreMetadata msbuildMetadata)
+        {
+            if (msbuildMetadata == null)
+            {
+                return false;
             }
 
             if (msbuildMetadata.ProjectUniqueName == null && msbuildMetadata.ProjectName == null
                 && msbuildMetadata.ProjectPath == null && msbuildMetadata.ProjectJsonPath == null
                 && msbuildMetadata.PackagesPath == null && msbuildMetadata.OutputPath == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// This method sets the msbuild metadata that's important for restore. Ensures that frameworks regardless of which way they're stores in the metadata(full name or short tfm name) are written out the same.
+        /// </summary>
+        private static void SetMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
+        {
+            var msbuildMetadata = packageSpec.RestoreMetadata;
+
+            if (!IsMetadataValid(msbuildMetadata))
             {
                 return;
             }
@@ -123,64 +156,30 @@ namespace NuGet.ProjectModel
                 SetValue(writer, "projectStyle", msbuildMetadata.ProjectStyle.ToString());
             }
 
-            if (msbuildMetadata.CrossTargeting)
-            {
-                SetValue(writer, "crossTargeting", msbuildMetadata.CrossTargeting.ToString());
-            }
-
-            if (msbuildMetadata.LegacyPackagesDirectory)
-            {
-                SetValue(
-                    writer,
-                    "legacyPackagesDirectory",
-                    msbuildMetadata.LegacyPackagesDirectory.ToString());
-            }
-
-            if (msbuildMetadata.ValidateRuntimeAssets)
-            {
-                SetValue(
-                    writer,
-                    "validateRuntimeAssets",
-                    msbuildMetadata.ValidateRuntimeAssets.ToString());
-            }
-
-            if (msbuildMetadata.SkipContentFileWrite)
-            {
-                SetValue(
-                    writer,
-                    "skipContentFileWrite",
-                    msbuildMetadata.SkipContentFileWrite.ToString());
-            }
+            WriteMetadataBooleans(writer, msbuildMetadata);
 
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
-            SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks);
+            SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
+            SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.Select(e => NuGetFramework.Parse(e).GetShortFolderName()));
 
-            if (msbuildMetadata.Sources?.Count > 0)
-            {
-                writer.WriteObjectStart("sources");
+            WriteMetadataSources(writer, msbuildMetadata);
+            WriteMetadataFiles(writer, msbuildMetadata);
+            WriteMetadataTargetFrameworks(writer, msbuildMetadata);
+            SetWarningProperties(writer, msbuildMetadata);
 
-                foreach (var source in msbuildMetadata.Sources)
-                {
-                    // "source": {}
-                    writer.WriteObjectStart(source.Source);
-                    writer.WriteObjectEnd();
-                }
+            writer.WriteObjectEnd();
+        }
 
-                writer.WriteObjectEnd();
-            }
+        private static void WriteMetadataBooleans(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            SetValueIfTrue(writer, "crossTargeting", msbuildMetadata.CrossTargeting);
+            SetValueIfTrue(writer, "legacyPackagesDirectory", msbuildMetadata.LegacyPackagesDirectory);
+            SetValueIfTrue(writer, "validateRuntimeAssets", msbuildMetadata.ValidateRuntimeAssets);
+            SetValueIfTrue(writer, "skipContentFileWrite", msbuildMetadata.SkipContentFileWrite);
+        }
 
-            if (msbuildMetadata.Files?.Count > 0)
-            {
-                writer.WriteObjectStart("files");
-
-                foreach (var file in msbuildMetadata.Files)
-                {
-                    SetValue(writer, file.PackagePath, file.AbsolutePath);
-                }
-
-                writer.WriteObjectEnd();
-            }
-
+        private static void WriteMetadataTargetFrameworks(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
             if (msbuildMetadata.TargetFrameworks?.Count > 0)
             {
                 writer.WriteObjectStart("frameworks");
@@ -230,8 +229,75 @@ namespace NuGet.ProjectModel
 
                 writer.WriteObjectEnd();
             }
+        }
 
-            writer.WriteObjectEnd();
+        private static void WriteMetadataFiles(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            if (msbuildMetadata.Files?.Count > 0)
+            {
+                writer.WriteObjectStart("files");
+
+                foreach (var file in msbuildMetadata.Files)
+                {
+                    SetValue(writer, file.PackagePath, file.AbsolutePath);
+                }
+
+                writer.WriteObjectEnd();
+            }
+        }
+
+        private static void WriteMetadataSources(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            if (msbuildMetadata.Sources?.Count > 0)
+            {
+                writer.WriteObjectStart("sources");
+
+                foreach (var source in msbuildMetadata.Sources.OrderBy(e => e.Source, StringComparer.Ordinal))
+                {
+                    writer.WriteObjectStart(source.Source);
+                    writer.WriteObjectEnd();
+                }
+
+                writer.WriteObjectEnd();
+            }
+        }
+
+        private static void SetWarningProperties(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            if (msbuildMetadata.ProjectWideWarningProperties != null &&
+                (msbuildMetadata.ProjectWideWarningProperties.AllWarningsAsErrors ||
+                 msbuildMetadata.ProjectWideWarningProperties.NoWarn.Count > 0 ||
+                 msbuildMetadata.ProjectWideWarningProperties.WarningsAsErrors.Count > 0))
+            {
+                writer.WriteObjectStart("warningProperties");
+
+                SetValueIfTrue(writer, "allWarningsAsErrors", msbuildMetadata.ProjectWideWarningProperties.AllWarningsAsErrors);
+
+                if (msbuildMetadata.ProjectWideWarningProperties.NoWarn.Count > 0)
+                {
+                    SetArrayValue(writer, "noWarn", msbuildMetadata
+                       .ProjectWideWarningProperties
+                       .NoWarn
+                       .ToArray()
+                       .OrderBy(c => c)
+                       .Select(c => c.GetName())
+                       .Where(c => !string.IsNullOrEmpty(c)));
+                }
+
+                if (msbuildMetadata.ProjectWideWarningProperties.WarningsAsErrors.Count > 0)
+                {
+                    SetArrayValue(writer, "warnAsError", msbuildMetadata
+                        .ProjectWideWarningProperties
+                        .WarningsAsErrors
+                        .ToArray()
+                        .OrderBy(c => c)
+                        .Select(c => c.GetName())
+                        .Where(c => !string.IsNullOrEmpty(c)));
+
+                }
+
+                writer.WriteObjectEnd();
+            }
         }
 
         private static void SetPackOptions(IObjectWriter writer, PackageSpec packageSpec)
@@ -262,10 +328,7 @@ namespace NuGet.ProjectModel
             SetValue(writer, "releaseNotes", packageSpec.ReleaseNotes);
             SetValue(writer, "licenseUrl", packageSpec.LicenseUrl);
 
-            if (packageSpec.RequireLicenseAcceptance)
-            {
-                SetValue(writer, "requireLicenseAcceptance", packageSpec.RequireLicenseAcceptance.ToString());
-            }
+            SetValueIfTrue(writer, "requireLicenseAcceptance", packageSpec.RequireLicenseAcceptance);
 
             if (packOptions.PackageType != null)
             {
@@ -289,6 +352,10 @@ namespace NuGet.ProjectModel
             SetDependencies(writer, "frameworkAssemblies", libraryDependencies.Where(dependency => dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference));
         }
 
+        /// <summary>
+        /// This method sorts the libraries based on the name
+        /// This method also writes out the normalized versions to avoid cases where original string is set because it was gotten through project system vs being installed from PM UI
+        /// </summary>
         private static void SetDependencies(IObjectWriter writer, string name, IEnumerable<LibraryDependency> libraryDependencies)
         {
             if (!libraryDependencies.Any())
@@ -298,21 +365,17 @@ namespace NuGet.ProjectModel
 
             writer.WriteObjectStart(name);
 
-            foreach (var dependency in libraryDependencies)
+            foreach (var dependency in libraryDependencies.OrderBy(e => e.Name, StringComparer.Ordinal))
             {
                 var expandedMode = dependency.IncludeType != LibraryIncludeFlags.All
                     || dependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent
                     || dependency.Type != LibraryDependencyType.Default
+                    || dependency.AutoReferenced
                     || (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference
                         && dependency.LibraryRange.TypeConstraint != (LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference));
 
                 var versionRange = dependency.LibraryRange.VersionRange ?? VersionRange.All;
-                var versionString = versionRange.OriginalString;
-
-                if (string.IsNullOrEmpty(versionString))
-                {
-                    versionString = versionRange.ToNormalizedString();
-                }
+                var versionString = versionRange.ToNormalizedString();
 
                 if (expandedMode)
                 {
@@ -351,6 +414,18 @@ namespace NuGet.ProjectModel
                         SetValue(writer, "version", versionString);
                     }
 
+                    SetValueIfTrue(writer, "autoReferenced", dependency.AutoReferenced);
+
+                    if (dependency.NoWarn.Count > 0)
+                    {
+                        SetArrayValue(writer, "noWarn", dependency
+                            .NoWarn
+                            .OrderBy(c => c)
+                            .Distinct()
+                            .Select(code => code.GetName())
+                            .Where(s => !string.IsNullOrEmpty(s)));
+                    }
+
                     writer.WriteObjectEnd();
                 }
                 else
@@ -384,11 +459,21 @@ namespace NuGet.ProjectModel
 
                     SetDependencies(writer, framework.Dependencies);
                     SetImports(writer, framework.Imports);
+                    SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
+                    SetValueIfTrue(writer, "warn", framework.Warn);
 
                     writer.WriteObjectEnd();
                 }
 
                 writer.WriteObjectEnd();
+            }
+        }
+
+        private static void SetValueIfTrue(IObjectWriter writer, string name, bool value)
+        {
+            if (value)
+            {
+                writer.WriteNameValue(name, value);
             }
         }
 

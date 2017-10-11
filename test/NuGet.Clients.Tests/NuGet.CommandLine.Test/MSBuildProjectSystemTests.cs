@@ -3,7 +3,9 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Test.Utility;
@@ -39,6 +41,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+
         [Fact]
         public void MSBuildProjectSystem_AddFile()
         {
@@ -61,6 +64,7 @@ namespace NuGet.CommandLine.Test
                 }
             }
         }
+
 
         [Fact]
         public void MSBuildProjectSystem_RemoveFile()
@@ -88,6 +92,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+
         [Fact]
         public void MSBuildProjectSystem_FileExistInProject()
         {
@@ -111,6 +116,65 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(fileExistsInProject, "a.js does not exist in project");
+            }
+        }
+
+        [Fact]
+        public void MSBuildProjectSystem_RemoveImport()
+        {
+            // Arrange
+            var import = @"packages\mypackage.1.0.0\build\mypackage.targets";
+            var projectFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Project ToolsVersion=""14.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+  <Import Project=""packages\mypackage.1.0.0\build\mypackage.targets"" Condition=""Exists('packages\mypackage.1.0.0\build\mypackage.targets')"" />
+  <Target Name=""EnsureNuGetPackageBuildImports"" BeforeTargets=""PrepareForBuild"" >
+    <PropertyGroup>   
+      <ErrorText>This project references NuGet package(s) that are missing on this computer.Enable NuGet Package Restore to download them.For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition=""!Exists('packages\mypackage.1.0.0\build\mypackage.targets')"" Text=""$([System.String]::Format('$(ErrorText)', 'packages\mypackage.1.0.0\build\mypackage.targets'))"" />
+  </Target>
+</Project>";
+
+            using (var testInfo = new TestInfo(projectFileContent))
+            {
+                var targetFullPath = Path.Combine(testInfo.MSBuildProjectSystem.ProjectFullPath, import);
+
+                // Act
+                testInfo.MSBuildProjectSystem.RemoveImport(targetFullPath);
+
+                // Assert
+                var proj = XElement.Load(testInfo.MSBuildProjectSystem.ProjectFileFullPath);
+                Assert.False(proj.HasElements, "The <Import /> and <Target Name=\"EnsureNuGetPackageBuildImports\" /> elements should have been removed.");
+            }
+        }
+
+        // Verify for mono scenarios that / slash paths are also removed.
+        [Fact]
+        public void MSBuildProjectSystem_RemoveImportForwardSlashes()
+        {
+            // Arrange
+            var import = @"packages\mypackage.1.0.0\build\mypackage.targets";
+            var projectFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Project ToolsVersion=""14.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+  <Import Project=""packages/mypackage.1.0.0/build/mypackage.targets"" Condition=""Exists('packages/mypackage.1.0.0/build/mypackage.targets')"" />
+  <Target Name=""EnsureNuGetPackageBuildImports"" BeforeTargets=""PrepareForBuild"" >
+    <PropertyGroup>   
+      <ErrorText>This project references NuGet package(s) that are missing on this computer.Enable NuGet Package Restore to download them.For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition=""!Exists('packages/mypackage.1.0.0/build/mypackage.targets')"" Text=""$([System.String]::Format('$(ErrorText)', 'packages/mypackage.1.0.0/build/mypackage.targets'))"" />
+  </Target>
+</Project>";
+
+            using (var testInfo = new TestInfo(projectFileContent))
+            {
+                var targetFullPath = Path.Combine(testInfo.MSBuildProjectSystem.ProjectFullPath, import);
+
+                // Act
+                testInfo.MSBuildProjectSystem.RemoveImport(targetFullPath);
+
+                // Assert
+                var proj = XElement.Load(testInfo.MSBuildProjectSystem.ProjectFileFullPath);
+                Assert.False(proj.HasElements, "The <Import /> and <Target Name=\"EnsureNuGetPackageBuildImports\" /> elements should have been removed.");
             }
         }
     }

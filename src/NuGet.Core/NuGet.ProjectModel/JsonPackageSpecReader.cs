@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -21,6 +22,8 @@ namespace NuGet.ProjectModel
     public class JsonPackageSpecReader
     {
         public static readonly string RestoreOptions = "restore";
+        public static readonly string RestoreSettings = "restoreSettings";
+        public static readonly string HideWarningsAndErrors = "hideWarningsAndErrors";
         public static readonly string PackOptions = "packOptions";
         public static readonly string PackageType = "packageType";
         public static readonly string Files = "files";
@@ -32,10 +35,7 @@ namespace NuGet.ProjectModel
         /// <param name="packageSpecPath">file path</param>
         public static PackageSpec GetPackageSpec(string name, string packageSpecPath)
         {
-            using (var stream = new FileStream(packageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                return GetPackageSpec(stream, name, packageSpecPath, null);
-            }
+            return FileUtility.SafeRead(filePath: packageSpecPath, read: (stream, filePath) => GetPackageSpec(stream, name, filePath, null));
         }
 
         public static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath)
@@ -161,6 +161,8 @@ namespace NuGet.ProjectModel
 
             packageSpec.PackOptions = GetPackOptions(packageSpec, rawPackageSpec);
 
+            packageSpec.RestoreSettings = GetRestoreSettings(packageSpec, rawPackageSpec);
+
             packageSpec.RestoreMetadata = GetMSBuildMetadata(packageSpec, rawPackageSpec);
 
             // Read the runtime graph
@@ -180,6 +182,19 @@ namespace NuGet.ProjectModel
             }
 
             return packageSpec;
+        }
+
+        private static ProjectRestoreSettings GetRestoreSettings(PackageSpec packageSpec, JObject rawPackageSpec)
+        {
+            var rawRestoreSettings = rawPackageSpec.Value<JToken>(RestoreSettings) as JObject;
+            var restoreSettings = new ProjectRestoreSettings();
+
+            if (rawRestoreSettings != null)
+            {
+                restoreSettings.HideWarningsAndErrors = GetBoolOrFalse(rawRestoreSettings, HideWarningsAndErrors, packageSpec.FilePath);
+            }
+
+            return restoreSettings;
         }
 
         private static ProjectRestoreMetadata GetMSBuildMetadata(PackageSpec packageSpec, JObject rawPackageSpec)
@@ -208,10 +223,10 @@ namespace NuGet.ProjectModel
             msbuildMetadata.ProjectJsonPath = rawMSBuildMetadata.GetValue<string>("projectJsonPath");
             msbuildMetadata.ProjectName = rawMSBuildMetadata.GetValue<string>("projectName");
             msbuildMetadata.ProjectPath = rawMSBuildMetadata.GetValue<string>("projectPath");
-            msbuildMetadata.CrossTargeting = rawMSBuildMetadata.GetValue<bool>("crossTargeting");
-            msbuildMetadata.LegacyPackagesDirectory = rawMSBuildMetadata.GetValue<bool>("legacyPackagesDirectory");
-            msbuildMetadata.ValidateRuntimeAssets = rawMSBuildMetadata.GetValue<bool>("validateRuntimeAssets");
-            msbuildMetadata.SkipContentFileWrite = rawMSBuildMetadata.GetValue<bool>("skipContentFileWrite");
+            msbuildMetadata.CrossTargeting = GetBoolOrFalse(rawMSBuildMetadata, "crossTargeting", packageSpec.FilePath);
+            msbuildMetadata.LegacyPackagesDirectory = GetBoolOrFalse(rawMSBuildMetadata, "legacyPackagesDirectory", packageSpec.FilePath);
+            msbuildMetadata.ValidateRuntimeAssets = GetBoolOrFalse(rawMSBuildMetadata, "validateRuntimeAssets", packageSpec.FilePath);
+            msbuildMetadata.SkipContentFileWrite = GetBoolOrFalse(rawMSBuildMetadata, "skipContentFileWrite", packageSpec.FilePath);
 
             msbuildMetadata.Sources = new List<PackageSource>();
 
@@ -269,6 +284,18 @@ namespace NuGet.ProjectModel
                     msbuildMetadata.TargetFrameworks.Add(frameworkGroup);
                 }
             }
+            // Add the config file paths to the equals method
+            msbuildMetadata.ConfigFilePaths = new List<string>();
+
+            var configFilePaths = rawMSBuildMetadata.GetValue<JArray>("configFilePaths");
+            if (configFilePaths != null)
+            {
+                foreach (var fallbackFolder in configFilePaths.Select(t => t.Value<string>()))
+                {
+                    msbuildMetadata.ConfigFilePaths.Add(fallbackFolder);
+                }
+            }
+
 
             msbuildMetadata.FallbackFolders = new List<string>();
 
@@ -290,6 +317,16 @@ namespace NuGet.ProjectModel
                 {
                     msbuildMetadata.OriginalTargetFrameworks.Add(orignalFramework);
                 }
+            }
+
+            var warningPropertiesObj = rawMSBuildMetadata.GetValue<JObject>("warningProperties");
+            if (warningPropertiesObj != null)
+            {
+                var allWarningsAsErrors = warningPropertiesObj.GetValue<bool>("allWarningsAsErrors");
+                var warnAsError = new HashSet<NuGetLogCode>(GetNuGetLogCodeEnumerableFromJArray(warningPropertiesObj["warnAsError"]));
+                var noWarn = new HashSet<NuGetLogCode>(GetNuGetLogCodeEnumerableFromJArray(warningPropertiesObj["noWarn"]));
+
+                msbuildMetadata.ProjectWideWarningProperties = new WarningProperties(warnAsError, noWarn, allWarningsAsErrors);
             }
 
             return msbuildMetadata;
@@ -317,20 +354,7 @@ namespace NuGet.ProjectModel
             packageSpec.ReleaseNotes = rawPackOptions.GetValue<string>("releaseNotes");
             packageSpec.LicenseUrl = rawPackOptions.GetValue<string>("licenseUrl");
 
-
-            var requireLicenseAcceptance = rawPackOptions["requireLicenseAcceptance"];
-
-            if (requireLicenseAcceptance != null)
-            {
-                try
-                {
-                    packageSpec.RequireLicenseAcceptance = rawPackOptions.GetValue<bool?>("requireLicenseAcceptance") ?? false;
-                }
-                catch (Exception ex)
-                {
-                    throw FileFormatException.Create(ex, requireLicenseAcceptance, packageSpec.FilePath);
-                }
-            }
+            packageSpec.RequireLicenseAcceptance = GetBoolOrFalse(rawPackOptions, "requireLicenseAcceptance", packageSpec.FilePath);
 
             var rawPackageType = rawPackOptions[PackageType];
             if (rawPackageType != null &&
@@ -438,6 +462,7 @@ namespace NuGet.ProjectModel
                     var dependencyIncludeFlagsValue = LibraryIncludeFlags.All;
                     var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
                     var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
+                    var noWarn = new List<NuGetLogCode>();
 
                     // This method handles both the dependencies and framework assembly sections.
                     // Framework references should be limited to references.
@@ -445,6 +470,8 @@ namespace NuGet.ProjectModel
                     var targetFlagsValue = isGacOrFrameworkReference
                                                     ? LibraryDependencyTarget.Reference
                                                     : LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference;
+
+                    var autoReferenced = false;
 
                     string dependencyVersionValue = null;
                     var dependencyVersionToken = dependencyValue;
@@ -502,6 +529,9 @@ namespace NuGet.ProjectModel
                             suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(strings);
                         }
 
+                        noWarn = GetNuGetLogCodeEnumerableFromJArray(dependencyValue["noWarn"])
+                            .ToList();
+
                         var targetToken = dependencyValue["target"];
 
                         if (targetToken != null)
@@ -521,6 +551,8 @@ namespace NuGet.ProjectModel
                                 throw FileFormatException.Create(message, targetToken, packageSpecPath);
                             }
                         }
+
+                        autoReferenced = GetBoolOrFalse(dependencyValue, "autoReferenced", packageSpecPath);
                     }
 
                     VersionRange dependencyVersionRange = null;
@@ -570,7 +602,9 @@ namespace NuGet.ProjectModel
                         },
                         Type = dependencyTypeValue,
                         IncludeType = includeFlags,
-                        SuppressParent = suppressParentFlagsValue
+                        SuppressParent = suppressParentFlagsValue,
+                        AutoReferenced = autoReferenced,
+                        NoWarn = noWarn.ToList()
                     });
                 }
             }
@@ -645,6 +679,23 @@ namespace NuGet.ProjectModel
             return true;
         }
 
+        internal static IEnumerable<NuGetLogCode> GetNuGetLogCodeEnumerableFromJArray(JToken token)
+        {
+            var items = new List<NuGetLogCode>();
+            var array = (JArray)token;
+            if (array != null)
+            {
+                foreach (var child in array)
+                {
+                    if (child.Type == JTokenType.String && Enum.TryParse(child.Value<string>(), out NuGetLogCode code))
+                    {
+                        items.Add(code);
+                    }
+                }
+            }
+            return items;
+        }
+
         private static void BuildTargetFrameworks(PackageSpec packageSpec, JObject rawPackageSpec)
         {
             // The frameworks node is where target frameworks go
@@ -666,7 +717,7 @@ namespace NuGet.ProjectModel
                 {
                     try
                     {
-                        BuildTargetFrameworkNode(packageSpec, framework);
+                        BuildTargetFrameworkNode(packageSpec, framework, packageSpec.FilePath);
                     }
                     catch (Exception ex)
                     {
@@ -676,11 +727,12 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static bool BuildTargetFrameworkNode(PackageSpec packageSpec, KeyValuePair<string, JToken> targetFramework)
+        private static bool BuildTargetFrameworkNode(PackageSpec packageSpec, KeyValuePair<string, JToken> targetFramework, string filePath)
         {
             var frameworkName = GetFramework(targetFramework.Key);
 
             var properties = targetFramework.Value.Value<JObject>();
+            var assetTargetFallback = GetBoolOrFalse(properties, "assetTargetFallback", filePath);
 
             var importFrameworks = GetImports(properties, packageSpec);
 
@@ -689,7 +741,14 @@ namespace NuGet.ProjectModel
 
             if (importFrameworks.Count != 0)
             {
-                updatedFramework = new FallbackFramework(frameworkName, importFrameworks);
+                if (assetTargetFallback)
+                {
+                    updatedFramework = new AssetTargetFallbackFramework(frameworkName, importFrameworks);
+                }
+                else
+                {
+                    updatedFramework = new FallbackFramework(frameworkName, importFrameworks);
+                }
             }
 
             var targetFrameworkInformation = new TargetFrameworkInformation
@@ -697,7 +756,8 @@ namespace NuGet.ProjectModel
                 FrameworkName = updatedFramework,
                 Dependencies = new List<LibraryDependency>(),
                 Imports = importFrameworks,
-                Warn = GetWarnSetting(properties)
+                Warn = GetWarnSetting(properties),
+                AssetTargetFallback = assetTargetFallback
             };
 
             PopulateDependencies(
@@ -724,7 +784,7 @@ namespace NuGet.ProjectModel
 
         private static List<NuGetFramework> GetImports(JObject properties, PackageSpec packageSpec)
         {
-            List<NuGetFramework> frameworks = new List<NuGetFramework>();
+            var frameworks = new List<NuGetFramework>();
 
             var importsProperty = properties["imports"];
 
@@ -768,6 +828,43 @@ namespace NuGet.ProjectModel
         private static NuGetFramework GetFramework(string key)
         {
             return NuGetFramework.Parse(key);
+        }
+
+        /// <summary>
+        /// Returns true if the property is set to true. Otherwise false.
+        /// </summary>
+        private static bool GetBoolOrFalse(JToken parent, string propertyName, string filePath)
+        {
+            var jObj = parent as JObject;
+
+            if (jObj != null)
+            {
+                return GetBoolOrFalse(jObj, propertyName, filePath);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if the property is set to true. Otherwise false.
+        /// </summary>
+        private static bool GetBoolOrFalse(JObject parent, string propertyName, string filePath)
+        {
+            var token = parent[propertyName];
+
+            if (token != null)
+            {
+                try
+                {
+                    return parent.GetValue<bool?>(propertyName) ?? false;
+                }
+                catch (Exception ex)
+                {
+                    throw FileFormatException.Create(ex, token, filePath);
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.DependencyResolver;
@@ -20,36 +23,19 @@ namespace NuGet.Commands
         /// <param name="fallbackPackageFolders">Path to any fallback package folders.</param>
         /// <param name="localProviders">This is typically just a provider for the global packages folder.</param>
         /// <param name="remoteProviders">All dependency providers.</param>
+        /// <param name="nuspecCache">Nuspec cache.</param>
         public RestoreCommandProviders(
             NuGetv3LocalRepository globalPackages,
             IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             IReadOnlyList<IRemoteDependencyProvider> localProviders,
-            IReadOnlyList<IRemoteDependencyProvider> remoteProviders)
+            IReadOnlyList<IRemoteDependencyProvider> remoteProviders,
+            LocalNuspecCache nuspecCache)
         {
-            if (globalPackages == null)
-            {
-                throw new ArgumentNullException(nameof(globalPackages));
-            }
-
-            if (fallbackPackageFolders == null)
-            {
-                throw new ArgumentNullException(nameof(fallbackPackageFolders));
-            }
-
-            if (localProviders == null)
-            {
-                throw new ArgumentNullException(nameof(localProviders));
-            }
-
-            if (remoteProviders == null)
-            {
-                throw new ArgumentNullException(nameof(remoteProviders));
-            }
-
-            GlobalPackages = globalPackages;
-            LocalProviders = localProviders;
-            RemoteProviders = remoteProviders;
-            FallbackPackageFolders = fallbackPackageFolders;
+            GlobalPackages = globalPackages ?? throw new ArgumentNullException(nameof(globalPackages));
+            LocalProviders = localProviders ?? throw new ArgumentNullException(nameof(localProviders));
+            RemoteProviders = remoteProviders ?? throw new ArgumentNullException(nameof(remoteProviders));
+            FallbackPackageFolders = fallbackPackageFolders ?? throw new ArgumentNullException(nameof(fallbackPackageFolders));
+            NuspecCache = nuspecCache ?? throw new ArgumentNullException(nameof(nuspecCache));
         }
 
         /// <summary>
@@ -65,14 +51,17 @@ namespace NuGet.Commands
 
         public IReadOnlyList<IRemoteDependencyProvider> RemoteProviders { get; }
 
+        public LocalNuspecCache NuspecCache { get; }
+
         public static RestoreCommandProviders Create(
             string globalFolderPath,
             IEnumerable<string> fallbackPackageFolderPaths,
             IEnumerable<SourceRepository> sources,
             SourceCacheContext cacheContext,
+            LocalNuspecCache nuspecCache,
             ILogger log)
         {
-            var globalPackages = new NuGetv3LocalRepository(globalFolderPath);
+            var globalPackages = new NuGetv3LocalRepository(globalFolderPath, nuspecCache);
             var globalPackagesSource = Repository.Factory.GetCoreV3(globalFolderPath, FeedType.FileSystemV3);
 
             var localProviders = new List<IRemoteDependencyProvider>()
@@ -83,7 +72,8 @@ namespace NuGet.Commands
                     log,
                     cacheContext,
                     ignoreFailedSources: true,
-                    ignoreWarning: true)
+                    ignoreWarning: true,
+                    nuspecCache: nuspecCache)
             };
 
             // Add fallback sources as local providers also
@@ -91,7 +81,7 @@ namespace NuGet.Commands
 
             foreach (var path in fallbackPackageFolderPaths)
             {
-                var fallbackRepository = new NuGetv3LocalRepository(path);
+                var fallbackRepository = new NuGetv3LocalRepository(path, nuspecCache);
                 var fallbackSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
 
                 var provider = new SourceRepositoryDependencyProvider(
@@ -99,7 +89,8 @@ namespace NuGet.Commands
                     log,
                     cacheContext,
                     ignoreFailedSources: false,
-                    ignoreWarning: false);
+                    ignoreWarning: false,
+                    nuspecCache: nuspecCache);
 
                 fallbackPackageFolders.Add(fallbackRepository);
                 localProviders.Add(provider);
@@ -114,7 +105,8 @@ namespace NuGet.Commands
                     log,
                     cacheContext,
                     cacheContext.IgnoreFailedSources,
-                    ignoreWarning: false);
+                    ignoreWarning: false,
+                    nuspecCache: nuspecCache);
 
                 remoteProviders.Add(provider);
             }
@@ -123,7 +115,8 @@ namespace NuGet.Commands
                 globalPackages,
                 fallbackPackageFolders,
                 localProviders,
-                remoteProviders);
+                remoteProviders,
+                nuspecCache);
         }
     }
 }

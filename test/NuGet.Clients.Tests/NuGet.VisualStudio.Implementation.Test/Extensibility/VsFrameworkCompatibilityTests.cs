@@ -178,7 +178,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             Assert.Equal(".NETStandard,Version=v1.5", actual[5].ToString());
             Assert.Equal(".NETStandard,Version=v1.6", actual[6].ToString());
             Assert.Equal(".NETStandard,Version=v1.7", actual[7].ToString());
-            Assert.Equal(8, actual.Length);
+            Assert.Equal(".NETStandard,Version=v2.0", actual[8].ToString());
+            Assert.Equal(9, actual.Length);
         }
     }
 }

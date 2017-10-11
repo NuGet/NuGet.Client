@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
@@ -16,6 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using System.Reflection;
 
 namespace NuGet.CommandLine.Test
 {
@@ -23,8 +24,65 @@ namespace NuGet.CommandLine.Test
     {
         private static readonly string NupkgFileFormat = "{0}.{1}.nupkg";
 
-        [DllImport("libc")]
-        static extern int uname(IntPtr buf);
+        public static string GetMockServerResource()
+        {
+            return GetResource("NuGet.CommandLine.Test.compiler.resources.mockserver.xml");
+        }
+        
+        public static string GetResource(string name)
+        {
+            using (var reader = new StreamReader(typeof(Util).GetTypeInfo().Assembly.GetManifestResourceStream(name)))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
+        /// <summary>
+        /// Restore a solution.
+        /// </summary>
+        public static CommandRunnerResult RestoreSolution(SimpleTestPathContext pathContext, int expectedExitCode = 0, params string[] additionalArgs)
+        {
+            return Restore(pathContext, pathContext.SolutionRoot, expectedExitCode, additionalArgs);
+        }
+
+        /// <summary>
+        /// Run nuget.exe restore {inputPath}
+        /// </summary>
+        public static CommandRunnerResult Restore(SimpleTestPathContext pathContext, string inputPath, int expectedExitCode = 0, params string[] additionalArgs)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Store the dg file for debugging
+            var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+            var envVars = new Dictionary<string, string>()
+                {
+                    { "NUGET_PERSIST_DG", "true" },
+                    { "NUGET_PERSIST_DG_PATH", dgPath },
+                    { "NUGET_HTTP_CACHE_PATH", pathContext.HttpCacheFolder }
+                };
+
+            var args = new string[] {
+                    "restore",
+                    inputPath,
+                    "-Verbosity",
+                    "detailed"
+                };
+
+            args = args.Concat(additionalArgs).ToArray();
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                pathContext.WorkingDirectory.Path,
+                string.Join(" ", args),
+                waitForExit: true,
+                environmentVariables: envVars);
+
+            // Assert
+            Assert.True(expectedExitCode == r.Item1, r.Item3 + "\n\n" + r.Item2);
+
+            return r;
+        }
 
         public static string CreateTestPackage(
             string packageId,
@@ -335,7 +393,7 @@ namespace NuGet.CommandLine.Test
             var server = new MockServer();
 
             server.Get.Add("/nuget/$metadata", r =>
-                   MockServerResource.NuGetV2APIMetadata);
+                   Util.GetMockServerResource());
             server.Get.Add("/nuget/FindPackagesById()", r =>
                 new Action<HttpListenerResponse>(response =>
                 {
@@ -398,7 +456,17 @@ namespace NuGet.CommandLine.Test
             return server;
         }
 
+        /// <summary>
+        /// Path to nuget.exe for tests.
+        /// </summary>
         public static string GetNuGetExePath()
+        {
+            return _nuGetExePath.Value;
+        }
+
+        private static readonly Lazy<string> _nuGetExePath = new Lazy<string>(GetNuGetExePathCore);
+
+        private static string GetNuGetExePathCore()
         {
             var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
             var nugetexe = Path.Combine(targetDir, "NuGet.exe");
@@ -1088,47 +1156,6 @@ EndProject");
         public static string GetHintPath(string path)
         {
             return @"<HintPath>.." + Path.DirectorySeparatorChar + path + @"</HintPath>";
-        }
-
-        public static bool IsRunningOnMac()
-        {
-
-            IntPtr buf = IntPtr.Zero;
-
-            try
-            {
-
-                buf = Marshal.AllocHGlobal(8192);
-
-                // This is a hacktastic way of getting sysname from uname ()
-
-                if (uname(buf) == 0)
-                {
-
-                    string os = Marshal.PtrToStringAnsi(buf);
-
-                    if (os == "Darwin")
-
-                        return true;
-
-                }
-
-            }
-            catch
-            {
-
-            }
-            finally
-            {
-
-                if (buf != IntPtr.Zero)
-
-                    Marshal.FreeHGlobal(buf);
-
-            }
-
-            return false;
-
         }
 
         private static bool IsProjectJson(string configFileName)

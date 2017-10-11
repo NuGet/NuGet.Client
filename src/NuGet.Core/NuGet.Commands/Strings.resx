@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -182,7 +182,8 @@
     <value>Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.</value>
   </data>
   <data name="Log_ResolverConflict" xml:space="preserve">
-    <value>Unable to satisfy conflicting requests for '{0}': {1}</value>
+    <value>Unable to satisfy conflicting requests for '{0}': {1} Framework: {2}</value>
+    <comment>0 - package id, 1 - comma delimited list of conflicts, 2 - framework</comment>
   </data>
   <data name="ResolverRequest_ToStringFormat" xml:space="preserve">
     <value>{0} (via {1})</value>
@@ -197,16 +198,19 @@
     <value>Dependency specified was {0} {1} but ended up with {2} {3}.</value>
   </data>
   <data name="Log_ImportsFallbackWarning" xml:space="preserve">
-    <value>Package '{0}' was restored using '{1}' instead the project target framework '{2}'. This may cause compatibility problems.</value>
+    <value>Package '{0}' was restored using '{1}' instead of the project target framework '{2}'. This package may not be fully compatible with your project.</value>
   </data>
   <data name="Log_CycleDetected" xml:space="preserve">
-    <value>Cycle detected:</value>
+    <value>Cycle detected.</value>
   </data>
   <data name="Log_DowngradeWarning" xml:space="preserve">
-    <value>Detected package downgrade: {0} from {1} to {2}</value>
+    <value>Detected package downgrade: {0} from {1} to {2}. Reference the package directly from the project to select a different version.</value>
+    <comment>{0}: package id
+{1}: requested version
+{2}: resolved version</comment>
   </data>
   <data name="Log_VersionConflict" xml:space="preserve">
-    <value>Version conflict detected for {0}.</value>
+    <value>Version conflict detected for {0}. Reference the package directly from the project to resolve this issue.</value>
   </data>
   <data name="Error_UnknownBuildAction" xml:space="preserve">
     <value>Package '{0}' specifies an invalid build action '{1}' for file '{2}'.</value>
@@ -510,5 +514,93 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="LocalsCommand_ClearingNuGetTempCache" xml:space="preserve">
     <value>Clearing NuGet Temp cache: {0}</value>
     <comment>{0} : Temp cache path</comment>
+  </data>
+  <data name="Log_RestoreNoOpDGChanged" xml:space="preserve">
+    <value>The restore inputs for '{0}' have changed. Continuing restore.</value>
+  </data>
+  <data name="Log_RestoreNoOpFinish" xml:space="preserve">
+    <value>The restore inputs for '{0}' have not changed. No further actions are required to complete the restore.</value>
+  </data>
+  <data name="Log_SkippingAssetsFile" xml:space="preserve">
+    <value>Assets file has not changed. Skipping assets file writing. Path: {0}</value>
+  </data>
+  <data name="Log_ToolSkippingAssetsFile" xml:space="preserve">
+    <value>Tool assets file has not changed. Skipping assets file write. Path: {0}</value>
+  </data>
+  <data name="Log_ToolWritingCacheFile" xml:space="preserve">
+    <value>Writing tool cache file to disk. Path: {0}</value>
+  </data>
+  <data name="Log_ToolWritingLockFile" xml:space="preserve">
+    <value>Writing tool lock file to disk. Path: {0}</value>
+  </data>
+  <data name="Log_WritingCacheFile" xml:space="preserve">
+    <value>Writing cache file to disk. Path: {0}</value>
+  </data>
+  <data name="Log_WritingLockFile" xml:space="preserve">
+    <value>Writing lock file to disk. Path: {0}</value>
+  </data>
+  <data name="Log_SkippingCacheFile" xml:space="preserve">
+    <value>No-Op restore. The cache will not be updated. Path: {0}</value>
+    <comment>{0}: Path to cache file</comment>
+  </data>
+  <data name="Log_AssetsFileNotOnDisk" xml:space="preserve">
+    <value>The expected assets file for {0} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
+  <data name="Log_PropsFileNotOnDisk" xml:space="preserve">
+    <value>The props file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
+  <data name="Log_TargetsFileNotOnDisk" xml:space="preserve">
+    <value>The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
+  <data name="Warning_MinVersionDoesNotExist" xml:space="preserve">
+    <value>{0} depends on {1} but {2} was not found. An approximate best match of {3} was resolved.</value>
+  </data>
+  <data name="Warning_MinVersionNonInclusive" xml:space="preserve">
+    <value>{0} does not provide an inclusive lower bound for dependency {1}. An approximate best match of {2} was resolved.</value>
+  </data>
+  <data name="Warning_ProjectDependencyMissingLowerBound" xml:space="preserve">
+    <value>Project dependency {0} does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.</value>
+  </data>
+  <data name="Error_NoPackageVersionsExist" xml:space="preserve">
+    <value>Unable to find package {0}. No packages exist with this id in source(s): {1}</value>
+  </data>
+  <data name="Error_NoPackageVersionsExistInRange" xml:space="preserve">
+    <value>Unable to find package {0} with version {1}</value>
+  </data>
+  <data name="Error_NoStablePackageVersionsExist" xml:space="preserve">
+    <value>Unable to find a stable package {0} with version {1}</value>
+  </data>
+  <data name="Error_ProjectDoesNotExist" xml:space="preserve">
+    <value>Unable to find project '{0}'. Check that the project reference is valid and that the project file exists.</value>
+  </data>
+  <data name="Error_UnableToFindProjectInfo" xml:space="preserve">
+    <value>Unable to find project information for '{0}'. The project file may be invalid or missing targets required for restore.</value>
+  </data>
+  <data name="FoundVersionsInSource" xml:space="preserve">
+    <value>Found {0} version(s) in {1} [ Nearest version: {2} ]</value>
+  </data>
+  <data name="FoundVersionsInSourceWithoutMatch" xml:space="preserve">
+    <value>Found {0} version(s) in {1}</value>
+  </data>
+  <data name="Log_MissingPackagesOnDisk" xml:space="preserve">
+    <value>Not all packages are on disk for: {0}</value>
+  </data>
+  <data name="CannotBeUsedWithOtherValues" xml:space="preserve">
+    <value>'{0}' cannot be used in conjunction with other values.</value>
+  </data>
+  <data name="Error_InvalidATF" xml:space="preserve">
+    <value>PackageTargetFallback and AssetTargetFallback cannot be used together. Remove PackageTargetFallback(deprecated) references from the project environment.</value>
+  </data>
+  <data name="UnsupportedProject" xml:space="preserve">
+    <value>Skipping restore for project '{0}'. The project file may be invalid or missing targets required for restore.</value>
+  </data>
+  <data name="Error_EmptySourceFilePath" xml:space="preserve">
+    <value>A source file was added with an empty path.</value>
+  </data>
+  <data name="Error_EmptySourceFileProjectDirectory" xml:space="preserve">
+    <value>The project directory for the source file '{0}' could not be found.</value>
+  </data>
+  <data name="Warning_VersionAboveUpperBound" xml:space="preserve">
+    <value>Detected package version outside of dependency constraint: {0} requires {1} but version {2} was resolved.</value>
   </data>
 </root>

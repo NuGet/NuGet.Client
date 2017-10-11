@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using NuGet.Test.Utility;
@@ -379,6 +380,56 @@ namespace NuGet.CommandLine.Test
                     Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
                     Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Item2);
                 }
+            }
+        }
+
+        [Theory, MemberData(nameof(ServerWarningData))]
+        public void DeleteCommand_ShowsServerWarnings(string firstServerWarning, string secondServerWarning)
+        {
+            var serverWarnings = new[] { firstServerWarning, secondServerWarning };
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Arrange
+            using (var server = new MockServer())
+            {
+                server.Start();
+
+                server.Delete.Add("/nuget/testPackage1/1.1", request => HttpStatusCode.OK);
+
+                server.AddServerWarnings(serverWarnings);
+
+                // Act
+                string[] args = new string[] {
+                    "delete", "testPackage1", "1.1.0",
+					"-Source", server.Uri + "nuget", "-NonInteractive" };
+
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                foreach (var serverWarning in serverWarnings)
+                {
+                    if (!string.IsNullOrEmpty(serverWarning))
+                    {
+                        Assert.Contains(serverWarning, r.Item2);
+                    }
+                }
+            }
+        }
+
+        public static IEnumerable<string[]> ServerWarningData
+        {
+            get
+            {
+                return new[]
+                {
+                    new string[] { null, null },
+                    new string[] { "Single server warning message", null},
+                    new string[] { "First of two server warning messages", "Second of two server warning messages"}
+                };
             }
         }
     }

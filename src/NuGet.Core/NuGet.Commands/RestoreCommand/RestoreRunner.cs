@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -7,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.Commands
@@ -19,23 +23,33 @@ namespace NuGet.Commands
         /// <summary>
         /// Create requests, execute requests, and commit restore results.
         /// </summary>
-        public static async Task<IReadOnlyList<RestoreSummary>> Run(RestoreArgs restoreContext)
+        public static async Task<IReadOnlyList<RestoreSummary>> RunAsync(RestoreArgs restoreContext, CancellationToken token)
         {
             // Create requests
             var requests = await GetRequests(restoreContext);
 
             // Run requests
-            return await Run(requests, restoreContext);
+            return await RunAsync(requests, restoreContext, token);
+        }
+
+        /// <summary>
+        /// Create requests, execute requests, and commit restore results.
+        /// </summary>
+        public static async Task<IReadOnlyList<RestoreSummary>> RunAsync(RestoreArgs restoreContext)
+        {
+            // Run requests
+            return await RunAsync(restoreContext, CancellationToken.None);
         }
 
         /// <summary>
         /// Execute and commit restore requests.
         /// </summary>
-        public static async Task<IReadOnlyList<RestoreSummary>> Run(
+        private static async Task<IReadOnlyList<RestoreSummary>> RunAsync(
             IEnumerable<RestoreSummaryRequest> restoreRequests,
-            RestoreArgs restoreContext)
+            RestoreArgs restoreContext,
+            CancellationToken token)
         {
-            int maxTasks = GetMaxTaskCount(restoreContext);
+            var maxTasks = GetMaxTaskCount(restoreContext);
 
             var log = restoreContext.Log;
 
@@ -68,7 +82,7 @@ namespace NuGet.Commands
 
                 var request = requests.Dequeue();
 
-                var task = Task.Run(async () => await ExecuteAndCommit(request));
+                var task = Task.Run(() => ExecuteAndCommitAsync(request, token), token);
                 restoreTasks.Add(task);
             }
 
@@ -90,7 +104,7 @@ namespace NuGet.Commands
             IEnumerable<RestoreSummaryRequest> restoreRequests,
             RestoreArgs restoreContext)
         {
-            int maxTasks = GetMaxTaskCount(restoreContext);
+            var maxTasks = GetMaxTaskCount(restoreContext);
 
             var log = restoreContext.Log;
 
@@ -123,7 +137,7 @@ namespace NuGet.Commands
 
                 var request = requests.Dequeue();
 
-                var task = Task.Run(async () => await Execute(request));
+                var task = Task.Run(() => ExecuteAsync(request, CancellationToken.None));
                 restoreTasks.Add(task);
             }
 
@@ -181,10 +195,12 @@ namespace NuGet.Commands
                 {
                     // No need to throw here - the situation is harmless, and we want to report all possible
                     // inputs that don't resolve to a project.
-                    restoreContext.Log.LogWarning(string.Format(
+                    var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Error_UnableToLocateRestoreTarget,
-                            Path.GetFullPath(input)));
+                            Path.GetFullPath(input));
+
+                    await restoreContext.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1501, message));
                 }
                 foreach (var request in inputRequests)
                 {
@@ -216,14 +232,14 @@ namespace NuGet.Commands
             return maxTasks;
         }
 
-        private static async Task<RestoreSummary> ExecuteAndCommit(RestoreSummaryRequest summaryRequest)
+        private static async Task<RestoreSummary> ExecuteAndCommitAsync(RestoreSummaryRequest summaryRequest, CancellationToken token)
         {
-            var result = await Execute(summaryRequest);
+            var result = await ExecuteAsync(summaryRequest, token);
 
-            return await Commit(result);
+            return await CommitAsync(result, token);
         }
 
-        private static async Task<RestoreResultPair> Execute(RestoreSummaryRequest summaryRequest)
+        private static async Task<RestoreResultPair> ExecuteAsync(RestoreSummaryRequest summaryRequest, CancellationToken token)
         {
             var log = summaryRequest.Request.Log;
 
@@ -244,12 +260,12 @@ namespace NuGet.Commands
             }
 
             var command = new RestoreCommand(request);
-            var result = await command.ExecuteAsync();
+            var result = await command.ExecuteAsync(token);
 
             return new RestoreResultPair(summaryRequest, result);
         }
 
-        public static async Task<RestoreSummary> Commit(RestoreResultPair restoreResult)
+        public static async Task<RestoreSummary> CommitAsync(RestoreResultPair restoreResult, CancellationToken token)
         {
             var summaryRequest = restoreResult.SummaryRequest;
             var result = restoreResult.Result;
@@ -258,7 +274,7 @@ namespace NuGet.Commands
 
             // Commit the result
             log.LogInformation(Strings.Log_Committing);
-            await result.CommitAsync(log, CancellationToken.None);
+            await result.CommitAsync(log, token);
 
             if (result.Success)
             {
@@ -277,13 +293,16 @@ namespace NuGet.Commands
                     summaryRequest.InputPath));
             }
 
+            // Remote the summary messages from the assets file. This will be removed later.
+            var messages = restoreResult.Result.LockFile.LogMessages.Select(e => new RestoreLogMessage(e.Level, e.Code, e.Message));
+
             // Build the summary
             return new RestoreSummary(
                 result,
                 summaryRequest.InputPath,
-                summaryRequest.Settings,
+                summaryRequest.ConfigFiles,
                 summaryRequest.Sources,
-                summaryRequest.CollectorLogger.Errors);
+                messages);
         }
 
         private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)

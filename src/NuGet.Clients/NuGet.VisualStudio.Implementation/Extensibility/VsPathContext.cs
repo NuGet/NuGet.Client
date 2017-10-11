@@ -5,11 +5,29 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Configuration;
 
 namespace NuGet.VisualStudio
 {
+    // Implementation of IVsPathContext without support of reference resolving.
+    // Used when project is not managed by NuGet or given project doesn't have any packages installed.
     internal class VsPathContext : IVsPathContext
     {
+        public string UserPackageFolder { get; }
+
+        public IEnumerable FallbackPackageFolders { get; }
+
+        public VsPathContext(NuGetPathContext pathContext)
+        {
+            if (pathContext == null)
+            {
+                throw new ArgumentNullException(nameof(pathContext));
+            }
+
+            UserPackageFolder = pathContext.UserPackageFolder;
+            FallbackPackageFolders = pathContext.FallbackPackageFolders;
+        }
+
         public VsPathContext(string userPackageFolder, IEnumerable<string> fallbackPackageFolders)
         {
             if (userPackageFolder == null)
@@ -26,7 +44,11 @@ namespace NuGet.VisualStudio
             FallbackPackageFolders = fallbackPackageFolders.ToList();
         }
 
-        public string UserPackageFolder { get; }
-        public IEnumerable FallbackPackageFolders { get; }
+        public bool TryResolvePackageAsset(string packageAssetPath, out string packageDirectoryPath)
+        {
+            // unable to resolve the reference file path without the index
+            packageDirectoryPath = null;
+            return false;
+        }
     }
 }

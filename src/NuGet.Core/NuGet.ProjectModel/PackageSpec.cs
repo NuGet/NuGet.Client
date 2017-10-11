@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Shared;
@@ -32,10 +33,7 @@ namespace NuGet.ProjectModel
 
         public string FilePath { get; set; }
 
-        public string BaseDirectory
-        {
-            get { return Path.GetDirectoryName(FilePath); }
-        }
+        public string BaseDirectory => Path.GetDirectoryName(FilePath);
 
         public string Name { get; set; }
 
@@ -44,14 +42,11 @@ namespace NuGet.ProjectModel
         private NuGetVersion _version = DefaultVersion;
         public NuGetVersion Version
         {
-            get
-            {
-                return _version;
-            }
+            get => _version;
             set
             {
                 _version = value;
-                this.IsDefaultVersion = false;
+                IsDefaultVersion = false;
             }
         }
         public bool IsDefaultVersion { get; set; } = true;
@@ -97,6 +92,12 @@ namespace NuGet.ProjectModel
         public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; } = new List<TargetFrameworkInformation>();
 
         public RuntimeGraph RuntimeGraph { get; set; } = new RuntimeGraph();
+
+        /// <summary>
+        /// Project Settings is used to pass settings like HideWarningsAndErrors down to lower levels.
+        /// This should not be part of the Equals and GetHashCode.
+        /// </summary>
+        public ProjectRestoreSettings RestoreSettings { get; set; } = new ProjectRestoreSettings();
 
         /// <summary>
         /// Additional MSBuild properties.
@@ -197,6 +198,11 @@ namespace NuGet.ProjectModel
             spec.FilePath = FilePath;
 
             return spec;
+        }
+
+        public PackageSpec WithSettings(ISettings settings)
+        {
+            return null;
         }
     }
 }

@@ -1,5 +1,9 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,7 +38,11 @@ namespace NuGet.Commands.Test
                     Path.Combine(pathContext.SolutionRoot, "tool", "fake.csproj"),
                     "a",
                     VersionRange.Parse("1.0.0"),
-                    NuGetFramework.Parse("netcoreapp1.0"));
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                    pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder},
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    new WarningProperties());
 
                 dgFile.AddProject(spec);
                 dgFile.AddRestore(spec.Name);
@@ -108,7 +116,11 @@ namespace NuGet.Commands.Test
                     Path.Combine(pathContext.SolutionRoot, "fake.csproj"),
                     "a",
                     VersionRange.Parse("1.0.0"),
-                    NuGetFramework.Parse("netcoreapp1.0"));
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                    pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder },
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    new WarningProperties());
 
                 dgFile.AddProject(spec);
                 dgFile.AddRestore(spec.Name);
@@ -131,6 +143,75 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task DotnetCliTool_ToolRestoreNoOpsRegardlessOfProject()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger1 = new TestLogger();
+                var logger2 = new TestLogger();
+
+                var spec1 = ToolRestoreUtility.GetSpec(
+                    Path.Combine(pathContext.SolutionRoot, "fake1.csproj"),
+                    "a",
+                    VersionRange.Parse("1.0.0"),
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                                        pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder },
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    new WarningProperties());
+
+                var spec2 = ToolRestoreUtility.GetSpec(
+                    Path.Combine(pathContext.SolutionRoot, "fake2.csproj"),
+                    "a",
+                    VersionRange.Parse("1.0.0"),
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                                        pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder },
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    new WarningProperties());
+
+                var dgFile1 = new DependencyGraphSpec();
+                dgFile1.AddProject(spec1);
+                dgFile1.AddRestore(spec1.Name);
+
+                var dgFile2 = new DependencyGraphSpec();
+                dgFile2.AddProject(spec2);
+                dgFile2.AddRestore(spec2.Name);
+
+                var pathResolver = new ToolPathResolver(pathContext.UserPackagesFolder);
+                var path = pathResolver.GetLockFilePath(
+                    "a",
+                    NuGetVersion.Parse("1.0.0"),
+                    NuGetFramework.Parse("netcoreapp1.0"));
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+
+                // Act
+                var results1 = await CommandsTestUtility.RunRestore(dgFile1, pathContext, logger1);
+
+                // Assert
+                Assert.Equal(1, results1.Count);
+                var result1 = results1.Single();
+
+                Assert.True(result1.Success, "Failed: " + string.Join(Environment.NewLine, logger1.Messages));
+                Assert.False(result1.NoOpRestore, "Should not no-op: " + string.Join(Environment.NewLine, logger1.Messages));
+                Assert.True(File.Exists(path));
+
+                // Act
+                var results2 = await CommandsTestUtility.RunRestore(dgFile2, pathContext, logger2);
+
+                // Assert
+                Assert.Equal(1, results2.Count);
+                var result2 = results2.Single();
+
+                Assert.True(result2.Success, "Failed: " + string.Join(Environment.NewLine, logger2.Messages));
+                Assert.True(result2.NoOpRestore, "Should no-op: " + string.Join(Environment.NewLine, logger2.Messages));
+                Assert.True(File.Exists(path));
+            }
+        }
+
+        [Fact]
         public async Task DotnetCliTool_BasicToolRestore_WithDuplicates()
         {
             // Arrange
@@ -145,7 +226,11 @@ namespace NuGet.Commands.Test
                         Path.Combine(pathContext.SolutionRoot, "fake.csproj"),
                         "a",
                         VersionRange.Parse("1.0.0"),
-                        NuGetFramework.Parse("netcoreapp1.0"));
+                        NuGetFramework.Parse("netcoreapp1.0"),
+                                            pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder },
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    new WarningProperties());
 
                     dgFile.AddProject(spec);
                     dgFile.AddRestore(spec.Name);
@@ -194,7 +279,11 @@ namespace NuGet.Commands.Test
                         Path.Combine(pathContext.SolutionRoot, $"fake{i}.csproj"),
                         "a",
                         version,
-                        NuGetFramework.Parse("netcoreapp1.0"));
+                        NuGetFramework.Parse("netcoreapp1.0"),
+                                            pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder },
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    new WarningProperties());
 
                     dgFile.AddProject(spec);
                     dgFile.AddRestore(spec.Name);
@@ -225,9 +314,24 @@ namespace NuGet.Commands.Test
                         version.MinVersion,
                         NuGetFramework.Parse("netcoreapp1.0"));
 
-                    Assert.True(File.Exists(path));
+                    Assert.True(File.Exists(path), $"{path} does not exist!");
                 }
             }
+        }
+
+        [Theory]
+        [InlineData("tool","netcoreapp1.0","1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
+        [InlineData("Tool", "netcoreapp1.0", "1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
+        [InlineData("tOOl", "NetCoreapp1.0", "1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
+        public void DotnetCliTool_TestGetUniqueName(string name, string framework, string version, string expected)
+        {
+            Assert.Equal(expected, ToolRestoreUtility.GetUniqueName(name, framework, VersionRange.Parse(version)));
+        }
+
+        [Fact] 
+        public void DotnetCliTool_TestGetUniqueName_VersionRangeAll()
+        {
+            Assert.Equal("tool-netcoreapp1.0-(, )", ToolRestoreUtility.GetUniqueName("tool", "netcoreapp1.0", VersionRange.All));
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
@@ -13,17 +14,17 @@ namespace NuGet.SolutionRestoreManager.Test
 
         public IVsProjectProperties Properties { get; }
 
-        public String TargetFrameworkMoniker { get; }
+        public string TargetFrameworkMoniker { get; }
 
         public VsTargetFrameworkInfo(
             string targetFrameworkMoniker,
-            IVsReferenceItems packageReferences,
-            IVsReferenceItems projectReferences,
-            IVsProjectProperties projectProperties)
+            IEnumerable<IVsReferenceItem> packageReferences,
+            IEnumerable<IVsReferenceItem> projectReferences,
+            IEnumerable<IVsProjectProperty> projectProperties)
         {
             if (string.IsNullOrEmpty(targetFrameworkMoniker))
             {
-                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(targetFrameworkMoniker));
+                throw new ArgumentException("Argument cannot be null or empty", nameof(targetFrameworkMoniker));
             }
 
             if (packageReferences == null)
@@ -42,9 +43,9 @@ namespace NuGet.SolutionRestoreManager.Test
             }
 
             TargetFrameworkMoniker = targetFrameworkMoniker;
-            PackageReferences = packageReferences;
-            ProjectReferences = projectReferences;
-            Properties = projectProperties;
+            PackageReferences = new VsReferenceItems(packageReferences);
+            ProjectReferences = new VsReferenceItems(projectReferences);
+            Properties = new VsProjectProperties(projectProperties);
         }
     }
 }

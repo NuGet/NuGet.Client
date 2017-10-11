@@ -1,12 +1,17 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Xunit;
@@ -825,9 +830,10 @@ namespace NuGet.DependencyResolver.Tests
                 }
             }
 
-            public Task CopyToAsync(
-                LibraryIdentity match,
-                Stream stream,
+            public PackageSource Source => new PackageSource("Test");
+
+            public Task<IPackageDownloader> GetPackageDownloaderAsync(
+                PackageIdentity packageIdentity,
                 SourceCacheContext cacheContext,
                 ILogger logger,
                 CancellationToken cancellationToken)
@@ -847,7 +853,12 @@ namespace NuGet.DependencyResolver.Tests
                 return Task.FromResult(packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version));
             }
 
-            public Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(
+            public Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, SourceCacheContext cacheContext, ILogger logger, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<LibraryDependencyInfo> GetDependenciesAsync(
                 LibraryIdentity match,
                 NuGetFramework targetFramework,
                 SourceCacheContext cacheContext,
@@ -857,9 +868,10 @@ namespace NuGet.DependencyResolver.Tests
                 List<LibraryDependency> dependencies;
                 if (_graph.TryGetValue(match, out dependencies))
                 {
-                    return Task.FromResult<IEnumerable<LibraryDependency>>(dependencies);
+                    return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, dependencies));
                 }
-                return Task.FromResult(Enumerable.Empty<LibraryDependency>());
+
+                return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, Enumerable.Empty<LibraryDependency>()));
             }
 
             public TestPackage Package(string id, string version)

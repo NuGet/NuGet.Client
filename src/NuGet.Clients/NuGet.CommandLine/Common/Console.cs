@@ -3,11 +3,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Threading.Tasks;
 using NuGet.Common;
 
 namespace NuGet.CommandLine
 {
-    public class Console : IConsole
+    public class Console : LoggerBase, IConsole
     {
         /// <summary>
         /// All operations writing to Out should be wrapped in a lock to 
@@ -81,9 +82,20 @@ namespace NuGet.CommandLine
             }
         }
 
+        private Verbosity _verbosity;
+
         public Verbosity Verbosity
         {
-            get; set; 
+            get
+            {
+                return _verbosity;
+            }
+
+            set
+            {
+                _verbosity = value;
+                VerbosityLevel = GetVerbosityLevel(_verbosity);
+            }
         }
 
         public bool IsNonInteractive
@@ -369,53 +381,50 @@ namespace NuGet.CommandLine
             }
         }
 
-        public void LogDebug(string data)
+        public override void Log(ILogMessage message)
         {
-            if (Verbosity == Verbosity.Detailed)
+            if (DisplayMessage(message.Level))
             {
-                WriteColor(Out, ConsoleColor.Gray, data);
+                if (message.Level == LogLevel.Debug)
+                {
+                    WriteColor(Out, ConsoleColor.Gray, message.Message);
+                }
+                else if (message.Level == LogLevel.Warning)
+                {
+                    WriteWarning(message.FormatWithCode());
+                }
+                else if (message.Level == LogLevel.Error)
+                {
+                    WriteError(message.FormatWithCode());
+                }
+                else
+                {
+                    // Verbose, Information
+                    WriteLine(message.Message);
+                }
             }
         }
 
-        public void LogVerbose(string data)
+        public override Task LogAsync(ILogMessage message)
         {
-            if (Verbosity == Verbosity.Detailed)
+            Log(message);
+
+            return Task.FromResult(0);
+        }
+
+        private static LogLevel GetVerbosityLevel(Verbosity level)
+        {
+            switch (level)
             {
-                WriteLine(data);
+                case Verbosity.Detailed:
+                    return LogLevel.Debug;
+                case Verbosity.Normal:
+                    return LogLevel.Information;
+                case Verbosity.Quiet:
+                    return LogLevel.Warning;
             }
-        }
 
-        public void LogInformation(string data)
-        {
-            if (Verbosity == Verbosity.Normal || Verbosity == Verbosity.Detailed)
-            {
-                WriteLine(data);
-            }
-        }
-
-        public void LogMinimal(string data)
-        {
-            LogInformation(data);
-        }
-
-        public void LogWarning(string data)
-        {
-            WriteWarning(data);
-        }
-
-        public void LogError(string data)
-        {
-            WriteLine(ConsoleColor.Red, data);
-        }
-
-        public void LogInformationSummary(string data)
-        {
-            LogInformation(data);
-        }
-
-        public void LogErrorSummary(string data)
-        {
-            WriteError(data);
+            return LogLevel.Information;
         }
     }
 }

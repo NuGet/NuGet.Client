@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>NuGet.CommandLine</id>
-    <version>4.0.0</version>
+    <version>4.5.0</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</licenseUrl>

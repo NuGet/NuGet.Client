@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,11 +27,7 @@ namespace NuGet.CommandLine.XPlat
 
         public MSBuildAPIUtility(ILogger logger)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            Logger = logger;
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -44,7 +40,7 @@ namespace NuGet.CommandLine.XPlat
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
             {
-                throw new Exception(Strings.Error_MsBuildUnableToOpenProject);
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
             }
             return new Project(projectRootElement);
         }
@@ -60,7 +56,7 @@ namespace NuGet.CommandLine.XPlat
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
             {
-                throw new Exception(Strings.Error_MsBuildUnableToOpenProject);
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
             }
             return new Project(projectRootElement, globalProperties, toolsVersion: null);
         }
@@ -223,14 +219,10 @@ namespace NuGet.CommandLine.XPlat
         {
             var packageVersion = packageDependency.VersionRange.OriginalString ??
                 packageDependency.VersionRange.MinVersion.ToString();
-            var packageMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            { { VERSION_TAG, packageVersion } };
 
-            // Currently metadata is added as a metadata. As opposed to an attribute
-            // Due to https://github.com/Microsoft/msbuild/issues/1393
+            var item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, packageDependency.Id);
+            item.AddMetadata(VERSION_TAG, packageVersion, expressAsAttribute: true);
 
-            itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, packageDependency.Id, packageMetadata);
-            itemGroup.ContainingProject.Save();
             Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.Info_AddPkgAdded,
                 packageDependency.Id,
@@ -258,7 +250,7 @@ namespace NuGet.CommandLine.XPlat
                         importedPackageReference.UnevaluatedInclude,
                         importedPackageReference.Xml.ContainingProject.FullPath));
                 }
-                throw new Exception(string.Format(CultureInfo.CurrentCulture,
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AddPkgFailOnImportEdit,
                     operationType,
                     packageDependency.Id,
@@ -333,7 +325,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 // There is ProjectRootElement.TryOpen but it does not work as expected
                 // I.e. it returns null for some valid projects
-                return ProjectRootElement.Open(filename);
+                return ProjectRootElement.Open(filename, ProjectCollection.GlobalProjectCollection, preserveFormatting: true);
             }
             catch (Microsoft.Build.Exceptions.InvalidProjectFileException)
             {

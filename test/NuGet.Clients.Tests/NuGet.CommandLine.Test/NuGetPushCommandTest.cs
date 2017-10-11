@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -291,6 +291,49 @@ namespace NuGet.CommandLine.Test
                     var output = result.Item2;
                     Assert.Contains("Your package was pushed.", output);
                     AssertFileEqual(packageFileName, outputFileName);
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ServerWarningData))]
+        public void PushCommand_LogsServerWarningsWhenPresent(string firstServerWarning, string secondServerWarning)
+        {
+            var serverWarnings = new[] { firstServerWarning, secondServerWarning };
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Arrange
+            using (var packageDirectory = TestDirectory.Create())
+            {
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                using (var server = new MockServer())
+                {
+                    server.Get.Add("/push", r => "OK");
+                    server.Put.Add("/push", r => HttpStatusCode.Created);
+
+                    server.AddServerWarnings(serverWarnings);
+
+                    server.Start();
+
+                    // Act
+                    var args = new string[]
+                    {"push", packageFileName, "-Source", server.Uri + "push", "-Apikey", "token"};
+                    var result = CommandRunner.Run(
+                        nugetexe,
+                        Directory.GetCurrentDirectory(),
+                        string.Join(" ", args),
+                        true);
+                    server.Stop();
+
+                    // Assert
+                    var output = result.Item2;
+                    foreach (var serverWarning in serverWarnings)
+                    {
+                        if (!string.IsNullOrEmpty(serverWarning))
+                        {
+                            Assert.Contains(serverWarning, output);
+                        }
+                    }
                 }
             }
         }
@@ -912,9 +955,8 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             var pluginDirectory = Util.GetTestablePluginDirectory();
-
-            List<string> credentialForGetRequest = new List<string>();
-            List<string> credentialForPutRequest = new List<string>();
+            
+            
 
             using (var packageDirectory = TestDirectory.Create())
             {
@@ -924,12 +966,13 @@ namespace NuGet.CommandLine.Test
 
                 using (var server = new MockServer())
                 {
+                    var credentialForPutRequest = new List<string>();
                     server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
                         var h = r.Headers["Authorization"];
                         var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                        credentialForPutRequest.Add(credential);
+                        credentialForPutRequest.Insert(0, credential);
 
                         if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
                         {
@@ -966,8 +1009,7 @@ namespace NuGet.CommandLine.Test
 
                     // Assert
                     Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
-
-                    Assert.Equal(1, credentialForPutRequest.Count);
+                    Assert.NotEqual(0, credentialForPutRequest.Count);
                     Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
                 }
             }
@@ -980,9 +1022,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
             var pluginDirectory = Util.GetTestablePluginDirectory();
-
-            List<string> credentialForGetRequest = new List<string>();
-            List<string> credentialForPutRequest = new List<string>();
+                        
 
             using (var packageDirectory = TestDirectory.Create())
             {
@@ -992,12 +1032,13 @@ namespace NuGet.CommandLine.Test
 
                 using (var server = new MockServer())
                 {
+                    var credentialForPutRequest = new List<string>();
                     server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
                         var h = r.Headers["Authorization"];
                         var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                        credentialForPutRequest.Add(credential);
+                        credentialForPutRequest.Insert(0,credential);
                         if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
                         {
                             res.StatusCode = (int)HttpStatusCode.OK;
@@ -1035,7 +1076,7 @@ namespace NuGet.CommandLine.Test
 
                     // Assert
                     Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
-                    Assert.Equal(1, credentialForPutRequest.Count);
+                    Assert.NotEqual(0, credentialForPutRequest.Count);
                     Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
                 }
             }
@@ -1167,8 +1208,8 @@ namespace NuGet.CommandLine.Test
 
                     // Assert
                     Assert.Equal(1, r1.Item1);
-                    Assert.Contains("401 (Unauthorized)", r1.Item3);
-                    Assert.Contains($"Credential plugin {pluginPath} handles this request, but is unable to provide credentials. Testing abort.", r1.Item2);
+                    Assert.Contains("401 (Unauthorized)", r1.Item2 + " " + r1.Item3);
+                    Assert.Contains($"Credential plugin {pluginPath} handles this request, but is unable to provide credentials. Testing abort.", r1.Item2 + " " + r1.Item3);
 
                     // No requests hit server, since abort during credential acquisition
                     // and no fallback to console provider
@@ -1237,10 +1278,12 @@ namespace NuGet.CommandLine.Test
                         });
                     server.Stop();
 
+                    var output = r1.Item2 + " " + r1.Item3;
+
                     // Assert
-                    Assert.Equal(1, r1.Item1);
-                    Assert.Contains("401 (Unauthorized)", r1.Item3);
-                    Assert.Contains($"Credential plugin {pluginPath} timed out", r1.Item2);
+                    Assert.True(1 == r1.Item1, output);
+                    Assert.Contains("401 (Unauthorized)", output);
+                    Assert.Contains($"Credential plugin {pluginPath} timed out", output);
                     // ensure the process was killed
                     Assert.Equal(0, System.Diagnostics.Process.GetProcessesByName(Path.GetFileNameWithoutExtension(pluginPath)).Length);
                     // No requests hit server, since abort during credential acquisition
@@ -2022,6 +2065,19 @@ namespace NuGet.CommandLine.Test
             public static readonly string ProviderNotApplicableCode = "1";
             public static readonly string FailCode = "2";
 
+        }
+
+        public static IEnumerable<string[]> ServerWarningData
+        {
+            get
+            {
+                return new[]
+                {
+                    new string[] { null, null },
+                    new string[] { "Single server warning message", null},
+                    new string[] { "First of two server warning messages", "Second of two server warning messages"}
+                };
+            }
         }
     }
 }

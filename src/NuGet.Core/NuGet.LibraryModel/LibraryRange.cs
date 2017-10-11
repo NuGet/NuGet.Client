@@ -3,6 +3,7 @@
 
 using System;
 using System.Text;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.LibraryModel
@@ -146,12 +147,13 @@ namespace NuGet.LibraryModel
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                return ((Name != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(Name) : 0) * 397) ^
-                       (VersionRange != null ? VersionRange.GetHashCode() : 0) ^
-                       TypeConstraint.GetHashCode();
-            }
+            var combiner = new HashCodeCombiner();
+
+            combiner.AddStringIgnoreCase(Name);
+            combiner.AddObject(VersionRange);
+            combiner.AddObject(TypeConstraint);
+
+            return combiner.CombinedHash;
         }
 
         public static bool operator ==(LibraryRange left, LibraryRange right)
