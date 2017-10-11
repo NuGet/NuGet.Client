@@ -725,14 +725,14 @@ namespace NuGet.Commands
         {
             PackageBuilder packageBuilder = CreatePackageBuilderFromNuspec(path);
 
-            PackageArchiveReader package = null;
+            PackageArchiveReader packageArchiveReader = null;
 
             if (_packArgs.InstallPackageToOutputPath)
             {
                 InitCommonPackageBuilderProperties(packageBuilder);
 
                 string outputPath = GetOutputPath(packageBuilder, _packArgs, excludeVersion: true);
-                package = BuildPackage(packageBuilder, outputPath: outputPath);
+                packageArchiveReader = BuildPackage(packageBuilder, outputPath: outputPath);
             }
             else
             {
@@ -749,7 +749,7 @@ namespace NuGet.Commands
 
                 InitCommonPackageBuilderProperties(packageBuilder);
 
-                package = BuildPackage(packageBuilder);
+                packageArchiveReader = BuildPackage(packageBuilder);
 
                 if (_packArgs.Symbols)
                 {
@@ -757,12 +757,12 @@ namespace NuGet.Commands
                 }
             }
 
-            if (package != null && !_packArgs.NoPackageAnalysis)
+            if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
             {
-                AnalyzePackage(package, packageBuilder);
+                AnalyzePackage(packageArchiveReader, packageBuilder);
             }
 
-            return package;
+            return packageArchiveReader;
         }
 
         private PackageBuilder CreatePackageBuilderFromNuspec(string path)
