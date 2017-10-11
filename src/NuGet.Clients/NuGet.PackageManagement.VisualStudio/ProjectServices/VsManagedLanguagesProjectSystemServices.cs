@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -136,7 +136,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var references = AsVSProject4.References
                 .Cast<Reference6>()
-                .Where(r => r.SourceProject != null)
+                .Where(r => r.SourceProject != null && EnvDTEProjectUtility.IsSupported(r.SourceProject))
                 .Select(reference =>
                 {
                     Array metadataElements;
