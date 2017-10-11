@@ -395,7 +395,7 @@ namespace NuGet.CommandLine
                 }
                 else if (message.Level == LogLevel.Error)
                 {
-                    WriteError(message.FormatWithCode());
+                    WriteError("error " + message.FormatWithCode());
                 }
                 else
                 {
