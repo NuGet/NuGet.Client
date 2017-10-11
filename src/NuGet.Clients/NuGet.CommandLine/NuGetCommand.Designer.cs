@@ -11566,6 +11566,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value provided for &apos;{0}&apos;. For a list of accepted values, please visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandInvalidArgumentException {
+            get {
+                return ResourceManager.GetString("SignCommandInvalidArgumentException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name of the key container which has the private key.
         ///This option, along with -CryptographicServiceProvider, can be used to specify the private key if the certificate file does not contain one..
         /// </summary>

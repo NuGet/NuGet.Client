@@ -5416,4 +5416,8 @@ This option should be used when specifying the certificate via -CertificateSubje
   <data name="SignCommandTimestamperDescription" xml:space="preserve">
     <value>URL to an RFC 3161 timestamp server.</value>
   </data>
+  <data name="SignCommandInvalidArgumentException" xml:space="preserve">
+    <value>Invalid value provided for '{0}'. For a list of accepted values, please visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+    <comment>{0} - argument name</comment>
+  </data>
 </root>

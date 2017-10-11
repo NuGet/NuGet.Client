@@ -9,11 +9,13 @@ using System.Text;
 namespace NuGet.Commands
 {
     /// <summary>
-    /// Find options for X.509 certificates.
-    /// <seealso cref="CertificateFinder" />
+    /// Source options for X.509 certificates.
+    /// <seealso cref="CertificateProvider" />
     /// </summary>
     internal class CertificateSourceOptions : IDisposable
     {
+        private SecureString _certificatePassword;
+
         /// <summary>
         /// The certificate file path.
         /// </summary>

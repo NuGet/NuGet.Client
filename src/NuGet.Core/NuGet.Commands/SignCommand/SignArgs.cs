@@ -3,6 +3,8 @@
 
 using System;
 using System.Security;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 
 namespace NuGet.Commands
@@ -30,12 +32,12 @@ namespace NuGet.Commands
         /// <summary>
         /// Name of the store to be used when searching for a certificate.
         /// </summary>
-        public string CertificateStoreName { get; set; }
+        public StoreName CertificateStoreName { get; set; }
 
         /// <summary>
         /// Location of the store to be used when searching for a certificate.
         /// </summary>
-        public string CertificateStoreLocation { get; set; }
+        public StoreLocation CertificateStoreLocation { get; set; }
 
         /// <summary>
         /// Subject Name for the certificate that can be used to search the local certificate store.
@@ -60,7 +62,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Hashing Algorithm to be used to digest the package files.
         /// </summary>
-        public string HashingAlgorithm { get; set; }
+        public HashAlgorithmName HashingAlgorithm { get; set; }
 
         /// <summary>
         /// URL to an RFC 3161 timestamp server.
@@ -70,7 +72,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Hashing Algorithm to be used by the RFC 3161 time stamp server.
         /// </summary>
-        public string TimestampHashAlgorithm { get; set; }
+        public HashAlgorithmName TimestampHashAlgorithm { get; set; }
 
         /// <summary>
         /// Password for the certificate, if needed.
