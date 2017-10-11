@@ -731,7 +731,7 @@ namespace NuGet.Commands
             {
                 InitCommonPackageBuilderProperties(packageBuilder);
 
-                string outputPath = GetOutputPath(packageBuilder, _packArgs, excludeVersion: true);
+                string outputPath = GetOutputPath(packageBuilder, _packArgs);
                 packageArchiveReader = BuildPackage(packageBuilder, outputPath: outputPath);
             }
             else
@@ -1044,7 +1044,7 @@ namespace NuGet.Commands
         }
 
         // Gets the full path of the resulting nuget package including the file name
-        public static string GetOutputPath(PackageBuilder builder, PackArgs packArgs, bool symbols = false, NuGetVersion nugetVersion = null, string outputDirectory = null, bool isNupkg = true, bool excludeVersion = false)
+        public static string GetOutputPath(PackageBuilder builder, PackArgs packArgs, bool symbols = false, NuGetVersion nugetVersion = null, string outputDirectory = null, bool isNupkg = true)
         {
             NuGetVersion versionToUse;
             if (nugetVersion != null)
@@ -1073,7 +1073,7 @@ namespace NuGet.Commands
                 }
             }
 
-            var outputFile = GetOutputFileName(builder.Id, versionToUse, isNupkg: isNupkg, symbols: symbols, excludeVersion: excludeVersion);
+            var outputFile = GetOutputFileName(builder.Id, versionToUse, isNupkg: isNupkg, symbols: symbols, excludeVersion: packArgs.OutputFileNamesWithoutVersion);
 
             var finalOutputDirectory = packArgs.OutputDirectory ?? packArgs.CurrentDirectory;
             finalOutputDirectory = outputDirectory ?? finalOutputDirectory;

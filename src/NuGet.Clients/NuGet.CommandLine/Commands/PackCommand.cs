@@ -82,6 +82,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandInstallPackageToOutputPath")]
         public bool InstallPackageToOutputPath { get; set; }
 
+        [Option(typeof(NuGetCommand), "PackageCommandOutputFileNamesWithoutVersion")]
+        public bool OutputFileNamesWithoutVersion { get; set; }
+
         [Option(typeof(NuGetCommand), "PackageCommandConfigFile")]
         public new string ConfigFile { get; set; }
 
@@ -143,6 +146,7 @@ namespace NuGet.CommandLine
             packArgs.Symbols = Symbols;
             packArgs.Tool = Tool;
             packArgs.InstallPackageToOutputPath = InstallPackageToOutputPath;
+            packArgs.OutputFileNamesWithoutVersion = OutputFileNamesWithoutVersion;
 
             if (!string.IsNullOrEmpty(Version))
             {

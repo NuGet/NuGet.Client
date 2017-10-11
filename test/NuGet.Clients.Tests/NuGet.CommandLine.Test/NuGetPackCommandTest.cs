@@ -2186,7 +2186,7 @@ public class B
                 // Execute the pack command and feed in some properties for token replacements and 
                 // set the flag to save the resolved nuspec to output directory.\
                 var arguments = string.Format(
-                    "pack {0} -ConfigFile {1} -properties tagVar=CustomTag;author=test1@microsoft.com -InstallPackageToOutputPath",
+                    "pack {0} -ConfigFile {1} -properties tagVar=CustomTag;author=test1@microsoft.com -InstallPackageToOutputPath -OutputFileNamesWithoutVersion",
                     Path.Combine(originalDirectory, nuspecName),
                     Path.Combine(originalDirectory, configurationFileName));
 
@@ -2256,7 +2256,7 @@ public class B
 
                 // Create response file
                 var arguments = string.Format(
-                    "pack {0} -properties tagVar=CustomTag;author=test1@microsoft.com -InstallPackageToOutputPath",
+                    "pack {0} -properties tagVar=CustomTag;author=test1@microsoft.com -InstallPackageToOutputPath -OutputFileNamesWithoutVersion",
                     Path.Combine(originalDirectory, nuspecName));
 
                 var responseFilePath = Path.Combine(workingDirectory, "responseFile1.rsp");

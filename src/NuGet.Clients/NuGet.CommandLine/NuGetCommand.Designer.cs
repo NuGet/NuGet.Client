@@ -7670,6 +7670,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specify if the command should prepare the package output name without the version..
+        /// </summary>
+        internal static string PackageCommandOutputFileNamesWithoutVersion {
+            get {
+                return ResourceManager.GetString("PackageCommandOutputFileNamesWithoutVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Provides the ability to specify a semicolon &quot;;&quot; delimited list of properties when creating a package..
         /// </summary>
         internal static string PackageCommandPropertiesDescription {
