@@ -155,6 +155,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 project.RestoreMetadata.Sources = VSRestoreSettingsUtilities.GetSources(settings, originalProject);
                 project.RestoreMetadata.FallbackFolders = VSRestoreSettingsUtilities.GetFallbackFolders(settings, originalProject);
                 project.RestoreMetadata.ConfigFilePaths = GetConfigFilePaths(settings);
+                IgnoreUnsupportProjectReference(project);
                 projects.Add(project);
             }
 
@@ -177,6 +178,24 @@ namespace NuGet.PackageManagement.VisualStudio
         private IList<string> GetConfigFilePaths(ISettings settings)
         {
             return SettingsUtility.GetConfigFilePaths(settings).ToList();
+        }
+
+        private void IgnoreUnsupportProjectReference(PackageSpec project)
+        {
+            foreach (var frameworkInfo in project.RestoreMetadata.TargetFrameworks)
+            {
+                var projectReferences = new List<ProjectRestoreReference>();
+
+                foreach (var projectReference in frameworkInfo.ProjectReferences)
+                {
+                    if (_projectSystemCache.ContainsKey(projectReference.ProjectUniqueName))
+                    {
+                        projectReferences.Add(projectReference);
+                    }
+                }
+
+                frameworkInfo.ProjectReferences = projectReferences;
+            }
         }
 
         #endregion
