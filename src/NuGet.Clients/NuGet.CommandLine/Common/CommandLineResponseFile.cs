@@ -28,6 +28,12 @@ namespace NuGet.Common
                 return args;
             }
 
+            // Response files are not supported on other platforms yet
+            if (!RuntimeEnvironmentHelper.IsWindows)
+            {
+                return args;
+            }
+
             const int MaxRecursionDepth = 3;
             var parsedArgs = new List<string>();
             foreach (var arg in args)
@@ -114,11 +120,14 @@ namespace NuGet.Common
         /// <returns>An array with split command line arguments</returns>
         private static string[] SplitArgs(string unsplitArguments)
         {
+            var splitArgs = new string[0];
+
             if (string.IsNullOrWhiteSpace(unsplitArguments))
             {
-                return new string[0];
+                return splitArgs;
             }
 
+#if IS_DESKTOP
             var ptrToSplitArgs = CommandLineToArgvW(unsplitArguments, out int numberOfArgs);
             if (ptrToSplitArgs == IntPtr.Zero)
             {
@@ -127,20 +136,21 @@ namespace NuGet.Common
 
             try
             {
-                var splitArgs = new string[numberOfArgs];
+                splitArgs = new string[numberOfArgs];
                 for (var i = 0; i < numberOfArgs; i++)
                 {
                     splitArgs[i] = Marshal.PtrToStringUni(Marshal.ReadIntPtr(ptrToSplitArgs, i * IntPtr.Size));
                 }
-
-                return splitArgs;
             }
             finally
             {
                 Marshal.FreeHGlobal(ptrToSplitArgs);
             }
+#endif
+            return splitArgs;
         }
 
+#if IS_DESKTOP
         /// <summary>
         /// Parses a Unicode command line string and returns an array of pointers to the command line arguments, 
         /// along with a count of such arguments, in a way that is similar to the standard C run-time argv and argc values.
@@ -150,5 +160,6 @@ namespace NuGet.Common
         /// <returns></returns>
         [DllImport("shell32.dll", SetLastError = true)]
         static extern IntPtr CommandLineToArgvW([MarshalAs(UnmanagedType.LPWStr)] string commandLine, out int argsLength);
+#endif
     }
 }
