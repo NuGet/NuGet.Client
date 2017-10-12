@@ -415,7 +415,7 @@ Function Set-DelaySigning {
 }
 
 Function Get-BuildNumber() {
-    $SemanticVersionDate = '2017-02-27'
+    $SemanticVersionDate = '2017-10-12'
     try {
         [uint16](((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5)
     }
