@@ -47,10 +47,11 @@ namespace NuGet.CommandLine
             }
 #endif
 
+#if IS_DESKTOP
             // Find any response files and resolve the args
-            var parsedArgs = CommandLineResponseFile.ParseArgsResponseFiles(args);
-
-            return MainCore(Directory.GetCurrentDirectory(), parsedArgs);
+            args = CommandLineResponseFile.ParseArgsResponseFiles(args);
+#endif
+            return MainCore(Directory.GetCurrentDirectory(), args);
         }
 
         public static int MainCore(string workingDirectory, string[] args)

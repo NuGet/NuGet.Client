@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if IS_DESKTOP
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -120,14 +121,11 @@ namespace NuGet.Common
         /// <returns>An array with split command line arguments</returns>
         private static string[] SplitArgs(string unsplitArguments)
         {
-            var splitArgs = new string[0];
-
             if (string.IsNullOrWhiteSpace(unsplitArguments))
             {
-                return splitArgs;
+                return new string[0];
             }
 
-#if IS_DESKTOP
             var ptrToSplitArgs = CommandLineToArgvW(unsplitArguments, out int numberOfArgs);
             if (ptrToSplitArgs == IntPtr.Zero)
             {
@@ -136,21 +134,20 @@ namespace NuGet.Common
 
             try
             {
-                splitArgs = new string[numberOfArgs];
+                var splitArgs = new string[numberOfArgs];
                 for (var i = 0; i < numberOfArgs; i++)
                 {
                     splitArgs[i] = Marshal.PtrToStringUni(Marshal.ReadIntPtr(ptrToSplitArgs, i * IntPtr.Size));
                 }
+
+                return splitArgs;
             }
             finally
             {
                 Marshal.FreeHGlobal(ptrToSplitArgs);
             }
-#endif
-            return splitArgs;
         }
 
-#if IS_DESKTOP
         /// <summary>
         /// Parses a Unicode command line string and returns an array of pointers to the command line arguments, 
         /// along with a count of such arguments, in a way that is similar to the standard C run-time argv and argc values.
@@ -160,6 +157,7 @@ namespace NuGet.Common
         /// <returns></returns>
         [DllImport("shell32.dll", SetLastError = true)]
         static extern IntPtr CommandLineToArgvW([MarshalAs(UnmanagedType.LPWStr)] string commandLine, out int argsLength);
-#endif
+
     }
 }
+#endif
