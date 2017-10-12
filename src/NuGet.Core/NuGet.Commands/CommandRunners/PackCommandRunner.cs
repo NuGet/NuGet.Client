@@ -727,10 +727,10 @@ namespace NuGet.Commands
 
             PackageArchiveReader packageArchiveReader = null;
 
+            InitCommonPackageBuilderProperties(packageBuilder);
+
             if (_packArgs.InstallPackageToOutputPath)
             {
-                InitCommonPackageBuilderProperties(packageBuilder);
-
                 string outputPath = GetOutputPath(packageBuilder, _packArgs);
                 packageArchiveReader = BuildPackage(packageBuilder, outputPath: outputPath);
             }
@@ -746,8 +746,6 @@ namespace NuGet.Commands
                         throw new PackagingException(NuGetLogCode.NU5004, string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForLibPackage, path, Strings.NuGetDocs));
                     }
                 }
-
-                InitCommonPackageBuilderProperties(packageBuilder);
 
                 packageArchiveReader = BuildPackage(packageBuilder);
 
@@ -819,17 +817,26 @@ namespace NuGet.Commands
             // Build the main package
             if (GenerateNugetPackage)
             {
-                PackageArchiveReader package = BuildPackage(mainPackageBuilder);
-
-                if (package != null && !_packArgs.NoPackageAnalysis)
+                PackageArchiveReader packageArchiveReader = null;
+                if (_packArgs.InstallPackageToOutputPath)
                 {
-                    AnalyzePackage(package, mainPackageBuilder);
+                    string outputPath = GetOutputPath(mainPackageBuilder, _packArgs);
+                    packageArchiveReader = BuildPackage(mainPackageBuilder, outputPath: outputPath);
+                }
+                else
+                {
+                    packageArchiveReader = BuildPackage(mainPackageBuilder);
+                }
+
+                if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
+                {
+                    AnalyzePackage(packageArchiveReader, mainPackageBuilder);
                 }
 
                 // If we're excluding symbols then do nothing else
-                if (!_packArgs.Symbols)
+                if (!_packArgs.Symbols || _packArgs.InstallPackageToOutputPath)
                 {
-                    return package;
+                    return packageArchiveReader;
                 }
             }
 
