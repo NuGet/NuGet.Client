@@ -10,11 +10,11 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// Providers signature trust information.
     /// </summary>
-    public interface ISignTrustProvider
+    public interface ISignatureVerificationProvider
     {
         /// <summary>
         /// Check if <paramref name="signature" /> is trusted by the provider.
         /// </summary>
-        Task<SignatureTrustResult> GetTrustResultAsync(Signature signature, ILogger logger, CancellationToken token);
+        Task<SignatureVerificationResult> GetTrustResultAsync(Signature signature, ILogger logger, CancellationToken token);
     }
 }

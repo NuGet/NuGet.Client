@@ -21,18 +21,23 @@ namespace NuGet.Packaging.Test.SigningTests
             var testLogger = new TestLogger();
             var zip = nupkg.Create();
 
-            using (var signPackage = new SignPackageArchive(zip))
+            using (var signPackage = new SignedPackageArchive(zip))
             {
                 var before = new List<string>(zip.Entries.Select(e => e.FullName));
                 var signer = new Signer(signPackage);
                 var signature = new Signature()
                 {
                     DisplayName = "Test signer",
-                    TestTrust = SignatureTrust.Trusted,
+                    TestTrust = SignatureVerificationStatus.Trusted,
                     Type = SignatureType.Author
                 };
 
-                await signer.SignAsync(signature, testLogger, CancellationToken.None);
+                var request = new SignPackageRequest()
+                {
+                    Signature = signature
+                };
+
+                await signer.SignAsync(request, testLogger, CancellationToken.None);
 
                 // Verify sign file exists
                 zip.Entries.Select(e => e.FullName)
@@ -52,18 +57,23 @@ namespace NuGet.Packaging.Test.SigningTests
             var testLogger = new TestLogger();
             var zip = nupkg.Create();
 
-            using (var signPackage = new SignPackageArchive(zip))
+            using (var signPackage = new SignedPackageArchive(zip))
             {
                 var before = new List<string>(zip.Entries.Select(e => e.FullName));
                 var signer = new Signer(signPackage);
                 var signature = new Signature()
                 {
                     DisplayName = "Test signer",
-                    TestTrust = SignatureTrust.Trusted,
+                    TestTrust = SignatureVerificationStatus.Trusted,
                     Type = SignatureType.Author
                 };
 
-                await signer.SignAsync(signature, testLogger, CancellationToken.None);
+                var request = new SignPackageRequest()
+                {
+                    Signature = signature
+                };
+
+                await signer.SignAsync(request, testLogger, CancellationToken.None);
 
                 await signer.RemoveSignatureAsync(signature, testLogger, CancellationToken.None);
 
@@ -82,18 +92,23 @@ namespace NuGet.Packaging.Test.SigningTests
             var testLogger = new TestLogger();
             var zip = nupkg.Create();
 
-            using (var signPackage = new SignPackageArchive(zip))
+            using (var signPackage = new SignedPackageArchive(zip))
             {
                 var before = new List<string>(zip.Entries.Select(e => e.FullName));
                 var signer = new Signer(signPackage);
                 var signature = new Signature()
                 {
                     DisplayName = "Test signer",
-                    TestTrust = SignatureTrust.Trusted,
+                    TestTrust = SignatureVerificationStatus.Trusted,
                     Type = SignatureType.Author
                 };
 
-                await signer.SignAsync(signature, testLogger, CancellationToken.None);
+                var request = new SignPackageRequest()
+                {
+                    Signature = signature
+                };
+
+                await signer.SignAsync(request, testLogger, CancellationToken.None);
 
                 await signer.RemoveSignaturesAsync(testLogger, CancellationToken.None);
 

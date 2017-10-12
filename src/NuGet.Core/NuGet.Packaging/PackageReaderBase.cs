@@ -22,7 +22,7 @@ namespace NuGet.Packaging
     /// Abstract class that both the zip and folder package readers extend
     /// This class contains the path conventions for both zip and folder readers
     /// </summary>
-    public abstract class PackageReaderBase : IPackageCoreReader, IPackageContentReader, IAsyncPackageCoreReader, IAsyncPackageContentReader, ISignPackageReader
+    public abstract class PackageReaderBase : IPackageCoreReader, IPackageContentReader, IAsyncPackageCoreReader, IAsyncPackageContentReader, ISignedPackageReader
     {
         private NuspecReader _nuspecReader;
 
@@ -546,53 +546,12 @@ namespace NuGet.Packaging
             throw new NotImplementedException();
         }
 
-        public async Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
-        {
-            var signatures = new List<Signature>();
+        public abstract Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token);
 
-            var files = await GetFilesAsync(token);
-            var sigFile = files.FirstOrDefault(e => StringComparer.Ordinal.Equals(e, "testsigned/signed.json"));
+        public abstract Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token);
 
-            if (sigFile != null)
-            {
-                using (var stream = await GetStreamAsync(sigFile, token))
-                using (var reader = new StreamReader(stream))
-                using (var jsonReader = new JsonTextReader(reader))
-                {
-                    var json = JObject.Load(jsonReader);
+        public abstract Task<PackageContentManifest> CreateManifestAsync(CancellationToken token);
 
-                    foreach (var sigEntry in json.Value<JArray>("signatures"))
-                    {
-                        Enum.TryParse<SignatureTrust>(sigEntry["trust"].Value<string>(), ignoreCase: true, result: out var testTrust);
-                        Enum.TryParse<SignatureType>(sigEntry["type"].Value<string>(), ignoreCase: true, result: out var sigType);
-
-                        signatures.Add(new Signature()
-                        {
-                            DisplayName = sigEntry.Value<string>("name"),
-                            TestTrust = testTrust,
-                            Type = sigType,
-                        });
-                    }
-                }
-            }
-
-            return signatures;
-        }
-
-        public Task<SignManifest> GetSignManifestAsync(CancellationToken token)
-        {
-            return CreateManifestAsync(token);
-        }
-
-        public Task<SignManifest> CreateManifestAsync(CancellationToken token)
-        {
-            return Task.FromResult(SignManifest.Create(new Dictionary<string, string>(), Enumerable.Empty<SignManifestFileEntry>()));
-        }
-
-        public async Task<bool> IsSignedAsync(CancellationToken token)
-        {
-            var signatures = await GetSignaturesAsync(token);
-            return signatures.Count > 0;
-        }
+        public abstract Task<bool> IsSignedAsync(CancellationToken token);
     }
 }

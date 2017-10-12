@@ -16,9 +16,9 @@ namespace NuGet.Packaging.Core
         /// Remove if the path exists.
         /// </summary>
         /// <param name="path">Relative file path in package.</param>
-        /// <returns>True if the file existed before the remove.</returns>
         /// <param name="token">CancellationToken</param>
-        Task<bool> RemoveAsync(string path, CancellationToken token);
+        /// <remarks>Empty directories will be removed upon removing a file.</remarks>
+        Task RemoveAsync(string path, CancellationToken token);
 
         /// <summary>
         /// Adds or replaces a file in the package.
@@ -26,6 +26,7 @@ namespace NuGet.Packaging.Core
         /// <param name="path">Relative file path in package.</param>
         /// <param name="stream">New file contents.</param>
         /// <param name="token">CancellationToken</param>
+        /// <remarks>Directories will be created for new paths.</remarks>
         Task AddAsync(string path, Stream stream, CancellationToken token);
     }
 }

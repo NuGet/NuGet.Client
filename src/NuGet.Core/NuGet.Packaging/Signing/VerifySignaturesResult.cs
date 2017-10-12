@@ -20,14 +20,14 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Individual trust results.
         /// </summary>
-        public IReadOnlyList<SignatureTrustResult> Results { get; }
+        public IReadOnlyList<SignatureVerificationResult> Results { get; }
 
         public VerifySignaturesResult(bool valid)
-            : this(valid, results: Enumerable.Empty<SignatureTrustResult>())
+            : this(valid, results: Enumerable.Empty<SignatureVerificationResult>())
         {
         }
 
-        public VerifySignaturesResult(bool valid, IEnumerable<SignatureTrustResult> results)
+        public VerifySignaturesResult(bool valid, IEnumerable<SignatureVerificationResult> results)
         {
             Valid = valid;
             Results = results?.ToList().AsReadOnly() ?? throw new ArgumentNullException(nameof(results));

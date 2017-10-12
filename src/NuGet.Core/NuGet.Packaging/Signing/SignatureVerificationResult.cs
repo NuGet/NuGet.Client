@@ -11,17 +11,17 @@ namespace NuGet.Packaging.Signing
     /// Represents a signature check result and any additional information
     /// needed to display to the user.
     /// </summary>
-    public class SignatureTrustResult
+    public class SignatureVerificationResult
     {
         /// <summary>
         /// Trust result
         /// </summary>
-        public SignatureTrust Trust { get; }
+        public SignatureVerificationStatus Trust { get; }
 
         /// <summary>
-        /// SignatureTrustResult
+        /// SignatureVerificationResult
         /// </summary>
-        public SignatureTrustResult(SignatureTrust trust)
+        public SignatureVerificationResult(SignatureVerificationStatus trust)
         {
             Trust = trust;
         }

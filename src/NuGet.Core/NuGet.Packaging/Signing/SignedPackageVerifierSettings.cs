@@ -6,7 +6,7 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// Feed settings used to verify packages.
     /// </summary>
-    public sealed class SignVerifierSettings
+    public sealed class SignedPackageVerifierSettings
     {
         /// <summary>
         /// Allow packages that do not contain signatures.
@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public bool AllowUntrusted { get; }
 
-        private SignVerifierSettings(bool allowUnsigned, bool allowUntrusted)
+        private SignedPackageVerifierSettings(bool allowUnsigned, bool allowUntrusted)
         {
             AllowUnsigned = allowUnsigned;
             AllowUntrusted = allowUntrusted;
@@ -27,21 +27,21 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Allow unsigned.
         /// </summary>
-        public static SignVerifierSettings AllowAll { get; } = new SignVerifierSettings(allowUnsigned: true, allowUntrusted: true);
+        public static SignedPackageVerifierSettings AllowAll { get; } = new SignedPackageVerifierSettings(allowUnsigned: true, allowUntrusted: true);
 
         /// <summary>
         /// Default settings.
         /// </summary>
-        public static SignVerifierSettings Default { get; } = AllowAll;
+        public static SignedPackageVerifierSettings Default { get; } = AllowAll;
 
         /// <summary>
         /// Require all packages to be signed and valid.
         /// </summary>
-        public static SignVerifierSettings RequireSigned { get; } = new SignVerifierSettings(allowUnsigned: false, allowUntrusted: false);
+        public static SignedPackageVerifierSettings RequireSigned { get; } = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false);
 
         /// <summary>
         /// Require all packages to be signed but allow untrusted packages that are valid.
         /// </summary>
-        public static SignVerifierSettings RequireSignedAllowUntrusted { get; } = new SignVerifierSettings(allowUnsigned: false, allowUntrusted: true);
+        public static SignedPackageVerifierSettings RequireSignedAllowUntrusted { get; } = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: true);
     }
 }

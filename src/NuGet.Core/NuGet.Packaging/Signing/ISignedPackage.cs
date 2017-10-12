@@ -8,7 +8,7 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// A package that can read and write signatures.
     /// </summary>
-    public interface ISignPackage : IPackageCoreWriter, ISignPackageReader
+    public interface ISignedPackage : IPackageCoreWriter, ISignedPackageReader
     {
         // This provides a combination of IPackageCoreWriter and ISignPackageReader.
         // No additional methods are needed, but new functionality could be added here

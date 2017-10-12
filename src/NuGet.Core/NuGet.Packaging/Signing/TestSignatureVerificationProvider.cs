@@ -11,11 +11,11 @@ namespace NuGet.Packaging.Test.SigningTests
     /// <summary>
     /// TEMPORARY trust provider for signing
     /// </summary>
-    public class TestTrustProvider : ISignTrustProvider
+    public class SignatureVerificationProvider : ISignatureVerificationProvider
     {
-        public Task<SignatureTrustResult> GetTrustResultAsync(Signature signature, ILogger logger, CancellationToken token)
+        public Task<SignatureVerificationResult> GetTrustResultAsync(Signature signature, ILogger logger, CancellationToken token)
         {
-            var result = new SignatureTrustResult(signature.TestTrust);
+            var result = new SignatureVerificationResult(signature.TestTrust);
             return Task.FromResult(result);
         }
     }

@@ -7,7 +7,7 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// Represents the trust result of a signature.
     /// </summary>
-    public enum SignatureTrust
+    public enum SignatureVerificationStatus
     {
         /// <summary>
         /// Default unknown value.
@@ -17,7 +17,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Invalid signature.
         /// </summary>
-        /// <remarks>If the package has been modified after signing this will occur.</remarks>
+        /// <remarks>This could happen for many reasons such as a tampered with package, invalid hash algorithm, or invalid signing data.</remarks>
         Invalid = 1,
 
         /// <summary>

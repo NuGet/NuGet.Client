@@ -13,21 +13,21 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// Loads trust providers and verifies package signatures.
     /// </summary>
-    public class SignVerifier
+    public class SignedPackageVerifier
     {
-        private readonly List<ISignTrustProvider> _trustProviders;
-        private readonly SignVerifierSettings _settings;
+        private readonly List<ISignatureVerificationProvider> _trustProviders;
+        private readonly SignedPackageVerifierSettings _settings;
 
-        public SignVerifier(IEnumerable<ISignTrustProvider> trustProviders, SignVerifierSettings settings)
+        public SignedPackageVerifier(IEnumerable<ISignatureVerificationProvider> trustProviders, SignedPackageVerifierSettings settings)
         {
             _trustProviders = trustProviders?.ToList() ?? throw new ArgumentNullException(nameof(trustProviders));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public async Task<VerifySignaturesResult> VerifySignaturesAsync(ISignPackageReader package, ILogger logger, CancellationToken token)
+        public async Task<VerifySignaturesResult> VerifySignaturesAsync(ISignedPackageReader package, ILogger logger, CancellationToken token)
         {
             var valid = false;
-            var trustResults = new List<SignatureTrustResult>();
+            var trustResults = new List<SignatureVerificationResult>();
 
             var isSigned = await package.IsSignedAsync(token);
 
@@ -36,7 +36,7 @@ namespace NuGet.Packaging.Signing
                 // Read package signatures
                 var signatures = await package.GetSignaturesAsync(token);
                 var signaturesAreValid = signatures.Count > 0; // Fail if there are no signatures
-                var signatureResults = new Dictionary<Signature, List<SignatureTrustResult>>();
+                var signatureResults = new Dictionary<Signature, List<SignatureVerificationResult>>();
 
                 // Verify that the signatures are trusted
                 foreach (var signature in signatures)
@@ -60,10 +60,10 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// True if a provider trusts the package signature.
         /// </summary>
-        private static bool IsValid(IEnumerable<SignatureTrustResult> trustResults, bool allowUntrusted)
+        private static bool IsValid(IEnumerable<SignatureVerificationResult> trustResults, bool allowUntrusted)
         {
             var hasItems = trustResults.Any();
-            var valid = trustResults.Any(e => e.Trust == SignatureTrust.Trusted || (allowUntrusted && SignatureTrust.Untrusted == e.Trust));
+            var valid = trustResults.Any(e => e.Trust == SignatureVerificationStatus.Trusted || (allowUntrusted && SignatureVerificationStatus.Untrusted == e.Trust));
 
             return valid && hasItems;
         }

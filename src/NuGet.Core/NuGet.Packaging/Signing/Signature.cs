@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
@@ -19,8 +21,13 @@ namespace NuGet.Packaging.Signing
         public string DisplayName { get; set; }
 
         /// <summary>
+        /// Additional counter signatures.
+        /// </summary>
+        public IReadOnlyList<Signature> AdditionalSignatures { get; set; } = new List<Signature>();
+
+        /// <summary>
         /// TEMPORARY - trust result to return.
         /// </summary>
-        public SignatureTrust TestTrust { get; set; }
+        public SignatureVerificationStatus TestTrust { get; set; }
     }
 }

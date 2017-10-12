@@ -11,12 +11,12 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// A nupkg that supports both reading and writing signatures.
     /// </summary>
-    public class SignPackageArchive : PackageArchiveReader, ISignPackage
+    public class SignedPackageArchive : PackageArchiveReader, ISignedPackage
     {
         // TEMP
         private const string TestSignedPath = "testsigned/signed.json";
 
-        public SignPackageArchive(ZipArchive zip)
+        public SignedPackageArchive(ZipArchive zip)
             : base(zip)
         {
         }
@@ -24,31 +24,24 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Add a file to the package.
         /// </summary>
-        public async Task AddAsync(string path, Stream stream, CancellationToken token)
+        public Task AddAsync(string path, Stream stream, CancellationToken token)
         {
             var entry = Zip.CreateEntry(path, CompressionLevel.Optimal);
-
-            using (var writer = new StreamWriter(entry.Open()))
+            using (var entryStream = entry.Open())
             {
-                await stream.CopyToAsync(stream);
-                await writer.FlushAsync();
+                stream.CopyTo(entryStream);
             }
+
+            return Task.FromResult(true);
         }
 
         /// <summary>
         /// Remove a file from the package.
         /// </summary>
-        public Task<bool> RemoveAsync(string path, CancellationToken token)
+        public Task RemoveAsync(string path, CancellationToken token)
         {
-            var entry = Zip.GetEntry(path);
-
-            if (entry != null)
-            {
-                entry.Delete();
-                return Task.FromResult(true);
-            }
-
-            return Task.FromResult(false);
+            Zip.GetEntry(path)?.Delete();
+            return Task.FromResult(true);
         }
     }
 }

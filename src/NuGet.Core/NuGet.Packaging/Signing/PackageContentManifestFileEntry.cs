@@ -8,19 +8,19 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// Represents a file in a package that is listed in the signed manifest.
     /// </summary>
-    public sealed class SignManifestFileEntry
+    public sealed class PackageContentManifestFileEntry
     {
         public string Path { get; }
 
         public string Hash { get; }
 
-        private SignManifestFileEntry(string path, string hash)
+        private PackageContentManifestFileEntry(string path, string hash)
         {
             Path = path;
             Hash = hash;
         }
 
-        public static SignManifestFileEntry Create(string path, string hash)
+        public static PackageContentManifestFileEntry Create(string path, string hash)
         {
             if (path == null)
             {
@@ -32,7 +32,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(hash));
             }
 
-            return new SignManifestFileEntry(path, hash);
+            return new PackageContentManifestFileEntry(path, hash);
         }
     }
 }

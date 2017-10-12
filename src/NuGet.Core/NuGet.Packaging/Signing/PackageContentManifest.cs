@@ -4,36 +4,44 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
-    /// Represents the XML manifest containing a set of files and hashes that can be signed.
+    /// Represents the signing manifest containing a set of files and hashes from the package.
     /// </summary>
-    public class SignManifest
+    public sealed class PackageContentManifest
     {
         public static readonly SemanticVersion DefaultVersion = new SemanticVersion(1, 0, 0);
 
+        /// <summary>
+        /// Manifest format version.
+        /// </summary>
         public SemanticVersion Version { get; }
 
-        public string GetHash()
+        /// <summary>
+        /// Write the manifest to a stream.
+        /// </summary>
+        public void Save(Stream stream)
         {
             throw new NotImplementedException();
         }
 
-        public static SignManifest Load(Stream stream)
+        /// <summary>
+        /// Load a manifest file from a stream.
+        /// </summary>
+        public static PackageContentManifest Load(Stream stream)
         {
             throw new NotImplementedException();
         }
 
-        public static SignManifest Create(IDictionary<string, string> headers, IEnumerable<SignManifestFileEntry> fileEntries)
+        public static PackageContentManifest Create(IDictionary<string, string> headers, IEnumerable<PackageContentManifestFileEntry> fileEntries)
         {
             return Create(DefaultVersion, fileEntries);
         }
 
-        public static SignManifest Create(SemanticVersion version, IEnumerable<SignManifestFileEntry> fileEntries)
+        public static PackageContentManifest Create(SemanticVersion version, IEnumerable<PackageContentManifestFileEntry> fileEntries)
         {
             if (version == null)
             {

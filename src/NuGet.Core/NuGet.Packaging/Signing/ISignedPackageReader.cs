@@ -11,7 +11,7 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// A readonly package that can provide signatures and a sign manifest from a package.
     /// </summary>
-    public interface ISignPackageReader : IDisposable
+    public interface ISignedPackageReader : IDisposable
     {
         /// <summary>
         /// Get all signatures used to sign a package.
@@ -22,15 +22,15 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Read the signed manifest from a package.
         /// </summary>
-        Task<SignManifest> GetSignManifestAsync(CancellationToken token);
+        Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token);
 
         /// <summary>
         /// Read and hash package contents and create a base manifest for signing.
         /// </summary>
-        Task<SignManifest> CreateManifestAsync(CancellationToken token);
+        Task<PackageContentManifest> CreateManifestAsync(CancellationToken token);
 
         /// <summary>
-        /// Check if a package contains signining information.
+        /// Check if a package contains signing information.
         /// </summary>
         /// <returns>True if the package is signed.</returns>
         Task<bool> IsSignedAsync(CancellationToken token);
