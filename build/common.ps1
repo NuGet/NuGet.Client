@@ -415,9 +415,15 @@ Function Set-DelaySigning {
 }
 
 Function Get-BuildNumber() {
-    # This build number is only used for local private builds.
-    # Return 0 since we no longer have package references between core and client solutions.
-    [uint16](0)
+    $SemanticVersionDate = '2017-10-12'
+    try {
+        [uint16](((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5)
+    }
+    catch {
+        # Build number is a 16-bit integer. The limitation is imposed by VERSIONINFO.
+        # https://msdn.microsoft.com/en-gb/library/aa381058.aspx
+        Error-Log "Build number is out of range! Consider advancing SemanticVersionDate." -Fatal
+    }
 }
 
 Function Format-BuildNumber([int]$BuildNumber) {
