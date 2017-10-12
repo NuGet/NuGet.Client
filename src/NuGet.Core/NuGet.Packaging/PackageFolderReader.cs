@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.Packaging
 {
@@ -199,6 +200,26 @@ namespace NuGet.Packaging
         protected override void Dispose(bool disposing)
         {
             // do nothing here
+        }
+
+        public override Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
+        {
+            return Task.FromResult<IReadOnlyList<Signature>>(new List<Signature>());
+        }
+
+        public override Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<PackageContentManifest> CreateManifestAsync(CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<bool> IsSignedAsync(CancellationToken token)
+        {
+            return Task.FromResult(false);
         }
     }
 }

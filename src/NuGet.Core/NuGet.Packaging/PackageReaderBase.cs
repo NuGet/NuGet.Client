@@ -8,9 +8,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging
@@ -19,7 +22,7 @@ namespace NuGet.Packaging
     /// Abstract class that both the zip and folder package readers extend
     /// This class contains the path conventions for both zip and folder readers
     /// </summary>
-    public abstract class PackageReaderBase : IPackageCoreReader, IPackageContentReader, IAsyncPackageCoreReader, IAsyncPackageContentReader
+    public abstract class PackageReaderBase : IPackageCoreReader, IPackageContentReader, IAsyncPackageCoreReader, IAsyncPackageContentReader, ISignedPackageReader
     {
         private NuspecReader _nuspecReader;
 
@@ -542,5 +545,13 @@ namespace NuGet.Packaging
         {
             throw new NotImplementedException();
         }
+
+        public abstract Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token);
+
+        public abstract Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token);
+
+        public abstract Task<PackageContentManifest> CreateManifestAsync(CancellationToken token);
+
+        public abstract Task<bool> IsSignedAsync(CancellationToken token);
     }
 }

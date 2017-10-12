@@ -13,6 +13,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Plugins
@@ -1121,6 +1122,26 @@ namespace NuGet.Protocol.Plugins
             Directory.CreateDirectory(tempDirectoryPath);
 
             return tempDirectoryPath;
+        }
+
+        public override Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
+        {
+            return Task.FromResult<IReadOnlyList<Signature>>(new List<Signature>());
+        }
+
+        public override Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<PackageContentManifest> CreateManifestAsync(CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<bool> IsSignedAsync(CancellationToken token)
+        {
+            return Task.FromResult(false);
         }
 
         private sealed class FileStreamCreator : IDisposable
