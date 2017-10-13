@@ -102,7 +102,7 @@ namespace NuGet.Credentials
             {
                 var request = new PluginCredentialRequest
                 {
-                    Uri = uri.ToString(),
+                    Uri = uri.AbsoluteUri,
                     IsRetry = isRetry,
                     NonInteractive = nonInteractive,
                     Verbosity = _verbosity
