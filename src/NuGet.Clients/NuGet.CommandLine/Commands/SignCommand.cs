@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Security;
 using System.Security.Cryptography;
@@ -130,6 +131,11 @@ namespace NuGet.CommandLine
                         NuGetCommand.SignCommandInvalidArgumentException,
                         nameof(TimestampHashAlgorithm)));
                 }
+            }
+            else if (!string.IsNullOrEmpty(OutputDirectory) &&
+                !Directory.Exists(OutputDirectory))
+            {
+                Directory.CreateDirectory(OutputDirectory);
             }
 
             var signArgs = new SignArgs()

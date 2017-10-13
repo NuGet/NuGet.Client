@@ -603,4 +603,29 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Warning_VersionAboveUpperBound" xml:space="preserve">
     <value>Detected package version outside of dependency constraint: {0} requires {1} but version {2} was resolved.</value>
   </data>
+  <data name="SignCommandDisplayCertificate" xml:space="preserve">
+    <value>Signing package(s) with certificate: 
+{0}</value>
+    <comment>0 -  X509Certificate2 details in the following format -
+Issued to: System.Security.Cryptography.X509Certificates.X500DistinguishedName
+Issued by: System.Security.Cryptography.X509Certificates.X500DistinguishedName
+Expires: System.Security.Cryptography.X509Certificates.X500DistinguishedName
+SHA1 hash: 5B43D629176F79BB358C6478A845E873D5A958A8
+Subject Name: System.Security.Cryptography.X509Certificates.X500DistinguishedName </comment>
+  </data>
+  <data name="SignCommandDialogMessage" xml:space="preserve">
+    <value>Please select a valid certitificate</value>
+  </data>
+  <data name="SignCommandDialogTitle" xml:space="preserve">
+    <value>NuGet Sign Certificate Selection</value>
+  </data>
+  <data name="SignCommandMultipleCertException" xml:space="preserve">
+    <value>Multiple matching certificates found.</value>
+  </data>
+  <data name="SignCommandNoCertException" xml:space="preserve">
+    <value>No matching certificates found.</value>
+  </data>
+  <data name="SignCommandSuccess" xml:space="preserve">
+    <value>Package(s) signed successfully.</value>
+  </data>
 </root>

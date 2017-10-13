@@ -4,8 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using NuGet.Common;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Commands
 {
@@ -16,23 +20,41 @@ namespace NuGet.Commands
     {
         public int ExecuteCommand(SignArgs signArgs)
         {
-            Debugger.Launch();
+            var success = true;
 
-            // check if the package exists
-            if (!File.Exists(signArgs.PackagePath))
+            // resolve path into multiple packages if needed.
+            var packagesToSign = PackageUpdateResource.ResolvePackageFromPath(signArgs.PackagePath);
+            PackageUpdateResource.EnsurePackageFileExists(signArgs.PackagePath, packagesToSign);
+
+            var cert = GetCertificate(signArgs);
+
+            signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                Strings.SignCommandDisplayCertificate,
+                CertificateUtility.X509Certificate2ToString(cert)));
+
+            foreach (var packagePath in packagesToSign)
             {
-                // error to user
-                return 1;
+                try
+                {
+                    SignPackage(cert, packagePath);
+                }
+                catch(Exception e)
+                {
+                    success = false;
+                    ExceptionUtilities.LogException(e, signArgs.Logger);
+                }
             }
 
-            // check if the output directory exists if passed
-            if (!string.IsNullOrEmpty(signArgs.OutputDirectory) &&
-                !Directory.Exists(signArgs.OutputDirectory))
+            if (success)
             {
-                //error to user
-                return 1;
+                signArgs.Logger.LogInformation(Strings.SignCommandSuccess);
             }
+            
+            return success ? 0 : 1;
+        }
 
+        private static X509Certificate2 GetCertificate(SignArgs signArgs)
+        {
             var certFindOptions = new CertificateSourceOptions()
             {
                 CertificatePath = signArgs.CertificatePath,
@@ -44,32 +66,36 @@ namespace NuGet.Commands
             };
 
             // get matching certificates
-            var matchingCerts = CertificateProvider.GetCertificates(certFindOptions);
+            var matchingCertCollection = CertificateProvider.GetCertificates(certFindOptions);
 
-            if (matchingCerts.Count == 0)
+            if (matchingCertCollection.Count == 0)
             {
-                // error out
-                return 1;
+                throw new InvalidOperationException(Strings.SignCommandNoCertException);
             }
-            else if(matchingCerts.Count > 1)
+            else if (matchingCertCollection.Count > 1)
             {
-                // if on non-windows os or in non interactive mode - display and error out
-                return 1;
-
-                // if on windows - launch UI to select
-            }
-            else
-            {
-                // invoke lower signing API
-                var cert = matchingCerts[0];
-
-                signArgs.Logger.LogInformation($"Signing package with certificate: {cert.Subject}");
-
-                signArgs.Logger.LogInformation($"Signed package with certificate: {cert.Subject}");
-
-                return 0;
+                if (signArgs.NonInteractive || !RuntimeEnvironmentHelper.IsWindows)
+                {
+                    // if on non-windows os or in non interactive mode - display and error out
+                    throw new InvalidOperationException(Strings.SignCommandMultipleCertException);
+                }
+                else
+                {
+                    // Else launch UI to select
+                    matchingCertCollection = X509Certificate2UI.SelectFromCollection(
+                        matchingCertCollection,
+                        Strings.SignCommandDialogTitle,
+                        Strings.SignCommandDialogMessage,
+                        X509SelectionFlag.SingleSelection);
+                }
             }
 
+            return matchingCertCollection[0];
+        }
+
+        private int SignPackage(X509Certificate2 cert, string path)
+        {
+            return 0;
         }
     }
 }

@@ -56,7 +56,7 @@ namespace NuGet.Commands
                 // check subject name
                 if (!string.IsNullOrEmpty(options.SubjectName))
                 {
-                    return store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly: true);
+                    return store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly: false);
                 }
             }
 
