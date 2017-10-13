@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -8,6 +8,11 @@ using EnvDTE;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
+using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Console.TestContract;
+using NuGet.PackageManagement.UI.TestContract;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 
 namespace NuGet.Tests.Apex
@@ -15,6 +20,16 @@ namespace NuGet.Tests.Apex
     [Export(typeof(NuGetApexTestService))]
     public class NuGetApexTestService : VisualStudioTestService<NuGetApexVerifier>
     {
+        [Import]
+        private NuGetApexUITestService NuGetApexUITestService { get; set; }
+        [Import]
+        private NuGetApexConsoleTestService NuGetApexConsoleTestService { get; set; }
+
+        public NuGetApexTestService()
+        {
+            //_nuGetApexUITestService = new NuGetApexUITestService();
+        }
+
         /// <summary>
         /// Gets the NuGet IVsPackageInstallerServices
         /// </summary>
@@ -54,6 +69,14 @@ namespace NuGet.Tests.Apex
             get
             {
                 return this.VisualStudioObjectProviders.GetComponentModelService<IVsPackageUninstaller>();
+            }
+        }
+
+        protected internal IVsUIShell UIShell
+        {
+            get
+            {
+                return this.VisualStudioObjectProviders.GetService<SVsUIShell, IVsUIShell>();
             }
         }
 
@@ -133,6 +156,18 @@ namespace NuGet.Tests.Apex
             {
                 Logger.WriteException(EntryType.Warning, e, string.Format("An error occured while attempting to uninstall package {0}", packageName));
             }
+        }
+
+        public NuGetUIProjectTestExtension GetUIWindowfromProject(ProjectTestExtension project)
+        {
+            var uiproject = NuGetApexUITestService.GetApexTestUIProject(project.Name);
+            return new NuGetUIProjectTestExtension(uiproject);
+        }
+
+        public NuGetConsoleTestExtension GetPackageManagerConsole(string project)
+        {
+            var pmconsole = NuGetApexConsoleTestService.GetApexTestConsole();
+            return new NuGetConsoleTestExtension(pmconsole, project);
         }
     }
 }

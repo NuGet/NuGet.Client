@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,7 +22,7 @@ namespace NuGet.XPlat.FuncTest
     [Collection("NuGet XPlat Test Collection")]
     public class XPlatAddPkgTests
     {
-        private static readonly string projectName = "test_project_addpkg";
+        private static readonly string ProjectName = "test_project_addpkg";
 
         private static MSBuildAPIUtility MsBuild => new MSBuildAPIUtility(new TestCommandOutputLogger());
 
@@ -47,7 +47,10 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange
             var projectPath = Path.Combine(Path.GetTempPath(), project);
+            var frameworks = MSBuildStringUtility.Split(frameworkString);
+            var sources = MSBuildStringUtility.Split(sourceString);
             File.Create(projectPath).Dispose();
+
 
             var argList = new List<string>() {
                 "add",
@@ -62,13 +65,19 @@ namespace NuGet.XPlat.FuncTest
 
             if (!string.IsNullOrEmpty(frameworkOption))
             {
-                argList.Add(frameworkOption);
-                argList.Add(frameworkString);
+                foreach(var framework in frameworks)
+                {
+                    argList.Add(frameworkOption);
+                    argList.Add(framework);
+                }
             }
             if (!string.IsNullOrEmpty(sourceOption))
             {
-                argList.Add(sourceOption);
-                argList.Add(sourceString);
+                foreach (var source in sources)
+                {
+                    argList.Add(sourceOption);
+                    argList.Add(source);
+                }
             }
             if (!string.IsNullOrEmpty(packageDirectoryOption))
             {
@@ -103,7 +112,7 @@ namespace NuGet.XPlat.FuncTest
             p.ProjectPath == projectPath &&
             p.DgFilePath == dgFilePath &&
             p.NoRestore == !string.IsNullOrEmpty(noRestoreSwitch) &&
-            (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(MSBuildStringUtility.Split(frameworkString))) &&
+            (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(frameworks)) &&
             (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(MSBuildStringUtility.Split(sourceString))) &&
             (string.IsNullOrEmpty(packageDirectoryOption) || !string.IsNullOrEmpty(packageDirectoryOption) && p.PackageDirectory == packageDirectory)),
             It.IsAny<MSBuildAPIUtility>()));
@@ -124,7 +133,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
                 var packageX = XPlatTestUtils.CreatePackage();
 
                 // Generate Package
@@ -159,7 +168,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
                 projectA.Properties.Add("OutputType", "exe");
                 projectA.Save();
 
@@ -213,7 +222,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageY);
 
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
 
                 projectA.DotnetCLIToolReferences.Add(packageDotnetCliToolX);
 
@@ -266,7 +275,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package
@@ -334,7 +343,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageY);
 
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
 
                 projectA.DotnetCLIToolReferences.Add(packageDotnetCliToolX);
 
@@ -369,7 +378,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
                 var packageX = XPlatTestUtils.CreatePackage();
 
                 // Generate Package
@@ -409,7 +418,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package
@@ -456,7 +465,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package
@@ -506,7 +515,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package
@@ -551,7 +560,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46; netcoreapp1.0");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46; netcoreapp1.0");
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package
@@ -582,7 +591,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46; netcoreapp1.0");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46; netcoreapp1.0");
                 var packageX = XPlatTestUtils.CreatePackage();
 
                 // Generate Package
@@ -613,7 +622,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
                 var packageX = XPlatTestUtils.CreatePackage("PkgX");
                 var packageY = XPlatTestUtils.CreatePackage("PkgY");
 
@@ -669,7 +678,7 @@ namespace NuGet.XPlat.FuncTest
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage("PkgX", frameworkString: packageFrameworks);
                 var packageY = XPlatTestUtils.CreatePackage("PkgY", frameworkString: packageFrameworks);
 
@@ -720,7 +729,7 @@ namespace NuGet.XPlat.FuncTest
             using (var tempGlobalPackagesDirectory = TestDirectory.Create())
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
                 var packageX = XPlatTestUtils.CreatePackage();
 
                 // Generate Package
@@ -766,7 +775,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46; netcoreapp1.0");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46; netcoreapp1.0");
                 var packageX = XPlatTestUtils.CreatePackage();
 
                 // Generate Package
@@ -898,7 +907,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, projectFrameworks);
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package

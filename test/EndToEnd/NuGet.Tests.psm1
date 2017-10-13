@@ -117,7 +117,7 @@ function Run-Test {
 		[parameter(ParameterSetName="Exclude", Mandatory=$true, Position=2)]
         [string]$Exclude,
         [parameter(Position=3)]
-        [bool]$LaunchResultsOnFailure=$true
+        [bool]$LaunchResultsOnFailure=$false
     )
 
     Write-Verbose "Loading test extensions modules"
@@ -190,7 +190,6 @@ function Run-Test {
     }
 
     $tests = $tests | ?{ ShouldRunTest $_ }
-
     $results = @{}
 
     # Add a reference to the msbuild assembly in case it isn't there
@@ -205,6 +204,30 @@ function Run-Test {
     {
     }
 
+    
+    $numberOfTests = 0
+    $tests | %{
+        $numberOfTests++
+        $testObject = $_
+        # Trim the Test- prefix
+        $testName = $testObject.Name.Substring(5)
+        try {
+            $testCasesFactory = @(Get-ChildItem "function:\TestCases-$testName")
+
+            if($testCasesFactory -and $testCasesFactory.Count -eq 1)
+            {
+                $testCases = & $testCasesFactory[0]
+                if($testCases -and $testCases.Count -gt 0)
+                {
+                    $numberOfTests = $numberOfTests + $testCases.Count -1
+                }
+            }        
+        }
+        catch {
+            
+        }
+    }
+    
 	$startTime = Get-Date
     try {
         # Run all tests
@@ -219,7 +242,7 @@ function Run-Test {
             $testName = $testObject.Name.Substring(5)
 
             $testCases = @( $null )
-            $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"
+            $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"        
 
             try {
                 Write-Host 'Getting the test cases factory for ' $testName
@@ -242,11 +265,8 @@ function Run-Test {
                 $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"
             }
 
-            # Write to log file as we run tests
-            "$(Get-Date -format o) Running Test $testName... ($testIndex / $($tests.Count))" + $testCasesInfoString >> $testLogFile
-            "Running Test " + $testName + " ($testIndex / $($tests.Count))" + $testCasesInfoString
 
-            $testCaseIndex = 0
+            $testCaseIndex = -1
             $testCases | %{
 
                 # set name to test name. If this is a test case, we will add that info to the name
@@ -261,9 +281,19 @@ function Run-Test {
                         $name += "(" + [system.string]::join("_", $noteProperties) + ")"
                     }
                     $testCaseIndex++
-                    "Running Test case $name... ($testCaseIndex / $($testCases.Count))"
+                    $testIndexToPrint = $testIndex + $testCaseIndex
+                    "Running Test case $name... ($testIndexToPrint / $numberOfTests)"
                     # Write to log file as we run tests
-                    "$(Get-Date -format o) Running Test case $name... ($testCaseIndex / $($testCases.Count))" >> $testLogFile
+                    "Running Test case $name... ($testIndexToPrint / $numberOfTests)" >> $testLogFile
+                    if ($testCaseIndex + 1 -eq $testCases.Count)
+                    {
+                        $testIndex = $testIndex + $testCaseIndex
+                    }
+                }
+                else
+                {
+                    # Write to log file as we run tests
+                    "Running Test $testName... ($testIndex / $numberOfTests)" >> $testLogFile            
                 }
 
                 $repositoryPath = Join-Path $testRepositoryPath $name
@@ -470,6 +500,12 @@ function Append-TextResult
     )
 
     $row = Get-TextResultRow $Result
+    $numLines = $row | Measure-Object -Line
+    if($numLines.Lines -gt 1)
+    {
+        $rowArray = $row.Split([environment]::NewLine)
+        $row = [string]::Join(" ", $rowArray)
+    }
     $row >> $Path
 }
 

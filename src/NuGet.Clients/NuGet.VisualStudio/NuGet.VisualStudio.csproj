@@ -10,11 +10,19 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <PackageId>NuGet.VisualStudio</PackageId>
     <AssemblyDescription>APIs for invoking NuGet services in Visual Studio.</AssemblyDescription>
+    <Description>APIs for invoking NuGet services in Visual Studio.</Description>
     <ImportedFromTypeLib>NuGet.VisualStudio</ImportedFromTypeLib>
     <Guid>228F7591-2777-47D7-B81D-FEADFC71CEB5</Guid>
     <ComVisible>false</ComVisible>
+    <authors>Microsoft</authors>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl	>https://github.com/NuGet/NuGet.Client</PackageProjectUrl	>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
   </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
@@ -25,25 +33,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="install.ps1">
-      <CopyToOutputDirectory Condition=" '$(VisualStudioVersion)' == '15.0' ">PreserveNewest</CopyToOutputDirectory> <!-- TODO: Remove this when we stop building for VS14 -->
-    </None>
-  </ItemGroup>
-
-  <PropertyGroup>
-    <NuspecFile>NuGet.VisualStudio.nuspec</NuspecFile>
-    <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
-    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
-  </PropertyGroup>
-
-  <!--
-  <ItemGroup>
-    <None Include="install.ps1">
-      <PackagePath>tools\</PackagePath>
+    <Content Include="NuGet.VisualStudio.targets">
+      <PackagePath>build</PackagePath>
       <Pack>true</Pack>
-    </None>
+    </Content>
   </ItemGroup>
-  -->
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>

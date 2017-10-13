@@ -198,7 +198,7 @@ namespace NuGet.Protocol.Tests
         public async Task GetAllVersionsAsync_NoErrorsOnNoContent()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress();
+            var serviceAddress = ProtocolUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "FindPackagesById()?id='a'", "204");
@@ -330,7 +330,7 @@ namespace NuGet.Protocol.Tests
             // Arrange
             using (var workingDir = TestDirectory.Create())
             {
-                var serviceAddress = TestUtility.CreateServiceAddress();
+                var serviceAddress = ProtocolUtility.CreateServiceAddress();
                 var package = SimpleTestPackageUtility.CreateFullPackage(workingDir, "xunit", "2.2.0-beta1-build3239");
                 var packageBytes = File.ReadAllBytes(package.FullName);
 
@@ -347,7 +347,7 @@ namespace NuGet.Protocol.Tests
                         serviceAddress + "FindPackagesById()?id='XUNIT'",
                         _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
-                            Content = new TestContent(TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()))
+                            Content = new TestContent(ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()))
                         })
                     },
                     {
@@ -388,7 +388,7 @@ namespace NuGet.Protocol.Tests
             // Arrange
             using (var workingDir = TestDirectory.Create())
             {
-                var serviceAddress = TestUtility.CreateServiceAddress();
+                var serviceAddress = ProtocolUtility.CreateServiceAddress();
                 var package = SimpleTestPackageUtility.CreateFullPackage(workingDir, "WindowsAzure.Storage", "6.2.2-preview");
                 var packageBytes = File.ReadAllBytes(package.FullName);
 
@@ -405,7 +405,7 @@ namespace NuGet.Protocol.Tests
                         serviceAddress + "FindPackagesById()?id='WINDOWSAZURE.STORAGE'",
                         _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
-                            Content = new TestContent(TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()))
+                            Content = new TestContent(ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()))
                         })
                     },
                     {
@@ -727,7 +727,7 @@ namespace NuGet.Protocol.Tests
 
             internal static RemoteV2FindPackageByIdResourceTest Create()
             {
-                var serviceAddress = TestUtility.CreateServiceAddress();
+                var serviceAddress = ProtocolUtility.CreateServiceAddress();
                 var packageIdentity = new PackageIdentity(
                     id: "xunit",
                     version: NuGetVersion.Parse("2.2.0-beta1-build3239"));
@@ -753,7 +753,7 @@ namespace NuGet.Protocol.Tests
                         request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(
-                                TestUtility.GetResource(
+                                ProtocolUtility.GetResource(
                                     "NuGet.Protocol.Tests.compiler.resources.XunitFindPackagesById.xml",
                                     typeof(RemoteV2FindPackageByIdResourceTest)))
                         })
@@ -763,7 +763,7 @@ namespace NuGet.Protocol.Tests
                         request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(
-                                TestUtility.GetResource(
+                                ProtocolUtility.GetResource(
                                     "NuGet.Protocol.Tests.compiler.resources.XunitFindPackagesById.xml",
                                     typeof(RemoteV2FindPackageByIdResourceTest)))
                         })

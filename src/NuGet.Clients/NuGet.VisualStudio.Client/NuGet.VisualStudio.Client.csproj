@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
@@ -30,9 +30,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <IsProductComponent>true</IsProductComponent>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0' AND '$(IsInsertable)' == 'true'">
-    <IsProductComponent>true</IsProductComponent>
     <ExtensionInstallationRoot>CommonExtensions</ExtensionInstallationRoot>
     <ExtensionInstallationFolder>Microsoft\NuGet</ExtensionInstallationFolder>
   </PropertyGroup>
@@ -51,7 +48,7 @@
       <Link>NuGet.targets</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="source.extension.vs15.insertable.vsixmanifest" />
+    <Content Include="source.extension.vs15.vsixmanifest" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt">
@@ -275,11 +272,8 @@
     <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
       <SourceVsixManifest Include="source.extension.vs14.vsixmanifest" />
     </ItemGroup>
-    <ItemGroup Condition="'$(IsInsertable)' != 'true' AND '$(VisualStudioVersion)' == '15.0'">
+    <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
       <SourceVsixManifest Include="source.extension.vs15.vsixmanifest" />
-    </ItemGroup>
-    <ItemGroup Condition="'$(IsInsertable)' == 'true' AND '$(VisualStudioVersion)' == '15.0'">
-      <SourceVsixManifest Include="source.extension.vs15.insertable.vsixmanifest" />
     </ItemGroup>
   </Target>
   <ItemGroup>
@@ -302,7 +296,7 @@
       <Version>3.0.3</Version>
     </PackageReference>
   </ItemGroup>
-  <Target Name="AfterBuild" DependsOnTargets="PublishVS14;PublishVS15;PublishVS15Insertable" />
+  <Target Name="AfterBuild" DependsOnTargets="PublishVS14;PublishVS15" />
   <Target Name="PublishVS14" Condition="'$(VisualStudioVersion)' == '14.0'">
     <Message Text="Publishing VS14 VSIX package files..." Importance="high" />
     <Message Text="$(TargetVsixContainer) -&gt; $(VsixPublishDestination)NuGet.Tools.vsix" Importance="high" />
@@ -311,9 +305,9 @@
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'"/>
+    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'" />
   </Target>
-  <Target Name="PublishVS15" Condition="'$(IsInsertable)' != 'true' AND '$(VisualStudioVersion)' == '15.0'">
+  <Target Name="PublishVS15" Condition="'$(VisualStudioVersion)' == '15.0'">
     <ItemGroup>
       <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />
     </ItemGroup>
@@ -326,22 +320,7 @@
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'"/>
-  </Target>
-  <Target Name="PublishVS15Insertable" Condition="'$(IsInsertable)' == 'true' AND '$(VisualStudioVersion)' == '15.0'">
-    <ItemGroup>
-      <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />
-    </ItemGroup>
-    <Message Text="Publishing VS15 Insertable VSIX package files..." Importance="high" />
-    <Message Text="$(TargetVsixContainer) -&gt; $(VsixPublishDestination)NuGet.Tools.vsix" Importance="high" />
-    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(VsixPublishDestination)NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
-    <Message Text="@(PackageManifest) -&gt; $(VsixPublishDestination)" Importance="high" />
-    <Copy SourceFiles="@(PackageManifest)" DestinationFolder="$(VsixPublishDestination)" OverwriteReadOnlyFiles="true" />
-    <ItemGroup Condition="'$(IsCIBuild)' !='true'">
-      <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
-    </ItemGroup>
-    <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'"/>
+    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'" />
   </Target>
   <Target Name="ReadVsixIncludeListFromFile">
     <ReadLinesFromFile File="@(VsixIncludeFile)">
@@ -382,10 +361,7 @@
   </Target>
   <!--The IsCIBuild property is passed on the VSTS CI-->
   <Target Name="GetLocalizedDlls" AfterTargets="GetVsixSourceItems" Condition="'$(IsCIBuild)' =='true'">
-    <MSBuild
-      Projects="@(SolutionProjectsWithoutVSIX)"
-      Targets="GetLocalizedFilesForVsix"
-      Properties="IsVsixBuild=true;BuildProjectReferences=false;">
+    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)" Targets="GetLocalizedFilesForVsix" Properties="IsVsixBuild=true;BuildProjectReferences=false;">
       <Output TaskParameter="TargetOutputs" ItemName="LocalizedFilesForVsix" />
     </MSBuild>
     <ItemGroup>

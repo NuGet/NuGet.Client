@@ -317,13 +317,31 @@ function Set-ProjectJsonLockFile {
     return $lockFileFormat.Write($projectJsonLockFilePath, $LockFile)
 }
 
-function Get-ProjectCacheFilePath {
+function Get-ProjectToolsCacheFilePath {
     param(
         [parameter(Mandatory = $true)]
         $Project
     )
-        return CacheFilePathFromProjectPath $Project.FullName
+    $node = Get-ToolsReference $Project.FullName
+
+    $includeValue = $node.Attributes['Include'].Value
+    $versionValue = $node.Attributes['Version'].Value
+
+    return "$($home)\.nuget\packages\.tools\$($includeValue)\$($versionValue)\netcoreapp2.0\$($includeValue).nuget.cache"      
 }
+
+function Get-ToolsReference {
+    param(
+        [parameter(Mandatory = $true)]
+        $projectPath
+    )
+    $doc = [xml](Get-Content $projectPath)
+    $ns = New-Object System.Xml.XmlNamespaceManager($doc.NameTable)
+    $ns.AddNamespace("ns", $doc.DocumentElement.NamespaceURI)
+    $node = $doc.SelectSingleNode("//ns:DotNetCliToolReference",$ns)
+    return $node
+}
+
 
 function Get-CacheFilePathFromProjectPath {
         param(
@@ -337,6 +355,15 @@ function Get-CacheFilePathFromProjectPath {
 
     return $projectCacheFilePath
 }
+
+function Get-ProjectCacheFilePath {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+        return CacheFilePathFromProjectPath $Project.FullName
+}
+
 
 
 function Get-ProjectJsonLockFilePath {

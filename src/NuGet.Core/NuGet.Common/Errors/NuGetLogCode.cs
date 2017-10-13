@@ -93,6 +93,16 @@ namespace NuGet.Common
         NU1106 = 1106,
 
         /// <summary>
+        /// Version conflict.
+        /// </summary>
+        NU1107 = 1107,
+
+        /// <summary>
+        /// Circular dependency.
+        /// </summary>
+        NU1108 = 1108,
+
+        /// <summary>
         /// Dependency project has an incompatible framework.
         /// </summary>
         NU1201 = 1201,
@@ -157,15 +167,14 @@ namespace NuGet.Common
         /// </summary>
         NU1605 = 1605,
 
-        /// <summary>
-        /// Circular dependency.
-        /// </summary>
-        NU1606 = 1606,
+        // These codes have been moved and should not be reused.
+        // NU1606 -> NU1108
+        // NU1607 -> NU1107
 
         /// <summary>
-        /// Version conflict.
+        /// Version is higher than upper bound.
         /// </summary>
-        NU1607 = 1607,
+        NU1608 = 1608,
 
         /// <summary>
         /// Fallback framework used.

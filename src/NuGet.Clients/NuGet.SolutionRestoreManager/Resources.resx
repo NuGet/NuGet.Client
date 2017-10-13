@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -136,12 +136,12 @@
     <value>Time Elapsed: {0}</value>
   </data>
   <data name="PackageNotRestoredBecauseOfNoConsent" xml:space="preserve">
-    <value>One or more NuGet packages need to be restored but couldn't be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also give consent by setting the environment variable 'EnableNuGetPackageRestore' to 'true'.
+    <value>One or more NuGet packages need to be restored but couldn't be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the NuGet Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also give consent by setting the environment variable 'EnableNuGetPackageRestore' to 'true'.
 
 Missing packages: {0}</value>
   </data>
   <data name="PackageRefNotRestoredBecauseOfNoConsent" xml:space="preserve">
-    <value>NuGet restore is currently disabled. To enable it, open the Visual Studio Options dialog, click on the Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also enable it by setting the environment variable 'EnableNuGetPackageRestore' to 'true'.</value>
+    <value>NuGet restore is currently disabled. To enable it, open the Visual Studio Options dialog, click on the NuGet Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also enable it by setting the environment variable 'EnableNuGetPackageRestore' to 'true'.</value>
   </data>
   <data name="PackageRestoreCanceled" xml:space="preserve">
     <value>NuGet package restore canceled.</value>
@@ -160,7 +160,7 @@ Missing packages: {0}</value>
   </data>
   <data name="PackageRestoreOptOutMessage" xml:space="preserve">
     <value>Restoring NuGet packages...
-To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck 'Allow NuGet to download missing packages during build.'</value>
+To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck 'Allow NuGet to download missing packages during build.'</value>
   </data>
   <data name="RelativeGlobalPackagesFolder" xml:space="preserve">
     <value>'globalPackagesFolder' from nuget.config file or the environment variable is '{0}', a relative path and the solution is not saved. Please save your solution or configure a 'globalPackagesFolder' which is a full path.</value>

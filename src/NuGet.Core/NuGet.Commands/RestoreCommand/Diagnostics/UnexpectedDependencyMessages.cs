@@ -1,13 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Shared;
@@ -28,6 +28,9 @@ namespace NuGet.Commands
             var ignoreIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var graphList = graphs.AsList();
 
+            // Index the flattened graph for faster lookups.
+            var indexedGraphs = graphList.Select(IndexedRestoreTargetGraph.Create).ToList();
+
             // 1. Detect project dependency authoring issues in the current project.
             //    The user can fix these themselves.
             var projectMissingLowerBounds = GetProjectDependenciesMissingLowerBounds(project);
@@ -43,8 +46,12 @@ namespace NuGet.Commands
 
             // 3. Detect top level dependencies that have a version different from the specified version.
             //    Ignore packages already logged in #1 and #2 since those errors are more specific.
-            var bumpedUp = GetBumpedUpDependencies(graphList, project, ignoreIds);
+            var bumpedUp = GetBumpedUpDependencies(indexedGraphs, project, ignoreIds);
             await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(bumpedUp));
+
+            // 4. Detect dependencies that are higher than the upper bound of a version range.
+            var aboveUpperBounds = GetDependenciesAboveUpperBounds(indexedGraphs, logger);
+            await logger.LogMessagesAsync(aboveUpperBounds);
         }
 
         /// <summary>
@@ -111,14 +118,14 @@ namespace NuGet.Commands
         /// Warn for dependencies that have been bumped up.
         /// </summary>
         public static IEnumerable<RestoreLogMessage> GetBumpedUpDependencies(
-            IEnumerable<IRestoreTargetGraph> graphs,
+            List<IndexedRestoreTargetGraph> graphs,
             PackageSpec project,
             ISet<string> ignoreIds)
         {
             var messages = new List<RestoreLogMessage>();
 
             // Group by framework to get project dependencies, then check each graph.
-            foreach (var frameworkGroup in graphs.GroupBy(e => e.Framework))
+            foreach (var frameworkGroup in graphs.GroupBy(e => e.Graph.Framework))
             {
                 // Get dependencies from the project
                 var dependencies = project.GetPackageDependenciesForFramework(frameworkGroup.Key)
@@ -128,24 +135,27 @@ namespace NuGet.Commands
                 foreach (var dependency in dependencies)
                 {
                     // Graphs may have different versions of the resolved package
-                    foreach (var graph in frameworkGroup)
+                    foreach (var indexedGraph in frameworkGroup)
                     {
-                        // Ignore floating or version-less (project) dependencies
-                        // Avoid warnings for non-packages
-                        var match = graph.Flattened.GetItemById(dependency.Name);
-
-                        if (match != null
-                            && LibraryType.Package == match.Key.Type
-                            && dependency.LibraryRange.VersionRange.IsMinInclusive
-                            && match.Key.Version > dependency.LibraryRange.VersionRange.MinVersion)
+                        var minVersion = dependency.LibraryRange.VersionRange?.MinVersion;
+                        if (minVersion != null && dependency.LibraryRange.VersionRange.IsMinInclusive)
                         {
-                            var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_DependencyBumpedUp,
-                                dependency.LibraryRange.Name,
-                                dependency.LibraryRange.VersionRange.PrettyPrint(),
-                                match.Key.Name,
-                                match.Key.Version);
+                            // Ignore floating or version-less (project) dependencies
+                            // Avoid warnings for non-packages
+                            var match = indexedGraph.GetItemById(dependency.Name, LibraryType.Package);
 
-                            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, message, match.Key.Name, graph.TargetGraphName));
+                            if (match != null && match.Key.Version > minVersion)
+                            {
+                                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_DependencyBumpedUp,
+                                    dependency.LibraryRange.Name,
+                                    dependency.LibraryRange.VersionRange.PrettyPrint(),
+                                    match.Key.Name,
+                                    match.Key.Version);
+
+                                var graphName = indexedGraph.Graph.TargetGraphName;
+
+                                messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, message, match.Key.Name, graphName));
+                            }
                         }
                     }
                 }
@@ -207,6 +217,68 @@ namespace NuGet.Commands
             }
 
             return !range.IsMinInclusive || !range.HasLowerBound;
+        }
+
+        /// <summary>
+        /// Log upgrade warnings from the graphs.
+        /// </summary>
+        public static IEnumerable<RestoreLogMessage> GetDependenciesAboveUpperBounds(List<IndexedRestoreTargetGraph> graphs, ILogger logger)
+        {
+            var messages = new List<RestoreLogMessage>();
+
+            foreach (var indexedGraph in graphs)
+            {
+                var graph = indexedGraph.Graph;
+
+                foreach (var node in graph.Flattened)
+                {
+                    var dependencies = node.Data?.Dependencies ?? Enumerable.Empty<LibraryDependency>();
+
+                    foreach (var dependency in dependencies)
+                    {
+                        // Check if the dependency has an upper bound
+                        var dependencyRange = dependency.LibraryRange.VersionRange;
+                        var upperBound = dependencyRange?.MaxVersion;
+                        if (upperBound != null)
+                        {
+                            var dependencyId = dependency.Name;
+
+                            // If the version does not exist then it was not resolved or is a project and should be skipped.
+                            var match = indexedGraph.GetItemById(dependencyId, LibraryType.Package);
+                            if (match != null)
+                            {
+                                var actualVersion = match.Key.Version;
+
+                                // If the upper bound is included then require that the version be higher than the upper bound to fail
+                                // If the upper bound is not included, then an exact match on the upperbound is a failure
+                                var compare = dependencyRange.IsMaxInclusive ? 1 : 0;
+
+                                if (VersionComparer.VersionRelease.Compare(actualVersion, upperBound) >= compare)
+                                {
+                                    // True if the package already has an NU1107 error, NU1608 would be redundant here.
+                                    if (!indexedGraph.HasErrors(dependencyId))
+                                    {
+                                        var parent = DiagnosticUtility.FormatIdentity(node.Key);
+                                        var child = DiagnosticUtility.FormatDependency(dependencyId, dependencyRange);
+                                        var actual = DiagnosticUtility.FormatIdentity(match.Key);
+
+                                        var message = string.Format(CultureInfo.CurrentCulture,
+                                            Strings.Warning_VersionAboveUpperBound,
+                                            parent,
+                                            child,
+                                            actual);
+
+                                        messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1608, message, dependencyId, graph.TargetGraphName));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Merge log messages
+            return DiagnosticUtility.MergeOnTargetGraph(messages);
         }
 
         private static bool IsNonFloatingPackageDependency(this LibraryDependency dependency)

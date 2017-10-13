@@ -59,6 +59,12 @@ namespace NuGet.PackageManagement.UI.Test
                 }
             } 
 
+            // All items should not have a prefix reserved because the feed is multisource
+            foreach (var item in loaded)
+            {
+                Assert.False(item.PrefixReserved);
+            }
+
             Assert.NotEmpty(loaded);
         }
 
@@ -130,7 +136,6 @@ namespace NuGet.PackageManagement.UI.Test
         private class TestPackageFeed : IPackageFeed
         {
             public bool IsMultiSource => false;
-            public bool IsOnlyLoadingFromNuGetOrg => false;
 
             public Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
             {

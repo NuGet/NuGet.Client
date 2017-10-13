@@ -377,7 +377,7 @@ namespace NuGet.Commands
                 foreach (var cycle in graph.AnalyzeResult.Cycles)
                 {
                     var text = Strings.Log_CycleDetected + $" {Environment.NewLine}  {cycle.GetPath()}.";
-                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1606, text, cycle.Key?.Name, graph.TargetGraphName));
+                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1108, text, cycle.Key?.Name, graph.TargetGraphName));
                     return false;
                 }
             }
@@ -398,9 +398,9 @@ namespace NuGet.Commands
                             CultureInfo.CurrentCulture,
                             Strings.Log_VersionConflict,
                             versionConflict.Selected.Key.Name)
-                        + $" {Environment.NewLine} {versionConflict.Selected.GetPath()} {Environment.NewLine} {versionConflict.Conflicting.GetPath()}.";
+                        + $" {Environment.NewLine} {versionConflict.Selected.GetPathWithLastRange()} {Environment.NewLine} {versionConflict.Conflicting.GetPathWithLastRange()}.";
 
-                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1607, message, versionConflict.Selected.Key.Name, graph.TargetGraphName));
+                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1107, message, versionConflict.Selected.Key.Name, graph.TargetGraphName));
                     return false;
                 }
             }
@@ -434,8 +434,13 @@ namespace NuGet.Commands
                         if (!ignoreIds.Contains(downgraded.Key.Name))
                         {
                             // Not all dependencies have a min version, if one does not exist use 0.0.0
-                            var fromVersion = downgraded.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
-                            var toVersion = downgradedBy.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
+                            var fromVersion = downgraded.GetVersionRange().MinVersion
+                                            ?? new NuGetVersion(0, 0, 0);
+
+                            // Use the actual version resolved if it exists
+                            var toVersion = downgradedBy.GetVersionOrDefault()
+                                            ?? downgradedBy.GetVersionRange().MinVersion
+                                            ?? new NuGetVersion(0, 0, 0);
 
                             var message = string.Format(
                                     CultureInfo.CurrentCulture,
@@ -443,7 +448,7 @@ namespace NuGet.Commands
                                     downgraded.Key.Name,
                                     fromVersion,
                                     toVersion)
-                                + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}";
+                                + $" {Environment.NewLine} {downgraded.GetPathWithLastRange()} {Environment.NewLine} {downgradedBy.GetPathWithLastRange()}";
 
                             messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, message, downgraded.Key.Name, graph.TargetGraphName));
                         }

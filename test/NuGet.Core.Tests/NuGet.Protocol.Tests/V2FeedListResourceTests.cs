@@ -19,17 +19,17 @@ namespace NuGet.Protocol.Tests
         public async Task TestListDelistedNoPrereleaseNotAllVersionsDelistedOnlyResponse()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
 
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'" +
                 "&targetFramework=''&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -66,17 +66,17 @@ namespace NuGet.Protocol.Tests
         public async Task TestListNoDelistedNoPrereleaseNotAllVersionsDelistedOnlyResponse()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
 
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'" +
                 "&targetFramework=''&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.6DelistedEntries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -113,21 +113,21 @@ namespace NuGet.Protocol.Tests
         public async Task TestListNoDelistedNoPrereleaseNotAllVersions()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
 
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'" +
                 "&targetFramework=''&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NewtonSearch30Entries.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NewtonSearch30Entries.xml", GetType()));
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsLatestVersion&$orderby=Id&searchTerm='newton'" +
                 "&targetFramework=''&includePrerelease=false&$skip=30&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NewtonSearch3Entries.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NewtonSearch3Entries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -164,17 +164,17 @@ namespace NuGet.Protocol.Tests
         public async Task TestListNoDelistedPrereleaseNotAllVersions()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
 
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsAbsoluteLatestVersion&$orderby=Id&searchTerm='NuGet.Exe'" +
                 "&targetFramework=''&includePrerelease=true&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NuGetExeSearch.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NuGetExeSearch.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -211,21 +211,21 @@ namespace NuGet.Protocol.Tests
         public async Task TestListDelistedPrereleaseNoAllVersions()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
 
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsAbsoluteLatestVersion&$orderby=Id&searchTerm='Windows.AzureStorage'" +
                 "&targetFramework=''&includePrerelease=true&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
             responses.Add(
                 serviceAddress + "/Search()?$filter=IsAbsoluteLatestVersion&$orderby=Id&searchTerm='Windows.AzureStorage'" +
                 "&targetFramework=''&includePrerelease=true&$skip=30&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -263,17 +263,17 @@ namespace NuGet.Protocol.Tests
         public async Task TestListNoDelistedPrereleaseAllVersions()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
 
             responses.Add(
                 serviceAddress + "/Search()?$orderby=Id&searchTerm='NuGet.Exe'&targetFramework=''" +
                 "&includePrerelease=true&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NuGetExeSearch.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.NuGetExeSearch.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -310,21 +310,21 @@ namespace NuGet.Protocol.Tests
         public async Task TestListDelistedPrereleaseAllVersions()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
 
             responses.Add(
                 serviceAddress + "/Search()?$orderby=Id&searchTerm='Windows.AzureStorage'&targetFramework=''" +
                 "&includePrerelease=true&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
             responses.Add(
                 serviceAddress + "/Search()?$orderby=Id&searchTerm='Windows.AzureStorage'&targetFramework=''" +
                 "&includePrerelease=true&$skip=30&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -362,21 +362,21 @@ namespace NuGet.Protocol.Tests
         public async Task TestListNoDelistedNoPrereleaseAllVersions()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
 
             responses.Add(
                 serviceAddress + "/Search()?$orderby=Id&searchTerm='Windows.AzureStorage'&targetFramework=''" +
                 "&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
             responses.Add(
                 serviceAddress + "/Search()?$orderby=Id&searchTerm='Windows.AzureStorage'&targetFramework=''" +
                 "&includePrerelease=false&$skip=30&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
@@ -413,17 +413,17 @@ namespace NuGet.Protocol.Tests
         public async Task TestUsesReferenceCache()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
 
             responses.Add(
                 serviceAddress + "/Search()?$orderby=Id&searchTerm='afine'" +
                 "&targetFramework=''&includePrerelease=false&$skip=0&$top=30&semVerLevel=2.0.0",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.SearchV2WithDuplicateBesidesVersion.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.SearchV2WithDuplicateBesidesVersion.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 

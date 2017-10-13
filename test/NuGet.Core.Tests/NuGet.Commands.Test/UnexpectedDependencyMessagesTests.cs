@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -19,6 +19,190 @@ namespace NuGet.Commands.Test
 {
     public class UnexpectedDependencyMessagesTests
     {
+        [Fact]
+        public void GivenAPackageVersionAboveADependencyConstraintVerifyWarning()
+        {
+            var testLogger = new TestLogger();
+            var range = VersionRange.Parse("1.0.0");
+            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
+            var project = new PackageSpec(tfi)
+            {
+                Name = "proj"
+            };
+
+            var depY = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange("y", VersionRange.Parse("[1.0.0]"), LibraryDependencyTarget.Package)
+            };
+            var itemX = GetItem("x", "1.0.0", LibraryType.Package, depY);
+            var itemY = GetItem("y", "2.0.0", LibraryType.Package);
+
+            var flattened = new HashSet<GraphItem<RemoteResolveResult>>() { itemX, itemY };
+            var indexedGraphs = GetIndexedGraphs(flattened);
+
+            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs, testLogger).ToList();
+            var message = messages.FirstOrDefault();
+
+            messages.Count.Should().Be(1);
+            message.LibraryId.Should().Be("y");
+            message.TargetGraphs.Single().Should().Be("net46");
+            message.Message.Should().Be("Detected package version outside of dependency constraint: x 1.0.0 requires y (= 1.0.0) but version y 2.0.0 was resolved.");
+            message.Code.Should().Be(NuGetLogCode.NU1608);
+            message.Level.Should().Be(LogLevel.Warning);
+        }
+
+        [Fact]
+        public void GivenAPackageVersionAboveMultipleDependencyConstraintsVerifyWarnings()
+        {
+            var testLogger = new TestLogger();
+            var range = VersionRange.Parse("1.0.0");
+            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
+            var project = new PackageSpec(tfi)
+            {
+                Name = "proj"
+            };
+
+            var depYX = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange("y", VersionRange.Parse("[1.0.0]"), LibraryDependencyTarget.Package)
+            };
+            var depYZ = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange("y", VersionRange.Parse("[2.0.0]"), LibraryDependencyTarget.Package)
+            };
+            var itemX = GetItem("x", "1.0.0", LibraryType.Package, depYX);
+            var itemY = GetItem("y", "3.0.0", LibraryType.Package);
+            var itemZ = GetItem("z", "1.0.0", LibraryType.Package, depYZ);
+
+            var flattened = new HashSet<GraphItem<RemoteResolveResult>>() { itemX, itemY, itemZ };
+            var indexedGraphs = GetIndexedGraphs(flattened);
+
+            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs, testLogger).ToList();
+            messages.Count.Should().Be(2);
+            messages.Select(e => e.Code).Distinct().Single().Should().Be(NuGetLogCode.NU1608);
+        }
+
+        [Theory]
+        [InlineData("2.0.0", "[1.0.0]", "above range")]
+        [InlineData("2.0.0-beta", "[1.0.0]", "above range")]
+        [InlineData("1.0.0", "[1.0.0-beta]", "above range")]
+        [InlineData("2.0.0", "[1.0.0, 2.0.0)", "above range since it is non-inclusive")]
+        public void GivenARangeVerifyNU1608Warning(string yVersion, string yDepRange, string reason)
+        {
+            var testLogger = new TestLogger();
+            var range = VersionRange.Parse("1.0.0");
+            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
+            var project = new PackageSpec(tfi)
+            {
+                Name = "proj"
+            };
+
+            var depY = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange("y", VersionRange.Parse(yDepRange), LibraryDependencyTarget.Package)
+            };
+            var itemX = GetItem("x", "1.0.0", LibraryType.Package, depY);
+            var itemY = GetItem("y", yVersion, LibraryType.Package);
+
+            var flattened = new HashSet<GraphItem<RemoteResolveResult>>() { itemX, itemY };
+            var indexedGraphs = GetIndexedGraphs(flattened);
+
+            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs, testLogger).ToList();
+            var message = messages.FirstOrDefault();
+
+            messages.Count.Should().Be(1);
+            message.LibraryId.Should().Be("y");
+            message.TargetGraphs.Single().Should().Be("net46");
+            message.Code.Should().Be(NuGetLogCode.NU1608);
+            message.Level.Should().Be(LogLevel.Warning);
+        }
+
+        [Theory]
+        [InlineData("0.1.0", "[1.0.0]", "below range")]
+        [InlineData("1.0.0", "[1.0.0]", "in range")]
+        [InlineData("1.0.0-beta", "[1.0.0-beta]", "in range prerelease")]
+        [InlineData("2.0.0-beta", "[1.0.0, 2.0.0)", "in range below stable")]
+        [InlineData("1.0.0", "[1.0.0, 2.0.0]", "in range")]
+        [InlineData("2.0.0", "[1.0.0, 2.0.0]", "in range")]
+        [InlineData("1.0.0", "[0.0.0, 2.0.0]", "in range")]
+        [InlineData("1.0.0", "(0.0.0,)", "no upper bound")]
+        [InlineData("1.0.0", "[1.0.0,)", "no upper bound")]
+        public void GivenARangeVerifyNU1608WarningNotPresent(string yVersion, string yDepRange, string reason)
+        {
+            var testLogger = new TestLogger();
+            var range = VersionRange.Parse("1.0.0");
+            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
+            var project = new PackageSpec(tfi)
+            {
+                Name = "proj"
+            };
+
+            var depY = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange("y", VersionRange.Parse(yDepRange), LibraryDependencyTarget.Package)
+            };
+            var itemX = GetItem("x", "1.0.0", LibraryType.Package, depY);
+            var itemY = GetItem("y", yVersion, LibraryType.Package);
+
+            var flattened = new HashSet<GraphItem<RemoteResolveResult>>() { itemX, itemY };
+            var indexedGraphs = GetIndexedGraphs(flattened);
+
+            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs, testLogger).ToList();
+
+            messages.Should().BeEmpty(reason);
+        }
+
+        [Fact]
+        public void GivenAPackageVersionDoesNotExistVerifyNoWarning()
+        {
+            var testLogger = new TestLogger();
+            var range = VersionRange.Parse("1.0.0");
+            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
+            var project = new PackageSpec(tfi)
+            {
+                Name = "proj"
+            };
+
+            var depY = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange("y", VersionRange.Parse("[1.0.0]"), LibraryDependencyTarget.Package)
+            };
+            var itemX = GetItem("x", "1.0.0", LibraryType.Package, depY);
+
+            var flattened = new HashSet<GraphItem<RemoteResolveResult>>() { itemX };
+            var indexedGraphs = GetIndexedGraphs(flattened);
+
+            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs, testLogger).ToList();
+
+            messages.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GivenAProjectVersionAboveADependencyConstraintVerifyNoWarning()
+        {
+            var testLogger = new TestLogger();
+            var range = VersionRange.Parse("1.0.0");
+            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
+            var project = new PackageSpec(tfi)
+            {
+                Name = "proj"
+            };
+
+            var depY = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange("y", VersionRange.Parse("[1.0.0]"), LibraryDependencyTarget.Package)
+            };
+            var itemX = GetItem("x", "1.0.0", LibraryType.Package, depY);
+            var itemY = GetItem("y", "2.0.0", LibraryType.Project);
+
+            var flattened = new HashSet<GraphItem<RemoteResolveResult>>() { itemX, itemY };
+            var indexedGraphs = GetIndexedGraphs(flattened);
+
+            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs, testLogger).ToList();
+
+            messages.Should().BeEmpty("project versions are not considered");
+        }
+
         [Fact]
         public void GivenAGraphWithMultipleIssuesForTheSamePackageVerifyBothMessagesLogged()
         {
@@ -196,8 +380,9 @@ namespace NuGet.Commands.Test
             targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
             var targetGraphs = new[] { targetGraph.Object };
             var ignore = new HashSet<string>();
+            var indexedGraphs = targetGraphs.Select(IndexedRestoreTargetGraph.Create).ToList();
 
-            UnexpectedDependencyMessages.GetBumpedUpDependencies(targetGraphs, project, ignore).Should().BeEmpty();
+            UnexpectedDependencyMessages.GetBumpedUpDependencies(indexedGraphs, project, ignore).Should().BeEmpty();
         }
 
         [Fact]
@@ -219,8 +404,9 @@ namespace NuGet.Commands.Test
             targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
             var targetGraphs = new[] { targetGraph.Object };
             var ignore = new HashSet<string>();
+            var indexedGraphs = targetGraphs.Select(IndexedRestoreTargetGraph.Create).ToList();
 
-            UnexpectedDependencyMessages.GetBumpedUpDependencies(targetGraphs, project, ignore).Should().BeEmpty();
+            UnexpectedDependencyMessages.GetBumpedUpDependencies(indexedGraphs, project, ignore).Should().BeEmpty();
         }
 
         [Fact]
@@ -242,8 +428,9 @@ namespace NuGet.Commands.Test
             targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
             var targetGraphs = new[] { targetGraph.Object };
             var ignore = new HashSet<string>() { "X" };
+            var indexedGraphs = targetGraphs.Select(IndexedRestoreTargetGraph.Create).ToList();
 
-            UnexpectedDependencyMessages.GetBumpedUpDependencies(targetGraphs, project, ignore).Should().BeEmpty();
+            UnexpectedDependencyMessages.GetBumpedUpDependencies(indexedGraphs, project, ignore).Should().BeEmpty();
         }
 
         [Fact]
@@ -265,8 +452,9 @@ namespace NuGet.Commands.Test
             targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
             var targetGraphs = new[] { targetGraph.Object };
             var ignore = new HashSet<string>();
+            var indexedGraphs = targetGraphs.Select(IndexedRestoreTargetGraph.Create).ToList();
 
-            var log = UnexpectedDependencyMessages.GetBumpedUpDependencies(targetGraphs, project, ignore).Single();
+            var log = UnexpectedDependencyMessages.GetBumpedUpDependencies(indexedGraphs, project, ignore).Single();
 
             log.Code.Should().Be(NuGetLogCode.NU1601);
             log.TargetGraphs.ShouldBeEquivalentTo(new[] { "net46/win10" });
@@ -635,6 +823,30 @@ namespace NuGet.Commands.Test
                 {
                     FrameworkName = framework,
                     Dependencies = dependencies.Select(e => new LibraryDependency(){ LibraryRange = e }).ToList()
+                }
+            };
+        }
+
+        private static List<IndexedRestoreTargetGraph> GetIndexedGraphs(HashSet<GraphItem<RemoteResolveResult>> flattened)
+        {
+            var targetGraph = new Mock<IRestoreTargetGraph>();
+            targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46");
+            targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
+            targetGraph.SetupGet(e => e.ResolvedDependencies).Returns(new HashSet<ResolvedDependencyKey>());
+            var targetGraphs = new[] { targetGraph.Object };
+            var indexedGraphs = targetGraphs.Select(IndexedRestoreTargetGraph.Create).ToList();
+            return indexedGraphs;
+        }
+
+        private static GraphItem<RemoteResolveResult> GetItem(string id, string version, LibraryType libraryType, params LibraryDependency[] dependencies)
+        {
+            return new GraphItem<RemoteResolveResult>(new LibraryIdentity(id, NuGetVersion.Parse(version), libraryType))
+            {
+                Data = new RemoteResolveResult()
+                {
+                    Match = new RemoteMatch(),
+                    Dependencies = dependencies.ToList()
                 }
             };
         }

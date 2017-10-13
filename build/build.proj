@@ -122,6 +122,33 @@
 
   <!--
     ============================================================
+    Run VS15 apex tests
+    ============================================================
+  -->
+  <Target Name="ApexTestsStandalone">
+
+    <!-- Test inputs -->
+    <PropertyGroup>
+      <TestProjectPaths>$(RepositoryRootDirectory)test\NuGet.Tests.Apex\NuGet.Tests.Apex\NuGet.Tests.Apex.csproj</TestProjectPaths>
+      <TestResultsFileName>ApexTestsVS15</TestResultsFileName>
+      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
+    </PropertyGroup>
+
+    <!-- Run tests as a batch -->
+    <MSBuild
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="RunTestsOnProjects"
+        Properties="$(CommonMSBuildProperties);
+                    VisualStudioVersion=$(TestVisualStudioVersion);
+                    TestResultsFileName=$(TestResultsFileName);
+                    TestProjectPaths=$(TestProjectPaths)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
     Run VS14 unit tests
     ============================================================
   -->
@@ -332,6 +359,27 @@
       Targets="Restore"
       Properties="$(CommonMSBuildProperties);
                   VisualStudioVersion=14.0">
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Restore Apex 
+    ============================================================
+  -->
+  <Target Name="RestoreApex">
+    <Message Text="Restoring Apex projects" Importance="high" />
+
+    <PropertyGroup>
+      <ProjectListValue>@(ApexProjects)</ProjectListValue>
+    </PropertyGroup>
+
+    <MSBuild
+      Projects="restorehelper.targets"
+      Targets="Restore"
+      Properties="RestoreGraphProjectInput=$(ProjectListValue);
+                  $(CommonMSBuildProperties);
+                  VisualStudioVersion=15.0">
     </MSBuild>
   </Target>
 

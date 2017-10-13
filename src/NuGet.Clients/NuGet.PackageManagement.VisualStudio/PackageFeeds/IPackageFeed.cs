@@ -15,8 +15,6 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         bool IsMultiSource { get; }
 
-        bool IsOnlyLoadingFromNuGetOrg { get; }
-
         /// <summary>
         /// Starts new search.
         /// </summary>

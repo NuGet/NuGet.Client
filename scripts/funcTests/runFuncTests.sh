@@ -84,6 +84,8 @@ NuGetExe="$DIR/.nuget/nuget.exe"
 #Get NuGet.exe
 curl -o $NuGetExe https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe
 
+mono --version
+
 #restore solution packages
 mono $NuGetExe restore  "$DIR/.nuget/packages.config" -SolutionDirectory "$DIR"
 if [ $? -ne 0 ]; then
@@ -98,12 +100,18 @@ rm -r -f "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSha
 
 case "$(uname -s)" in
 		Linux)
-			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin"
-			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Darwin
+			# We are not testing Mono on linux currently, so comment it out.
+			#echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Darwin -xml build/TestResults/monoonlinux.xml"
+			#mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Darwin -xml "build/TestResults/monoonlinux.xml"
 			;;
 		Darwin)
-			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux"
-			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Linux
+			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Linux -xml build/TestResults/monoomac.xml"
+			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.exe" -notrait Platform=Windows -notrait Platform=Linux -xml "build/TestResults/monoonmac.xml"
+			if [ $? -ne '0' ]; then
+				RESULTCODE=$?
+				echo "Mono tests failed!"				
+				exit 1
+			fi
 			;;
 		*) ;;
 esac

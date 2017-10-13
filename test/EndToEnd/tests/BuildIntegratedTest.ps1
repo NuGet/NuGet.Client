@@ -346,7 +346,7 @@ function Test-BuildIntegratedTransitiveProjectJsonRestores {
 
     # Arrange
     $project1 = New-Project BuildIntegratedClassLibrary
-    $project2 = New-ClassLibrary
+    $project2 = New-ClassLibraryNET46
     $project3 = New-Project BuildIntegratedClassLibrary
 
     Add-ProjectReference $project2 $project1
@@ -465,7 +465,7 @@ function Test-BuildIntegratedParentProjectIsRestoredAfterInstallWithClassLibInTr
 
     # Arrange
     $project1 = New-Project BuildIntegratedClassLibrary
-    $project2 = New-ClassLibrary ClassLib2
+    $project2 = New-ClassLibraryNET46 ClassLib2
     $project3 = New-Project BuildIntegratedClassLibrary
 
     Add-ProjectReference $project1 $project2
@@ -590,6 +590,41 @@ function Test-BuildIntegratedLegacyRebuildDoesNotDeleteCacheFile {
     Assert-ProjectCacheFileExists $project
 }
 
+function Test-BuildIntegratedRestoreAfterInstall {
+    # Arrange
+    $project = New-Project PackageReferenceClassLibrary
+    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    Assert-ProjectCacheFileExists $project
+    $cacheFile = Get-ProjectCacheFilePath $project
+    $installTimeStamp = ([datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+
+    #Act
+    Build-Solution
+    $restoreTimeStamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+    
+    #Assert
+    Assert-True ($installTimeStamp -eq $restoreTimeStamp)
+}
+
+function Test-BuildIntegratedRestoreAfterUninstall {
+    # Arrange
+    $project = New-Project PackageReferenceClassLibrary
+    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    Assert-ProjectCacheFileExists $project
+    $cacheFile = Get-ProjectCacheFilePath $project
+
+    #Act
+    $project | Uninstall-Package Newtonsoft.Json -Version 9.0.1
+
+    $uninstallTimeStamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+    
+    Build-Solution
+
+    $restoreTimeStamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+    
+    #Assert
+    Assert-True ($uninstallTimeStamp -eq $restoreTimeStamp)
+}
 function Test-BuildIntegratedProjectGetPackageTransitive {
     [SkipTestForVS14()]
     param($Context, $TestCase)
@@ -634,4 +669,25 @@ function Test-PackageReferenceProjectGetPackageTransitive {
 
 function TestCases-PackageReferenceProjectGetPackageTransitive{
     BuildProjectTemplateTestCases 'ClassLibrary' , 'PackageReferenceClassLibrary', 'BuildIntegratedClassLibrary'
+}
+
+function Test-BuildIntegratedVSandMSBuildNoOp {
+    # Arrange
+    $project = New-Project PackageReferenceClassLibrary
+    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    Assert-ProjectCacheFileExists $project
+    $cacheFile = Get-ProjectCacheFilePath $project
+    
+    Build-Solution
+
+    $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+    
+    $MSBuildExe = Get-MSBuildExe
+
+    & "$MSBuildExe" /t:restore
+
+    $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+
+    #Assert
+    Assert-True ($MsBuildRestoreTimestamp -eq $VSRestoreTimestamp)
 }

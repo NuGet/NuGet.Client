@@ -575,7 +575,7 @@ namespace Dotnet.Integration.Test
         [InlineData("folderA/folderB/abc.txt", null,
             "content/folderA/folderB/abc.txt;contentFiles/any/netstandard1.4/folderA/folderB/abc.txt")]
         [InlineData("../abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("C:/abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
         [InlineData("abc.txt", "folderA/", "folderA/abc.txt")]
         [InlineData("abc.txt", "folderA/xyz.txt", "folderA/xyz.txt")]
         [InlineData("abc.txt", "", "abc.txt")]
@@ -595,15 +595,15 @@ namespace Dotnet.Integration.Test
         [InlineData("folderA/abc.txt", "folderA;contentFiles/", "folderA/abc.txt;contentFiles/abc.txt")]
         [InlineData("folderA/abc.txt", "folderA;contentFiles/folderA", "folderA/abc.txt;contentFiles/folderA/abc.txt")]
         [InlineData("folderA/abc.txt", "folderA/xyz.txt", "folderA/xyz.txt")]
-        [InlineData("C:/abc.txt", "folderA/", "folderA/abc.txt")]
-        [InlineData("C:/abc.txt", "folderA/xyz.txt", "folderA/xyz.txt")]
-        [InlineData("C:/abc.txt", "", "abc.txt")]
-        [InlineData("C:/abc.txt", "/", "abc.txt")]
-        [InlineData("C:/abc.txt", "folderA;folderB", "folderA/abc.txt;folderB/abc.txt")]
-        [InlineData("C:/abc.txt", "folderA;contentFiles", "folderA/abc.txt;contentFiles/abc.txt")]
-        [InlineData("C:/abc.txt", "folderA;contentFiles\\", "folderA/abc.txt;contentFiles/abc.txt")]
-        [InlineData("C:/abc.txt", "folderA;contentFiles/", "folderA/abc.txt;contentFiles/abc.txt")]
-        [InlineData("C:/abc.txt", "folderA;contentFiles/folderA", "folderA/abc.txt;contentFiles/folderA/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", "folderA/", "folderA/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", "folderA/xyz.txt", "folderA/xyz.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", "", "abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", "/", "abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", "folderA;folderB", "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles", "folderA/abc.txt;contentFiles/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles\\", "folderA/abc.txt;contentFiles/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles/", "folderA/abc.txt;contentFiles/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles/folderA", "folderA/abc.txt;contentFiles/folderA/abc.txt")]
         [InlineData("../abc.txt", "folderA/", "folderA/abc.txt")]
         [InlineData("../abc.txt", "folderA/xyz.txt", "folderA/xyz.txt")]
         [InlineData("../abc.txt", "", "abc.txt")]
@@ -637,6 +637,10 @@ namespace Dotnet.Integration.Test
                 {
                     sourcePath = sourcePath.Replace("##", workingDirectory);
                 }
+                else if(sourcePath.StartsWith("{AbsolutePath}"))
+                {
+                    sourcePath = sourcePath.Replace("{AbsolutePath}", Path.GetTempPath().Replace('\\','/'));
+                }
 
                 // Create the subdirectory structure for testing possible source paths for the content file
                 Directory.CreateDirectory(Path.Combine(workingDirectory, "folderA"));
@@ -668,11 +672,16 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                var pathToContent = Path.Combine(workingDirectory, sourcePath);
+                var pathToContent = string.Empty;
                 if (Path.IsPathRooted(sourcePath))
                 {
                     pathToContent = sourcePath;
                 }
+                else
+                {
+                    pathToContent = Path.Combine(workingDirectory, sourcePath);
+                }
+                
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
@@ -1295,7 +1304,7 @@ namespace Dotnet.Integration.Test
         [InlineData("folderA/abc.txt",          null,                               "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
         [InlineData("folderA/folderB/abc.txt",  null,                               "content/folderA/folderB/abc.txt;contentFiles/any/netstandard1.4/folderA/folderB/abc.txt")]
         [InlineData("../abc.txt",               null,                               "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("C:/abc.txt",               null,                               "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               null,                               "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
         [InlineData("abc.txt",                  "folderA/",                         "folderA/abc.txt")]
         [InlineData("abc.txt",                  "folderA/xyz.txt",                  "folderA/xyz.txt/abc.txt")]
         [InlineData("abc.txt",                  "folderA;folderB",                  "folderA/abc.txt;folderB/abc.txt")]
@@ -1311,13 +1320,13 @@ namespace Dotnet.Integration.Test
         [InlineData("folderA/abc.txt",          "folderA;contentFiles/",            "folderA/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
         [InlineData("folderA/abc.txt",          "folderA;contentFiles/folderA",     "folderA/folderA/abc.txt;contentFiles/folderA/folderA/abc.txt")]
         [InlineData("folderA/abc.txt",          "folderA/xyz.txt",                  "folderA/xyz.txt/folderA/abc.txt")]
-        [InlineData("C:/abc.txt",               "folderA/",                         "folderA/abc.txt")]
-        [InlineData("C:/abc.txt",               "folderA/xyz.txt",                  "folderA/xyz.txt/abc.txt")]
-        [InlineData("C:/abc.txt",               "folderA;folderB",                  "folderA/abc.txt;folderB/abc.txt")]
-        [InlineData("C:/abc.txt",               "folderA;contentFiles",             "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("C:/abc.txt",               "folderA;contentFiles\\",           "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("C:/abc.txt",               "folderA;contentFiles/",            "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("C:/abc.txt",               "folderA;contentFiles/folderA",     "folderA/abc.txt;contentFiles/folderA/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA/",                         "folderA/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA/xyz.txt",                  "folderA/xyz.txt/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA;folderB",                  "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA;contentFiles",             "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA;contentFiles\\",           "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA;contentFiles/",            "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA;contentFiles/folderA",     "folderA/abc.txt;contentFiles/folderA/abc.txt")]
         [InlineData("../abc.txt",               "folderA/",                         "folderA/abc.txt")]
         [InlineData("../abc.txt",               "folderA/xyz.txt",                  "folderA/xyz.txt/abc.txt")]
         [InlineData("../abc.txt",               "folderA;folderB",                  "folderA/abc.txt;folderB/abc.txt")]
@@ -1347,6 +1356,10 @@ namespace Dotnet.Integration.Test
                 {
                     sourcePath = sourcePath.Replace("##", workingDirectory);
                 }
+                else if (sourcePath.StartsWith("{AbsolutePath}"))
+                {
+                    sourcePath = sourcePath.Replace("{AbsolutePath}", Path.GetTempPath().Replace('\\', '/'));
+                }
 
                 // Create the subdirectory structure for testing possible source paths for the content file
                 Directory.CreateDirectory(Path.Combine(workingDirectory, "folderA"));
@@ -1375,10 +1388,14 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                var pathToContent = Path.Combine(workingDirectory, sourcePath);
+                var pathToContent = string.Empty;
                 if (Path.IsPathRooted(sourcePath))
                 {
                     pathToContent = sourcePath;
+                }
+                else
+                {
+                    pathToContent = Path.Combine(workingDirectory, sourcePath);
                 }
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 

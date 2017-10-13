@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -28,7 +28,7 @@ namespace NuGet.ProjectModel.Test
             var json = @"{
                     ""dependencies"": {
                         ""b"": {
-                            ""version"": ""1.0.0"",
+                            ""version"": ""[1.0.0, )"",
                             ""autoReferenced"": true
                         }
                     },
@@ -36,7 +36,7 @@ namespace NuGet.ProjectModel.Test
                     ""net46"": {
                         ""dependencies"": {
                             ""a"": {
-                                ""version"": ""1.0.0"",
+                                ""version"": ""[1.0.0, )"",
                                 ""autoReferenced"": true
                             }
                         }
@@ -171,9 +171,9 @@ namespace NuGet.ProjectModel.Test
       ""c""
     ],
     ""originalTargetFrameworks"": [
-      ""b"",
-      ""a"",
-      ""c""
+      ""net46"",
+      ""net45"",
+      ""net40""
     ],
     ""sources"": {
       ""source"": {}
@@ -363,6 +363,88 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedWarningPropertiesJson, actualWarningPropertiesJson);
         }
 
+        [Fact]
+        public void Write_ReadWriteDependenciesAreSorted()
+        {
+            // Arrange
+            var json = @"{
+                    ""dependencies"": {
+                        ""b"": {
+                                ""version"": ""[1.0.0, )"",
+                        },
+                        ""a"": {
+                            ""version"": ""[1.0.0, )"",
+                        }
+                    },
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""b"": {
+                                ""version"": ""[1.0.0, )"",
+                            },
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                            }
+                        }
+                    }
+                  }
+                }";
+
+            var expectedJson = @"{
+                  ""dependencies"": {
+                    ""a"": ""[1.0.0, )"",
+                    ""b"": ""[1.0.0, )""
+                  },
+                  ""frameworks"": {
+                    ""net46"": {
+                      ""dependencies"": {
+                        ""a"": ""[1.0.0, )"",
+                        ""b"": ""[1.0.0, )""
+                      }
+                    }
+                  }
+                }";
+            // Act & Assert
+            VerifyPackageSpecWrite(json, expectedJson);
+        }
+
+        [Fact]
+        public void Write_ReadWriteVersionsAreNormalized()
+        {
+            // Arrange
+            var json = @"{
+                    ""dependencies"": {
+                        ""a"": {
+                                ""version"": ""1.0.0"",
+                        },
+                    },
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""1.0.0"",
+                            },
+                        }
+                    }
+                  }
+                }";
+
+            var expectedJson = @"{
+                  ""dependencies"": {
+                    ""a"": ""[1.0.0, )""
+                  },
+                  ""frameworks"": {
+                    ""net46"": {
+                      ""dependencies"": {
+                        ""a"": ""[1.0.0, )""
+                      }
+                    }
+                  }
+                }";
+            // Act & Assert
+            VerifyPackageSpecWrite(json, expectedJson);
+        }
+
         private static string GetJsonString(PackageSpec packageSpec)
         {
             var writer = new JsonObjectWriter();
@@ -405,7 +487,7 @@ namespace NuGet.ProjectModel.Test
             {
                 IncludeType = LibraryIncludeFlags.Build,
                 LibraryRange = libraryRangeWithNoWarnGlobal,
-                NoWarn = new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1607 }
+                NoWarn = new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1608 }
             };
 
             var nugetFramework = new NuGetFramework("frameworkIdentifier", new Version("1.2.3"), "frameworkProfile");
@@ -446,7 +528,7 @@ namespace NuGet.ProjectModel.Test
                     FallbackFolders = unsortedReadOnlyList,
                     ConfigFilePaths = unsortedReadOnlyList,
                     LegacyPackagesDirectory = false,
-                    OriginalTargetFrameworks = unsortedReadOnlyList,
+                    OriginalTargetFrameworks = new[] { "net45", "net46", "net40" },
                     OutputPath = "outputPath",
                     ProjectStyle = ProjectStyle.PackageReference,
                     PackagesPath = "packagesPath",
@@ -531,6 +613,22 @@ namespace NuGet.ProjectModel.Test
             var actualResult = writer.GetJson();
 
             var expected = JObject.Parse(json).ToString();
+
+            // Assert
+            Assert.Equal(expected, actualResult);
+        }
+
+        private static void VerifyPackageSpecWrite(string json, string expectedJson)
+        {
+            // Arrange & Act
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "testName", @"C:\fake\path");
+
+            var writer = new JsonObjectWriter();
+            PackageSpecWriter.Write(spec, writer);
+
+            var actualResult = writer.GetJson();
+
+            var expected = JObject.Parse(expectedJson).ToString();
 
             // Assert
             Assert.Equal(expected, actualResult);

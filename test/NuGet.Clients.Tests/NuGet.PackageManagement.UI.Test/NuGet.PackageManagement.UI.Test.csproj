@@ -29,6 +29,7 @@
     <Compile Include="ConverterTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageItemLoaderTests.cs" />
+    <Compile Include="PackageManagerListItemsTest.cs" />
     <Compile Include="PackageManagerProviderTest.cs" />
     <Compile Include="TestPackageManagerProviders.cs" />
     <Compile Include="WpfFactAttribute.cs" />
@@ -52,6 +53,9 @@
     <Content Include="Resources\packageicon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="compiler\resources\EntityFrameworkSearch.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="xunit.runner.json">

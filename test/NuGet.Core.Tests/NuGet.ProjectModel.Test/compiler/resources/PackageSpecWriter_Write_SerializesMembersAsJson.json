@@ -60,9 +60,9 @@
       "c"
     ],
     "originalTargetFrameworks": [
-      "b",
-      "a",
-      "c"
+      "net45",
+      "net46",
+      "net40"
     ],
     "sources": {
       "source": {}
@@ -102,7 +102,7 @@
       "version": "[1.2.3, )",
       "noWarn": [
         "NU1500",
-        "NU1607"
+        "NU1608"
       ]
     }
   },

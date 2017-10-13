@@ -1053,6 +1053,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Applying setting failed..
+        /// </summary>
+        public static string ShowError_ApplySettingFailed {
+            get {
+                return ResourceManager.GetString("ShowError_ApplySettingFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet.Config is malformed, Please check NuGet.Config.
         /// </summary>
         public static string ShowError_ConfigInvalidOperation {
@@ -1541,7 +1550,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The identity of this package has been verified by nuget.org.
+        ///   Looks up a localized string similar to The ID prefix of this package has been reserved for the owner of the package by the currently selected feed.
         /// </summary>
         public static string Tooltip_PrefixReserved {
             get {

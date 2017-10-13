@@ -12,40 +12,43 @@
     Assert-NotNull $installerServices
     Assert-NotNull $installerEvents
 }
-## Skipping the Test below, because current E2E machines (Win2016 Server) do not allow creating new UWP projects.
 
-# function Test-MigrateVanilaUwpProjectJsonToPackageReference {
-#     param(
-#         $context
-#     )
+function Test-MigrateVanilaUwpProjectJsonToPackageReference {
+    param(
+        $context
+    )
 
-#     # Arrange
-#     $p = New-UwpClassLibrary UwpClassLibrary1
-#     $cm = Get-VsComponentModel
-#     $projectDir = Get-ProjectDir $p
-#     $result = [API.Test.InternalAPITestHook]::MigrateJsonProject($p.FullName)
+    # Arrange
+    $p = New-UwpClassLibraryProjectJson UwpClassLibrary1
+    $cm = Get-VsComponentModel
+    $projectDir = Get-ProjectDir $p
+    $result = [API.Test.InternalAPITestHook]::MigrateJsonProject($p.FullName)
+    Start-Sleep -Seconds 3
+    # Assert
 
-#     # Assert
+    # Check if runtimes were migrated correctly
+    $expectRuntimeIds = 'win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot'
+    Assert-True($result.IsSuccess)
+    $actualRuntimes = Get-MsBuildPropertyValue $p 'RuntimeIdentifiers'
+    Assert-AreEqual $expectRuntimeIds $actualRuntimes
 
-#     # Check if runtimes were migrated correctly
-#     $expectRuntimeIds = 'win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot'
-#     Assert-True($result.IsSuccess)
-#     $actualRuntimes = Get-MsBuildPropertyValue $p 'RuntimeIdentifiers'
-#     Assert-AreEqual $expectRuntimeIds $actualRuntimes
+    # Check if project.json file was deleted
+    Assert-True !(Test-Path (Join-Path $projectDir project.json))
 
-#     # Check if project.json file was deleted
-#     Assert-True !(Test-Path (Join-Path $projectDir project.json))
+    # Check if backup was created
+    $backupProjectJsonPath = [System.IO.Path]::Combine($projectDir, "Backup", "project.json")
+    $backupCsprojPath = [System.IO.Path]::Combine($projectDir, "Backup", "UwpClassLibrary1.csproj")
+    Write-Host "Project json backup path: $backupProjectJsonPath"
+    Write-Host "Csproj backup path: $backupCsprojPath"
+    Assert-True (Test-Path $backupProjectJsonPath)
+    Assert-True (Test-Path $backupCsprojPath)
 
-#     # Check if backup was created
-#     Assert-True (Test-Path (Join-Path $projectDir (Join-Path Backup project.json)))
-#     Assert-True (Test-Path (Join-Path $projectDir (Join-Path Backup UwpClassLibrary1.csproj)))
-
-#     # Check if package reference was added correctly
-#     $packageRefs = @(Get-MsBuildItems $p 'PackageReference')
-#     Assert-AreEqual 1 $packageRefs.Count
-#     Assert-AreEqual $packageRefs[0].GetMetadataValue("Identity") 'Microsoft.NETCore.UniversalWindowsPlatform'
-#     Assert-AreEqual $packageRefs[0].GetMetadataValue("Version") '5.2.2'
-# }
+    # Check if package reference was added correctly
+    $packageRefs = @(Get-MsBuildItems $p 'PackageReference')
+    Assert-AreEqual 1 $packageRefs.Count
+    Assert-AreEqual $packageRefs[0].GetMetadataValue("Identity") 'Microsoft.NETCore.UniversalWindowsPlatform'
+    Assert-AreEqual $packageRefs[0].GetMetadataValue("Version") '5.2.2'
+}
 
 function Test-VsPackageInstallerServices {
     param(
@@ -85,11 +88,12 @@ function Test-GetInstalledPackagesWithCustomRestorePackagesPath {
 
     # Assert    
     Assert-NotNull $packages
-    Assert-NotNull $packages[0].InstallPath
+    $package = $packages | where Id -eq NuGet.Versioning
+    Assert-NotNull $package.InstallPath
     $packagesPath = Get-MsBuildPropertyValue $p 'RestorePackagesPath'
     Assert-NotNull $packagesPath
-    $expectedInstallPath = (Join-Path $packagesPath (Join-Path $packages[0].Id $packages[0].Version))
-    Assert-AreEqual $expectedInstallPath $packages[0].InstallPath
+    $expectedInstallPath = (Join-Path $packagesPath (Join-Path $package.Id $package.Version))
+    Assert-AreEqual $expectedInstallPath $package.InstallPath
 }
 
 function Test-GetInstalledPackagesForProjectWithCustomRestorePackagesPath {
@@ -108,11 +112,12 @@ function Test-GetInstalledPackagesForProjectWithCustomRestorePackagesPath {
 
     # Assert    
     Assert-NotNull $packages
-    Assert-NotNull $packages[0].InstallPath
+    $package = $packages | where Id -eq NuGet.Versioning
+    Assert-NotNull $package.InstallPath
     $packagesPath = Get-MsBuildPropertyValue $p 'RestorePackagesPath'
     Assert-NotNull $packagesPath
-    $expectedInstallPath = (Join-Path $packagesPath (Join-Path $packages[0].Id $packages[0].Version))
-    Assert-AreEqual $expectedInstallPath $packages[0].InstallPath
+    $expectedInstallPath = (Join-Path $packagesPath (Join-Path $package.Id $package.Version))
+    Assert-AreEqual $expectedInstallPath $package.InstallPath
 }
 
 function Test-GetInstalledPackagesMultipleProjectsSameVersion {

@@ -17,7 +17,7 @@ namespace NuGet.Protocol.Tests
         public async Task DefaultBaseAddressIsServiceAddressWithTrimmedSlash()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + '/';
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + '/';
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress, string.Empty);
@@ -37,10 +37,10 @@ namespace NuGet.Protocol.Tests
         public async Task IgnoresXmlBase()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress();
+            var serviceAddress = ProtocolUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress, TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.ODataServiceDocument.xml", GetType()));
+            responses.Add(serviceAddress, ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.ODataServiceDocument.xml", GetType()));
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
@@ -58,7 +58,7 @@ namespace NuGet.Protocol.Tests
         public async Task IgnoresInvalidXml()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress();
+            var serviceAddress = ProtocolUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress, "[1, 2, \"not XML\"]");
@@ -76,7 +76,7 @@ namespace NuGet.Protocol.Tests
         public async Task FollowsRedirect()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress();
+            var serviceAddress = ProtocolUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress, "301 https://bringing/it/all/back/home");
@@ -96,7 +96,7 @@ namespace NuGet.Protocol.Tests
         public async Task FollowsRedirectAndTrimsQueryStringAndSlashes()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress();
+            var serviceAddress = ProtocolUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress, "301 https://bringing/it/all/back/home//?foo=bar");
@@ -116,7 +116,7 @@ namespace NuGet.Protocol.Tests
         public async Task FollowsRedirectToJustDomainName()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress();
+            var serviceAddress = ProtocolUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress, "301 https://bringing");

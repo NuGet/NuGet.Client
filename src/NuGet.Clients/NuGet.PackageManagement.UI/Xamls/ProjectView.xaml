@@ -99,10 +99,13 @@
       AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
       ItemsSource="{Binding Path=Versions}"
       SelectedItem="{Binding Path=SelectedVersion}">
-
-        <ComboBox.ItemContainerStyle>
-            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}"> 
+      <ComboBox.ItemContainerStyle>
+            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.UIText}}" />
                 <Style.Triggers>
+                    <DataTrigger Binding="{Binding Path=IsValidVersion}" Value="false">
+                        <Setter Property="Foreground" Value="{x:Static SystemColors.GrayTextBrush}" />
+                    </DataTrigger>
                     <DataTrigger
                         Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
                         Value="True" >

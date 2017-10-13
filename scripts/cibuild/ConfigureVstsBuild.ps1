@@ -78,33 +78,6 @@ Function Update-VsixVersion {
     Write-Host "Updated the VSIX version [$oldVersion] => [$($root.Metadata.Identity.Version)]"
 }
 
-Function Update-BuildNumberForFunctionalTests {
-    param(
-        [string]$BuildId,
-        [string]$BuildNumber
-    )
-    $url = "{0}/build/builds/{1}?api-version=2.0" -f $VstsRestApiRootUrl, $BuildId
-    $b = @{
-        buildNumber = $BuildNumber
-        sourceVersion = $env:BUILD_SOURCEVERSION
-    } | convertto-json
-    Write-Host $b
-    $build = Invoke-RestMethod -Uri $url -Method PATCH -Body $b -Headers @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" } -ContentType "application/json" 
-    $build
-}
-
-Function Queue-FunctionalTests {
-    param(
-        [string]$BuildNumber
-    )
-    $url = "{0}/build/builds?api-version=2.0" -f $VstsRestApiRootUrl
-    $b = @{definition=@{id=$FunctionalTestBuildId};sourceBranch=$env:BUILD_SOURCEBRANCH} | convertto-json 
-    $build = Invoke-RestMethod -Uri $url -Method POST -Body $b -Headers @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" } -ContentType "application/json" 
-    $build 
-    $funcTestId = $build.id
-    Update-BuildNumberForFunctionalTests -BuildId $funcTestId -BuildNumber $BuildNumber
-}
-
 $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
 
 # Turn off strong name verification for common DevDiv public keys so that people can execute things against
@@ -210,6 +183,4 @@ else
         exit 1
     }
     Update-VsixVersion -manifestName source.extension.vs15.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $newBuildCounter
-    Update-VsixVersion -manifestName source.extension.vs15.insertable.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $newBuildCounter
-    Queue-FunctionalTests -BuildNumber $newBuildCounter
 }

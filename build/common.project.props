@@ -102,7 +102,6 @@
 
   <PropertyGroup>
     <VsixPublishDestination>$(ArtifactRoot)$(VsixOutputDirName)\</VsixPublishDestination>
-    <VsixPublishDestination Condition="'$(IsInsertable)' == 'true'">$(ArtifactRoot)$(VsixOutputDirName)\Insertable\</VsixPublishDestination>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildRTM)' == 'true' ">
@@ -256,6 +255,10 @@
   <ItemGroup Condition=" '$(IsXPlat)' == 'true' ">
     <SolutionProjects Include="@(CoreUnitTestProjects)" />
     <SolutionProjects Include="@(CoreFuncTestProjects)" />
+  </ItemGroup>
+
+  <ItemGroup>
+   <ApexProjects Include="$(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj" />
   </ItemGroup>
 
 </Project>

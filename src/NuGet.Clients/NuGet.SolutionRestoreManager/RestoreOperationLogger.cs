@@ -334,13 +334,13 @@ namespace NuGet.SolutionRestoreManager
                     switch (_operationSource)
                     {
                         case RestoreOperationSource.Implicit:
-                            WriteLine(MSBuildVerbosityLevel.Quiet, Resources.RestoringPackages);
+                            WriteLine(MSBuildVerbosityLevel.Normal, Resources.RestoringPackages);
                             break;
                         case RestoreOperationSource.OnBuild:
-                            WriteLine(MSBuildVerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
+                            WriteLine(MSBuildVerbosityLevel.Normal, Resources.PackageRestoreOptOutMessage);
                             break;
                         case RestoreOperationSource.Explicit:
-                            WriteLine(MSBuildVerbosityLevel.Quiet, Resources.RestoringPackages);
+                            WriteLine(MSBuildVerbosityLevel.Normal, Resources.RestoringPackages);
                             break;
                     }
                 });

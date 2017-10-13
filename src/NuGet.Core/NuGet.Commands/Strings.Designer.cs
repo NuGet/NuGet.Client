@@ -20,7 +20,7 @@ namespace NuGet.Commands {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -1445,6 +1445,15 @@ namespace NuGet.Commands {
         internal static string Warning_UnspecifiedField {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Detected package version outside of dependency constraint: {0} requires {1} but version {2} was resolved..
+        /// </summary>
+        internal static string Warning_VersionAboveUpperBound {
+            get {
+                return ResourceManager.GetString("Warning_VersionAboveUpperBound", resourceCulture);
             }
         }
     }

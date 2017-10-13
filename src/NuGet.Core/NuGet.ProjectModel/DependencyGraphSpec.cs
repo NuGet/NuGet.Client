@@ -17,6 +17,8 @@ namespace NuGet.ProjectModel
         private readonly SortedSet<string> _restore = new SortedSet<string>(StringComparer.Ordinal);
         private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(StringComparer.Ordinal);
 
+        private const int _version = 1;
+
         public DependencyGraphSpec(JObject json)
         {
             if (json == null)
@@ -111,10 +113,10 @@ namespace NuGet.ProjectModel
             var projectDependencyGraphSpec = new DependencyGraphSpec();
             projectDependencyGraphSpec.AddRestore(projectUniqueName);
             foreach (var spec in GetClosure(projectUniqueName))
-            { 
+            {
                 projectDependencyGraphSpec.AddProject(spec.Clone());
             }
-            
+
             return projectDependencyGraphSpec;
         }
 
@@ -129,10 +131,8 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(rootUniqueName));
             }
 
-            var projectsByPath = _projects
-                .Where(t => !string.IsNullOrEmpty(t.Value?.RestoreMetadata?.ProjectPath))
-                .GroupBy(t => t.Value.RestoreMetadata.ProjectPath, PathUtility.GetStringComparerBasedOnOS())
-                .ToDictionary(t => t.Key, t => t.First().Value, PathUtility.GetStringComparerBasedOnOS());
+            var projectsByUniqueName = _projects
+                .ToDictionary(t => t.Value.RestoreMetadata.ProjectUniqueName, t => t.Value, PathUtility.GetStringComparerBasedOnOS());
 
             var closure = new List<PackageSpec>();
 
@@ -152,7 +152,7 @@ namespace NuGet.ProjectModel
                     closure.Add(spec);
 
                     // Find children
-                    foreach (var projectName in GetProjectReferenceNames(spec, projectsByPath))
+                    foreach (var projectName in GetProjectReferenceNames(spec, projectsByUniqueName))
                     {
                         if (added.Add(projectName))
                         {
@@ -165,16 +165,14 @@ namespace NuGet.ProjectModel
             return closure;
         }
 
-        private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec, Dictionary<string, PackageSpec> projectsByPath)
+        private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec, Dictionary<string, PackageSpec> projectsByUniqueName)
         {
             // Handle projects which may not have specs, and which may not have references
             return spec?.RestoreMetadata?
                 .TargetFrameworks
                 .SelectMany(e => e.ProjectReferences)
-                .Where(project => projectsByPath.ContainsKey(project.ProjectPath))
-                .Select(project => projectsByPath[project.ProjectPath]?.RestoreMetadata?.ProjectUniqueName)
-                .Where(t => !string.IsNullOrEmpty(t))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Where(project => projectsByUniqueName.ContainsKey(project.ProjectUniqueName))
+                .Select(project => project.ProjectUniqueName)
                 ?? Enumerable.Empty<string>();
         }
 
@@ -238,7 +236,7 @@ namespace NuGet.ProjectModel
         {
             var writer = new RuntimeModel.JsonObjectWriter();
 
-            Write(writer);
+            Write(writer, PackageSpecWriter.Write);
 
             return writer.GetJson();
         }
@@ -289,15 +287,14 @@ namespace NuGet.ProjectModel
             using (var hashFunc = new Sha512HashFunction())
             using (var writer = new HashObjectWriter(hashFunc))
             {
-                Write(writer);
-
+                Write(writer, PackageSpecWriter.Write);
                 return writer.GetHash();
             }
         }
 
-        private void Write(RuntimeModel.IObjectWriter writer)
+        private void Write(RuntimeModel.IObjectWriter writer, Action<PackageSpec, RuntimeModel.IObjectWriter> writeAction)
         {
-            writer.WriteNameValue("format", 1);
+            writer.WriteNameValue("format", _version);
 
             writer.WriteObjectStart("restore");
 
@@ -318,7 +315,7 @@ namespace NuGet.ProjectModel
                 var project = pair.Value;
 
                 writer.WriteObjectStart(project.RestoreMetadata.ProjectUniqueName);
-                PackageSpecWriter.Write(project, writer);
+                writeAction.Invoke(project, writer);
                 writer.WriteObjectEnd();
             }
 

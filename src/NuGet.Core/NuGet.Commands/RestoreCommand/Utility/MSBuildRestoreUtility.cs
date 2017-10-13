@@ -38,19 +38,24 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(items));
             }
 
+            // Unique names created by the MSBuild restore target are project paths, these
+            // can be different on case-insensitive file systems for the same project file.
+            // To workaround this unique names should be compared based on the OS.
+            var uniqueNameComparer = PathUtility.GetStringComparerBasedOnOS();
+
             var graphSpec = new DependencyGraphSpec();
-            var itemsById = new Dictionary<string, List<IMSBuildItem>>(StringComparer.Ordinal);
-            var restoreSpecs = new HashSet<string>(StringComparer.Ordinal);
-            var validForRestore = new HashSet<string>(StringComparer.Ordinal);
+            var itemsById = new Dictionary<string, List<IMSBuildItem>>(uniqueNameComparer);
+            var restoreSpecs = new HashSet<string>(uniqueNameComparer);
+            var validForRestore = new HashSet<string>(uniqueNameComparer);
+            var projectPathLookup = new Dictionary<string, string>(uniqueNameComparer);
             var toolItems = new List<IMSBuildItem>();
 
             // Sort items and add restore specs
             foreach (var item in items)
             {
-                var type = item.GetProperty("Type")?.ToLowerInvariant();
                 var projectUniqueName = item.GetProperty("ProjectUniqueName");
 
-                if ("restorespec".Equals(type, StringComparison.Ordinal))
+                if (item.IsType("restorespec"))
                 {
                     restoreSpecs.Add(projectUniqueName);
                 }
@@ -72,6 +77,19 @@ namespace NuGet.Commands
 
             foreach (var spec in validProjectSpecs)
             {
+                // Keep track of all project path casings
+                var uniqueName = spec.RestoreMetadata.ProjectUniqueName;
+                if (uniqueName != null && !projectPathLookup.ContainsKey(uniqueName))
+                {
+                    projectPathLookup.Add(uniqueName, uniqueName);
+                }
+
+                var projectPath = spec.RestoreMetadata.ProjectPath;
+                if (projectPath != null && !projectPathLookup.ContainsKey(projectPath))
+                {
+                    projectPathLookup.Add(projectPath, projectPath);
+                }
+
                 if (spec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
                     || spec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson
                     || spec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool
@@ -82,6 +100,9 @@ namespace NuGet.Commands
 
                 graphSpec.AddProject(spec);
             }
+
+            // Fix project reference casings to match the original project on case insensitive file systems.
+            NormalizePathCasings(projectPathLookup, graphSpec);
 
             // Remove references to projects that could not be read by restore.
             RemoveMissingProjects(graphSpec);
@@ -132,9 +153,7 @@ namespace NuGet.Commands
             // There should only be one ProjectSpec per project in the item set, 
             // but if multiple do appear take only the first one in an effort
             // to handle this gracefully.
-            var specItem = items.FirstOrDefault(item =>
-                "projectSpec".Equals(item.GetProperty("Type"),
-                StringComparison.OrdinalIgnoreCase));
+            var specItem = GetItemByType(items, "projectSpec").FirstOrDefault();
 
             if (specItem != null)
             {
@@ -298,6 +317,44 @@ namespace NuGet.Commands
         }
 
         /// <summary>
+        /// Change all project paths to the same casing.
+        /// </summary>
+        public static void NormalizePathCasings(Dictionary<string, string> paths, DependencyGraphSpec graphSpec)
+        {
+            if (PathUtility.IsFileSystemCaseInsensitive)
+            {
+                foreach (var project in graphSpec.Projects)
+                {
+                    foreach (var framework in project.RestoreMetadata.TargetFrameworks)
+                    {
+                        foreach (var projectReference in framework.ProjectReferences)
+                        {
+                            // Check reference unique name
+                            var refUniqueName = projectReference.ProjectUniqueName;
+
+                            if (refUniqueName != null
+                                && paths.TryGetValue(refUniqueName, out var refUniqueNameCasing)
+                                && !StringComparer.Ordinal.Equals(refUniqueNameCasing, refUniqueName))
+                            {
+                                projectReference.ProjectUniqueName = refUniqueNameCasing;
+                            }
+
+                            // Check reference project path
+                            var projectRefPath = projectReference.ProjectPath;
+
+                            if (projectRefPath != null
+                                && paths.TryGetValue(projectRefPath, out var projectRefPathCasing)
+                                && !StringComparer.Ordinal.Equals(projectRefPathCasing, projectRefPath))
+                            {
+                                projectReference.ProjectPath = projectRefPathCasing;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// True if the list contains CLEAR.
         /// </summary>
         public static bool ContainsClearKeyword(IEnumerable<string> values)
@@ -432,6 +489,8 @@ namespace NuGet.Commands
             var flatReferences = GetItemByType(items, "ProjectReference")
                 .Select(GetProjectRestoreReference);
 
+            var comparer = PathUtility.GetStringComparerBasedOnOS();
+
             // Add project paths
             foreach (var frameworkPair in flatReferences)
             {
@@ -446,9 +505,7 @@ namespace NuGet.Commands
                     if (frameworkGroups.TryGetValue(framework, out references))
                     {
                         // Ensure unique
-                        if (!references
-                            .Any(e => e.ProjectUniqueName
-                            .Equals(frameworkPair.Item2.ProjectUniqueName, StringComparison.OrdinalIgnoreCase)))
+                        if (!references.Any(e => comparer.Equals(e.ProjectUniqueName, frameworkPair.Item2.ProjectUniqueName)))
                         {
                             references.Add(frameworkPair.Item2);
                         }
@@ -483,13 +540,10 @@ namespace NuGet.Commands
 
         private static bool AddDependencyIfNotExist(PackageSpec spec, LibraryDependency dependency)
         {
-            if (!spec.Dependencies
-                   .Select(d => d.Name)
-                   .Contains(dependency.Name, StringComparer.OrdinalIgnoreCase))
-            {
-                spec.Dependencies.Add(dependency);
 
-                return true;
+            foreach (var framework in spec.TargetFrameworks.Select(e => e.FrameworkName))
+            {
+                AddDependencyIfNotExist(spec, framework, dependency);
             }
 
             return false;
@@ -675,7 +729,12 @@ namespace NuGet.Commands
 
         private static IEnumerable<IMSBuildItem> GetItemByType(IEnumerable<IMSBuildItem> items, string type)
         {
-            return items.Where(e => type.Equals(e.GetProperty("Type"), StringComparison.OrdinalIgnoreCase));
+            return items.Where(e => e.IsType(type));
+        }
+
+        private static bool IsType(this IMSBuildItem item, string type)
+        {
+            return StringComparer.OrdinalIgnoreCase.Equals(type, item?.GetProperty("Type"));
         }
 
         /// <summary>

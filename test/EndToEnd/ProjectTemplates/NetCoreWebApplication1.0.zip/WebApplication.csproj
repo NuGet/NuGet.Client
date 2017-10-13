@@ -19,5 +19,8 @@
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.0-msbuild3-final" />
   </ItemGroup>
+  <PropertyGroup>
+    <DotnetCliToolTargetFramework>netcoreapp2.0</DotnetCliToolTargetFramework>
+  </PropertyGroup>  
 
 </Project>

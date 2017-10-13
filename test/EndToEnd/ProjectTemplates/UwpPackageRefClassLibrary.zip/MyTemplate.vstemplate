@@ -14,11 +14,11 @@
     <Icon>__TemplateIcon.ico</Icon>
   </TemplateData>
   <TemplateContent>
-    <Project TargetFileName="ClassLibrary18.csproj" File="ClassLibrary18.csproj" ReplaceParameters="true">
+    <Project TargetFileName="ClassLibrary47.csproj" File="ClassLibrary47.csproj" ReplaceParameters="true">
       <ProjectItem ReplaceParameters="true" TargetFileName="Class1.cs">Class1.cs</ProjectItem>
       <Folder Name="Properties" TargetFolderName="Properties">
         <ProjectItem ReplaceParameters="true" TargetFileName="AssemblyInfo.cs">AssemblyInfo.cs</ProjectItem>
-        <ProjectItem ReplaceParameters="true" TargetFileName="ClassLibrary18.rd.xml">ClassLibrary18.rd.xml</ProjectItem>
+        <ProjectItem ReplaceParameters="true" TargetFileName="ClassLibrary47.rd.xml">ClassLibrary47.rd.xml</ProjectItem>
       </Folder>
     </Project>
   </TemplateContent>

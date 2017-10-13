@@ -100,6 +100,12 @@ namespace NuGet.Options
                 MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
                 return false;
             }
+            catch (Exception ex)
+            {
+                MessageHelper.ShowErrorMessage(Resources.ShowError_ApplySettingFailed, Resources.ErrorDialogBoxTitle);
+                ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
+                return false;
+            }
 
             return true;
         }

@@ -6,4 +6,8 @@
     <RestorePackagesPath>$(MSBuildThisFileDirectory)restoredPackages</RestorePackagesPath>
   </PropertyGroup>
 
+<ItemGroup>
+    <PackageReference Include="NuGet.Versioning" Version="1.0.7" />
+  </ItemGroup>
+
 </Project>

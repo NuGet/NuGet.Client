@@ -458,24 +458,13 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>{0} - Operation Name
 {1} - project file path</comment>
   </data>
-  <data name="Error_MultipleMatchingSpecs" xml:space="preserve">
-    <value>Multiple matching package specs found when attempting to add package '{0}' to project '{1}'. Number of matching package specs found are  '{2}'.</value>
-    <comment>{0} - Package ID
-{1} - Project path
-{2} -  NUmber of matching package specs found</comment>
-  </data>
   <data name="Error_NoMatchingSpecs" xml:space="preserve">
     <value>No matching package specs found when attempting to add package '{0}' to project '{1}'.</value>
     <comment>{0} - Package ID
 {1} - Project path</comment>
   </data>
-  <data name="Error_MultipleProjectsFound" xml:space="preserve">
-    <value>Error while adding package '{0}' to project '{1}'. dotnet add package command supports adding package to one project at a time. But multiple projects were found at the project path '{1}'.</value>
-    <comment>{0} - Package Id
-{1} - Project path</comment>
-  </data>
-  <data name="Error_NoProjectFound" xml:space="preserve">
-    <value>Error while adding package '{0}' to project '{1}'. dotnet add package command supports adding package to one project at a time. But no project was found at the project path '{0}'.</value>
+  <data name="Error_UnsupportedProject" xml:space="preserve">
+    <value>Error while adding package '{0}' to project '{1}'. The project does not support adding package references through the add package command.</value>
     <comment>{0} - Package Id
 {1} - Project path</comment>
   </data>

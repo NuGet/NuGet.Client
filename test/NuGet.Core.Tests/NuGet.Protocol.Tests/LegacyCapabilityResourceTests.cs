@@ -24,11 +24,11 @@ namespace NuGet.Protocol.Tests
         public async Task LegacyResourceNuGetOrg()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTT.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -46,11 +46,11 @@ namespace NuGet.Protocol.Tests
         public async Task LegacyResourceSearchNoAbsoluteLatestVersion()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTF.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataTF.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -68,11 +68,11 @@ namespace NuGet.Protocol.Tests
         public async Task LegacyResourceNoSearchAbsoluteLatestVersion()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataFT.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataFT.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
@@ -90,11 +90,11 @@ namespace NuGet.Protocol.Tests
         public async Task LegacyResourceNoSearchNoAbsoluteLatestVersion()
         {
             // Arrange
-            var serviceAddress = TestUtility.CreateServiceAddress() + "api/v2";
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "api/v2";
 
             var responses = new Dictionary<string, string>();
             responses.Add(serviceAddress + "/$metadata",
-                TestUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataFF.xml", GetType()));
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.MetadataFF.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);

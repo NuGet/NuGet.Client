@@ -144,7 +144,7 @@ namespace NuGet.Common.Test
                 NoWarn = new List<NuGetLogCode>
                 {
                     NuGetLogCode.NU1603,
-                    NuGetLogCode.NU1607
+                    NuGetLogCode.NU1107
                 }
             };
 
@@ -190,7 +190,7 @@ namespace NuGet.Common.Test
 
             // Assert
             Assert.True(warningProperties.Contains(NuGetLogCode.NU1603, "test_library_1", net45Framework));
-            Assert.True(warningProperties.Contains(NuGetLogCode.NU1607, "test_library_1", net45Framework));
+            Assert.True(warningProperties.Contains(NuGetLogCode.NU1107, "test_library_1", net45Framework));
             Assert.False(warningProperties.Contains(NuGetLogCode.NU1603, "test_library", net45Framework));
             Assert.False(warningProperties.Contains(NuGetLogCode.NU1701, "test_library_1", net45Framework));
             Assert.False(warningProperties.Contains(NuGetLogCode.NU1603, "test_library_1", netcoreappFramework));

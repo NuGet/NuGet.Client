@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,7 +41,10 @@ namespace NuGet.CommandLine.XPlat
             var dgSpec = ReadProjectDependencyGraph(packageReferenceArgs);
             if (dgSpec == null)
             {
-                throw new Exception(Strings.Error_NoDgSpec);
+                // Logging non localized error on debug stream.
+                packageReferenceArgs.Logger.LogDebug(Strings.Error_NoDgSpec);
+
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_NoDgSpec));
             }
             packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Read");
 
@@ -55,15 +58,12 @@ namespace NuGet.CommandLine.XPlat
 
             // This ensures that the DG specs generated in previous steps contain exactly 1 project with the same path as the project requesting add package.
             // Throw otherwise since we cannot proceed further.
-            if (!matchingPackageSpecs.Any())
+            if (matchingPackageSpecs.Length != 1)
             {
-                packageReferenceArgs.Logger.LogDebug(Strings.Error_NoMatchingSpecs);
-                throw new Exception(Strings.Error_NoProjectFound);
-            }
-            else if (matchingPackageSpecs.Count() > 1)
-            {
-                packageReferenceArgs.Logger.LogDebug(Strings.Error_MultipleMatchingSpecs);
-                throw new Exception(Strings.Error_MultipleProjectsFound);
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_UnsupportedProject,
+                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.ProjectPath));
             }
 
             // Parse the user specified frameworks once to avoid re-do's
@@ -89,8 +89,8 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, 
-                    packageReferenceArgs.PackageDependency);
+                // If the user has not specified a framework, then just add it to all frameworks
+                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageDependency, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
             }
 
 
