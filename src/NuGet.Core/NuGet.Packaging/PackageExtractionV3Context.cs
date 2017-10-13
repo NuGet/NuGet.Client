@@ -1,29 +1,32 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Globalization;
 using NuGet.Common;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.Packaging
 {
-    public class VersionFolderPathContext
+    public class PackageExtractionV3Context : PackageExtractionContextBase
     {
         public PackageIdentity Package { get; }
         public string PackagesDirectory { get; }
         public bool IsLowercasePackagesDirectory { get; }
-        public ILogger Logger { get; }
-        public PackageSaveMode PackageSaveMode { get; }
-        public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; }
 
-        public VersionFolderPathContext(
+        public PackageExtractionV3Context(
             PackageIdentity package,
             string packagesDirectory,
             bool isLowercasePackagesDirectory,
             ILogger logger,
             PackageSaveMode packageSaveMode,
-            XmlDocFileSaveMode xmlDocFileSaveMode)
+            XmlDocFileSaveMode xmlDocFileSaveMode,
+            SignedPackageVerifier signedPackageVerifier) : base(
+                packageSaveMode,
+                xmlDocFileSaveMode,
+                logger,
+                signedPackageVerifier)
         {
             if (package == null)
             {
@@ -46,23 +49,22 @@ namespace NuGet.Packaging
             Package = package;
             PackagesDirectory = packagesDirectory;
             IsLowercasePackagesDirectory = isLowercasePackagesDirectory;
-            Logger = logger;
-            PackageSaveMode = packageSaveMode;
-            XmlDocFileSaveMode = xmlDocFileSaveMode;
         }
 
-        public VersionFolderPathContext(
+        public PackageExtractionV3Context(
             PackageIdentity package,
             string packagesDirectory,
             ILogger logger,
             PackageSaveMode packageSaveMode,
-            XmlDocFileSaveMode xmlDocFileSaveMode) : this(
+            XmlDocFileSaveMode xmlDocFileSaveMode,
+            SignedPackageVerifier signedPackageVerifier): this(
                 package,
                 packagesDirectory,
                 isLowercasePackagesDirectory: true,
                 logger: logger,
                 packageSaveMode: packageSaveMode,
-                xmlDocFileSaveMode: xmlDocFileSaveMode)
+                xmlDocFileSaveMode: xmlDocFileSaveMode,
+                signedPackageVerifier: signedPackageVerifier)
         {
         }
     }

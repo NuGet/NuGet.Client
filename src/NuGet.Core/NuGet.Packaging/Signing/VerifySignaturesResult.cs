@@ -22,14 +22,17 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public IReadOnlyList<SignatureVerificationResult> Results { get; }
 
-        public VerifySignaturesResult(bool valid)
-            : this(valid, results: Enumerable.Empty<SignatureVerificationResult>())
+        public string ErrorMessage { get; }
+
+        public VerifySignaturesResult(bool valid, string errorMessage)
+            : this(valid, errorMessage, results: Enumerable.Empty<SignatureVerificationResult>())
         {
         }
 
-        public VerifySignaturesResult(bool valid, IEnumerable<SignatureVerificationResult> results)
+        public VerifySignaturesResult(bool valid, string errorMessage, IEnumerable<SignatureVerificationResult> results)
         {
             Valid = valid;
+            ErrorMessage = errorMessage;
             Results = results?.ToList().AsReadOnly() ?? throw new ArgumentNullException(nameof(results));
         }
     }

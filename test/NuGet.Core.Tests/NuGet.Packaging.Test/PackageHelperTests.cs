@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -210,7 +210,7 @@ namespace NuGet.Packaging.Test
                     test.Reader,
                     test.GetPackageStream(),
                     test.Resolver,
-                    new PackageExtractionContext(NullLogger.Instance),
+                    new PackageExtractionV2Context(NullLogger.Instance, null),
                     CancellationToken.None);
 
                 var packageIdentity = test.Reader.GetIdentity();
@@ -336,7 +336,7 @@ namespace NuGet.Packaging.Test
                             packageReader,
                             packageStream,
                             packagePathResolver,
-                            new PackageExtractionContext(NullLogger.Instance),
+                            new PackageExtractionV2Context(NullLogger.Instance, null),
                             CancellationToken.None);
                     }
 
@@ -384,7 +384,7 @@ namespace NuGet.Packaging.Test
                         packageReader,
                         packageStream,
                         packagePathResolver,
-                        new PackageExtractionContext(NullLogger.Instance),
+                        new PackageExtractionV2Context(NullLogger.Instance, null),
                         CancellationToken.None);
                 }
 
@@ -396,7 +396,7 @@ namespace NuGet.Packaging.Test
                         packageReader,
                         packageStream,
                         packagePathResolver,
-                        new PackageExtractionContext(NullLogger.Instance),
+                        new PackageExtractionV2Context(NullLogger.Instance, null),
                         CancellationToken.None);
                 }
 

@@ -13,6 +13,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
@@ -300,9 +301,14 @@ namespace NuGet.CommandLine
             CheckRequireConsent();
 
             var collectorLogger = new RestoreCollectorLogger(Console);
+
+            var signedPackageVerifier = new SignedPackageVerifier(
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignedPackageVerifierSettings.Default);
+
             var projectContext = new ConsoleProjectContext(collectorLogger)
             {
-                PackageExtractionContext = new PackageExtractionContext(collectorLogger)
+                PackageExtractionContext = new PackageExtractionV2Context(collectorLogger, signedPackageVerifier)
             };
 
             if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)

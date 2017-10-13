@@ -13,6 +13,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
@@ -301,7 +302,11 @@ namespace NuGet.PackageManagement
             // and not have to determine if the package is a satellite package beforehand
             if (nuGetProjectContext.PackageExtractionContext == null)
             {
-                nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
+                var signedPackageVerifier = new SignedPackageVerifier(
+                           SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                           SignedPackageVerifierSettings.Default);
+
+                nuGetProjectContext.PackageExtractionContext = new PackageExtractionV2Context(new LoggerAdapter(nuGetProjectContext), signedPackageVerifier: signedPackageVerifier);
             }
 
             nuGetProjectContext.PackageExtractionContext.CopySatelliteFiles = false;

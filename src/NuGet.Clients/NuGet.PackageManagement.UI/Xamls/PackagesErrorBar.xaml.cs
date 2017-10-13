@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement.UI
 
         public event EventHandler InitializationCompleted;
 
-        public PackageExtractionContext PackageExtractionContext { get; set; }
+        public PackageExtractionV2Context PackageExtractionContext { get; set; }
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; }
 

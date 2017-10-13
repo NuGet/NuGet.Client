@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Xml.Linq;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -16,7 +16,7 @@ namespace NuGet.CommandLine
 
         public ExecutionContext ExecutionContext => null;
 
-        public PackageExtractionContext PackageExtractionContext { get; set; }
+        public PackageExtractionV2Context PackageExtractionContext { get; set; }
 
         public XDocument OriginalPackagesConfig { get; set; }
 
