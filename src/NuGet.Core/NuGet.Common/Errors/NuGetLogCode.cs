@@ -14,7 +14,7 @@ namespace NuGet.Common
     ///     y - 'y' is the second largest digit and should be used for sub sections withing a broad category.
     ///     
     ///         For example 12zw cvould be http related errors.
-    ///         Further 'y' = 0-4 shoudl be used for errors and 'y' = 5-9 should be warnings.
+    ///         Further 'y' = 0-4 should be used for errors and 'y' = 5-9 should be warnings.
     ///         
     ///     zw - 'zw' are the least two digit.
     ///         These could be used for different errors or warnings within the broad categories set by digits 'xy'.
@@ -23,11 +23,12 @@ namespace NuGet.Common
     /// 1000 - Restore
     /// 
     /// Sub groups:
-    /// 1000/1500 Input
-    /// 1100/1600 Resolver
-    /// 1200/1700 Compat
-    /// 1300/1800 Feed
-    /// 1400/1900 Package
+    /// error/warning - Reason
+    /// 1000/1500     - Input
+    /// 1100/1600     - Resolver
+    /// 1200/1700     - Compat
+    /// 1300/1800     - Feed
+    /// 1400/1900     - Package
     /// </summary>
     public enum NuGetLogCode
     {
