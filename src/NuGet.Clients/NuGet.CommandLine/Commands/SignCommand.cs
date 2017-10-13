@@ -76,70 +76,61 @@ namespace NuGet.CommandLine
 
             if (string.IsNullOrEmpty(packagePath))
             {
-                throw new ArgumentException("No package provided for signing");
+                throw new ArgumentException(NuGetCommand.SignCommandNoPackageException);
+
             }
             else if (string.IsNullOrEmpty(Timestamper))
             {
-                throw new ArgumentException("No timestamper url provided for signing");
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
+                    NuGetCommand.SignCommandNoArgumentException,
+                    nameof(Timestamper)));
             }
             else if (string.IsNullOrEmpty(CertificatePath) &&
                 string.IsNullOrEmpty(CertificateFingerprint) &&
                 string.IsNullOrEmpty(CertificateSubjectName))
             {
-                throw new ArgumentException("No certificate provided for signing");
+                throw new ArgumentException(NuGetCommand.SignCommandNoCertificateException);
             }
             else if (!string.IsNullOrEmpty(CertificatePath) &&
                 !(string.IsNullOrEmpty(CertificateFingerprint) &&
                 string.IsNullOrEmpty(CertificateSubjectName)))
             {
-                throw new ArgumentException("Multiple certificate source options provided for signing. " +
-                    "Please pass exactly one option i.e. [-CertificatePath <certificate_path> | [-CertificateSubjectName <certificate_subject_name> | -CertificateFingerprint <certificate_fingerprint>]]. " +
-                    "For a list of accepted values, please visit http://docs.nuget.org/docs/reference/command-line-reference");
+                throw new ArgumentException(NuGetCommand.SignCommandMultipleCertificateException);
             }
             else if (!string.IsNullOrEmpty(CertificateStoreLocation) &&
                 !Enum.TryParse(CertificateStoreLocation, ignoreCase: true, result: out storeLocation))
             {
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    NuGetCommand.SignCommandArgumentException,
+                    NuGetCommand.SignCommandInvalidArgumentException,
                     nameof(CertificateStoreLocation)));
             }
             else if (!string.IsNullOrEmpty(CertificateStoreName) &&
                 !Enum.TryParse(CertificateStoreName, ignoreCase: true, result: out storeName))
             {
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    NuGetCommand.SignCommandArgumentException,
+                    NuGetCommand.SignCommandInvalidArgumentException,
                     nameof(CertificateStoreName)));
             }
             else if (!string.IsNullOrEmpty(HashAlgorithm))
             {
-                if (!_acceptedHashAlgorithms.Contains(HashAlgorithm, StringComparer.InvariantCultureIgnoreCase))
+                if (!_acceptedHashAlgorithms.Contains(HashAlgorithm, StringComparer.InvariantCultureIgnoreCase) ||
+                    !Enum.TryParse(HashAlgorithm, ignoreCase: true, result: out hashAlgorithm))
                 {
                     throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                        NuGetCommand.SignCommandArgumentException,
+                        NuGetCommand.SignCommandInvalidArgumentException,
                         nameof(HashAlgorithm)));
-                }
-                else
-                {
-                    hashAlgorithm = new HashAlgorithmName(HashAlgorithm);
                 }
             }
             else if (!string.IsNullOrEmpty(TimestampHashAlgorithm))
             {
-                if (!_acceptedHashAlgorithms.Contains(TimestampHashAlgorithm, StringComparer.InvariantCultureIgnoreCase))
+                if (!_acceptedHashAlgorithms.Contains(TimestampHashAlgorithm, StringComparer.InvariantCultureIgnoreCase) ||
+                    !Enum.TryParse(HashAlgorithm, ignoreCase: true, result: out timestampHashAlgorithm))
                 {
                     throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                        NuGetCommand.SignCommandArgumentException,
+                        NuGetCommand.SignCommandInvalidArgumentException,
                         nameof(TimestampHashAlgorithm)));
                 }
-                else
-                {
-                    timestampHashAlgorithm = new HashAlgorithmName(TimestampHashAlgorithm);
-                }
             }
-
-            var securePassword = new SecureString();
-            CertificatePassword.ForEach(ch => securePassword.AppendChar(ch));
-            securePassword.MakeReadOnly();
 
             var signArgs = new SignArgs()
             {
@@ -150,7 +141,7 @@ namespace NuGet.CommandLine
                 CertificateStoreLocation = storeLocation,
                 CertificateSubjectName = CertificateSubjectName,
                 CertificateFingerprint = CertificateFingerprint,
-                CertificatePassword = securePassword,
+                CertificatePassword = CertificatePassword,
                 CryptographicServiceProvider = CryptographicServiceProvider,
                 KeyContainer = KeyContainer,
                 HashingAlgorithm = hashAlgorithm,

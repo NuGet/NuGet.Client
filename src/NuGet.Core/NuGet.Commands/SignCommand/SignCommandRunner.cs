@@ -38,8 +38,8 @@ namespace NuGet.Commands
                 CertificatePath = signArgs.CertificatePath,
                 CertificatePassword = signArgs.CertificatePassword,
                 Fingerprint = signArgs.CertificateFingerprint,
-                StoreLocation = "CurrentUser",
-                StoreName = "My",
+                StoreLocation = signArgs.CertificateStoreLocation,
+                StoreName = signArgs.CertificateStoreName,
                 SubjectName = signArgs.CertificateSubjectName
             };
 

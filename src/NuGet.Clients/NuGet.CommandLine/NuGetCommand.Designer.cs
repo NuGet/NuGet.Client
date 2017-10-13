@@ -11585,6 +11585,42 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Multiple options were used to specify a certificate. For a list of accepted ways to provide a certificate, please visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandMultipleCertificateException {
+            get {
+                return ResourceManager.GetString("SignCommandMultipleCertificateException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No value provided for &apos;{0}&apos;. For a list of accepted values, please visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandNoArgumentException {
+            get {
+                return ResourceManager.GetString("SignCommandNoArgumentException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No certificate was provided. For a list of accepted ways to provide a certificate, please visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandNoCertificateException {
+            get {
+                return ResourceManager.GetString("SignCommandNoCertificateException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No package was provided. For a list of accepted ways to provide a package, please visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandNoPackageException {
+            get {
+                return ResourceManager.GetString("SignCommandNoPackageException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Directory where the signed package should be saved. By default the original package is overwritten by the signed package..
         /// </summary>
         internal static string SignCommandOutputDirectoryDescription {

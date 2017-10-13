@@ -12,9 +12,16 @@ namespace NuGet.Commands
         // "The system cannot find the file specified." (ERROR_FILE_NOT_FOUND)
         private const int ERROR_FILE_NOT_FOUND_HRESULT = unchecked((int)0x80070002);
 
-        // "The specified network password is not correct." (ERROR_INVALID_PASSWORD)
+        // "The specified password is not correct." (ERROR_INVALID_PASSWORD)
         private const int ERROR_INVALID_PASSWORD_HRESULT = unchecked((int)0x80070056);
 
+        /// <summary>
+        /// Looks for X509Certificates using the CertificateSourceOptions.
+        /// Throws an InvalidOperationException if the option specifies a CertificateFilePath with invalid password.
+        /// </summary>
+        /// <param name="options">CertificateSourceOptions to be used while searching for the certificates.</param>
+        /// <returns>An X509Certificate2Collection object containing matching certificates.
+        /// If no matching certificates are found then it returns an empty collection.</returns>
         public static X509Certificate2Collection GetCertificates(CertificateSourceOptions options)
         {
             // check certificate path
@@ -30,22 +37,13 @@ namespace NuGet.Commands
                     // TODO-AM add casing for invalid password and certificate
                     if (ex.HResult == ERROR_INVALID_PASSWORD_HRESULT)
                     {
-                        throw new ArgumentException("invalid password or certificate");
+                        throw new InvalidOperationException("invalid password or certificate");
                     }
                 }
             }
             else
             {
-                X509Store store;
-                // check store name
-                if (!string.IsNullOrEmpty(options.StoreName))
-                {
-                    store = GetStore(options.StoreName, options.StoreLocation);
-                }
-                else
-                {
-                    store = GetStore(options.StoreLocation);
-                }
+                var store = new X509Store(options.StoreName, options.StoreLocation);
 
                 OpenStore(store);
 
@@ -66,24 +64,11 @@ namespace NuGet.Commands
             return new X509Certificate2Collection();
         }
 
-        private static X509Store GetStore(string storeName, string storeLocation)
-        {
-            var location = storeLocation.Equals("LocalMachine", StringComparison.InvariantCultureIgnoreCase) ?
-                StoreLocation.LocalMachine :
-                StoreLocation.CurrentUser;
-
-            return new X509Store(storeName, location);
-        }
-
-        private static X509Store GetStore(string storeLocation)
-        {
-            var location = storeLocation.Equals("LocalMachine", StringComparison.InvariantCultureIgnoreCase) ?
-                StoreLocation.LocalMachine :
-                StoreLocation.CurrentUser;
-
-            return new X509Store(location);
-        }
-
+        /// <summary>
+        /// Opens an X509Store with read only access.
+        /// Throws an InvalidOperationException if the store does not exist.
+        /// </summary>
+        /// <param name="store">X509Store to be opened.</param>
         private static void OpenStore(X509Store store)
         {
             try
@@ -94,7 +79,7 @@ namespace NuGet.Commands
             {
                 if (ex.HResult == ERROR_FILE_NOT_FOUND_HRESULT)
                 {
-                    throw new ArgumentException("certificate store not found");
+                    throw new InvalidOperationException("certificate store not found");
                 }
             }
         }

@@ -75,9 +75,9 @@ namespace NuGet.Commands
         public HashAlgorithmName TimestampHashAlgorithm { get; set; }
 
         /// <summary>
-        /// Password for the certificate, if needed.
+        /// Password for a pfx file, if needed.
         /// </summary>
-        public SecureString CertificatePassword { get; set; }
+        public string CertificatePassword { get; set; }
 
         /// <summary>
         /// Switch used to indicate if an existing signature should be overwritten.
