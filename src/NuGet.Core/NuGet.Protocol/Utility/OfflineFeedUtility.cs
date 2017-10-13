@@ -12,7 +12,6 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
-using NuGet.Packaging.Signing;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -194,17 +193,12 @@ namespace NuGet.Protocol.Core.Types
                             ? PackageSaveMode.Defaultv3
                             : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
 
-                        var signedPackageVerifier = new SignedPackageVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
-
-                        var packageExtractionV3Context = new PackageExtractionV3Context(
+                        var versionFolderPathContext = new VersionFolderPathContext(
                             packageIdentity,
                             source,
                             logger,
                             packageSaveMode: packageSaveMode,
-                            xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode,
-                            signedPackageVerifier: signedPackageVerifier);
+                            xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
                         using (var packageDownloader = new LocalPackageArchiveDownloader(
                             packagePath,
@@ -213,7 +207,7 @@ namespace NuGet.Protocol.Core.Types
                         {
                             await PackageExtractor.InstallFromSourceAsync(
                                 packageDownloader,
-                                packageExtractionV3Context,
+                                versionFolderPathContext,
                                 token);
                         }
 

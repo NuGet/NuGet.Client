@@ -48,13 +48,12 @@ namespace NuGet.Packaging.Test
                     {
                         using (var packageStream = File.OpenRead(sourcePathResolver.GetPackageFilePath(identity.Id, identity.Version)))
                         {
-                            var pathContext = new PackageExtractionV3Context(
+                            var pathContext = new VersionFolderPathContext(
                                     identity,
                                     packagesPath,
                                     NullLogger.Instance,
                                     packageSaveMode: PackageSaveMode.Nupkg,
-                                    xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                                    signedPackageVerifier: null);
+                                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                             var pathResolver = new VersionFolderPathResolver(packagesPath);
                             var hashPath = pathResolver.GetHashPath(identity.Id, identity.Version);
@@ -122,13 +121,12 @@ namespace NuGet.Packaging.Test
                     // Act
                     var installed = await PackageExtractor.InstallFromSourceAsync(
                         packageDownloader,
-                        new PackageExtractionV3Context(
+                        new VersionFolderPathContext(
                             identity,
                             packagesPath,
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Nupkg,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                            signedPackageVerifier: null),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
                         CancellationToken.None);
 
                     // Assert
@@ -164,13 +162,12 @@ namespace NuGet.Packaging.Test
                     // Act
                     var installed = await PackageExtractor.InstallFromSourceAsync(
                         packageDownloader,
-                        new PackageExtractionV3Context(
+                        new VersionFolderPathContext(
                             identity,
                             packagesPath,
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Nupkg,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                            signedPackageVerifier: null),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
                         CancellationToken.None);
 
                     // Assert
@@ -209,14 +206,13 @@ namespace NuGet.Packaging.Test
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
                         packageDownloader,
-                        new PackageExtractionV3Context(
+                        new VersionFolderPathContext(
                             identity,
                             packagesPath,
                             isLowercase,
                             NullLogger.Instance,
                             PackageSaveMode.Nupkg,
-                            XmlDocFileSaveMode.None,
-                            null),
+                            XmlDocFileSaveMode.None),
                         CancellationToken.None);
 
                     // Assert
@@ -268,13 +264,12 @@ namespace NuGet.Packaging.Test
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
                         packageDownloader,
-                        new PackageExtractionV3Context(
+                        new VersionFolderPathContext(
                             packageIdentity,
                             root,
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Defaultv3,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                            signedPackageVerifier: null),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
                         CancellationToken.None);
 
                     // Assert
@@ -312,13 +307,12 @@ namespace NuGet.Packaging.Test
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
                         packageDownloader,
-                        new PackageExtractionV3Context(
+                        new VersionFolderPathContext(
                             packageIdentity,
                             root,
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Defaultv3,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                            signedPackageVerifier: null),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
                         CancellationToken.None);
 
                     // Assert
@@ -344,7 +338,7 @@ namespace NuGet.Packaging.Test
                     packageReader,
                     packageStream,
                     resolver,
-                    new PackageExtractionV2Context(NullLogger.Instance, null),
+                    new PackageExtractionContext(NullLogger.Instance),
                     CancellationToken.None);
 
                 // Assert
@@ -375,7 +369,7 @@ namespace NuGet.Packaging.Test
                         var files = await PackageExtractor.ExtractPackageAsync(folderReader,
                             stream,
                             new PackagePathResolver(root),
-                            new PackageExtractionV2Context(NullLogger.Instance, null),
+                            new PackageExtractionContext(NullLogger.Instance),
                             CancellationToken.None);
 
                         // Assert
@@ -402,7 +396,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         XmlDocFileSaveMode = XmlDocFileSaveMode.None
                     };
@@ -411,7 +405,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -435,14 +429,14 @@ namespace NuGet.Packaging.Test
                 {
                     zipFile.ExtractAll(packageFolder);
 
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null);
-                    packageExtractionV2Context.PackageSaveMode = PackageSaveMode.Nupkg;
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance);
+                    packageExtractionContext.PackageSaveMode = PackageSaveMode.Nupkg;
 
                     // Act
                     var files = await PackageExtractor.ExtractPackageAsync(folderReader,
                                                                          packageStream,
                                                                          new PackagePathResolver(root),
-                                                                         packageExtractionV2Context,
+                                                                         packageExtractionContext,
                                                                          CancellationToken.None);
 
                     // Assert
@@ -466,14 +460,14 @@ namespace NuGet.Packaging.Test
                 {
                     zipFile.ExtractAll(packageFolder);
 
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null);
-                    packageExtractionV2Context.PackageSaveMode = PackageSaveMode.Nuspec;
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance);
+                    packageExtractionContext.PackageSaveMode = PackageSaveMode.Nuspec;
 
                     // Act
                     var files = await PackageExtractor.ExtractPackageAsync(folderReader,
                                                                          packageStream,
                                                                          new PackagePathResolver(root),
-                                                                         packageExtractionV2Context,
+                                                                         packageExtractionContext,
                                                                          CancellationToken.None);
 
                     // Assert
@@ -497,14 +491,14 @@ namespace NuGet.Packaging.Test
                 {
                     zipFile.ExtractAll(packageFolder);
 
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null);
-                    packageExtractionV2Context.PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance);
+                    packageExtractionContext.PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
 
                     // Act
                     var files = await PackageExtractor.ExtractPackageAsync(folderReader,
                                                                          packageStream,
                                                                          new PackagePathResolver(root),
-                                                                         packageExtractionV2Context,
+                                                                         packageExtractionContext,
                                                                          CancellationToken.None);
 
                     // Assert
@@ -529,17 +523,17 @@ namespace NuGet.Packaging.Test
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 using (var satellitePackageStream = File.OpenRead(satellitePackageInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null);
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(packageStream,
                                                                      resolver,
-                                                                     packageExtractionV2Context,
+                                                                     packageExtractionContext,
                                                                      CancellationToken.None);
 
                     var satellitePackageFiles = PackageExtractor.ExtractPackageAsync(satellitePackageStream,
                                                                      resolver,
-                                                                     packageExtractionV2Context,
+                                                                     packageExtractionContext,
                                                                      CancellationToken.None);
 
                     var pathToAFrDllInSatellitePackage
@@ -572,7 +566,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         XmlDocFileSaveMode = XmlDocFileSaveMode.None
                     };
@@ -581,7 +575,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -612,7 +606,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         XmlDocFileSaveMode = XmlDocFileSaveMode.Compress
                     };
@@ -621,7 +615,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -664,7 +658,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         XmlDocFileSaveMode = XmlDocFileSaveMode.Compress
                     };
@@ -673,7 +667,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -706,7 +700,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         XmlDocFileSaveMode = XmlDocFileSaveMode.Skip
                     };
@@ -715,7 +709,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -749,7 +743,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         XmlDocFileSaveMode = XmlDocFileSaveMode.Skip
                     };
@@ -758,7 +752,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -803,7 +797,7 @@ namespace NuGet.Packaging.Test
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 using (var satellitePackageStream = File.OpenRead(satellitePackageInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         XmlDocFileSaveMode = XmlDocFileSaveMode.Skip
                     };
@@ -812,13 +806,13 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     var satellitePackageFiles = PackageExtractor.ExtractPackageAsync(
                         satellitePackageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -853,7 +847,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         XmlDocFileSaveMode = XmlDocFileSaveMode.Compress
                     };
@@ -862,7 +856,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -894,7 +888,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         XmlDocFileSaveMode = XmlDocFileSaveMode.Compress
                     };
@@ -903,7 +897,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -932,7 +926,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         PackageSaveMode = PackageSaveMode.Nupkg | PackageSaveMode.Nuspec
                     };
@@ -941,7 +935,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -972,7 +966,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         PackageSaveMode = PackageSaveMode.Nupkg | PackageSaveMode.Files
                     };
@@ -981,7 +975,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -1012,7 +1006,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         PackageSaveMode = PackageSaveMode.Nupkg | PackageSaveMode.Files | PackageSaveMode.Nuspec
                     };
@@ -1021,7 +1015,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -1052,7 +1046,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         PackageSaveMode = PackageSaveMode.Nupkg | PackageSaveMode.Files
                     };
@@ -1061,7 +1055,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -1092,7 +1086,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files
                     };
@@ -1101,7 +1095,7 @@ namespace NuGet.Packaging.Test
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     // Assert
@@ -1134,7 +1128,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files
                     };
@@ -1143,7 +1137,7 @@ namespace NuGet.Packaging.Test
                     await PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     var installPath = resolver.GetInstallPath(identity);
@@ -1178,7 +1172,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files
                     };
@@ -1187,7 +1181,7 @@ namespace NuGet.Packaging.Test
                     await PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     var installPath = resolver.GetInstallPath(identity);
@@ -1223,7 +1217,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, null)
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
                     {
                         PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files
                     };
@@ -1232,7 +1226,7 @@ namespace NuGet.Packaging.Test
                     await PackageExtractor.ExtractPackageAsync(
                         packageStream,
                         resolver,
-                        packageExtractionV2Context,
+                        packageExtractionContext,
                         CancellationToken.None);
 
                     var installPath = resolver.GetInstallPath(identity);
@@ -1253,7 +1247,7 @@ namespace NuGet.Packaging.Test
                     () => PackageExtractor.ExtractPackageAsync(
                         packageReader: null,
                         packagePathResolver: test.Resolver,
-                        packageExtractionV2Context: test.Context,
+                        packageExtractionContext: test.Context,
                         token: CancellationToken.None));
 
                 Assert.Equal("packageReader", exception.ParamName);
@@ -1269,7 +1263,7 @@ namespace NuGet.Packaging.Test
                     () => PackageExtractor.ExtractPackageAsync(
                         test.Reader,
                         packagePathResolver: null,
-                        packageExtractionV2Context: test.Context,
+                        packageExtractionContext: test.Context,
                         token: CancellationToken.None));
 
                 Assert.Equal("packagePathResolver", exception.ParamName);
@@ -1285,10 +1279,10 @@ namespace NuGet.Packaging.Test
                     () => PackageExtractor.ExtractPackageAsync(
                         test.Reader,
                         test.Resolver,
-                        packageExtractionV2Context: null,
+                        packageExtractionContext: null,
                         token: CancellationToken.None));
 
-                Assert.Equal("packageExtractionV2Context", exception.ParamName);
+                Assert.Equal("packageExtractionContext", exception.ParamName);
             }
         }
 
@@ -1623,13 +1617,12 @@ namespace NuGet.Packaging.Test
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
                         packageDownloader,
-                        new PackageExtractionV3Context(
+                        new VersionFolderPathContext(
                             identity,
                             root,
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Files,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                            signedPackageVerifier: null),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
                         CancellationToken.None);
 
                     // Assert
@@ -1663,13 +1656,12 @@ namespace NuGet.Packaging.Test
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
                         packageDownloader,
-                        new PackageExtractionV3Context(
+                        new VersionFolderPathContext(
                             identity,
                             root,
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                            signedPackageVerifier: null),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
                         CancellationToken.None);
 
                     // Assert
@@ -1704,13 +1696,12 @@ namespace NuGet.Packaging.Test
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
                         packageDownloader,
-                        new PackageExtractionV3Context(
+                        new VersionFolderPathContext(
                             identity,
                             root,
                             NullLogger.Instance,
                             packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                            signedPackageVerifier: null),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
                         CancellationToken.None);
 
                     // Assert
@@ -1762,20 +1753,19 @@ namespace NuGet.Packaging.Test
 
             using (var testDirectory = TestDirectory.Create())
             {
-                var packageExtractionV3Context = new PackageExtractionV3Context(
+                var versionFolderPathContext = new VersionFolderPathContext(
                     packageIdentity,
                     testDirectory.Path,
                     NullLogger.Instance,
                     PackageSaveMode.Nuspec,
-                    XmlDocFileSaveMode.None,
-                    null);
+                    XmlDocFileSaveMode.None);
                 var versionFolderPathResolver = new VersionFolderPathResolver(testDirectory.Path);
                 var installDirectoryPath = versionFolderPathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
                 var expectedNuspecFilePath = Path.Combine(installDirectoryPath, nuspecFileName);
 
                 var wasInstalled = await PackageExtractor.InstallFromSourceAsync(
                     packageDownloader.Object,
-                    packageExtractionV3Context,
+                    versionFolderPathContext,
                     CancellationToken.None);
 
                 Assert.True(wasInstalled);
@@ -1829,13 +1819,12 @@ namespace NuGet.Packaging.Test
 
             using (var testDirectory = TestDirectory.Create())
             {
-                var packageExtractionV3Context = new PackageExtractionV3Context(
+                var versionFolderPathContext = new VersionFolderPathContext(
                     packageIdentity,
                     testDirectory.Path,
                     NullLogger.Instance,
                     PackageSaveMode.Nuspec,
-                    XmlDocFileSaveMode.None,
-                    null);
+                    XmlDocFileSaveMode.None);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(testDirectory.Path);
                 var installDirectoryPath = versionFolderPathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
@@ -1843,7 +1832,7 @@ namespace NuGet.Packaging.Test
 
                 var wasInstalled = await PackageExtractor.InstallFromSourceAsync(
                     packageDownloader.Object,
-                    packageExtractionV3Context,
+                    versionFolderPathContext,
                     CancellationToken.None);
 
                 Assert.True(wasInstalled);
@@ -1897,7 +1886,7 @@ namespace NuGet.Packaging.Test
                     packageIdentity: null,
                     packagePathResolver: new PackagePathResolver(rootDirectory: "a"),
                     packageSaveMode: PackageSaveMode.Defaultv3,
-                    packageExtractionV2Context: new PackageExtractionV2Context(NullLogger.Instance, null),
+                    packageExtractionContext: new PackageExtractionContext(NullLogger.Instance),
                     token: CancellationToken.None));
 
             Assert.Equal("packageIdentity", exception.ParamName);
@@ -1911,7 +1900,7 @@ namespace NuGet.Packaging.Test
                     new PackageIdentity("a", new NuGetVersion(major: 1, minor: 2, patch: 3)),
                     packagePathResolver: null,
                     packageSaveMode: PackageSaveMode.Defaultv3,
-                    packageExtractionV2Context: new PackageExtractionV2Context(NullLogger.Instance, null),
+                    packageExtractionContext: new PackageExtractionContext(NullLogger.Instance),
                     token: CancellationToken.None));
 
             Assert.Equal("packagePathResolver", exception.ParamName);
@@ -1936,10 +1925,10 @@ namespace NuGet.Packaging.Test
                         satelliteIdentity,
                         packagePathResolver,
                         PackageSaveMode.Defaultv3,
-                        packageExtractionV2Context: null,
+                        packageExtractionContext: null,
                         token: CancellationToken.None));
 
-                Assert.Equal("packageExtractionV2Context", exception.ParamName);
+                Assert.Equal("packageExtractionContext", exception.ParamName);
             }
         }
 
@@ -1956,7 +1945,7 @@ namespace NuGet.Packaging.Test
                     satelliteIdentity,
                     packagePathResolver,
                     PackageSaveMode.Defaultv3,
-                    new PackageExtractionV2Context(NullLogger.Instance, null),
+                    new PackageExtractionContext(NullLogger.Instance),
                     CancellationToken.None);
 
                 Assert.Empty(files);
@@ -1985,7 +1974,7 @@ namespace NuGet.Packaging.Test
                     satelliteIdentity,
                     packagePathResolver,
                     PackageSaveMode.Defaultv3,
-                    new PackageExtractionV2Context(NullLogger.Instance, null),
+                    new PackageExtractionContext(NullLogger.Instance),
                     CancellationToken.None)).ToArray();
 
                 Assert.Equal(1, files.Length);
@@ -2012,7 +2001,7 @@ namespace NuGet.Packaging.Test
         {
             private readonly TestDirectory _testDirectory;
 
-            internal PackageExtractionV2Context Context { get; }
+            internal PackageExtractionContext Context { get; }
             internal DirectoryInfo DestinationDirectory { get; }
             internal FileInfo Package { get; }
             internal PackageIdentity PackageIdentity { get; }
@@ -2021,7 +2010,7 @@ namespace NuGet.Packaging.Test
 
             internal ExtractPackageAsyncTest()
             {
-                Context = new PackageExtractionV2Context(NullLogger.Instance, null);
+                Context = new PackageExtractionContext(NullLogger.Instance);
                 PackageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
                 _testDirectory = TestDirectory.Create();
 

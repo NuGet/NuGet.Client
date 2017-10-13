@@ -1044,7 +1044,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             get { return this; }
         }
 
-        public PackageExtractionV2Context PackageExtractionContext { get; set; }
+        public PackageExtractionContext PackageExtractionContext { get; set; }
 
         /// <summary>
         /// Flushes all existing messages in the <see cref="BlockingCollection"/> before

@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.Signing;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -41,16 +40,6 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
         public IAsyncPackageCoreReader CoreReader
-        {
-            get
-            {
-                ThrowIfDisposed();
-
-                return _packageReader;
-            }
-        }
-
-        public ISignedPackageReader SignedPackageReader
         {
             get
             {

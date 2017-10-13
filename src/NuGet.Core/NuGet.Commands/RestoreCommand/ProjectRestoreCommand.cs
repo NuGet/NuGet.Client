@@ -15,7 +15,6 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.Signing;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 
@@ -243,17 +242,12 @@ namespace NuGet.Commands
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
 
-            var signedPackageVerifier = new SignedPackageVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
-
-            var packageExtractionV3Context = new PackageExtractionV3Context(
+            var versionFolderPathContext = new VersionFolderPathContext(
                 packageIdentity,
                 _request.PackagesDirectory,
                 _logger,
                 _request.PackageSaveMode,
-                _request.XmlDocFileSaveMode,
-                signedPackageVerifier);
+                _request.XmlDocFileSaveMode);
 
             using (var packageDependency = await installItem.Provider.GetPackageDownloaderAsync(
                 packageIdentity,
@@ -263,7 +257,7 @@ namespace NuGet.Commands
             {
                 await PackageExtractor.InstallFromSourceAsync(
                     packageDependency,
-                    packageExtractionV3Context,
+                    versionFolderPathContext,
                     token);
             }
         }

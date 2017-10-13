@@ -399,13 +399,12 @@ namespace NuGet.Test.Utility
                     {
                         await PackageExtractor.InstallFromSourceAsync((stream) =>
                             fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
-                            new PackageExtractionV3Context(
+                            new VersionFolderPathContext(
                                 identity,
                                 root,
                                 NullLogger.Instance,
                                 saveMode,
-                                XmlDocFileSaveMode.None,
-                                signedPackageVerifier: null),
+                                XmlDocFileSaveMode.None),
                                 CancellationToken.None);
                     }
                 }
@@ -441,7 +440,7 @@ namespace NuGet.Test.Utility
         public static async Task CreateFolderFeedPackagesConfigAsync(string root, params string[] nupkgPaths)
         {
             var resolver = new PackagePathResolver(root);
-            var context = new PackageExtractionV2Context(NullLogger.Instance, signedPackageVerifier: null);
+            var context = new PackageExtractionContext(NullLogger.Instance);
 
             foreach (var path in nupkgPaths)
             {

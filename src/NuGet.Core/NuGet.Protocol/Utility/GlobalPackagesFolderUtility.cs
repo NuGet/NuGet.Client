@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,6 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
-using NuGet.Packaging.Signing;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -30,7 +29,7 @@ namespace NuGet.Protocol
             {
                 throw new ArgumentNullException(nameof(globalPackagesFolder));
             }
-
+            
             var defaultPackagePathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 
             var hashPath = defaultPackagePathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
@@ -94,21 +93,16 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(globalPackagesFolder));
             }
 
-            var signedPackageVerifier = new SignedPackageVerifier(
-                          SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                          SignedPackageVerifierSettings.Default);
-
             // The following call adds it to the global packages folder.
             // Addition is performed using ConcurrentUtils, such that,
             // multiple processes may add at the same time
 
-            var versionFolderPathContext = new PackageExtractionV3Context(
+            var versionFolderPathContext = new VersionFolderPathContext(
                 packageIdentity,
                 globalPackagesFolder,
                 logger,
                 PackageSaveMode.Defaultv3,
-                PackageExtractionBehavior.XmlDocFileSaveMode,
-                signedPackageVerifier);
+                PackageExtractionBehavior.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(
                 stream => packageStream.CopyToAsync(stream, BufferSize, token),

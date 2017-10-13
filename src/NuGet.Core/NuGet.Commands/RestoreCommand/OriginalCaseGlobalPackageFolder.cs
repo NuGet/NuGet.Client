@@ -13,7 +13,6 @@ using NuGet.DependencyResolver;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Repositories;
@@ -128,20 +127,15 @@ namespace NuGet.Commands
             }
         }
 
-        private PackageExtractionV3Context GetPathContext(PackageIdentity packageIdentity, bool isLowercase)
+        private VersionFolderPathContext GetPathContext(PackageIdentity packageIdentity, bool isLowercase)
         {
-            var signedPackageVerifier = new SignedPackageVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
-
-            return new PackageExtractionV3Context(
+            return new VersionFolderPathContext(
                 packageIdentity,
                 _request.PackagesDirectory,
                 isLowercase,
                 _request.Log,
                 _request.PackageSaveMode,
-                _request.XmlDocFileSaveMode,
-                signedPackageVerifier);
+                _request.XmlDocFileSaveMode);
         }
 
         private static PackageIdentity GetPackageIdentity(RemoteMatch remoteMatch)

@@ -1,11 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
 using System.Xml.Linq;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
-using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
@@ -19,11 +18,7 @@ namespace NuGet.VisualStudio
 
         public VSAPIProjectContext(bool skipAssemblyReferences, bool bindingRedirectsDisabled, bool useLegacyInstallPaths = true)
         {
-            var signedPackageVerifier = new SignedPackageVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
-
-            PackageExtractionContext = new PackageExtractionV2Context(new LoggerAdapter(this), signedPackageVerifier);
+            PackageExtractionContext = new PackageExtractionContext(new LoggerAdapter(this));
 
             // many templates depend on legacy paths, for the VS API and template wizard we unfortunately need to keep them
             PackageExtractionContext.UseLegacyPackageInstallPath = useLegacyInstallPaths;
@@ -43,7 +38,7 @@ namespace NuGet.VisualStudio
             return FileConflictAction.IgnoreAll;
         }
 
-        public PackageExtractionV2Context PackageExtractionContext { get; set; }
+        public PackageExtractionContext PackageExtractionContext { get; set; }
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; }
 

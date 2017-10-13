@@ -449,13 +449,12 @@ namespace NuGet.Commands.FuncTest
                 {
                     await PackageExtractor.InstallFromSourceAsync(
                         packageDownloader,
-                        new PackageExtractionV3Context(
+                        new VersionFolderPathContext(
                             new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")),
                             packagesDir,
                             logger,
                             PackageSaveMode.Defaultv3,
-                            XmlDocFileSaveMode.None,
-                            null),
+                            XmlDocFileSaveMode.None),
                         CancellationToken.None);
                 }
 

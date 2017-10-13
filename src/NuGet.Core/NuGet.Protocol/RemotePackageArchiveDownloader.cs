@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.Signing;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -47,16 +46,6 @@ namespace NuGet.Protocol
         /// </summary>
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
         public IAsyncPackageCoreReader CoreReader
-        {
-            get
-            {
-                ThrowIfDisposed();
-
-                return _packageReader.Value;
-            }
-        }
-
-        public ISignedPackageReader SignedPackageReader
         {
             get
             {

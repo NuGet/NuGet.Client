@@ -16,7 +16,6 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -353,13 +352,9 @@ namespace NuGet.CommandLine
             }
             else
             {
-                var signedPackageVerifier = new SignedPackageVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
-
                 var projectContext = new ConsoleProjectContext(Console)
                 {
-                    PackageExtractionContext = new PackageExtractionV2Context(Console, signedPackageVerifier)
+                    PackageExtractionContext = new PackageExtractionContext(Console)
                 };
 
                 if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
