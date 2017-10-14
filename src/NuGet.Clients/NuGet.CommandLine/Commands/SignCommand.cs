@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using NuGet.Commands;
+using NuGet.Packaging.Signing;
 using NuGet.Shared;
 
 namespace NuGet.CommandLine
@@ -72,7 +73,7 @@ namespace NuGet.CommandLine
             var storeName = StoreName.My;
             var storeLocation = StoreLocation.CurrentUser;
             var hashAlgorithm = HashAlgorithmName.SHA256;
-            var timestampHashAlgorithm = HashAlgorithmName.SHA512;
+            var timestampHashAlgorithm = HashAlgorithmName.SHA256;
             var packagePath = Arguments[0];
 
             if (string.IsNullOrEmpty(packagePath))

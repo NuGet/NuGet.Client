@@ -5,8 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NuGet.Commands
+namespace NuGet.Packaging.Signing
 {
+    /// <summary>
+    /// An enum of all accepted hash algorithm names.
+    /// Any algorithm that cannot be mapped to this enum should be rejected in package signing.
+    /// But this list should not be the only check. Each singature version may have different accepted formats.
+    /// </summary>
     public enum HashAlgorithmName
     {
         SHA256,

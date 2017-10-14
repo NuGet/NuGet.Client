@@ -6,9 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using NuGet.Common;
+using NuGet.Packaging.Signing;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Commands
@@ -32,11 +35,13 @@ namespace NuGet.Commands
                 Strings.SignCommandDisplayCertificate,
                 CertificateUtility.X509Certificate2ToString(cert)));
 
+            var signRequest = GenerateSignPackageRequest(signArgs, cert);
+
             foreach (var packagePath in packagesToSign)
             {
                 try
                 {
-                    SignPackage(cert, packagePath);
+                    SignPackage(packagePath, signRequest);
                 }
                 catch(Exception e)
                 {
@@ -51,6 +56,30 @@ namespace NuGet.Commands
             }
             
             return success ? 0 : 1;
+        }
+
+        private int SignPackage(string path, SignPackageRequest request)
+        {
+            using (var zip = ZipFile.Open(path, ZipArchiveMode.Update))
+            {
+                var package = new SignedPackageArchive(zip);
+                var signer = new Signer(package);
+                signer.SignAsync(request, CancellationToken.None).Wait();
+            }
+
+            return 0;
+        }
+
+        private SignPackageRequest GenerateSignPackageRequest(SignArgs signArgs, X509Certificate2 certificate)
+        {
+            return new SignPackageRequest()
+            {
+                Certificate = certificate,
+                HashingAlgorithm = signArgs.HashingAlgorithm,
+                Timestamper = signArgs.Timestamper,
+                TimestampHashAlgorithm = signArgs.TimestampHashAlgorithm,
+                Logger = signArgs.Logger
+            };
         }
 
         private static X509Certificate2 GetCertificate(SignArgs signArgs)
@@ -91,11 +120,6 @@ namespace NuGet.Commands
             }
 
             return matchingCertCollection[0];
-        }
-
-        private int SignPackage(X509Certificate2 cert, string path)
-        {
-            return 0;
         }
     }
 }

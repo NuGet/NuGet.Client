@@ -14,11 +14,10 @@ namespace NuGet.Commands
         {
             var certStringBuilder = new StringBuilder();
 
-            certStringBuilder.AppendLine($"Issued to: {cert.IssuerName}");
-            certStringBuilder.AppendLine($"Issued by: {cert.IssuerName}");
-            certStringBuilder.AppendLine($"Expires: {cert.IssuerName}");
+            certStringBuilder.AppendLine($"Subject Name: {cert.SubjectName.Name}");
             certStringBuilder.AppendLine($"SHA1 hash: {cert.Thumbprint}");
-            certStringBuilder.AppendLine($"Subject Name: {cert.SubjectName}");
+            certStringBuilder.AppendLine($"Issued by: {cert.Issuer}");
+            certStringBuilder.AppendLine($"Expires: {cert.NotAfter}");
 
             return certStringBuilder.ToString();
         }
