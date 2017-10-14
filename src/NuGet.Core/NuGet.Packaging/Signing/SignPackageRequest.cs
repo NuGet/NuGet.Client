@@ -11,6 +11,6 @@ namespace NuGet.Packaging.Signing
         // Signature info
         public Signature Signature { get; set; }
 
-        public HashAlgorithmName HashAlgorithm { get; set; }
+        public HashAlgorithmName HashAlgorithm { get; set; } = HashAlgorithmName.SHA256;
     }
 }

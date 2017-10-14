@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         private static readonly string[] _allowedPaths = new[]
         {
-            _folder,
+            _manifestPath,
             _signaturePath1,
             _signaturePath2
         };

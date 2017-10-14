@@ -42,10 +42,29 @@ namespace NuGet.Packaging.Signing
                 request.HashAlgorithm,
                 packageEntries);
 
-            // Generate manifest hash
+            // Generate manifest hash and add file
+            var manifestHash = await AddManifestAndGetHashAsync(manifest, request.HashAlgorithm, token);
 
             // Create signature
             await AddSignatureAsync(request, token);
+        }
+
+        private async Task<string> AddManifestAndGetHashAsync(PackageContentManifest manifest, HashAlgorithmName hashAlgorithmName, CancellationToken token)
+        {
+            string hash = null;
+
+            using (var manifestStream = new MemoryStream())
+            {
+                manifest.Save(manifestStream);
+                manifestStream.Position = 0;
+
+                hash = hashAlgorithmName.GetHashProvider().ComputeHashAsBase64(manifestStream, leaveStreamOpen: true);
+                manifestStream.Position = 0;
+
+                await _package.AddAsync(_specifications.ManifestPath, manifestStream, token);
+            }
+
+            return hash;
         }
 
         private async Task AddSignatureAsync(SignPackageRequest request, CancellationToken token)
