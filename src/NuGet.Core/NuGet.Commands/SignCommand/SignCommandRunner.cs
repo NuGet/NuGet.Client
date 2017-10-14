@@ -103,6 +103,7 @@ namespace NuGet.Commands
             }
             else if (matchingCertCollection.Count > 1)
             {
+#if !IS_CORECLR
                 if (signArgs.NonInteractive || !RuntimeEnvironmentHelper.IsWindows)
                 {
                     // if on non-windows os or in non interactive mode - display and error out
@@ -117,6 +118,10 @@ namespace NuGet.Commands
                         Strings.SignCommandDialogMessage,
                         X509SelectionFlag.SingleSelection);
                 }
+#else
+                // if on non-windows os or in non interactive mode - display and error out
+                throw new InvalidOperationException(Strings.SignCommandMultipleCertException);
+#endif
             }
 
             return matchingCertCollection[0];
