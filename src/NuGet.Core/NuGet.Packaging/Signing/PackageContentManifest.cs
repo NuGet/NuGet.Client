@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging.Signing
@@ -13,12 +15,29 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public sealed class PackageContentManifest
     {
+        private readonly Stream _stream;
+
+        /// <summary>
+        /// Current default manifest version.
+        /// </summary>
         public static readonly SemanticVersion DefaultVersion = new SemanticVersion(1, 0, 0);
 
         /// <summary>
         /// Manifest format version.
         /// </summary>
         public SemanticVersion Version { get; }
+
+        /// <summary>
+        /// File hashing algorithm used.
+        /// </summary>
+        public HashAlgorithm HashAlgorithm { get; }
+
+        private PackageContentManifest(SemanticVersion version, HashAlgorithm hashAlgorithm, Stream stream)
+        {
+            HashAlgorithm = hashAlgorithm;
+            Version = version ?? throw new ArgumentNullException(nameof(version));
+            _stream = stream ?? throw new ArgumentNullException(nameof(stream));
+        }
 
         /// <summary>
         /// Write the manifest to a stream.
@@ -36,24 +55,56 @@ namespace NuGet.Packaging.Signing
             throw new NotImplementedException();
         }
 
-        public static PackageContentManifest Create(IDictionary<string, string> headers, IEnumerable<PackageContentManifestFileEntry> fileEntries)
+        /// <summary>
+        /// Create a PackageContentManifest.
+        /// </summary>
+        public static PackageContentManifest Create(HashAlgorithm hashAlgorithm, IEnumerable<PackageContentManifestFileEntry> fileEntries, SemanticVersion version)
         {
-            return Create(DefaultVersion, fileEntries);
+            var stream = new MemoryStream();
+            using (var writer = new StreamWriter(stream, Encoding.UTF8, bufferSize: 8192, leaveOpen: true))
+            {
+                WriteItem(writer, "Version", version.ToNormalizedString());
+                WriteItem(writer, "Hash-Algorithm", version.ToNormalizedString());
+            }
+
+            stream.Position = 0;
+
+            return new PackageContentManifest(version, hashAlgorithm, stream);
         }
 
-        public static PackageContentManifest Create(SemanticVersion version, IEnumerable<PackageContentManifestFileEntry> fileEntries)
+        /// <summary>
+        /// Write key:value to the manifest stream.
+        /// </summary>
+        private static void WriteItem(TextWriter writer, string key, string value)
         {
-            if (version == null)
+            writer.WriteLine(FormatItem(key, value));
+        }
+
+        /// <summary>
+        /// key:value
+        /// </summary>
+        private static string FormatItem(string key, string value)
+        {
+            if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException(nameof(version));
+                throw new ArgumentException(null, nameof(key));
             }
 
-            if (fileEntries == null)
+            if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentNullException(nameof(fileEntries));
+                throw new ArgumentException(null, nameof(value));
             }
 
-            throw new NotImplementedException();
+            return $"{key}:{value}";
+        }
+
+        private class ManifestConstants
+        {
+            public const string Version = nameof(Version);
+            public const string HashAlgorithm = "Hash-Algorithm";
+            public const string HashValue = "Hash-Value";
+            public const string Path = "Path";
+            public const string EOL = "\n";
         }
     }
 }
