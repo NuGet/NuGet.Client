@@ -11,6 +11,11 @@ namespace NuGet.Packaging.Signing
     public abstract class SigningSpecifications
     {
         /// <summary>
+        /// v1.0.0 signing settings
+        /// </summary>
+        public static readonly SigningSpecificationsV1 V1 = new SigningSpecificationsV1();
+
+        /// <summary>
         /// Returns the set of allowed signature file paths
         /// in the package. This may also contain
         /// optional signing file paths.

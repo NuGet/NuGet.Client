@@ -45,7 +45,8 @@ namespace NuGet.Packaging.Test.SigningTests
                     .Should()
                     .BeEquivalentTo(new[]
                 {
-                    "testsigned/signed.json"
+                    SigningSpecifications.V1.ManifestPath,
+                    SigningSpecifications.V1.SignaturePath1,
                 });
             }
         }

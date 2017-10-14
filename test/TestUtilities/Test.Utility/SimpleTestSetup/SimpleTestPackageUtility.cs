@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.Versioning;
 
 namespace NuGet.Test.Utility
@@ -231,7 +232,8 @@ namespace NuGet.Test.Utility
                         sig.Add(new JProperty("name", signature.DisplayName));
                     }
 
-                    zip.AddEntry("testsigned/signed.json", signedJson.ToString());
+                    zip.AddEntry(SigningSpecifications.V1.ManifestPath, new byte[] { 0 });
+                    zip.AddEntry(SigningSpecifications.V1.SignaturePath1, signedJson.ToString());
                 }
 
                 zip.AddEntry($"{id}.nuspec", xml.ToString(), Encoding.UTF8);

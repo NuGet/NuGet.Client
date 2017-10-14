@@ -213,7 +213,7 @@ namespace NuGet.Packaging
         {
             var signatures = new List<Signature>();
 
-            var sigFile = GetSignManifestEntry();
+            var sigFile = GetExactEntryOrDefault(SigningSpecifications.V1.SignaturePath1);
 
             if (sigFile != null)
             {
@@ -235,16 +235,15 @@ namespace NuGet.Packaging
 
         public override Task<bool> IsSignedAsync(CancellationToken token)
         {
-            return Task.FromResult(GetSignManifestEntry() != null);
+            // A package is signed if a signature file exists.
+            return Task.FromResult(GetExactEntryOrDefault(SigningSpecifications.V1.SignaturePath1) != null);
         }
 
-        private const string SignManifestPath = "testsigned/signed.json";
-
-        private ZipArchiveEntry GetSignManifestEntry()
+        private ZipArchiveEntry GetExactEntryOrDefault(string path)
         {
-            var entry = _zipArchive.GetEntry(SignManifestPath);
+            var entry = _zipArchive.GetEntry(path);
 
-            if (entry != null && !StringComparer.Ordinal.Equals(SignManifestPath, entry.FullName))
+            if (entry != null && !StringComparer.Ordinal.Equals(path, entry.FullName))
             {
                 // The entry casing did not match.
                 entry = null;

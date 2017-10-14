@@ -15,9 +15,8 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public sealed class Signer
     {
-        // Temporary
-        private const string TestSignedPath = "testsigned/signed.json";
         private readonly ISignedPackage _package;
+        private readonly SigningSpecificationsV1 _specifications = SigningSpecifications.V1;
 
         /// <summary>
         /// Creates a signer for a specific package.
@@ -47,16 +46,19 @@ namespace NuGet.Packaging.Signing
             {
                 writer.Write(signedJson.ToString());
                 stream.Position = 0;
-                await _package.AddAsync(TestSignedPath, stream, token);
+                await _package.AddAsync(_specifications.SignaturePath1, stream, token);
             }
         }
 
         /// <summary>
         /// Remove all signatures from a package.
         /// </summary>
-        public Task RemoveSignaturesAsync(ILogger logger, CancellationToken token)
+        public async Task RemoveSignaturesAsync(ILogger logger, CancellationToken token)
         {
-            return _package.RemoveAsync(TestSignedPath, token);
+            foreach (var file in _specifications.AllowedPaths)
+            {
+                await _package.RemoveAsync(file, token);
+            }
         }
 
         /// <summary>
