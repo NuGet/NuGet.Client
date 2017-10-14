@@ -1188,6 +1188,61 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please select a valid certitificate.
+        /// </summary>
+        internal static string SignCommandDialogMessage {
+            get {
+                return ResourceManager.GetString("SignCommandDialogMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet Sign Certificate Selection.
+        /// </summary>
+        internal static string SignCommandDialogTitle {
+            get {
+                return ResourceManager.GetString("SignCommandDialogTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Signing package(s) with certificate: 
+        ///{0}.
+        /// </summary>
+        internal static string SignCommandDisplayCertificate {
+            get {
+                return ResourceManager.GetString("SignCommandDisplayCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple matching certificates found..
+        /// </summary>
+        internal static string SignCommandMultipleCertException {
+            get {
+                return ResourceManager.GetString("SignCommandMultipleCertException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No matching certificates found..
+        /// </summary>
+        internal static string SignCommandNoCertException {
+            get {
+                return ResourceManager.GetString("SignCommandNoCertException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package(s) signed successfully..
+        /// </summary>
+        internal static string SignCommandSuccess {
+            get {
+                return ResourceManager.GetString("SignCommandSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Duplicate frameworks found: &apos;{0}&apos;..
         /// </summary>
         internal static string SpecValidationDuplicateFrameworks {

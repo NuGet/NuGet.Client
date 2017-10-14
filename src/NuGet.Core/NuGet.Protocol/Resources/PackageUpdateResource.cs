@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -170,7 +170,7 @@ namespace NuGet.Protocol.Core.Types
                     GetSourceDisplayName(source)));
             }
 
-            var packagesToPush = GetPackagesToPush(packagePath);
+            var packagesToPush = ResolvePackageFromPath(packagePath);
 
             EnsurePackageFileExists(packagePath, packagesToPush);
 
@@ -221,7 +221,7 @@ namespace NuGet.Protocol.Core.Types
             return "'" + source + "'";
         }
 
-        private static IEnumerable<string> GetPackagesToPush(string packagePath)
+        public static IEnumerable<string> ResolvePackageFromPath(string packagePath)
         {
             // Ensure packagePath ends with *.nupkg
             packagePath = EnsurePackageExtension(packagePath);
@@ -251,11 +251,11 @@ namespace NuGet.Protocol.Core.Types
             return packagePath;
         }
 
-        private static void EnsurePackageFileExists(string packagePath, IEnumerable<string> packagesToPush)
+        public static void EnsurePackageFileExists(string packagePath, IEnumerable<string> packagesToPush)
         {
             if (!packagesToPush.Any())
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture,
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     Strings.UnableToFindFile,
                     packagePath));
             }
