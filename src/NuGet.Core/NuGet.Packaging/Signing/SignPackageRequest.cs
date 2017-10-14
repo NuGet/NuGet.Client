@@ -8,5 +8,7 @@ namespace NuGet.Packaging.Signing
     {
         // Signature info
         public Signature Signature { get; set; }
+
+        public HashAlgorithm HashAlgorithm { get; set; }
     }
 }

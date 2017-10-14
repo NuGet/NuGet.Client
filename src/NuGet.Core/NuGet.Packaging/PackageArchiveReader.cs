@@ -225,12 +225,51 @@ namespace NuGet.Packaging
 
         public override Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token)
         {
-            throw new NotImplementedException();
+            PackageContentManifest result = null;
+
+            using (var stream = GetExactEntryOrDefault(SigningSpecifications.V1.ManifestPath)?.Open())
+            {
+                if (stream != null)
+                {
+                    result = PackageContentManifest.Load(stream);
+                }
+            }
+
+            return Task.FromResult(result);
         }
 
         public override Task<PackageContentManifest> CreateManifestAsync(CancellationToken token)
         {
-            throw new NotImplementedException();
+            var entries = _zipArchive.Entries
+                .Where(IncludeInManifest)
+                .Select(GetManifestEntry);
+        }
+
+        private static string GetEntryHash(ZipArchiveEntry entry, CryptoHashProvider hashProvider)
+        {
+            if (IsEmptyDirectory(entry))
+            {
+                return "0";
+            }
+            else
+            {
+                using (var stream = entry.Open())
+                {
+                    var hash = hashProvider.CalculateHash(stream);
+                }
+            }
+
+            return new PackageContentManifestFileEntry(entry.FullName, );
+        }
+
+        private static bool IsEmptyDirectory(ZipArchiveEntry entry)
+        {
+            return entry.FullName.EndsWith("/", StringComparison.Ordinal);
+        }
+
+        private static bool IncludeInManifest(ZipArchiveEntry entry)
+        {
+            return SigningSpecifications.V1.AllowedPaths.Contains(entry.FullName, StringComparer.Ordinal);
         }
 
         public override Task<bool> IsSignedAsync(CancellationToken token)

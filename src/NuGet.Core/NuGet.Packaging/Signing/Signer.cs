@@ -32,6 +32,24 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public async Task SignAsync(SignPackageRequest request, ILogger logger, CancellationToken token)
         {
+            // Verify hash is allowed
+
+            // Generate manifest
+            var packageEntries = null;
+
+            var manifest = new PackageContentManifest(
+                PackageContentManifest.DefaultVersion,
+                request.HashAlgorithm,
+                packageEntries);
+
+            // Generate manifest hash
+
+            // Create signature
+            await AddSignatureAsync(request, token);
+        }
+
+        private async Task AddSignatureAsync(SignPackageRequest request, CancellationToken token)
+        {
             var signedJson = new JObject();
             var signatures = new JArray();
             signedJson.Add(new JProperty("signatures", signatures));

@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -41,6 +42,14 @@ namespace NuGet.Packaging.Signing
             }
 
             return signatures.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Create a CryptoHashProvider from a hash algorithm name.
+        /// </summary>
+        public static CryptoHashProvider GetHashProvider(this HashAlgorithm hashAlgorithm)
+        {
+            return new CryptoHashProvider(hashAlgorithm.ToString().ToUpperInvariant());
         }
     }
 }
