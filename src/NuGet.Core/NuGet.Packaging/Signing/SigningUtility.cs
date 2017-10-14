@@ -43,13 +43,5 @@ namespace NuGet.Packaging.Signing
 
             return signatures.AsReadOnly();
         }
-
-        /// <summary>
-        /// Create a CryptoHashProvider from a hash algorithm name.
-        /// </summary>
-        public static CryptoHashProvider GetHashProvider(this HashAlgorithm hashAlgorithm)
-        {
-            return new CryptoHashProvider(hashAlgorithm.ToString().ToUpperInvariant());
-        }
     }
 }

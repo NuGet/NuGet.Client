@@ -35,7 +35,7 @@ namespace NuGet.Packaging.Signing
             // Verify hash is allowed
 
             // Generate manifest
-            var packageEntries = null;
+            var packageEntries = await _package.GetContentManifestEntriesAsync(request.HashAlgorithm, token);
 
             var manifest = new PackageContentManifest(
                 PackageContentManifest.DefaultVersion,

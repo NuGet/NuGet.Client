@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
+using NuGet.Common;
+
 namespace NuGet.Packaging.Signing
 {
     public class SignPackageRequest
@@ -9,6 +11,6 @@ namespace NuGet.Packaging.Signing
         // Signature info
         public Signature Signature { get; set; }
 
-        public HashAlgorithm HashAlgorithm { get; set; }
+        public HashAlgorithmName HashAlgorithm { get; set; }
     }
 }

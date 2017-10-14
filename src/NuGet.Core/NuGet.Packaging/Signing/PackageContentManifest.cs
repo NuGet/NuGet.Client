@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using NuGet.Common;
 using NuGet.Shared;
 using NuGet.Versioning;
 
@@ -31,7 +32,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// File hashing algorithm used.
         /// </summary>
-        public HashAlgorithm HashAlgorithm { get; }
+        public HashAlgorithmName HashAlgorithm { get; }
 
         /// <summary>
         /// All content entries from the package excluding signing files.
@@ -46,7 +47,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="packageEntries">All entries in the package except signing files.</param>
         public PackageContentManifest(
             SemanticVersion version,
-            HashAlgorithm hashAlgorithm,
+            HashAlgorithmName hashAlgorithm,
             IEnumerable<PackageContentManifestFileEntry> packageEntries)
         {
             HashAlgorithm = hashAlgorithm;
@@ -82,7 +83,7 @@ namespace NuGet.Packaging.Signing
         public static PackageContentManifest Load(Stream stream)
         {
             SemanticVersion version = null;
-            var hashAlgorithm = HashAlgorithm.Unknown;
+            var hashAlgorithm = HashAlgorithmName.Unknown;
             var entries = new List<PackageContentManifestFileEntry>();
 
             if (stream.Length > MaxSize)
@@ -140,12 +141,12 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Get the hash algorithm and ensure that it is valid.
         /// </summary>
-        private static HashAlgorithm ReadHashAlgorithm(HashAlgorithm hashAlgorithm, string line)
+        private static HashAlgorithmName ReadHashAlgorithm(HashAlgorithmName hashAlgorithm, string line)
         {
             var hashAlgorithmString = GetValueOrThrow(line, ManifestConstants.HashAlgorithm);
 
-            if (Enum.TryParse<HashAlgorithm>(hashAlgorithmString, ignoreCase: false, result: out var parsedHashAlgorithm)
-                && parsedHashAlgorithm != HashAlgorithm.Unknown)
+            if (Enum.TryParse<HashAlgorithmName>(hashAlgorithmString, ignoreCase: false, result: out var parsedHashAlgorithm)
+                && parsedHashAlgorithm != HashAlgorithmName.Unknown)
             {
                 hashAlgorithm = parsedHashAlgorithm;
             }

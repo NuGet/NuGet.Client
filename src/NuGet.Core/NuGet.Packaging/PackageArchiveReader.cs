@@ -6,10 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -238,38 +237,38 @@ namespace NuGet.Packaging
             return Task.FromResult(result);
         }
 
-        public override Task<PackageContentManifest> CreateManifestAsync(CancellationToken token)
+        public override Task<IReadOnlyList<PackageContentManifestFileEntry>> GetContentManifestEntriesAsync(Common.HashAlgorithmName hashAlgorithm, CancellationToken token)
         {
+            var hashProvider = hashAlgorithm.GetHashProvider();
+
             var entries = _zipArchive.Entries
-                .Where(IncludeInManifest)
-                .Select(GetManifestEntry);
+                .Select(e => new PackageContentManifestFileEntry(
+                    path: e.FullName,
+                    hash: GetEntryHash(e, hashProvider)))
+                .ToList();
+
+            return Task.FromResult<IReadOnlyList<PackageContentManifestFileEntry>>(entries);
         }
 
-        private static string GetEntryHash(ZipArchiveEntry entry, CryptoHashProvider hashProvider)
+        private static string GetEntryHash(ZipArchiveEntry entry, HashAlgorithm hashProvider)
         {
+            string hash = null;
+
             if (IsEmptyDirectory(entry))
             {
-                return "0";
+                hash = "0";
             }
             else
             {
-                using (var stream = entry.Open())
-                {
-                    var hash = hashProvider.CalculateHash(stream);
-                }
+                hash = hashProvider.ComputeHashAsBase64(entry.Open());
             }
 
-            return new PackageContentManifestFileEntry(entry.FullName, );
+            return hash;
         }
 
         private static bool IsEmptyDirectory(ZipArchiveEntry entry)
         {
             return entry.FullName.EndsWith("/", StringComparison.Ordinal);
-        }
-
-        private static bool IncludeInManifest(ZipArchiveEntry entry)
-        {
-            return SigningSpecifications.V1.AllowedPaths.Contains(entry.FullName, StringComparer.Ordinal);
         }
 
         public override Task<bool> IsSignedAsync(CancellationToken token)
