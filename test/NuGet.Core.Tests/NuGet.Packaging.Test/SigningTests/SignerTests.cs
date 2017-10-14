@@ -25,19 +25,13 @@ namespace NuGet.Packaging.Test.SigningTests
             {
                 var before = new List<string>(zip.Entries.Select(e => e.FullName));
                 var signer = new Signer(signPackage);
-                var signature = new Signature()
-                {
-                    DisplayName = "Test signer",
-                    TestTrust = SignatureVerificationStatus.Trusted,
-                    Type = SignatureType.Author
-                };
 
                 var request = new SignPackageRequest()
                 {
-                    Signature = signature
+                    Logger = testLogger
                 };
 
-                await signer.SignAsync(request, testLogger, CancellationToken.None);
+                await signer.SignAsync(request, CancellationToken.None);
 
                 // Verify sign file exists
                 zip.Entries.Select(e => e.FullName)
@@ -70,10 +64,10 @@ namespace NuGet.Packaging.Test.SigningTests
 
                 var request = new SignPackageRequest()
                 {
-                    Signature = signature
+                    Logger = testLogger
                 };
 
-                await signer.SignAsync(request, testLogger, CancellationToken.None);
+                await signer.SignAsync(request, CancellationToken.None);
 
                 await signer.RemoveSignatureAsync(signature, testLogger, CancellationToken.None);
 
@@ -105,10 +99,10 @@ namespace NuGet.Packaging.Test.SigningTests
 
                 var request = new SignPackageRequest()
                 {
-                    Signature = signature
+                    Logger = testLogger
                 };
 
-                await signer.SignAsync(request, testLogger, CancellationToken.None);
+                await signer.SignAsync(request, CancellationToken.None);
 
                 await signer.RemoveSignaturesAsync(testLogger, CancellationToken.None);
 
