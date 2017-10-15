@@ -21,6 +21,11 @@ namespace NuGet.Packaging.Signing
         public string DisplayName { get; set; }
 
         /// <summary>
+        /// Actual signature bytes.
+        /// </summary>
+        public byte[] Data { get; set; }
+
+        /// <summary>
         /// Additional counter signatures.
         /// </summary>
         public IReadOnlyList<Signature> AdditionalSignatures { get; set; } = new List<Signature>();

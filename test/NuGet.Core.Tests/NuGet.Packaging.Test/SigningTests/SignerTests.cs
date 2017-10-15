@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Packaging.Test.SigningTests
@@ -24,7 +25,6 @@ namespace NuGet.Packaging.Test.SigningTests
             using (var signPackage = new SignedPackageArchive(zip))
             {
                 var before = new List<string>(zip.Entries.Select(e => e.FullName));
-                var signer = new Signer(signPackage);
                 var signature = new Signature()
                 {
                     DisplayName = "Test signer",
@@ -32,9 +32,14 @@ namespace NuGet.Packaging.Test.SigningTests
                     Type = SignatureType.Author
                 };
 
+                var cert = SigningTestUtility.SharedTestCert.Value;
+                var testSignatureProvider = new TestSignatureProvider(signature);
+                var signer = new Signer(signPackage, testSignatureProvider);
+
                 var request = new SignPackageRequest()
                 {
-                    Signature = signature
+                    Certificate = cert,
+                    HashAlgorithm = Common.HashAlgorithmName.SHA256
                 };
 
                 await signer.SignAsync(request, testLogger, CancellationToken.None);
@@ -61,7 +66,6 @@ namespace NuGet.Packaging.Test.SigningTests
             using (var signPackage = new SignedPackageArchive(zip))
             {
                 var before = new List<string>(zip.Entries.Select(e => e.FullName));
-                var signer = new Signer(signPackage);
                 var signature = new Signature()
                 {
                     DisplayName = "Test signer",
@@ -69,9 +73,14 @@ namespace NuGet.Packaging.Test.SigningTests
                     Type = SignatureType.Author
                 };
 
+                var cert = SigningTestUtility.SharedTestCert.Value;
+                var testSignatureProvider = new TestSignatureProvider(signature);
+                var signer = new Signer(signPackage, testSignatureProvider);
+
                 var request = new SignPackageRequest()
                 {
-                    Signature = signature
+                    Certificate = cert,
+                    HashAlgorithm = Common.HashAlgorithmName.SHA256
                 };
 
                 await signer.SignAsync(request, testLogger, CancellationToken.None);
@@ -96,7 +105,6 @@ namespace NuGet.Packaging.Test.SigningTests
             using (var signPackage = new SignedPackageArchive(zip))
             {
                 var before = new List<string>(zip.Entries.Select(e => e.FullName));
-                var signer = new Signer(signPackage);
                 var signature = new Signature()
                 {
                     DisplayName = "Test signer",
@@ -104,9 +112,14 @@ namespace NuGet.Packaging.Test.SigningTests
                     Type = SignatureType.Author
                 };
 
+                var cert = SigningTestUtility.SharedTestCert.Value;
+                var testSignatureProvider = new TestSignatureProvider(signature);
+                var signer = new Signer(signPackage, testSignatureProvider);
+
                 var request = new SignPackageRequest()
                 {
-                    Signature = signature
+                    Certificate = cert,
+                    HashAlgorithm = Common.HashAlgorithmName.SHA256
                 };
 
                 await signer.SignAsync(request, testLogger, CancellationToken.None);

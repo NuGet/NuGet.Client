@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
@@ -17,14 +16,25 @@ namespace NuGet.Packaging.Signing
     {
         private readonly ISignedPackage _package;
         private readonly SigningSpecificationsV1 _specifications = SigningSpecifications.V1;
+        private readonly ISignatureProvider _signatureProvider;
 
         /// <summary>
         /// Creates a signer for a specific package.
         /// </summary>
         /// <param name="package">Package to sign or modify.</param>
         public Signer(ISignedPackage package)
+            : this(package, new X509SignatureProvider(new TimestampProvider()))
+        {
+        }
+
+        /// <summary>
+        /// Creates a signer for a specific package.
+        /// </summary>
+        /// <param name="package">Package to sign or modify.</param>
+        public Signer(ISignedPackage package, ISignatureProvider signatureProvider)
         {
             _package = package ?? throw new ArgumentNullException(nameof(package));
+            _signatureProvider = signatureProvider ?? throw new ArgumentNullException(nameof(signatureProvider));
         }
 
         /// <summary>
@@ -46,10 +56,15 @@ namespace NuGet.Packaging.Signing
             var manifestHash = await AddManifestAndGetHashAsync(manifest, request.HashAlgorithm, token);
 
             // Create signature
-            await AddSignatureAsync(request, token);
+            var sig = await _signatureProvider.CreateSignatureAsync(request, manifestHash, logger, token);
+
+            using (var stream = new MemoryStream(sig.Data))
+            {
+                await _package.AddAsync(_specifications.SignaturePath1, stream, token);
+            }
         }
 
-        private async Task<string> AddManifestAndGetHashAsync(PackageContentManifest manifest, HashAlgorithmName hashAlgorithmName, CancellationToken token)
+        private async Task<string> AddManifestAndGetHashAsync(PackageContentManifest manifest, Common.HashAlgorithmName hashAlgorithmName, CancellationToken token)
         {
             string hash = null;
 
@@ -65,26 +80,6 @@ namespace NuGet.Packaging.Signing
             }
 
             return hash;
-        }
-
-        private async Task AddSignatureAsync(SignPackageRequest request, CancellationToken token)
-        {
-            var signedJson = new JObject();
-            var signatures = new JArray();
-            signedJson.Add(new JProperty("signatures", signatures));
-            var sig = new JObject();
-            signatures.Add(sig);
-            sig.Add(new JProperty("trust", request.Signature.TestTrust.ToString()));
-            sig.Add(new JProperty("type", request.Signature.Type.ToString()));
-            sig.Add(new JProperty("name", request.Signature.DisplayName));
-
-            using (var stream = new MemoryStream())
-            using (var writer = new StreamWriter(stream))
-            {
-                writer.Write(signedJson.ToString());
-                stream.Position = 0;
-                await _package.AddAsync(_specifications.SignaturePath1, stream, token);
-            }
         }
 
         /// <summary>
