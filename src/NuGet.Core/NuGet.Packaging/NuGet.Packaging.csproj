@@ -37,6 +37,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Signing\NewFolder\**" />
+    <EmbeddedResource Remove="Signing\NewFolder\**" />
+    <None Remove="Signing\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" />
   </ItemGroup>
 

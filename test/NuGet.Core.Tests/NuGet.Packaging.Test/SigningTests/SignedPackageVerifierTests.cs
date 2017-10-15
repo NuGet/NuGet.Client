@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if IS_DESKTOP
+
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -12,6 +15,7 @@ using FluentAssertions;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Test.Utility;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test.SigningTests
@@ -26,8 +30,12 @@ namespace NuGet.Packaging.Test.SigningTests
             var testLogger = new TestLogger();
             var zip = nupkg.Create();
 
+            using (var testCert = TestCertificate.Generate().WithTrust())
             using (var signPackage = new SignedPackageArchive(zip))
             {
+                File.WriteAllBytes(@"d:\tmp\cert.pfx", testCert.Source.Cert.Export(X509ContentType.Pfx));
+                File.WriteAllBytes(@"d:\tmp\ca.pfx", testCert.Source.CA.Export(X509ContentType.Pfx));
+
                 var before = new List<string>(zip.Entries.Select(e => e.FullName));
                 var signature = new Signature()
                 {
@@ -36,36 +44,24 @@ namespace NuGet.Packaging.Test.SigningTests
                     Type = SignatureType.Author
                 };
 
-                var cert = SigningTestUtility.SharedTestCert.Value;
                 var testSignatureProvider = new X509SignatureProvider(new TimestampProvider());
-                var store = new X509Store(StoreName.TrustedPeople, StoreLocation.CurrentUser);
-                store.Open(OpenFlags.MaxAllowed);
 
-                try
+                var signer = new Signer(signPackage, testSignatureProvider);
+
+                var request = new SignPackageRequest()
                 {
-                    //store.Add(cert);
+                    Certificate = testCert.Source.Cert,
+                    HashAlgorithm = Common.HashAlgorithmName.SHA256
+                };
 
-                    var signer = new Signer(signPackage, testSignatureProvider);
+                await signer.SignAsync(request, testLogger, CancellationToken.None);
 
-                    var request = new SignPackageRequest()
-                    {
-                        Certificate = cert,
-                        HashAlgorithm = Common.HashAlgorithmName.SHA256
-                    };
+                var trustProviders = new[] { new X509SignatureVerificationProvider() };
+                var verifier = new SignedPackageVerifier(trustProviders, SignedPackageVerifierSettings.RequireSignedAllowUntrusted);
 
-                    await signer.SignAsync(request, testLogger, CancellationToken.None);
+                var result = await verifier.VerifySignaturesAsync(signPackage, testLogger, CancellationToken.None);
 
-                    var trustProviders = new[] { new X509SignatureVerificationProvider() };
-                    var verifier = new SignedPackageVerifier(trustProviders, SignedPackageVerifierSettings.RequireSignedAllowUntrusted);
-
-                    var result = await verifier.VerifySignaturesAsync(signPackage, testLogger, CancellationToken.None);
-
-                    result.Valid.Should().BeTrue();
-                }
-                finally
-                {
-                    store.Remove(cert);
-                }
+                result.Valid.Should().BeTrue();
             }
         }
 
@@ -178,3 +174,4 @@ namespace NuGet.Packaging.Test.SigningTests
         }
     }
 }
+#endif

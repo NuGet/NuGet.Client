@@ -29,9 +29,7 @@ namespace NuGet.Packaging.Signing
         {
             var signerInfo = signature.SignerInfoCollection[0];
 
-            var result = signerInfo.Certificate.Verify();
-
-            SigningUtility.IsCertificateValid(signerInfo.Certificate, out var chain, allowUntrustedRoot: true);
+            var result = SigningUtility.IsCertificateValid(signerInfo.Certificate, out var chain, allowUntrustedRoot: true);
 
             if (result)
             {
