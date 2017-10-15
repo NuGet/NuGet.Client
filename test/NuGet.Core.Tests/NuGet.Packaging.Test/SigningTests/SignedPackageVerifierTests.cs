@@ -22,9 +22,9 @@ namespace NuGet.Packaging.Test.SigningTests
 {
     public class SignedPackageVerifierTests
     {
-        // Verify a valid but untrusted package with a certificate.
+        // Verify a valid and trusted signature on a package.
         [Fact]
-        public async Task SignedPackageVerifier_CreateValidPackageVerifyUntrustedResult()
+        public async Task SignedPackageVerifier_CreateValidPackageVerifyTrustedResult()
         {
             var nupkg = new SimpleTestPackageContext();
             var testLogger = new TestLogger();
@@ -33,144 +33,144 @@ namespace NuGet.Packaging.Test.SigningTests
             using (var testCert = TestCertificate.Generate().WithTrust())
             using (var signPackage = new SignedPackageArchive(zip))
             {
-                File.WriteAllBytes(@"d:\tmp\cert.pfx", testCert.Source.Cert.Export(X509ContentType.Pfx));
-                File.WriteAllBytes(@"d:\tmp\ca.pfx", testCert.Source.CA.Export(X509ContentType.Pfx));
+                await SignPackageAsync(testLogger, testCert.Source.Cert, signPackage);
 
-                var before = new List<string>(zip.Entries.Select(e => e.FullName));
-                var signature = new Signature()
-                {
-                    DisplayName = "Test signer",
-                    TestTrust = SignatureVerificationStatus.Trusted,
-                    Type = SignatureType.Author
-                };
+                var settings = SignedPackageVerifierSettings.RequireSigned;
 
-                var testSignatureProvider = new X509SignatureProvider(new TimestampProvider());
-
-                var signer = new Signer(signPackage, testSignatureProvider);
-
-                var request = new SignPackageRequest()
-                {
-                    Certificate = testCert.Source.Cert,
-                    HashAlgorithm = Common.HashAlgorithmName.SHA256
-                };
-
-                await signer.SignAsync(request, testLogger, CancellationToken.None);
-
-                var trustProviders = new[] { new X509SignatureVerificationProvider() };
-                var verifier = new SignedPackageVerifier(trustProviders, SignedPackageVerifierSettings.RequireSignedAllowUntrusted);
-
-                var result = await verifier.VerifySignaturesAsync(signPackage, testLogger, CancellationToken.None);
+                var result = await VerifySignatureAsync(testLogger, signPackage, settings);
 
                 result.Valid.Should().BeTrue();
             }
         }
 
-        // Verify a trusted signature
-        [Fact]
-        public async Task SignedPackageVerifier_CreateTrustedPackageVerifySignature()
+        //// Verify a trusted signature
+        //[Fact]
+        //public async Task SignedPackageVerifier_CreateTrustedPackageVerifySignature()
+        //{
+        //    var signature = new Signature()
+        //    {
+        //        DisplayName = "Test Signer",
+        //        TestTrust = SignatureVerificationStatus.Trusted,
+        //        Type = SignatureType.Author
+        //    };
+
+        //    var verifyResult = await GetTrustResultAsync(signature, SignedPackageVerifierSettings.RequireSigned);
+
+        //    verifyResult.Valid.Should().BeTrue();
+        //    verifyResult.Results.Single().Trust.Should().Be(SignatureVerificationStatus.Trusted);
+        //}
+
+        //// Verify a valid package that does not have a trusted cert
+        //[Fact]
+        //public async Task SignedPackageVerifier_CreateUntrustedPackageVerifySignature()
+        //{
+        //    var signature = new Signature()
+        //    {
+        //        DisplayName = "Test Signer",
+        //        TestTrust = SignatureVerificationStatus.Untrusted,
+        //        Type = SignatureType.Author
+        //    };
+
+        //    var verifyResult = await GetTrustResultAsync(signature, SignedPackageVerifierSettings.RequireSignedAllowUntrusted);
+
+        //    verifyResult.Valid.Should().BeTrue();
+        //    verifyResult.Results.Single().Trust.Should().Be(SignatureVerificationStatus.Untrusted);
+        //}
+
+        //// Verify a valid package that does not have a trusted cert
+        //[Fact]
+        //public async Task SignedPackageVerifier_CreateUntrustedPackageVerifySignatureFails()
+        //{
+        //    var signature = new Signature()
+        //    {
+        //        DisplayName = "Test Signer",
+        //        TestTrust = SignatureVerificationStatus.Untrusted,
+        //        Type = SignatureType.Author
+        //    };
+
+        //    var verifyResult = await GetTrustResultAsync(signature, SignedPackageVerifierSettings.RequireSigned);
+
+        //    verifyResult.Valid.Should().BeFalse();
+        //    verifyResult.Results.Single().Trust.Should().Be(SignatureVerificationStatus.Untrusted);
+        //}
+
+        //// Verify a package that has been tampered with
+        //[Fact]
+        //public async Task SignedPackageVerifier_CreateInvalidPackageVerifySignature()
+        //{
+        //    var signature = new Signature()
+        //    {
+        //        DisplayName = "Test Signer",
+        //        TestTrust = SignatureVerificationStatus.Invalid,
+        //        Type = SignatureType.Author
+        //    };
+
+        //    var verifyResult = await GetTrustResultAsync(signature, SignedPackageVerifierSettings.AllowAll);
+
+        //    verifyResult.Valid.Should().BeFalse();
+        //    verifyResult.Results.Single().Trust.Should().Be(SignatureVerificationStatus.Invalid);
+        //}
+
+        //// Verify a package with no signature
+        //[Fact]
+        //public async Task SignedPackageVerifier_CreateUnSignedPackageVerifySignatureWithAllowAll()
+        //{
+        //    var verifyResult = await GetTrustResultAsync(null, SignedPackageVerifierSettings.AllowAll);
+
+        //    verifyResult.Valid.Should().BeTrue();
+        //    verifyResult.Results.Should().BeEmpty();
+        //}
+
+        //// Verify a package with no signature and require signing
+        //[Fact]
+        //public async Task SignedPackageVerifier_CreateUnSignedPackageVerifySignatureWithRequireSigned()
+        //{
+        //    var verifyResult = await GetTrustResultAsync(null, SignedPackageVerifierSettings.RequireSigned);
+
+        //    verifyResult.Valid.Should().BeFalse();
+        //    verifyResult.Results.Should().BeEmpty();
+        //}
+
+        //private static Task<VerifySignaturesResult> GetTrustResultAsync(Signature signature, SignedPackageVerifierSettings settings)
+        //{
+        //    var nupkg = new SimpleTestPackageContext();
+        //    if (signature != null)
+        //    {
+        //        nupkg.Signatures.Add(signature);
+        //    }
+
+        //    var testLogger = new TestLogger();
+        //    var zip = nupkg.Create();
+
+        //    using (var signPackage = new SignedPackageArchive(zip))
+        //    {
+        //        var trustProviders = new[] { new TestSignatureVerificationProvider() };
+        //        var verifier = new SignedPackageVerifier(trustProviders, settings);
+
+        //        return verifier.VerifySignaturesAsync(signPackage, testLogger, CancellationToken.None);
+        //    }
+        //}
+
+        private static async Task SignPackageAsync(TestLogger testLogger, X509Certificate2 cert, SignedPackageArchive signPackage)
         {
-            var signature = new Signature()
+            var testSignatureProvider = new X509SignatureProvider(new TimestampProvider());
+            var signer = new Signer(signPackage, testSignatureProvider);
+
+            var request = new SignPackageRequest()
             {
-                DisplayName = "Test Signer",
-                TestTrust = SignatureVerificationStatus.Trusted,
-                Type = SignatureType.Author
+                Certificate = cert,
+                HashAlgorithm = Common.HashAlgorithmName.SHA256
             };
 
-            var verifyResult = await GetTrustResultAsync(signature, SignedPackageVerifierSettings.RequireSigned);
-
-            verifyResult.Valid.Should().BeTrue();
-            verifyResult.Results.Single().Trust.Should().Be(SignatureVerificationStatus.Trusted);
+            await signer.SignAsync(request, testLogger, CancellationToken.None);
         }
 
-        // Verify a valid package that does not have a trusted cert
-        [Fact]
-        public async Task SignedPackageVerifier_CreateUntrustedPackageVerifySignature()
+        private static async Task<VerifySignaturesResult> VerifySignatureAsync(TestLogger testLogger, SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)
         {
-            var signature = new Signature()
-            {
-                DisplayName = "Test Signer",
-                TestTrust = SignatureVerificationStatus.Untrusted,
-                Type = SignatureType.Author
-            };
-
-            var verifyResult = await GetTrustResultAsync(signature, SignedPackageVerifierSettings.RequireSignedAllowUntrusted);
-
-            verifyResult.Valid.Should().BeTrue();
-            verifyResult.Results.Single().Trust.Should().Be(SignatureVerificationStatus.Untrusted);
-        }
-
-        // Verify a valid package that does not have a trusted cert
-        [Fact]
-        public async Task SignedPackageVerifier_CreateUntrustedPackageVerifySignatureFails()
-        {
-            var signature = new Signature()
-            {
-                DisplayName = "Test Signer",
-                TestTrust = SignatureVerificationStatus.Untrusted,
-                Type = SignatureType.Author
-            };
-
-            var verifyResult = await GetTrustResultAsync(signature, SignedPackageVerifierSettings.RequireSigned);
-
-            verifyResult.Valid.Should().BeFalse();
-            verifyResult.Results.Single().Trust.Should().Be(SignatureVerificationStatus.Untrusted);
-        }
-
-        // Verify a package that has been tampered with
-        [Fact]
-        public async Task SignedPackageVerifier_CreateInvalidPackageVerifySignature()
-        {
-            var signature = new Signature()
-            {
-                DisplayName = "Test Signer",
-                TestTrust = SignatureVerificationStatus.Invalid,
-                Type = SignatureType.Author
-            };
-
-            var verifyResult = await GetTrustResultAsync(signature, SignedPackageVerifierSettings.AllowAll);
-
-            verifyResult.Valid.Should().BeFalse();
-            verifyResult.Results.Single().Trust.Should().Be(SignatureVerificationStatus.Invalid);
-        }
-
-        // Verify a package with no signature
-        [Fact]
-        public async Task SignedPackageVerifier_CreateUnSignedPackageVerifySignatureWithAllowAll()
-        {
-            var verifyResult = await GetTrustResultAsync(null, SignedPackageVerifierSettings.AllowAll);
-
-            verifyResult.Valid.Should().BeTrue();
-            verifyResult.Results.Should().BeEmpty();
-        }
-
-        // Verify a package with no signature and require signing
-        [Fact]
-        public async Task SignedPackageVerifier_CreateUnSignedPackageVerifySignatureWithRequireSigned()
-        {
-            var verifyResult = await GetTrustResultAsync(null, SignedPackageVerifierSettings.RequireSigned);
-
-            verifyResult.Valid.Should().BeFalse();
-            verifyResult.Results.Should().BeEmpty();
-        }
-
-        private static Task<VerifySignaturesResult> GetTrustResultAsync(Signature signature, SignedPackageVerifierSettings settings)
-        {
-            var nupkg = new SimpleTestPackageContext();
-            if (signature != null)
-            {
-                nupkg.Signatures.Add(signature);
-            }
-
-            var testLogger = new TestLogger();
-            var zip = nupkg.Create();
-
-            using (var signPackage = new SignedPackageArchive(zip))
-            {
-                var trustProviders = new[] { new TestSignatureVerificationProvider() };
-                var verifier = new SignedPackageVerifier(trustProviders, settings);
-
-                return verifier.VerifySignaturesAsync(signPackage, testLogger, CancellationToken.None);
-            }
+            var trustProviders = new[] { new X509SignatureVerificationProvider() };
+            var verifier = new SignedPackageVerifier(trustProviders, settings);
+            var result = await verifier.VerifySignaturesAsync(signPackage, testLogger, CancellationToken.None);
+            return result;
         }
     }
 }

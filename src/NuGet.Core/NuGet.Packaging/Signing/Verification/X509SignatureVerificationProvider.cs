@@ -19,27 +19,28 @@ namespace NuGet.Packaging.Signing
     {
         public Task<SignatureVerificationResult> GetTrustResultAsync(Signature signature, ILogger logger, CancellationToken token)
         {
-            var result = new SignatureVerificationResult(VerifySignature(signature));
+            var result = VerifySignature(signature);
 
             return Task.FromResult(result);
         }
 
 #if NET46
-        private SignatureVerificationStatus VerifySignature(Signature signature)
+        private SignatureVerificationResult VerifySignature(Signature signature)
         {
+            var status = SignatureVerificationStatus.Invalid;
             var signerInfo = signature.SignerInfoCollection[0];
 
-            var result = SigningUtility.IsCertificateValid(signerInfo.Certificate, out var chain, allowUntrustedRoot: true);
+            var valid = SigningUtility.IsCertificateValid(signerInfo.Certificate, out var chain, allowUntrustedRoot: false);
 
-            if (result)
+            if (valid)
             {
-                return SignatureVerificationStatus.Trusted;
+                status = SignatureVerificationStatus.Trusted;
             }
 
-            return SignatureVerificationStatus.Invalid;
+            return new SignatureVerificationResult(status, signature, chain);
         }
 #else
-        private SignatureVerificationStatus VerifySignature(Signature signature)
+        private SignatureVerificationResult VerifySignature(Signature signature)
         {
             throw new NotSupportedException();
         }

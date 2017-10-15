@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace NuGet.Packaging.Signing
@@ -19,11 +20,23 @@ namespace NuGet.Packaging.Signing
         public SignatureVerificationStatus Trust { get; }
 
         /// <summary>
+        /// Signature
+        /// </summary>
+        public Signature Signature { get; }
+
+        /// <summary>
+        /// Certificate chain resolved.
+        /// </summary>
+        public X509Chain Chain { get; }
+
+        /// <summary>
         /// SignatureVerificationResult
         /// </summary>
-        public SignatureVerificationResult(SignatureVerificationStatus trust)
+        public SignatureVerificationResult(SignatureVerificationStatus trust, Signature signature, X509Chain chain)
         {
             Trust = trust;
+            Signature = signature ?? throw new ArgumentNullException(nameof(signature));
+            Chain = chain ?? throw new ArgumentNullException(nameof(chain));
         }
     }
 }
