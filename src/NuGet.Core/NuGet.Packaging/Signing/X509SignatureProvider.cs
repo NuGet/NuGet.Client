@@ -74,6 +74,7 @@ namespace NuGet.Packaging.Signing
             var signature = new Signature()
             {
                 Type = SignatureType.Author,
+                Data = cms.Encode()
             };
 
             return signature;

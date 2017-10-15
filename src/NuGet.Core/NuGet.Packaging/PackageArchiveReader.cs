@@ -212,12 +212,14 @@ namespace NuGet.Packaging
         {
             var signatures = new List<Signature>();
 
+#if NET46
             var sigFile = GetExactEntryOrDefault(SigningSpecifications.V1.SignaturePath1);
 
             if (sigFile != null)
             {
-                signatures.AddRange(SigningUtility.GetTestSignatures(sigFile.Open()));
+                signatures.Add(Signature.FromStream(sigFile.Open()));
             }
+#endif
 
             return Task.FromResult<IReadOnlyList<Signature>>(signatures.AsReadOnly());
         }

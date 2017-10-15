@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -42,6 +43,23 @@ namespace NuGet.Packaging.Signing
             }
 
             return signatures.AsReadOnly();
+        }
+
+        public static bool IsCertificateValid(X509Certificate2 certificate, out X509Chain chain, bool allowUntrustedRoot)
+        {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+
+            chain = new X509Chain();
+
+            if (allowUntrustedRoot)
+            {
+                chain.ChainPolicy.VerificationFlags |= X509VerificationFlags.AllowUnknownCertificateAuthority;
+            }
+
+            return chain.Build(certificate);
         }
     }
 }

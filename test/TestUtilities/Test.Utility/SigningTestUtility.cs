@@ -11,6 +11,7 @@ using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Operators;
+using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Crypto.Prng;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
@@ -61,9 +62,13 @@ namespace Test.Utility
             // Allow changes
             modifyGenerator?.Invoke(certGen);
 
-            var signatureFactory = new Asn1SignatureFactory("SHA512WITHRSA", pair.Private, random);
+            var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", pair.Private, random);
             var certificate = certGen.Generate(signatureFactory);
             var certResult = new X509Certificate2(certificate.GetEncoded());
+
+#if NET46
+            certResult.PrivateKey = DotNetUtilities.ToRSA(pair.Private as RsaPrivateCrtKeyParameters);
+#endif
 
             return certResult;
         }
