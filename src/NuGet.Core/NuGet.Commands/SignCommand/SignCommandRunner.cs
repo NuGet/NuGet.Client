@@ -41,7 +41,7 @@ namespace NuGet.Commands
             {
                 try
                 {
-                    SignPackage(packagePath, signRequest);
+                    SignPackage(packagePath, signArgs.Logger, signRequest);
                 }
                 catch(Exception e)
                 {
@@ -58,13 +58,13 @@ namespace NuGet.Commands
             return success ? 0 : 1;
         }
 
-        private int SignPackage(string path, SignPackageRequest request)
+        private int SignPackage(string path, ILogger logger, SignPackageRequest request)
         {
             using (var zip = ZipFile.Open(path, ZipArchiveMode.Update))
             {
                 var package = new SignedPackageArchive(zip);
                 var signer = new Signer(package);
-                signer.SignAsync(request, CancellationToken.None).Wait();
+                signer.SignAsync(request, logger, CancellationToken.None).Wait();
             }
 
             return 0;
@@ -74,11 +74,12 @@ namespace NuGet.Commands
         {
             return new SignPackageRequest()
             {
-                Certificate = certificate,
-                HashingAlgorithm = signArgs.HashingAlgorithm,
-                Timestamper = signArgs.Timestamper,
-                TimestampHashAlgorithm = signArgs.TimestampHashAlgorithm,
-                Logger = signArgs.Logger
+                Signature = new Signature()
+                {
+                    DisplayName = "FakeSignature",
+                    Type = SignatureType.Author,
+                    TestTrust = SignatureVerificationStatus.Trusted
+                }
             };
         }
 
