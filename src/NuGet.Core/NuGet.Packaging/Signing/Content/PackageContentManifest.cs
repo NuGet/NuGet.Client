@@ -60,11 +60,11 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public void Save(Stream stream)
         {
-            using (var writer = new StreamWriter(stream, ManifestEncoding, bufferSize: 8192, leaveOpen: true))
+            using (var writer = new KeyPairFileWriter(stream, leaveOpen: true))
             {
                 // Write headers
-                WriteItem(writer, ManifestConstants.Version, Version.ToNormalizedString());
-                WriteItem(writer, ManifestConstants.HashAlgorithm, HashAlgorithm.ToString().ToUpperInvariant());
+                writer.WritePair(ManifestConstants.Version, Version.ToNormalizedString());
+                writer.WritePair(ManifestConstants.HashAlgorithm, HashAlgorithm.ToString().ToUpperInvariant());
 
                 // Order entries
                 var entries = PackageEntries.OrderBy(e => e.Path, StringComparer.Ordinal);
@@ -86,52 +86,29 @@ namespace NuGet.Packaging.Signing
             var hashAlgorithm = HashAlgorithmName.Unknown;
             var entries = new List<PackageContentManifestFileEntry>();
 
-            if (stream.Length > MaxSize)
+            using (var reader = new KeyPairFileReader(stream))
             {
-                throw new SignatureException("Manifest file is too large.");
-            }
+                // Read headers from the first section
+                var allowedHeaders = new HashSet<string>(StringComparer.Ordinal) { ManifestConstants.Version, ManifestConstants.HashAlgorithm };
+                var headers = reader.ReadSection();
 
-            using (var reader = new StreamReader(stream, ManifestEncoding, detectEncodingFromByteOrderMarks: false))
-            {
-                var state = ReaderState.Version;
-                string path = null;
+                // Verify the version is 1.0.0 or throw before reading the rest.
+                version = ReadVersion(headers);
 
-                var line = reader.ReadLine();
-                while (line != null)
-                {
-                    switch (state)
-                    {
-                        case ReaderState.Version:
-                            version = ReadVersion(version, line);
-                            state = ReaderState.HashAlgorithm;
-                            break;
-                        case ReaderState.HashAlgorithm:
-                            hashAlgorithm = ReadHashAlgorithm(hashAlgorithm, line);
-                            state = ReaderState.Empty;
-                            break;
-                        case ReaderState.Empty:
-                            ReadNewLine(line);
-                            state = ReaderState.Path;
-                            break;
-                        case ReaderState.Path:
-                            path = GetValueOrThrow(line, ManifestConstants.Path);
-                            state = ReaderState.HashValue;
-                            break;
-                        case ReaderState.HashValue:
-                            var hashValue = GetValueOrThrow(line, ManifestConstants.HashValue);
-                            entries.Add(new PackageContentManifestFileEntry(path, hashValue));
-                            path = null;
-                            state = ReaderState.Empty;
-                            break;
-                    }
-
-                    line = reader.ReadLine();
-                }
-
-                // Verify that the manifest ended at a stopping point.
-                if (state != ReaderState.Empty)
+                // Throw if any unexpected headers exist
+                if (headers.Count != 2)
                 {
                     ThrowInvalidFormat();
+                }
+
+                // Read hash algorithm
+                hashAlgorithm = ReadHashAlgorithm(headers);
+
+                // Read entries
+                while (!reader.EndOfStream)
+                {
+                    // Read entries and throw if unexpected values exist.
+                    entries.Add(GetFileEntry(reader.ReadSection()));
                 }
             }
 
@@ -139,11 +116,28 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
+        /// Read a Path and Hash-Value section. This will throw if anything additional exists.
+        /// </summary>
+        private static PackageContentManifestFileEntry GetFileEntry(Dictionary<string, string> section)
+        {
+            if (section.Count != 2)
+            {
+                ThrowInvalidFormat();
+            }
+
+            var path = KeyPairFileUtility.GetValueOrThrow(section, ManifestConstants.Path);
+            var hashValue = KeyPairFileUtility.GetValueOrThrow(section, ManifestConstants.HashValue);
+
+            return new PackageContentManifestFileEntry(path, hashValue);
+        }
+
+        /// <summary>
         /// Get the hash algorithm and ensure that it is valid.
         /// </summary>
-        private static HashAlgorithmName ReadHashAlgorithm(HashAlgorithmName hashAlgorithm, string line)
+        private static HashAlgorithmName ReadHashAlgorithm(Dictionary<string, string> headers)
         {
-            var hashAlgorithmString = GetValueOrThrow(line, ManifestConstants.HashAlgorithm);
+            var hashAlgorithm = HashAlgorithmName.Unknown;
+            var hashAlgorithmString = KeyPairFileUtility.GetValueOrThrow(headers, ManifestConstants.HashAlgorithm);
 
             if (Enum.TryParse<HashAlgorithmName>(hashAlgorithmString, ignoreCase: false, result: out var parsedHashAlgorithm)
                 && parsedHashAlgorithm != HashAlgorithmName.Unknown)
@@ -158,12 +152,10 @@ namespace NuGet.Packaging.Signing
             return hashAlgorithm;
         }
 
-        /// <summary>
-        /// Get the manifest version and ensure that it is 1.0.0.
-        /// </summary>
-        private static SemanticVersion ReadVersion(SemanticVersion version, string line)
+        private static SemanticVersion ReadVersion(Dictionary<string, string> headers)
         {
-            var versionString = GetValueOrThrow(line, ManifestConstants.Version);
+            SemanticVersion version = null;
+            var versionString = KeyPairFileUtility.GetValueOrThrow(headers, ManifestConstants.Version);
 
             // 1.0.0 is only allowed version
             if (StringComparer.Ordinal.Equals(versionString, DefaultVersion.ToNormalizedString()))
@@ -172,57 +164,10 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                ThrowInvalidFormat();
+                throw new SignatureException($"Unknown signature version: '{versionString}'");
             }
 
             return version;
-        }
-
-        /// <summary>
-        /// Read a new line, throw if something else is present.
-        /// </summary>
-        private static void ReadNewLine(string line)
-        {
-            if (line == null || line.Length > 0)
-            {
-                ThrowInvalidFormat();
-            }
-        }
-
-        /// <summary>
-        /// Read a key value pair from the manifest.
-        /// </summary>
-        /// <param name="line">Manifest line.</param>
-        /// <param name="key">Expected key name.</param>
-        /// <returns>Value of the entry.</returns>
-        private static string GetValueOrThrow(string line, string key)
-        {
-            string value = null;
-
-            if (line != null)
-            {
-                var pos = line.IndexOf(':');
-
-                // Verify that : exists
-                if (pos > 0)
-                {
-                    // Verify the key is the expected name.
-                    var actualKey = line.Substring(0, pos);
-                    if (StringComparer.Ordinal.Equals(key, actualKey))
-                    {
-                        // Read the rest of the string as the value.
-                        value = line.Substring(pos + 1);
-                    }
-                }
-            }
-
-            // fail if anything is out of place
-            if (value == null)
-            {
-                ThrowInvalidFormat();
-            }
-
-            return value;
         }
 
         /// <summary>
@@ -236,51 +181,16 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Write a package entry with a package path and hash.
         /// </summary>
-        private static void WritePackageEntry(TextWriter writer, PackageContentManifestFileEntry entry)
+        private static void WritePackageEntry(KeyPairFileWriter writer, PackageContentManifestFileEntry entry)
         {
             // Write a blank line to start a new section.
-            WriteEOL(writer);
+            writer.WriteSectionBreak();
 
             // Path:file
-            WriteItem(writer, ManifestConstants.Path, entry.Path);
+            writer.WritePair(ManifestConstants.Path, entry.Path);
 
             // Hash-Value:hash
-            WriteItem(writer, ManifestConstants.HashValue, entry.Hash);
-        }
-
-        /// <summary>
-        /// Write key:value with EOL to the manifest stream.
-        /// </summary>
-        private static void WriteItem(TextWriter writer, string key, string value)
-        {
-            writer.Write(FormatItem(key, value));
-            WriteEOL(writer);
-        }
-
-        /// <summary>
-        /// Write an end of line to the manifest writer.
-        /// </summary>
-        private static void WriteEOL(TextWriter writer)
-        {
-            writer.Write(ManifestConstants.LF);
-        }
-
-        /// <summary>
-        /// key:value
-        /// </summary>
-        private static string FormatItem(string key, string value)
-        {
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentException(null, nameof(key));
-            }
-
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentException(null, nameof(value));
-            }
-
-            return $"{key}:{value}";
+            writer.WritePair(ManifestConstants.HashValue, entry.Hash);
         }
 
         private class ManifestConstants
@@ -289,20 +199,6 @@ namespace NuGet.Packaging.Signing
             public const string HashAlgorithm = "Hash-Algorithm";
             public const string HashValue = "Hash-Value";
             public const string Path = nameof(Path);
-            public const string LF = "\n";
-        }
-
-        /// <summary>
-        /// Manifest reader state. This represents the expected
-        /// entry for the line.
-        /// </summary>
-        private enum ReaderState
-        {
-            Version,
-            HashAlgorithm,
-            Empty,
-            Path,
-            HashValue
         }
     }
 }
