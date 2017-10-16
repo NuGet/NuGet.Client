@@ -19,31 +19,9 @@ namespace NuGet.Packaging.Signing
             _signature = signature ?? throw new ArgumentNullException(nameof(signature));
         }
 
-        public Task<Signature> CreateSignatureAsync(SignPackageRequest request, string manifestHash, ILogger logger, CancellationToken token)
+        public Task<Signature> CreateSignatureAsync(SignPackageRequest request, SignatureManifest signatureManifest, ILogger logger, CancellationToken token)
         {
-            var signedJson = new JObject();
-            var signatures = new JArray();
-            signedJson.Add(new JProperty("signatures", signatures));
-            var sig = new JObject();
-            signatures.Add(sig);
-            sig.Add(new JProperty("trust", _signature.TestTrust.ToString()));
-            sig.Add(new JProperty("type", _signature.Type.ToString()));
-            sig.Add(new JProperty("name", _signature.DisplayName));
-
-            var result = new Signature()
-            {
-                DisplayName = _signature.DisplayName,
-                Type = _signature.Type,
-                TestTrust = _signature.TestTrust,
-                Data = _signature.Data
-            };
-
-            if (result.Data == null)
-            {
-                result.Data = Encoding.UTF8.GetBytes(sig.ToString());
-            }
-
-            return Task.FromResult(result);
+            throw new NotImplementedException();
         }
     }
 }

@@ -58,28 +58,26 @@ namespace NuGet.Packaging.Signing
             // Create signature
             var sig = await _signatureProvider.CreateSignatureAsync(request, manifestHash, logger, token);
 
-            using (var stream = new MemoryStream(sig.Data))
+            using (var stream = new MemoryStream(sig.GetBytes()))
             {
                 await _package.AddAsync(_specifications.SignaturePath1, stream, token);
             }
         }
 
-        private async Task<string> AddManifestAndGetHashAsync(PackageContentManifest manifest, Common.HashAlgorithmName hashAlgorithmName, CancellationToken token)
+        private async Task<SignatureManifest> AddManifestAndGetHashAsync(PackageContentManifest manifest, Common.HashAlgorithmName hashAlgorithmName, CancellationToken token)
         {
-            string hash = null;
-
             using (var manifestStream = new MemoryStream())
             {
                 manifest.Save(manifestStream);
                 manifestStream.Position = 0;
 
-                hash = hashAlgorithmName.GetHashProvider().ComputeHashAsBase64(manifestStream, leaveStreamOpen: true);
+                var hash = hashAlgorithmName.GetHashProvider().ComputeHashAsBase64(manifestStream, leaveStreamOpen: true);
                 manifestStream.Position = 0;
 
                 await _package.AddAsync(_specifications.ManifestPath, manifestStream, token);
-            }
 
-            return hash;
+                return new SignatureManifest(SignatureManifest.DefaultVersion, hashAlgorithmName, hash);
+            }
         }
 
         /// <summary>

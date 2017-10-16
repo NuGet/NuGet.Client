@@ -217,7 +217,7 @@ namespace NuGet.Packaging
 
             if (sigFile != null)
             {
-                signatures.Add(Signature.FromStream(sigFile.Open()));
+                signatures.Add(Signature.Load(sigFile.Open()));
             }
 #endif
 

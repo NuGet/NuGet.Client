@@ -8,6 +8,9 @@ using NuGet.Versioning;
 
 namespace NuGet.Packaging.Signing
 {
+    /// <summary>
+    /// Manifest stored in a signature containing the hash of a content manifest.
+    /// </summary>
     public sealed class SignatureManifest
     {
         private const int MaxSize = 1024 * 1024;
@@ -50,6 +53,32 @@ namespace NuGet.Packaging.Signing
                 writer.WritePair(ManifestConstants.Version, Version.ToNormalizedString());
                 writer.WritePair(ManifestConstants.SignatureTargetHashAlgorithm, SignatureTargetHashAlgorithm.ToString().ToUpperInvariant());
                 writer.WritePair(ManifestConstants.SignatureTargetHashValue, SignatureTargetHashValue);
+            }
+        }
+
+        /// <summary>
+        /// Write the manifest to byte array.
+        /// </summary>
+        /// <returns></returns>
+        public byte[] GetBytes()
+        {
+            using (var ms = new MemoryStream())
+            {
+                Save(ms);
+                ms.Position = 0;
+                return ms.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Load from a byte array.
+        /// </summary>
+        public static SignatureManifest Load(byte[] bytes)
+        {
+            using (var ms = new MemoryStream(bytes))
+            {
+                ms.Position = 0;
+                return Load(ms);
             }
         }
 
@@ -136,7 +165,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         private static void ThrowInvalidFormat()
         {
-            throw new SignatureException("Invalid signing manifest format");
+            throw new SignatureException("Invalid signature manifest format");
         }
 
         private class ManifestConstants

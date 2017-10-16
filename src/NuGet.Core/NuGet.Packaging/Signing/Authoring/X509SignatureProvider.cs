@@ -31,16 +31,16 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Sign a manifest hash with an X509Certificate2.
         /// </summary>
-        public Task<Signature> CreateSignatureAsync(SignPackageRequest request, string manifestHash, ILogger logger, CancellationToken token)
+        public Task<Signature> CreateSignatureAsync(SignPackageRequest request, SignatureManifest signatureManifest, ILogger logger, CancellationToken token)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (manifestHash == null)
+            if (signatureManifest == null)
             {
-                throw new ArgumentNullException(nameof(manifestHash));
+                throw new ArgumentNullException(nameof(signatureManifest));
             }
 
             if (logger == null)
@@ -48,15 +48,14 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            var signature = CreateSignature(request.Certificate, manifestHash);
+            var signature = CreateSignature(request.Certificate, signatureManifest);
             return Task.FromResult(signature);
         }
 
 #if NET46
-        private Signature CreateSignature(X509Certificate2 cert, string manifestHash)
+        private Signature CreateSignature(X509Certificate2 cert, SignatureManifest signatureManifest)
         {
-            var manfiestHashBytes = ASCIIEncoding.ASCII.GetBytes(manifestHash);
-            var contentInfo = new ContentInfo(manfiestHashBytes);
+            var contentInfo = new ContentInfo(signatureManifest.GetBytes());
 
             var cmsSigner = new CmsSigner(SubjectIdentifierType.SubjectKeyIdentifier, cert);
             var signingTime = new Pkcs9SigningTime();
@@ -71,16 +70,10 @@ namespace NuGet.Packaging.Signing
             var cms = new SignedCms(contentInfo);
             cms.ComputeSignature(cmsSigner);
 
-            var signature = new Signature()
-            {
-                Type = SignatureType.Author,
-                Data = cms.Encode()
-            };
-
-            return signature;
+            return Signature.Load(cms);
         }
 #else
-        private Signature CreateSignature(X509Certificate2 cert, string manifestHash)
+        private Signature CreateSignature(X509Certificate2 cert, SignatureManifest signatureManifest)
         {
             throw new NotSupportedException();
         }

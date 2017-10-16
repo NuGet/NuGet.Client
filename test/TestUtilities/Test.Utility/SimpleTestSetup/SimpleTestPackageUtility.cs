@@ -219,21 +219,7 @@ namespace NuGet.Test.Utility
 
                 if (packageContext.Signatures.Count > 0)
                 {
-                    var signedJson = new JObject();
-                    var signatures = new JArray();
-                    signedJson.Add(new JProperty("signatures", signatures));
-
-                    foreach (var signature in packageContext.Signatures)
-                    {
-                        var sig = new JObject();
-                        signatures.Add(sig);
-                        sig.Add(new JProperty("trust", signature.TestTrust.ToString()));
-                        sig.Add(new JProperty("type", signature.Type.ToString()));
-                        sig.Add(new JProperty("name", signature.DisplayName));
-                    }
-
-                    zip.AddEntry(SigningSpecifications.V1.ManifestPath, new byte[] { 0 });
-                    zip.AddEntry(SigningSpecifications.V1.SignaturePath1, signedJson.ToString());
+                    throw new NotImplementedException();
                 }
 
                 zip.AddEntry($"{id}.nuspec", xml.ToString(), Encoding.UTF8);
