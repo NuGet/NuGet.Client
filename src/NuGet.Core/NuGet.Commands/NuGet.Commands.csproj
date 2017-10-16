@@ -28,7 +28,7 @@
     <ProjectReference Include="..\NuGet.Configuration\NuGet.Configuration.csproj" />
     <ProjectReference Include="..\NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />

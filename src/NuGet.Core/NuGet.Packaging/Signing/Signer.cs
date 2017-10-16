@@ -31,20 +31,16 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Add a signature to a package.
         /// </summary>
-        public async Task SignAsync(SignPackageRequest request, CancellationToken token)
+        public async Task SignAsync(SignPackageRequest request, ILogger logger, CancellationToken token)
         {
-
-            // Get the signature
-            var signature = GenerateSignature(request);
-
             var signedJson = new JObject();
             var signatures = new JArray();
             signedJson.Add(new JProperty("signatures", signatures));
             var sig = new JObject();
             signatures.Add(sig);
-            sig.Add(new JProperty("trust", signature.TestTrust.ToString()));
-            sig.Add(new JProperty("type", signature.Type.ToString()));
-            sig.Add(new JProperty("name", signature.DisplayName));
+            sig.Add(new JProperty("trust", request.Signature.TestTrust.ToString()));
+            sig.Add(new JProperty("type", request.Signature.Type.ToString()));
+            sig.Add(new JProperty("name", request.Signature.DisplayName));
 
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream))
@@ -53,32 +49,6 @@ namespace NuGet.Packaging.Signing
                 stream.Position = 0;
                 await _package.AddAsync(TestSignedPath, stream, token);
             }
-        }
-
-        /// <summary>
-        /// Method to generate a signature from a SignPackageRequest
-        /// </summary>
-        /// <param name="request">SignPackageRequest to be used while generating a signature for a package.</param>
-        /// <returns>Signature object representing a signature for a package.</returns>
-        private Signature GenerateSignature(SignPackageRequest request)
-        {
-            // Create Package Manifest
-            // TODO replace with real manifest code when that is ready.
-            var packageManifest = new PackageContentManifest();
-            var manifestHash = GetManifestHash(packageManifest);
-
-            return new Signature()
-            {
-                Certificate = request.Certificate,
-                TargetHashAlgorithm = request.HashingAlgorithm,
-                TargetHashValue = manifestHash
-            };
-        }
-
-        // TODO add content to generate actual manifest hash once the manifest code is ready.
-        private string GetManifestHash(PackageContentManifest manifest)
-        {
-            return new Guid().ToString();
         }
 
         /// <summary>
