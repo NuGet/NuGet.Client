@@ -542,6 +542,9 @@ namespace NuGet.Packaging
                         var tempHashPath = Path.Combine(targetPath, Path.GetRandomFileName());
                         var packageSaveMode = packageExtractionV3Context.PackageSaveMode;
 
+                        // Extract the nupkg
+                        var copiedNupkg = await packageDownloader.CopyNupkgFileToAsync(targetTempNupkg, cancellationToken);
+
                         if (packageSaveMode.HasFlag(PackageSaveMode.Nuspec) || packageSaveMode.HasFlag(PackageSaveMode.Files))
                         {
                             if (packageExtractionV3Context.SignedPackageVerifier != null)
@@ -552,9 +555,6 @@ namespace NuGet.Packaging
                                     token);
                             }
                         }
-
-                        // Extract the nupkg
-                        var copiedNupkg = await packageDownloader.CopyNupkgFileToAsync(targetTempNupkg, cancellationToken);
 
                         if (packageSaveMode.HasFlag(PackageSaveMode.Nuspec))
                         {
