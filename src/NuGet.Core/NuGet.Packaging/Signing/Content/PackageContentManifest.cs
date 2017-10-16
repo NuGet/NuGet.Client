@@ -89,7 +89,6 @@ namespace NuGet.Packaging.Signing
             using (var reader = new KeyPairFileReader(stream))
             {
                 // Read headers from the first section
-                var allowedHeaders = new HashSet<string>(StringComparer.Ordinal) { ManifestConstants.Version, ManifestConstants.HashAlgorithm };
                 var headers = reader.ReadSection();
 
                 // Verify the version is 1.0.0 or throw before reading the rest.
