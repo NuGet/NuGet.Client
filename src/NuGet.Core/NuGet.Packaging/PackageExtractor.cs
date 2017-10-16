@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.Packaging
 {
@@ -60,6 +61,11 @@ namespace NuGet.Packaging
                         packageReader,
                         packageExtractionV2Context.Logger,
                         token);
+
+                    if (!verifyResult.Valid)
+                    {
+                        throw new SignatureException(verifyResult.ErrorMessage);
+                    }
                 }
 
                 var packageFiles = await packageReader.GetPackageFilesAsync(packageSaveMode, token);
@@ -152,6 +158,11 @@ namespace NuGet.Packaging
                     packageReader,
                     packageExtractionV2Context.Logger,
                     token);
+
+                if (!verifyResult.Valid)
+                {
+                    throw new SignatureException(verifyResult.ErrorMessage);
+                }
             }
 
             var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(token);
@@ -234,6 +245,11 @@ namespace NuGet.Packaging
                     packageReader,
                     packageExtractionV2Context.Logger,
                     token);
+
+                if (!verifyResult.Valid)
+                {
+                    throw new SignatureException(verifyResult.ErrorMessage);
+                }
             }
 
             var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(token);
@@ -390,6 +406,11 @@ namespace NuGet.Packaging
                                             packageReader,
                                             packageExtractionV3Context.Logger,
                                             token);
+
+                                        if (!verifyResult.Valid)
+                                        {
+                                            throw new SignatureException(verifyResult.ErrorMessage);
+                                        }
                                     }
                                 }
 
@@ -553,6 +574,11 @@ namespace NuGet.Packaging
                                     packageDownloader.SignedPackageReader,
                                     packageExtractionV3Context.Logger,
                                     token);
+
+                                if (!verifyResult.Valid)
+                                {
+                                    throw new SignatureException(verifyResult.ErrorMessage);
+                                }
                             }
                         }
 

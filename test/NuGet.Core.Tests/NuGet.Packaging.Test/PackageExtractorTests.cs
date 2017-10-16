@@ -14,6 +14,7 @@ using System.Xml.Linq;
 using Moq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -1855,6 +1856,606 @@ namespace NuGet.Packaging.Test
             packageDownloader.Verify();
         }
 
+        [Fact]
+        public async Task InstallFromSourceAsyncByPackageDownloader_TrustedSignPackage()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Trusted,
+                    Type = SignatureType.Author
+                };
+
+                var resolver = new VersionFolderPathResolver(root);
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                if (signature != null)
+                {
+                    nupkg.Signatures.Add(signature);
+                }
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var signedPackageVerifier = new SignedPackageVerifier(
+                    SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                    SignedPackageVerifierSettings.Default);
+
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageDownloader,
+                        new PackageExtractionV3Context(
+                            identity,
+                            root,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            signedPackageVerifier: signedPackageVerifier),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.False(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
+                    Assert.True(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
+                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsyncByPackageDownloader_InvalidSignPackageWithUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Invalid,
+                    Type = SignatureType.Author
+                };
+
+                var resolver = new VersionFolderPathResolver(root);
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                if (signature != null)
+                {
+                    nupkg.Signatures.Add(signature);
+                }
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var signedPackageVerifier = new SignedPackageVerifier(
+                    SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                    SignedPackageVerifierSettings.Default);
+
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
+                {
+                    // Act & Assert
+                    await Assert.ThrowsAsync<SignatureException>(
+                     () => PackageExtractor.InstallFromSourceAsync(
+                        packageDownloader,
+                        new PackageExtractionV3Context(
+                            identity,
+                            root,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            signedPackageVerifier: signedPackageVerifier),
+                        CancellationToken.None));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsyncByPackageDownloader_InvalidSignPackageWithoutUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Invalid,
+                    Type = SignatureType.Author
+                };
+
+                var resolver = new VersionFolderPathResolver(root);
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                if (signature != null)
+                {
+                    nupkg.Signatures.Add(signature);
+                }
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var signedPackageVerifier = new SignedPackageVerifier(
+                    SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                    SignedPackageVerifierSettings.Default);
+
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageDownloader,
+                        new PackageExtractionV3Context(
+                            identity,
+                            root,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nupkg,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            signedPackageVerifier: signedPackageVerifier),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
+                    Assert.False(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
+                    Assert.False(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsyncByStream_TrustedSignPackage()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Trusted,
+                    Type = SignatureType.Author
+                };
+
+                var resolver = new VersionFolderPathResolver(root);
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                if (signature != null)
+                {
+                    nupkg.Signatures.Add(signature);
+                }
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var signedPackageVerifier = new SignedPackageVerifier(
+                    SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                    SignedPackageVerifierSettings.Default);
+
+                using (var fileStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        (stream) => fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                        new PackageExtractionV3Context(
+                            identity,
+                            root,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            signedPackageVerifier: signedPackageVerifier),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.False(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
+                    Assert.True(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
+                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsyncByStream_InvalidSignPackageWithoutUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Invalid,
+                    Type = SignatureType.Author
+                };
+
+                var resolver = new VersionFolderPathResolver(root);
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                if (signature != null)
+                {
+                    nupkg.Signatures.Add(signature);
+                }
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var signedPackageVerifier = new SignedPackageVerifier(
+                    SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                    SignedPackageVerifierSettings.Default);
+
+                using (var fileStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        (stream) => fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                        new PackageExtractionV3Context(
+                            identity,
+                            root,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nupkg,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            signedPackageVerifier: signedPackageVerifier),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.False(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
+                    Assert.True(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
+                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsyncByStream_InvalidSignPackageWithUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Invalid,
+                    Type = SignatureType.Author
+                };
+
+                var resolver = new VersionFolderPathResolver(root);
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                if (signature != null)
+                {
+                    nupkg.Signatures.Add(signature);
+                }
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var signedPackageVerifier = new SignedPackageVerifier(
+                    SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                    SignedPackageVerifierSettings.Default);
+
+                using (var fileStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act & Assert
+                    await Assert.ThrowsAsync<SignatureException>(
+                     () => PackageExtractor.InstallFromSourceAsync(
+                        (stream) => fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                        new PackageExtractionV3Context(
+                            identity,
+                            root,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            signedPackageVerifier: signedPackageVerifier),
+                        CancellationToken.None));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsyncByStream_TrustedSignPackage()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Trusted,
+                    Type = SignatureType.Author
+                };
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                if (signature != null)
+                {
+                    nupkg.Signatures.Add(signature);
+                }
+
+                var signedPackageVerifier = new SignedPackageVerifier(
+                   SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                   SignedPackageVerifierSettings.Default);
+
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, signedPackageVerifier);
+                    packageExtractionV2Context.PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files;
+
+                    // Act
+                    var packageFiles = await PackageExtractor.ExtractPackageAsync(packageStream,
+                                                                     resolver,
+                                                                     packageExtractionV2Context,
+                                                                     CancellationToken.None);
+
+                    // Assert
+                    var installPath = resolver.GetInstallPath(identity);
+                    Assert.False(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Invalid,
+                    Type = SignatureType.Author
+                };
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                if (signature != null)
+                {
+                    nupkg.Signatures.Add(signature);
+                }
+
+                var signedPackageVerifier = new SignedPackageVerifier(
+                   SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                   SignedPackageVerifierSettings.Default);
+
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, signedPackageVerifier);
+                    packageExtractionV2Context.PackageSaveMode = PackageSaveMode.Nupkg;
+
+                    // Act & Assert
+                    await Assert.ThrowsAsync<SignatureException>(
+                        () => PackageExtractor.ExtractPackageAsync(
+                            packageStream,
+                            resolver,
+                            packageExtractionV2Context,
+                            CancellationToken.None));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsyncByPackageReader_TrustedSignPackage()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Trusted,
+                    Type = SignatureType.Author
+                };
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                if (signature != null)
+                {
+                    nupkg.Signatures.Add(signature);
+                }
+
+                var signedPackageVerifier = new SignedPackageVerifier(
+                   SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                   SignedPackageVerifierSettings.Default);
+
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, signedPackageVerifier);
+                    packageExtractionV2Context.PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files;
+
+                    // Act
+                    var packageFiles = await PackageExtractor.ExtractPackageAsync(packageReader,
+                                                                     resolver,
+                                                                     packageExtractionV2Context,
+                                                                     CancellationToken.None);
+
+                    // Assert
+                    var installPath = resolver.GetInstallPath(identity);
+                    Assert.False(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Invalid,
+                    Type = SignatureType.Author
+                };
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                if (signature != null)
+                {
+                    nupkg.Signatures.Add(signature);
+                }
+
+                var signedPackageVerifier = new SignedPackageVerifier(
+                   SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                   SignedPackageVerifierSettings.Default);
+
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, signedPackageVerifier);
+                    packageExtractionV2Context.PackageSaveMode = PackageSaveMode.Nupkg;
+
+                    // Act & Assert
+                    await Assert.ThrowsAsync<SignatureException>(
+                        () => PackageExtractor.ExtractPackageAsync(
+                            packageReader,
+                            resolver,
+                            packageExtractionV2Context,
+                            CancellationToken.None));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsyncByPackageReaderAndStream_TrustedSignPackage()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Trusted,
+                    Type = SignatureType.Author
+                };
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                if (signature != null)
+                {
+                    nupkg.Signatures.Add(signature);
+                }
+
+                var signedPackageVerifier = new SignedPackageVerifier(
+                   SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                   SignedPackageVerifierSettings.Default);
+
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, signedPackageVerifier);
+                    packageExtractionV2Context.PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files;
+
+                    // Act
+                    var packageFiles = await PackageExtractor.ExtractPackageAsync(packageReader,
+                                                                     packageStream,
+                                                                     resolver,
+                                                                     packageExtractionV2Context,
+                                                                     CancellationToken.None);
+
+                    // Assert
+                    var installPath = resolver.GetInstallPath(identity);
+                    Assert.False(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Invalid,
+                    Type = SignatureType.Author
+                };
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                if (signature != null)
+                {
+                    nupkg.Signatures.Add(signature);
+                }
+
+                var signedPackageVerifier = new SignedPackageVerifier(
+                   SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                   SignedPackageVerifierSettings.Default);
+
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionV2Context = new PackageExtractionV2Context(NullLogger.Instance, signedPackageVerifier);
+                    packageExtractionV2Context.PackageSaveMode = PackageSaveMode.Nupkg;
+
+                    // Act & Assert
+                    await Assert.ThrowsAsync<SignatureException>(
+                        () => PackageExtractor.ExtractPackageAsync(
+                            packageReader,
+                            packageStream,
+                            resolver,
+                            packageExtractionV2Context,
+                            CancellationToken.None));
+                }
+            }
+        }
         private string StatPermissions(string path)
         {
             string permissions;
