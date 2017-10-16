@@ -152,7 +152,8 @@ namespace NuGet.Configuration
             }
 
             return Name.Equals(other.Name, StringComparison.CurrentCultureIgnoreCase) &&
-                   Source.Equals(other.Source, StringComparison.OrdinalIgnoreCase);
+                   Source.Equals(other.Source, StringComparison.OrdinalIgnoreCase) &&
+                   Equals(Credentials, other.Credentials);
         }
 
         public override bool Equals(object obj)
