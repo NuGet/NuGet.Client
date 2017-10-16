@@ -136,7 +136,6 @@ namespace NuGet.CommandLine.Test
 
                 SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
                 SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageZ);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageZ11);
                 SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY);
 
                 // B -> X
@@ -226,7 +225,6 @@ namespace NuGet.CommandLine.Test
 
                 SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
                 SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageZ);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageZ11);
                 SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY);
 
                 // B -> X
@@ -317,7 +315,6 @@ namespace NuGet.CommandLine.Test
 
                 SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
                 SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageZ);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageZ11);
                 SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY);
 
                 // B -> X
