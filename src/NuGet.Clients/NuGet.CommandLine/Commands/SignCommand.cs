@@ -24,6 +24,13 @@ namespace NuGet.CommandLine
         UsageDescriptionResourceName = "SignCommandUsageDescription")]
     public class SignCommand : Command
     {
+        // Default constructor used only for testing, since the Command Default Constructor is protected
+        public SignCommand() : base()
+        {
+        }
+
+        public ISignCommandRunner SignCommandRunner { get; set; }
+
         // List of possible values - https://github.com/Microsoft/referencesource/blob/master/mscorlib/system/security/cryptography/HashAlgorithmName.cs
         private static string[] _acceptedHashAlgorithms = { "SHA256", "SHA384", "SHA512" };
 
@@ -66,22 +73,25 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "SignCommandOverwriteDescription")]
         public bool Overwrite { get; set; }
 
-        public SignCommandRunner SignCommandRunner { get; set; }
-
         public override Task ExecuteCommandAsync()
         {
             var storeName = StoreName.My;
             var storeLocation = StoreLocation.CurrentUser;
             var hashAlgorithm = HashAlgorithmName.SHA256;
             var timestampHashAlgorithm = HashAlgorithmName.SHA256;
-            var packagePath = Arguments[0];
+            
 
-            if (string.IsNullOrEmpty(packagePath))
+            // Assert mandatory argument
+            if (Arguments.Count < 1 ||
+                string.IsNullOrEmpty(Arguments[0]))
             {
                 throw new ArgumentException(NuGetCommand.SignCommandNoPackageException);
-
             }
-            else if (string.IsNullOrEmpty(Timestamper))
+
+            var packagePath = Arguments[0];
+
+            // Assert options
+            if (string.IsNullOrEmpty(Timestamper))
             {
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
                     NuGetCommand.SignCommandNoArgumentException,
@@ -94,9 +104,17 @@ namespace NuGet.CommandLine
                 throw new ArgumentException(NuGetCommand.SignCommandNoCertificateException);
             }
             else if (!string.IsNullOrEmpty(CertificatePath) &&
-                !(string.IsNullOrEmpty(CertificateFingerprint) &&
-                string.IsNullOrEmpty(CertificateSubjectName)))
+                ((!string.IsNullOrEmpty(CertificateFingerprint) ||
+                 !string.IsNullOrEmpty(CertificateSubjectName)) ||
+                 !string.IsNullOrEmpty(CertificateStoreLocation) ||
+                 !string.IsNullOrEmpty(CertificateStoreName)))
             {
+                // Thow if the user provided a path and any one of the other options
+                throw new ArgumentException(NuGetCommand.SignCommandMultipleCertificateException);
+            }
+            else if (!string.IsNullOrEmpty(CertificateFingerprint) && !string.IsNullOrEmpty(CertificateSubjectName))
+            {
+                // Thow if the user provided a path and any one of the other options
                 throw new ArgumentException(NuGetCommand.SignCommandMultipleCertificateException);
             }
             else if (!string.IsNullOrEmpty(CertificateStoreLocation) &&
@@ -126,7 +144,7 @@ namespace NuGet.CommandLine
             else if (!string.IsNullOrEmpty(TimestampHashAlgorithm))
             {
                 if (!_acceptedHashAlgorithms.Contains(TimestampHashAlgorithm, StringComparer.InvariantCultureIgnoreCase) ||
-                    !Enum.TryParse(HashAlgorithm, ignoreCase: true, result: out timestampHashAlgorithm))
+                    !Enum.TryParse(TimestampHashAlgorithm, ignoreCase: true, result: out timestampHashAlgorithm))
                 {
                     throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
                         NuGetCommand.SignCommandInvalidArgumentException,
@@ -159,9 +177,12 @@ namespace NuGet.CommandLine
                 TimestampHashAlgorithm = timestampHashAlgorithm
             };
 
-            var signCommandRunner = new SignCommandRunner();
+            if (SignCommandRunner == null)
+            {
+                SignCommandRunner = new SignCommandRunner();
+            }
 
-            var result = signCommandRunner.ExecuteCommand(signArgs);
+            var result = SignCommandRunner.ExecuteCommand(signArgs);
 
             return Task.FromResult(result);
         }
