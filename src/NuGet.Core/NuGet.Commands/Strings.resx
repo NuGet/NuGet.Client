@@ -607,11 +607,10 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Signing package(s) with certificate: 
 {0}</value>
     <comment>0 -  X509Certificate2 details in the following format -
-Issued to: System.Security.Cryptography.X509Certificates.X500DistinguishedName
-Issued by: System.Security.Cryptography.X509Certificates.X500DistinguishedName
-Expires: System.Security.Cryptography.X509Certificates.X500DistinguishedName
-SHA1 hash: 5B43D629176F79BB358C6478A845E873D5A958A8
-Subject Name: System.Security.Cryptography.X509Certificates.X500DistinguishedName </comment>
+Subject Name:
+SHA1 hash:
+Issued by:
+Valid from:</comment>
   </data>
   <data name="SignCommandDialogMessage" xml:space="preserve">
     <value>Please select a valid certitificate</value>
@@ -620,12 +619,36 @@ Subject Name: System.Security.Cryptography.X509Certificates.X500DistinguishedNam
     <value>NuGet Sign Certificate Selection</value>
   </data>
   <data name="SignCommandMultipleCertException" xml:space="preserve">
-    <value>Multiple matching certificates found.</value>
+    <value>Multiple certificates were found that meet all the given criteria. Use the '-{0}' option with the hash of the desired certificate.</value>
+    <comment>0 - CertificateFingerprint option</comment>
   </data>
   <data name="SignCommandNoCertException" xml:space="preserve">
-    <value>No matching certificates found.</value>
+    <value>No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, please visit http://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="SignCommandSuccess" xml:space="preserve">
     <value>Package(s) signed successfully.</value>
+  </data>
+  <data name="SignCommandCertificateHash" xml:space="preserve">
+    <value>SHA1 hash: {0}</value>
+    <comment>0 - certificate sha1 hash</comment>
+  </data>
+  <data name="SignCommandCertificateIssuer" xml:space="preserve">
+    <value>Issued by: {0}</value>
+    <comment>0 - certificate issuer</comment>
+  </data>
+  <data name="SignCommandCertificateSubjectName" xml:space="preserve">
+    <value>Subject Name: {0}</value>
+    <comment>0 - certificate subject name</comment>
+  </data>
+  <data name="SignCommandCertificateValidity" xml:space="preserve">
+    <value>Valid from: {0} to {1}</value>
+    <comment>0 -  start date
+1 - end date</comment>
+  </data>
+  <data name="SignCommandMultipleCertificatesFooter" xml:space="preserve">
+    <value>... {0} more.</value>
+  </data>
+  <data name="SignCommandMultipleCertificatesHeader" xml:space="preserve">
+    <value>The following certificates meet all given criteria:</value>
   </data>
 </root>

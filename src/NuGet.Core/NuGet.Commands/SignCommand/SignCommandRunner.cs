@@ -98,17 +98,14 @@ namespace NuGet.Commands
             // get matching certificates
             var matchingCertCollection = CertificateProvider.GetCertificates(certFindOptions);
 
-            if (matchingCertCollection.Count == 0)
-            {
-                throw new InvalidOperationException(Strings.SignCommandNoCertException);
-            }
-            else if (matchingCertCollection.Count > 1)
+            if (matchingCertCollection.Count > 1)
             {
 #if !IS_CORECLR
                 if (signArgs.NonInteractive || !RuntimeEnvironmentHelper.IsWindows)
                 {
-                    // if on non-windows os or in non interactive mode - display and error out
-                    throw new InvalidOperationException(Strings.SignCommandMultipleCertException);
+                    // if on non-windows os or in non interactive mode - display the certs and error out
+                    signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2CollectionToString(matchingCertCollection));
+                    throw new InvalidOperationException(string.Format(Strings.SignCommandMultipleCertException, nameof(SignArgs.CertificateFingerprint)));
                 }
                 else
                 {
@@ -121,8 +118,14 @@ namespace NuGet.Commands
                 }
 #else
                 // if on non-windows os or in non interactive mode - display and error out
-                throw new InvalidOperationException(Strings.SignCommandMultipleCertException);
+                signArgs.Logger.LogError(CertificateUtility.X509Certificate2CollectionToString(matchingCertCollection));
+                throw new InvalidOperationException(string.Format(Strings.SignCommandMultipleCertException, nameof(SignArgs.CertificateFingerprint)));
 #endif
+            }
+
+            if (matchingCertCollection.Count == 0)
+            {
+                throw new InvalidOperationException(Strings.SignCommandNoCertException);
             }
 
             return matchingCertCollection[0];
