@@ -1116,6 +1116,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Properties &apos;{0}&apos;:&apos;{1}&apos; and &apos;{2}&apos;:&apos;{3}&apos; do not match..
+        /// </summary>
+        internal static string NonMatchingProperties {
+            get {
+                return ResourceManager.GetString("NonMatchingProperties", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to http://docs.nuget.org/.
         /// </summary>
         internal static string NuGetDocs {

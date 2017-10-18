@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -326,6 +326,20 @@ namespace NuGet.Commands
                     CultureInfo.CurrentCulture,
                     Strings.MissingRequiredProperty,
                     nameof(spec.RestoreMetadata.ProjectName));
+
+                throw RestoreSpecException.Create(message, files);
+            }
+
+            // spec.name and spec.RestoreMetadata.ProjectName should be the same
+            if (!string.Equals(spec.Name, spec.RestoreMetadata.ProjectName, StringComparison.Ordinal))
+            {
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.NonMatchingProperties,
+                    nameof(spec.Name),
+                    spec.Name,
+                    nameof(spec.RestoreMetadata.ProjectName),
+                    spec.RestoreMetadata.ProjectName);
 
                 throw RestoreSpecException.Create(message, files);
             }
