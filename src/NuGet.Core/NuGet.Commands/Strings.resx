@@ -603,4 +603,11 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Warning_VersionAboveUpperBound" xml:space="preserve">
     <value>Detected package version outside of dependency constraint: {0} requires {1} but version {2} was resolved.</value>
   </data>
+  <data name="NonMatchingProperties" xml:space="preserve">
+    <value>Properties '{0}':'{1}' and '{2}':'{3}' do not match.</value>
+    <comment>0 - first property name
+1 - first property value
+2 - second property name
+3 - second property value</comment>
+  </data>
 </root>
