@@ -208,4 +208,13 @@
     <comment>{0} is the invalid path.
 {1} is the package ID and version.</comment>
   </data>
+  <data name="ErrorPackageNotSigned" xml:space="preserve">
+    <value>Package is not signed.</value>
+  </data>
+  <data name="ErrorPackageTampered" xml:space="preserve">
+    <value>Package contents might have been tampered.</value>
+  </data>
+  <data name="ErrorSigningCertUntrustedRoot" xml:space="preserve">
+    <value>Signing certificate chains to an untrusted root.</value>
+  </data>
 </root>

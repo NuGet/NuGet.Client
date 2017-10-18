@@ -53,6 +53,10 @@ namespace NuGet.Packaging.Signing
                 // An unsigned package is valid only if unsigned packages are allowed.
                 valid = true;
             }
+            else
+            {
+                trustResults.Add(SignatureVerificationResult.UnsignedPackageResult(SignatureVerificationStatus.Invalid, new List<SignatureIssue>{ SignatureIssue.InvalidInputError(Strings.ErrorPackageNotSigned) }));
+            }
 
             return new VerifySignaturesResult(valid, trustResults);
         }

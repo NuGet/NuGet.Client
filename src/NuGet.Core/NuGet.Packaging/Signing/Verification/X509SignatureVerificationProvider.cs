@@ -29,15 +29,26 @@ namespace NuGet.Packaging.Signing
         {
             var status = SignatureVerificationStatus.Invalid;
             var signerInfo = signature.SignerInfoCollection[0];
+            var signatureIssues = new List<SignatureIssue>();
 
-            var valid = SigningUtility.IsCertificateValid(signerInfo.Certificate, out var chain, allowUntrustedRoot: false);
+            var validAndUntrusted = SigningUtility.IsCertificateValid(signerInfo.Certificate, out var chain, allowUntrustedRoot: true);
+            var valid = SigningUtility.IsCertificateValid(signerInfo.Certificate, out chain, allowUntrustedRoot: false);
 
             if (valid)
             {
                 status = SignatureVerificationStatus.Trusted;
             }
+            else if (validAndUntrusted)
+            {
+                status = SignatureVerificationStatus.Untrusted;
+                signatureIssues.Add(SignatureIssue.UntrustedRootWarning(Strings.ErrorSigningCertUntrustedRoot));
+            }
+            else {
+                status = SignatureVerificationStatus.Invalid;
+                signatureIssues.Add(SignatureIssue.InvalidPackageError(Strings.ErrorPackageTampered));
+            }
 
-            return new SignatureVerificationResult(status, signature, chain);
+            return new SignatureVerificationResult(status, signature, chain, signatureIssues);
         }
 #else
         private SignatureVerificationResult VerifySignature(Signature signature)

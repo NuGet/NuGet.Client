@@ -125,6 +125,33 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package is not signed..
+        /// </summary>
+        internal static string ErrorPackageNotSigned {
+            get {
+                return ResourceManager.GetString("ErrorPackageNotSigned", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package contents might have been tampered..
+        /// </summary>
+        internal static string ErrorPackageTampered {
+            get {
+                return ResourceManager.GetString("ErrorPackageTampered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Signing certificate chains to an untrusted root..
+        /// </summary>
+        internal static string ErrorSigningCertUntrustedRoot {
+            get {
+                return ResourceManager.GetString("ErrorSigningCertUntrustedRoot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to delete temporary file &apos;{0}&apos;. Error: &apos;{1}&apos;..
         /// </summary>
         internal static string ErrorUnableToDeleteFile {

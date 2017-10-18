@@ -30,13 +30,41 @@ namespace NuGet.Packaging.Signing
         public X509Chain Chain { get; }
 
         /// <summary>
+        /// List of issues found in the verification process
+        /// </summary>
+        public IEnumerable<SignatureIssue> Issues { get; }
+
+        /// <summary>
         /// SignatureVerificationResult
         /// </summary>
-        public SignatureVerificationResult(SignatureVerificationStatus trust, Signature signature, X509Chain chain)
+        public SignatureVerificationResult(SignatureVerificationStatus trust, Signature signature, X509Chain chain, IEnumerable<SignatureIssue> issues)
         {
             Trust = trust;
             Signature = signature ?? throw new ArgumentNullException(nameof(signature));
             Chain = chain ?? throw new ArgumentNullException(nameof(chain));
+            Issues = issues ?? new List<SignatureIssue>();
+        }
+
+        /// <summary>
+        /// Creates a SignatureVerificationResult for an unsigned package
+        /// </summary>
+        /// <param name="trust">Verification status</param>
+        /// <param name="issues">List of issues with the verification result</param>
+        /// <returns></returns>
+        public static SignatureVerificationResult UnsignedPackageResult(SignatureVerificationStatus trust, IEnumerable<SignatureIssue> issues)
+        {
+            return new SignatureVerificationResult(trust, issues);
+        }
+
+        /// <summary>
+        /// SignatureVerificationResult
+        /// </summary>
+        private SignatureVerificationResult(SignatureVerificationStatus trust, IEnumerable<SignatureIssue> issues)
+        {
+            Trust = trust;
+            Issues = issues ?? new List<SignatureIssue>();
+            Signature = null;
+            Chain = null;
         }
     }
 }
