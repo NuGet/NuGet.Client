@@ -5421,7 +5421,7 @@ This option should be used when specifying the certificate via -CertificateSubje
     <comment>{0} - argument name</comment>
   </data>
   <data name="SignCommandMultipleCertificateException" xml:space="preserve">
-    <value>Multiple options were used to specify a certificate. For a list of accepted ways to provide a certificate, please visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+    <value>Multiple options were used to specify a certificate. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="SignCommandNoArgumentException" xml:space="preserve">
     <value>No value provided for '{0}'. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>

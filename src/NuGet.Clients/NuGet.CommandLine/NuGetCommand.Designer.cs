@@ -11585,7 +11585,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple options were used to specify a certificate. For a list of accepted ways to provide a certificate, please visit http://docs.nuget.org/docs/reference/command-line-reference.
+        ///   Looks up a localized string similar to Multiple options were used to specify a certificate. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string SignCommandMultipleCertificateException {
             get {

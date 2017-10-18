@@ -73,58 +73,8 @@ namespace NuGet.CommandLine
 
         public override Task ExecuteCommandAsync()
         {
-
-            // Assert options
-            if (string.IsNullOrEmpty(Timestamper))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    NuGetCommand.SignCommandNoArgumentException,
-                    nameof(Timestamper)));
-            }
-            else if (!string.IsNullOrEmpty(CertificateStoreLocation) &&
-                !Enum.TryParse(CertificateStoreLocation, ignoreCase: true, result: out storeLocation))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    NuGetCommand.SignCommandInvalidArgumentException,
-                    nameof(CertificateStoreLocation)));
-            }
-            else if (!string.IsNullOrEmpty(CertificateStoreName) &&
-                !Enum.TryParse(CertificateStoreName, ignoreCase: true, result: out storeName))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    NuGetCommand.SignCommandInvalidArgumentException,
-                    nameof(CertificateStoreName)));
-            }
-            else if (!string.IsNullOrEmpty(HashAlgorithm))
-            {
-                if (!_acceptedHashAlgorithms.Contains(HashAlgorithm, StringComparer.InvariantCultureIgnoreCase) ||
-                    !Enum.TryParse(HashAlgorithm, ignoreCase: true, result: out hashAlgorithm))
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                        NuGetCommand.SignCommandInvalidArgumentException,
-                        nameof(HashAlgorithm)));
-                }
-            }
-            else if (!string.IsNullOrEmpty(TimestampHashAlgorithm))
-            {
-                if (!_acceptedHashAlgorithms.Contains(TimestampHashAlgorithm, StringComparer.InvariantCultureIgnoreCase) ||
-                    !Enum.TryParse(TimestampHashAlgorithm, ignoreCase: true, result: out timestampHashAlgorithm))
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                        NuGetCommand.SignCommandInvalidArgumentException,
-                        nameof(TimestampHashAlgorithm)));
-                }
-            }
-            else if (!string.IsNullOrEmpty(OutputDirectory) &&
-                !Directory.Exists(OutputDirectory))
-            {
-                Directory.CreateDirectory(OutputDirectory);
-            }
-
             var signArgs = GetSignArgs();
-
             var signCommandRunner = new SignCommandRunner();
-
             var result = signCommandRunner.ExecuteCommand(signArgs);
 
             return Task.FromResult(result);
@@ -132,15 +82,18 @@ namespace NuGet.CommandLine
 
         public SignArgs GetSignArgs()
         {
-            var storeName = StoreName.My;
-            var storeLocation = StoreLocation.CurrentUser;
-            var hashAlgorithm = HashAlgorithmName.SHA256;
-            var timestampHashAlgorithm = HashAlgorithmName.SHA256;
-            var packagePath = Arguments[0];
+            ValidatePackagePath();
+            ValidateTimestamper();
+            ValidateCertificateInputs();
+            ValidateOutputDirectory();
+            ValidateAndParseStoreLocation(out var storeLocation);
+            ValidateAndParseStoreName(out var storeName);
+            ValidateAndParseHashAlgorithm(HashAlgorithm, nameof(HashAlgorithm), out var hashAlgorithm);
+            ValidateAndParseHashAlgorithm(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm), out var timestampHashAlgorithm);
 
             return new SignArgs()
             {
-                PackagePath = packagePath,
+                PackagePath = Arguments[0],
                 OutputDirectory = OutputDirectory,
                 CertificatePath = CertificatePath,
                 CertificateStoreName = storeName,
@@ -159,6 +112,48 @@ namespace NuGet.CommandLine
             };
         }
 
+        private void ValidateAndParseHashAlgorithm(string value, string name, out HashAlgorithmName hashAlgorithm)
+        {
+            hashAlgorithm = HashAlgorithmName.SHA256;
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                if (!_acceptedHashAlgorithms.Contains(value, StringComparer.InvariantCultureIgnoreCase) ||
+                    !Enum.TryParse(value, ignoreCase: true, result: out hashAlgorithm))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
+                        NuGetCommand.SignCommandInvalidArgumentException,
+                        name));
+                }
+            }
+        }
+
+        private void ValidateAndParseStoreName(out StoreName storeName)
+        {
+            storeName = StoreName.My;
+
+            if (!string.IsNullOrEmpty(CertificateStoreName) &&
+                !Enum.TryParse(CertificateStoreName, ignoreCase: true, result: out storeName))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
+                    NuGetCommand.SignCommandInvalidArgumentException,
+                    nameof(CertificateStoreName)));
+            }
+        }
+
+        private void ValidateAndParseStoreLocation(out StoreLocation storeLocation)
+        {
+            storeLocation = StoreLocation.CurrentUser;
+
+            if (!string.IsNullOrEmpty(CertificateStoreLocation) &&
+                !Enum.TryParse(CertificateStoreLocation, ignoreCase: true, result: out storeLocation))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
+                    NuGetCommand.SignCommandInvalidArgumentException,
+                    nameof(CertificateStoreLocation)));
+            }
+        }
+
         private void ValidatePackagePath()
         {
             // Assert mandatory argument
@@ -169,25 +164,22 @@ namespace NuGet.CommandLine
             }
         }
 
-        private void ValidateOption(string optionName, string optionValue, string exceptionString, bool isMandatory, Type expectedType)
+        private void ValidateTimestamper()
         {
-            // Ensure that a mandatory paramter is passed
-            if (isMandatory && string.IsNullOrEmpty(optionValue))
+            if (string.IsNullOrEmpty(Timestamper))
             {
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    exceptionString,
-                    nameof(optionName)));
+                    NuGetCommand.SignCommandNoArgumentException,
+                    nameof(Timestamper)));
             }
+        }
 
-            if (expectedType.IsEnum)
+        private void ValidateOutputDirectory()
+        {
+            if (!string.IsNullOrEmpty(OutputDirectory) &&
+                            !Directory.Exists(OutputDirectory))
             {
-                if (!string.IsNullOrEmpty(CertificateStoreLocation) &&
-               !Enum.TryParse(CertificateStoreLocation, ignoreCase: true, result: out storeLocation))
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                        NuGetCommand.SignCommandInvalidArgumentException,
-                        nameof(CertificateStoreLocation)));
-                }
+                Directory.CreateDirectory(OutputDirectory);
             }
         }
 

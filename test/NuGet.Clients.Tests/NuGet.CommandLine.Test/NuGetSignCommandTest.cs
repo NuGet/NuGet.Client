@@ -26,12 +26,11 @@ namespace NuGet.CommandLine.Test
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
             };
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.Execute());
+            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
             Assert.Equal(_noPackageException, ex.Message);
         }
 
@@ -44,14 +43,13 @@ namespace NuGet.CommandLine.Test
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
             };
 
             signCommand.Arguments.Add(packagePath);
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.Execute());
+            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
             Assert.Equal(string.Format(_noArgException, nameof(SignCommand.Timestamper)), ex.Message);
         }
 
@@ -66,7 +64,6 @@ namespace NuGet.CommandLine.Test
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper
             };
@@ -74,7 +71,7 @@ namespace NuGet.CommandLine.Test
             signCommand.Arguments.Add(packagePath);
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.Execute());
+            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
             Assert.Equal(_noCertificateException, ex.Message);
         }
 
@@ -95,7 +92,6 @@ namespace NuGet.CommandLine.Test
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
                 CertificatePath =certificatePath,
@@ -106,7 +102,7 @@ namespace NuGet.CommandLine.Test
             signCommand.Arguments.Add(packagePath);
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.Execute());
+            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
             Assert.Equal(_multipleCertificateException, ex.Message);
         }
 
@@ -134,23 +130,21 @@ namespace NuGet.CommandLine.Test
             var timestamper = "http://foo.bar";
             var certificateFingerprint = new Guid().ToString();
             var parsable = Enum.TryParse(storeName, ignoreCase: true, result: out StoreName parsedStoreName);
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
                 CertificateFingerprint = certificateFingerprint,
                 CertificateStoreName = storeName
             };
-
             signCommand.Arguments.Add(packagePath);
 
             // Act & Assert
             Assert.True(parsable);
-            signCommand.Execute();
-            mockSignCommandRunner.Verify(mock => mock.ExecuteCommand((It.Is<SignArgs>(s => s.CertificateStoreName == parsedStoreName && s.CertificateStoreLocation == StoreLocation.CurrentUser))));
+            var signArgs = signCommand.GetSignArgs();
+            Assert.Equal(parsedStoreName, signArgs.CertificateStoreName);
+            Assert.Equal(StoreLocation.CurrentUser, signArgs.CertificateStoreLocation);
         }
 
         [Fact]
@@ -161,11 +155,9 @@ namespace NuGet.CommandLine.Test
             var timestamper = "http://foo.bar";
             var certificateFingerprint = new Guid().ToString();
             var storeName = "random_store";
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
                 CertificateFingerprint = certificateFingerprint,
@@ -175,7 +167,7 @@ namespace NuGet.CommandLine.Test
             signCommand.Arguments.Add(packagePath);
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.Execute());
+            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
             Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.CertificateStoreName)), ex.Message);
         }
 
@@ -191,11 +183,9 @@ namespace NuGet.CommandLine.Test
             var timestamper = "http://foo.bar";
             var certificateFingerprint = new Guid().ToString();
             var parsable = Enum.TryParse(storeLocation, ignoreCase: true, result: out StoreLocation parsedStoreLocation);
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
                 CertificateFingerprint = certificateFingerprint,
@@ -206,8 +196,9 @@ namespace NuGet.CommandLine.Test
 
             // Act & Assert
             Assert.True(parsable);
-            signCommand.Execute();
-            mockSignCommandRunner.Verify(mock => mock.ExecuteCommand((It.Is<SignArgs>(s => s.CertificateStoreLocation == parsedStoreLocation && s.CertificateStoreName == StoreName.My))));
+            var signArgs = signCommand.GetSignArgs();
+            Assert.Equal(StoreName.My, signArgs.CertificateStoreName);
+            Assert.Equal(parsedStoreLocation, signArgs.CertificateStoreLocation);
         }
 
         [Fact]
@@ -218,11 +209,9 @@ namespace NuGet.CommandLine.Test
             var timestamper = "http://foo.bar";
             var certificateFingerprint = new Guid().ToString();
             var storeLocation = "random_location";
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
                 CertificateFingerprint = certificateFingerprint,
@@ -232,7 +221,7 @@ namespace NuGet.CommandLine.Test
             signCommand.Arguments.Add(packagePath);
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.Execute());
+            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
             Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.CertificateStoreLocation)), ex.Message);
         }
 
@@ -251,11 +240,9 @@ namespace NuGet.CommandLine.Test
             var timestamper = "http://foo.bar";
             var certificatePath = @"\\foo\bar.pfx";
             var parsable = Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedHashAlgorithm);
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
                 CertificatePath = certificatePath,
@@ -266,8 +253,9 @@ namespace NuGet.CommandLine.Test
 
             // Act & Assert
             Assert.True(parsable);
-            signCommand.Execute();
-            mockSignCommandRunner.Verify(mock => mock.ExecuteCommand((It.Is<SignArgs>(s => s.HashingAlgorithm == parsedHashAlgorithm && s.TimestampHashAlgorithm == HashAlgorithmName.SHA256))));
+            var signArgs = signCommand.GetSignArgs();
+            Assert.Equal(parsedHashAlgorithm, signArgs.HashingAlgorithm);
+            Assert.Equal(HashAlgorithmName.SHA256, signArgs.TimestampHashAlgorithm);
         }
 
         [Fact]
@@ -278,11 +266,9 @@ namespace NuGet.CommandLine.Test
             var timestamper = "http://foo.bar";
             var certificatePath = @"\\foo\bar.pfx";
             var hashAlgorithm = "MD5";
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
                 CertificatePath = certificatePath,
@@ -292,7 +278,7 @@ namespace NuGet.CommandLine.Test
             signCommand.Arguments.Add(packagePath);
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.Execute());
+            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
             Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.HashAlgorithm)), ex.Message);
         }
 
@@ -311,11 +297,9 @@ namespace NuGet.CommandLine.Test
             var timestamper = "http://foo.bar";
             var certificatePath = @"\\foo\bar.pfx";
             var parsable = Enum.TryParse(timestampHashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedTimestampHashAlgorithm);
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
                 CertificatePath = certificatePath,
@@ -326,8 +310,9 @@ namespace NuGet.CommandLine.Test
 
             // Act & Assert
             Assert.True(parsable);
-            signCommand.Execute();
-            mockSignCommandRunner.Verify(mock => mock.ExecuteCommand((It.Is<SignArgs>(s => s.TimestampHashAlgorithm == parsedTimestampHashAlgorithm && s.HashingAlgorithm == HashAlgorithmName.SHA256))));
+            var signArgs = signCommand.GetSignArgs();
+            Assert.Equal(HashAlgorithmName.SHA256, signArgs.HashingAlgorithm);
+            Assert.Equal(parsedTimestampHashAlgorithm, signArgs.TimestampHashAlgorithm);
         }
 
         [Fact]
@@ -338,11 +323,9 @@ namespace NuGet.CommandLine.Test
             var timestamper = "http://foo.bar";
             var certificatePath = @"\\foo\bar.pfx";
             var timestampHashAlgorithm = "MD5";
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
                 CertificatePath = certificatePath,
@@ -352,12 +335,12 @@ namespace NuGet.CommandLine.Test
             signCommand.Arguments.Add(packagePath);
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.Execute());
+            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
             Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.TimestampHashAlgorithm)), ex.Message);
         }
 
         [Fact]
-        public async void SignCommandArgParsing_ValidArgs_CertFingerprintAsync()
+        public void SignCommandArgParsing_ValidArgs_CertFingerprintAsync()
         {
             //Debugger.Launch();
             // Arrange
@@ -377,13 +360,11 @@ namespace NuGet.CommandLine.Test
             var outputDir = @".\bar";
             var csp = "csp_name";
             var kc = "kc_name";
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             mockConsole.Setup(c => c.Verbosity).Returns(Verbosity.Detailed);
 
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
                 CertificateFingerprint = certificateFingerprint,
@@ -401,27 +382,26 @@ namespace NuGet.CommandLine.Test
             signCommand.Arguments.Add(packagePath);
 
             // Act & Assert
-            signCommand.Execute();
-            await signCommand.ExecuteCommandAsync();
+            var signArgs = signCommand.GetSignArgs();
 
-            mockSignCommandRunner.Verify(mock => mock.ExecuteCommand((It.Is<SignArgs>(s =>
-                s.CertificatePath == null &&
-                s.CertificateFingerprint == certificateFingerprint &&
-                s.CertificateSubjectName == null &&
-                s.CertificateStoreLocation == parsedStoreLocation &&
-                s.CertificateStoreName == parsedStoreName &&
-                s.CryptographicServiceProvider == csp &&
-                s.KeyContainer == kc &&
-                s.Logger == mockConsole.Object &&
-                s.NonInteractive == nonInteractive &&
-                s.Overwrite == overwrite &&
-                s.PackagePath == packagePath &&
-                s.Timestamper == timestamper &&
-                s.OutputDirectory == outputDir))));
+            Assert.True(
+                signArgs.CertificatePath == null &&
+                signArgs.CertificateFingerprint == certificateFingerprint &&
+                signArgs.CertificateSubjectName == null &&
+                signArgs.CertificateStoreLocation == parsedStoreLocation &&
+                signArgs.CertificateStoreName == parsedStoreName &&
+                signArgs.CryptographicServiceProvider == csp &&
+                signArgs.KeyContainer == kc &&
+                signArgs.Logger == mockConsole.Object &&
+                signArgs.NonInteractive == nonInteractive &&
+                signArgs.Overwrite == overwrite &&
+                signArgs.PackagePath == packagePath &&
+                signArgs.Timestamper == timestamper &&
+                signArgs.OutputDirectory == outputDir);
         }
 
         [Fact]
-        public async void SignCommandArgParsing_ValidArgs_CertSubjectNameAsync()
+        public void SignCommandArgParsing_ValidArgs_CertSubjectNameAsync()
         {
             //Debugger.Launch();
             // Arrange
@@ -441,13 +421,11 @@ namespace NuGet.CommandLine.Test
             var outputDir = @".\bar";
             var csp = "csp_name";
             var kc = "kc_name";
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             mockConsole.Setup(c => c.Verbosity).Returns(Verbosity.Detailed);
 
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
                 CertificateSubjectName = certificateSubjectName,
@@ -465,27 +443,26 @@ namespace NuGet.CommandLine.Test
             signCommand.Arguments.Add(packagePath);
 
             // Act & Assert
-            signCommand.Execute();
-            await signCommand.ExecuteCommandAsync();
+            var signArgs = signCommand.GetSignArgs();
 
-            mockSignCommandRunner.Verify(mock => mock.ExecuteCommand((It.Is<SignArgs>(s =>
-                s.CertificatePath == null &&
-                s.CertificateFingerprint == null &&
-                s.CertificateSubjectName == certificateSubjectName &&
-                s.CertificateStoreLocation == parsedStoreLocation &&
-                s.CertificateStoreName == parsedStoreName &&
-                s.CryptographicServiceProvider == csp &&
-                s.KeyContainer == kc &&
-                s.Logger == mockConsole.Object &&
-                s.NonInteractive == nonInteractive &&
-                s.Overwrite == overwrite &&
-                s.PackagePath == packagePath &&
-                s.Timestamper == timestamper &&
-                s.OutputDirectory == outputDir))));
+            Assert.True(
+                signArgs.CertificatePath == null &&
+                signArgs.CertificateFingerprint == null &&
+                signArgs.CertificateSubjectName == certificateSubjectName &&
+                signArgs.CertificateStoreLocation == parsedStoreLocation &&
+                signArgs.CertificateStoreName == parsedStoreName &&
+                signArgs.CryptographicServiceProvider == csp &&
+                signArgs.KeyContainer == kc &&
+                signArgs.Logger == mockConsole.Object &&
+                signArgs.NonInteractive == nonInteractive &&
+                signArgs.Overwrite == overwrite &&
+                signArgs.PackagePath == packagePath &&
+                signArgs.Timestamper == timestamper &&
+                signArgs.OutputDirectory == outputDir);
         }
 
         [Fact]
-        public async void SignCommandArgParsing_ValidArgs_CertPathAsync()
+        public void SignCommandArgParsing_ValidArgs_CertPathAsync()
         {
             //Debugger.Launch();
             // Arrange
@@ -505,13 +482,11 @@ namespace NuGet.CommandLine.Test
             var outputDir = @".\bar";
             var csp = "csp_name";
             var kc = "kc_name";
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             mockConsole.Setup(c => c.Verbosity).Returns(Verbosity.Detailed);
 
             var signCommand = new SignCommand
             {
-                SignCommandRunner = mockSignCommandRunner.Object,
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
                 CertificatePath = certificatePath,
@@ -527,23 +502,22 @@ namespace NuGet.CommandLine.Test
             signCommand.Arguments.Add(packagePath);
 
             // Act & Assert
-            signCommand.Execute();
-            await signCommand.ExecuteCommandAsync();
+            var signArgs = signCommand.GetSignArgs();
 
-            mockSignCommandRunner.Verify(mock => mock.ExecuteCommand((It.Is<SignArgs>(s =>
-                s.CertificatePath == certificatePath &&
-                s.CertificateFingerprint == null &&
-                s.CertificateSubjectName == null &&
-                s.CertificateStoreLocation == parsedStoreLocation &&
-                s.CertificateStoreName == parsedStoreName &&
-                s.CryptographicServiceProvider == csp &&
-                s.KeyContainer == kc &&
-                s.Logger == mockConsole.Object &&
-                s.NonInteractive == nonInteractive &&
-                s.Overwrite == overwrite &&
-                s.PackagePath == packagePath &&
-                s.Timestamper == timestamper &&
-                s.OutputDirectory == outputDir))));
+            Assert.True(
+                signArgs.CertificatePath == certificatePath &&
+                signArgs.CertificateFingerprint == null &&
+                signArgs.CertificateSubjectName == null &&
+                signArgs.CertificateStoreLocation == parsedStoreLocation &&
+                signArgs.CertificateStoreName == parsedStoreName &&
+                signArgs.CryptographicServiceProvider == csp &&
+                signArgs.KeyContainer == kc &&
+                signArgs.Logger == mockConsole.Object &&
+                signArgs.NonInteractive == nonInteractive &&
+                signArgs.Overwrite == overwrite &&
+                signArgs.PackagePath == packagePath &&
+                signArgs.Timestamper == timestamper &&
+                signArgs.OutputDirectory == outputDir);
         }
     }
 }
