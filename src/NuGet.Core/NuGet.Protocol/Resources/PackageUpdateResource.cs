@@ -74,7 +74,7 @@ namespace NuGet.Protocol.Core.Types
                 // - The package source is nuget.org and the default symbol source is used
                 if (!string.IsNullOrEmpty(symbolSource))
                 {
-                    string symbolApiKey = getSymbolApiKey(symbolSource);
+                    var symbolApiKey = getSymbolApiKey(symbolSource);
 
                     await PushSymbols(packagePath, symbolSource, symbolApiKey, requestTimeout, log, tokenSource.Token);
                 }
@@ -132,7 +132,7 @@ namespace NuGet.Protocol.Core.Types
                 var sourceUri = UriUtility.CreateSourceUri(source);
 
                 // See if the api key exists
-                if (String.IsNullOrEmpty(apiKey) && !sourceUri.IsFile)
+                if (string.IsNullOrEmpty(apiKey) && !sourceUri.IsFile)
                 {
                     log.LogWarning(string.Format(CultureInfo.CurrentCulture,
                         Strings.Warning_SymbolServerNotConfigured,
@@ -149,8 +149,8 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         private static string GetSymbolsPath(string packagePath)
         {
-            string symbolPath = Path.GetFileNameWithoutExtension(packagePath) + NuGetConstants.SymbolsExtension;
-            string packageDir = Path.GetDirectoryName(packagePath);
+            var symbolPath = Path.GetFileNameWithoutExtension(packagePath) + NuGetConstants.SymbolsExtension;
+            var packageDir = Path.GetDirectoryName(packagePath);
             return Path.Combine(packageDir, symbolPath);
         }
 
@@ -170,11 +170,11 @@ namespace NuGet.Protocol.Core.Types
                     GetSourceDisplayName(source)));
             }
 
-            var packagesToPush = ResolvePackageFromPath(packagePath);
+            var packagesToPush = LocalFolderUtility.ResolvePackageFromPath(packagePath);
 
-            EnsurePackageFileExists(packagePath, packagesToPush);
+            LocalFolderUtility.EnsurePackageFileExists(packagePath, packagesToPush);
 
-            foreach (string packageToPush in packagesToPush)
+            foreach (var packageToPush in packagesToPush)
             {
                 await PushPackageCore(source, apiKey, packageToPush, requestTimeout, log, token);
             }
@@ -210,7 +210,7 @@ namespace NuGet.Protocol.Core.Types
 
         private static string GetSourceDisplayName(string source)
         {
-            if (String.IsNullOrEmpty(source) || source.Equals(NuGetConstants.DefaultGalleryServerUrl, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(source) || source.Equals(NuGetConstants.DefaultGalleryServerUrl, StringComparison.OrdinalIgnoreCase))
             {
                 return Strings.LiveFeed + " (" + NuGetConstants.DefaultGalleryServerUrl + ")";
             }
@@ -219,46 +219,6 @@ namespace NuGet.Protocol.Core.Types
                 return Strings.DefaultSymbolServer + " (" + NuGetConstants.DefaultSymbolServerUrl + ")";
             }
             return "'" + source + "'";
-        }
-
-        public static IEnumerable<string> ResolvePackageFromPath(string packagePath)
-        {
-            // Ensure packagePath ends with *.nupkg
-            packagePath = EnsurePackageExtension(packagePath);
-            return PathResolver.PerformWildcardSearch(Directory.GetCurrentDirectory(), packagePath);
-        }
-
-        private static string EnsurePackageExtension(string packagePath)
-        {
-            if (packagePath.IndexOf('*') == -1)
-            {
-                // If there's no wildcard in the path to begin with, assume that it's an absolute path.
-                return packagePath;
-            }
-            // If the path does not contain wildcards, we need to add *.nupkg to it.
-            if (!packagePath.EndsWith(NuGetConstants.PackageExtension, StringComparison.OrdinalIgnoreCase))
-            {
-                if (packagePath.EndsWith("**", StringComparison.OrdinalIgnoreCase))
-                {
-                    packagePath = packagePath + Path.DirectorySeparatorChar + '*';
-                }
-                else if (!packagePath.EndsWith("*", StringComparison.OrdinalIgnoreCase))
-                {
-                    packagePath = packagePath + '*';
-                }
-                packagePath = packagePath + NuGetConstants.PackageExtension;
-            }
-            return packagePath;
-        }
-
-        public static void EnsurePackageFileExists(string packagePath, IEnumerable<string> packagesToPush)
-        {
-            if (!packagesToPush.Any())
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
-                    Strings.UnableToFindFile,
-                    packagePath));
-            }
         }
 
         // Indicates whether the specified source is a file source, such as: \\a\b, c:\temp, etc.
@@ -398,7 +358,7 @@ namespace NuGet.Protocol.Core.Types
             ILogger log,
             CancellationToken token)
         {
-            string root = sourceUri.LocalPath;
+            var root = sourceUri.LocalPath;
             var reader = new PackageArchiveReader(pathToPackage);
             var packageIdentity = reader.GetIdentity();
 
@@ -505,7 +465,7 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                string packageDirectory = OfflineFeedUtility.GetPackageDirectory(packageIdentity, root);
+                var packageDirectory = OfflineFeedUtility.GetPackageDirectory(packageIdentity, root);
                 if (!Directory.Exists(packageDirectory))
                 {
                     throw new ArgumentException(Strings.DeletePackage_NotFound);
@@ -543,7 +503,7 @@ namespace NuGet.Protocol.Core.Types
         {
             var baseUri = EnsureTrailingSlash(source);
             Uri requestUri;
-            if (String.IsNullOrEmpty(baseUri.AbsolutePath.TrimStart('/')))
+            if (string.IsNullOrEmpty(baseUri.AbsolutePath.TrimStart('/')))
             {
                 // If there's no host portion specified, append the url to the client.
                 requestUri = new Uri(baseUri, ServiceEndpoint + '/' + path);

@@ -12,11 +12,11 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetSignCommandTest
     {
-        private const string _noArgException = "No value provided for '{0}'. For a list of accepted values, please visit http://docs.nuget.org/docs/reference/command-line-reference";
-        private const string _invalidArgException = "Invalid value provided for '{0}'. For a list of accepted values, please visit http://docs.nuget.org/docs/reference/command-line-reference";
-        private const string _noPackageException = "No package was provided. For a list of accepted ways to provide a package, please visit http://docs.nuget.org/docs/reference/command-line-reference";
-        private const string _multipleCertificateException = "Multiple options were used to specify a certificate. For a list of accepted ways to provide a certificate, please visit http://docs.nuget.org/docs/reference/command-line-reference";
-        private const string _noCertificateException = "No certificate was provided. For a list of accepted ways to provide a certificate, please visit http://docs.nuget.org/docs/reference/command-line-reference";
+        private const string _noArgException = "No value provided for '{0}'. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference";
+        private const string _invalidArgException = "Invalid value provided for '{0}'. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference";
+        private const string _noPackageException = "No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference";
+        private const string _multipleCertificateException = "Multiple options were used to specify a certificate. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference";
+        private const string _noCertificateException = "No certificate was provided. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference";
 
         [Fact]
         public void SignCommandArgParsing_NoPackagePath()
@@ -32,7 +32,7 @@ namespace NuGet.CommandLine.Test
 
             // Act & Assert
             var ex = Assert.Throws<ArgumentException>(() => signCommand.Execute());
-            Assert.Equal("No package was provided. For a list of accepted ways to provide a package, please visit http://docs.nuget.org/docs/reference/command-line-reference", ex.Message);
+            Assert.Equal(_noPackageException, ex.Message);
         }
 
         [Fact]

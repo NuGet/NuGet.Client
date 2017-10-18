@@ -11566,7 +11566,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value provided for &apos;{0}&apos;. For a list of accepted values, please visit http://docs.nuget.org/docs/reference/command-line-reference.
+        ///   Looks up a localized string similar to Invalid value provided for &apos;{0}&apos;. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string SignCommandInvalidArgumentException {
             get {
@@ -11594,7 +11594,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No value provided for &apos;{0}&apos;. For a list of accepted values, please visit http://docs.nuget.org/docs/reference/command-line-reference.
+        ///   Looks up a localized string similar to No value provided for &apos;{0}&apos;. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string SignCommandNoArgumentException {
             get {
@@ -11603,7 +11603,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No certificate was provided. For a list of accepted ways to provide a certificate, please visit http://docs.nuget.org/docs/reference/command-line-reference.
+        ///   Looks up a localized string similar to No certificate was provided. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string SignCommandNoCertificateException {
             get {
@@ -11612,7 +11612,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No package was provided. For a list of accepted ways to provide a package, please visit http://docs.nuget.org/docs/reference/command-line-reference.
+        ///   Looks up a localized string similar to No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string SignCommandNoPackageException {
             get {
@@ -11657,7 +11657,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hash algorithm to be used by the RFC 3161 time stamp server. Defaults to SHA256..
+        ///   Looks up a localized string similar to Hash algorithm to be used by the RFC 3161 timestamp server. Defaults to SHA256..
         /// </summary>
         internal static string SignCommandTimestampHashAlgorithmDescription {
             get {

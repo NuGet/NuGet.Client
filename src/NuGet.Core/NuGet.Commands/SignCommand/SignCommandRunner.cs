@@ -2,17 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
-using NuGet.Protocol.Core.Types;
+using NuGet.Protocol;
 
 namespace NuGet.Commands
 {
@@ -26,8 +22,8 @@ namespace NuGet.Commands
             var success = true;
 
             // resolve path into multiple packages if needed.
-            var packagesToSign = PackageUpdateResource.ResolvePackageFromPath(signArgs.PackagePath);
-            PackageUpdateResource.EnsurePackageFileExists(signArgs.PackagePath, packagesToSign);
+            var packagesToSign = LocalFolderUtility.ResolvePackageFromPath(signArgs.PackagePath);
+            LocalFolderUtility.EnsurePackageFileExists(signArgs.PackagePath, packagesToSign);
 
             var cert = GetCertificate(signArgs);
 

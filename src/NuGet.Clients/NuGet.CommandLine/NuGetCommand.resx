@@ -5389,7 +5389,7 @@ This option, along with -CryptographicServiceProvider, can be used to specify th
     <value>Signs a NuGet package.</value>
   </data>
   <data name="SignCommandTimestampHashAlgorithmDescription" xml:space="preserve">
-    <value>Hash algorithm to be used by the RFC 3161 time stamp server. Defaults to SHA256.</value>
+    <value>Hash algorithm to be used by the RFC 3161 timestamp server. Defaults to SHA256.</value>
   </data>
   <data name="SignCommandUsageDescription" xml:space="preserve">
     <value>Signs a NuGet package.</value>
@@ -5417,20 +5417,20 @@ This option should be used when specifying the certificate via -CertificateSubje
     <value>URL to an RFC 3161 timestamp server.</value>
   </data>
   <data name="SignCommandInvalidArgumentException" xml:space="preserve">
-    <value>Invalid value provided for '{0}'. For a list of accepted values, please visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+    <value>Invalid value provided for '{0}'. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
     <comment>{0} - argument name</comment>
   </data>
   <data name="SignCommandMultipleCertificateException" xml:space="preserve">
     <value>Multiple options were used to specify a certificate. For a list of accepted ways to provide a certificate, please visit http://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="SignCommandNoArgumentException" xml:space="preserve">
-    <value>No value provided for '{0}'. For a list of accepted values, please visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+    <value>No value provided for '{0}'. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
     <comment>{0} - argument name</comment>
   </data>
   <data name="SignCommandNoCertificateException" xml:space="preserve">
-    <value>No certificate was provided. For a list of accepted ways to provide a certificate, please visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+    <value>No certificate was provided. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="SignCommandNoPackageException" xml:space="preserve">
-    <value>No package was provided. For a list of accepted ways to provide a package, please visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+    <value>No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
 </root>

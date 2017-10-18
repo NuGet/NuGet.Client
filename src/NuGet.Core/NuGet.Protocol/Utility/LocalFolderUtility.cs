@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -947,6 +947,47 @@ namespace NuGet.Protocol
             }
 
             yield break;
+        }
+
+
+        public static IEnumerable<string> ResolvePackageFromPath(string packagePath)
+        {
+            // Ensure packagePath ends with *.nupkg
+            packagePath = EnsurePackageExtension(packagePath);
+            return PathResolver.PerformWildcardSearch(Directory.GetCurrentDirectory(), packagePath);
+        }
+
+        private static string EnsurePackageExtension(string packagePath)
+        {
+            if (packagePath.IndexOf('*') == -1)
+            {
+                // If there's no wildcard in the path to begin with, assume that it's an absolute path.
+                return packagePath;
+            }
+            // If the path does not contain wildcards, we need to add *.nupkg to it.
+            if (!packagePath.EndsWith(NuGetConstants.PackageExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                if (packagePath.EndsWith("**", StringComparison.OrdinalIgnoreCase))
+                {
+                    packagePath = packagePath + Path.DirectorySeparatorChar + '*';
+                }
+                else if (!packagePath.EndsWith("*", StringComparison.OrdinalIgnoreCase))
+                {
+                    packagePath = packagePath + '*';
+                }
+                packagePath = packagePath + NuGetConstants.PackageExtension;
+            }
+            return packagePath;
+        }
+
+        public static void EnsurePackageFileExists(string packagePath, IEnumerable<string> packagesToPush)
+        {
+            if (!packagesToPush.Any())
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.UnableToFindFile,
+                    packagePath));
+            }
         }
 
         /// <summary>

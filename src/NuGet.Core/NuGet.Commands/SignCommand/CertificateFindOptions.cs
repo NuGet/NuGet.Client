@@ -13,7 +13,6 @@ namespace NuGet.Commands
     /// </summary>
     internal class CertificateSourceOptions
     {
-
         /// <summary>
         /// The certificate file path.
         /// </summary>

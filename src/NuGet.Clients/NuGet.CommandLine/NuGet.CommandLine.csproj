@@ -51,16 +51,16 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>NuGetCommand.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="NuGetResources.resx">
-      <!-- Strings are shared by other projects, use public strings. -->
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <Compile Update="NuGetCommand.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>NuGetCommand.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Update="NuGetResources.resx">
+      <!-- Strings are shared by other projects, use public strings. -->
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <Compile Update="NuGetResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -88,7 +88,7 @@
     <MakeDir Directories="$(ArtifactsDirectory)$(VsixOutputDirName)" />
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
-  
+
   <PropertyGroup>
     <NuspecFile>NuGet.CommandLine.nuspec</NuspecFile>
     <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
@@ -96,14 +96,14 @@
   </PropertyGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  
+
   <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
-  <ItemGroup>
-    <DllsToSign Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe">
-      <StrongName>MsSharedLib72</StrongName>
-      <Authenticode>Microsoft</Authenticode>
-    </DllsToSign>
-  </ItemGroup>
+    <ItemGroup>
+      <DllsToSign Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe">
+        <StrongName>MsSharedLib72</StrongName>
+        <Authenticode>Microsoft</Authenticode>
+      </DllsToSign>
+    </ItemGroup>
   </Target>
 
   <Target Name="GetSymbolsToIndex" Returns="@(SymbolsToIndex)">
