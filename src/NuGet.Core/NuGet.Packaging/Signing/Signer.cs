@@ -46,6 +46,7 @@ namespace NuGet.Packaging.Signing
             using (var writer = new StreamWriter(stream))
             {
                 writer.Write(signedJson.ToString());
+                writer.Flush();
                 stream.Position = 0;
                 await _package.AddAsync(TestSignedPath, stream, token);
             }
