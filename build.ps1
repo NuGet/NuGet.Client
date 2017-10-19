@@ -17,9 +17,6 @@ Path to a code signing certificate for delay-sigining (optional)
 .PARAMETER NuGetPFXPath
 Path to a code signing certificate for delay-sigining (optional)
 
-.PARAMETER SkipVS14
-Skips building binaries targeting Visual Studio "14" (released as Visual Studio 2015)
-
 .PARAMETER SkipVS15
 Skips building binaries targeting Visual Studio "15"
 
@@ -38,8 +35,8 @@ To run full clean build, e.g after switching branches
 Fast incremental build
 
 .EXAMPLE
-.\build.ps1 -s14 -s15
-To build core projects only
+.\build.ps1 -s15
+To only run unit tests
 
 .EXAMPLE
 .\build.ps1 -v -ea Stop
@@ -59,8 +56,6 @@ param (
     [string]$MSPFXPath,
     [Alias('nugetpfx')]
     [string]$NuGetPFXPath,
-    [Alias('s14')]
-    [switch]$SkipVS14,
     [Alias('s15')]
     [switch]$SkipVS15,
     [Alias('su')]
@@ -92,11 +87,6 @@ Trace-Log "Build #$BuildNumber started at $startTime"
 Test-BuildEnvironment -CI:$CI
 
 # Adjust version skipping if only one version installed - if VS15 is not installed, no need to specify SkipVS15
-if (-not $SkipVS14 -and -not $VS14Installed) {
-    Warning-Log "VS14 build is requested but it appears not to be installed."
-    $SkipVS14 = $True
-}
-
 if (-not $SkipVS15 -and -not $VS15Installed) {
     Warning-Log "VS15 build is requested but it appears not to be installed."
     $SkipVS15 = $True
