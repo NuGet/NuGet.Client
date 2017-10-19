@@ -329,28 +329,27 @@ namespace NuGet.Commands
 
         private CompatibilityData GetCompatibilityData(RestoreTargetGraph graph, LibraryIdentity libraryId)
         {
+            // Use data from the current lock file if it exists.
             LockFileTargetLibrary targetLibrary = null;
             var target = _lockFile.Targets.FirstOrDefault(t => Equals(t.TargetFramework, graph.Framework) && string.Equals(t.RuntimeIdentifier, graph.RuntimeIdentifier, StringComparison.Ordinal));
             if (target != null)
             {
-                targetLibrary = target.Libraries.FirstOrDefault(t => t.Name.Equals(libraryId.Name) && t.Version.Equals(libraryId.Version));
+                targetLibrary = target.Libraries
+                    .FirstOrDefault(t => t.Name.Equals(libraryId.Name, StringComparison.OrdinalIgnoreCase) && t.Version.Equals(libraryId.Version));
             }
 
             IEnumerable<string> files = null;
-            var lockFileLibrary = _lockFile.Libraries.FirstOrDefault(l => l.Name.Equals(libraryId.Name) && l.Version.Equals(libraryId.Version));
+            var lockFileLibrary = _lockFile.Libraries
+                .FirstOrDefault(l => l.Name.Equals(libraryId.Name, StringComparison.OrdinalIgnoreCase) && l.Version.Equals(libraryId.Version));
+
             if (lockFileLibrary != null)
             {
                 files = lockFileLibrary.Files;
             }
 
-            if (files != null && targetLibrary != null)
+            if (files == null || targetLibrary == null)
             {
-                // Everything we need is in the lock file!
-                return new CompatibilityData(lockFileLibrary.Files, targetLibrary);
-            }
-            else
-            {
-                // We need to generate some of the data. We'll need the local packge info to do that
+                // We need to generate some of the data. We'll need the local package info to do that
                 var packageInfo = NuGetv3LocalRepositoryUtility.GetPackage(
                     _localRepositories,
                     libraryId.Name,
@@ -364,20 +363,7 @@ namespace NuGet.Commands
                 // Collect the file list if necessary
                 if (files == null)
                 {
-                    using (var packageReader = new PackageFolderReader(packageInfo.Package.ExpandedPath))
-                    {
-                        if (Path.DirectorySeparatorChar != '/')
-                        {
-                            files = packageReader
-                                    .GetFiles()
-                                    .Select(p => p.Replace(Path.DirectorySeparatorChar, '/'))
-                                    .ToList();
-                        }
-                        else
-                        {
-                            files = packageReader.GetFiles().ToList();
-                        }
-                    }
+                    files = packageInfo.Package.Files;
                 }
 
                 // Generate the target library if necessary
@@ -389,9 +375,9 @@ namespace NuGet.Commands
                         targetGraph: graph,
                         dependencyType: LibraryIncludeFlags.All);
                 }
-
-                return new CompatibilityData(files, targetLibrary);
             }
+
+            return new CompatibilityData(files, targetLibrary);
         }
 
         private class CompatibilityData
