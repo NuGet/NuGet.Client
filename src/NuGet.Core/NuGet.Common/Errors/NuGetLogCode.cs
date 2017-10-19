@@ -225,5 +225,10 @@ namespace NuGet.Common
         /// Error_UnableToLocateBuildOutput
         /// </summary>
         NU5007 = 5007,
+
+        /// <summary>
+        /// ErrorManifestFileNotFound
+        /// </summary>
+        NU5008 = 5008,
     }
 }

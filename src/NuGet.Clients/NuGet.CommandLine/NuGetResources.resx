@@ -417,6 +417,9 @@
   <data name="ConfigCommandKeyNotFound" xml:space="preserve">
     <value>Key '{0}' not found.</value>
   </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>  
   <data name="Error_CannotPromptForInput" xml:space="preserve">
     <value>Cannot prompt for input in non-interactive mode.</value>
   </data>

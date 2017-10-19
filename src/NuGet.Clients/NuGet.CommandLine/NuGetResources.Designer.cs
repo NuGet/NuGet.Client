@@ -2329,6 +2329,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid AssemblyInformationalVersion {0} on assembly {1}..
         /// </summary>
         public static string Error_AssemblyInformationalVersion {

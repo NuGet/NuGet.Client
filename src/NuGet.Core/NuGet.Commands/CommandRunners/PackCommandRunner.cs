@@ -133,9 +133,9 @@ namespace NuGet.Commands
 
             if (_packArgs.InstallPackageToOutputPath)
             {
-                _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "Package", outputPath));
-                WriteResolvedNuSpecToPackageOutputDirectory(outputPath, builder);
-                WriteSHA512PackageHash(outputPath);
+                _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "Package", outputPath));
+                WriteResolvedNuSpecToPackageOutputDirectory(builder);
+                WriteSHA512PackageHash(builder);
             }
 
             _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath));
@@ -145,13 +145,15 @@ namespace NuGet.Commands
         /// <summary>
         /// Writes the resolved NuSpec file to the package output directory.
         /// </summary>
-        /// <param name="packageOutputPath">The output package path</param>
-        /// <param name="packageBuilder">The package builder</param>
-        private void WriteResolvedNuSpecToPackageOutputDirectory(string packageOutputPath, PackageBuilder packageBuilder)
+        /// <param name="builder">The package builder</param>
+        private void WriteResolvedNuSpecToPackageOutputDirectory(PackageBuilder builder)
         {
+            var outputPath = GetOutputPath(builder, _packArgs, false, builder.Version);
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+
             var resolvedNuSpecOutputPath = Path.Combine(
-                Path.GetDirectoryName(packageOutputPath), 
-                new VersionFolderPathResolver(packageOutputPath).GetManifestFileName(packageBuilder.Id, packageBuilder.Version));
+                Path.GetDirectoryName(outputPath), 
+                new VersionFolderPathResolver(outputPath).GetManifestFileName(builder.Id, builder.Version));
 
             _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "NuSpec", resolvedNuSpecOutputPath));
 
@@ -160,7 +162,7 @@ namespace NuGet.Commands
                 throw new PackagingException(NuGetLogCode.NU5001, string.Format(CultureInfo.CurrentCulture, Strings.Error_WriteResolvedNuSpecOverwriteOriginal, _packArgs.Path));
             }
 
-            Manifest manifest = new Manifest(new ManifestMetadata(packageBuilder), null);
+            var manifest = new Manifest(new ManifestMetadata(builder), null);
             using (Stream stream = new FileStream(resolvedNuSpecOutputPath, FileMode.Create))
             {
                 manifest.Save(stream);
@@ -170,17 +172,20 @@ namespace NuGet.Commands
         /// <summary>
         /// Writes the sha512 package hash file to the package output directory
         /// </summary>
-        /// <param name="packageOutputPath">The output package path</param>
-        private void WriteSHA512PackageHash(string packageOutputPath)
+        /// <param name="builder">The package builder</param>
+        private void WriteSHA512PackageHash(PackageBuilder builder)
         {
-            var sha512OutputPath = Path.Combine(packageOutputPath + ".sha512");
+            var outputPath = GetOutputPath(builder, _packArgs, false, builder.Version);
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+
+            var sha512OutputPath = Path.Combine(outputPath + ".sha512");
             var sha512TempOutputPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetFileName(sha512OutputPath));
 
             _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "SHA512", sha512OutputPath));
 
             byte[] sha512hash;
             var cryptoHashProvider = new CryptoHashProvider("SHA512");
-            using (var fileStream = new FileStream(packageOutputPath, FileMode.Open, FileAccess.Read))
+            using (var fileStream = new FileStream(outputPath, FileMode.Open, FileAccess.Read))
             {
                 sha512hash = cryptoHashProvider.CalculateHash(fileStream);
             }
