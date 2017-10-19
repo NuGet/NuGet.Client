@@ -949,7 +949,12 @@ namespace NuGet.Protocol
             yield break;
         }
 
-
+        /// <summary>
+        /// Resolves a package path into a list of paths.
+        /// If the path contains wildcards then the path is expanded to all matching entries.
+        /// </summary>
+        /// <param name="packagePath">Package path</param>
+        /// <returns>A list of package paths that match the input path.</returns>
         public static IEnumerable<string> ResolvePackageFromPath(string packagePath)
         {
             // Ensure packagePath ends with *.nupkg
@@ -980,9 +985,14 @@ namespace NuGet.Protocol
             return packagePath;
         }
 
-        public static void EnsurePackageFileExists(string packagePath, IEnumerable<string> packagesToPush)
+        /// <summary>
+        /// This method checks of a given list of package paths exist on disk.
+        /// </summary>
+        /// <param name="packagePath">A package path to be used while creating logs.</param>
+        /// <param name="matchingPackagePaths">A list of matching package paths that need to be checked.</param>
+        public static void EnsurePackageFileExists(string packagePath, IEnumerable<string> matchingPackagePaths)
         {
-            if (!packagesToPush.Any())
+            if (!matchingPackagePaths.Any())
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     Strings.UnableToFindFile,

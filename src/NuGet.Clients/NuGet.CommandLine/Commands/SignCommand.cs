@@ -86,10 +86,11 @@ namespace NuGet.CommandLine
             ValidateTimestamper();
             ValidateCertificateInputs();
             ValidateOutputDirectory();
-            ValidateAndParseStoreLocation(out var storeLocation);
-            ValidateAndParseStoreName(out var storeName);
-            ValidateAndParseHashAlgorithm(HashAlgorithm, nameof(HashAlgorithm), out var hashAlgorithm);
-            ValidateAndParseHashAlgorithm(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm), out var timestampHashAlgorithm);
+
+            var storeLocation = ValidateAndParseStoreLocation();
+            var storeName = ValidateAndParseStoreName();
+            var hashAlgorithm = ValidateAndParseHashAlgorithm(HashAlgorithm, nameof(HashAlgorithm));
+            var timestampHashAlgorithm = ValidateAndParseHashAlgorithm(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm));
 
             return new SignArgs()
             {
@@ -112,9 +113,9 @@ namespace NuGet.CommandLine
             };
         }
 
-        private void ValidateAndParseHashAlgorithm(string value, string name, out HashAlgorithmName hashAlgorithm)
+        private HashAlgorithmName ValidateAndParseHashAlgorithm(string value, string name)
         {
-            hashAlgorithm = HashAlgorithmName.SHA256;
+            var hashAlgorithm = HashAlgorithmName.SHA256;
 
             if (!string.IsNullOrEmpty(value))
             {
@@ -126,11 +127,13 @@ namespace NuGet.CommandLine
                         name));
                 }
             }
+
+            return hashAlgorithm;
         }
 
-        private void ValidateAndParseStoreName(out StoreName storeName)
+        private StoreName ValidateAndParseStoreName()
         {
-            storeName = StoreName.My;
+            var storeName = StoreName.My;
 
             if (!string.IsNullOrEmpty(CertificateStoreName) &&
                 !Enum.TryParse(CertificateStoreName, ignoreCase: true, result: out storeName))
@@ -139,11 +142,13 @@ namespace NuGet.CommandLine
                     NuGetCommand.SignCommandInvalidArgumentException,
                     nameof(CertificateStoreName)));
             }
+
+            return storeName;
         }
 
-        private void ValidateAndParseStoreLocation(out StoreLocation storeLocation)
+        private StoreLocation ValidateAndParseStoreLocation()
         {
-            storeLocation = StoreLocation.CurrentUser;
+            var storeLocation = StoreLocation.CurrentUser;
 
             if (!string.IsNullOrEmpty(CertificateStoreLocation) &&
                 !Enum.TryParse(CertificateStoreLocation, ignoreCase: true, result: out storeLocation))
@@ -152,6 +157,8 @@ namespace NuGet.CommandLine
                     NuGetCommand.SignCommandInvalidArgumentException,
                     nameof(CertificateStoreLocation)));
             }
+
+            return storeLocation;
         }
 
         private void ValidatePackagePath()
