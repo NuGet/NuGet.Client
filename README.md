@@ -6,7 +6,7 @@
 
 This repo contains the following clients:
   * [NuGet CLI](https://docs.nuget.org/ndocs/tools/nuget.exe-cli-reference)
-  * [NuGet Package Manager for Visual Studio 2015/2017](https://docs.nuget.org/ndocs/tools/package-manager-ui)
+  * [NuGet Package Manager for Visual Studio 2017](https://docs.nuget.org/ndocs/tools/package-manager-ui)
   * [PowerShell CmdLets](https://docs.nuget.org/ndocs/tools/powershell-reference)
 
 ## Build Status
@@ -27,8 +27,6 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
     - .NET desktop development
     - Desktop development with C++
     - Visual Studio extension development.
-- [Visual Studio 2015 Update 3](https://go.microsoft.com/fwlink/?LinkId=691129)
-  with Visual Studio Extensibility Tools
 - [Windows 10 SDK](https://dev.windows.com/en-US/downloads/windows-10-sdk)
 - Git
 - Windows Powershell v3.0+
@@ -62,11 +60,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 > In case you have build issues try cleaning the local repository using `git clean -xdf` and retry steps 3 and 4.
 
 #### Notable `build.ps1` switches
-- `-SkipVS14` - skips building binaries targeting Visual Studio "14" (released as Visual Studio 2015)
 - `-SkipVS15` - skips building binaries targeting Visual Studio "15" (released as Visual Studio 2017)
-
-> Note that if only one of Visual Studio 2015 (VS14) or Visual Studio 2017 (VS15) is installed, neither of the above switches is necessary - the script will build according to the installed version.
-
+- `-SkipUnitTest` - skips running unit tests.
 - `-Fast` - runs minimal incremental build. Skips end-to-end packaging step.
 
 > Reveal all script parameters and switches by running
