@@ -41,11 +41,13 @@ namespace NuGet.Packaging.Signing
             return new SignatureIssue(false, NuGetLogCode.NU3502, message);
         }
 
-        public override string ToString()
+        public ILogMessage ToLogMessage()
         {
-            var issueType = Fatal ? "ERROR" : "WARNING";
-
-            return $"{issueType}: NU{Code} {Message}";
+            if (Fatal)
+            {
+                return LogMessage.CreateError(Code, Message);
+            }
+            return LogMessage.CreateWarning(Code, Message);
         }
 
         public bool Equals(SignatureIssue other)
