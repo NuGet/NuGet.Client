@@ -12,6 +12,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -1171,6 +1172,76 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
                 Assert.Equal(0, lockFile.Libraries.Count);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_InvalidSignPackage()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            // Both TxMs reference packageA, but they are different types.
+            // Verify that the reference does not show up under libraries.
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""netstandard1.3"": {
+                    ""dependencies"": {
+                        ""packageA"": ""4.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(UriUtility.CreateSourceUri(packageSource.FullName).AbsoluteUri));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                var nupkg = new SimpleTestPackageContext("packageA", "4.0.0");
+
+                var signature = new Signature()
+                {
+                    DisplayName = "Test signer",
+                    TestTrust = SignatureVerificationStatus.Invalid,
+                    Type = SignatureType.Author
+                };
+
+                nupkg.Signatures.Add(signature);
+
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, nupkg);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                Assert.False(result.Success);
+                Assert.Equal(NuGetLogCode.NU1410, lockFile.LogMessages.FirstOrDefault().Code);                
             }
         }
     }

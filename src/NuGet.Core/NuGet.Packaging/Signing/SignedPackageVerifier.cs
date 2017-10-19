@@ -55,6 +55,11 @@ namespace NuGet.Packaging.Signing
                 valid = true;
             }
 
+            if (!valid)
+            {
+                errorMessage = $"package signature is invalid.";
+            }
+
             return new VerifySignaturesResult(valid, errorMessage, trustResults);
         }
 

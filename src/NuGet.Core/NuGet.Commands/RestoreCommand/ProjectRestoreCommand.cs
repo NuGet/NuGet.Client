@@ -254,17 +254,23 @@ namespace NuGet.Commands
                 _request.PackageSaveMode,
                 _request.XmlDocFileSaveMode,
                 signedPackageVerifier);
-
-            using (var packageDependency = await installItem.Provider.GetPackageDownloaderAsync(
-                packageIdentity,
-                _request.CacheContext,
-                _logger,
-                token))
+            try
             {
-                await PackageExtractor.InstallFromSourceAsync(
-                    packageDependency,
-                    packageExtractionV3Context,
-                    token);
+                using (var packageDependency = await installItem.Provider.GetPackageDownloaderAsync(
+                    packageIdentity,
+                    _request.CacheContext,
+                    _logger,
+                    token))
+                {
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageDependency,
+                        packageExtractionV3Context,
+                        token);
+                }
+            }
+            catch (SignatureException e)
+            {
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1410, e.Message, packageIdentity.ToString()));
             }
         }
 

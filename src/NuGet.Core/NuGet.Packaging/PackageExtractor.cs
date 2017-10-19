@@ -577,6 +577,27 @@ namespace NuGet.Packaging
 
                                 if (!verifyResult.Valid)
                                 {
+                                    try
+                                    {
+                                        if (File.Exists(targetTempNupkg))
+                                        {
+                                            File.Delete(targetTempNupkg);
+                                        }
+
+                                        if (Directory.Exists(targetPath))
+                                        {
+                                            Directory.Delete(targetPath);
+                                        }
+                                    }
+                                    catch (IOException ex)
+                                    {
+                                        logger.LogWarning(string.Format(
+                                            CultureInfo.CurrentCulture,
+                                            Strings.ErrorUnableToDeleteFile,
+                                            targetTempNupkg,
+                                            ex.Message));
+                                    }
+
                                     throw new SignatureException(verifyResult.ErrorMessage);
                                 }
                             }
@@ -793,6 +814,11 @@ namespace NuGet.Packaging
                     packageReader,
                     packageExtractionV2Context.Logger,
                     token);
+
+                if (!verifyResult.Valid)
+                {
+                    throw new SignatureException(verifyResult.ErrorMessage);
+                }
             }
 
             var satelliteFilesCopied = Enumerable.Empty<string>();
