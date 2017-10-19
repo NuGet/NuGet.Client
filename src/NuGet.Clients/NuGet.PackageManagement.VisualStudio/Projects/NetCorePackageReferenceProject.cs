@@ -188,7 +188,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 foreach (var projectReference in frameworkInfo.ProjectReferences)
                 {
-                    if (_projectSystemCache.ContainsKey(projectReference.ProjectUniqueName))
+                    if (SupportedProjectTypes.IsSupportedProjectExtension(projectReference.ProjectPath))
                     {
                         projectReferences.Add(projectReference);
                     }
