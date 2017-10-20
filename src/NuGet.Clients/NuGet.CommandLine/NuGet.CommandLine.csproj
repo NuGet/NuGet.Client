@@ -88,7 +88,7 @@
     <MakeDir Directories="$(ArtifactsDirectory)$(VsixOutputDirName)" />
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
-  
+
   <PropertyGroup>
     <NuspecFile>NuGet.CommandLine.nuspec</NuspecFile>
     <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
@@ -96,14 +96,14 @@
   </PropertyGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  
+
   <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
-  <ItemGroup>
-    <DllsToSign Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe">
-      <StrongName>MsSharedLib72</StrongName>
-      <Authenticode>Microsoft</Authenticode>
-    </DllsToSign>
-  </ItemGroup>
+    <ItemGroup>
+      <DllsToSign Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe">
+        <StrongName>MsSharedLib72</StrongName>
+        <Authenticode>Microsoft</Authenticode>
+      </DllsToSign>
+    </ItemGroup>
   </Target>
 
   <Target Name="GetSymbolsToIndex" Returns="@(SymbolsToIndex)">

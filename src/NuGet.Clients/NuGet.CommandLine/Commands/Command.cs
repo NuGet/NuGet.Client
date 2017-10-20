@@ -102,7 +102,7 @@ namespace NuGet.CommandLine
             }
             else
             {
-                if (String.IsNullOrEmpty(ConfigFile))
+                if (string.IsNullOrEmpty(ConfigFile))
                 {
                     Settings = Configuration.Settings.LoadDefaultSettings(
                         CurrentDirectory,
@@ -216,13 +216,13 @@ namespace NuGet.CommandLine
             }
 
             // Use the command name minus the suffix if present and default description
-            string name = GetType().Name;
-            int idx = name.LastIndexOf(CommandSuffix, StringComparison.OrdinalIgnoreCase);
+            var name = GetType().Name;
+            var idx = name.LastIndexOf(CommandSuffix, StringComparison.OrdinalIgnoreCase);
             if (idx >= 0)
             {
                 name = name.Substring(0, idx);
             }
-            if (!String.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(name))
             {
                 return new CommandAttribute(name, LocalizedResourceManager.GetString("DefaultCommandDescription"));
             }
