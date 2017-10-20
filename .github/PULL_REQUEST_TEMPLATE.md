@@ -1,5 +1,5 @@
 ## Bug
-Link: Link_to_issue  
+Fixes: Link_to_issue  
 Regression: Yes/No  
 If Regression then when did it last work:   
 If Regression then how are we preventing it in future:   
