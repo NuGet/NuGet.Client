@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -14,6 +15,15 @@ namespace NuGet.Commands
 
         // "The specified password is not correct." (ERROR_INVALID_PASSWORD)
         private const int ERROR_INVALID_PASSWORD_HRESULT = unchecked((int)0x80070056);
+
+        // "The specified certificate file is not correct." (CRYPT_E_NO_MATCH)
+        private const int CRYPT_E_NO_MATCH_HRESULT = unchecked((int)0x80092009);
+
+        // Used to throw "Certificate file not found"
+        private const string CERTIFICATE = "Certificate";
+
+        // Used to throw "Certificate store file not found"
+        private const string CERTIFICATE_STORE = "Certificate store";
 
         /// <summary>
         /// Looks for X509Certificates using the CertificateSourceOptions.
@@ -29,15 +39,42 @@ namespace NuGet.Commands
             {
                 try
                 {
-                    var cert = new X509Certificate2(options.CertificatePath, options.CertificatePassword);
-                    return new X509Certificate2Collection(cert);
+                    if (!string.IsNullOrEmpty(options.CertificatePassword))
+                    {
+                        var cert = new X509Certificate2(options.CertificatePath, options.CertificatePassword); // use the password if the user provided it.
+                        return new X509Certificate2Collection(cert);
+                    }
+                    else
+                    {
+                        var cert = new X509Certificate2(options.CertificatePath);
+                        return new X509Certificate2Collection(cert);
+                    }
                 }
                 catch (CryptographicException ex)
                 {
-                    // TODO-AM add casing for invalid password and certificate
                     if (ex.HResult == ERROR_INVALID_PASSWORD_HRESULT)
                     {
-                        throw new InvalidOperationException("invalid password or certificate");
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                            Strings.SignCommandInvalidPasswordException,
+                            options.CertificatePath,
+                            nameof(options.CertificatePassword)));
+                    }
+                    else if (ex.HResult == ERROR_FILE_NOT_FOUND_HRESULT)
+                    {
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                                Strings.SignCommandFileNotFound,
+                                CERTIFICATE,
+                                options.CertificatePath));
+                    }
+                    else if (ex.HResult == CRYPT_E_NO_MATCH_HRESULT)
+                    {
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                                Strings.SignCommandInvalidCertException,
+                                options.CertificatePath));
+                    }
+                    else
+                    {
+                        throw ex;
                     }
                 }
             }
@@ -47,20 +84,17 @@ namespace NuGet.Commands
 
                 OpenStore(store);
 
-                // check fingerprint
                 if (!string.IsNullOrEmpty(options.Fingerprint))
                 {
                     return store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly: true);
                 }
 
-                // check subject name
                 if (!string.IsNullOrEmpty(options.SubjectName))
                 {
                     return store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly: true);
                 }
             }
 
-            // return empty certificate collection
             return new X509Certificate2Collection();
         }
 
@@ -79,7 +113,10 @@ namespace NuGet.Commands
             {
                 if (ex.HResult == ERROR_FILE_NOT_FOUND_HRESULT)
                 {
-                    throw new InvalidOperationException("certificate store not found");
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                            Strings.SignCommandFileNotFound,
+                            CERTIFICATE_STORE,
+                            store));
                 }
             }
         }

@@ -5,14 +5,10 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Packaging.Signing;
-using NuGet.Shared;
 
 namespace NuGet.CommandLine
 {
@@ -80,6 +76,10 @@ namespace NuGet.CommandLine
             return Task.FromResult(result);
         }
 
+        /// <summary>
+        /// Generates a SignArgs object from the arguments and options passed to the SignCommand object.
+        /// </summary>
+        /// <returns>SignArgs object containing the arguments and options passed to the SignCommand object.</returns>
         public SignArgs GetSignArgs()
         {
             ValidatePackagePath();
@@ -212,6 +212,22 @@ namespace NuGet.CommandLine
             {
                 // Thow if the user provided a fingerprint and a subject
                 throw new ArgumentException(NuGetCommand.SignCommandMultipleCertificateException);
+            }
+            else if (!string.IsNullOrEmpty(KeyContainer) && string.IsNullOrEmpty(CryptographicServiceProvider))
+            {
+                // Thow if the user provided a fingerprint and a subject
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
+                    NuGetCommand.SignCommandMissingArgumentException,
+                    nameof(CryptographicServiceProvider),
+                    nameof(KeyContainer)));
+            }
+            else if (!string.IsNullOrEmpty(CryptographicServiceProvider) && string.IsNullOrEmpty(KeyContainer))
+            {
+                // Thow if the user provided a fingerprint and a subject
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
+                    NuGetCommand.SignCommandMissingArgumentException,
+                    nameof(KeyContainer),
+                    nameof(CryptographicServiceProvider)));
             }
         }
     }

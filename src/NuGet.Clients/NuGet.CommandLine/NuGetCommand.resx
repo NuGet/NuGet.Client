@@ -5347,7 +5347,7 @@ nuget locals global-packages -list</value>
   </data>
   <data name="SignCommandCertificatePasswordDescription" xml:space="preserve">
     <value>Password for the certificate, if needed.
-This option can be used to specify the password for the certificate. If no password is provided, the user may be prompted for a password at run time, unless the -NonInteractive  option is passed.</value>
+This option can be used to specify the password for the certificate. If no password is provided, the command will prompt for a password at run time, unless the -NonInteractive option is passed.</value>
   </data>
   <data name="SignCommandCertificatePathDescription" xml:space="preserve">
     <value>File path to the certificate to be used while signing the package.</value>
@@ -5369,8 +5369,8 @@ This option, along with -KeyContainer, can be used to specify the private key if
     <value>Signs a NuGet package with the specified certificate.</value>
   </data>
   <data name="SignCommandExamples" xml:space="preserve">
-    <value>nuget sign MyPackage.nupkg -CertificatePath /path/to/certificate
-nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -OutputDirectory ./signed/</value>
+    <value>nuget sign MyPackage.nupkg -CertificatePath \path\to\certificate
+nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -OutputDirectory .\signed\</value>
   </data>
   <data name="SignCommandOverwriteDescription" xml:space="preserve">
     <value>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</value>
@@ -5414,7 +5414,7 @@ This option should be used when specifying the certificate via -CertificateSubje
 This option should be used when specifying the certificate via -CertificateSubjectName or -CertificateFingerprint options.</value>
   </data>
   <data name="SignCommandTimestamperDescription" xml:space="preserve">
-    <value>URL to an RFC 3161 timestamp server.</value>
+    <value>URL to an RFC 3161 timestamping server.</value>
   </data>
   <data name="SignCommandInvalidArgumentException" xml:space="preserve">
     <value>Invalid value provided for '{0}'. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
@@ -5432,5 +5432,10 @@ This option should be used when specifying the certificate via -CertificateSubje
   </data>
   <data name="SignCommandNoPackageException" xml:space="preserve">
     <value>No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+  </data>
+  <data name="SignCommandMissingArgumentException" xml:space="preserve">
+    <value>No value provided for '{0}', which is needed when using the '{1}' option. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <comment>0 - primary param name
+1 - other param name</comment>
   </data>
 </root>

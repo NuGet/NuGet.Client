@@ -1224,7 +1224,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please select a valid certitificate.
+        ///   Looks up a localized string similar to Please select a valid certificate.
         /// </summary>
         internal static string SignCommandDialogMessage {
             get {
@@ -1248,6 +1248,33 @@ namespace NuGet.Commands {
         internal static string SignCommandDisplayCertificate {
             get {
                 return ResourceManager.GetString("SignCommandDisplayCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; file &apos;{1}&apos; not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandFileNotFound {
+            get {
+                return ResourceManager.GetString("SignCommandFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate file &apos;{0}&apos; is invalid. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandInvalidCertException {
+            get {
+                return ResourceManager.GetString("SignCommandInvalidCertException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid password was provided for the certificate file &apos;{0}&apos;. Please provide a valid password using the &apos;-{1}&apos; option.
+        /// </summary>
+        internal static string SignCommandInvalidPasswordException {
+            get {
+                return ResourceManager.GetString("SignCommandInvalidPasswordException", resourceCulture);
             }
         }
         
@@ -1279,7 +1306,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, please visit http://docs.nuget.org/docs/reference/command-line-reference.
+        ///   Looks up a localized string similar to No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string SignCommandNoCertException {
             get {

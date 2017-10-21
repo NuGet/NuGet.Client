@@ -39,7 +39,7 @@ namespace NuGet.Commands
                 {
                     SignPackage(packagePath, signArgs.Logger, signRequest);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     success = false;
                     ExceptionUtilities.LogException(e, signArgs.Logger);
@@ -50,7 +50,7 @@ namespace NuGet.Commands
             {
                 signArgs.Logger.LogInformation(Strings.SignCommandSuccess);
             }
-            
+
             return success ? 0 : 1;
         }
 
