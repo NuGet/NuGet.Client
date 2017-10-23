@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.Versioning;
 
@@ -385,14 +386,14 @@ namespace NuGet.Test.Utility
                 {
                     using (var fileStream = File.OpenRead(file))
                     {
-                        await PackageExtractor.InstallFromSourceAsync((stream) =>
-                            fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
-                            new VersionFolderPathContext(
-                                identity,
-                                root,
-                                NullLogger.Instance,
+                        await PackageExtractor.InstallFromSourceAsync(identity,
+                            (stream) => fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                            new VersionFolderPathResolver(root),
+                            new PackageExtractionContext(
                                 saveMode,
-                                XmlDocFileSaveMode.None),
+                                XmlDocFileSaveMode.None,
+                                NullLogger.Instance,
+                                signedPackageVerifier: null),
                                 CancellationToken.None);
                     }
                 }
@@ -428,7 +429,11 @@ namespace NuGet.Test.Utility
         public static async Task CreateFolderFeedPackagesConfigAsync(string root, params string[] nupkgPaths)
         {
             var resolver = new PackagePathResolver(root);
-            var context = new PackageExtractionContext(NullLogger.Instance);
+            var context = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null);
 
             foreach (var path in nupkgPaths)
             {

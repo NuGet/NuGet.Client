@@ -12,6 +12,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -193,12 +194,17 @@ namespace NuGet.Protocol.Core.Types
                             ? PackageSaveMode.Defaultv3
                             : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
 
-                        var versionFolderPathContext = new VersionFolderPathContext(
-                            packageIdentity,
-                            source,
+                        var signedPackageVerifier = new SignedPackageVerifier(
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignedPackageVerifierSettings.Default);
+
+                        var packageExtractionContext = new PackageExtractionContext(
+                            packageSaveMode,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
                             logger,
-                            packageSaveMode: packageSaveMode,
-                            xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
+                            signedPackageVerifier);
+
+                        var versionFolderPathResolver = new VersionFolderPathResolver(source);
 
                         using (var packageDownloader = new LocalPackageArchiveDownloader(
                             packagePath,
@@ -206,8 +212,10 @@ namespace NuGet.Protocol.Core.Types
                             logger))
                         {
                             await PackageExtractor.InstallFromSourceAsync(
+                                packageIdentity,
                                 packageDownloader,
-                                versionFolderPathContext,
+                                versionFolderPathResolver,
+                                packageExtractionContext,
                                 token);
                         }
 

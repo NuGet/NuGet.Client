@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -204,7 +204,7 @@ namespace NuGet.VisualStudio
                         if (!_packageServices.IsPackageInstalledEx(project, package.Id, package.Version.ToNormalizedString()))
                         {
                             // No? Raise a warning (likely written to the Output window) and ignore this package.
-                            warningHandler(String.Format(VsResources.PreinstalledPackages_VersionConflict, package.Id, package.Version));
+                            warningHandler(string.Format(VsResources.PreinstalledPackages_VersionConflict, package.Id, package.Version));
                         }
                         // Yes? Just silently ignore this package!
                     }
@@ -214,16 +214,13 @@ namespace NuGet.VisualStudio
                         {
                             if (InfoHandler != null)
                             {
-                                InfoHandler(String.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_PackageInstallStatus, package.Id, package.Version));
+                                InfoHandler(string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_PackageInstallStatus, package.Id, package.Version));
                             }
 
                             // Skip assembly references and disable binding redirections should be done together
-                            bool disableBindingRedirects = package.SkipAssemblyReferences;
+                            var disableBindingRedirects = package.SkipAssemblyReferences;
 
                             var projectContext = new VSAPIProjectContext(package.SkipAssemblyReferences, disableBindingRedirects);
-
-                            // Old templates have hardcoded non-normalized paths
-                            projectContext.PackageExtractionContext.UseLegacyPackageInstallPath = true;
 
                             // This runs from the UI thread
                             await _installer.InstallInternalCoreAsync(

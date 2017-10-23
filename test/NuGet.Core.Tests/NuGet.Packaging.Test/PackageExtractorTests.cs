@@ -14,6 +14,8 @@ using System.Xml.Linq;
 using Moq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -48,12 +50,11 @@ namespace NuGet.Packaging.Test
                     {
                         using (var packageStream = File.OpenRead(sourcePathResolver.GetPackageFilePath(identity.Id, identity.Version)))
                         {
-                            var pathContext = new VersionFolderPathContext(
-                                    identity,
-                                    packagesPath,
-                                    NullLogger.Instance,
+                            var pathContext = new PackageExtractionContext(
                                     packageSaveMode: PackageSaveMode.Nupkg,
-                                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
+                                    xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                                    logger: NullLogger.Instance,
+                                    signedPackageVerifier: null);
 
                             var pathResolver = new VersionFolderPathResolver(packagesPath);
                             var hashPath = pathResolver.GetHashPath(identity.Id, identity.Version);
@@ -66,7 +67,9 @@ namespace NuGet.Packaging.Test
                                 NullLogger.Instance))
                             {
                                 var installed = await PackageExtractor.InstallFromSourceAsync(
+                                    identity,
                                     packageDownloader,
+                                    pathResolver,
                                     pathContext,
                                     CancellationToken.None);
 
@@ -112,6 +115,7 @@ namespace NuGet.Packaging.Test
 
                 var packagesPath = Path.Combine(root, "packages");
                 await SimpleTestPackageUtility.CreateFolderFeedV3(packagesPath, identity);
+                var pathResolver = new VersionFolderPathResolver(packagesPath);
 
                 using (var packageDownloader = new LocalPackageArchiveDownloader(
                     packageFileInfo.FullName,
@@ -120,13 +124,14 @@ namespace NuGet.Packaging.Test
                 {
                     // Act
                     var installed = await PackageExtractor.InstallFromSourceAsync(
+                        identity,
                         packageDownloader,
-                        new VersionFolderPathContext(
-                            identity,
-                            packagesPath,
-                            NullLogger.Instance,
+                        pathResolver,
+                        new PackageExtractionContext(
                             packageSaveMode: PackageSaveMode.Nupkg,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            logger: NullLogger.Instance,
+                            signedPackageVerifier: null),
                         CancellationToken.None);
 
                     // Assert
@@ -153,6 +158,7 @@ namespace NuGet.Packaging.Test
                     "lib/net45/A.dll");
 
                 var packagesPath = Path.Combine(root, "packages");
+                var pathResolver = new VersionFolderPathResolver(packagesPath);
 
                 using (var packageDownloader = new LocalPackageArchiveDownloader(
                     packageFileInfo.FullName,
@@ -161,14 +167,15 @@ namespace NuGet.Packaging.Test
                 {
                     // Act
                     var installed = await PackageExtractor.InstallFromSourceAsync(
-                        packageDownloader,
-                        new VersionFolderPathContext(
-                            identity,
-                            packagesPath,
-                            NullLogger.Instance,
-                            packageSaveMode: PackageSaveMode.Nupkg,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
-                        CancellationToken.None);
+                         identity,
+                         packageDownloader,
+                         pathResolver,
+                         new PackageExtractionContext(
+                             packageSaveMode: PackageSaveMode.Nupkg,
+                             xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                             logger: NullLogger.Instance,
+                             signedPackageVerifier: null),
+                         CancellationToken.None);
 
                     // Assert
                     Assert.True(installed);
@@ -196,7 +203,7 @@ namespace NuGet.Packaging.Test
                    "lib/net45/A.dll");
 
                 var packagesPath = Path.Combine(root, "packages");
-                var resolver = new VersionFolderPathResolver(packagesPath, isLowercase);
+                var pathResolver = new VersionFolderPathResolver(packagesPath, isLowercase);
 
                 using (var packageDownloader = new LocalPackageArchiveDownloader(
                     packageFileInfo.FullName,
@@ -205,18 +212,18 @@ namespace NuGet.Packaging.Test
                 {
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
-                        packageDownloader,
-                        new VersionFolderPathContext(
-                            identity,
-                            packagesPath,
-                            isLowercase,
-                            NullLogger.Instance,
-                            PackageSaveMode.Nupkg,
-                            XmlDocFileSaveMode.None),
-                        CancellationToken.None);
+                          identity,
+                          packageDownloader,
+                          pathResolver,
+                          new PackageExtractionContext(
+                              packageSaveMode: PackageSaveMode.Nupkg,
+                              xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                              logger: NullLogger.Instance,
+                              signedPackageVerifier: null),
+                          CancellationToken.None);
 
                     // Assert
-                    Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should exist.");
+                    Assert.True(File.Exists(pathResolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should exist.");
                 }
             }
         }
@@ -255,6 +262,7 @@ namespace NuGet.Packaging.Test
                 }
 
                 var packageIdentity = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                var pathResolver = new VersionFolderPathResolver(root);
 
                 using (var packageDownloader = new LocalPackageArchiveDownloader(
                     packageFile,
@@ -263,13 +271,14 @@ namespace NuGet.Packaging.Test
                 {
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
+                        packageIdentity,
                         packageDownloader,
-                        new VersionFolderPathContext(
-                            packageIdentity,
-                            root,
-                            NullLogger.Instance,
+                        pathResolver,
+                        new PackageExtractionContext(
                             packageSaveMode: PackageSaveMode.Defaultv3,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            logger: NullLogger.Instance,
+                            signedPackageVerifier: null),
                         CancellationToken.None);
 
                     // Assert
@@ -298,6 +307,7 @@ namespace NuGet.Packaging.Test
 
                 var packageFile = Path.Combine(root, "a.1.0.0.nupkg");
                 var packageIdentity = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                var pathResolver = new VersionFolderPathResolver(root);
 
                 using (var packageDownloader = new LocalPackageArchiveDownloader(
                     packageFile,
@@ -306,13 +316,14 @@ namespace NuGet.Packaging.Test
                 {
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
+                        packageIdentity,
                         packageDownloader,
-                        new VersionFolderPathContext(
-                            packageIdentity,
-                            root,
-                            NullLogger.Instance,
+                        pathResolver,
+                        new PackageExtractionContext(
                             packageSaveMode: PackageSaveMode.Defaultv3,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            logger: NullLogger.Instance,
+                            signedPackageVerifier: null),
                         CancellationToken.None);
 
                     // Assert
@@ -338,7 +349,11 @@ namespace NuGet.Packaging.Test
                     packageReader,
                     packageStream,
                     resolver,
-                    new PackageExtractionContext(NullLogger.Instance),
+                    new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null),
                     CancellationToken.None);
 
                 // Assert
@@ -369,7 +384,11 @@ namespace NuGet.Packaging.Test
                         var files = await PackageExtractor.ExtractPackageAsync(folderReader,
                             stream,
                             new PackagePathResolver(root),
-                            new PackageExtractionContext(NullLogger.Instance),
+                            new PackageExtractionContext(
+                                PackageSaveMode.Defaultv2,
+                                PackageExtractionBehavior.XmlDocFileSaveMode,
+                                NullLogger.Instance,
+                                signedPackageVerifier: null),
                             CancellationToken.None);
 
                         // Assert
@@ -396,10 +415,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        XmlDocFileSaveMode = XmlDocFileSaveMode.None
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        XmlDocFileSaveMode.None,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -429,8 +449,11 @@ namespace NuGet.Packaging.Test
                 {
                     zipFile.ExtractAll(packageFolder);
 
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance);
-                    packageExtractionContext.PackageSaveMode = PackageSaveMode.Nupkg;
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nupkg,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null);
 
                     // Act
                     var files = await PackageExtractor.ExtractPackageAsync(folderReader,
@@ -460,8 +483,11 @@ namespace NuGet.Packaging.Test
                 {
                     zipFile.ExtractAll(packageFolder);
 
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance);
-                    packageExtractionContext.PackageSaveMode = PackageSaveMode.Nuspec;
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nuspec,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null);
 
                     // Act
                     var files = await PackageExtractor.ExtractPackageAsync(folderReader,
@@ -491,8 +517,11 @@ namespace NuGet.Packaging.Test
                 {
                     zipFile.ExtractAll(packageFolder);
 
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance);
-                    packageExtractionContext.PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nuspec | PackageSaveMode.Nupkg,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null);
 
                     // Act
                     var files = await PackageExtractor.ExtractPackageAsync(folderReader,
@@ -523,7 +552,11 @@ namespace NuGet.Packaging.Test
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 using (var satellitePackageStream = File.OpenRead(satellitePackageInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance);
+                    var packageExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Defaultv2,
+                                PackageExtractionBehavior.XmlDocFileSaveMode,
+                                NullLogger.Instance,
+                                signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(packageStream,
@@ -566,10 +599,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        XmlDocFileSaveMode = XmlDocFileSaveMode.None
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Defaultv2,
+                                XmlDocFileSaveMode.None,
+                                NullLogger.Instance,
+                                signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -606,10 +640,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        XmlDocFileSaveMode = XmlDocFileSaveMode.Compress
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Defaultv2,
+                                XmlDocFileSaveMode.Compress,
+                                NullLogger.Instance,
+                                signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -658,10 +693,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        XmlDocFileSaveMode = XmlDocFileSaveMode.Compress
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Defaultv2,
+                                XmlDocFileSaveMode.Compress,
+                                NullLogger.Instance,
+                                signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -700,10 +736,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        XmlDocFileSaveMode = XmlDocFileSaveMode.Skip
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Defaultv2,
+                                XmlDocFileSaveMode.Skip,
+                                NullLogger.Instance,
+                                signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -743,10 +780,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        XmlDocFileSaveMode = XmlDocFileSaveMode.Skip
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                               PackageSaveMode.Defaultv2,
+                               XmlDocFileSaveMode.Skip,
+                               NullLogger.Instance,
+                               signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -797,10 +835,11 @@ namespace NuGet.Packaging.Test
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 using (var satellitePackageStream = File.OpenRead(satellitePackageInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        XmlDocFileSaveMode = XmlDocFileSaveMode.Skip
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                               PackageSaveMode.Defaultv2,
+                               XmlDocFileSaveMode.Skip,
+                               NullLogger.Instance,
+                               signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -847,10 +886,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        XmlDocFileSaveMode = XmlDocFileSaveMode.Compress
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                               PackageSaveMode.Defaultv2,
+                               XmlDocFileSaveMode.Compress,
+                               NullLogger.Instance,
+                               signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -888,10 +928,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        XmlDocFileSaveMode = XmlDocFileSaveMode.Compress
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                               PackageSaveMode.Defaultv2,
+                               XmlDocFileSaveMode.Compress,
+                               NullLogger.Instance,
+                               signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -926,10 +967,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        PackageSaveMode = PackageSaveMode.Nupkg | PackageSaveMode.Nuspec
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                               PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
+                               PackageExtractionBehavior.XmlDocFileSaveMode,
+                               NullLogger.Instance,
+                               signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -966,10 +1008,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        PackageSaveMode = PackageSaveMode.Nupkg | PackageSaveMode.Files
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                               PackageSaveMode.Nupkg | PackageSaveMode.Files,
+                               PackageExtractionBehavior.XmlDocFileSaveMode,
+                               NullLogger.Instance,
+                               signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -1006,10 +1049,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        PackageSaveMode = PackageSaveMode.Nupkg | PackageSaveMode.Files | PackageSaveMode.Nuspec
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                               PackageSaveMode.Nupkg | PackageSaveMode.Files | PackageSaveMode.Nuspec,
+                               PackageExtractionBehavior.XmlDocFileSaveMode,
+                               NullLogger.Instance,
+                               signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -1046,10 +1090,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        PackageSaveMode = PackageSaveMode.Nupkg | PackageSaveMode.Files
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Nupkg | PackageSaveMode.Files,
+                                PackageExtractionBehavior.XmlDocFileSaveMode,
+                                NullLogger.Instance,
+                                signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -1086,10 +1131,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                               PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                               PackageExtractionBehavior.XmlDocFileSaveMode,
+                               NullLogger.Instance,
+                               signedPackageVerifier: null);
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
@@ -1128,10 +1174,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                               PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                               PackageExtractionBehavior.XmlDocFileSaveMode,
+                               NullLogger.Instance,
+                               signedPackageVerifier: null);
 
                     // Act
                     await PackageExtractor.ExtractPackageAsync(
@@ -1172,10 +1219,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                               PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                               PackageExtractionBehavior.XmlDocFileSaveMode,
+                               NullLogger.Instance,
+                               signedPackageVerifier: null);
 
                     // Act
                     await PackageExtractor.ExtractPackageAsync(
@@ -1217,10 +1265,11 @@ namespace NuGet.Packaging.Test
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
-                    {
-                        PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files
-                    };
+                    var packageExtractionContext = new PackageExtractionContext(
+                               PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                               PackageExtractionBehavior.XmlDocFileSaveMode,
+                               NullLogger.Instance,
+                               signedPackageVerifier: null);
 
                     // Act
                     await PackageExtractor.ExtractPackageAsync(
@@ -1609,6 +1658,8 @@ namespace NuGet.Packaging.Test
                    DateTimeOffset.UtcNow.LocalDateTime,
                    "lib/net45/A.dll");
 
+                var pathResolver = new VersionFolderPathResolver(root);
+
                 using (var packageDownloader = new LocalPackageArchiveDownloader(
                     packageFileInfo.FullName,
                     identity,
@@ -1616,13 +1667,14 @@ namespace NuGet.Packaging.Test
                 {
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
+                        identity,
                         packageDownloader,
-                        new VersionFolderPathContext(
-                            identity,
-                            root,
-                            NullLogger.Instance,
+                        pathResolver,
+                        new PackageExtractionContext(
                             packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Files,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            logger: NullLogger.Instance,
+                            signedPackageVerifier: null),
                         CancellationToken.None);
 
                     // Assert
@@ -1647,6 +1699,7 @@ namespace NuGet.Packaging.Test
                    identity.Version.ToString(),
                    DateTimeOffset.UtcNow.LocalDateTime,
                    "lib/net45/A.dll");
+                var pathResolver = new VersionFolderPathResolver(root);
 
                 using (var packageDownloader = new LocalPackageArchiveDownloader(
                     packageFileInfo.FullName,
@@ -1655,13 +1708,14 @@ namespace NuGet.Packaging.Test
                 {
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
+                        identity,
                         packageDownloader,
-                        new VersionFolderPathContext(
-                            identity,
-                            root,
-                            NullLogger.Instance,
+                        pathResolver,
+                        new PackageExtractionContext(
                             packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            logger: NullLogger.Instance,
+                            signedPackageVerifier: null),
                         CancellationToken.None);
 
                     // Assert
@@ -1687,6 +1741,7 @@ namespace NuGet.Packaging.Test
                    identity.Version.ToString(),
                    DateTimeOffset.UtcNow.LocalDateTime,
                    "lib/net45/A.dll");
+                var pathResolver = new VersionFolderPathResolver(root);
 
                 using (var packageDownloader = new LocalPackageArchiveDownloader(
                     packageFileInfo.FullName,
@@ -1695,13 +1750,14 @@ namespace NuGet.Packaging.Test
                 {
                     // Act
                     await PackageExtractor.InstallFromSourceAsync(
+                        identity,
                         packageDownloader,
-                        new VersionFolderPathContext(
-                            identity,
-                            root,
-                            NullLogger.Instance,
+                        pathResolver,
+                        new PackageExtractionContext(
                             packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
-                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            logger: NullLogger.Instance,
+                            signedPackageVerifier: null),
                         CancellationToken.None);
 
                     // Assert
@@ -1718,6 +1774,7 @@ namespace NuGet.Packaging.Test
             var nuspecFileName = "a.nuspec";
             var packageDownloader = new Mock<IPackageDownloader>(MockBehavior.Strict);
             var coreReader = new Mock<IAsyncPackageCoreReader>(MockBehavior.Strict);
+            var signedReader = new Mock<ISignedPackageReader>(MockBehavior.Strict);
 
             packageDownloader.Setup(x => x.CopyNupkgFileToAsync(It.IsNotNull<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
@@ -1725,6 +1782,7 @@ namespace NuGet.Packaging.Test
                 .ReturnsAsync("hash");
             packageDownloader.SetupGet(x => x.CoreReader)
                 .Returns(coreReader.Object);
+            packageDownloader.SetupGet(x => x.SignedPackageReader).Returns(signedReader.Object);
             packageDownloader.Setup(x => x.Dispose());
 
             coreReader.Setup(x => x.GetNuspecFileAsync(It.IsAny<CancellationToken>()))
@@ -1753,19 +1811,20 @@ namespace NuGet.Packaging.Test
 
             using (var testDirectory = TestDirectory.Create())
             {
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    packageIdentity,
-                    testDirectory.Path,
-                    NullLogger.Instance,
+                var packageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Nuspec,
-                    XmlDocFileSaveMode.None);
+                    XmlDocFileSaveMode.None,
+                    NullLogger.Instance,
+                    null);
                 var versionFolderPathResolver = new VersionFolderPathResolver(testDirectory.Path);
                 var installDirectoryPath = versionFolderPathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
                 var expectedNuspecFilePath = Path.Combine(installDirectoryPath, nuspecFileName);
 
                 var wasInstalled = await PackageExtractor.InstallFromSourceAsync(
+                    packageIdentity,
                     packageDownloader.Object,
-                    versionFolderPathContext,
+                    versionFolderPathResolver,
+                    packageExtractionContext,
                     CancellationToken.None);
 
                 Assert.True(wasInstalled);
@@ -1784,6 +1843,7 @@ namespace NuGet.Packaging.Test
             var actualNuspecFileName = intendedNuspecFileName.ToUpperInvariant();
             var packageDownloader = new Mock<IPackageDownloader>(MockBehavior.Strict);
             var coreReader = new Mock<IAsyncPackageCoreReader>(MockBehavior.Strict);
+            var signedReader = new Mock<ISignedPackageReader>(MockBehavior.Strict);
 
             packageDownloader.Setup(x => x.CopyNupkgFileToAsync(It.IsNotNull<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
@@ -1791,6 +1851,7 @@ namespace NuGet.Packaging.Test
                 .ReturnsAsync("hash");
             packageDownloader.SetupGet(x => x.CoreReader)
                 .Returns(coreReader.Object);
+            packageDownloader.SetupGet(x => x.SignedPackageReader).Returns(signedReader.Object);
             packageDownloader.Setup(x => x.Dispose());
 
             coreReader.Setup(x => x.GetNuspecFileAsync(It.IsAny<CancellationToken>()))
@@ -1819,20 +1880,21 @@ namespace NuGet.Packaging.Test
 
             using (var testDirectory = TestDirectory.Create())
             {
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    packageIdentity,
-                    testDirectory.Path,
-                    NullLogger.Instance,
+                var packageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Nuspec,
-                    XmlDocFileSaveMode.None);
+                    XmlDocFileSaveMode.None,
+                    NullLogger.Instance,
+                    null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(testDirectory.Path);
                 var installDirectoryPath = versionFolderPathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
                 var intendedNuspecFilePath = Path.Combine(installDirectoryPath, intendedNuspecFileName);
 
                 var wasInstalled = await PackageExtractor.InstallFromSourceAsync(
+                    packageIdentity,
                     packageDownloader.Object,
-                    versionFolderPathContext,
+                    versionFolderPathResolver,
+                    packageExtractionContext,
                     CancellationToken.None);
 
                 Assert.True(wasInstalled);
@@ -1842,6 +1904,492 @@ namespace NuGet.Packaging.Test
 
             coreReader.Verify();
             packageDownloader.Verify();
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsyncByPackageDownloader_TrustedSignPackage()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new VersionFolderPathResolver(root);
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                var signedPackageVerifier = new Mock<ISignedPackageVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+                    ReturnsAsync(new VerifySignaturesResult(true));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        identity,
+                        packageDownloader,
+                        resolver,
+                        new PackageExtractionContext(
+                            packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            logger: NullLogger.Instance,
+                            signedPackageVerifier: signedPackageVerifier.Object),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.False(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
+                    Assert.True(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
+                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsyncByPackageDownloader_InvalidSignPackageWithUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new VersionFolderPathResolver(root);
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                var signedPackageVerifier = new Mock<ISignedPackageVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+                    ReturnsAsync(new VerifySignaturesResult(false));
+
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
+                {
+                    // Act & Assert
+                    await Assert.ThrowsAsync<SignatureException>(
+                     () => PackageExtractor.InstallFromSourceAsync(
+                        identity,
+                        packageDownloader,
+                        resolver,
+                        new PackageExtractionContext(
+                            packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            logger: NullLogger.Instance,
+                            signedPackageVerifier: signedPackageVerifier.Object),
+                        CancellationToken.None));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsyncByPackageDownloader_InvalidSignPackageWithoutUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new VersionFolderPathResolver(root);
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                var signedPackageVerifier = new Mock<ISignedPackageVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+                    ReturnsAsync(new VerifySignaturesResult(false));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    packageFileInfo.FullName,
+                    identity,
+                    NullLogger.Instance))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        identity,
+                        packageDownloader,
+                        resolver,
+                        new PackageExtractionContext(
+                            packageSaveMode: PackageSaveMode.Nupkg,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            logger: NullLogger.Instance,
+                            signedPackageVerifier: signedPackageVerifier.Object),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
+                    Assert.False(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
+                    Assert.False(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsyncByStream_TrustedSignPackage()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new VersionFolderPathResolver(root);
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                var signedPackageVerifier = new Mock<ISignedPackageVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+                    ReturnsAsync(new VerifySignaturesResult(true));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                using (var fileStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        identity,
+                        (stream) => fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                        resolver,
+                        new PackageExtractionContext(
+                            packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            logger: NullLogger.Instance,
+                            signedPackageVerifier: signedPackageVerifier.Object),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.False(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
+                    Assert.True(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
+                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsyncByStream_InvalidSignPackageWithoutUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new VersionFolderPathResolver(root);
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                var signedPackageVerifier = new Mock<ISignedPackageVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+                    ReturnsAsync(new VerifySignaturesResult(false));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                using (var fileStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        identity,
+                        (stream) => fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                        resolver,
+                        new PackageExtractionContext(
+                            packageSaveMode: PackageSaveMode.Nupkg,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            logger: NullLogger.Instance,
+                            signedPackageVerifier: signedPackageVerifier.Object),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
+                    Assert.False(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
+                    Assert.False(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsyncByStream_InvalidSignPackageWithUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new VersionFolderPathResolver(root);
+
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                var signedPackageVerifier = new Mock<ISignedPackageVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+                    ReturnsAsync(new VerifySignaturesResult(false));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                using (var fileStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act & Assert
+                    await Assert.ThrowsAsync<SignatureException>(
+                     () => PackageExtractor.InstallFromSourceAsync(
+                         identity,
+                        (stream) => fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                        resolver,
+                        new PackageExtractionContext(
+                            packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                            logger: NullLogger.Instance,
+                            signedPackageVerifier: signedPackageVerifier.Object),
+                        CancellationToken.None));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsyncByStream_TrustedSignPackage()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                var signedPackageVerifier = new Mock<ISignedPackageVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+                    ReturnsAsync(new VerifySignaturesResult(true));
+
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier.Object);
+
+                    // Act
+                    var packageFiles = await PackageExtractor.ExtractPackageAsync(packageStream,
+                                                                     resolver,
+                                                                     packageExtractionContext,
+                                                                     CancellationToken.None);
+
+                    // Assert
+                    var installPath = resolver.GetInstallPath(identity);
+                    Assert.False(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                var signedPackageVerifier = new Mock<ISignedPackageVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+                    ReturnsAsync(new VerifySignaturesResult(false));
+
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nupkg,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier.Object);
+
+                    // Act & Assert
+                    await Assert.ThrowsAsync<SignatureException>(
+                        () => PackageExtractor.ExtractPackageAsync(
+                            packageStream,
+                            resolver,
+                            packageExtractionContext,
+                            CancellationToken.None));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsyncByPackageReader_TrustedSignPackage()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                var signedPackageVerifier = new Mock<ISignedPackageVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+                    ReturnsAsync(new VerifySignaturesResult(true));
+
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier.Object);
+
+                    // Act
+                    var packageFiles = await PackageExtractor.ExtractPackageAsync(packageReader,
+                                                                     resolver,
+                                                                     packageExtractionContext,
+                                                                     CancellationToken.None);
+
+                    // Assert
+                    var installPath = resolver.GetInstallPath(identity);
+                    Assert.False(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                var signedPackageVerifier = new Mock<ISignedPackageVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+                    ReturnsAsync(new VerifySignaturesResult(false));
+
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nupkg,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier.Object);
+
+                    // Act & Assert
+                    await Assert.ThrowsAsync<SignatureException>(
+                        () => PackageExtractor.ExtractPackageAsync(
+                            packageReader,
+                            resolver,
+                            packageExtractionContext,
+                            CancellationToken.None));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsyncByPackageReaderAndStream_TrustedSignPackage()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                var signedPackageVerifier = new Mock<ISignedPackageVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+                    ReturnsAsync(new VerifySignaturesResult(true));
+
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier.Object);
+
+                    // Act
+                    var packageFiles = await PackageExtractor.ExtractPackageAsync(packageReader,
+                                                                     packageStream,
+                                                                     resolver,
+                                                                     packageExtractionContext,
+                                                                     CancellationToken.None);
+
+                    // Assert
+                    var installPath = resolver.GetInstallPath(identity);
+                    Assert.False(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
+                }
+            }
+
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzip()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+                var signedPackageVerifier = new Mock<ISignedPackageVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+                    ReturnsAsync(new VerifySignaturesResult(false));
+
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nupkg,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier.Object);
+
+                    // Act & Assert
+                    await Assert.ThrowsAsync<SignatureException>(
+                        () => PackageExtractor.ExtractPackageAsync(
+                            packageReader,
+                            packageStream,
+                            resolver,
+                            packageExtractionContext,
+                            CancellationToken.None));
+                }
+            }
         }
 
         private string StatPermissions(string path)
@@ -1886,7 +2434,11 @@ namespace NuGet.Packaging.Test
                     packageIdentity: null,
                     packagePathResolver: new PackagePathResolver(rootDirectory: "a"),
                     packageSaveMode: PackageSaveMode.Defaultv3,
-                    packageExtractionContext: new PackageExtractionContext(NullLogger.Instance),
+                    packageExtractionContext: new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        null),
                     token: CancellationToken.None));
 
             Assert.Equal("packageIdentity", exception.ParamName);
@@ -1900,7 +2452,11 @@ namespace NuGet.Packaging.Test
                     new PackageIdentity("a", new NuGetVersion(major: 1, minor: 2, patch: 3)),
                     packagePathResolver: null,
                     packageSaveMode: PackageSaveMode.Defaultv3,
-                    packageExtractionContext: new PackageExtractionContext(NullLogger.Instance),
+                    packageExtractionContext: new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        null),
                     token: CancellationToken.None));
 
             Assert.Equal("packagePathResolver", exception.ParamName);
@@ -1945,7 +2501,11 @@ namespace NuGet.Packaging.Test
                     satelliteIdentity,
                     packagePathResolver,
                     PackageSaveMode.Defaultv3,
-                    new PackageExtractionContext(NullLogger.Instance),
+                    new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        null),
                     CancellationToken.None);
 
                 Assert.Empty(files);
@@ -1974,7 +2534,11 @@ namespace NuGet.Packaging.Test
                     satelliteIdentity,
                     packagePathResolver,
                     PackageSaveMode.Defaultv3,
-                    new PackageExtractionContext(NullLogger.Instance),
+                    new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        null),
                     CancellationToken.None)).ToArray();
 
                 Assert.Equal(1, files.Length);
@@ -2010,7 +2574,11 @@ namespace NuGet.Packaging.Test
 
             internal ExtractPackageAsyncTest()
             {
-                Context = new PackageExtractionContext(NullLogger.Instance);
+                Context = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        null);
                 PackageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
                 _testDirectory = TestDirectory.Create();
 

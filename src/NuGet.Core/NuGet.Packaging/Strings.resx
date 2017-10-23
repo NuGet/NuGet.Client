@@ -217,4 +217,7 @@
   <data name="ErrorSigningCertUntrustedRoot" xml:space="preserve">
     <value>Signing certificate chains to an untrusted root.</value>
   </data>
+  <data name="InvalidPackageSignature" xml:space="preserve">
+    <value>Package {0} signature is invalid.</value>
+  </data>
 </root>

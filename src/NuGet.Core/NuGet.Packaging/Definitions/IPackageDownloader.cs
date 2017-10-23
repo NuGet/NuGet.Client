@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.Packaging
 {
@@ -24,6 +25,8 @@ namespace NuGet.Packaging
         /// </summary>
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
         IAsyncPackageCoreReader CoreReader { get; }
+
+        ISignedPackageReader SignedPackageReader { get; }
 
         /// <summary>
         /// Asynchronously copies a .nupkg to a target file path.
