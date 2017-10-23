@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectManagement;
 
 namespace Test.Utility
@@ -27,7 +28,11 @@ namespace Test.Utility
             return FileConflictAction.IgnoreAll;
         }
 
-        public PackageExtractionContext PackageExtractionContext { get; set; } = new PackageExtractionContext(NullLogger.Instance);
+        public PackageExtractionContext PackageExtractionContext { get; set; } = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null);
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; set; }
 

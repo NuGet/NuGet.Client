@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -29,7 +30,7 @@ namespace NuGet.Protocol
             {
                 throw new ArgumentNullException(nameof(globalPackagesFolder));
             }
-            
+
             var defaultPackagePathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 
             var hashPath = defaultPackagePathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
@@ -50,7 +51,7 @@ namespace NuGet.Protocol
                 {
                     stream = File.Open(nupkgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                     packageReader = new PackageFolderReader(installPath);
-                    return new DownloadResourceResult(stream, packageReader);
+                    return new DownloadResourceResult(stream, packageReader) { SignatureVerified = true };
                 }
                 catch
                 {
@@ -93,20 +94,27 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(globalPackagesFolder));
             }
 
+            var signedPackageVerifier = new SignedPackageVerifier(
+                          SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                          SignedPackageVerifierSettings.Default);
+
             // The following call adds it to the global packages folder.
             // Addition is performed using ConcurrentUtils, such that,
             // multiple processes may add at the same time
 
-            var versionFolderPathContext = new VersionFolderPathContext(
-                packageIdentity,
-                globalPackagesFolder,
-                logger,
+            var packageExtractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv3,
-                PackageExtractionBehavior.XmlDocFileSaveMode);
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                logger,
+                signedPackageVerifier);
+
+            var versionFolderPathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 
             await PackageExtractor.InstallFromSourceAsync(
+                packageIdentity,
                 stream => packageStream.CopyToAsync(stream, BufferSize, token),
-                versionFolderPathContext,
+                versionFolderPathResolver,
+                packageExtractionContext,
                 token);
 
             var package = GetPackage(packageIdentity, globalPackagesFolder);

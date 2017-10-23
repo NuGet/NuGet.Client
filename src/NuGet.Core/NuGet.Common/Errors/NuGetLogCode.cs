@@ -125,6 +125,11 @@ namespace NuGet.Common
         NU1401 = 1401,
 
         /// <summary>
+        /// Package Signature is invalid
+        /// </summary>
+        NU1410 = 1410,
+
+        /// <summary>
         /// Undefined warning
         /// </summary>
         NU1500 = 1500,

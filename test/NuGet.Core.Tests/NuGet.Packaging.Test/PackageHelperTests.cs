@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -210,7 +211,11 @@ namespace NuGet.Packaging.Test
                     test.Reader,
                     test.GetPackageStream(),
                     test.Resolver,
-                    new PackageExtractionContext(NullLogger.Instance),
+                    new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null),
                     CancellationToken.None);
 
                 var packageIdentity = test.Reader.GetIdentity();
@@ -336,7 +341,11 @@ namespace NuGet.Packaging.Test
                             packageReader,
                             packageStream,
                             packagePathResolver,
-                            new PackageExtractionContext(NullLogger.Instance),
+                            new PackageExtractionContext(
+                                PackageSaveMode.Defaultv2,
+                                PackageExtractionBehavior.XmlDocFileSaveMode,
+                                NullLogger.Instance,
+                                signedPackageVerifier: null),
                             CancellationToken.None);
                     }
 
@@ -384,7 +393,11 @@ namespace NuGet.Packaging.Test
                         packageReader,
                         packageStream,
                         packagePathResolver,
-                        new PackageExtractionContext(NullLogger.Instance),
+                        new PackageExtractionContext(
+                            PackageSaveMode.Defaultv2,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
+                            NullLogger.Instance,
+                            signedPackageVerifier: null),
                         CancellationToken.None);
                 }
 
@@ -396,7 +409,11 @@ namespace NuGet.Packaging.Test
                         packageReader,
                         packageStream,
                         packagePathResolver,
-                        new PackageExtractionContext(NullLogger.Instance),
+                        new PackageExtractionContext(
+                            PackageSaveMode.Defaultv2,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
+                            NullLogger.Instance,
+                            signedPackageVerifier: null),
                         CancellationToken.None);
                 }
 

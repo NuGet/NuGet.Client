@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// Loads trust providers and verifies package signatures.
     /// </summary>
-    public class SignedPackageVerifier
+    public class SignedPackageVerifier : ISignedPackageVerifier
     {
         private readonly List<ISignatureVerificationProvider> _verificationProviders;
         private readonly SignedPackageVerifierSettings _settings;
@@ -28,7 +28,6 @@ namespace NuGet.Packaging.Signing
         {
             var valid = false;
             var trustResults = new List<SignatureVerificationResult>();
-
             var isSigned = await package.IsSignedAsync(token);
 
             if (isSigned)
@@ -47,6 +46,7 @@ namespace NuGet.Packaging.Signing
                 }
 
                 valid = signaturesAreValid;
+                
             }
             else if (_settings.AllowUnsigned)
             {

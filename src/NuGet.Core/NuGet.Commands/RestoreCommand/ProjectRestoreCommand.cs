@@ -15,6 +15,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 
@@ -215,11 +216,22 @@ namespace NuGet.Commands
             CancellationToken token)
         {
             var packagesToInstall = graphs.SelectMany(g => g.Install.Where(match => allInstalledPackages.Add(match.Library)));
+
+            var signedPackageVerifier = new SignedPackageVerifier(
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignedPackageVerifierSettings.Default);
+
+            var packageExtractionContext = new PackageExtractionContext(
+                _request.PackageSaveMode,
+                _request.XmlDocFileSaveMode,
+                _logger,
+                signedPackageVerifier);
+
             if (_request.MaxDegreeOfConcurrency <= 1)
             {
                 foreach (var match in packagesToInstall)
                 {
-                    await InstallPackageAsync(match, token);
+                    await InstallPackageAsync(match, packageExtractionContext, token);
                 }
             }
             else
@@ -231,34 +243,41 @@ namespace NuGet.Commands
                         RemoteMatch match;
                         while (bag.TryTake(out match))
                         {
-                            await InstallPackageAsync(match, token);
+                            await InstallPackageAsync(match, packageExtractionContext, token);
                         }
                     });
                 await Task.WhenAll(tasks);
             }
         }
 
-        private async Task InstallPackageAsync(RemoteMatch installItem, CancellationToken token)
+        private async Task InstallPackageAsync(RemoteMatch installItem, PackageExtractionContext packageExtractionContext, CancellationToken token)
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
 
-            var versionFolderPathContext = new VersionFolderPathContext(
-                packageIdentity,
-                _request.PackagesDirectory,
-                _logger,
-                _request.PackageSaveMode,
-                _request.XmlDocFileSaveMode);
+            var signedPackageVerifier = new SignedPackageVerifier(
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignedPackageVerifierSettings.Default);
 
-            using (var packageDependency = await installItem.Provider.GetPackageDownloaderAsync(
-                packageIdentity,
-                _request.CacheContext,
-                _logger,
-                token))
+            var versionFolderPathResolver = new VersionFolderPathResolver(_request.PackagesDirectory);
+            try
             {
-                await PackageExtractor.InstallFromSourceAsync(
-                    packageDependency,
-                    versionFolderPathContext,
-                    token);
+                using (var packageDependency = await installItem.Provider.GetPackageDownloaderAsync(
+                    packageIdentity,
+                    _request.CacheContext,
+                    _logger,
+                    token))
+                {
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageIdentity,
+                        packageDependency,
+                        versionFolderPathResolver,
+                        packageExtractionContext,
+                        token);
+                }
+            }
+            catch (SignatureException e)
+            {
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1410, e.Message, packageIdentity.ToString()));
             }
         }
 

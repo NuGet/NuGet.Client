@@ -448,13 +448,14 @@ namespace NuGet.Commands.FuncTest
                     logger))
                 {
                     await PackageExtractor.InstallFromSourceAsync(
+                        new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")),
                         packageDownloader,
-                        new VersionFolderPathContext(
-                            new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")),
-                            packagesDir,
-                            logger,
+                        new VersionFolderPathResolver(packagesDir),
+                        new PackageExtractionContext(
                             PackageSaveMode.Defaultv3,
-                            XmlDocFileSaveMode.None),
+                            XmlDocFileSaveMode.None,
+                            logger,
+                            signedPackageVerifier: null),
                         CancellationToken.None);
                 }
 
