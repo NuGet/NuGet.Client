@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Shared;
 

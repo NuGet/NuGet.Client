@@ -1134,7 +1134,7 @@ namespace NuGet.Protocol.Plugins
             throw new NotImplementedException();
         }
 
-        public override Task<PackageContentManifest> CreateManifestAsync(CancellationToken token)
+        public override Task<IReadOnlyList<PackageContentManifestFileEntry>> GetContentManifestEntriesAsync(HashAlgorithmName hashAlgorithm, CancellationToken token)
         {
             throw new NotImplementedException();
         }

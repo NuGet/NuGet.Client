@@ -21,6 +21,7 @@ namespace NuGet.Common
     ///         
     /// Groups:
     /// 1000 - Restore
+    /// 3000 - Signing
     /// 
     /// Sub groups:
     /// error/warning - Reason
@@ -186,5 +187,35 @@ namespace NuGet.Common
         /// Feed error converted to a warning when ignoreFailedSources is true.
         /// </summary>
         NU1801 = 1801,
+
+        /// <summary>
+        /// Undefined signature error
+        /// </summary>
+        NU3000 = 3000,
+
+        /// <summary>
+        /// Invalid Input error
+        /// </summary>
+        NU3001 = 3001,
+
+        /// <summary>
+        /// Invalid package error
+        /// </summary>
+        NU3002 = 3002,
+
+        /// <summary>
+        /// Undefined signature warning
+        /// </summary>
+        NU3500 = 3500,
+
+        /// <summary>
+        /// Untrusted root warning
+        /// </summary>
+        NU3501 = 3501,
+
+        /// <summary>
+        /// Signature information unavailable warning
+        /// </summary>
+        NU3502 = 3502,
     }
 }
