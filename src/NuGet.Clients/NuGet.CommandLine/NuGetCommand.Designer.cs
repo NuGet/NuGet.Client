@@ -11479,7 +11479,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to Password for the certificate, if needed.
-        ///This option can be used to specify the password for the certificate. If no password is provided, the user may be prompted for a password at run time, unless the -NonInteractive  option is passed..
+        ///This option can be used to specify the password for the certificate. If no password is provided, the command will prompt for a password at run time, unless the -NonInteractive option is passed..
         /// </summary>
         internal static string SignCommandCertificatePasswordDescription {
             get {
@@ -11547,8 +11547,9 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget sign MyPackage.nupkg -CertificatePath /path/to/certificate
-        ///nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -OutputDirectory ./signed/.
+        ///   Looks up a localized string similar to nuget sign MyPackage.nupkg -CertificatePath C:\certificate.pfx
+        ///nuget sign MyPackage.nupkg -CertificatePath \\path\to\certificate.pfx
+        ///nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -OutputDirectory .\signed\.
         /// </summary>
         internal static string SignCommandExamples {
             get {
@@ -11581,6 +11582,15 @@ namespace NuGet.CommandLine {
         internal static string SignCommandKeyContainerDescription {
             get {
                 return ResourceManager.GetString("SignCommandKeyContainerDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No value provided for &apos;{0}&apos;, which is needed when using the &apos;{1}&apos; option. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandMissingArgumentException {
+            get {
+                return ResourceManager.GetString("SignCommandMissingArgumentException", resourceCulture);
             }
         }
         
@@ -11648,7 +11658,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to URL to an RFC 3161 timestamp server..
+        ///   Looks up a localized string similar to URL to an RFC 3161 timestamping server..
         /// </summary>
         internal static string SignCommandTimestamperDescription {
             get {

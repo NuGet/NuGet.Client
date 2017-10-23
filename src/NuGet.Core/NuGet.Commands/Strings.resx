@@ -613,7 +613,7 @@ Issued by:
 Valid from:</comment>
   </data>
   <data name="SignCommandDialogMessage" xml:space="preserve">
-    <value>Please select a valid certitificate</value>
+    <value>Please select a valid certificate</value>
   </data>
   <data name="SignCommandDialogTitle" xml:space="preserve">
     <value>NuGet Sign Certificate Selection</value>
@@ -623,7 +623,7 @@ Valid from:</comment>
     <comment>0 - CertificateFingerprint option</comment>
   </data>
   <data name="SignCommandNoCertException" xml:space="preserve">
-    <value>No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, please visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+    <value>No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="SignCommandSuccess" xml:space="preserve">
     <value>Package(s) signed successfully.</value>
@@ -650,5 +650,19 @@ Valid from:</comment>
   </data>
   <data name="SignCommandMultipleCertificatesHeader" xml:space="preserve">
     <value>The following certificates meet all given criteria:</value>
+  </data>
+  <data name="SignCommandFileNotFound" xml:space="preserve">
+    <value>'{0}' file '{1}' not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <comment>0 - file type
+1- certificate file path</comment>
+  </data>
+  <data name="SignCommandInvalidCertException" xml:space="preserve">
+    <value>Certificate file '{0}' is invalid. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <comment>0 - certificate file path</comment>
+  </data>
+  <data name="SignCommandInvalidPasswordException" xml:space="preserve">
+    <value>Invalid password was provided for the certificate file '{0}'. Please provide a valid password using the '-{1}' option</value>
+    <comment>0 - certificate file path
+1 - certificate password option</comment>
   </data>
 </root>

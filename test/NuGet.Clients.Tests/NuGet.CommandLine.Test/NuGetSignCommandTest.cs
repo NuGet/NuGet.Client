@@ -17,6 +17,7 @@ namespace NuGet.CommandLine.Test
         private const string _noPackageException = "No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference";
         private const string _multipleCertificateException = "Multiple options were used to specify a certificate. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference";
         private const string _noCertificateException = "No certificate was provided. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference";
+        private const string _missingArgumentException = "No value provided for '{0}', which is needed when using the '{1}' option. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference";
 
         [Fact]
         public void SignCommandArgParsing_NoPackagePath()
@@ -38,7 +39,7 @@ namespace NuGet.CommandLine.Test
         public void SignCommandArgParsing_NoTimestamper()
         {
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
+            var packagePath = @"\\path\package.nupkg";
             var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
@@ -53,48 +54,26 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(string.Format(_noArgException, nameof(SignCommand.Timestamper)), ex.Message);
         }
 
-
-        [Fact]
-        public void SignCommandArgParsing_NoCertificate()
-        {
-            // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
-            var mockConsole = new Mock<IConsole>();
-            var signCommand = new SignCommand
-            {
-                Console = mockConsole.Object,
-                Timestamper = timestamper
-            };
-
-            signCommand.Arguments.Add(packagePath);
-
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
-            Assert.Equal(_noCertificateException, ex.Message);
-        }
-
         [Theory]
-        [InlineData(@"\\foo\bar.pfx", "foo_bar_subject", "")]
-        [InlineData("\\foo\bar.cert", "", "foo_bar_fingerprint")]
-        [InlineData("\\foo\bar.cert", "foo_bar_subject", "foo_bar_fingerprint")]
-        [InlineData("", "foo_bar_subject", "foo_bar_fingerprint")]
+        [InlineData(@"\\path\file.pfx", "test_cert_subject", "")]
+        [InlineData("\\path\file.cert", "", "test_cert_fingerprint")]
+        [InlineData("\\path\file.cert", "test_cert_subject", "test_cert_fingerprint")]
+        [InlineData("", "test_cert_subject", "test_cert_fingerprint")]
         public void SignCommandArgParsing_MultipleCertificateOptions(
             string certificatePath,
             string certificateSubjectName,
             string certificateFingerprint)
         {
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
             var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
             {
                 Console = mockConsole.Object,
                 Timestamper = timestamper,
-                CertificatePath =certificatePath,
+                CertificatePath = certificatePath,
                 CertificateSubjectName = certificateSubjectName,
                 CertificateFingerprint = certificateFingerprint
             };
@@ -116,18 +95,12 @@ namespace NuGet.CommandLine.Test
         [InlineData("TrustedPeople")]
         [InlineData("TrustedPublisher")]
         [InlineData("AddreSSBook")]
-        [InlineData("aUthrOOT")]
-        [InlineData("certificateAuthority")]
-        [InlineData("disAllowed")]
-        [InlineData("my")]
-        [InlineData("rOOt")]
-        [InlineData("trustEDPeople")]
-        [InlineData("truSTEDPubliSher")]
+        [InlineData("addressbook")]
         public void SignCommandArgParsing_ValidCertificateStoreName(string storeName)
         {
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
             var certificateFingerprint = new Guid().ToString();
             var parsable = Enum.TryParse(storeName, ignoreCase: true, result: out StoreName parsedStoreName);
             var mockConsole = new Mock<IConsole>();
@@ -151,8 +124,8 @@ namespace NuGet.CommandLine.Test
         public void SignCommandArgParsing_InvalidCertificateStoreName()
         {
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
             var certificateFingerprint = new Guid().ToString();
             var storeName = "random_store";
             var mockConsole = new Mock<IConsole>();
@@ -175,12 +148,12 @@ namespace NuGet.CommandLine.Test
         [InlineData("CurrentUser")]
         [InlineData("LocalMachine")]
         [InlineData("currentuser")]
-        [InlineData("localmaChiNe")]
+        [InlineData("cURRentuser")]
         public void SignCommandArgParsing_ValidCertificateStoreLocation(string storeLocation)
         {
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
             var certificateFingerprint = new Guid().ToString();
             var parsable = Enum.TryParse(storeLocation, ignoreCase: true, result: out StoreLocation parsedStoreLocation);
             var mockConsole = new Mock<IConsole>();
@@ -205,8 +178,8 @@ namespace NuGet.CommandLine.Test
         public void SignCommandArgParsing_InvalidCertificateStoreLocation()
         {
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
             var certificateFingerprint = new Guid().ToString();
             var storeLocation = "random_location";
             var mockConsole = new Mock<IConsole>();
@@ -225,6 +198,56 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.CertificateStoreLocation)), ex.Message);
         }
 
+        [Fact]
+        public void SignCommandArgParsing_KeyCntainerButNoCryptographicServiceProvider()
+        {
+            // Arrange
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
+            var certificatePath = @"\\path\file.pfx";
+            var keyContainer = "some_container";
+            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
+            var mockConsole = new Mock<IConsole>();
+            var signCommand = new SignCommand
+            {
+                Console = mockConsole.Object,
+                Timestamper = timestamper,
+                CertificatePath = certificatePath,
+                KeyContainer = keyContainer
+            };
+
+            signCommand.Arguments.Add(packagePath);
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
+            Assert.Equal(string.Format(_missingArgumentException, nameof(SignArgs.CryptographicServiceProvider), nameof(SignArgs.KeyContainer)), ex.Message);
+        }
+
+        [Fact]
+        public void SignCommandArgParsing_CryptographicServiceProviderButNoKeyCntainer()
+        {
+            // Arrange
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
+            var certificatePath = @"\\path\file.pfx";
+            var cryptographicServiceProvider = "some_provider";
+            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
+            var mockConsole = new Mock<IConsole>();
+            var signCommand = new SignCommand
+            {
+                Console = mockConsole.Object,
+                Timestamper = timestamper,
+                CertificatePath = certificatePath,
+                CryptographicServiceProvider = cryptographicServiceProvider
+            };
+
+            signCommand.Arguments.Add(packagePath);
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
+            Assert.Equal(string.Format(_missingArgumentException, nameof(SignArgs.KeyContainer), nameof(SignArgs.CryptographicServiceProvider)), ex.Message);
+        }
+
         [Theory]
         [InlineData("sha256")]
         [InlineData("sha384")]
@@ -236,9 +259,9 @@ namespace NuGet.CommandLine.Test
         public void SignCommandArgParsing_ValidHashAlgorithm(string hashAlgorithm)
         {
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
-            var certificatePath = @"\\foo\bar.pfx";
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
+            var certificatePath = @"\\path\file.pfx";
             var parsable = Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedHashAlgorithm);
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
@@ -262,9 +285,9 @@ namespace NuGet.CommandLine.Test
         public void SignCommandArgParsing_InvalidHashAlgorithm()
         {
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
-            var certificatePath = @"\\foo\bar.pfx";
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
+            var certificatePath = @"\\path\file.pfx";
             var hashAlgorithm = "MD5";
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
@@ -293,9 +316,9 @@ namespace NuGet.CommandLine.Test
         public void SignCommandArgParsing_ValidTimestampHashAlgorithm(string timestampHashAlgorithm)
         {
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
-            var certificatePath = @"\\foo\bar.pfx";
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
+            var certificatePath = @"\\path\file.pfx";
             var parsable = Enum.TryParse(timestampHashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedTimestampHashAlgorithm);
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
@@ -319,9 +342,9 @@ namespace NuGet.CommandLine.Test
         public void SignCommandArgParsing_InvalidTimestampHashAlgorithm()
         {
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
-            var certificatePath = @"\\foo\bar.pfx";
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
+            var certificatePath = @"\\path\file.pfx";
             var timestampHashAlgorithm = "MD5";
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
@@ -344,8 +367,8 @@ namespace NuGet.CommandLine.Test
         {
             //Debugger.Launch();
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
             var certificateFingerprint = new Guid().ToString();
             var hashAlgorithm = "sha256";
             Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedHashAlgorithm);
@@ -357,7 +380,7 @@ namespace NuGet.CommandLine.Test
             Enum.TryParse(storeLocation, ignoreCase: true, result: out StoreLocation parsedStoreLocation);
             var nonInteractive = true;
             var overwrite = true;
-            var outputDir = @".\bar";
+            var outputDir = @".\test\output\path";
             var csp = "csp_name";
             var kc = "kc_name";
             var mockConsole = new Mock<IConsole>();
@@ -384,20 +407,19 @@ namespace NuGet.CommandLine.Test
             // Act & Assert
             var signArgs = signCommand.GetSignArgs();
 
-            Assert.True(
-                signArgs.CertificatePath == null &&
-                signArgs.CertificateFingerprint == certificateFingerprint &&
-                signArgs.CertificateSubjectName == null &&
-                signArgs.CertificateStoreLocation == parsedStoreLocation &&
-                signArgs.CertificateStoreName == parsedStoreName &&
-                signArgs.CryptographicServiceProvider == csp &&
-                signArgs.KeyContainer == kc &&
-                signArgs.Logger == mockConsole.Object &&
-                signArgs.NonInteractive == nonInteractive &&
-                signArgs.Overwrite == overwrite &&
-                signArgs.PackagePath == packagePath &&
-                signArgs.Timestamper == timestamper &&
-                signArgs.OutputDirectory == outputDir);
+            Assert.Null(signArgs.CertificatePath);
+            Assert.Equal(certificateFingerprint, signArgs.CertificateFingerprint, StringComparer.Ordinal);
+            Assert.Null(signArgs.CertificateSubjectName);
+            Assert.Equal(parsedStoreLocation, signArgs.CertificateStoreLocation);
+            Assert.Equal(parsedStoreName, signArgs.CertificateStoreName);
+            Assert.Equal(csp, signArgs.CryptographicServiceProvider, StringComparer.Ordinal);
+            Assert.Equal(kc, signArgs.KeyContainer, StringComparer.Ordinal);
+            Assert.Equal(mockConsole.Object, signArgs.Logger);
+            Assert.Equal(nonInteractive, signArgs.NonInteractive);
+            Assert.Equal(overwrite, signArgs.Overwrite);
+            Assert.Equal(packagePath, signArgs.PackagePath, StringComparer.Ordinal);
+            Assert.Equal(timestamper, signArgs.Timestamper, StringComparer.Ordinal);
+            Assert.Equal(outputDir, signArgs.OutputDirectory, StringComparer.Ordinal);
         }
 
         [Fact]
@@ -405,8 +427,8 @@ namespace NuGet.CommandLine.Test
         {
             //Debugger.Launch();
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
             var certificateSubjectName = new Guid().ToString();
             var hashAlgorithm = "sha256";
             Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedHashAlgorithm);
@@ -418,7 +440,7 @@ namespace NuGet.CommandLine.Test
             Enum.TryParse(storeLocation, ignoreCase: true, result: out StoreLocation parsedStoreLocation);
             var nonInteractive = true;
             var overwrite = true;
-            var outputDir = @".\bar";
+            var outputDir = @".\test\output\path";
             var csp = "csp_name";
             var kc = "kc_name";
             var mockConsole = new Mock<IConsole>();
@@ -445,20 +467,19 @@ namespace NuGet.CommandLine.Test
             // Act & Assert
             var signArgs = signCommand.GetSignArgs();
 
-            Assert.True(
-                signArgs.CertificatePath == null &&
-                signArgs.CertificateFingerprint == null &&
-                signArgs.CertificateSubjectName == certificateSubjectName &&
-                signArgs.CertificateStoreLocation == parsedStoreLocation &&
-                signArgs.CertificateStoreName == parsedStoreName &&
-                signArgs.CryptographicServiceProvider == csp &&
-                signArgs.KeyContainer == kc &&
-                signArgs.Logger == mockConsole.Object &&
-                signArgs.NonInteractive == nonInteractive &&
-                signArgs.Overwrite == overwrite &&
-                signArgs.PackagePath == packagePath &&
-                signArgs.Timestamper == timestamper &&
-                signArgs.OutputDirectory == outputDir);
+            Assert.Null(signArgs.CertificatePath);
+            Assert.Null(signArgs.CertificateFingerprint);
+            Assert.Equal(certificateSubjectName, signArgs.CertificateSubjectName, StringComparer.Ordinal);
+            Assert.Equal(parsedStoreLocation, signArgs.CertificateStoreLocation);
+            Assert.Equal(parsedStoreName, signArgs.CertificateStoreName);
+            Assert.Equal(csp, signArgs.CryptographicServiceProvider, StringComparer.Ordinal);
+            Assert.Equal(kc, signArgs.KeyContainer, StringComparer.Ordinal);
+            Assert.Equal(mockConsole.Object, signArgs.Logger);
+            Assert.Equal(nonInteractive, signArgs.NonInteractive);
+            Assert.Equal(overwrite, signArgs.Overwrite);
+            Assert.Equal(packagePath, signArgs.PackagePath, StringComparer.Ordinal);
+            Assert.Equal(timestamper, signArgs.Timestamper, StringComparer.Ordinal);
+            Assert.Equal(outputDir, signArgs.OutputDirectory, StringComparer.Ordinal);
         }
 
         [Fact]
@@ -466,9 +487,9 @@ namespace NuGet.CommandLine.Test
         {
             //Debugger.Launch();
             // Arrange
-            var packagePath = @"foo\bar.nupkg";
-            var timestamper = "http://foo.bar";
-            var certificatePath = @"\\foo\bar.pfx";
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
+            var certificatePath = @"\\path\file.pfx";
             var hashAlgorithm = "sha256";
             Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedHashAlgorithm);
             var timestampHashAlgorithm = "sha512";
@@ -479,7 +500,7 @@ namespace NuGet.CommandLine.Test
             Enum.TryParse(storeLocation, ignoreCase: true, result: out StoreLocation parsedStoreLocation);
             var nonInteractive = true;
             var overwrite = true;
-            var outputDir = @".\bar";
+            var outputDir = @".\test\output\path";
             var csp = "csp_name";
             var kc = "kc_name";
             var mockConsole = new Mock<IConsole>();
@@ -504,20 +525,19 @@ namespace NuGet.CommandLine.Test
             // Act & Assert
             var signArgs = signCommand.GetSignArgs();
 
-            Assert.True(
-                signArgs.CertificatePath == certificatePath &&
-                signArgs.CertificateFingerprint == null &&
-                signArgs.CertificateSubjectName == null &&
-                signArgs.CertificateStoreLocation == parsedStoreLocation &&
-                signArgs.CertificateStoreName == parsedStoreName &&
-                signArgs.CryptographicServiceProvider == csp &&
-                signArgs.KeyContainer == kc &&
-                signArgs.Logger == mockConsole.Object &&
-                signArgs.NonInteractive == nonInteractive &&
-                signArgs.Overwrite == overwrite &&
-                signArgs.PackagePath == packagePath &&
-                signArgs.Timestamper == timestamper &&
-                signArgs.OutputDirectory == outputDir);
+            Assert.Equal(certificatePath, signArgs.CertificatePath, StringComparer.Ordinal);
+            Assert.Null(signArgs.CertificateFingerprint);
+            Assert.Null(signArgs.CertificateSubjectName);
+            Assert.Equal(parsedStoreLocation, signArgs.CertificateStoreLocation);
+            Assert.Equal(parsedStoreName, signArgs.CertificateStoreName);
+            Assert.Equal(csp, signArgs.CryptographicServiceProvider, StringComparer.Ordinal);
+            Assert.Equal(kc, signArgs.KeyContainer, StringComparer.Ordinal);
+            Assert.Equal(mockConsole.Object, signArgs.Logger);
+            Assert.Equal(nonInteractive, signArgs.NonInteractive);
+            Assert.Equal(overwrite, signArgs.Overwrite);
+            Assert.Equal(packagePath, signArgs.PackagePath, StringComparer.Ordinal);
+            Assert.Equal(timestamper, signArgs.Timestamper, StringComparer.Ordinal);
+            Assert.Equal(outputDir, signArgs.OutputDirectory, StringComparer.Ordinal);
         }
     }
 }
