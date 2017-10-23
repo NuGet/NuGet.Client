@@ -39,42 +39,43 @@ namespace NuGet.Commands
             {
                 try
                 {
+                    X509Certificate2 cert;
+
                     if (!string.IsNullOrEmpty(options.CertificatePassword))
                     {
-                        var cert = new X509Certificate2(options.CertificatePath, options.CertificatePassword); // use the password if the user provided it.
-                        return new X509Certificate2Collection(cert);
+                        cert = new X509Certificate2(options.CertificatePath, options.CertificatePassword); // use the password if the user provided it.
                     }
                     else
                     {
-                        var cert = new X509Certificate2(options.CertificatePath);
-                        return new X509Certificate2Collection(cert);
+                        cert = new X509Certificate2(options.CertificatePath);                        
                     }
+
+                    return new X509Certificate2Collection(cert);
                 }
                 catch (CryptographicException ex)
                 {
-                    if (ex.HResult == ERROR_INVALID_PASSWORD_HRESULT)
+
+                    switch (ex.HResult)
                     {
-                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
-                            Strings.SignCommandInvalidPasswordException,
-                            options.CertificatePath,
-                            nameof(options.CertificatePassword)));
-                    }
-                    else if (ex.HResult == ERROR_FILE_NOT_FOUND_HRESULT)
-                    {
-                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SignCommandFileNotFound,
-                                CERTIFICATE,
-                                options.CertificatePath));
-                    }
-                    else if (ex.HResult == CRYPT_E_NO_MATCH_HRESULT)
-                    {
-                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SignCommandInvalidCertException,
-                                options.CertificatePath));
-                    }
-                    else
-                    {
-                        throw ex;
+                        case ERROR_INVALID_PASSWORD_HRESULT:
+                            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                                Strings.SignCommandInvalidPasswordException,
+                                options.CertificatePath,
+                                nameof(options.CertificatePassword)));
+
+                        case ERROR_FILE_NOT_FOUND_HRESULT:
+                            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                                    Strings.SignCommandFileNotFound,
+                                    CERTIFICATE,
+                                    options.CertificatePath));
+
+                        case CRYPT_E_NO_MATCH_HRESULT:
+                            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                                    Strings.SignCommandInvalidCertException,
+                                    options.CertificatePath));
+
+                        default:
+                            throw ex;
                     }
                 }
             }

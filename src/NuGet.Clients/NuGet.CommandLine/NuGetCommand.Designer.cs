@@ -11547,7 +11547,8 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget sign MyPackage.nupkg -CertificatePath \path\to\certificate
+        ///   Looks up a localized string similar to nuget sign MyPackage.nupkg -CertificatePath C:\certificate.pfx
+        ///nuget sign MyPackage.nupkg -CertificatePath \\path\to\certificate.pfx
         ///nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -OutputDirectory .\signed\.
         /// </summary>
         internal static string SignCommandExamples {

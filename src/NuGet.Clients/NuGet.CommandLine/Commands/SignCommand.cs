@@ -196,7 +196,7 @@ namespace NuGet.CommandLine
                 string.IsNullOrEmpty(CertificateFingerprint) &&
                 string.IsNullOrEmpty(CertificateSubjectName))
             {
-                // THrow if user gave no certificate input
+                // Throw if user gave no certificate input
                 throw new ArgumentException(NuGetCommand.SignCommandNoCertificateException);
             }
             else if (!string.IsNullOrEmpty(CertificatePath) &&
@@ -215,7 +215,7 @@ namespace NuGet.CommandLine
             }
             else if (!string.IsNullOrEmpty(KeyContainer) && string.IsNullOrEmpty(CryptographicServiceProvider))
             {
-                // Thow if the user provided a fingerprint and a subject
+                // Throw if the user provides a csp but no key container
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
                     NuGetCommand.SignCommandMissingArgumentException,
                     nameof(CryptographicServiceProvider),
@@ -223,7 +223,7 @@ namespace NuGet.CommandLine
             }
             else if (!string.IsNullOrEmpty(CryptographicServiceProvider) && string.IsNullOrEmpty(KeyContainer))
             {
-                // Thow if the user provided a fingerprint and a subject
+                // Throw if the user provides a key container but no csps
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
                     NuGetCommand.SignCommandMissingArgumentException,
                     nameof(KeyContainer),

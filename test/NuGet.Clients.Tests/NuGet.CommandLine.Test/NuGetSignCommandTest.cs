@@ -66,7 +66,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var mockSignCommandRunner = new Mock<ISignCommandRunner>();
             var mockConsole = new Mock<IConsole>();
             var signCommand = new SignCommand
@@ -100,7 +100,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificateFingerprint = new Guid().ToString();
             var parsable = Enum.TryParse(storeName, ignoreCase: true, result: out StoreName parsedStoreName);
             var mockConsole = new Mock<IConsole>();
@@ -125,7 +125,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificateFingerprint = new Guid().ToString();
             var storeName = "random_store";
             var mockConsole = new Mock<IConsole>();
@@ -153,7 +153,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificateFingerprint = new Guid().ToString();
             var parsable = Enum.TryParse(storeLocation, ignoreCase: true, result: out StoreLocation parsedStoreLocation);
             var mockConsole = new Mock<IConsole>();
@@ -179,7 +179,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificateFingerprint = new Guid().ToString();
             var storeLocation = "random_location";
             var mockConsole = new Mock<IConsole>();
@@ -203,7 +203,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificatePath = @"\\path\file.pfx";
             var keyContainer = "some_container";
             var mockSignCommandRunner = new Mock<ISignCommandRunner>();
@@ -228,7 +228,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificatePath = @"\\path\file.pfx";
             var cryptographicServiceProvider = "some_provider";
             var mockSignCommandRunner = new Mock<ISignCommandRunner>();
@@ -260,7 +260,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificatePath = @"\\path\file.pfx";
             var parsable = Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedHashAlgorithm);
             var mockConsole = new Mock<IConsole>();
@@ -286,7 +286,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificatePath = @"\\path\file.pfx";
             var hashAlgorithm = "MD5";
             var mockConsole = new Mock<IConsole>();
@@ -317,7 +317,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificatePath = @"\\path\file.pfx";
             var parsable = Enum.TryParse(timestampHashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedTimestampHashAlgorithm);
             var mockConsole = new Mock<IConsole>();
@@ -343,7 +343,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificatePath = @"\\path\file.pfx";
             var timestampHashAlgorithm = "MD5";
             var mockConsole = new Mock<IConsole>();
@@ -368,7 +368,7 @@ namespace NuGet.CommandLine.Test
             //Debugger.Launch();
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificateFingerprint = new Guid().ToString();
             var hashAlgorithm = "sha256";
             Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedHashAlgorithm);
@@ -428,7 +428,7 @@ namespace NuGet.CommandLine.Test
             //Debugger.Launch();
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificateSubjectName = new Guid().ToString();
             var hashAlgorithm = "sha256";
             Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedHashAlgorithm);
@@ -488,7 +488,7 @@ namespace NuGet.CommandLine.Test
             //Debugger.Launch();
             // Arrange
             var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.url";
+            var timestamper = "https://timestamper.test";
             var certificatePath = @"\\path\file.pfx";
             var hashAlgorithm = "sha256";
             Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedHashAlgorithm);
