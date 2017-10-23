@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 
 namespace NuGet.CommandLine

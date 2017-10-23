@@ -6,10 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -213,38 +212,78 @@ namespace NuGet.Packaging
         {
             var signatures = new List<Signature>();
 
-            var sigFile = GetSignManifestEntry();
+#if IS_DESKTOP
+            var sigFile = GetExactEntryOrDefault(SigningSpecifications.V1.SignaturePath1);
 
             if (sigFile != null)
             {
-                signatures.AddRange(SigningUtility.GetTestSignatures(sigFile.Open()));
+                signatures.Add(Signature.Load(sigFile.Open()));
             }
+#endif
 
             return Task.FromResult<IReadOnlyList<Signature>>(signatures.AsReadOnly());
         }
 
         public override Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token)
         {
-            throw new NotImplementedException();
+            PackageContentManifest result = null;
+
+            using (var stream = GetExactEntryOrDefault(SigningSpecifications.V1.ManifestPath)?.Open())
+            {
+                if (stream != null)
+                {
+                    result = PackageContentManifest.Load(stream);
+                }
+            }
+
+            return Task.FromResult(result);
         }
 
-        public override Task<PackageContentManifest> CreateManifestAsync(CancellationToken token)
+        public override Task<IReadOnlyList<PackageContentManifestFileEntry>> GetContentManifestEntriesAsync(Common.HashAlgorithmName hashAlgorithm, CancellationToken token)
         {
-            throw new NotImplementedException();
+            var hashProvider = hashAlgorithm.GetHashProvider();
+
+            var entries = _zipArchive.Entries
+                .Select(e => new PackageContentManifestFileEntry(
+                    path: e.FullName,
+                    hash: GetEntryHash(e, hashProvider)))
+                .ToList();
+
+            return Task.FromResult<IReadOnlyList<PackageContentManifestFileEntry>>(entries);
+        }
+
+        private static string GetEntryHash(ZipArchiveEntry entry, HashAlgorithm hashProvider)
+        {
+            string hash = null;
+
+            if (IsEmptyDirectory(entry))
+            {
+                hash = "0";
+            }
+            else
+            {
+                hash = hashProvider.ComputeHashAsBase64(entry.Open());
+            }
+
+            return hash;
+        }
+
+        private static bool IsEmptyDirectory(ZipArchiveEntry entry)
+        {
+            return entry.FullName.EndsWith("/", StringComparison.Ordinal);
         }
 
         public override Task<bool> IsSignedAsync(CancellationToken token)
         {
-            return Task.FromResult(GetSignManifestEntry() != null);
+            // A package is signed if a signature file exists.
+            return Task.FromResult(GetExactEntryOrDefault(SigningSpecifications.V1.SignaturePath1) != null);
         }
 
-        private const string SignManifestPath = "testsigned/signed.json";
-
-        private ZipArchiveEntry GetSignManifestEntry()
+        private ZipArchiveEntry GetExactEntryOrDefault(string path)
         {
-            var entry = _zipArchive.GetEntry(SignManifestPath);
+            var entry = _zipArchive.GetEntry(path);
 
-            if (entry != null && !StringComparer.Ordinal.Equals(SignManifestPath, entry.FullName))
+            if (entry != null && !StringComparer.Ordinal.Equals(path, entry.FullName))
             {
                 // The entry casing did not match.
                 entry = null;

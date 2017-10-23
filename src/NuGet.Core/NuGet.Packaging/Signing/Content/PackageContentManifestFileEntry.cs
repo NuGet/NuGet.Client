@@ -10,29 +10,30 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public sealed class PackageContentManifestFileEntry
     {
+        /// <summary>
+        /// Path value in the manifest.
+        /// </summary>
         public string Path { get; }
 
+        /// <summary>
+        /// Hash-Path value in the manifest.
+        /// </summary>
         public string Hash { get; }
 
-        private PackageContentManifestFileEntry(string path, string hash)
+        public PackageContentManifestFileEntry(string path, string hash)
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException(null, nameof(path));
+            }
+
+            if (string.IsNullOrWhiteSpace(hash))
+            {
+                throw new ArgumentException(null, nameof(hash));
+            }
+
             Path = path;
             Hash = hash;
-        }
-
-        public static PackageContentManifestFileEntry Create(string path, string hash)
-        {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            if (hash == null)
-            {
-                throw new ArgumentNullException(nameof(hash));
-            }
-
-            return new PackageContentManifestFileEntry(path, hash);
         }
     }
 }

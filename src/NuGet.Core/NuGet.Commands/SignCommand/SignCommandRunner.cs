@@ -68,15 +68,7 @@ namespace NuGet.Commands
 
         private SignPackageRequest GenerateSignPackageRequest(SignArgs signArgs, X509Certificate2 certificate)
         {
-            return new SignPackageRequest()
-            {
-                Signature = new Signature()
-                {
-                    DisplayName = "FakeSignature",
-                    Type = SignatureType.Author,
-                    TestTrust = SignatureVerificationStatus.Trusted
-                }
-            };
+            throw new NotImplementedException();
         }
 
         private static X509Certificate2 GetCertificate(SignArgs signArgs)

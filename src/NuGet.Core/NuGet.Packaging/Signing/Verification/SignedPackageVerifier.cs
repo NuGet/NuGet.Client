@@ -15,12 +15,12 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class SignedPackageVerifier
     {
-        private readonly List<ISignatureVerificationProvider> _trustProviders;
+        private readonly List<ISignatureVerificationProvider> _verificationProviders;
         private readonly SignedPackageVerifierSettings _settings;
 
-        public SignedPackageVerifier(IEnumerable<ISignatureVerificationProvider> trustProviders, SignedPackageVerifierSettings settings)
+        public SignedPackageVerifier(IEnumerable<ISignatureVerificationProvider> verificationProviders, SignedPackageVerifierSettings settings)
         {
-            _trustProviders = trustProviders?.ToList() ?? throw new ArgumentNullException(nameof(trustProviders));
+            _verificationProviders = verificationProviders?.ToList() ?? throw new ArgumentNullException(nameof(verificationProviders));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
@@ -41,7 +41,7 @@ namespace NuGet.Packaging.Signing
                 // Verify that the signatures are trusted
                 foreach (var signature in signatures)
                 {
-                    var sigTrustResults = await Task.WhenAll(_trustProviders.Select(e => e.GetTrustResultAsync(signature, logger, token)));
+                    var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(signature, logger, token)));
                     signaturesAreValid &= IsValid(sigTrustResults, _settings.AllowUntrusted);
                     trustResults.AddRange(sigTrustResults);
                 }
@@ -52,6 +52,10 @@ namespace NuGet.Packaging.Signing
             {
                 // An unsigned package is valid only if unsigned packages are allowed.
                 valid = true;
+            }
+            else
+            {
+                trustResults.Add(SignatureVerificationResult.UnsignedPackageResult(SignatureVerificationStatus.Invalid, new List<SignatureIssue>{ SignatureIssue.InvalidInputError(Strings.ErrorPackageNotSigned) }));
             }
 
             return new VerifySignaturesResult(valid, trustResults);

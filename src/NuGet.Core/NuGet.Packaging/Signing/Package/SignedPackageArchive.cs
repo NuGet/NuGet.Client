@@ -13,9 +13,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class SignedPackageArchive : PackageArchiveReader, ISignedPackage
     {
-        // TEMP
-        private const string TestSignedPath = "testsigned/signed.json";
-
         public SignedPackageArchive(ZipArchive zip)
             : base(zip)
         {

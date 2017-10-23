@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
@@ -25,9 +26,9 @@ namespace NuGet.Packaging.Signing
         Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token);
 
         /// <summary>
-        /// Read and hash package contents and create a base manifest for signing.
+        /// Read and hash all package entries.
         /// </summary>
-        Task<PackageContentManifest> CreateManifestAsync(CancellationToken token);
+        Task<IReadOnlyList<PackageContentManifestFileEntry>> GetContentManifestEntriesAsync(HashAlgorithmName hashAlgorithm, CancellationToken token);
 
         /// <summary>
         /// Check if a package contains signing information.
