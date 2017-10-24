@@ -119,7 +119,7 @@ namespace NuGet.Protocol
 
             var registrationUri = GetUri(packageId);
 
-            var ranges = await Utils.LoadRanges(_client, registrationUri, range, log, token);
+            var ranges = await RegistrationUtility.LoadRanges(_client, registrationUri, range, log, token);
 
             foreach (var rangeObj in ranges)
             {

@@ -1,25 +1,28 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
-    internal static class Utils
+    public static class RegistrationUtility
     {
         public static VersionRange CreateVersionRange(string stringToParse)
         {
-            var range = VersionRange.Parse(string.IsNullOrEmpty(stringToParse) ? "[0.0.0-alpha,)" : stringToParse);
+            if (string.IsNullOrEmpty(stringToParse))
+            {
+                return VersionRange.All;
+            }
+
+            var range = VersionRange.Parse(stringToParse);
+
             return new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive);
         }
 
