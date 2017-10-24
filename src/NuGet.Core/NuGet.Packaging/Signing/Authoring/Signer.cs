@@ -56,9 +56,9 @@ namespace NuGet.Packaging.Signing
             var manifestHash = await AddManifestAndGetHashAsync(manifest, request.HashAlgorithm, token);
 
             // Create signature
-            var sig = await _signatureProvider.CreateSignatureAsync(request, manifestHash, logger, token);
+            var signature = await _signatureProvider.CreateSignatureAsync(request, manifestHash, logger, token);
 
-            using (var stream = new MemoryStream(sig.GetBytes()))
+            using (var stream = new MemoryStream(signature.GetBytes()))
             {
                 await _package.AddAsync(_specifications.SignaturePath1, stream, token);
             }
