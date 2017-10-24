@@ -30,7 +30,7 @@ namespace NuGet.Common
             }
 
             // Response files are not supported on other platforms yet
-            if (!RuntimeEnvironmentHelper.IsWindows)
+            if (!RuntimeEnvironmentHelper.IsWindows && !RuntimeEnvironmentHelper.IsMono)
             {
                 return args;
             }

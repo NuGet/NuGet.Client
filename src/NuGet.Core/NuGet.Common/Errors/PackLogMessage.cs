@@ -52,9 +52,9 @@ namespace NuGet.Common
             switch (logLevel)
             {
                 case LogLevel.Error:
-                    return NuGetLogCode.NU1000;
+                    return NuGetLogCode.NU5000;
                 case LogLevel.Warning:
-                    return NuGetLogCode.NU1500;
+                    return NuGetLogCode.NU5500;
                 default:
                     return NuGetLogCode.Undefined;
             }

@@ -28,7 +28,7 @@ namespace NuGet.Packaging.Core
             _logMessage = PackLogMessage.CreateError(NuGetLogCode.NU5000, message);
         }
 
-        public ILogMessage AsLogMessage()
+        public virtual ILogMessage AsLogMessage()
         {
             return _logMessage;
         }

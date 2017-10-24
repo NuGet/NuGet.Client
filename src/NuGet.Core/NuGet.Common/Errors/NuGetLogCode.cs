@@ -230,5 +230,10 @@ namespace NuGet.Common
         /// ErrorManifestFileNotFound
         /// </summary>
         NU5008 = 5008,
+
+        /// <summary>
+        /// Undefined package warning
+        /// </summary>
+        NU5500 = 5500,
     }
 }

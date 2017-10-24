@@ -3094,7 +3094,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG5002: Response file &apos;{0}&apos; does not exist.
+        ///   Looks up a localized string similar to Response file &apos;{0}&apos; does not exist.
         /// </summary>
         public static string Error_ResponseFileDoesNotExist {
             get {
@@ -3103,7 +3103,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG5001: Invalid response file, &apos;@&apos; does not exist.
+        ///   Looks up a localized string similar to Invalid response file, &apos;@&apos; does not exist.
         /// </summary>
         public static string Error_ResponseFileInvalid {
             get {
@@ -3112,7 +3112,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG5005: No more than {0} nested response files are allowed.
+        ///   Looks up a localized string similar to No more than {0} nested response files are allowed.
         /// </summary>
         public static string Error_ResponseFileMaxRecursionDepth {
             get {
@@ -3121,7 +3121,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG5003: Response file &apos;{0}&apos; cannot be empty.
+        ///   Looks up a localized string similar to Response file &apos;{0}&apos; cannot be empty.
         /// </summary>
         public static string Error_ResponseFileNullOrEmpty {
             get {
@@ -3130,7 +3130,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to error NG5004: Response file &apos;{0}&apos; cannot be larger than {1}mb.
+        ///   Looks up a localized string similar to Response file &apos;{0}&apos; cannot be larger than {1}mb.
         /// </summary>
         public static string Error_ResponseFileTooLarge {
             get {

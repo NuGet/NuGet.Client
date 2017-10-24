@@ -49,7 +49,10 @@ namespace NuGet.CommandLine
 
 #if IS_DESKTOP
             // Find any response files and resolve the args
-            args = CommandLineResponseFile.ParseArgsResponseFiles(args);
+            if (!RuntimeEnvironmentHelper.IsMono)
+            {
+                args = CommandLineResponseFile.ParseArgsResponseFiles(args);
+            }
 #endif
             return MainCore(Directory.GetCurrentDirectory(), args);
         }

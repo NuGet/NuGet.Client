@@ -419,7 +419,7 @@
   </data>
   <data name="Error" xml:space="preserve">
     <value>Error</value>
-  </data>  
+  </data>
   <data name="Error_CannotPromptForInput" xml:space="preserve">
     <value>Cannot prompt for input in non-interactive mode.</value>
   </data>
@@ -6137,18 +6137,18 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <value>Installing package '{0}' to '{1}'.</value>
   </data>
   <data name="Error_ResponseFileDoesNotExist" xml:space="preserve">
-    <value>error NG5002: Response file '{0}' does not exist</value>
+    <value>Response file '{0}' does not exist</value>
   </data>
   <data name="Error_ResponseFileInvalid" xml:space="preserve">
-    <value>error NG5001: Invalid response file, '@' does not exist</value>
+    <value>Invalid response file, '@' does not exist</value>
   </data>
   <data name="Error_ResponseFileMaxRecursionDepth" xml:space="preserve">
-    <value>error NG5005: No more than {0} nested response files are allowed</value>
+    <value>No more than {0} nested response files are allowed</value>
   </data>
   <data name="Error_ResponseFileNullOrEmpty" xml:space="preserve">
-    <value>error NG5003: Response file '{0}' cannot be empty</value>
+    <value>Response file '{0}' cannot be empty</value>
   </data>
   <data name="Error_ResponseFileTooLarge" xml:space="preserve">
-    <value>error NG5004: Response file '{0}' cannot be larger than {1}mb</value>
+    <value>Response file '{0}' cannot be larger than {1}mb</value>
   </data>
 </root>

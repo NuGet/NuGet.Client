@@ -163,10 +163,13 @@ namespace NuGet.Commands
             }
 
             var manifest = new Manifest(new ManifestMetadata(builder), null);
-            using (Stream stream = new FileStream(resolvedNuSpecOutputPath, FileMode.Create))
+            var tempOutputPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetFileName(resolvedNuSpecOutputPath));
+            using (Stream stream = new FileStream(tempOutputPath, FileMode.Create))
             {
                 manifest.Save(stream);
             }
+
+            FileUtility.Replace(tempOutputPath, resolvedNuSpecOutputPath);
         }
 
         /// <summary>
@@ -179,7 +182,7 @@ namespace NuGet.Commands
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             var sha512OutputPath = Path.Combine(outputPath + ".sha512");
-            var sha512TempOutputPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetFileName(sha512OutputPath));
+            var tempOutputPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetFileName(sha512OutputPath));
 
             _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "SHA512", sha512OutputPath));
 
@@ -190,11 +193,8 @@ namespace NuGet.Commands
                 sha512hash = cryptoHashProvider.CalculateHash(fileStream);
             }
 
-            FileUtility.Delete(sha512TempOutputPath);
-            File.WriteAllText(sha512TempOutputPath, Convert.ToBase64String(sha512hash));
-
-            FileUtility.Delete(sha512OutputPath);
-            FileUtility.Move(sha512TempOutputPath, sha512OutputPath);
+            File.WriteAllText(tempOutputPath, Convert.ToBase64String(sha512hash));
+            FileUtility.Replace(tempOutputPath, sha512OutputPath);
         }
 
         private void InitCommonPackageBuilderProperties(PackageBuilder builder)
