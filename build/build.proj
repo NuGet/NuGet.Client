@@ -209,6 +209,15 @@
     <Message Text="Building for VS15" Importance="high" />
   </Target>
 
+    <!--
+    ============================================================
+    Build for XPLAT 
+    ============================================================
+  -->
+  <Target Name="BuildXPLAT" >
+    <Message Text="Building XPLAT" Importance="high" />
+  </Target>
+
   <!--
     ============================================================
     Build for VS14
@@ -231,6 +240,20 @@
     <Message Text="Building for VS15" Importance="high" />
 
     <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
+             Targets="Build"
+             Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=15.0;" />
+  </Target>
+
+  <!--
+    ============================================================
+    Build XPLAT
+    ============================================================
+  -->
+  <Target Name="BuildXPLATProjects" AfterTargets="BuildXPLAT">
+    <Message Text="Building XPLAT" Importance="high" />
+
+    <MSBuild Projects="@(XPLATProjects)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=15.0;" />
@@ -310,6 +333,21 @@
 
   <!--
     ============================================================
+    Pack for XPLAT
+    ============================================================
+  -->
+  <Target Name="PackXPLAT">
+    <Message Text="Packing for XPLAT" Importance="high" />
+
+    <MSBuild BuildInParallel="false"
+             Projects="@(XPLATProjects)"
+             Targets="PackProjects"
+             Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=$(VisualStudioVersion);" />
+  </Target>
+
+  <!--
+    ============================================================
     Restore all projects for the current platform.
     ============================================================
   -->
@@ -359,6 +397,28 @@
       Targets="Restore"
       Properties="$(CommonMSBuildProperties);
                   VisualStudioVersion=14.0">
+    </MSBuild>
+  </Target>
+
+
+  <!--
+    ============================================================
+    Restore for XPLAT
+    ============================================================
+  -->
+  <Target Name="RestoreXPLAT">
+    <Message Text="Restoring for XPLAT" Importance="high" />
+    
+    <PropertyGroup>
+      <ProjectListValue>@(XPLATProjects)</ProjectListValue>
+    </PropertyGroup>
+
+    <MSBuild
+      Projects="restorehelper.targets"
+      Targets="Restore"
+      Properties="RestoreGraphProjectInput=$(ProjectListValue);
+                  $(CommonMSBuildProperties);
+                  VisualStudioVersion=$(VisualStudioVersion)">
     </MSBuild>
   </Target>
 
