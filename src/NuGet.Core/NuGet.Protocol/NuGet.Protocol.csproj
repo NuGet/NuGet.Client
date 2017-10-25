@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT' or '$(DotNetBuildFromSource)' == 'true'">netstandard1.3</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1573;CS0012</NoWarn>
     <PackageTags>nuget protocol</PackageTags>
