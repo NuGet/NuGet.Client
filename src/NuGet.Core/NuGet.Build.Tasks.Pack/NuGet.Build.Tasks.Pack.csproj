@@ -6,22 +6,22 @@
     <TargetFrameworks Condition="'$(IsXPlatBuildOnly)' == 'true'">netstandard1.3</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyName>NuGet.Build.Tasks.Pack</AssemblyName>
+    <PackageId>NuGet.Build.Tasks.Pack</PackageId>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <NoBuild>true</NoBuild>
+    <Authors>Microsoft</Authors>
+    <Description>NuGet pack for dotnet CLI</Description>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier> <!-- Does this need to be removed? Why is the runtime identifer here? -->
     <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\NuGet.Build.Tasks\Common\MSBuildLogger.cs" />
     <Compile Include="..\NuGet.Build.Tasks\GetProjectTargetFrameworksTask.cs" />
-    <Content Include="Pack.targets">
-       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -38,7 +38,53 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
   </ItemGroup>
-  
+
+  <PropertyGroup Condition=" '$(IsXplat)' == 'false' AND '$(DotNetBuildFromSource)' != 'true'">
+    <IncludeBuildOuput>false</IncludeBuildOuput>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(IsXplat)' == 'false' AND '$(DotNetBuildFromSource)' != 'true'">
+
+    <None Include="$(OutputPath)net45\ilmerge\NuGet.Build.Tasks.Pack.dll">
+      <PackagePath>Desktop</PackagePath>
+      <Pack>true</Pack>
+    </None>
+    <None Include="$(OutputPath)net45\ilmerge\NuGet.Build.Tasks.Pack.xml">
+      <PackagePath>Desktop</PackagePath>
+      <Pack>true</Pack>
+    </None>
+    <None Include="$(OutputPath)net45\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll">
+      <PackagePath>Desktop</PackagePath>
+      <Pack>true</Pack>
+    </None>
+    <None Include="$(OutputPath)netstandard1.3\ilmerge\NuGet.Build.Tasks.Pack.dll">
+      <PackagePath>CoreCLR</PackagePath>
+      <Pack>true</Pack>
+    </None>
+    <None Include="$(OutputPath)netstandard1.3\ilmerge\NuGet.Build.Tasks.Pack.xml">
+      <PackagePath>CoreCLR</PackagePath>
+      <Pack>true</Pack>
+    </None>
+    <None Include="$(OutputPath)netstandard1.3\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll">
+      <PackagePath>CoreCLR</PackagePath>
+      <Pack>true</Pack>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Pack.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>build</PackagePath>
+      <Pack>true</Pack>
+    </None>
+    <None Include="Pack.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>buildCrossTargeting</PackagePath>
+      <Pack>true</Pack>
+    </None>
+  </ItemGroup>
+
+
   <ItemGroup>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -66,7 +112,7 @@
     </MSBuild>
   </Target>
 
-  <Target Name="ILMergeNuGetPack" Condition="'$(TargetFramework)' != ''">
+  <Target Name="ILMergeNuGetPack" Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' == 'false' ">
     <PropertyGroup>
       <ILMergeResultDir>$(OutputPath)ilmerge</ILMergeResultDir>
     </PropertyGroup>
@@ -128,10 +174,4 @@
       <SymbolsToIndex Include="$(OutputPath)ilmerge\*.pdb" KeepDuplicates="false" />
     </ItemGroup>
   </Target>
-  
-  <PropertyGroup>
-    <NuspecFile>NuGet.Build.Tasks.Pack.nuspec</NuspecFile>
-    <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
-    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
-  </PropertyGroup>
 </Project>
