@@ -40,7 +40,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(IsXplat)' == 'false' AND '$(DotNetBuildFromSource)' != 'true'">
-    <IncludeBuildOuput>false</IncludeBuildOuput>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsXplat)' == 'false' AND '$(DotNetBuildFromSource)' != 'true'">
@@ -48,26 +48,32 @@
     <None Include="$(OutputPath)net45\ilmerge\NuGet.Build.Tasks.Pack.dll">
       <PackagePath>Desktop</PackagePath>
       <Pack>true</Pack>
+      <Visible>false</Visible>
     </None>
     <None Include="$(OutputPath)net45\ilmerge\NuGet.Build.Tasks.Pack.xml">
       <PackagePath>Desktop</PackagePath>
       <Pack>true</Pack>
+      <Visible>false</Visible>
     </None>
     <None Include="$(OutputPath)net45\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll">
       <PackagePath>Desktop</PackagePath>
       <Pack>true</Pack>
+      <Visible>false</Visible>
     </None>
     <None Include="$(OutputPath)netstandard1.3\ilmerge\NuGet.Build.Tasks.Pack.dll">
       <PackagePath>CoreCLR</PackagePath>
       <Pack>true</Pack>
+      <Visible>false</Visible>
     </None>
     <None Include="$(OutputPath)netstandard1.3\ilmerge\NuGet.Build.Tasks.Pack.xml">
       <PackagePath>CoreCLR</PackagePath>
       <Pack>true</Pack>
+      <Visible>false</Visible>
     </None>
     <None Include="$(OutputPath)netstandard1.3\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll">
       <PackagePath>CoreCLR</PackagePath>
       <Pack>true</Pack>
+      <Visible>false</Visible>
     </None>
   </ItemGroup>
 
