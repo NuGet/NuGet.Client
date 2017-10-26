@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsXPlatBuildOnly)' == 'true'">netstandard1.3</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.3</TargetFrameworks>
     <TargetFramework/>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
