@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsXPlatBuildOnly)' == 'true'">netstandard1.3</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.3</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyName>NuGet.Build.Tasks.Pack</AssemblyName>
     <PackageId>NuGet.Build.Tasks.Pack</PackageId>
@@ -41,7 +41,7 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IsXplat)' == 'false' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">
+  <ItemGroup Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">
     <None Include="$(OutputPath)net45\ilmerge\NuGet.Build.Tasks.Pack.dll">
       <PackagePath>Desktop</PackagePath>
       <Pack>true</Pack>
@@ -74,7 +74,7 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IsXplat)' == 'true' OR '$(IsBuildOnlyXPLATProjects)' == 'true'">
+  <ItemGroup Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">
     <None Include="$(OutputPath)netstandard1.3\*.dll">
       <PackagePath>CoreCLR</PackagePath>
       <Pack>true</Pack>
@@ -111,7 +111,7 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target Name="PublishAndMergePackNupkg" AfterTargets="AfterBuild" Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' == 'false' AND '$(BuildingInsideVisualStudio)' != 'true'">
+  <Target Name="PublishAndMergePackNupkg" AfterTargets="AfterBuild" Condition="'$(TargetFramework)' != '' AND '$(IsBuildOnlyXPLATProjects)' == 'false' AND '$(BuildingInsideVisualStudio)' != 'true'">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish;ILMergeNuGetPack" />
   </Target>
 
@@ -123,7 +123,7 @@
     </MSBuild>
   </Target>
 
-  <Target Name="ILMergeNuGetPack" Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' == 'false' ">
+  <Target Name="ILMergeNuGetPack" Condition="'$(TargetFramework)' != '' AND '$(IsBuildOnlyXPLATProjects)' == 'false' ">
     <PropertyGroup>
       <ILMergeResultDir>$(OutputPath)ilmerge</ILMergeResultDir>
     </PropertyGroup>
