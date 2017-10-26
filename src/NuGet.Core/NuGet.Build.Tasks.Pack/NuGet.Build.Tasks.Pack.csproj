@@ -15,8 +15,9 @@
     <Authors>Microsoft</Authors>
     <Description>NuGet pack for dotnet CLI</Description>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier> <!-- Does this need to be removed? Why is the runtime identifer here? -->
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier> 
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <IncludeBuildOutput>false</IncludeBuildOutput> <!-- We only collect the ILMerged dll when packing on desktop. Build from does not do an ILMerge -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,12 +40,7 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(IsXplat)' == 'false' AND '$(DotNetBuildFromSource)' != 'true'">
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-  </PropertyGroup>
-
   <ItemGroup Condition=" '$(IsXplat)' == 'false' AND '$(DotNetBuildFromSource)' != 'true'">
-
     <None Include="$(OutputPath)net45\ilmerge\NuGet.Build.Tasks.Pack.dll">
       <PackagePath>Desktop</PackagePath>
       <Pack>true</Pack>
@@ -76,6 +72,14 @@
       <Visible>false</Visible>
     </None>
   </ItemGroup>
+
+  <ItemGroup Condition=" '$(IsXplat)' == 'true' OR '$(DotNetBuildFromSource)' == 'true'">
+    <None Include="$(OutputPath)netstandard1.3\*.dll">
+      <PackagePath>CoreCLR</PackagePath>
+      <Pack>true</Pack>
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>  
 
   <ItemGroup>
     <None Include="Pack.targets">
