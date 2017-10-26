@@ -33,8 +33,7 @@
     <LocalizationRootDirectory>$(NuGetBuildLocalizationRepository)localize</LocalizationRootDirectory>
     <LocalizationFilesDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationFilesDirectory>
     <MicroBuildDirectory>$(SolutionPackagesFolder)MicroBuild.Core.0.2.0\build\</MicroBuildDirectory>
-    <IsBuildOnlyXPLATProjects>false</IsBuildOnlyXPLATProjects>
-    <IsBuildOnlyXPLATProjects Condition="'$(OS)' != 'Windows_NT' or '$(DotNetBuildFromSource)' == 'true'">true</IsBuildOnlyXPLATProjects>
+    <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
   </PropertyGroup>
 
   <!-- Defaults -->
