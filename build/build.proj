@@ -19,11 +19,11 @@
   -->
   <Target Name="GetXPLATProjects">
       <MsBuild
-      Projects="@(SolutionProjects)"
+      Projects="@(AllSolutionProjects)"
       Targets="GetXPLATProject">
       <Output
           TaskParameter="TargetOutputs"
-          ItemName="XPLATProjects" /> 
+          ItemName="XPLATProjects" />
     </MsBuild>
   </Target>
 

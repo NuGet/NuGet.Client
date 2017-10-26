@@ -259,6 +259,10 @@
   </ItemGroup>
 
   <ItemGroup>
+      <AllSolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
    <ApexProjects Include="$(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj" />
   </ItemGroup>
 
