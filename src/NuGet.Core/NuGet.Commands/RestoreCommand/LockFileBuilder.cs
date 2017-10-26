@@ -110,19 +110,45 @@ namespace NuGet.Commands
                     // Packages
                     var packageInfo = NuGetv3LocalRepositoryUtility.GetPackage(localRepositories, library.Name, library.Version);
 
-                    // Add the library if it was resolved, unresolved packages are not added to the assets file.
-                    if (packageInfo != null)
+                    if (packageInfo == null)
                     {
-                        var package = packageInfo.Package;
-                        var resolver = packageInfo.Repository.PathResolver;
-
-                        var sha512 = File.ReadAllText(resolver.GetHashPath(package.Id, package.Version));
-                        var path = PathUtility.GetPathWithForwardSlashes(
-                            resolver.GetPackageDirectory(package.Id, package.Version));
-
-                        // Create a new lock file library
-                        lockFile.Libraries.Add(CreateLockFileLibrary(package, sha512, path));
+                        continue;
                     }
+
+                    var package = packageInfo.Package;
+                    var resolver = packageInfo.Repository.PathResolver;
+
+                    LockFileLibrary previousLibrary = null;
+                    if (previousLibraries?.TryGetValue(Tuple.Create(package.Id, package.Version), out previousLibrary) == true)
+                    {
+                        // We mutate this previous library so we must take a clone of it. This is
+                        // important because later, when deciding whether the lock file has changed,
+                        // we compare the new lock file to the previous (in-memory) lock file.
+                        previousLibrary = previousLibrary.Clone();
+                    }
+
+                    var sha512 = File.ReadAllText(resolver.GetHashPath(package.Id, package.Version));
+                    var path = PathUtility.GetPathWithForwardSlashes(
+                        resolver.GetPackageDirectory(package.Id, package.Version));
+
+                    var lockFileLib = previousLibrary;
+
+                    // If we have the same library in the lock file already, use that.
+                    if (previousLibrary == null ||
+                        previousLibrary.Sha512 != sha512 ||
+                        previousLibrary.Path != path)
+                    {
+                        // The existing library did not match, create a new one.
+                        lockFileLib = CreateLockFileLibrary(
+                            package,
+                            sha512,
+                            path);
+                    }
+
+                    lockFile.Libraries.Add(lockFileLib);
+
+                    var packageIdentity = new PackageIdentity(lockFileLib.Name, lockFileLib.Version);
+                    context.PackageFileCache.TryAdd(packageIdentity, lockFileLib.Files);
                 }
             }
 
