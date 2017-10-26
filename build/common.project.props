@@ -260,12 +260,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <XPLATProjects Include="$(RepositoryRootDirectory)src\NuGet.Core\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.csproj"/>
-    <XPLATProjects Include="$(RepositoryRootDirectory)src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj"/>
-    <XPLATProjects Include="$(RepositoryRootDirectory)src\NuGet.Core\NuGet.Build.Tasks\NuGet.Build.Tasks.csproj"/>
-  </ItemGroup>
-
-  <ItemGroup>
    <ApexProjects Include="$(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj" />
   </ItemGroup>
 

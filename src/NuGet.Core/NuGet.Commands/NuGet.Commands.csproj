@@ -11,6 +11,7 @@
     <PackProject>true</PackProject>
     <IncludeInVSIX>true</IncludeInVSIX>
     <Shipping>true</Shipping>
+    <XPLATProject>true</XPLATProject>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">

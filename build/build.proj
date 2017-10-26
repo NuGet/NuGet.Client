@@ -14,6 +14,21 @@
 
   <!--
     ============================================================
+    Get XPLAT projects
+    ============================================================
+  -->
+  <Target Name="GetXPLATProjects">
+      <MsBuild
+      Projects="@(SolutionProjects)"
+      Targets="GetXPLATProject">
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="XPLATProjects" /> 
+    </MsBuild>
+  </Target>
+
+  <!--
+    ============================================================
     Run core functional tests (non-VS specific)
     ============================================================
   -->
@@ -214,7 +229,7 @@
     Build for XPLAT 
     ============================================================
   -->
-  <Target Name="BuildXPLAT" >
+  <Target Name="BuildXPLAT" DependsOnTargets="GetXPLATProjects">
     <Message Text="Building XPLAT" Importance="high" />
   </Target>
 
@@ -336,7 +351,7 @@
     Pack for XPLAT
     ============================================================
   -->
-  <Target Name="PackXPLAT">
+  <Target Name="PackXPLAT" DependsOnTargets="GetXPLATProjects">
     <Message Text="Packing for XPLAT" Importance="high" />
 
     <MSBuild BuildInParallel="false"
@@ -406,7 +421,7 @@
     Restore for XPLAT
     ============================================================
   -->
-  <Target Name="RestoreXPLAT">
+  <Target Name="RestoreXPLAT" DependsOnTargets="GetXPLATProjects">
     <Message Text="Restoring for XPLAT" Importance="high" />
     
     <PropertyGroup>

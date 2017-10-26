@@ -18,6 +18,7 @@
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier> 
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <IncludeBuildOutput>false</IncludeBuildOutput> <!-- We only collect the ILMerged dll when packing on desktop. Build from does not do an ILMerge -->
+    <XPLATProject>true</XPLATProject>
   </PropertyGroup>
 
   <ItemGroup>
