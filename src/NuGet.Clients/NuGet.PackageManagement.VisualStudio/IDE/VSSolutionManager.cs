@@ -143,14 +143,13 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsProjectAdapterProvider = vsProjectAdapterProvider;
             _logger = logger;
             _settings = settings;
-
-            _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
         }
 
         private async Task InitializeAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+            _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
             var dte = _serviceProvider.GetDTE();
             UserAgent.SetUserAgentString(
                     new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
@@ -303,6 +302,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // This checks all the pre-conditions before showing NuGet manager UI at solution level
             // without initializing full VSSolutionManager, otherwise it will create hang issues.
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await EnsureInitializeAsync();
 
             bool? isSolutionAvailable = null;
             var DoesNuGetSupportsAnyProject = false;
@@ -485,13 +485,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private async Task<bool> IsSolutionDPLEnabled()
+        private async Task<bool> IsSolutionDPLEnabledAsync()
         {
 #if VS14
             // for Dev14 always return false since DPL not exists there.
             return await Task.FromResult(false);
 #else
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await EnsureInitializeAsync();
 
             var vsSolution7 = _vsSolution as IVsSolution7;
 
@@ -511,9 +512,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return await Task.FromResult(false);
 #else
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await EnsureInitializeAsync();
 
             // check if solution is DPL enabled or not. 
-            if (!await IsSolutionDPLEnabled())
+            if (!await IsSolutionDPLEnabledAsync())
             {
                 return false;
             }
@@ -531,6 +533,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return await Task.FromResult(Enumerable.Empty<IVsHierarchy>());
 #else
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await EnsureInitializeAsync();
 
             var projectIVsHierarchys = new List<IVsHierarchy>();
 
