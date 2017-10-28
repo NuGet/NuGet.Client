@@ -57,9 +57,9 @@
       "c"
     ],
     "originalTargetFrameworks": [
-      "net45",
-      "net46",
-      "net40"
+      "a",
+      "b",
+      "c"
     ],
     "sources": {
       "source": {}

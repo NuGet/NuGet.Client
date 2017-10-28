@@ -214,7 +214,8 @@ namespace NuGet.Test.Utility
                     _packageSpec.RestoreMetadata.ProjectPath = ProjectPath;
                     _packageSpec.RestoreMetadata.ProjectStyle = Type;
                     _packageSpec.RestoreMetadata.OutputPath = AssetsFileOutputPath;
-                    _packageSpec.RestoreMetadata.OriginalTargetFrameworks = OriginalFrameworkStrings;
+                    _packageSpec.RestoreMetadata.OriginalTargetFrameworks = OriginalFrameworkStrings
+                        ;
                     _packageSpec.RestoreMetadata.TargetFrameworks = Frameworks
                         .Select(f => new ProjectRestoreMetadataFrameworkInfo(f.Framework))
                         .ToList();
@@ -411,7 +412,8 @@ namespace NuGet.Test.Utility
 
                     ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
                     {
-                        { tfPropName, string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
+                        { tfPropName, OriginalFrameworkStrings.Count != 0 ? string.Join(";", OriginalFrameworkStrings): 
+                        string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
                     });
                 }
 

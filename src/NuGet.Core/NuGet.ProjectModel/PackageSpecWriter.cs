@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -160,7 +160,14 @@ namespace NuGet.ProjectModel
 
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
             SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
-            SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.Select(e => NuGetFramework.Parse(e).GetShortFolderName()));
+            if (msbuildMetadata.CrossTargeting)
+            {
+                SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.OrderBy( c => c)); // This need to stay the original strings because the nuget.g.targets have conditional imports based on the original framework name
+            }
+            else
+            {
+                SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.Select(e => NuGetFramework.Parse(e).GetShortFolderName()).OrderBy(c => c));
+            }
 
             WriteMetadataSources(writer, msbuildMetadata);
             WriteMetadataFiles(writer, msbuildMetadata);
@@ -185,8 +192,8 @@ namespace NuGet.ProjectModel
                 writer.WriteObjectStart("frameworks");
 
                 var frameworkNames = new HashSet<string>();
-
-                foreach (var framework in msbuildMetadata.TargetFrameworks)
+                var frameworkSorter = new NuGetFrameworkSorter();
+                foreach (var framework in msbuildMetadata.TargetFrameworks.OrderBy(c => c.FrameworkName, frameworkSorter))
                 {
                     var frameworkName = framework.FrameworkName.GetShortFolderName();
 
@@ -453,7 +460,8 @@ namespace NuGet.ProjectModel
             {
                 writer.WriteObjectStart("frameworks");
 
-                foreach (var framework in frameworks)
+                var frameworkSorter = new NuGetFrameworkSorter();
+                foreach (var framework in frameworks.OrderBy(c => c.FrameworkName, frameworkSorter))
                 {
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
 

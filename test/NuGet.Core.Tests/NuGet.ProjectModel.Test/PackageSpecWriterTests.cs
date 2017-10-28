@@ -171,9 +171,9 @@ namespace NuGet.ProjectModel.Test
       ""c""
     ],
     ""originalTargetFrameworks"": [
-      ""net46"",
-      ""net45"",
-      ""net40""
+      ""a"",
+      ""b"",
+      ""c""
     ],
     ""sources"": {
       ""source"": {}
@@ -528,7 +528,7 @@ namespace NuGet.ProjectModel.Test
                     FallbackFolders = unsortedReadOnlyList,
                     ConfigFilePaths = unsortedReadOnlyList,
                     LegacyPackagesDirectory = false,
-                    OriginalTargetFrameworks = new[] { "net45", "net46", "net40" },
+                    OriginalTargetFrameworks = unsortedReadOnlyList,
                     OutputPath = "outputPath",
                     ProjectStyle = ProjectStyle.PackageReference,
                     PackagesPath = "packagesPath",

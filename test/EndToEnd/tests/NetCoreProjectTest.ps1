@@ -802,6 +802,52 @@ function Test-NetCoreVSandMSBuildNoOp {
     Assert-True ($MsBuildRestoreTimestamp -eq $VSRestoreTimestamp)
 }
 
+function Test-NetCoreTargetFrameworksVSandMSBuildNoOp {
+    
+    # Arrange
+    $project = New-NetCoreConsoleTargetFrameworksApp ConsoleApp
+    Build-Solution
+
+    Assert-ProjectCacheFileExists $project
+    $cacheFile = Get-ProjectCacheFilePath $project
+
+    #Act
+    
+    $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+    
+    $MSBuildExe = Get-MSBuildExe
+    
+    & "$MSBuildExe" /t:restore
+
+    $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+
+    #Assert
+    Assert-True ($MsBuildRestoreTimestamp -eq $VSRestoreTimestamp)
+}
+
+function Test-NetCoreMultipleTargetFrameworksVSandMSBuildNoOp {
+    
+    # Arrange
+    $project = New-NetCoreConsoleMultipleTargetFrameworksApp ConsoleApp
+    Build-Solution
+
+    Assert-ProjectCacheFileExists $project
+    $cacheFile = Get-ProjectCacheFilePath $project
+
+    #Act
+    
+    $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+    
+    $MSBuildExe = Get-MSBuildExe
+    
+    & "$MSBuildExe" /t:restore
+
+    $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
+
+    #Assert
+    Assert-True ($MsBuildRestoreTimestamp -eq $VSRestoreTimestamp)
+}
+
 function Test-NetCoreToolsVSandMSBuildNoOp {
     
     # Arrange
