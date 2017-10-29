@@ -22,6 +22,7 @@ namespace NuGet.Build.Tasks.Pack
         public ITaskItem[] BuildOutputInPackage { get; set; }
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
+        public string VersionSuffix { get; set; }
         public string Title { get; set; }
         public string[] Authors { get; set; }
         public string Description { get; set; }
@@ -164,7 +165,8 @@ namespace NuGet.Build.Tasks.Pack
                 Tags = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Tags),
                 TargetFrameworks = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetFrameworks),
                 TargetPathsToSymbols = MSBuildUtility.WrapMSBuildItem(TargetPathsToSymbols),
-                Title = MSBuildStringUtility.TrimAndGetNullForEmpty(Title)
+                Title = MSBuildStringUtility.TrimAndGetNullForEmpty(Title),
+                VersionSuffix = MSBuildStringUtility.TrimAndGetNullForEmpty(VersionSuffix)
             };
         }
     }

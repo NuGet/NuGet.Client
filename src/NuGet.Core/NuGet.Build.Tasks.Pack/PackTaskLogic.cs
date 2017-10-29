@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -183,7 +183,7 @@ namespace NuGet.Build.Tasks.Pack
                     assetsFilePath));
             }
 
-            PopulateProjectAndPackageReferences(builder, assetsFile);
+            PopulateProjectAndPackageReferences(builder, assetsFile, request.VersionSuffix);
             PopulateFrameworkAssemblyReferences(builder, request);
             return builder;
         }
@@ -570,11 +570,11 @@ namespace NuGet.Build.Tasks.Pack
             return sourceFiles;
         }
 
-        private void PopulateProjectAndPackageReferences(PackageBuilder packageBuilder, LockFile assetsFile)
+        private void PopulateProjectAndPackageReferences(PackageBuilder packageBuilder, LockFile assetsFile, string versionSuffix)
         {
             var dependenciesByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
 
-            InitializeProjectDependencies(assetsFile, dependenciesByFramework);
+            InitializeProjectDependencies(assetsFile, dependenciesByFramework, versionSuffix);
             InitializePackageDependencies(assetsFile, dependenciesByFramework);
 
             foreach (var pair in dependenciesByFramework)
@@ -585,7 +585,8 @@ namespace NuGet.Build.Tasks.Pack
 
         private static void InitializeProjectDependencies(
             LockFile assetsFile,
-            Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework)
+            Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework,
+            string versionSuffix)
         {
             // From the package spec, all we know is each absolute path to the project reference the the target
             // framework that project reference applies to.
@@ -640,6 +641,10 @@ namespace NuGet.Build.Tasks.Pack
                         continue;
                     }
 
+                    if(!string.IsNullOrEmpty(versionSuffix) && !string.Equals(versionSuffix, targetLibrary.Version.Release, StringComparison.Ordinal))
+                    {
+                        targetLibrary.Version = new NuGetVersion(targetLibrary.Version.Version, versionSuffix);
+                    }
                     // TODO: Implement <TreatAsPackageReference>false</TreatAsPackageReference>
                     //   https://github.com/NuGet/Home/issues/3891
                     //

@@ -408,6 +408,108 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("1.0.0",                                                "alpha2",                           "1.0.0-alpha2")]
+        [InlineData("1.0.0-alpha1",                                         "alpha2",                           "1.0.0-alpha2")]
+        [InlineData("1.0.0-1.0.0",                                          "alpha2.abc",                       "1.0.0-alpha2.abc")]
+        [InlineData("1.2.3.4",                                              "alpha2",                           "1.2.3.4-alpha2")]
+        [InlineData("1.0.0-alpha-beta",                                     "gamma",                            "1.0.0-gamma")]
+        [InlineData("1.0.0-alpha2",                                         "alpha2",                           "1.0.0-alpha2")]
+        [InlineData("1.0.0.0",                                              "alpha2",                           "1.0.0.0-alpha2")]
+        [InlineData("1.0.0" ,                                               "alpha2+asdafdfsdfgdfsdf",          "1.0.0.0-alpha2+asdafdfsdfgdfsdf")]
+        [InlineData("1.0.0-beta+asdasdasdasasd",                            "alpha2+asdafdfsdfgdfsdf",          "1.0.0.0-alpha2+asdafdfsdfgdfsdf")]
+        [InlineData("1.0.0",                                                "0-abc-123",                        "1.0.0-0-abc-123")]
+        public void PackCommand_PackProject_AddsProjectRefsAsPackageRefsWithVersionSuffix(string projectRefVersion, string versionSuffix, string expectedVersion)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var referencedProject = "ClassLibrary2";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                var referencedProjectFile = Path.Combine(testDirectory, referencedProject, $"{referencedProject}.csproj");
+
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
+
+                using (var stream = new FileStream(referencedProjectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    ProjectFileUtils.AddProperty(xml, "Version", projectRefVersion);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    var attributes = new Dictionary<string, string>();
+
+                    var properties = new Dictionary<string, string>();
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "ProjectReference",
+                        @"..\ClassLibrary2\ClassLibrary2.csproj",
+                        string.Empty,
+                        properties,
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory} --version-suffix {versionSuffix}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0-{versionSuffix}.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0-{versionSuffix}.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    var dependencyGroups = nuspecReader
+                        .GetDependencyGroups()
+                        .OrderBy(x => x.TargetFramework,
+                            new NuGetFrameworkSorter())
+                        .ToList();
+
+                    Assert.Equal(1,
+                        dependencyGroups.Count);
+
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp20,
+                        dependencyGroups[0].TargetFramework);
+                    var packagesA = dependencyGroups[0].Packages.ToList();
+                    Assert.Equal(2,
+                        packagesA.Count);
+                    Assert.Equal("Microsoft.NETCore.App", packagesA[1].Id);
+                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesA[1].Exclude);
+                    Assert.Empty(packagesA[1].Include);
+
+                    Assert.Equal("ClassLibrary2", packagesA[0].Id);
+                    Assert.Equal(new VersionRange(new NuGetVersion(expectedVersion)), packagesA[0].VersionRange);
+                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesA[0].Exclude);
+                    Assert.Empty(packagesA[0].Include);
+
+                    // Validate the assets.
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp20, libItems[0].TargetFramework);
+                    Assert.Equal(
+                        new[]
+                        {"lib/netcoreapp2.0/ClassLibrary1.dll", "lib/netcoreapp2.0/ClassLibrary1.runtimeconfig.json"},
+                        libItems[0].Items);
+                }
+            }
+        }
+
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackProject_PacksFromNuspec()
         {
