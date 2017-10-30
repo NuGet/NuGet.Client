@@ -23,6 +23,7 @@ namespace NuGet.Protocol
             ProjectUrl = GetUriSafe(package.ProjectUrl);
             Published = package.Published;
             ReportAbuseUrl = GetUriSafe(package.ReportAbuseUrl);
+            ReleaseNotes = package.ReleaseNotes;
             RequireLicenseAcceptance = package.RequireLicenseAcceptance;
             Summary = package.Summary;
             Tags = package.Tags;
@@ -78,6 +79,8 @@ namespace NuGet.Protocol
             get { return !string.IsNullOrEmpty(_titleValue) ? _titleValue : PackageId; }
             private set { _titleValue = value; }
         }
+
+        public string ReleaseNotes { get; private set; }
 
         public NuGetVersion Version { get; private set; }
 

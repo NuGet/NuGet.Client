@@ -34,7 +34,7 @@
     <d:PackageSize m:type="Edm.Int64">15150</d:PackageSize>
     <d:ProjectUrl>http://go.microsoft.com/fwlink/?LinkId=235168</d:ProjectUrl>
     <d:ReportAbuseUrl>https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/4.3.2-preview</d:ReportAbuseUrl>
-    <d:ReleaseNotes></d:ReleaseNotes>
+    <d:ReleaseNotes>release notes</d:ReleaseNotes>
     <d:RequireLicenseAcceptance m:type="Edm.Boolean">true</d:RequireLicenseAcceptance>
     <d:Tags>Microsoft Azure Storage Table Blob File Queue Scalable windowsazureofficial</d:Tags>
     <d:Title>Windows Azure Storage</d:Title>
