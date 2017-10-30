@@ -108,6 +108,45 @@ function New-NetCoreConsoleApp
     }
 }
 
+function New-NetCoreConsoleTargetFrameworksApp
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        $project = New-Project NetCoreConsoleTargetFrameworksApp $ProjectName $SolutionFolder
+        Wait-OnNetCoreRestoreCompletion $project
+        return $project
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
+
+function New-NetCoreConsoleMultipleTargetFrameworksApp
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        $project = New-Project NetCoreConsoleMultipleTargetFrameworksApp $ProjectName $SolutionFolder
+        Wait-OnNetCoreRestoreCompletion $project
+        return $project
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
 function New-NetCoreWebApp10
 {
     param(
