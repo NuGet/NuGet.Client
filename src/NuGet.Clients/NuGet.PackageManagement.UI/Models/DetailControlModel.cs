@@ -322,7 +322,7 @@ namespace NuGet.PackageManagement.UI
             get { return _selectedVersion; }
             set
             {
-                if (_selectedVersion != value && value.IsValidVersion)
+                if (_selectedVersion != value && (value == null || value.IsValidVersion))
                 {
                     _selectedVersion = value;
 
