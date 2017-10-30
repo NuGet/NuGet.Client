@@ -1527,6 +1527,54 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_OriginalTargetFrameworkArePreserved()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    "proj",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netstandard1.3"),
+                    NuGetFramework.Parse("net4"));
+
+                project.OriginalFrameworkStrings = new List<string> { "netstandard1.3", "net4" };
+
+                project.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+                Assert.Equal(0, r.Item1);
+                Assert.True(File.Exists(project.PropsOutput), r.Item2);
+                var propsXML = XDocument.Parse(File.ReadAllText(project.PropsOutput));
+
+                var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").ToList();
+
+                Assert.Equal("'$(TargetFramework)' == 'net4' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'netstandard1.3' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_NoOp_AddingANewProjectRestoresOnlyThatProject()
         {
             // Arrange
