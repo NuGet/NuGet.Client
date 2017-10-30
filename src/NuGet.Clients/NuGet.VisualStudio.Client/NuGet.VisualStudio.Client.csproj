@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
-  <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.props" />
+  <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.props" Condition="'$(IsXplat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' "/> <!-- No bootstrapping on XPLAT, this project is not expect to work correctly-->
   <PropertyGroup>
     <Shipping>true</Shipping>
     <ProjectGuid>{3B96F91B-3B58-40ED-B06E-5CD133A79A63}</ProjectGuid>
@@ -266,8 +266,8 @@
   </Choose>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" />
-  <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.targets" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(IsXplat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' "/>
+  <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.targets" Condition="'$(IsXplat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' "/>
   <Target Name="FindSourceVsixManifest">
     <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
       <SourceVsixManifest Include="source.extension.vs14.vsixmanifest" />

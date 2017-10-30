@@ -4,6 +4,7 @@
   <PropertyGroup>
     <Description>The understanding of target frameworks for NuGet.Packaging</Description>
     <TargetFrameworks>netstandard1.3;net45;net40</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.3</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573</NoWarn>
     <LangVersion>5</LangVersion>
@@ -11,6 +12,7 @@
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
+    <XPLATProject>true</XPLATProject>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
