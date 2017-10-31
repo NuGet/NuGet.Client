@@ -46,7 +46,14 @@ namespace NuGet.CommandLine
                 System.Diagnostics.Debugger.Launch();
             }
 #endif
-           
+
+#if IS_DESKTOP
+            // Find any response files and resolve the args
+            if (!RuntimeEnvironmentHelper.IsMono)
+            {
+                args = CommandLineResponseFile.ParseArgsResponseFiles(args);
+            }
+#endif
             return MainCore(Directory.GetCurrentDirectory(), args);
         }
 
@@ -147,17 +154,6 @@ namespace NuGet.CommandLine
             }
 
             return 0;
-        }
-
-        private static void SetConsoleOutputEncoding(System.Text.Encoding encoding)
-        {
-            try
-            {
-                System.Console.OutputEncoding = encoding;
-            }
-            catch (IOException)
-            {
-            }
         }
 
         private void Initialize(CoreV2.NuGet.IFileSystem fileSystem, IConsole console)
@@ -332,6 +328,17 @@ namespace NuGet.CommandLine
             if (command != null)
             {
                 console.Verbosity = command.Verbosity;
+            }
+        }
+
+        private static void SetConsoleOutputEncoding(System.Text.Encoding encoding)
+        {
+            try
+            {
+                System.Console.OutputEncoding = encoding;
+            }
+            catch (IOException)
+            {
             }
         }
     }

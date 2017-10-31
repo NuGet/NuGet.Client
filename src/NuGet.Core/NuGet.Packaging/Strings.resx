@@ -208,4 +208,7 @@
     <comment>{0} is the invalid path.
 {1} is the package ID and version.</comment>
   </data>
+  <data name="ErrorManifestFileNotFound" xml:space="preserve">
+    <value>Manifest file not found at '{0}'</value>
+  </data>
 </root>

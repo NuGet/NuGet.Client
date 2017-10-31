@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 extern alias CoreV2;
 
@@ -104,9 +104,17 @@ namespace NuGet.CommandLine
             {
                 if (String.IsNullOrEmpty(ConfigFile))
                 {
+                    string configFileName = null;
+
+                    PackCommand packCommand = this as PackCommand;
+                    if (packCommand != null && !string.IsNullOrEmpty(packCommand.ConfigFile))
+                    {
+                        configFileName = packCommand.ConfigFile;
+                    }
+
                     Settings = Configuration.Settings.LoadDefaultSettings(
                         CurrentDirectory,
-                        configFileName: null,
+                        configFileName: configFileName,
                         machineWideSettings: MachineWideSettings);
                 }
                 else
