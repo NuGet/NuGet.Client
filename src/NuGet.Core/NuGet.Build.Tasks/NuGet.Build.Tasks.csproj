@@ -2,8 +2,8 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
-    <TargetFramework/>
+    <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
+    <TargetFramework />
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <PackProject>true</PackProject>
@@ -28,7 +28,7 @@
     <ProjectReference Include="..\NuGet.Commands\NuGet.Commands.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Microsoft.Build.Framework" />
   </ItemGroup>
