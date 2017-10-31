@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <Description>NuGet.Indexing Class Library</Description>
-    <TargetFramework>net45</TargetFramework>
+    <TargetFramework>net46</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
