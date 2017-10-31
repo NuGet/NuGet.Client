@@ -51,7 +51,7 @@ namespace NuGet.VisualStudio
             // FullName
             var fullName = GetPotentialFullPathOrNull(envDTEProject.FullName);
 
-            if (fullName != null)
+            if (!string.IsNullOrEmpty(fullName))
             {
                 return fullName;
             }
@@ -59,7 +59,7 @@ namespace NuGet.VisualStudio
             // FullPath
             var fullPath = GetPotentialFullPathOrNull(GetPropertyValue<string>(envDTEProject, FullPath));
 
-            if (fullPath != null)
+            if (!string.IsNullOrEmpty(fullPath))
             {
                 return fullPath;
             }
@@ -92,32 +92,29 @@ namespace NuGet.VisualStudio
             // until we can find one containing the full path.
 
             // FullName
-            if (!String.IsNullOrEmpty(envDTEProject.FullName))
+            var fullName = GetPotentialFullPathOrNull(envDTEProject.FullName);
+
+            if (!string.IsNullOrEmpty(fullName))
             {
-                return Path.GetDirectoryName(envDTEProject.FullName);
+                return Path.GetDirectoryName(fullName);
             }
 
             // C++ projects do not have FullPath property, but do have ProjectDirectory one.
-            string projectDirectory = GetPropertyValue<string>(envDTEProject, ProjectDirectory);
+            var projectDirectory = GetPropertyValue<string>(envDTEProject, ProjectDirectory);
 
-            if (!String.IsNullOrEmpty(projectDirectory))
+            if (!string.IsNullOrEmpty(projectDirectory))
             {
                 return projectDirectory;
             }
 
             // FullPath
-            string fullPath = GetPropertyValue<string>(envDTEProject, FullPath);
+            var fullPath = GetPotentialFullPathOrNull(GetPropertyValue<string>(envDTEProject, FullPath));
 
             if (!String.IsNullOrEmpty(fullPath))
             {
                 // Some Project System implementations (JS metro app) return the project 
                 // file as FullPath. We only need the parent directory
-                if (File.Exists(fullPath))
-                {
                     return Path.GetDirectoryName(fullPath);
-                }
-
-                return fullPath;
             }
 
             Debug.Fail("Unable to find the project path");
