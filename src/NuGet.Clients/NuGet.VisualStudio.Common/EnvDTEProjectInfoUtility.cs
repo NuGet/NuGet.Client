@@ -114,7 +114,7 @@ namespace NuGet.VisualStudio
             {
                 // Some Project System implementations (JS metro app) return the project 
                 // file as FullPath. We only need the parent directory
-                    return Path.GetDirectoryName(fullPath);
+                return Path.GetDirectoryName(fullPath);
             }
 
             Debug.Fail("Unable to find the project path");
