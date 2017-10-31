@@ -83,12 +83,12 @@
   </ItemGroup>  
 
   <ItemGroup>
-    <None Include="Pack.targets">
+    <None Include="NuGet.Build.Tasks.Pack.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackagePath>build</PackagePath>
       <Pack>true</Pack>
     </None>
-    <None Include="Pack.targets">
+    <None Include="NuGet.Build.Tasks.Pack.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackagePath>buildCrossTargeting</PackagePath>
       <Pack>true</Pack>
