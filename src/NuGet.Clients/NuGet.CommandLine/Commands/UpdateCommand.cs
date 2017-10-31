@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,9 +10,9 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine
@@ -54,6 +53,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "CommandMSBuildPath")]
         public string MSBuildPath { get; set; }
+
+        [Option(typeof(NuGetCommand), "WhatIf")]
+        public bool WhatIf { get; set; }
 
         // The directory that contains msbuild
         private Lazy<string> _msbuildDirectory;
@@ -316,13 +318,45 @@ namespace NuGet.CommandLine
                 projectActions.AddRange(actions);
             }
 
-            await packageManager.ExecuteNuGetProjectActionsAsync(
-                nugetProject,
-                projectActions,
-                project.NuGetProjectContext,
-                CancellationToken.None);
+            if (WhatIf)
+            {
+                SimulatePackageUpdate(projectActions);
+            }
+            else
+            {
+                await packageManager.ExecuteNuGetProjectActionsAsync(
+                    nugetProject,
+                    projectActions,
+                    project.NuGetProjectContext,
+                    CancellationToken.None);
 
-            project.Save();
+                project.Save();
+            }
+        }
+
+        private void SimulatePackageUpdate(List<NuGetProjectAction> projectActions)
+        {
+            var findCurrentlyInstalled = projectActions
+                .Select(pa => pa.Project.GetInstalledPackagesAsync(CancellationToken.None))
+                .ToArray();
+            Task.WaitAll(findCurrentlyInstalled);
+            var currentPackages = findCurrentlyInstalled.SelectMany(t => t.Result);
+
+            foreach (var action in projectActions)
+            {
+                if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                {
+                    var oldestVersion = currentPackages
+                        .Where(p => p.PackageIdentity.Id.Equals(action.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase))
+                        .OrderBy(p => p.PackageIdentity.Version)
+                        .FirstOrDefault();
+
+                    if (oldestVersion != null)
+                        Console.WriteLine(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("UpdateWhatIf"), action.PackageIdentity.Id, oldestVersion.PackageIdentity.Version, action.PackageIdentity.Version));
+                    else
+                        Console.WriteLine(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("UpdateWhatIfNew"), action.PackageIdentity.Id, action.PackageIdentity.Version));
+                }
+            }
         }
 
         private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
@@ -412,7 +446,6 @@ namespace NuGet.CommandLine
 
             return new MSBuildProjectSystem(_msbuildDirectory.Value, projectFiles[0], projectContext);
         }
-
 
         private class UpdateConsoleProjectContext : ConsoleProjectContext
         {
