@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -19,9 +20,8 @@ namespace NuGet.Packaging.Signing
 
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
         {
-
-#if IS_DESKTOP // Uri.UriSchemeHttp and Uri.UriSchemeHttps are not available in netstandard 1.3
-
+#if IS_DESKTOP
+            // Uri.UriSchemeHttp and Uri.UriSchemeHttps are not available in netstandard 1.3
             if (!string.Equals(timeStampServerUrl.Scheme, Uri.UriSchemeHttp, StringComparison.Ordinal) &&
                 !string.Equals(timeStampServerUrl.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal))
             {
@@ -36,8 +36,32 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamp a signature.
         /// </summary>
-        public Task<Signature> CreateSignatureAsync(TimestampRequest timestampRequest, ILogger logger, CancellationToken token)
+        public Task<Signature> CreateSignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token)
         {
+            // Get the signatureValue from the signerInfo object
+            using (var nativeCms = NativeCms.Decode(request.Signature.GetBytes(), detached: false))
+            {
+                var digest = nativeCms.GetEncryptedDigest();
+
+
+                // Hash signatureValueBytes
+                var signatureHash = request
+                    .TimestampHashAlgorithm
+                    .GetHashProvider()
+                    .ComputeHashAsBase64(manifestStream, leaveStreamOpen: true);
+
+                // Generate a time stamp request
+
+                var timestampRequest = new Rfc3161TimestampRequest(
+                sigHash,
+                request.TimestampHashAlgorithm,
+                nonce: nonce,
+                requestSignerCertificates: true);
+
+                var timestampToken = timestampRequest.SubmitRequest(
+                    new Uri("http://sha256timestamp.ws.symantec.com/sha256/timestamp"),
+                    TimeSpan.FromSeconds(10));
+            }
             // Returns the signature as-is for now.
             return Task.FromResult(timestampRequest.Signature);
         }

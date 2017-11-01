@@ -10,6 +10,19 @@ namespace NuGet.Common
 {
     public static class CryptoHashUtility
     {
+
+        /// <summary>
+        /// Compute the hash as a base64 encoded string.
+        /// </summary>
+        /// <remarks>Closes the stream by default.</remarks>
+        /// <param name="hashAlgorithm">Algorithm to use for hashing.</param>
+        /// <param name="data">Stream to hash.</param>
+        public static string ComputeHashAsBase64(this HashAlgorithm hashAlgorithm, Stream data)
+        {
+            return ComputeHashAsBase64(hashAlgorithm, data, leaveStreamOpen: false);
+        }
+
+
         /// <summary>
         /// Compute the hash as a base64 encoded string.
         /// </summary>
