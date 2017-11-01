@@ -20,7 +20,7 @@ namespace NuGet.Packaging.Test.SigningTests
         /// </summary>
         public static async Task SignPackageAsync(TestLogger testLogger, X509Certificate2 cert, SignedPackageArchive signPackage)
         {
-            var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider());
+            var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(new Uri("http://unit.test")));
             var signer = new Signer(signPackage, testSignatureProvider);
 
             var request = new SignPackageRequest()

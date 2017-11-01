@@ -550,7 +550,7 @@ namespace NuGet.Packaging
                             {
                                 await VerifyPackageSignatureAsync(packageIdentity, packageExtractionContext, packageDownloader.SignedPackageReader, token);
                             }
-                            catch(SignatureException e)
+                            catch(SignatureException)
                             {
                                 try
                                 {
