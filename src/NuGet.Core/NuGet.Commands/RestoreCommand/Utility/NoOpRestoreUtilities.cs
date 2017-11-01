@@ -176,16 +176,6 @@ namespace NuGet.Commands
                         {
                             found = true;
 
-                            // Cache sha512 values across all restores
-                            // If a full restore is done this same value will also be used later
-                            var sha512 = request.DependencyProviders.PackageFileCache.GetOrAddSha512(hashPath);
-
-                            if (!StringComparer.Ordinal.Equals(library.Sha512, sha512.Value))
-                            {
-                                // A package has changed
-                                return false;
-                            }
-
                             // Skip checking the rest of the package folders
                             break;
                         }
