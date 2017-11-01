@@ -105,7 +105,7 @@ namespace NuGet.CommandLine
                 CertificatePassword = CertificatePassword,
                 CryptographicServiceProvider = CryptographicServiceProvider,
                 KeyContainer = KeyContainer,
-                HashingAlgorithm = hashAlgorithm,
+                SignatureHashAlgorithm = hashAlgorithm,
                 Logger = Console,
                 Overwrite = Overwrite,
                 NonInteractive = NonInteractive,

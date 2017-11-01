@@ -61,7 +61,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Hashing Algorithm to be used to digest the package files.
         /// </summary>
-        public HashAlgorithmName HashingAlgorithm { get; set; }
+        public HashAlgorithmName SignatureHashAlgorithm { get; set; }
 
         /// <summary>
         /// URL to an RFC 3161 timestamp server.

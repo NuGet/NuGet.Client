@@ -20,13 +20,13 @@ namespace NuGet.Packaging.Test.SigningTests
         /// </summary>
         public static async Task SignPackageAsync(TestLogger testLogger, X509Certificate2 cert, SignedPackageArchive signPackage)
         {
-            var testSignatureProvider = new X509SignatureProvider(new TimestampProvider());
+            var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider());
             var signer = new Signer(signPackage, testSignatureProvider);
 
             var request = new SignPackageRequest()
             {
                 Certificate = cert,
-                HashAlgorithm = Common.HashAlgorithmName.SHA256
+                SignatureHashAlgorithm = Common.HashAlgorithmName.SHA256
             };
 
             await signer.SignAsync(request, testLogger, CancellationToken.None);

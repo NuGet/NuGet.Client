@@ -278,7 +278,7 @@ namespace NuGet.CommandLine.Test
             // Act & Assert
             Assert.True(parsable);
             var signArgs = signCommand.GetSignArgs();
-            Assert.Equal(parsedHashAlgorithm, signArgs.HashingAlgorithm);
+            Assert.Equal(parsedHashAlgorithm, signArgs.SignatureHashAlgorithm);
             Assert.Equal(HashAlgorithmName.SHA256, signArgs.TimestampHashAlgorithm);
         }
 
@@ -335,7 +335,7 @@ namespace NuGet.CommandLine.Test
             // Act & Assert
             Assert.True(parsable);
             var signArgs = signCommand.GetSignArgs();
-            Assert.Equal(HashAlgorithmName.SHA256, signArgs.HashingAlgorithm);
+            Assert.Equal(HashAlgorithmName.SHA256, signArgs.SignatureHashAlgorithm);
             Assert.Equal(parsedTimestampHashAlgorithm, signArgs.TimestampHashAlgorithm);
         }
 

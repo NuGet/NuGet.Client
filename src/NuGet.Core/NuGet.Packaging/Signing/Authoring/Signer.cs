@@ -22,15 +22,6 @@ namespace NuGet.Packaging.Signing
         /// Creates a signer for a specific package.
         /// </summary>
         /// <param name="package">Package to sign or modify.</param>
-        public Signer(ISignedPackage package)
-            : this(package, new X509SignatureProvider(new TimestampProvider()))
-        {
-        }
-
-        /// <summary>
-        /// Creates a signer for a specific package.
-        /// </summary>
-        /// <param name="package">Package to sign or modify.</param>
         public Signer(ISignedPackage package, ISignatureProvider signatureProvider)
         {
             _package = package ?? throw new ArgumentNullException(nameof(package));
@@ -45,15 +36,15 @@ namespace NuGet.Packaging.Signing
             // Verify hash is allowed
 
             // Generate manifest
-            var packageEntries = await _package.GetContentManifestEntriesAsync(request.HashAlgorithm, token);
+            var packageEntries = await _package.GetContentManifestEntriesAsync(request.SignatureHashAlgorithm, token);
 
             var manifest = new PackageContentManifest(
                 PackageContentManifest.DefaultVersion,
-                request.HashAlgorithm,
+                request.SignatureHashAlgorithm,
                 packageEntries);
 
             // Generate manifest hash and add file
-            var manifestHash = await AddManifestAndGetHashAsync(manifest, request.HashAlgorithm, token);
+            var manifestHash = await AddManifestAndGetHashAsync(manifest, request.SignatureHashAlgorithm, token);
 
             // Create signature
             var signature = await _signatureProvider.CreateSignatureAsync(request, manifestHash, logger, token);

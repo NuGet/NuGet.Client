@@ -9,8 +9,11 @@ namespace NuGet.Packaging.Signing
 {
     public class SignPackageRequest
     {
-        public HashAlgorithmName HashAlgorithm { get; set; } = HashAlgorithmName.SHA256;
+        public HashAlgorithmName SignatureHashAlgorithm { get; set; } = HashAlgorithmName.SHA256;
+
+        public HashAlgorithmName TimestampHashAlgorithm { get; set; } = HashAlgorithmName.SHA256;
 
         public X509Certificate2 Certificate { get; set; }
+
     }
 }

@@ -32,12 +32,14 @@ namespace NuGet.Commands
                 CertificateUtility.X509Certificate2ToString(cert)));
 
             var signRequest = GenerateSignPackageRequest(signArgs, cert);
+            var timestampProvider = new Rfc3161TimestampProvider(new Uri(signArgs.Timestamper));
+            var signatureProvider = new X509SignatureProvider(timestampProvider);
 
             foreach (var packagePath in packagesToSign)
             {
                 try
                 {
-                    SignPackage(packagePath, signArgs.Logger, signRequest);
+                    SignPackage(packagePath, signArgs.Logger, signatureProvider, signRequest);
                 }
                 catch (Exception e)
                 {
@@ -54,12 +56,12 @@ namespace NuGet.Commands
             return success ? 0 : 1;
         }
 
-        private int SignPackage(string path, ILogger logger, SignPackageRequest request)
+        private int SignPackage(string path, ILogger logger, ISignatureProvider signatureProvider, SignPackageRequest request)
         {
             using (var zip = ZipFile.Open(path, ZipArchiveMode.Update))
             {
                 var package = new SignedPackageArchive(zip);
-                var signer = new Signer(package);
+                var signer = new Signer(package, signatureProvider);
                 signer.SignAsync(request, logger, CancellationToken.None).Wait();
             }
 
@@ -68,7 +70,12 @@ namespace NuGet.Commands
 
         private SignPackageRequest GenerateSignPackageRequest(SignArgs signArgs, X509Certificate2 certificate)
         {
-            throw new NotImplementedException();
+            return new SignPackageRequest
+            {
+                Certificate = certificate,
+                SignatureHashAlgorithm = signArgs.SignatureHashAlgorithm,
+                TimestampHashAlgorithm = signArgs.TimestampHashAlgorithm
+            };
         }
 
         private static X509Certificate2 GetCertificate(SignArgs signArgs)
