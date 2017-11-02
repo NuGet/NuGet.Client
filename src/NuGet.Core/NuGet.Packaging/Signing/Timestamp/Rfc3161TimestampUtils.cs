@@ -17,7 +17,7 @@ namespace NuGet.Packaging.Signing
 {
     /// <summary>
     /// Internally used by Rfc3161TimestampProvider.
-    /// Should be removed once that file is referenced through the .NET Core framework.
+    /// This class should be removed once we can reference it throught the .NET Core framework.
     /// </summary>
     internal static class Rfc3161TimestampUtils
     {

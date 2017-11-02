@@ -11,6 +11,10 @@ namespace NuGet.Common
     public static class CryptoHashUtility
     {
 
+        private const string SHA256_OID = "2.16.840.1.101.3.4.2.1";
+        private const string SHA384_OID = "2.16.840.1.101.3.4.2.2";
+        private const string SHA512_OID = "2.16.840.1.101.3.4.2.3";
+
         /// <summary>
         /// Compute the hash as a base64 encoded string.
         /// </summary>
@@ -148,6 +152,42 @@ namespace NuGet.Common
 #else
             return false;
 #endif
+        }
+
+        /// <summary>
+        /// Extension method to convert NuGet.Common.HashAlgorithmName to System.Security.Cryptography.HashAlgorithmName
+        /// </summary>
+        /// <returns>System.Security.Cryptography.HashAlgorithmName equivalent of the NuGet.Common.HashAlgorithmName</returns>
+        public static System.Security.Cryptography.HashAlgorithmName ConvertToSystemSecurityHashAlgorithmName(this HashAlgorithmName hashalgorithm)
+        {
+            switch (hashalgorithm)
+            {
+                default:
+                case HashAlgorithmName.SHA256:
+                    return System.Security.Cryptography.HashAlgorithmName.SHA256;
+                case HashAlgorithmName.SHA384:
+                    return System.Security.Cryptography.HashAlgorithmName.SHA384;
+                case HashAlgorithmName.SHA512:
+                    return System.Security.Cryptography.HashAlgorithmName.SHA512;
+            }
+        }
+
+        /// <summary>
+        /// Extension method to convert NuGet.Common.HashAlgorithmName to an Oid string
+        /// </summary>
+        /// <returns>Oid string equivalent of the NuGet.Common.HashAlgorithmName</returns>
+        public static string ConvertOidString(this HashAlgorithmName hashalgorithm)
+        {
+            switch (hashalgorithm)
+            {
+                default:
+                case HashAlgorithmName.SHA256:
+                    return SHA256_OID;
+                case HashAlgorithmName.SHA384:
+                    return SHA384_OID;
+                case HashAlgorithmName.SHA512:
+                    return SHA512_OID;
+            }
         }
     }
 }

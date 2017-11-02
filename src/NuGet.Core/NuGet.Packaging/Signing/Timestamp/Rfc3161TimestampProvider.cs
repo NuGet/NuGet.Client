@@ -3,7 +3,14 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
+
+#if IS_DESKTOP
+using System.Security.Cryptography.Pkcs;
+#endif
+
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -18,6 +25,9 @@ namespace NuGet.Packaging.Signing
     {
         // Url to an RFC 3161 timestamp server
         private readonly Uri _url;
+        private const int _rfc3161RequestTimeoutSeconds = 10;
+        private const string _signingCertificateV2Oid = "1.2.840.113549.1.9.16.2.47";
+
 
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
         {
@@ -42,36 +52,109 @@ namespace NuGet.Packaging.Signing
             // Get the signatureValue from the signerInfo object
             using (var nativeCms = NativeCms.Decode(request.Signature.GetBytes(), detached: false))
             {
-                var signatureValue = nativeCms.GetEncryptedDigest();
-                var signatureValueStream = new MemoryStream(signatureValue);
+                var signatureValueHashByteArray = GetSignatureValueHash(
+                    request.TimestampHashAlgorithm,
+                    nativeCms);
 
-                    // Hash signatureValueBytes
-                var signatureValueHash = request
-                    .TimestampHashAlgorithm
-                    .GetHashProvider()
-                    .ComputeHashAsBase64(signatureValueStream, leaveStreamOpen: false);
+                // Allows us to track the request.
+                var nonce = GenerateNonce();
 
-                var nonce = new byte[24];
-
-                using (var rng = RandomNumberGenerator.Create())
-                {
-                    rng.GetBytes(nonce);
-                }
-
-                // Generate a time stamp request
-                var timestampRequest = new Rfc3161TimestampRequest(
-                signatureValueHash,
-                request.TimestampHashAlgorithm,
+                var rfc3161TimestampRequest = new Rfc3161TimestampRequest(
+                signatureValueHashByteArray,
+                request.TimestampHashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(),
                 nonce: nonce,
                 requestSignerCertificates: true);
 
-                var timestampToken = timestampRequest.SubmitRequest(
-                    new Uri("http://sha256timestamp.ws.symantec.com/sha256/timestamp"),
-                    TimeSpan.FromSeconds(10));
+                // Request a timestamp
+                var timestampToken = rfc3161TimestampRequest.SubmitRequest(
+                    request.Timestamper,
+                    TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
+
+                // Verify the response
+                var tokenCms = timestampToken.AsSignedCms();
+
+                // TODO Check if there can be more than 1?
+                var tokenSigner = tokenCms.SignerInfos[0];
+
+                ValidateTimestampResponse(request, signatureValueHashByteArray, nonce, timestampToken, tokenSigner);
+
+                var signingCertificate = GetSigningCertificateFromTimestampResponse(tokenSigner);
+
+                //TODO validate the certificate chain.
+
+                // Returns the signature as-is for now.
+                return Task.FromResult(request.Signature);
+            }
+        }
+
+        private static CryptographicAttributeObject GetSigningCertificateFromTimestampResponse(SignerInfo tokenSigner)
+        {
+            CryptographicAttributeObject signingCertificateV2 = null;
+
+            foreach (var attr in tokenSigner.SignedAttributes)
+            {
+                if (string.Equals(attr.Oid.Value, _signingCertificateV2Oid))
+                {
+                    signingCertificateV2 = attr;
+                    break;
+                }
             }
 
-            // Returns the signature as-is for now.
-            return Task.FromResult(timestampRequest.Signature);
+            if (signingCertificateV2 == null)
+            {
+                throw new InvalidOperationException("Rfc3161TimestampToken does not contain a signer certificate.");
+            }
+
+            return signingCertificateV2;
+        }
+
+        private static void ValidateTimestampResponse(TimestampRequest request,
+            byte[] signatureValueHashByteArray,
+            byte[] nonce,
+            Rfc3161TimestampToken timestampToken,
+            SignerInfo tokenSigner)
+        {
+            if (!timestampToken.TokenInfo.HasMessageHash(signatureValueHashByteArray))
+            {
+                throw new InvalidOperationException($"Rfc3161TimestampToken contains invalid {nameof(signatureValueHashByteArray)}.");
+            }
+
+            if (!nonce.SequenceEqual(timestampToken.TokenInfo.GetNonce()))
+            {
+                throw new InvalidOperationException($"Rfc3161TimestampToken contains invalid {nameof(nonce)}.");
+            }
+
+            if (!request.SigningSpec.AllowedHashAlgorithms.Contains(tokenSigner.DigestAlgorithm.Value))
+            {
+                throw new InvalidOperationException("Rfc3161TimestampToken contains invalid hash algorithm Oid.");
+            }
+        }
+
+        private static byte[] GetSignatureValueHash(Common.HashAlgorithmName hashAlgorithm, NativeCms nativeCms)
+        {
+            var signatureValue = nativeCms.GetEncryptedDigest();
+
+            var signatureValueStream = new MemoryStream(signatureValue);
+
+            var signatureValueHash = hashAlgorithm
+                .GetHashProvider()
+                .ComputeHashAsBase64(signatureValueStream, leaveStreamOpen: false);
+
+            var signatureValueHashByteArray = Encoding.ASCII.GetBytes(signatureValueHash);
+
+            return signatureValueHashByteArray;
+        }
+
+        private static byte[] GenerateNonce()
+        {
+            var nonce = new byte[24];
+
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(nonce);
+            }
+
+            return nonce;
         }
 #else
         /// <summary>

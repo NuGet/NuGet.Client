@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Common;
+
 namespace NuGet.Packaging.Signing
 {
     public sealed class SigningSpecificationsV1 : SigningSpecifications
@@ -9,6 +11,16 @@ namespace NuGet.Packaging.Signing
         private const string _manifestPath = "testsigned/manifest.txt";
         private const string _signaturePath1 = "testsigned/a.sig";
         private const string _signaturePath2 = "testsigned/b.sig";
+
+        /// <summary>
+        /// Allowed digest algorithms for signature and timestamp hashing.
+        /// </summary>
+        private static readonly string[] _allowedHashAlgorithms = new[]
+        {
+            "SHA256",
+            "SHA384",
+            "SHA512"
+        };
 
         /// <summary>
         /// These paths are allowed in the testsigned folder.
@@ -30,6 +42,8 @@ namespace NuGet.Packaging.Signing
         };
 
         public override string[] AllowedPaths => _allowedPaths;
+
+        public override string[] AllowedHashAlgorithms => _allowedHashAlgorithms;
 
         public override string[] RequiredPaths => _requiredPaths;
 

@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Signing
 {
     /// <summary>
     /// Represents an RFC3161 TSTInfo.
-    /// Should be removed once this file is referenced through the .NET Core framework.
+    /// This class should be removed once we can reference it throught the .NET Core framework.
     /// </summary>
     internal sealed class Rfc3161TimestampTokenInfo : AsnEncodedData
     {

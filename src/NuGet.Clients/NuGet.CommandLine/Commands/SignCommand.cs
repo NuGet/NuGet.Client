@@ -26,9 +26,6 @@ namespace NuGet.CommandLine
         {
         }
 
-        // List of possible values - https://github.com/Microsoft/referencesource/blob/master/mscorlib/system/security/cryptography/HashAlgorithmName.cs
-        private static string[] _acceptedHashAlgorithms = { "SHA256", "SHA384", "SHA512" };
-
         [Option(typeof(NuGetCommand), "SignCommandOutputDirectoryDescription")]
         public string OutputDirectory { get; set; }
 
@@ -88,10 +85,11 @@ namespace NuGet.CommandLine
             ValidateCertificateInputs();
             ValidateOutputDirectory();
 
+            var signingSpec = SigningSpecifications.V1;
             var storeLocation = ValidateAndParseStoreLocation();
             var storeName = ValidateAndParseStoreName();
-            var hashAlgorithm = ValidateAndParseHashAlgorithm(HashAlgorithm, nameof(HashAlgorithm));
-            var timestampHashAlgorithm = ValidateAndParseHashAlgorithm(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm));
+            var hashAlgorithm = ValidateAndParseHashAlgorithm(HashAlgorithm, nameof(HashAlgorithm), signingSpec);
+            var timestampHashAlgorithm = ValidateAndParseHashAlgorithm(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm), signingSpec);
 
             return new SignArgs()
             {
@@ -114,13 +112,13 @@ namespace NuGet.CommandLine
             };
         }
 
-        private HashAlgorithmName ValidateAndParseHashAlgorithm(string value, string name)
+        private HashAlgorithmName ValidateAndParseHashAlgorithm(string value, string name, SigningSpecifications spec)
         {
             var hashAlgorithm = HashAlgorithmName.SHA256;
 
             if (!string.IsNullOrEmpty(value))
             {
-                if (!_acceptedHashAlgorithms.Contains(value, StringComparer.InvariantCultureIgnoreCase) ||
+                if (!spec.AllowedHashAlgorithms.Contains(value, StringComparer.InvariantCultureIgnoreCase) ||
                     !Enum.TryParse(value, ignoreCase: true, result: out hashAlgorithm))
                 {
                     throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,

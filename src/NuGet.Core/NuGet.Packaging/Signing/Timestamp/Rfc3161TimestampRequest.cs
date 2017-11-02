@@ -8,13 +8,18 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using NuGet.Common;
+using HashAlgorithmName = System.Security.Cryptography.HashAlgorithmName;
 
 namespace NuGet.Packaging.Signing
 {
+    /// <summary>
+    /// Class representing a Rfc3161TimestampRequest.
+    /// This class should be removed once we can reference it throught the .NET Core framework.
+    /// </summary>
     internal sealed class Rfc3161TimestampRequest : AsnEncodedData
     {
+
+#if IS_DESKTOP
         private class DataType
         {
             internal int _version;
@@ -418,5 +423,6 @@ namespace NuGet.Packaging.Signing
             _data = null;
             base.CopyFrom(asnEncodedData);
         }
+#endif
     }
 }

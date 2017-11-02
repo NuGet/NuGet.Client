@@ -6,13 +6,24 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+
+#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
+#endif
+
 using System.Security.Cryptography.X509Certificates;
 
 namespace NuGet.Packaging.Signing
 {
+    /// <summary>
+    /// Class representing a Rfc3161TimestampToken.
+    /// This class should be removed once we can reference it throught the .NET Core framework.
+    /// </summary>
     internal sealed class Rfc3161TimestampToken
     {
+
+#if IS_DESKTOP
+
         private readonly byte[] _encoded;
 
         public Rfc3161TimestampTokenInfo TokenInfo { get; }
@@ -144,5 +155,6 @@ namespace NuGet.Packaging.Signing
                     Rfc3161TimestampWin32.CertCloseStore(hStore, 0);
             }
         }
+#endif
     }
 }
