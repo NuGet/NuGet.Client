@@ -19,6 +19,10 @@
     <TargetFramework>net46</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Common\NuGet.Common.csproj" />
     <ProjectReference Include="..\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj" />
