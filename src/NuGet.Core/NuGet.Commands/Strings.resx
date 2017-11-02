@@ -665,4 +665,11 @@ Valid from:</comment>
     <comment>0 - certificate file path
 1 - certificate password option</comment>
   </data>
+  <data name="NonMatchingProperties" xml:space="preserve">
+    <value>Properties '{0}':'{1}' and '{2}':'{3}' do not match.</value>
+    <comment>0 - first property name
+1 - first property value
+2 - second property name
+3 - second property value</comment>
+  </data>
 </root>

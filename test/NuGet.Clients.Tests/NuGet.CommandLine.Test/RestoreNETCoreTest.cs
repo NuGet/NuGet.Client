@@ -20,6 +20,51 @@ namespace NuGet.CommandLine.Test
     public class RestoreNetCoreTest
     {
         [Fact]
+        public void RestoreNetCore_ModifyFilesInPackageVerifyRestoreUpdates()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var pkgX = new SimpleTestPackageContext("x", "1.0.0");
+                pkgX.AddFile("lib/net45/x.dll");
+
+                // Add y to the project
+                projectA.AddPackageToAllFrameworks(pkgX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, pkgX);
+
+                // Location where the package will be installed
+                var pathResolver = new VersionFolderPathResolver(pathContext.UserPackagesFolder);
+                var xPath = pathResolver.GetInstallPath("x", NuGetVersion.Parse("1.0.0"));
+
+                // First restore
+                var r = Util.RestoreSolution(pathContext);
+                r.Success.Should().BeTrue();
+
+                // Modify files in package
+                File.WriteAllText(Path.Combine(xPath, "lib", "net45", "test.txt"), "test");
+
+                // Second restore with force
+                r = Util.RestoreSolution(pathContext, 0, "-Force");
+
+                // Assert
+                r.Success.Should().BeTrue();
+                projectA.AssetsFile.GetLibrary("x", NuGetVersion.Parse("1.0.0")).Files.Should().Contain("lib/net45/test.txt");
+            }
+        }
+
+        [Fact]
         public void RestoreNetCore_AddExternalTargetVerifyTargetUsed()
         {
             // Arrange
@@ -1478,6 +1523,54 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, r.Item1);
 
 
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_OriginalTargetFrameworkArePreserved()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    "proj",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netstandard1.3"),
+                    NuGetFramework.Parse("net4"));
+
+                project.OriginalFrameworkStrings = new List<string> { "netstandard1.3", "net4" };
+
+                project.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+                Assert.Equal(0, r.Item1);
+                Assert.True(File.Exists(project.PropsOutput), r.Item2);
+                var propsXML = XDocument.Parse(File.ReadAllText(project.PropsOutput));
+
+                var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").ToList();
+
+                Assert.Equal("'$(TargetFramework)' == 'net4' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'netstandard1.3' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
             }
         }
 

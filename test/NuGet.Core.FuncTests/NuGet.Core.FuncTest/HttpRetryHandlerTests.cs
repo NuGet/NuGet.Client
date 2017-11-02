@@ -1,11 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -20,6 +18,27 @@ namespace NuGet.Core.FuncTest
     public class HttpRetryHandlerTests
     {
         private const string TestUrl = "https://test.local/test.json";
+
+        [Fact]
+        public async Task HttpRetryHandler_ReturnsContentHeaders()
+        {
+            // Arrange
+            var retryHandler = new HttpRetryHandler();
+            using (var httpClient = new HttpClient())
+            {
+                var request = new HttpRetryHandlerRequest(
+                    httpClient,
+                    () => new HttpRequestMessage(HttpMethod.Get, "https://api.nuget.org/v3/index.json"));
+                var log = new TestLogger();
+
+                // Act
+                using (var actualResponse = await retryHandler.SendAsync(request, log, CancellationToken.None))
+                {
+                    // Assert
+                    Assert.NotEmpty(actualResponse.Content.Headers);
+                }
+            }
+        }
 
         [Fact]
         public async Task HttpRetryHandler_AppliesTimeoutToRequestsIndividually()

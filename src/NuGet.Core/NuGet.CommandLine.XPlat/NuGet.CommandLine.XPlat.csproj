@@ -4,13 +4,14 @@
   <PropertyGroup>
     <Description>NuGet wrapper for dotnet.exe</Description>
     <TargetFrameworks>netcoreapp1.0;net46</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netcoreapp1.0</TargetFrameworks>
     <RuntimeIdentifier Condition=" '$(TargetFramework)' == 'net46' ">win7-x86</RuntimeIdentifier>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <OutputType>Exe</OutputType>
-    <!-- <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">$(PackageTargetFallback);dotnet5.6</PackageTargetFallback> -->
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">1.0.3</RuntimeFrameworkVersion>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
+    <XPLATProject>true</XPLATProject>
   </PropertyGroup>
 
   <ItemGroup>

@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
@@ -22,6 +23,11 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly INuGetProjectProvider[] _providers;
         private readonly IVsProjectThreadingService _threadingService;
         private readonly Common.ILogger _logger;
+
+        // Reason it's lazy<object> is because we don't want to load any CPS assemblies until
+        // we're really going to use any of CPS api. Which is why we also don't use nameof or typeof apis.
+        [Import("Microsoft.VisualStudio.ProjectSystem.IProjectServiceAccessor")]
+        private Lazy<object> ProjectServiceAccessor { get; set; }
 
         [ImportingConstructor]
         public NuGetProjectFactory(
@@ -61,7 +67,14 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(vsProjectAdapter);
             Assumes.Present(context);
 
-            _threadingService.ThrowIfNotOnUIThread();
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (vsProjectAdapter.VsHierarchy != null &&
+                VsHierarchyUtility.IsCPSCapabilityComplaint(vsProjectAdapter.VsHierarchy))
+            {
+                // Lazy load the CPS enabled JoinableTaskFactory for the UI.
+                NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
+            }
 
             var exceptions = new List<Exception>();
             foreach (var provider in _providers)
@@ -114,6 +127,13 @@ namespace NuGet.PackageManagement.VisualStudio
             if (provider == null)
             {
                 return null;
+            }
+
+            if (vsProjectAdapter.VsHierarchy != null &&
+                VsHierarchyUtility.IsCPSCapabilityComplaint(vsProjectAdapter.VsHierarchy))
+            {
+                // Lazy load the CPS enabled JoinableTaskFactory for the UI.
+                NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
             }
 
             try
