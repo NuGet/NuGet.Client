@@ -41,19 +41,18 @@ namespace NuGet.Packaging.Signing
             // Get the signatureValue from the signerInfo object
             using (var nativeCms = NativeCms.Decode(request.Signature.GetBytes(), detached: false))
             {
-                var digest = nativeCms.GetEncryptedDigest();
+                var signatureValue = nativeCms.GetEncryptedDigest();
+                var signatureValueStream = new MemoryStream(signatureValue);
 
-
-                // Hash signatureValueBytes
-                var signatureHash = request
+                    // Hash signatureValueBytes
+                var signatureValueHash = request
                     .TimestampHashAlgorithm
                     .GetHashProvider()
-                    .ComputeHashAsBase64(manifestStream, leaveStreamOpen: true);
+                    .ComputeHashAsBase64(signatureValueStream, leaveStreamOpen: false);
 
                 // Generate a time stamp request
-
                 var timestampRequest = new Rfc3161TimestampRequest(
-                sigHash,
+                signatureValueHash,
                 request.TimestampHashAlgorithm,
                 nonce: nonce,
                 requestSignerCertificates: true);
@@ -62,6 +61,7 @@ namespace NuGet.Packaging.Signing
                     new Uri("http://sha256timestamp.ws.symantec.com/sha256/timestamp"),
                     TimeSpan.FromSeconds(10));
             }
+
             // Returns the signature as-is for now.
             return Task.FromResult(timestampRequest.Signature);
         }
