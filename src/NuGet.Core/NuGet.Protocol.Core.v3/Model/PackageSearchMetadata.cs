@@ -89,6 +89,8 @@ namespace NuGet.Protocol
             private set { _titleValue = value; }
         }
 
+        public string ReleaseNotes { get; private set; }
+
         [JsonProperty(PropertyName = JsonProperties.Version)]
         public NuGetVersion Version { get; private set; }
 

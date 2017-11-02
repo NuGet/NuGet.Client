@@ -41,7 +41,7 @@ namespace NuGet.Protocol.Tests
             return new V2FeedPackageInfo(new PackageIdentity("test", NuGetVersion.Parse("1.0.0")),
                                          "title", "summary", "description", authors, owners,
                                          iconUrl, licenseUrl, projectUrl, reportAbuseUrl, "tags", null, "dependencies",
-                                         false, "downloadUrl", "0", "packageHash", "packageHashAlgorithm", new NuGetVersion("3.0"));
+                                         false, "downloadUrl", "0", "packageHash", "packageHashAlgorithm", new NuGetVersion("3.0"), "release notes");
         }
     }
 }

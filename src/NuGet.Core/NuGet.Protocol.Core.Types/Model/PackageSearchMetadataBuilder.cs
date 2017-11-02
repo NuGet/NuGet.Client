@@ -33,6 +33,7 @@ namespace NuGet.Protocol.Core.Types
             public string Summary { get; set; }
             public string Tags { get; set; }
             public string Title { get; set; }
+            public string ReleaseNotes { get; set; }
 
             public AsyncLazy<IEnumerable<VersionInfo>> LazyVersionsFactory { get; set; }
 
@@ -69,6 +70,7 @@ namespace NuGet.Protocol.Core.Types
                 ProjectUrl = _metadata.ProjectUrl,
                 Published = _metadata.Published,
                 ReportAbuseUrl = _metadata.ReportAbuseUrl,
+                ReleaseNotes = _metadata.ReleaseNotes,
                 RequireLicenseAcceptance = _metadata.RequireLicenseAcceptance,
                 Summary = _metadata.Summary,
                 Tags = _metadata.Tags,

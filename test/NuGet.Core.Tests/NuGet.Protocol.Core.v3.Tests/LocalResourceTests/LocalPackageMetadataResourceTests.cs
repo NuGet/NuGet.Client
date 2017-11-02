@@ -300,6 +300,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 Assert.Equal("sum", package.Summary);
                 Assert.Equal("a b c", package.Tags);
                 Assert.Equal("myTitle", package.Title);
+                Assert.Equal("notes", package.ReleaseNotes);
             }
         }
     }

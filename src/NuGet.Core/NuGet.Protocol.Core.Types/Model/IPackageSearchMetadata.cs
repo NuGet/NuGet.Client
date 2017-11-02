@@ -27,6 +27,7 @@ namespace NuGet.Protocol.Core.Types
         string Summary { get; }
         string Tags { get; }
         string Title { get; }
+        string ReleaseNotes { get; }
 
         Task<IEnumerable<VersionInfo>> GetVersionsAsync();
     }
