@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -49,6 +50,13 @@ namespace NuGet.Packaging.Signing
                     .TimestampHashAlgorithm
                     .GetHashProvider()
                     .ComputeHashAsBase64(signatureValueStream, leaveStreamOpen: false);
+
+                var nonce = new byte[24];
+
+                using (var rng = RandomNumberGenerator.Create())
+                {
+                    rng.GetBytes(nonce);
+                }
 
                 // Generate a time stamp request
                 var timestampRequest = new Rfc3161TimestampRequest(
