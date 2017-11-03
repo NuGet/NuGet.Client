@@ -90,10 +90,10 @@ namespace NuGet.ProjectModel
         public IncludeExcludeFiles Clone()
         {
             var clonedObject = new IncludeExcludeFiles();
-            clonedObject.Include = Include;
-            clonedObject.Exclude = Exclude;
-            clonedObject.IncludeFiles = IncludeFiles;
-            clonedObject.ExcludeFiles = ExcludeFiles;
+            clonedObject.Include = Include.ToList();
+            clonedObject.Exclude = Exclude.ToList();
+            clonedObject.IncludeFiles = IncludeFiles.ToList();
+            clonedObject.ExcludeFiles = ExcludeFiles.ToList();
             return clonedObject;
         }
     }

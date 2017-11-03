@@ -49,14 +49,17 @@ namespace NuGet.ProjectModel
         public PackOptions Clone()
         {
             var clonedObject = new PackOptions();
-            clonedObject.PackageType = PackageType;
+            clonedObject.PackageType = new List<PackageType>(PackageType);
             clonedObject.IncludeExcludeFiles = IncludeExcludeFiles?.Clone();
-            clonedObject.Mappings = new Dictionary<string, IncludeExcludeFiles>();
-            foreach(var kvp in Mappings)
+            if (Mappings != null)
             {
-                clonedObject.Mappings.Add(kvp.Key, kvp.Value.Clone());
+                clonedObject.Mappings = new Dictionary<string, IncludeExcludeFiles>();
+                foreach (var kvp in Mappings)
+                {
+                    clonedObject.Mappings.Add(kvp.Key, kvp.Value.Clone());
+                }
             }
-        return clonedObject;
+            return clonedObject;
         }
     }
 }
