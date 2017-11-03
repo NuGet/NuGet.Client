@@ -26,9 +26,9 @@ namespace NuGet.Commands
         private readonly ILogger _logger;
         private readonly Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> _includeFlagGraphs;
 
-        public LockFileBuilder(int lockFileVersion, 
-            ILogger logger, 
-            Dictionary<RestoreTargetGraph, 
+        public LockFileBuilder(int lockFileVersion,
+            ILogger logger,
+            Dictionary<RestoreTargetGraph,
             Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs)
         {
             _lockFileVersion = lockFileVersion;
@@ -46,6 +46,8 @@ namespace NuGet.Commands
             {
                 Version = _lockFileVersion
             };
+
+            var previousLibraries = previousLockFile?.Libraries.ToDictionary(l => Tuple.Create(l.Name, l.Version));
 
             if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference)
             {
@@ -115,11 +117,33 @@ namespace NuGet.Commands
                         var package = packageInfo.Package;
                         var resolver = packageInfo.Repository.PathResolver;
 
-                        var path = PathUtility.GetPathWithForwardSlashes(
-                            resolver.GetPackageDirectory(package.Id, package.Version));
+                        var sha512 = package.Sha512;
+                        var path = PathUtility.GetPathWithForwardSlashes(resolver.GetPackageDirectory(package.Id, package.Version));
+                        LockFileLibrary lockFileLib = null;
+                        LockFileLibrary previousLibrary = null;
+
+                        if (previousLibraries?.TryGetValue(Tuple.Create(package.Id, package.Version), out previousLibrary) == true)
+                        {
+                            // Check that the previous library is still valid
+                            if (previousLibrary != null
+                                && StringComparer.Ordinal.Equals(path, previousLibrary.Path)
+                                && StringComparer.Ordinal.Equals(sha512, previousLibrary.Sha512))
+                            {
+                                // We mutate this previous library so we must take a clone of it. This is
+                                // important because later, when deciding whether the lock file has changed,
+                                // we compare the new lock file to the previous (in-memory) lock file.
+                                lockFileLib = previousLibrary.Clone();
+                            }
+                        }
+
+                        // Create a new lock file library if one doesn't exist already.
+                        if (lockFileLib == null)
+                        {
+                            lockFileLib = CreateLockFileLibrary(package, sha512, path);
+                        }
 
                         // Create a new lock file library
-                        lockFile.Libraries.Add(CreateLockFileLibrary(package, package.Sha512, path));
+                        lockFile.Libraries.Add(lockFileLib);
                     }
                 }
             }
@@ -296,7 +320,7 @@ namespace NuGet.Commands
                 dependencies.AddRange(project.Dependencies.Select(e => e.LibraryRange));
                 dependencies.AddRange(frameworkInfo.Dependencies.Select(e => e.LibraryRange));
 
-                var targetGraph = targetGraphs.SingleOrDefault(graph => 
+                var targetGraph = targetGraphs.SingleOrDefault(graph =>
                     graph.Framework.Equals(frameworkInfo.FrameworkName)
                     && string.IsNullOrEmpty(graph.RuntimeIdentifier));
 
