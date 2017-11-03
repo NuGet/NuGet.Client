@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
@@ -187,7 +188,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Clone a PackageSpec and underlying JObject.
         /// </summary>
-        public PackageSpec Clone()
+        public PackageSpec CloneOld()
         {
             var writer = new JsonObjectWriter();
             PackageSpecWriter.Write(this, writer);
@@ -197,6 +198,46 @@ namespace NuGet.ProjectModel
             spec.Name = Name;
             spec.FilePath = FilePath;
 
+            return spec;
+        }
+
+        public PackageSpec Clone()
+        {
+            var spec = new PackageSpec();
+            spec.Name = Name;
+            spec.FilePath = FilePath;
+            spec.Title = Title;
+            spec.IsDefaultVersion = IsDefaultVersion;
+            spec.HasVersionSnapshot = HasVersionSnapshot;
+            spec.Description = Description;
+            spec.Summary = Summary;
+            spec.ReleaseNotes = ReleaseNotes;
+            spec.Authors = (string[]) Authors.Clone();
+            spec.Owners = (string[]) Owners.Clone();
+            spec.ProjectUrl = ProjectUrl;
+
+            spec.IconUrl = IconUrl;
+            spec.LicenseUrl = LicenseUrl;
+            spec.RequireLicenseAcceptance = RequireLicenseAcceptance;
+            spec.Language = Language;
+
+            spec.Copyright = Copyright;
+            spec.Version = Version; 
+
+
+            spec.BuildOptions = BuildOptions.Clone();
+            spec.Tags = (string[])Tags.Clone();
+            
+            spec.ContentFiles = new List<string>(ContentFiles);
+            spec.Dependencies = Dependencies.Select(item => (LibraryDependency)item.Clone()).ToList();
+            spec.Scripts = new Dictionary<string, IEnumerable<string>>(Scripts); ;  // This actually needs cloned;
+            spec.PackInclude = new Dictionary<string, string>(PackInclude);
+
+            spec.PackOptions = PackOptions.Clone();
+            spec.TargetFrameworks = TargetFrameworks.Select(item => (TargetFrameworkInformation)item.Clone()).ToList(); ;
+            spec.RuntimeGraph = RuntimeGraph; // This needs cloned as well
+            spec.RestoreSettings = RestoreSettings; // clone this
+            spec.RestoreMetadata = RestoreMetadata; // The monster that'd be hardest to deal with
             return spec;
         }
 

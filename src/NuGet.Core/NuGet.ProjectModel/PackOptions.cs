@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -45,6 +45,18 @@ namespace NuGet.ProjectModel
             return PackageType.SequenceEqualWithNullCheck(other.PackageType) &&
                    Mappings.SequenceEqualWithNullCheck(other.Mappings) &&
                    EqualityUtility.EqualsWithNullCheck(IncludeExcludeFiles, other.IncludeExcludeFiles);
+        }
+        public PackOptions Clone()
+        {
+            var clonedObject = new PackOptions();
+            clonedObject.PackageType = PackageType;
+            clonedObject.IncludeExcludeFiles = IncludeExcludeFiles.Clone();
+            clonedObject.Mappings = new Dictionary<string, IncludeExcludeFiles>();
+            foreach(var kvp in Mappings)
+            {
+                clonedObject.Mappings.Add(kvp.Key, kvp.Value.Clone());
+            }
+        return clonedObject;
         }
     }
 }
