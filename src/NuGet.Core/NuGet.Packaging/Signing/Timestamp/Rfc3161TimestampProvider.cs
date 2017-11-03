@@ -24,7 +24,7 @@ namespace NuGet.Packaging.Signing
     public class Rfc3161TimestampProvider : ITimestampProvider
     {
         // Url to an RFC 3161 timestamp server
-        private readonly Uri _url;
+        private readonly Uri _timestamperUrl;
         private const int _rfc3161RequestTimeoutSeconds = 10;
         private const string _signingCertificateV2Oid = "1.2.840.113549.1.9.16.2.47";
 
@@ -39,7 +39,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentException($"Invalid scheme for {nameof(timeStampServerUrl)}: {timeStampServerUrl}. The supported schemes are {Uri.UriSchemeHttp} and {Uri.UriSchemeHttps}.");
             }
 #endif
-            _url = timeStampServerUrl ?? throw new ArgumentNullException(nameof(timeStampServerUrl));
+            _timestamperUrl = timeStampServerUrl ?? throw new ArgumentNullException(nameof(timeStampServerUrl));
         }
 
 
@@ -67,7 +67,7 @@ namespace NuGet.Packaging.Signing
 
                 // Request a timestamp
                 var timestampToken = rfc3161TimestampRequest.SubmitRequest(
-                    request.Timestamper,
+                    _timestamperUrl,
                     TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
 
                 // Verify the response
@@ -82,8 +82,8 @@ namespace NuGet.Packaging.Signing
 
                 //TODO validate the certificate chain.
 
-                // Returns the signature as-is for now.
-                return Task.FromResult(request.Signature);
+                // Returns the signature as a Signature object
+                return Task.FromResult(Signature.Load(tokenCms));
             }
         }
 
@@ -124,7 +124,7 @@ namespace NuGet.Packaging.Signing
                 throw new InvalidOperationException($"Rfc3161TimestampToken contains invalid {nameof(nonce)}.");
             }
 
-            if (!request.SigningSpec.AllowedHashAlgorithms.Contains(tokenSigner.DigestAlgorithm.Value))
+            if (!request.SigningSpec.AllowedHashAlgorithmOids.Contains(tokenSigner.DigestAlgorithm.Value))
             {
                 throw new InvalidOperationException("Rfc3161TimestampToken contains invalid hash algorithm Oid.");
             }
@@ -136,11 +136,9 @@ namespace NuGet.Packaging.Signing
 
             var signatureValueStream = new MemoryStream(signatureValue);
 
-            var signatureValueHash = hashAlgorithm
+            var signatureValueHashByteArray = hashAlgorithm
                 .GetHashProvider()
-                .ComputeHashAsBase64(signatureValueStream, leaveStreamOpen: false);
-
-            var signatureValueHashByteArray = Encoding.ASCII.GetBytes(signatureValueHash);
+                .ComputeHash(signatureValueStream, leaveStreamOpen: false);
 
             return signatureValueHashByteArray;
         }

@@ -11,15 +11,28 @@ namespace NuGet.Packaging.Signing
         private const string _manifestPath = "testsigned/manifest.txt";
         private const string _signaturePath1 = "testsigned/a.sig";
         private const string _signaturePath2 = "testsigned/b.sig";
+        private const string _SHA256String = "SHA256";
+        private const string _SHA384String = "SHA384";
+        private const string _SHA512String = "SHA512";
 
         /// <summary>
         /// Allowed digest algorithms for signature and timestamp hashing.
         /// </summary>
         private static readonly string[] _allowedHashAlgorithms = new[]
         {
-            "SHA256",
-            "SHA384",
-            "SHA512"
+            _SHA256String,
+            _SHA384String,
+            _SHA512String
+        };
+
+        /// <summary>
+        /// Allowed digest algorithm Oids for signature and timestamp hashing.
+        /// </summary>
+        private static readonly string[] _allowedHashAlgorithmOids = new[]
+        {
+            HashAlgorithmName.SHA256.ConvertOidString(),
+            HashAlgorithmName.SHA256.ConvertOidString(),
+            HashAlgorithmName.SHA256.ConvertOidString()
         };
 
         /// <summary>
@@ -44,6 +57,8 @@ namespace NuGet.Packaging.Signing
         public override string[] AllowedPaths => _allowedPaths;
 
         public override string[] AllowedHashAlgorithms => _allowedHashAlgorithms;
+
+        public override string[] AllowedHashAlgorithmOids => _allowedHashAlgorithmOids;
 
         public override string[] RequiredPaths => _requiredPaths;
 

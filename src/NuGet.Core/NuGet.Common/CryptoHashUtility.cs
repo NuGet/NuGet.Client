@@ -62,6 +62,54 @@ namespace NuGet.Common
             return hash;
         }
 
+        /// <summary>
+        /// Compute the hash as a byte[].
+        /// </summary>
+        /// <remarks>Closes the stream by default.</remarks>
+        /// <param name="hashAlgorithm">Algorithm to use for hashing.</param>
+        /// <param name="data">Stream to hash.</param>
+        /// <returns>A hash byte[].</returns>
+        public static byte[] ComputeHash(this HashAlgorithm hashAlgorithm, Stream data)
+        {
+            return ComputeHash(hashAlgorithm, data, leaveStreamOpen: false);
+        }
+
+        /// <summary>
+        /// Compute the hash as a byte[].
+        /// </summary>
+        /// <param name="hashAlgorithm">Algorithm to use for hashing.</param>
+        /// <param name="data">Stream to hash.</param>
+        /// <param name="leaveStreamOpen">If false the stream will be closed.</param>
+        /// <returns>A hash byte[].</returns>
+        public static byte[] ComputeHash(this HashAlgorithm hashAlgorithm, Stream data, bool leaveStreamOpen)
+        {
+            if (hashAlgorithm == null)
+            {
+                throw new ArgumentNullException(nameof(hashAlgorithm));
+            }
+
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
+            byte[] hash = null;
+
+            try
+            {
+                hash = hashAlgorithm.ComputeHash(data);
+            }
+            finally
+            {
+                if (!leaveStreamOpen)
+                {
+                    data.Dispose();
+                }
+            }
+
+            return hash;
+        }
+
         public static HashAlgorithm GetHashAlgorithm(string hashAlgorithmName)
         {
             if (hashAlgorithmName == null)
@@ -158,9 +206,9 @@ namespace NuGet.Common
         /// Extension method to convert NuGet.Common.HashAlgorithmName to System.Security.Cryptography.HashAlgorithmName
         /// </summary>
         /// <returns>System.Security.Cryptography.HashAlgorithmName equivalent of the NuGet.Common.HashAlgorithmName</returns>
-        public static System.Security.Cryptography.HashAlgorithmName ConvertToSystemSecurityHashAlgorithmName(this HashAlgorithmName hashalgorithm)
+        public static System.Security.Cryptography.HashAlgorithmName ConvertToSystemSecurityHashAlgorithmName(this HashAlgorithmName hashAlgorithm)
         {
-            switch (hashalgorithm)
+            switch (hashAlgorithm)
             {
                 default:
                 case HashAlgorithmName.SHA256:
@@ -176,9 +224,9 @@ namespace NuGet.Common
         /// Extension method to convert NuGet.Common.HashAlgorithmName to an Oid string
         /// </summary>
         /// <returns>Oid string equivalent of the NuGet.Common.HashAlgorithmName</returns>
-        public static string ConvertOidString(this HashAlgorithmName hashalgorithm)
+        public static string ConvertOidString(this HashAlgorithmName hashAlgorithm)
         {
-            switch (hashalgorithm)
+            switch (hashAlgorithm)
             {
                 default:
                 case HashAlgorithmName.SHA256:

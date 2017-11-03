@@ -19,11 +19,6 @@ namespace NuGet.Packaging.Signing
         public Signature Signature { get; set; }
 
         /// <summary>
-        /// URL to the time stamping service.
-        /// </summary>
-        public Uri Timestamper { get; set; }
-
-        /// <summary>
         /// Hash algorithm to be used for timestamping.
         /// </summary>
         public HashAlgorithmName TimestampHashAlgorithm { get; set; }

@@ -49,6 +49,9 @@ namespace NuGet.Packaging.Signing
             }
 
             var signature = CreateSignature(request.Certificate, signatureManifest);
+
+            var timestampSignature = CreateTimestampSignature(request, logger, signature, token);
+
             return Task.FromResult(signature);
         }
 
@@ -72,8 +75,26 @@ namespace NuGet.Packaging.Signing
 
             return Signature.Load(cms);
         }
+
+        private Task<Signature> CreateTimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
+        {
+            var timestampRequest = new TimestampRequest
+            {
+                Signature = signature,
+                SigningSpec = SigningSpecifications.V1,
+                TimestampHashAlgorithm = request.TimestampHashAlgorithm
+            };
+
+            var timestampSignature = _timestampProvider.CreateSignatureAsync(timestampRequest, logger, token);
+            return timestampSignature;
+        }
 #else
         private Signature CreateSignature(X509Certificate2 cert, SignatureManifest signatureManifest)
+        {
+            throw new NotSupportedException();
+        }
+
+        private Task<Signature> CreateTimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
         {
             throw new NotSupportedException();
         }

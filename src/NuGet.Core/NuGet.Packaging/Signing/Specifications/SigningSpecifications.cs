@@ -28,6 +28,11 @@ namespace NuGet.Packaging.Signing
         public abstract string[] AllowedHashAlgorithms { get; }
 
         /// <summary>
+        /// Returns the set of allowed hash algorithm Oids.
+        /// </summary>
+        public abstract string[] AllowedHashAlgorithmOids { get; }
+
+        /// <summary>
         /// Paths required for the package to be considered
         /// signed.
         /// </summary>
