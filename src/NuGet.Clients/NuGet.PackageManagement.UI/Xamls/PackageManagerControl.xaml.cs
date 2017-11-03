@@ -62,9 +62,11 @@ namespace NuGet.PackageManagement.UI
 
         public Configuration.ISettings Settings { get; }
 
-        internal ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
+        public ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
 
-        internal InfiniteScrollList PackageList { get => _packageList; }
+        public InfiniteScrollList PackageList { get => _packageList; }
+
+        public DetailControlModel DetailModel { get => _detailModel; }
 
         internal PackageSourceMoniker SelectedSource
         {
@@ -82,7 +84,7 @@ namespace NuGet.PackageManagement.UI
 
         internal IEnumerable<SourceRepository> ActiveSources => SelectedSource?.SourceRepositories ?? Enumerable.Empty<SourceRepository>();
 
-        internal event EventHandler _actionCompleted;
+        public event EventHandler _actionCompleted;
 
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
 
@@ -1120,7 +1122,7 @@ namespace NuGet.PackageManagement.UI
             RefreshConsolidatablePackagesCount();
         }
 
-        internal void InstallPackage(string packageId, NuGetVersion version)
+        public void InstallPackage(string packageId, NuGetVersion version)
         {
             var action = UserAction.CreateInstallAction(packageId, version);
 
@@ -1136,7 +1138,7 @@ namespace NuGet.PackageManagement.UI
                 nugetUi => SetOptions(nugetUi, NuGetActionType.Install));
         }
 
-        internal void UninstallPackage(string packageId)
+        public void UninstallPackage(string packageId)
         {
             var action = UserAction.CreateUnInstallAction(packageId);
 
@@ -1152,7 +1154,7 @@ namespace NuGet.PackageManagement.UI
                 nugetUi => SetOptions(nugetUi, NuGetActionType.Uninstall));
         }
 
-        internal void UpdatePackage(List<PackageIdentity> packages)
+        public void UpdatePackage(List<PackageIdentity> packages)
         {
             if (packages.Count == 0)
             {

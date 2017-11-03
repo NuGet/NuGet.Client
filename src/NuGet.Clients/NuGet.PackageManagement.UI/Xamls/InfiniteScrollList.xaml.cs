@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.UI
         public event UpdateButtonClickEventHandler UpdateButtonClicked;
 
         // This exists only to facilitate unit testing.
-        internal event EventHandler LoadItemsCompleted;
+        public event EventHandler LoadItemsCompleted;
 
         private CancellationTokenSource _loadCts;
         private IPackageItemLoader _loader;
@@ -530,7 +530,7 @@ namespace NuGet.PackageManagement.UI
             {
                 return _list.SelectedItem as PackageItemListViewModel;
             }
-            internal set
+            set
             {
                 _list.SelectedItem = value;
             }
