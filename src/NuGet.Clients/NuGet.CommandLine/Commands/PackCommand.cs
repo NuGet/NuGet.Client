@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -79,8 +79,13 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandMSBuildPath")]
         public string MSBuildPath { get; set; }
 
-        // TODO: Temporarily hide the real ConfigFile parameter from the help text.
-        // When we fix #3230, we should remove this property.
+        [Option(typeof(NuGetCommand), "PackageCommandInstallPackageToOutputPath")]
+        public bool InstallPackageToOutputPath { get; set; }
+
+        [Option(typeof(NuGetCommand), "PackageCommandOutputFileNamesWithoutVersion")]
+        public bool OutputFileNamesWithoutVersion { get; set; }
+
+        [Option(typeof(NuGetCommand), "PackageCommandConfigFile")]
         public new string ConfigFile { get; set; }
 
         public override void ExecuteCommand()
@@ -140,6 +145,8 @@ namespace NuGet.CommandLine
             packArgs.Suffix = Suffix;
             packArgs.Symbols = Symbols;
             packArgs.Tool = Tool;
+            packArgs.InstallPackageToOutputPath = InstallPackageToOutputPath;
+            packArgs.OutputFileNamesWithoutVersion = OutputFileNamesWithoutVersion;
 
             if (!string.IsNullOrEmpty(Version))
             {

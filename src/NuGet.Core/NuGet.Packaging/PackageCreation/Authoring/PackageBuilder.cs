@@ -34,6 +34,13 @@ namespace NuGet.Packaging
         public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(includeEmptyDirectories)
         {
+            if (!File.Exists(path))
+            {
+                throw new PackagingException(
+                    NuGetLogCode.NU5008,
+                    string.Format(CultureInfo.CurrentCulture, Strings.ErrorManifestFileNotFound, path ?? "null"));
+            }
+
             using (Stream stream = File.OpenRead(path))
             {
                 ReadManifest(stream, basePath, propertyProvider);

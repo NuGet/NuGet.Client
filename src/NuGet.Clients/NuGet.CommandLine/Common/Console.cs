@@ -395,7 +395,15 @@ namespace NuGet.CommandLine
                 }
                 else if (message.Level == LogLevel.Error)
                 {
-                    WriteError(message.FormatWithCode());
+                    // Use standard error format for Packaging Errors
+                    if (message.Code >= NuGetLogCode.NU5000 && message.Code <= NuGetLogCode.NU5500)
+                    {
+                        WriteError(string.Concat(LocalizedResourceManager.GetString("Error"), " ", message.FormatWithCode()));
+                    }
+                    else
+                    {
+                        WriteError(message.FormatWithCode());
+                    }
                 }
                 else
                 {

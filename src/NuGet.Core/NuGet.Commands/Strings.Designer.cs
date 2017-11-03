@@ -125,6 +125,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please specify a nuspec, project.json, or project file to use.
+        /// </summary>
+        internal static string Error_InputFileNotSpecified {
+            get {
+                return ResourceManager.GetString("Error_InputFileNotSpecified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PackageTargetFallback and AssetTargetFallback cannot be used together. Remove PackageTargetFallback(deprecated) references from the project environment..
         /// </summary>
         internal static string Error_InvalidATF {
@@ -296,6 +305,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to output resolved nuspec file because it would overwrite the original at &apos;{0}&apos;.
+        /// </summary>
+        internal static string Error_WriteResolvedNuSpecOverwriteOriginal {
+            get {
+                return ResourceManager.GetString("Error_WriteResolvedNuSpecOverwriteOriginal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid input &apos;{0}&apos;. XProj support has been removed. Support for XProj and standalone project.json files has been removed, to continue working with legacy projects use NuGet 3.5.x from https://nuget.org/downloads.
         /// </summary>
         internal static string Error_XPROJNotAllowed {
@@ -337,15 +355,6 @@ namespace NuGet.Commands {
         internal static string FoundVersionsInSourceWithoutMatch {
             get {
                 return ResourceManager.GetString("FoundVersionsInSourceWithoutMatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Please specify a nuspec, project.json, or project file to use.
-        /// </summary>
-        internal static string InputFileNotSpecified {
-            get {
-                return ResourceManager.GetString("InputFileNotSpecified", resourceCulture);
             }
         }
         
@@ -734,6 +743,15 @@ namespace NuGet.Commands {
         internal static string Log_PackageCommandAttemptingToBuildSymbolsPackage {
             get {
                 return ResourceManager.GetString("Log_PackageCommandAttemptingToBuildSymbolsPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Install {0} to output path &apos;{1}&apos;.
+        /// </summary>
+        internal static string Log_PackageCommandInstallPackageToOutputPath {
+            get {
+                return ResourceManager.GetString("Log_PackageCommandInstallPackageToOutputPath", resourceCulture);
             }
         }
         
