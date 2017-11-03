@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,5 +17,12 @@ namespace NuGet.ProjectModel
         /// Currently this is only being used for net core based projects on nomination.
         /// </summary>
         public bool HideWarningsAndErrors { get; set; } = false;
+
+        public ProjectRestoreSettings Clone()
+        {
+            var clonedObject = new ProjectRestoreSettings();
+            clonedObject.HideWarningsAndErrors = HideWarningsAndErrors;
+            return clonedObject;
+        }
     }
 }

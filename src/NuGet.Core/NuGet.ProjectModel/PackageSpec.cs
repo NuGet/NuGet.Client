@@ -212,8 +212,8 @@ namespace NuGet.ProjectModel
             spec.Description = Description;
             spec.Summary = Summary;
             spec.ReleaseNotes = ReleaseNotes;
-            spec.Authors = (string[]) Authors.Clone();
-            spec.Owners = (string[]) Owners.Clone();
+            spec.Authors = (string[]) Authors?.Clone();
+            spec.Owners = (string[]) Owners?.Clone();
             spec.ProjectUrl = ProjectUrl;
 
             spec.IconUrl = IconUrl;
@@ -225,7 +225,7 @@ namespace NuGet.ProjectModel
             spec.Version = Version; 
 
 
-            spec.BuildOptions = BuildOptions.Clone();
+            spec.BuildOptions = BuildOptions?.Clone();
             spec.Tags = (string[])Tags.Clone();
             
             spec.ContentFiles = new List<string>(ContentFiles);
@@ -234,9 +234,9 @@ namespace NuGet.ProjectModel
             spec.PackInclude = new Dictionary<string, string>(PackInclude);
 
             spec.PackOptions = PackOptions.Clone();
-            spec.TargetFrameworks = TargetFrameworks.Select(item => (TargetFrameworkInformation)item.Clone()).ToList(); ;
-            spec.RuntimeGraph = RuntimeGraph; // This needs cloned as well
-            spec.RestoreSettings = RestoreSettings; // clone this
+            spec.TargetFrameworks = TargetFrameworks.Select(item => (TargetFrameworkInformation)item.Clone()).ToList();
+            spec.RuntimeGraph = RuntimeGraph?.Clone(); // TODO - Double check this
+            spec.RestoreSettings = RestoreSettings.Clone();
             spec.RestoreMetadata = RestoreMetadata; // The monster that'd be hardest to deal with
             return spec;
         }

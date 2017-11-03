@@ -74,5 +74,10 @@ namespace NuGet.ProjectModel
                 EqualityUtility.SetEqualsWithNullCheck(WarningsAsErrors, other.WarningsAsErrors) &&
                 EqualityUtility.SetEqualsWithNullCheck(NoWarn, other.NoWarn);
         }
+
+        public WarningProperties Clone()
+        {
+            return new WarningProperties(warningsAsErrors: new HashSet<NuGetLogCode>(WarningsAsErrors), noWarn: new HashSet<NuGetLogCode>(WarningsAsErrors), allWarningsAsErrors: AllWarningsAsErrors);
+        }
     }
 }

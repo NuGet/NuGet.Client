@@ -50,7 +50,7 @@ namespace NuGet.ProjectModel
         {
             var clonedObject = new PackOptions();
             clonedObject.PackageType = PackageType;
-            clonedObject.IncludeExcludeFiles = IncludeExcludeFiles.Clone();
+            clonedObject.IncludeExcludeFiles = IncludeExcludeFiles?.Clone();
             clonedObject.Mappings = new Dictionary<string, IncludeExcludeFiles>();
             foreach(var kvp in Mappings)
             {

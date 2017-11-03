@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -173,5 +174,30 @@ namespace NuGet.ProjectModel
                    EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files) &&
                    EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties);
         }
+
+        public ProjectRestoreMetadata Clone()
+        {
+            var clonedObject = new ProjectRestoreMetadata();
+            clonedObject.ProjectStyle = ProjectStyle;
+            clonedObject.ProjectPath = ProjectPath;
+            clonedObject.ProjectJsonPath = ProjectJsonPath;
+            clonedObject.OutputPath = OutputPath;
+            clonedObject.ProjectName = ProjectName;
+            clonedObject.ProjectUniqueName = ProjectUniqueName;
+            clonedObject.PackagesPath = PackagesPath;
+            clonedObject.CacheFilePath = CacheFilePath;
+            clonedObject.CrossTargeting = CrossTargeting;
+            clonedObject.LegacyPackagesDirectory = LegacyPackagesDirectory;
+            clonedObject.SkipContentFileWrite = SkipContentFileWrite;
+            clonedObject.ValidateRuntimeAssets = ValidateRuntimeAssets;
+            clonedObject.FallbackFolders = new List<string>(FallbackFolders);
+            clonedObject.ConfigFilePaths = new List<string>(ConfigFilePaths);
+            clonedObject.OriginalTargetFrameworks = new List<string>(ConfigFilePaths);
+            clonedObject.Sources = Sources?.Select(c => c.Clone()).ToList();
+            clonedObject.TargetFrameworks = TargetFrameworks?.Select( c => c.Clone()).ToList();
+            clonedObject.Files = Files.Select(c => c.Clone()).ToList();
+            clonedObject.ProjectWideWarningProperties = ProjectWideWarningProperties.Clone();
+            return clonedObject;
     }
+}
 }
