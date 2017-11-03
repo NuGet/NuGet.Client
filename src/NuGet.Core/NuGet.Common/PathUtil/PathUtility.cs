@@ -13,6 +13,7 @@ namespace NuGet.Common
     public static class PathUtility
     {
         private static readonly Lazy<bool> _isFileSystemCaseInsensitive = new Lazy<bool>(CheckIfFileSystemIsCaseInsensitive);
+
         /// <summary>
         /// Returns OrdinalIgnoreCase windows and mac. Ordinal for linux.
         /// </summary>
@@ -52,10 +53,12 @@ namespace NuGet.Common
 
         /// <summary>
         /// Replace all back slashes with forward slashes.
+        /// If the path does not contain a back slash
+        /// the original string is returned.
         /// </summary>
         public static string GetPathWithForwardSlashes(string path)
         {
-            if (path != null && path.IndexOf('\\') >= -1)
+            if (path != null && path.IndexOf('\\') > -1)
             {
                 return path.Replace('\\', '/');
             }

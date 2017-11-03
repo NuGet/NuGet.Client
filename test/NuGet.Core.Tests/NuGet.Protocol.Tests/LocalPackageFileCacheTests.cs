@@ -12,14 +12,70 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
-    public class LocalNuspecCacheTests
+    public class LocalPackageFileCacheTests
     {
         [Fact]
-        public async Task LocalNuspecCache_GetNuspecTwiceVerifySameInstance()
+        public async Task LocalPackageFileCache_GetFilesTwiceVerifySameInstance()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                var cache = new LocalNuspecCache();
+                var cache = new LocalPackageFileCache();
+                var pathResolver = new VersionFolderPathResolver(pathContext.PackageSource);
+
+                var identity = new PackageIdentity("X", NuGetVersion.Parse("1.0.0"));
+                var path = pathResolver.GetInstallPath(identity.Id, identity.Version);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    identity);
+
+                var filesA = cache.GetOrAddFiles(path);
+                var filesB = cache.GetOrAddFiles(path);
+
+                // Verify both file lists are the exact same instance
+                Assert.Same(filesA.Value, filesB.Value);
+                filesA.Value.Should().NotBeEmpty();
+            }
+        }
+
+        [Fact]
+        public async Task LocalPackageFileCache_GetShaTwiceVerifyMissingFilesAreNotCached()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var cache = new LocalPackageFileCache();
+                var pathResolver = new VersionFolderPathResolver(pathContext.PackageSource);
+
+                var identity = new PackageIdentity("X", NuGetVersion.Parse("1.0.0"));
+                var shaPath = pathResolver.GetHashPath(identity.Id, identity.Version);
+
+                var exists1 = cache.Sha512Exists(shaPath);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    identity);
+
+                var exists2 = cache.Sha512Exists(shaPath);
+                var sha512 = cache.GetOrAddSha512(shaPath);
+                var sha512B = cache.GetOrAddSha512(shaPath);
+
+                // Verify original value was not found
+                exists1.Should().BeFalse();
+
+                // Verify false was not cached
+                exists2.Should().BeTrue();
+
+                // Verify both hashes are the exact same instance
+                Assert.Same(sha512.Value, sha512B.Value);
+            }
+        }
+
+        [Fact]
+        public async Task LocalPackageFileCache_GetNuspecTwiceVerifySameInstance()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var cache = new LocalPackageFileCache();
                 var pathResolver = new VersionFolderPathResolver(pathContext.PackageSource);
 
                 var identity = new PackageIdentity("X", NuGetVersion.Parse("1.0.0"));
@@ -31,8 +87,8 @@ namespace NuGet.Protocol.Tests
                 var nuspec = pathResolver.GetManifestFilePath(identity.Id, identity.Version);
                 var expanded = pathResolver.GetInstallPath(identity.Id, identity.Version);
 
-                var result1 = cache.GetOrAdd(nuspec, expanded);
-                var result2 = cache.GetOrAdd(nuspec, expanded);
+                var result1 = cache.GetOrAddNuspec(nuspec, expanded);
+                var result2 = cache.GetOrAddNuspec(nuspec, expanded);
 
                 Assert.Same(result1.Value, result2.Value);
                 result1.Value.GetIdentity().Should().Be(identity);
@@ -40,11 +96,11 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalNuspecCache_FallbackToFolderReaderVerifyResult()
+        public async Task LocalPackageFileCache_FallbackToFolderReaderVerifyResult()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                var cache = new LocalNuspecCache();
+                var cache = new LocalPackageFileCache();
                 var pathResolver = new VersionFolderPathResolver(pathContext.PackageSource);
 
                 var identity = new PackageIdentity("X", NuGetVersion.Parse("1.0.0"));
@@ -56,18 +112,18 @@ namespace NuGet.Protocol.Tests
                 var nuspec = pathResolver.GetManifestFilePath(identity.Id, identity.Version) + "invalid.nuspec";
                 var expanded = pathResolver.GetInstallPath(identity.Id, identity.Version);
 
-                var result = cache.GetOrAdd(nuspec, expanded);
+                var result = cache.GetOrAddNuspec(nuspec, expanded);
 
                 result.Value.GetIdentity().Should().Be(identity);
             }
         }
 
         [Fact]
-        public void LocalNuspecCache_NuspecNotFoundVerifyFailure()
+        public void LocalPackageFileCache_NuspecNotFoundVerifyFailure()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                var cache = new LocalNuspecCache();
+                var cache = new LocalPackageFileCache();
                 var pathResolver = new VersionFolderPathResolver(pathContext.PackageSource);
 
                 var identity = new PackageIdentity("X", NuGetVersion.Parse("1.0.0"));
@@ -77,7 +133,7 @@ namespace NuGet.Protocol.Tests
                 Directory.CreateDirectory(expanded);
 
                 // Verify does not throw
-                var result = cache.GetOrAdd(nuspec, expanded);
+                var result = cache.GetOrAddNuspec(nuspec, expanded);
 
                 // This should throw
                 Assert.Throws<PackagingException>(() => result.Value);
@@ -85,11 +141,11 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void LocalNuspecCache_DirNotFoundVerifyFailure()
+        public void LocalPackageFileCache_DirNotFoundVerifyFailure()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                var cache = new LocalNuspecCache();
+                var cache = new LocalPackageFileCache();
                 var pathResolver = new VersionFolderPathResolver(pathContext.PackageSource);
 
                 var identity = new PackageIdentity("X", NuGetVersion.Parse("1.0.0"));
@@ -98,7 +154,7 @@ namespace NuGet.Protocol.Tests
                 var expanded = pathResolver.GetInstallPath(identity.Id, identity.Version);
 
                 // Verify does not throw
-                var result = cache.GetOrAdd(nuspec, expanded);
+                var result = cache.GetOrAddNuspec(nuspec, expanded);
 
                 // This should throw
                 Assert.Throws<DirectoryNotFoundException>(() => result.Value);

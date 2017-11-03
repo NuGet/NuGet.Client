@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -233,6 +233,43 @@ namespace NuGet.Commands.Test
 
             // Act && Assert
             AssertError(spec, "Missing required property 'FilePath'");
+        }
+
+        [Fact]
+        public void SpecValidationUtility_VerifyProjectMetadata_SameNameAsSpecName()
+        {
+            // Arrange
+            var spec = new DependencyGraphSpec();
+            spec.AddRestore("a");
+
+            var targetFramework1 = new TargetFrameworkInformation()
+            {
+                FrameworkName = NuGetFramework.Parse("net45")
+            };
+
+            var info = new[] { targetFramework1 };
+
+            var project = new PackageSpec(info)
+            {
+                RestoreMetadata = new ProjectRestoreMetadata(),
+                Name = "a",
+                FilePath = Path.Combine(Directory.GetCurrentDirectory(), "project.json")
+            };
+
+            project.RestoreMetadata.ProjectUniqueName = "some_other_path";
+            project.RestoreMetadata.ProjectName = "some_other_name";
+            project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.Unknown;
+
+            targetFramework1.Dependencies.Add(new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.PackageProjectExternal)
+            });
+
+            spec.AddProject(project);
+
+            // Act && Assert
+            AssertError(spec, $"Properties '{nameof(project.Name)}':'{project.Name}' and '{nameof(project.RestoreMetadata.ProjectName)}':'{project.RestoreMetadata.ProjectName}' do not match.");
         }
 
         [Fact]

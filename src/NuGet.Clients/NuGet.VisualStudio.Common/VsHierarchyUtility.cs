@@ -108,6 +108,17 @@ namespace NuGet.VisualStudio
         }
 
         /// <summary>
+        /// Check for CPS capability in IVsHierarchy. All CPS projects will have CPS capability except VisualC projects.
+        /// So checking for VisualC explicitly with a OR flag.
+        /// </summary>
+        public static bool IsCPSCapabilityComplaint(IVsHierarchy hierarchy)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            return hierarchy.IsCapabilityMatch("CPS | VisualC");
+        }
+
+        /// <summary>
         /// Gets the EnvDTE.Project instance from IVsHierarchy
         /// </summary>
         /// <param name="pHierarchy">pHierarchy is the IVsHierarchy instance from which the project instance is obtained</param>

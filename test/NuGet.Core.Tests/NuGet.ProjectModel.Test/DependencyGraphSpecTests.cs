@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
@@ -63,6 +64,34 @@ namespace NuGet.ProjectModel.Test
 
             Assert.Equal(1, zClosure.Count);
             Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B", zClosure.Single().RestoreMetadata.ProjectUniqueName);
+        }
+
+        [Fact]
+        public void DependencyGraphSpec_ProjectsWithToolReferences_GetClosures()
+        {
+            // Arrange
+            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test2.dg", typeof(DependencyGraphSpecTests)));
+            var childProject = @"f:\validation\test\dg\Project.Core\Project.Core\Project.Core.csproj";
+            var parentProject = @"f:\validation\test\dg\Project.Core\Project\Project.csproj";
+            var tool = @"atool-netcoreapp2.0-[1.0.0, )";
+
+            // Act
+            var dg = DependencyGraphSpec.Load(json);
+
+            var childClosure = dg.GetClosure(childProject).OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
+            var parentClosure = dg.GetClosure(parentProject).OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
+            var toolClosure = dg.GetClosure(tool).OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
+
+            // Assert
+            Assert.Equal(2, parentClosure.Count);
+            Assert.Equal(childProject, parentClosure[0].RestoreMetadata.ProjectUniqueName);
+            Assert.Equal(parentProject, parentClosure[1].RestoreMetadata.ProjectUniqueName);
+
+            Assert.Equal(1, childClosure.Count);
+            Assert.Equal(childProject, childClosure.Single().RestoreMetadata.ProjectUniqueName);
+
+            Assert.Equal(1, toolClosure.Count);
+            Assert.Equal(tool, toolClosure.Single().RestoreMetadata.ProjectUniqueName);
         }
 
         [Fact]

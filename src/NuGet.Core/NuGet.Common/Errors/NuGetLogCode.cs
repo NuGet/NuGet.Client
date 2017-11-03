@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.Common
@@ -185,5 +185,55 @@ namespace NuGet.Common
         /// Feed error converted to a warning when ignoreFailedSources is true.
         /// </summary>
         NU1801 = 1801,
+
+        /// <summary>
+        /// Undefined Package Error.
+        /// </summary>
+        NU5000 = 5000,
+
+        /// <summary>
+        /// Error_WriteResolvedNuSpecOverwriteOriginal
+        /// </summary>
+        NU5001 = 5001,
+
+        /// <summary>
+        /// Error_InputFileNotSpecified
+        /// </summary>
+        NU5002 = 5002,
+
+        /// <summary>
+        /// Error_InvalidTargetFramework
+        /// </summary>
+        NU5003 = 5003,
+
+        /// <summary>
+        /// Error_PackageCommandNoFilesForLibPackage
+        /// </summary>
+        NU5004 = 5004,
+
+        /// <summary>
+        /// Error_PackageCommandNoFilesForSymbolsPackage
+        /// </summary>
+        NU5005 = 5005,
+
+        /// <summary>
+        /// Error_PackFailed
+        /// </summary>
+        NU5006 = 5006,
+
+        /// <summary>
+        /// Error_UnableToLocateBuildOutput
+        /// </summary>
+        NU5007 = 5007,
+
+        /// <summary>
+        /// ErrorManifestFileNotFound
+        /// </summary>
+        NU5008 = 5008,
+
+        /// <summary>
+        /// Undefined package warning
+        /// </summary>
+        NU5500 = 5500,
     }
 }

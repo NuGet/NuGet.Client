@@ -23,19 +23,19 @@ namespace NuGet.Commands
         /// <param name="fallbackPackageFolders">Path to any fallback package folders.</param>
         /// <param name="localProviders">This is typically just a provider for the global packages folder.</param>
         /// <param name="remoteProviders">All dependency providers.</param>
-        /// <param name="nuspecCache">Nuspec cache.</param>
+        /// <param name="packageFileCache">Nuspec and package file cache.</param>
         public RestoreCommandProviders(
             NuGetv3LocalRepository globalPackages,
             IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             IReadOnlyList<IRemoteDependencyProvider> localProviders,
             IReadOnlyList<IRemoteDependencyProvider> remoteProviders,
-            LocalNuspecCache nuspecCache)
+            LocalPackageFileCache packageFileCache)
         {
             GlobalPackages = globalPackages ?? throw new ArgumentNullException(nameof(globalPackages));
             LocalProviders = localProviders ?? throw new ArgumentNullException(nameof(localProviders));
             RemoteProviders = remoteProviders ?? throw new ArgumentNullException(nameof(remoteProviders));
             FallbackPackageFolders = fallbackPackageFolders ?? throw new ArgumentNullException(nameof(fallbackPackageFolders));
-            NuspecCache = nuspecCache ?? throw new ArgumentNullException(nameof(nuspecCache));
+            PackageFileCache = packageFileCache ?? throw new ArgumentNullException(nameof(packageFileCache));
         }
 
         /// <summary>
@@ -51,17 +51,17 @@ namespace NuGet.Commands
 
         public IReadOnlyList<IRemoteDependencyProvider> RemoteProviders { get; }
 
-        public LocalNuspecCache NuspecCache { get; }
+        public LocalPackageFileCache PackageFileCache { get; }
 
         public static RestoreCommandProviders Create(
             string globalFolderPath,
             IEnumerable<string> fallbackPackageFolderPaths,
             IEnumerable<SourceRepository> sources,
             SourceCacheContext cacheContext,
-            LocalNuspecCache nuspecCache,
+            LocalPackageFileCache packageFileCache,
             ILogger log)
         {
-            var globalPackages = new NuGetv3LocalRepository(globalFolderPath, nuspecCache);
+            var globalPackages = new NuGetv3LocalRepository(globalFolderPath, packageFileCache);
             var globalPackagesSource = Repository.Factory.GetCoreV3(globalFolderPath, FeedType.FileSystemV3);
 
             var localProviders = new List<IRemoteDependencyProvider>()
@@ -73,7 +73,7 @@ namespace NuGet.Commands
                     cacheContext,
                     ignoreFailedSources: true,
                     ignoreWarning: true,
-                    nuspecCache: nuspecCache)
+                    fileCache: packageFileCache)
             };
 
             // Add fallback sources as local providers also
@@ -81,7 +81,7 @@ namespace NuGet.Commands
 
             foreach (var path in fallbackPackageFolderPaths)
             {
-                var fallbackRepository = new NuGetv3LocalRepository(path, nuspecCache);
+                var fallbackRepository = new NuGetv3LocalRepository(path, packageFileCache);
                 var fallbackSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
 
                 var provider = new SourceRepositoryDependencyProvider(
@@ -90,7 +90,7 @@ namespace NuGet.Commands
                     cacheContext,
                     ignoreFailedSources: false,
                     ignoreWarning: false,
-                    nuspecCache: nuspecCache);
+                    fileCache: packageFileCache);
 
                 fallbackPackageFolders.Add(fallbackRepository);
                 localProviders.Add(provider);
@@ -106,7 +106,7 @@ namespace NuGet.Commands
                     cacheContext,
                     cacheContext.IgnoreFailedSources,
                     ignoreWarning: false,
-                    nuspecCache: nuspecCache);
+                    fileCache: packageFileCache);
 
                 remoteProviders.Add(provider);
             }
@@ -116,7 +116,7 @@ namespace NuGet.Commands
                 fallbackPackageFolders,
                 localProviders,
                 remoteProviders,
-                nuspecCache);
+                packageFileCache);
         }
     }
 }

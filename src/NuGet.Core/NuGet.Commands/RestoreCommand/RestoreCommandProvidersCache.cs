@@ -26,7 +26,7 @@ namespace NuGet.Commands
         private readonly ConcurrentDictionary<string, NuGetv3LocalRepository> _globalCache
             = new ConcurrentDictionary<string, NuGetv3LocalRepository>(PathUtility.GetStringComparerBasedOnOS());
 
-        private readonly LocalNuspecCache _nuspecCache = new LocalNuspecCache();
+        private readonly LocalPackageFileCache _fileCache = new LocalPackageFileCache();
 
         public RestoreCommandProviders GetOrCreate(
             string globalPackagesPath,
@@ -35,7 +35,7 @@ namespace NuGet.Commands
             SourceCacheContext cacheContext,
             ILogger log)
         {
-            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, (path) => new NuGetv3LocalRepository(path, _nuspecCache));
+            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, (path) => new NuGetv3LocalRepository(path, _fileCache));
 
             var local = _localProvider.GetOrAdd(globalPackagesPath, (path) =>
             {
@@ -49,7 +49,7 @@ namespace NuGet.Commands
                     cacheContext,
                     ignoreFailedSources: true,
                     ignoreWarning: true,
-                    nuspecCache: _nuspecCache);
+                    fileCache: _fileCache);
             });
 
             var localProviders = new List<IRemoteDependencyProvider>() { local };
@@ -57,7 +57,7 @@ namespace NuGet.Commands
 
             foreach (var fallbackPath in fallbackPackagesPaths)
             {
-                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path, _nuspecCache));
+                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path, _fileCache));
                 fallbackFolders.Add(cache);
 
                 var localProvider = _localProvider.GetOrAdd(fallbackPath, (path) =>
@@ -72,7 +72,7 @@ namespace NuGet.Commands
                         cacheContext,
                         ignoreFailedSources: false,
                         ignoreWarning: false,
-                        nuspecCache: _nuspecCache);
+                        fileCache: _fileCache);
                 });
 
                 localProviders.Add(localProvider);
@@ -88,12 +88,12 @@ namespace NuGet.Commands
                     cacheContext,
                     cacheContext.IgnoreFailedSources,
                     ignoreWarning: false,
-                    nuspecCache: _nuspecCache));
+                    fileCache: _fileCache));
 
                 remoteProviders.Add(remoteProvider);
             }
 
-            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, _nuspecCache);
+            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, _fileCache);
         }
     }
 }

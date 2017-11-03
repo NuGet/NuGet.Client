@@ -411,7 +411,8 @@ namespace NuGet.Test.Utility
 
                     ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
                     {
-                        { tfPropName, string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
+                        { tfPropName, OriginalFrameworkStrings.Count != 0 ? string.Join(";", OriginalFrameworkStrings): 
+                        string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
                     });
                 }
 

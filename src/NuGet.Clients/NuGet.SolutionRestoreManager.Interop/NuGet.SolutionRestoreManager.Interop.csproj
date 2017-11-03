@@ -3,23 +3,26 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
 
   <PropertyGroup>
+    <PackageId>NuGet.SolutionRestoreManager.Interop</PackageId>
     <TargetFramework>net46</TargetFramework>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <IncludeInVsix>true</IncludeInVsix>
+    <authors>Microsoft</authors>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl	>https://github.com/NuGet/NuGet.Client</PackageProjectUrl	>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <AssemblyDescription>APIs for invoking NuGet Restore Manager in Visual Studio.</AssemblyDescription>
+    <Description>APIs for invoking NuGet Restore Manager in Visual Studio.</Description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="install.ps1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Content Include="NuGet.SolutionRestoreManager.Interop.targets">
+      <PackagePath>build</PackagePath>
+      <Pack>true</Pack>
+    </Content>
   </ItemGroup>
-
-  <PropertyGroup>
-    <NuspecFile>NuGet.SolutionRestoreManager.Interop.nuspec</NuspecFile>
-    <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
-    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
-  </PropertyGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>

@@ -68,7 +68,7 @@ function Wait-OnNetCoreRestoreCompletion{
      param(
         [parameter(Mandatory = $true)]
         $Project,
-        [int]$TimoutSeconds = 20
+        [int]$TimoutSeconds = 30
     )
 
     $NetCoreLockFilePath = Get-NetCoreLockFilePath $Project
@@ -99,6 +99,45 @@ function New-NetCoreConsoleApp
     if ((Get-VSVersion) -ge '15.0')
     {
         $project = New-Project NetCoreConsoleApp $ProjectName $SolutionFolder
+        Wait-OnNetCoreRestoreCompletion $project
+        return $project
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
+function New-NetCoreConsoleTargetFrameworksApp
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        $project = New-Project NetCoreConsoleTargetFrameworksApp $ProjectName $SolutionFolder
+        Wait-OnNetCoreRestoreCompletion $project
+        return $project
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
+
+function New-NetCoreConsoleMultipleTargetFrameworksApp
+{
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolder
+    )
+
+    if ((Get-VSVersion) -ge '15.0')
+    {
+        $project = New-Project NetCoreConsoleMultipleTargetFrameworksApp $ProjectName $SolutionFolder
         Wait-OnNetCoreRestoreCompletion $project
         return $project
     }

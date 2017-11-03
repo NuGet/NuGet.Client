@@ -29,7 +29,7 @@ namespace NuGet.Protocol
 
         private readonly string _source;
         private readonly VersionFolderPathResolver _resolver;
-        private LocalNuspecCache _nuspecCache;
+        private LocalPackageFileCache _packageFileCache;
         private readonly Lazy<bool> _rootExists;
 
         /// <summary>
@@ -37,19 +37,19 @@ namespace NuGet.Protocol
         /// This is exposed to allow sharing the cache with other components
         /// that are reading the same files.
         /// </summary>
-        public LocalNuspecCache NuspecCache
+        public LocalPackageFileCache PackageFileCache
         {
             get
             {
-                if (_nuspecCache == null)
+                if (_packageFileCache == null)
                 {
-                    _nuspecCache = new LocalNuspecCache();
+                    _packageFileCache = new LocalPackageFileCache();
                 }
 
-                return _nuspecCache;
+                return _packageFileCache;
             }
 
-            set => _nuspecCache = value;
+            set => _packageFileCache = value;
         }
 
         /// <summary>
@@ -310,7 +310,7 @@ namespace NuGet.Protocol
             try
             {
                 // Read the nuspec
-                nuspecReader = NuspecCache.GetOrAdd(nuspecPath, expandedPath).Value;
+                nuspecReader = PackageFileCache.GetOrAddNuspec(nuspecPath, expandedPath).Value;
             }
             catch (XmlException ex)
             {

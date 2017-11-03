@@ -20,7 +20,7 @@ namespace NuGet.Build.Tasks {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -62,6 +62,15 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; targets &apos;{2}&apos;. It cannot be referenced by a project that targets &apos;{1}&apos;..
+        /// </summary>
+        internal static string NoCompatibleTargetFramework {
+            get {
+                return ResourceManager.GetString("NoCompatibleTargetFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to find a project to restore!.
         /// </summary>
         internal static string NoProjectsProvidedToTask {
@@ -85,6 +94,15 @@ namespace NuGet.Build.Tasks {
         internal static string RestoreCanceled {
             get {
                 return ResourceManager.GetString("RestoreCanceled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The framework &apos;{0}&apos; is not a supported target framework..
+        /// </summary>
+        internal static string UnsupportedTargetFramework {
+            get {
+                return ResourceManager.GetString("UnsupportedTargetFramework", resourceCulture);
             }
         }
     }

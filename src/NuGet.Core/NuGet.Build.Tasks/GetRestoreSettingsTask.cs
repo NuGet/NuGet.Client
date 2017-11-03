@@ -89,6 +89,7 @@ namespace NuGet.Build.Tasks
             BuildTasksUtility.LogInputParam(log, nameof(RestorePackagesPathOverride), RestorePackagesPathOverride);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreSourcesOverride), RestoreSourcesOverride);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreFallbackFoldersOverride), RestoreFallbackFoldersOverride);
+            BuildTasksUtility.LogInputParam(log, nameof(MSBuildStartupDirectory), MSBuildStartupDirectory);
 
             try
             {
@@ -108,18 +109,21 @@ namespace NuGet.Build.Tasks
                 }
 
                 // Settings
-                var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), RestoreConfigFile, _machineWideSettings);
+                // Find the absolute path of nuget.config, this should only be set on the command line. Setting the path in project files
+                // is something that could happen, but it is not supported.
+                var absoluteConfigFilePath = GetGlobalAbsolutePath(RestoreConfigFile);
+                var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, Path.GetDirectoryName(ProjectUniqueName), absoluteConfigFilePath, _machineWideSettings);
                 OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
 
                 // PackagesPath
                 OutputPackagesPath = RestoreSettingsUtils.GetValue(
-                    () => string.IsNullOrEmpty(RestorePackagesPathOverride) ? null : UriUtility.GetAbsolutePath(MSBuildStartupDirectory, RestorePackagesPathOverride),
+                    () => GetGlobalAbsolutePath(RestorePackagesPathOverride),
                     () => string.IsNullOrEmpty(RestorePackagesPath) ? null : UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestorePackagesPath),
                     () => SettingsUtility.GetGlobalPackagesFolder(settings));
 
                 // Sources
                 var currentSources = RestoreSettingsUtils.GetValue(
-                    () => RestoreSourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(MSBuildStartupDirectory, e)).ToArray(),
+                    () => RestoreSourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => GetGlobalAbsolutePath(e)).ToArray(),
                     () => MSBuildRestoreUtility.ContainsClearKeyword(RestoreSources) ? new string[0] : null,
                     () => RestoreSources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray(),
                     () => (new PackageSourceProvider(settings)).LoadPackageSources().Where(e => e.IsEnabled).Select(e => e.Source).ToArray());
@@ -136,7 +140,7 @@ namespace NuGet.Build.Tasks
 
                 // Fallback folders
                 var currentFallbackFolders = RestoreSettingsUtils.GetValue(
-                    () => RestoreFallbackFoldersOverride?.Select(e => UriUtility.GetAbsolutePath(MSBuildStartupDirectory, e)).ToArray(),
+                    () => RestoreFallbackFoldersOverride?.Select(e => GetGlobalAbsolutePath(e)).ToArray(),
                     () => MSBuildRestoreUtility.ContainsClearKeyword(RestoreFallbackFolders) ? new string[0] : null,
                     () => RestoreFallbackFolders?.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray(),
                     () => SettingsUtility.GetFallbackPackageFolders(settings).ToArray());
@@ -190,6 +194,19 @@ namespace NuGet.Build.Tasks
             }
 
             return items.SelectMany(e => MSBuildStringUtility.Split(BuildTasksUtility.GetPropertyIfExists(e, key)));
+        }
+
+        /// <summary>
+        /// Resolve a path against MSBuildStartupDirectory
+        /// </summary>
+        private string GetGlobalAbsolutePath(string path)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                return UriUtility.GetAbsolutePath(MSBuildStartupDirectory, path);
+            }
+
+            return path;
         }
     }
 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NuGet.VisualStudio;
 
@@ -55,6 +56,14 @@ namespace NuGet.VisualStudio
                 VsProjectTypes.CppProjectTypeGuid,
             };
 
+        private static readonly HashSet<string> _unsupportedProjectExtension = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".metaproj",
+            ".shproj",
+            ".vcxitems",
+            ".sqlproj"
+        };
+
         public static bool IsSupported(string projectKind)
         {
             return _supportedProjectTypes.Contains(projectKind);
@@ -73,6 +82,11 @@ namespace NuGet.VisualStudio
         public static bool IsSupportedForAddingReferences(string projectKind)
         {
             return !_unsupportedProjectTypesForAddingReferences.Contains(projectKind, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static bool IsSupportedProjectExtension(string projectPath)
+        {
+            return !_unsupportedProjectExtension.Contains(Path.GetExtension(projectPath));
         }
     }
 }
