@@ -8,9 +8,9 @@ using System.Security.Cryptography;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
+using System.Security.Cryptography.X509Certificates;
 #endif
 
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -26,7 +26,10 @@ namespace NuGet.Packaging.Signing
         // Url to an RFC 3161 timestamp server
         private readonly Uri _timestamperUrl;
         private const int _rfc3161RequestTimeoutSeconds = 10;
+        private const long _ticksPerMicroSecond = 10;
         private const string _signingCertificateV2Oid = "1.2.840.113549.1.9.16.2.47";
+        private const string _timeStampingEkuOid = "1.3.6.1.5.5.7.3.8";
+        private const string _baselineTimestampOid = "0.4.0.2023.1.1";
 
 
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
@@ -45,7 +48,7 @@ namespace NuGet.Packaging.Signing
 
 #if IS_DESKTOP
         /// <summary>
-        /// Timestamp a signature.
+        /// Timestamps a Signature.
         /// </summary>
         public Task<Signature> CreateSignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token)
         {
@@ -66,6 +69,7 @@ namespace NuGet.Packaging.Signing
                 requestSignerCertificates: true);
 
                 // Request a timestamp
+                // The response status need not be checked here as lower level api will throw if the response is invalid
                 var timestampToken = rfc3161TimestampRequest.SubmitRequest(
                     _timestamperUrl,
                     TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
@@ -78,16 +82,82 @@ namespace NuGet.Packaging.Signing
 
                 ValidateTimestampResponse(request, signatureValueHashByteArray, nonce, timestampToken, tokenSigner);
 
-                var signingCertificate = GetSigningCertificateFromTimestampResponse(tokenSigner);
+                var signerCert = GetSignerCertFromTimestampResponse(tokenSigner);
 
-                //TODO validate the certificate chain.
+                ValidateTimestampCertificate(signerCert, tokenCms);
 
-                // Returns the signature as a Signature object
-                return Task.FromResult(Signature.Load(tokenCms));
+                var tstInfoGenTime = timestampToken.TokenInfo.Timestamp;
+
+                var tstInfoAccuracy = timestampToken.TokenInfo.AccuracyInMicroseconds;
+                long tstInfoAccuracyInTicks;
+
+                if (!tstInfoAccuracy.HasValue)
+                {
+                    if (string.Equals(timestampToken.TokenInfo.PolicyId, _baselineTimestampOid))
+                    {
+                        tstInfoAccuracyInTicks = TimeSpan.TicksPerSecond;
+                    }
+                    else
+                    {
+                        tstInfoAccuracyInTicks = 0;
+                    }
+                }
+                else
+                {
+                    tstInfoAccuracyInTicks = tstInfoAccuracy.Value * _ticksPerMicroSecond;
+                }
+
+                var timestampUpperGenTime = tstInfoGenTime.AddTicks(tstInfoAccuracyInTicks);
+                var timestampLowerGenTime = tstInfoGenTime.Subtract(TimeSpan.FromTicks(tstInfoAccuracyInTicks));
+
+                if (request.Certificate.NotAfter < timestampUpperGenTime ||
+                    request.Certificate.NotBefore > timestampLowerGenTime)
+                {
+                    throw new InvalidOperationException("Author's certificate was not valid when it was timestamped.");
+                }
+
+                //TODO DER encode the TSTInfo
+                //TODO check SignerInfoCollection[0]
+                request.Signature.SignerInfoCollection[0].UnsignedAttributes.Add(new AsnEncodedData("1.2.840.113549.1.9.16.2.14", timestampToken.TokenInfo.RawData));
+
+                // Returns the signature with added info
+                return Task.FromResult(request.Signature);
             }
         }
 
-        private static CryptographicAttributeObject GetSigningCertificateFromTimestampResponse(SignerInfo tokenSigner)
+        private static void ValidateTimestampCertificate(X509Certificate2 signerCert, SignedCms tokenCms)
+        {
+            //validate the certificate chain.
+            X509Chain chain = null;
+
+            if (!SigningUtility.IsCertificateValid(signerCert, out chain, allowUntrustedRoot: false, checkRevocationStatus: true))
+            {
+                //TODO throw better error message
+                throw new InvalidOperationException("The timestamper's certificate chain does not build.");
+            }
+
+            if (!SigningUtility.CertificateContainsEku(signerCert, _timeStampingEkuOid))
+            {
+                throw new InvalidOperationException("The timestamper's certificate does not contain a valid EKU for timestamping.");
+            }
+
+            //TODO check if all the certificates are in the cms object
+            // The 2 counts are not matching.
+            //if (chain.ChainElements.Count != tokenCms.Certificates.Count)
+            //{
+            //    throw new InvalidOperationException("The timestamper's certificates count does not match the built chain count.");
+            //}
+
+            //foreach(var chainElement in chain.ChainElements)
+            //{
+            //    if (!tokenCms.Certificates.Contains(chainElement.Certificate))
+            //    {
+            //        throw new InvalidOperationException("The timestamper's certificates do not match the built chain.");
+            //    }
+            //}
+        }
+
+        private static X509Certificate2 GetSignerCertFromTimestampResponse(SignerInfo tokenSigner)
         {
             CryptographicAttributeObject signingCertificateV2 = null;
 
@@ -105,7 +175,7 @@ namespace NuGet.Packaging.Signing
                 throw new InvalidOperationException("Rfc3161TimestampToken does not contain a signer certificate.");
             }
 
-            return signingCertificateV2;
+            return tokenSigner.Certificate;
         }
 
         private static void ValidateTimestampResponse(TimestampRequest request,

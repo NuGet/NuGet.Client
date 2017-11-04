@@ -20,8 +20,6 @@ namespace NuGet.Commands
     {
         public int ExecuteCommand(SignArgs signArgs)
         {
-            Debugger.Launch();
-
             var success = true;
 
             // resolve path into multiple packages if needed.
