@@ -204,8 +204,6 @@ namespace NuGet.ProjectModel.Test
             //Assert again
             Assert.NotEqual(originalWarningProperties, clone);
             Assert.Equal(2, clone.NoWarn.Count);
-
-
         }
 
     }

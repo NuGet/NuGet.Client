@@ -24,5 +24,30 @@ namespace NuGet.ProjectModel
             clonedObject.HideWarningsAndErrors = HideWarningsAndErrors;
             return clonedObject;
         }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as ProjectRestoreSettings);
+        }
+
+        public bool Equals(ProjectRestoreSettings other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return HideWarningsAndErrors == other.HideWarningsAndErrors;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

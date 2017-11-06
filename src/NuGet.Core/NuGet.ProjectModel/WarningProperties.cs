@@ -77,7 +77,7 @@ namespace NuGet.ProjectModel
 
         public WarningProperties Clone()
         {
-            return new WarningProperties(warningsAsErrors: new HashSet<NuGetLogCode>(WarningsAsErrors), noWarn: new HashSet<NuGetLogCode>(WarningsAsErrors), allWarningsAsErrors: AllWarningsAsErrors);
+            return new WarningProperties(warningsAsErrors: new HashSet<NuGetLogCode>(WarningsAsErrors), noWarn: new HashSet<NuGetLogCode>(NoWarn), allWarningsAsErrors: AllWarningsAsErrors);
         }
     }
 }
