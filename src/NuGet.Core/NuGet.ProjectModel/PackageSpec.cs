@@ -186,21 +186,8 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// Clone a PackageSpec and underlying JObject.
+        /// Clone a PackageSpec
         /// </summary>
-        public PackageSpec CloneOld()
-        {
-            var writer = new JsonObjectWriter();
-            PackageSpecWriter.Write(this, writer);
-            var json = writer.GetJObject();
-
-            var spec = JsonPackageSpecReader.GetPackageSpec(json);
-            spec.Name = Name;
-            spec.FilePath = FilePath;
-
-            return spec;
-        }
-
         public PackageSpec Clone()
         {
             var spec = new PackageSpec();
@@ -237,7 +224,7 @@ namespace NuGet.ProjectModel
             spec.TargetFrameworks = TargetFrameworks.Select(item => (TargetFrameworkInformation)item.Clone()).ToList();
             spec.RuntimeGraph = RuntimeGraph?.Clone(); // TODO - Double check this
             spec.RestoreSettings = RestoreSettings.Clone();
-            spec.RestoreMetadata = RestoreMetadata; // The monster that'd be hardest to deal with
+            spec.RestoreMetadata = RestoreMetadata.Clone(); // The monster that'd be hardest to deal with
             return spec;
         }
 
