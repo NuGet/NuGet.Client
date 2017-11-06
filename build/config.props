@@ -5,8 +5,8 @@
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">4.4.0</SemanticVersion>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">3</NetCoreAssemblyBuildNumber>
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">5</NetCoreAssemblyBuildNumber>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">svc</ReleaseLabel>
   </PropertyGroup>
 
   <!-- Dependency versions -->
