@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using Xunit;
 namespace NuGet.ProjectModel.Test
 {
@@ -137,7 +138,33 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void ProjectRestoreMetadataFrameworkInfoCloneTest()
         {
-            // TODO NK
+            //Set up
+            var projectReference = new ProjectRestoreReference();
+            projectReference.ProjectPath = "Path";
+            projectReference.ProjectUniqueName = "ProjectUniqueName";
+            projectReference.IncludeAssets = LibraryModel.LibraryIncludeFlags.All;
+            projectReference.ExcludeAssets = LibraryModel.LibraryIncludeFlags.Analyzers;
+            projectReference.PrivateAssets = LibraryModel.LibraryIncludeFlags.Build;
+
+            var nugetFramework = NuGetFramework.Parse("net461");
+            var originalFrameworkName = "net461";
+
+            var originalPRMFI = new ProjectRestoreMetadataFrameworkInfo(nugetFramework);
+            originalPRMFI.OriginalFrameworkName = originalFrameworkName;
+            originalPRMFI.ProjectReferences = new List<ProjectRestoreReference>() { projectReference };
+
+            // Act
+            var clone = originalPRMFI.Clone();
+
+            // Assert
+            Assert.Equal(clone, originalPRMFI);
+            Assert.False(object.ReferenceEquals(originalPRMFI, clone));
+
+            // Act
+            projectReference.ProjectPath = "NewPath";
+            
+            // Assert
+            Assert.NotEqual(clone, originalPRMFI);
         }
 
         [Fact]
@@ -177,7 +204,48 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void TargetFrameworkInformationCloneTest()
         {
-            // TODO Nk
+            // Set up
+            var framework = NuGetFramework.Parse("net461");
+            var dependency = new LibraryDependency();
+            dependency.LibraryRange = new LibraryRange("Dependency", LibraryDependencyTarget.Package);
+            dependency.Type = LibraryDependencyType.Default;
+            dependency.IncludeType = LibraryIncludeFlags.None;
+            dependency.SuppressParent = LibraryIncludeFlags.ContentFiles;
+            var imports = NuGetFramework.Parse("net45"); // This makes no sense in the context of fallback, just for testing :)
+
+            var originalTargetFrameworkInformation = new TargetFrameworkInformation();
+            originalTargetFrameworkInformation.FrameworkName = framework;
+            originalTargetFrameworkInformation.Dependencies = new List<LibraryDependency>() { dependency };
+            originalTargetFrameworkInformation.AssetTargetFallback = false;
+            originalTargetFrameworkInformation.Imports = new List<NuGetFramework>() { imports };
+
+            // Act
+            var clone = originalTargetFrameworkInformation.Clone();
+
+            // Assert
+            Assert.Equal(originalTargetFrameworkInformation, clone);
+            Assert.False(object.ReferenceEquals(originalTargetFrameworkInformation, clone));
+
+            // Act
+            originalTargetFrameworkInformation.Imports.Clear();
+
+            // Assert
+            Assert.NotEqual(originalTargetFrameworkInformation, clone);
+            Assert.Equal(1, clone.Imports.Count);
+
+            //Act
+            var cloneToTestDependencies = originalTargetFrameworkInformation.Clone();
+
+            // Assert
+            Assert.Equal(originalTargetFrameworkInformation, cloneToTestDependencies);
+            Assert.False(object.ReferenceEquals(originalTargetFrameworkInformation, cloneToTestDependencies));
+
+            // Act
+            originalTargetFrameworkInformation.Dependencies.Clear();
+
+            // Assert
+            Assert.NotEqual(originalTargetFrameworkInformation, cloneToTestDependencies);
+            Assert.Equal(1, cloneToTestDependencies.Dependencies.Count);
         }
 
         [Fact]
