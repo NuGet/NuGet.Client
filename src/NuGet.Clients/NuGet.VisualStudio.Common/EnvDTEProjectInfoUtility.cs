@@ -48,20 +48,20 @@ namespace NuGet.VisualStudio
                 return Path.Combine(solutionDirectory, envDTEProject.UniqueName);
             }
 
-            // FullPath
-            var fullPath = GetPotentialFullPathOrNull(GetPropertyValue<string>(envDTEProject, FullPath));
-
-            if (fullPath != null)
-            {
-                return fullPath;
-            }
-
             // FullName
             var fullName = GetPotentialFullPathOrNull(envDTEProject.FullName);
 
-            if (fullName != null)
+            if (!string.IsNullOrEmpty(fullName))
             {
                 return fullName;
+            }
+
+            // FullPath
+            var fullPath = GetPotentialFullPathOrNull(GetPropertyValue<string>(envDTEProject, FullPath));
+
+            if (!string.IsNullOrEmpty(fullPath))
+            {
+                return fullPath;
             }
 
             return null;
@@ -91,33 +91,30 @@ namespace NuGet.VisualStudio
             // for start up scenarios such as VS Templates. In these cases we need to fallback 
             // until we can find one containing the full path.
 
+            // FullName
+            var fullName = GetPotentialFullPathOrNull(envDTEProject.FullName);
+
+            if (!string.IsNullOrEmpty(fullName))
+            {
+                return Path.GetDirectoryName(fullName);
+            }
+
+            // C++ projects do not have FullPath property, but do have ProjectDirectory one.
+            var projectDirectory = GetPropertyValue<string>(envDTEProject, ProjectDirectory);
+
+            if (!string.IsNullOrEmpty(projectDirectory))
+            {
+                return projectDirectory;
+            }
+
             // FullPath
-            string fullPath = GetPropertyValue<string>(envDTEProject, FullPath);
+            var fullPath = GetPotentialFullPathOrNull(GetPropertyValue<string>(envDTEProject, FullPath));
 
             if (!String.IsNullOrEmpty(fullPath))
             {
                 // Some Project System implementations (JS metro app) return the project 
                 // file as FullPath. We only need the parent directory
-                if (File.Exists(fullPath))
-                {
-                    return Path.GetDirectoryName(fullPath);
-                }
-
-                return fullPath;
-            }
-
-            // C++ projects do not have FullPath property, but do have ProjectDirectory one.
-            string projectDirectory = GetPropertyValue<string>(envDTEProject, ProjectDirectory);
-
-            if (!String.IsNullOrEmpty(projectDirectory))
-            {
-                return projectDirectory;
-            }
-
-            // FullName
-            if (!String.IsNullOrEmpty(envDTEProject.FullName))
-            {
-                return Path.GetDirectoryName(envDTEProject.FullName);
+                return Path.GetDirectoryName(fullPath);
             }
 
             Debug.Fail("Unable to find the project path");
