@@ -86,6 +86,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         Task<IEnumerable<string>> GetAllNuGetProjectSafeNameAsync();
 
-        IEnumerable<Task<Tuple<string, string>>> GetAllNuGetProjectSafeAndDisplayNameAsync();
+        IEnumerable<Task<Tuple<string, string>>> GetAllNuGetProjectSafeAndDisplayNameAsync(IEnumerable<NuGetProject> nuGetProjects);
     }
 }

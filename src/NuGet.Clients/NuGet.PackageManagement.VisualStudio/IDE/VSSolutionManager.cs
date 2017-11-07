@@ -235,9 +235,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return await Task.WhenAll((await GetNuGetProjectsAsync()).Select(GetNuGetProjectSafeNameAsync));
         }
 
-        public async IEnumerable<Task<Tuple<string,string>>> GetAllNuGetProjectSafeAndDisplayNameAsync()
+        public IEnumerable<Task<Tuple<string,string>>> GetAllNuGetProjectSafeAndDisplayNameAsync(IEnumerable<NuGetProject> nuGetProjects)
         {
-            return (await GetNuGetProjectsAsync()).Select(GetNuGetProjectSafeAndDisplayNameAsync);
+            return nuGetProjects.Select(GetNuGetProjectSafeAndDisplayNameAsync);
         }
 
         private async Task<Tuple<string, string>> GetNuGetProjectSafeAndDisplayNameAsync(NuGetProject nuGetProject)
@@ -256,11 +256,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 safeName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             }
 
-            var displayNameTask = Task.Run(async () => await GetDisplayNameAsync(nuGetProject));
+            var displayNameTask = await GetDisplayNameAsync(nuGetProject);
 
-            return new Tuple<string,string>(safeName,displayNameTask);
+            return new Tuple<string,string>(safeName, displayNameTask);
         }
-    }
+
 
         private async Task<string> GetDisplayNameAsync(NuGetProject nuGetProject)
         {

@@ -755,43 +755,45 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                var displayNames = new List<string>();
-                var displayNameTasks = new List<Task<string>>();
+                var displayNames = new List< Tuple<string, string> > ();
+                var displayNameTasks = new List<Task<Tuple<string, string>>>();
 
                 // start a single task to get all project's safe name
 
                 //var safeNamesTask = Task.Run(async () => await _solutionManager.Value.GetAllNuGetProjectSafeNameAsync());
 
-                //var allProjects = await _solutionManager.Value.GetNuGetProjectsAsync();
+                var allProjects = await _solutionManager.Value.GetNuGetProjectsAsync();
 
-                //foreach (var project in allProjects)
-                //{
-                //    // Throttle and wait for a task to finish if we have hit the limit
-                //    if (displayNameTasks.Count == MaxTasks)
-                //    {
-                //        var displayName = await CompleteTaskAsync(displayNameTasks);
-                //        displayNames.Add(displayName);
-                //    }
+                var tasks = _solutionManager.Value.GetAllNuGetProjectSafeAndDisplayNameAsync(nuGetProjects: allProjects);
 
-                //    var displayNameTask = Task.Run(async () => await GetDisplayNameAsync(project));
-                //    displayNameTasks.Add(displayNameTask);
-                //}
+                foreach (var task in tasks)
+                {
+                    // Throttle and wait for a task to finish if we have hit the limit
+                    if (displayNameTasks.Count == MaxTasks)
+                    {
+                        var displayName = await CompleteTaskAsync(displayNameTasks);
+                        displayNames.Add(displayName);
+                    }
 
-                //// wait until all the tasks to retrieve display names are completed
-                //while (displayNameTasks.Count > 0)
-                //{
-                //    var displayName = await CompleteTaskAsync(displayNameTasks);
-                //    displayNames.Add(displayName);
-                //}
+                    var displayNameTask = await task;
+                    displayNameTasks.Add(task);
+                }
 
-                //_projectSafeNames = (await safeNamesTask).ToArray();
-                //Array.Sort(displayNames.ToArray(), _projectSafeNames, StringComparer.CurrentCultureIgnoreCase);
-                //return _projectSafeNames;
-                return null;
+                // wait until all the tasks to retrieve display names are completed
+                while (displayNameTasks.Count > 0)
+                {
+                    var displayName = await CompleteTaskAsync(displayNameTasks);
+                    displayNames.Add(displayName);
+                }
+
+                _projectSafeNames = displayNames.Select(e => e.Item1).ToArray();
+
+                Array.Sort(displayNames.Select(e => e.Item2).ToArray(), _projectSafeNames, StringComparer.CurrentCultureIgnoreCase);
+                return _projectSafeNames;
             });
         }
 
-        private async Task<string> CompleteTaskAsync(List<Task<string>> nameTasks)
+        private async Task<Tuple<string,string>> CompleteTaskAsync(List<Task<Tuple<string, string>>> nameTasks)
         {
             var doneTask = await Task.WhenAny(nameTasks);
             nameTasks.Remove(doneTask);
