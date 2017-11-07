@@ -264,6 +264,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     {
                         return null;
                     }
+
                     return await GetDisplayNameAsync(defaultProject);
                 });
             }
