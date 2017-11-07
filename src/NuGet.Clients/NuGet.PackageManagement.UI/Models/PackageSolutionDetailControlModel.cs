@@ -243,6 +243,8 @@ namespace NuGet.PackageManagement.UI
             };
 
             _packageManagerProviders = packageManagerProviders;
+
+            CreateProjectLists();
         }
 
         // The event handler that is called when a project is added, removed or renamed.
@@ -278,7 +280,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Creates the project lists. Also called after a project is added/removed/renamed.
-        public override void CreateProjectLists()
+        private void CreateProjectLists()
         {
             // unhook event handler
             if (Projects != null)
