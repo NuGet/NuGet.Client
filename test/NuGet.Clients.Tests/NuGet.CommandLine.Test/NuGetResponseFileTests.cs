@@ -1,4 +1,4 @@
-﻿#if IS_DESKTOP
+#if IS_DESKTOP
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -15,7 +15,7 @@ namespace NuGet.CommandLine.Test
     {
         private const int TwoMegaBytesLength = 2048000;
 
-        [Fact]
+        [WindowsNTFact]
         public void ResponseFileSingleArgFullPath()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -37,7 +37,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void ResponseFileBlankLines()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -59,7 +59,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void NoResponseFile()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -77,7 +77,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void NoArgs()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -93,7 +93,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void ResponseFileTooLarge()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -125,7 +125,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void ResponseFileInvalid()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -149,7 +149,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void ResponseFileMultipleArgs()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -174,7 +174,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void ResponseFileMultiLineArgs()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -201,7 +201,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void ResponseFileMultipleNested()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -230,7 +230,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void ResponseFileInfiniteNestedRecursion()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -263,7 +263,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void ResponseFileFullPath()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -285,7 +285,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void WhiteSpaceArg()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -303,7 +303,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void NullArg()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
@@ -321,7 +321,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void ResponseFileLargeArg()
         {
             using (var workingDirectory = new SimpleTestPathContext().WorkingDirectory)
