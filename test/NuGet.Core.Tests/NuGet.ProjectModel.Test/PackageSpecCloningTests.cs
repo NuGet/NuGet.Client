@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using Xunit;
@@ -112,13 +113,189 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void PackageSpecCloneTest()
         {
-            // TODO NK
+            // Set up
+            var PackageSpec = new PackageSpec();
+            PackageSpec.RestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Act
+            var clonedPackageSpec = PackageSpec.Clone();
+
+            // TODO NK - Add more tests
+            //Assert
+            Assert.Equal(PackageSpec, clonedPackageSpec);
+            Assert.False(object.ReferenceEquals(PackageSpec, clonedPackageSpec));
+        }
+
+        private ProjectRestoreMetadata CreateProjectRestoreMetadata()
+        {
+            var projectReference = new ProjectRestoreReference();
+            projectReference.ProjectPath = "Path";
+            projectReference.ProjectUniqueName = "ProjectUniqueName";
+            projectReference.IncludeAssets = LibraryIncludeFlags.All;
+            projectReference.ExcludeAssets = LibraryIncludeFlags.Analyzers;
+            projectReference.PrivateAssets = LibraryIncludeFlags.Build;
+            var nugetFramework = NuGetFramework.Parse("net461");
+            var originalFrameworkName = "net461";
+            var originalPRMFI = new ProjectRestoreMetadataFrameworkInfo(nugetFramework);
+            originalPRMFI.OriginalFrameworkName = originalFrameworkName;
+            originalPRMFI.ProjectReferences = new List<ProjectRestoreReference>() { projectReference };
+            var targetframeworks = new List<ProjectRestoreMetadataFrameworkInfo>() { originalPRMFI };
+
+            var allWarningsAsErrors = true;
+            var noWarn = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1500 };
+            var warningsAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1501 };
+            var warningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn);
+
+            var originalProjectRestoreMetadata = new ProjectRestoreMetadata();
+            originalProjectRestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+            originalProjectRestoreMetadata.ProjectPath = "ProjectPath";
+            originalProjectRestoreMetadata.ProjectJsonPath = "ProjectJsonPath";
+            originalProjectRestoreMetadata.OutputPath = "OutputPath";
+            originalProjectRestoreMetadata.ProjectName = "ProjectName";
+            originalProjectRestoreMetadata.ProjectUniqueName = "ProjectUniqueName";
+            originalProjectRestoreMetadata.PackagesPath = "PackagesPath";
+            originalProjectRestoreMetadata.CacheFilePath = "CacheFilePath";
+            originalProjectRestoreMetadata.CrossTargeting = true;
+            originalProjectRestoreMetadata.LegacyPackagesDirectory = true;
+            originalProjectRestoreMetadata.ValidateRuntimeAssets = true;
+            originalProjectRestoreMetadata.SkipContentFileWrite = true;
+            originalProjectRestoreMetadata.TargetFrameworks = targetframeworks;
+            originalProjectRestoreMetadata.Sources = new List<PackageSource>() { new PackageSource("http://api.nuget.org/v3/index.json") }; ;
+            originalProjectRestoreMetadata.FallbackFolders = new List<string>() { "fallback1" };
+            originalProjectRestoreMetadata.ConfigFilePaths = new List<string>() { "config1" };
+            originalProjectRestoreMetadata.OriginalTargetFrameworks = new List<string>() { "net45" };
+            originalProjectRestoreMetadata.Files = new List<ProjectRestoreMetadataFile>() { new ProjectRestoreMetadataFile("packagePath", "absolutePath") };
+            originalProjectRestoreMetadata.ProjectWideWarningProperties = warningProperties;
+
+            return originalProjectRestoreMetadata;
         }
 
         [Fact]
         public void ProjectRestoreMetadataCloneTest()
         {
-            // TODO NK
+            // Set up
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+            // Act
+
+            var happyClone = originalProjectRestoreMetadata.Clone();
+
+            // Assert
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeSourcesTest()
+        {
+            // Set up
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.Sources.Clear();
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(1, happyClone.Sources.Count);
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeFallbackFoldersTest()
+        {
+            // Set up
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.FallbackFolders.Clear();
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(1, happyClone.FallbackFolders.Count);
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeConfigFilePathsTest()
+        {
+            // Set up
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.ConfigFilePaths.Clear();
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(1, happyClone.ConfigFilePaths.Count);
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeOriginalTargetFrameworksTest()
+        {
+            // Set up
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.OriginalTargetFrameworks.Clear();
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(1, happyClone.OriginalTargetFrameworks.Count);
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeFilesTest()
+        {
+            // Set up
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.Files.Clear();
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(1, happyClone.Files.Count);
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeProjectWideWarningPropertiesTest()
+        {
+            // Set up
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors = false; ;
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(true, happyClone.ProjectWideWarningProperties.AllWarningsAsErrors);
         }
 
         [Fact]

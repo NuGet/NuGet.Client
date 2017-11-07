@@ -190,13 +190,13 @@ namespace NuGet.ProjectModel
             clonedObject.LegacyPackagesDirectory = LegacyPackagesDirectory;
             clonedObject.SkipContentFileWrite = SkipContentFileWrite;
             clonedObject.ValidateRuntimeAssets = ValidateRuntimeAssets;
-            clonedObject.FallbackFolders = new List<string>(FallbackFolders);
-            clonedObject.ConfigFilePaths = new List<string>(ConfigFilePaths);
-            clonedObject.OriginalTargetFrameworks = new List<string>(ConfigFilePaths);
+            clonedObject.FallbackFolders = FallbackFolders != null ? new List<string>(FallbackFolders) : null;
+            clonedObject.ConfigFilePaths = ConfigFilePaths != null ? new List<string>(ConfigFilePaths) : null;
+            clonedObject.OriginalTargetFrameworks = OriginalTargetFrameworks != null ? new List<string>(OriginalTargetFrameworks) : null;
             clonedObject.Sources = Sources?.Select(c => c.Clone()).ToList();
             clonedObject.TargetFrameworks = TargetFrameworks?.Select( c => c.Clone()).ToList();
-            clonedObject.Files = Files.Select(c => c.Clone()).ToList();
-            clonedObject.ProjectWideWarningProperties = ProjectWideWarningProperties.Clone();
+            clonedObject.Files = Files?.Select(c => c.Clone()).ToList();
+            clonedObject.ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone();
             return clonedObject;
     }
 }
