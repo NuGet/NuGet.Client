@@ -85,5 +85,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Return collection of safe name for all supported projects in solution.
         /// </summary>
         Task<IEnumerable<string>> GetAllNuGetProjectSafeNameAsync();
+
+        IEnumerable<Task<Tuple<string, string>>> GetAllNuGetProjectSafeAndDisplayNameAsync();
     }
 }

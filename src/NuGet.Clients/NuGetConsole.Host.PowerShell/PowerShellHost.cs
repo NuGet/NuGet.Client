@@ -270,6 +270,29 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
         }
 
+        private async Task<string> GetDisplayNameAsync(NuGetProject nuGetProject)
+        {
+            if(MaxTasks == 15)
+            {
+                // Do nothing
+            }
+            var vsProjectAdapter = await _solutionManager.Value.GetVsProjectAdapterAsync(nuGetProject);
+
+            var name = vsProjectAdapter.CustomUniqueName;
+            if (await IsWebSiteAsync(vsProjectAdapter))
+            {
+                name = PathHelper.SmartTruncate(name, 40);
+            }
+            return name;
+        }
+
+        private async Task<bool> IsWebSiteAsync(IVsProjectAdapter project)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            return (await project.GetProjectTypeGuidsAsync()).Contains(VsProjectTypes.WebSiteProjectTypeGuid);
+        }
+
         #endregion
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
@@ -736,53 +759,36 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 var displayNameTasks = new List<Task<string>>();
 
                 // start a single task to get all project's safe name
-                var safeNamesTask = Task.Run(async () => await _solutionManager.Value.GetAllNuGetProjectSafeNameAsync());
 
-                var allProjects = await _solutionManager.Value.GetNuGetProjectsAsync();
+                //var safeNamesTask = Task.Run(async () => await _solutionManager.Value.GetAllNuGetProjectSafeNameAsync());
 
-                foreach (var project in allProjects)
-                {
-                    // Throttle and wait for a task to finish if we have hit the limit
-                    if (displayNameTasks.Count == MaxTasks)
-                    {
-                        var displayName = await CompleteTaskAsync(displayNameTasks);
-                        displayNames.Add(displayName);
-                    }
+                //var allProjects = await _solutionManager.Value.GetNuGetProjectsAsync();
 
-                    var displayNameTask = Task.Run(async () => await GetDisplayNameAsync(project));
-                    displayNameTasks.Add(displayNameTask);
-                }
+                //foreach (var project in allProjects)
+                //{
+                //    // Throttle and wait for a task to finish if we have hit the limit
+                //    if (displayNameTasks.Count == MaxTasks)
+                //    {
+                //        var displayName = await CompleteTaskAsync(displayNameTasks);
+                //        displayNames.Add(displayName);
+                //    }
 
-                // wait until all the tasks to retrieve display names are completed
-                while (displayNameTasks.Count > 0)
-                {
-                    var displayName = await CompleteTaskAsync(displayNameTasks);
-                    displayNames.Add(displayName);
-                }
+                //    var displayNameTask = Task.Run(async () => await GetDisplayNameAsync(project));
+                //    displayNameTasks.Add(displayNameTask);
+                //}
 
-                _projectSafeNames = (await safeNamesTask).ToArray();
-                Array.Sort(displayNames.ToArray(), _projectSafeNames, StringComparer.CurrentCultureIgnoreCase);
-                return _projectSafeNames;
+                //// wait until all the tasks to retrieve display names are completed
+                //while (displayNameTasks.Count > 0)
+                //{
+                //    var displayName = await CompleteTaskAsync(displayNameTasks);
+                //    displayNames.Add(displayName);
+                //}
+
+                //_projectSafeNames = (await safeNamesTask).ToArray();
+                //Array.Sort(displayNames.ToArray(), _projectSafeNames, StringComparer.CurrentCultureIgnoreCase);
+                //return _projectSafeNames;
+                return null;
             });
-        }
-
-        private async Task<string> GetDisplayNameAsync(NuGetProject nuGetProject)
-        {
-            var vsProjectAdapter = await _solutionManager.Value.GetVsProjectAdapterAsync(nuGetProject);
-
-            var name = vsProjectAdapter.CustomUniqueName;
-            if (await IsWebSiteAsync(vsProjectAdapter))
-            {
-                name = PathHelper.SmartTruncate(name, 40);
-            }
-            return name;
-        }
-
-        private async Task<bool> IsWebSiteAsync(IVsProjectAdapter project)
-        {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            return (await project.GetProjectTypeGuidsAsync()).Contains(VsProjectTypes.WebSiteProjectTypeGuid);
         }
 
         private async Task<string> CompleteTaskAsync(List<Task<string>> nameTasks)
