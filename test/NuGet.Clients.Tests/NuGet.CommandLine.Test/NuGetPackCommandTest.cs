@@ -2085,7 +2085,7 @@ public class B
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void PackCommand_OutputResolvedNuSpecFileAttemptToOverwriteOriginal()
         {
             using (var workingDirectory = TestDirectory.Create())
