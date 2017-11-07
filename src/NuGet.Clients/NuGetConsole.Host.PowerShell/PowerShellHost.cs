@@ -731,15 +731,18 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                var displayNames = new List< Tuple<string, string> > ();
+                var displayNames = new List<Tuple<string, string>>();
                 var displayNameTasks = new List<Task<Tuple<string, string>>>();
 
                 var allProjects = await _solutionManager.Value.GetNuGetProjectsAsync();
 
-                var tasks = allProjects.Select(async e => { var safeName = await _solutionManager.Value.GetNuGetProjectSafeNameAsync(e);
-                    var displayName = await GetDisplayNameAsync(e);
-                    return new Tuple<string, string>(safeName, displayName);
-                });
+                var tasks = allProjects.Select(
+                    async e =>
+                    {
+                        var safeName = await _solutionManager.Value.GetNuGetProjectSafeNameAsync(e);
+                        var displayName = await GetDisplayNameAsync(e);
+                        return new Tuple<string, string>(safeName, displayName);
+                    });
 
                 foreach (var task in tasks)
                 {
@@ -761,9 +764,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     displayNames.Add(displayName);
                 }
 
-                _projectSafeNames = displayNames.Select(e => e.Item1).ToArray();
+                var sortedDisplayNames = displayNames.OrderBy(i => i.Item1, StringComparer.CurrentCultureIgnoreCase).ToArray();
 
-                Array.Sort(displayNames.Select(e => e.Item2).ToArray(), _projectSafeNames, StringComparer.CurrentCultureIgnoreCase);
+                _projectSafeNames = sortedDisplayNames.Select(e => e.Item1).ToArray();
                 return _projectSafeNames;
             });
         }
