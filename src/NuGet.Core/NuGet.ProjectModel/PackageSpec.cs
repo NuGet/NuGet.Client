@@ -221,7 +221,7 @@ namespace NuGet.ProjectModel
             spec.PackInclude = new Dictionary<string, string>(PackInclude);
 
             spec.PackOptions = PackOptions.Clone();
-            spec.TargetFrameworks = TargetFrameworks.Select(item => (TargetFrameworkInformation)item.Clone()).ToList();
+            spec.TargetFrameworks = TargetFrameworks?.Select(item => (TargetFrameworkInformation)item.Clone()).ToList();
             spec.RuntimeGraph = RuntimeGraph?.Clone(); // TODO - Double check this
             spec.RestoreSettings = RestoreSettings.Clone();
             spec.RestoreMetadata = RestoreMetadata.Clone(); // The monster that'd be hardest to deal with
