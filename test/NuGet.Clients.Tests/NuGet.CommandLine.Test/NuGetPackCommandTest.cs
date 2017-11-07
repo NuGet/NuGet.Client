@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -2085,7 +2085,7 @@ public class B
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void PackCommand_OutputResolvedNuSpecFileAttemptToOverwriteOriginal()
         {
             using (var workingDirectory = TestDirectory.Create())
@@ -2139,7 +2139,7 @@ public class B
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void PackCommand_InstallPackageToOutputPath()
         {
             using (var workingDirectory = TestDirectory.Create())
@@ -2244,7 +2244,7 @@ public class B
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void PackCommand_InstallPackageToOutputPathWithResponseFile()
         {
             using (var workingDirectory = TestDirectory.Create())
