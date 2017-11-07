@@ -383,7 +383,7 @@ namespace NuGet.PackageManagement
             {
                 new PackageSource("https://www.myget.org/F/aspnetvnext/api/v2/"),
                 TestSourceRepositoryUtility.V3PackageSource,
-                new PackageSource("http://blah.com"),
+                new PackageSource("http://unit.test"),
             });
 
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
@@ -413,7 +413,7 @@ namespace NuGet.PackageManagement
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
             {
                 new PackageSource("https://www.myget.org/F/aspnetvnext/api/v2/"),
-                new PackageSource("http://blah.com"),
+                new PackageSource("http://unit.test"),
             });
 
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
@@ -440,7 +440,7 @@ namespace NuGet.PackageManagement
             {
                 TestSourceRepositoryUtility.V3PackageSource,
                 TestSourceRepositoryUtility.V3PackageSource,
-                new PackageSource("http://blah.com"),
+                new PackageSource("http://unit.test"),
                 TestSourceRepositoryUtility.V2PackageSource,
                 TestSourceRepositoryUtility.V2PackageSource,
             });
@@ -462,6 +462,41 @@ namespace NuGet.PackageManagement
 
                 // Assert
                 Assert.True(targetPackageStream.CanSeek);
+            }
+        }
+
+        [Fact]
+        public async Task GetDownloadResourceResultAsync_MultipleSources_IncludesTaskStatusInException()
+        {
+            using (var test = new PackageDownloaderTest())
+            {
+                var resourceProvider = new Mock<INuGetResourceProvider>();
+                var resource = new Mock<DownloadResource>();
+
+                resourceProvider.SetupGet(x => x.Name)
+                    .Returns(nameof(DownloadResource) + "Provider");
+                resourceProvider.SetupGet(x => x.ResourceType)
+                    .Returns(typeof(DownloadResource));
+                resourceProvider.Setup(x => x.TryCreate(
+                        It.IsNotNull<SourceRepository>(),
+                        It.IsAny<CancellationToken>()))
+                    .Throws(new OperationCanceledException());
+
+                var sourceRepositories = new[]
+                {
+                    new SourceRepository(test.SourceRepository.PackageSource, new[] { resourceProvider.Object })
+                };
+
+                var exception = await Assert.ThrowsAsync<FatalProtocolException>(
+                    () => PackageDownloader.GetDownloadResourceResultAsync(
+                        sourceRepositories,
+                        test.PackageIdentity,
+                        test.Context,
+                        globalPackagesFolder: "",
+                        logger: NullLogger.Instance,
+                        token: CancellationToken.None));
+
+                Assert.Contains(": Canceled", exception.Message);
             }
         }
 
@@ -570,7 +605,7 @@ namespace NuGet.PackageManagement
                 Context = new PackageDownloadContext(_sourceCacheContext);
                 PackageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
                 SourceRepository = new SourceRepository(
-                    new PackageSource("https://unit/test"),
+                    new PackageSource("https://unit.test"),
                     Enumerable.Empty<INuGetResourceProvider>());
             }
 
