@@ -30,7 +30,7 @@ namespace NuGet.Packaging.Signing
         private const string _signingCertificateV2Oid = "1.2.840.113549.1.9.16.2.47";
         private const string _timeStampingEkuOid = "1.3.6.1.5.5.7.3.8";
         private const string _baselineTimestampOid = "0.4.0.2023.1.1";
-
+        private static readonly Oid _tstOid = new Oid("1.2.840.113549.1.9.16.2.14", "id-aa-timeStampToken");
 
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
         {
@@ -116,9 +116,16 @@ namespace NuGet.Packaging.Signing
                     throw new InvalidOperationException("Author's certificate was not valid when it was timestamped.");
                 }
 
-                //TODO DER encode the TSTInfo
+                var asnData = new AsnEncodedData(new Oid(_tstOid), timestampToken.TokenInfo.RawData);
+
+                var asnDataCollection = new AsnEncodedDataCollection(asnData);
+
+                var timestampAttribute = new CryptographicAttributeObject(
+                    asnData.Oid,
+                    asnDataCollection);
+
                 //TODO check SignerInfoCollection[0]
-                request.Signature.SignerInfoCollection[0].UnsignedAttributes.Add(new AsnEncodedData("1.2.840.113549.1.9.16.2.14", timestampToken.TokenInfo.RawData));
+                request.Signature.SignerInfoCollection[0].UnsignedAttributes.Add(timestampAttribute);
 
                 // Returns the signature with added info
                 return Task.FromResult(request.Signature);
