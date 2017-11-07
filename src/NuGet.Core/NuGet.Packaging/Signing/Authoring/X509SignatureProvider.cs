@@ -50,7 +50,7 @@ namespace NuGet.Packaging.Signing
 
             var signature = CreateSignature(request.Certificate, signatureManifest);
 
-            var timestampSignature = CreateTimestampSignature(request, logger, signature, token);
+            TimestampSignature(request, logger, signature, token);
 
             return Task.FromResult(signature);
         }
@@ -76,7 +76,7 @@ namespace NuGet.Packaging.Signing
             return Signature.Load(cms);
         }
 
-        private Task<Signature> CreateTimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
+        private Task TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
         {
             var timestampRequest = new TimestampRequest
             {
@@ -86,8 +86,7 @@ namespace NuGet.Packaging.Signing
                 TimestampHashAlgorithm = request.TimestampHashAlgorithm
             };
 
-            var timestampSignature = _timestampProvider.CreateSignatureAsync(timestampRequest, logger, token);
-            return timestampSignature;
+            return _timestampProvider.TimestampSignatureAsync(timestampRequest, logger, token);
         }
 #else
         private Signature CreateSignature(X509Certificate2 cert, SignatureManifest signatureManifest)

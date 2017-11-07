@@ -30,7 +30,7 @@ namespace NuGet.Packaging.Signing
         private const string _signingCertificateV2Oid = "1.2.840.113549.1.9.16.2.47";
         private const string _timeStampingEkuOid = "1.3.6.1.5.5.7.3.8";
         private const string _baselineTimestampOid = "0.4.0.2023.1.1";
-        private static readonly Oid _tstOid = new Oid("1.2.840.113549.1.9.16.2.14", "id-aa-timeStampToken");
+        private static readonly Oid _tstOid = new Oid("1.2.840.113549.1.9.16.2.14");
 
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
         {
@@ -48,9 +48,9 @@ namespace NuGet.Packaging.Signing
 
 #if IS_DESKTOP
         /// <summary>
-        /// Timestamps a Signature.
+        /// Timestamps a Signature present in the TimestampRequest.
         /// </summary>
-        public Task<Signature> CreateSignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token)
+        public Task TimestampSignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token)
         {
             // Get the signatureValue from the signerInfo object
             using (var nativeCms = NativeCms.Decode(request.Signature.GetBytes(), detached: false))
@@ -77,7 +77,7 @@ namespace NuGet.Packaging.Signing
                 // Verify the response
                 var tokenCms = timestampToken.AsSignedCms();
 
-                // TODO Check if there can be more than 1?
+                // Taking the first timestamp signer is acceptable
                 var tokenSigner = tokenCms.SignerInfos[0];
 
                 ValidateTimestampResponse(request, signatureValueHashByteArray, nonce, timestampToken, tokenSigner);
@@ -86,49 +86,57 @@ namespace NuGet.Packaging.Signing
 
                 ValidateTimestampCertificate(signerCert, tokenCms);
 
-                var tstInfoGenTime = timestampToken.TokenInfo.Timestamp;
+                ValidateSignerCertificateAgainstTimestamp(request, timestampToken);
 
-                var tstInfoAccuracy = timestampToken.TokenInfo.AccuracyInMicroseconds;
-                long tstInfoAccuracyInTicks;
+                // updates the signature with the timestamp
+                InsertTimestampIntoSignature(request, timestampToken);
 
-                if (!tstInfoAccuracy.HasValue)
+                return Task.FromResult(0);
+            }
+        }
+
+        private static void InsertTimestampIntoSignature(TimestampRequest request, Rfc3161TimestampToken timestampToken)
+        {
+            var asnData = new AsnEncodedData(_tstOid, timestampToken.TokenInfo.RawData);
+
+            var asnDataCollection = new AsnEncodedDataCollection(asnData);
+
+            var timestampAttribute = new CryptographicAttributeObject(
+                asnData.Oid,
+                asnDataCollection);
+
+            request.Signature.SignerInfoCollection[request.SignerInfoIndex].UnsignedAttributes.Add(timestampAttribute);
+        }
+
+        private static void ValidateSignerCertificateAgainstTimestamp(TimestampRequest request, Rfc3161TimestampToken timestampToken)
+        {
+            var tstInfoGenTime = timestampToken.TokenInfo.Timestamp;
+            var tstInfoAccuracy = timestampToken.TokenInfo.AccuracyInMicroseconds;
+            long tstInfoAccuracyInTicks;
+
+            if (!tstInfoAccuracy.HasValue)
+            {
+                if (string.Equals(timestampToken.TokenInfo.PolicyId, _baselineTimestampOid))
                 {
-                    if (string.Equals(timestampToken.TokenInfo.PolicyId, _baselineTimestampOid))
-                    {
-                        tstInfoAccuracyInTicks = TimeSpan.TicksPerSecond;
-                    }
-                    else
-                    {
-                        tstInfoAccuracyInTicks = 0;
-                    }
+                    tstInfoAccuracyInTicks = TimeSpan.TicksPerSecond;
                 }
                 else
                 {
-                    tstInfoAccuracyInTicks = tstInfoAccuracy.Value * _ticksPerMicroSecond;
+                    tstInfoAccuracyInTicks = 0;
                 }
+            }
+            else
+            {
+                tstInfoAccuracyInTicks = tstInfoAccuracy.Value * _ticksPerMicroSecond;
+            }
 
-                var timestampUpperGenTime = tstInfoGenTime.AddTicks(tstInfoAccuracyInTicks);
-                var timestampLowerGenTime = tstInfoGenTime.Subtract(TimeSpan.FromTicks(tstInfoAccuracyInTicks));
+            var timestampUpperGenTime = tstInfoGenTime.AddTicks(tstInfoAccuracyInTicks);
+            var timestampLowerGenTime = tstInfoGenTime.Subtract(TimeSpan.FromTicks(tstInfoAccuracyInTicks));
 
-                if (request.Certificate.NotAfter < timestampUpperGenTime ||
-                    request.Certificate.NotBefore > timestampLowerGenTime)
-                {
-                    throw new InvalidOperationException("Author's certificate was not valid when it was timestamped.");
-                }
-
-                var asnData = new AsnEncodedData(new Oid(_tstOid), timestampToken.TokenInfo.RawData);
-
-                var asnDataCollection = new AsnEncodedDataCollection(asnData);
-
-                var timestampAttribute = new CryptographicAttributeObject(
-                    asnData.Oid,
-                    asnDataCollection);
-
-                //TODO check SignerInfoCollection[0]
-                request.Signature.SignerInfoCollection[0].UnsignedAttributes.Add(timestampAttribute);
-
-                // Returns the signature with added info
-                return Task.FromResult(request.Signature);
+            if (request.Certificate.NotAfter < timestampUpperGenTime ||
+                request.Certificate.NotBefore > timestampLowerGenTime)
+            {
+                throw new InvalidOperationException("Author's certificate was not valid when it was timestamped.");
             }
         }
 
@@ -235,7 +243,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamp a signature.
         /// </summary>
-        public Task<Signature> CreateSignatureAsync(TimestampRequest timestampRequest, ILogger logger, CancellationToken token)
+        public Task<Signature> TimestampSignatureAsync(TimestampRequest timestampRequest, ILogger logger, CancellationToken token)
         {
             throw new NotImplementedException();
         }
