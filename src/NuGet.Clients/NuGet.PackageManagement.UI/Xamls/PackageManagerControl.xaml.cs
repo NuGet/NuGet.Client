@@ -41,8 +41,6 @@ namespace NuGet.PackageManagement.UI
         // list in response to PackageSourcesChanged event.
         private bool _dontStartNewSearch;
 
-        private PackagesErrorBar _errorBar;
-
         private PackageRestoreBar _restoreBar;
 
         private RestartRequestBar _restartBar;
@@ -126,8 +124,6 @@ namespace NuGet.PackageManagement.UI
 
             AddRestartRequestBar(vsShell);
 
-            AddPackagesErrorBar();
-
             _packageDetail.Control = this;
             _packageDetail.Visibility = Visibility.Hidden;
 
@@ -177,15 +173,6 @@ namespace NuGet.PackageManagement.UI
 
         private void PackagesErrorBar_RefreshUI(object sender, EventArgs e)
         {
-            Refresh();
-        }
-
-        private void PackagesErrorBar_InitializationCompleted(object sender, EventArgs e)
-        {
-            _detailModel.CreateProjectLists();
-
-            Model.Context.Projects = _detailModel.NuGetProjects;
-
             Refresh();
         }
 
@@ -444,29 +431,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             return settings;
-        }
-
-        private void AddPackagesErrorBar()
-        {
-            _errorBar = new PackagesErrorBar(Model.Context.SolutionManager);
-            DockPanel.SetDock(_errorBar, Dock.Top);
-
-            // attach to RefreshUI event of PackagesErrorBar
-            _errorBar.RefreshUI += PackagesErrorBar_RefreshUI;
-
-            _errorBar.InitializationCompleted += PackagesErrorBar_InitializationCompleted;
-
-            _root.Children.Insert(0, _errorBar);
-        }
-
-        private void RemovePackagesConfigErrorBar()
-        {
-            if (_errorBar != null)
-            {
-                _errorBar.RefreshUI -= PackagesErrorBar_RefreshUI;
-                _errorBar.InitializationCompleted -= PackagesErrorBar_InitializationCompleted;
-                _errorBar.CleanUp();
-            }
         }
 
         private void AddRestoreBar()
@@ -996,7 +960,6 @@ namespace NuGet.PackageManagement.UI
             _windowSearchHost.TerminateSearch();
             RemoveRestoreBar();
             RemoveRestartBar();
-            RemovePackagesConfigErrorBar();
 
             var solutionManager = Model.Context.SolutionManager;
             solutionManager.NuGetProjectAdded -= SolutionManager_ProjectsChanged;

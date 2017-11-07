@@ -615,15 +615,15 @@ namespace NuGetVSExtension
                 throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
 
-            var projects = await SolutionManager.Value.GetNuGetProjectsAsync();
-            if (!projects.Any())
+            var projects = (await SolutionManager.Value.GetNuGetProjectsAsync()).ToArray();
+            if (projects.Length == 0)
             {
                 MessageHelper.ShowWarningMessage(Resources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
                 return null;
             }
 
             // pass empty array of NuGetProject
-            var uiController = UIFactory.Value.Create(new NuGetProject[0]);
+            var uiController = UIFactory.Value.Create(projects);
 
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
 
