@@ -230,57 +230,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetProject.GetUniqueNameOrName(nuGetProject);
         }
 
-        public async Task<IEnumerable<string>> GetAllNuGetProjectSafeNameAsync()
-        {
-            return await Task.WhenAll((await GetNuGetProjectsAsync()).Select(GetNuGetProjectSafeNameAsync));
-        }
-
-        public IEnumerable<Task<Tuple<string,string>>> GetAllNuGetProjectSafeAndDisplayNameAsync(IEnumerable<NuGetProject> nuGetProjects)
-        {
-            return nuGetProjects.Select(GetNuGetProjectSafeAndDisplayNameAsync);
-        }
-
-        private async Task<Tuple<string, string>> GetNuGetProjectSafeAndDisplayNameAsync(NuGetProject nuGetProject)
-        {
-            if (nuGetProject == null)
-            {
-                throw new ArgumentNullException("nuGetProject");
-            }
-
-            await EnsureInitializeAsync();
-
-            // Try searching for simple names first
-            var safeName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-            if ((await GetNuGetProjectAsync(safeName)) != nuGetProject)
-            {
-                safeName = NuGetProject.GetUniqueNameOrName(nuGetProject);
-            }
-
-            var displayNameTask = await GetDisplayNameAsync(nuGetProject);
-
-            return new Tuple<string,string>(safeName, displayNameTask);
-        }
-
-
-        private async Task<string> GetDisplayNameAsync(NuGetProject nuGetProject)
-        {
-            var vsProjectAdapter = await GetVsProjectAdapterAsync(nuGetProject);
-
-            var name = vsProjectAdapter.CustomUniqueName;
-            if (await IsWebSiteAsync(vsProjectAdapter))
-            {
-                name = PathHelper.SmartTruncate(name, 40);
-            }
-            return name;
-        }
-
-        private async Task<bool> IsWebSiteAsync(IVsProjectAdapter project)
-        {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            return (await project.GetProjectTypeGuidsAsync()).Contains(VsProjectTypes.WebSiteProjectTypeGuid);
-        }
-
         public async Task<IEnumerable<NuGetProject>> GetNuGetProjectsAsync()
         {
             InitializationTask = EnsureInitializeAsync();
