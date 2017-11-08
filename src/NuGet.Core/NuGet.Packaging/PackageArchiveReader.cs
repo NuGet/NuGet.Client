@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -95,8 +95,21 @@ namespace NuGet.Packaging
             {
                 throw new ArgumentNullException(nameof(filePath));
             }
-
-            _zipArchive = new ZipArchive(File.OpenRead(filePath), ZipArchiveMode.Read);
+            
+            // Since this constructor owns the stream, the responsibility falls here to dispose the stream of an
+            // invalid .zip archive. If this constructor succeeds, the disposal of the stream is handled by the
+            // disposal of this instance.
+            Stream stream = null;
+            try
+            {
+                stream = File.OpenRead(filePath);
+                _zipArchive = new ZipArchive(stream, ZipArchiveMode.Read);
+            }
+            catch
+            {
+                stream?.Dispose();
+                throw;
+            }
         }
 
         public override IEnumerable<string> GetFiles()
