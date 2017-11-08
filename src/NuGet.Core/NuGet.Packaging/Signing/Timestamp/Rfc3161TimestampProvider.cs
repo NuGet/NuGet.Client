@@ -31,6 +31,7 @@ namespace NuGet.Packaging.Signing
         private const string _timeStampingEkuOid = "1.3.6.1.5.5.7.3.8";
         private const string _baselineTimestampOid = "0.4.0.2023.1.1";
         private static readonly Oid _tstOid = new Oid("1.2.840.113549.1.9.16.2.14");
+        private static readonly Oid _tstOid2 = new Oid("1.2.840.113549.1.9.16.2.17");
 
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
         {
@@ -52,52 +53,60 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public Task TimestampSignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token)
         {
+            byte[] signatureValueHashByteArray;
+
             // Get the signatureValue from the signerInfo object
             using (var nativeCms = NativeCms.Decode(request.Signature.GetBytes(), detached: false))
             {
-                var signatureValueHashByteArray = GetSignatureValueHash(
+                signatureValueHashByteArray = GetSignatureValueHash(
                     request.TimestampHashAlgorithm,
                     nativeCms);
-
-                // Allows us to track the request.
-                var nonce = GenerateNonce();
-
-                var rfc3161TimestampRequest = new Rfc3161TimestampRequest(
-                signatureValueHashByteArray,
-                request.TimestampHashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(),
-                nonce: nonce,
-                requestSignerCertificates: true);
-
-                // Request a timestamp
-                // The response status need not be checked here as lower level api will throw if the response is invalid
-                var timestampToken = rfc3161TimestampRequest.SubmitRequest(
-                    _timestamperUrl,
-                    TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
-
-                // Verify the response
-                var tokenCms = timestampToken.AsSignedCms();
-
-                // Taking the first timestamp signer is acceptable
-                var tokenSigner = tokenCms.SignerInfos[0];
-
-                ValidateTimestampResponse(request, signatureValueHashByteArray, nonce, timestampToken, tokenSigner);
-
-                var signerCert = GetSignerCertFromTimestampResponse(tokenSigner);
-
-                ValidateTimestampCertificate(signerCert, tokenCms);
-
-                ValidateSignerCertificateAgainstTimestamp(request, timestampToken);
-
-                // updates the signature with the timestamp
-                InsertTimestampIntoSignature(request, timestampToken);
-
-                return Task.FromResult(0);
             }
+
+            if (signatureValueHashByteArray.Count() == 0)
+            {
+                throw new InvalidOperationException("Signature hash value is empty");
+            }
+
+            // Allows us to track the request.
+            var nonce = GenerateNonce();
+
+            var rfc3161TimestampRequest = new Rfc3161TimestampRequest(
+            signatureValueHashByteArray,
+            request.TimestampHashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(),
+            nonce: nonce,
+            requestSignerCertificates: true);
+
+            // Request a timestamp
+            // The response status need not be checked here as lower level api will throw if the response is invalid
+            var timestampToken = rfc3161TimestampRequest.SubmitRequest(
+                _timestamperUrl,
+                TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
+
+            // Verify the response
+            var tokenCms = timestampToken.AsSignedCms();
+
+            // Taking the first timestamp signer is acceptable
+            var tokenSigner = tokenCms.SignerInfos[0];
+
+            ValidateTimestampResponse(request, signatureValueHashByteArray, nonce, timestampToken, tokenSigner);
+
+            var signerCert = tokenSigner.Certificate;
+
+            ValidateTimestampCertificate(signerCert, tokenCms);
+
+            ValidateSignerCertificateAgainstTimestamp(request, timestampToken);
+
+            // updates the signature with the timestamp
+            var index = InsertTimestampIntoSignature(request, timestampToken);
+
+            return Task.FromResult(index);
+            
         }
 
-        private static void InsertTimestampIntoSignature(TimestampRequest request, Rfc3161TimestampToken timestampToken)
+        private static int InsertTimestampIntoSignature(TimestampRequest request, Rfc3161TimestampToken timestampToken)
         {
-            var asnData = new AsnEncodedData(_tstOid, timestampToken.TokenInfo.RawData);
+            var asnData = new AsnEncodedData(_tstOid, timestampToken.GetEncodedValue());
 
             var asnDataCollection = new AsnEncodedDataCollection(asnData);
 
@@ -105,7 +114,11 @@ namespace NuGet.Packaging.Signing
                 asnData.Oid,
                 asnDataCollection);
 
-            request.Signature.SignerInfoCollection[request.SignerInfoIndex].UnsignedAttributes.Add(timestampAttribute);
+            var signingTime = new Pkcs9SigningTime();
+
+            var res1 = request.Signature.SignerInfo.UnsignedAttributes.Add(timestampAttribute);
+
+            return 0;
         }
 
         private static void ValidateSignerCertificateAgainstTimestamp(TimestampRequest request, Rfc3161TimestampToken timestampToken)
@@ -172,26 +185,26 @@ namespace NuGet.Packaging.Signing
             //}
         }
 
-        private static X509Certificate2 GetSignerCertFromTimestampResponse(SignerInfo tokenSigner)
-        {
-            CryptographicAttributeObject signingCertificateV2 = null;
+        //private static X509Certificate2 GetSignerCertFromTimestampResponse(SignerInfo tokenSigner)
+        //{
+        //    CryptographicAttributeObject signingCertificateV2 = null;
 
-            foreach (var attr in tokenSigner.SignedAttributes)
-            {
-                if (string.Equals(attr.Oid.Value, _signingCertificateV2Oid))
-                {
-                    signingCertificateV2 = attr;
-                    break;
-                }
-            }
+        //    foreach (var attr in tokenSigner.SignedAttributes)
+        //    {
+        //        if (string.Equals(attr.Oid.Value, _signingCertificateV2Oid))
+        //        {
+        //            signingCertificateV2 = attr;
+        //            break;
+        //        }
+        //    }
 
-            if (signingCertificateV2 == null)
-            {
-                throw new InvalidOperationException("Rfc3161TimestampToken does not contain a signer certificate.");
-            }
+        //    if (signingCertificateV2 == null)
+        //    {
+        //        throw new InvalidOperationException("Rfc3161TimestampToken does not contain a signer certificate.");
+        //    }
 
-            return tokenSigner.Certificate;
-        }
+        //    return tokenSigner.Certificate;
+        //}
 
         private static void ValidateTimestampResponse(TimestampRequest request,
             byte[] signatureValueHashByteArray,
@@ -243,7 +256,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamp a signature.
         /// </summary>
-        public Task<Signature> TimestampSignatureAsync(TimestampRequest timestampRequest, ILogger logger, CancellationToken token)
+        public Task TimestampSignatureAsync(TimestampRequest timestampRequest, ILogger logger, CancellationToken token)
         {
             throw new NotImplementedException();
         }

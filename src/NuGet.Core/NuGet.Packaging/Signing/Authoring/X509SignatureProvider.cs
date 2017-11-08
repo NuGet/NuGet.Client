@@ -68,12 +68,18 @@ namespace NuGet.Packaging.Signing
                     signingTime.Oid,
                     new AsnEncodedDataCollection(signingTime)));
 
+            cmsSigner.UnsignedAttributes.Add(
+                new CryptographicAttributeObject(
+                    signingTime.Oid,
+                    new AsnEncodedDataCollection(signingTime)));
+
             cmsSigner.IncludeOption = X509IncludeOption.WholeChain;
 
             var cms = new SignedCms(contentInfo);
             cms.ComputeSignature(cmsSigner);
 
-            return Signature.Load(cms);
+            // 0 - Since we just created this signature and it should contain only 1 signerInfo
+            return Signature.Load(cms, signerInfoIndex: 0);
         }
 
         private Task TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
@@ -94,7 +100,7 @@ namespace NuGet.Packaging.Signing
             throw new NotSupportedException();
         }
 
-        private Task<Signature> CreateTimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
+        private Task TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
         {
             throw new NotSupportedException();
         }

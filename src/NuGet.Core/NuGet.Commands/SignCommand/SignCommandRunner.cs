@@ -20,6 +20,7 @@ namespace NuGet.Commands
     {
         public int ExecuteCommand(SignArgs signArgs)
         {
+            Debugger.Launch();
 
             var success = true;
 
