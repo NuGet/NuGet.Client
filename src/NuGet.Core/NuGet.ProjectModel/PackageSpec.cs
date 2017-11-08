@@ -231,6 +231,7 @@ namespace NuGet.ProjectModel
                 {
                     clone.Add(kvp.Key, new List<string>(kvp.Value));
                 }
+                return clone;
             }
             return null;
         }
