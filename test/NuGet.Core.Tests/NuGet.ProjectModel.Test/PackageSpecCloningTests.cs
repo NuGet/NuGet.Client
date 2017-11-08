@@ -195,22 +195,6 @@ namespace NuGet.ProjectModel.Test
             //Assert
             Assert.Equal(PackageSpec, clonedPackageSpec);
             Assert.False(object.ReferenceEquals(PackageSpec, clonedPackageSpec));
-
-            // Act
-            var oldClone = OldClone(PackageSpec);
-        }
-
-        private PackageSpec OldClone(PackageSpec packageSpec)
-        {
-
-            var writer = new JsonObjectWriter();
-            PackageSpecWriter.Write(packageSpec, writer);
-            var json = writer.GetJObject();
-
-            var spec = JsonPackageSpecReader.GetPackageSpec(json);
-            spec.Name = packageSpec.Name;
-            spec.FilePath = packageSpec.FilePath;
-            return spec;
         }
 
         private ProjectRestoreMetadata CreateProjectRestoreMetadata()
