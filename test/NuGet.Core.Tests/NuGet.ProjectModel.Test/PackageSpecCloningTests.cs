@@ -114,9 +114,13 @@ namespace NuGet.ProjectModel.Test
         public void PackageSpecCloneTest()
         {
             // Set up
-            var PackageSpec = new PackageSpec();
+            var originalTargetFrameworkInformation = CreateTargetFrameworkInformation();
+            var PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { originalTargetFrameworkInformation });
             PackageSpec.RestoreMetadata = CreateProjectRestoreMetadata();
-
+            PackageSpec.FilePath = "FilePath";
+            PackageSpec.Name = "Name";
+            PackageSpec.Title = "Title";
+            PackageSpec.Version = new Versioning.NuGetVersion("1.0.0");
             // Act
             var clonedPackageSpec = PackageSpec.Clone();
 
@@ -378,10 +382,8 @@ namespace NuGet.ProjectModel.Test
             Assert.False(object.ReferenceEquals(originalProjectRestoreSettings, clone));
         }
 
-        [Fact]
-        public void TargetFrameworkInformationCloneTest()
+        private TargetFrameworkInformation CreateTargetFrameworkInformation()
         {
-            // Set up
             var framework = NuGetFramework.Parse("net461");
             var dependency = new LibraryDependency();
             dependency.LibraryRange = new LibraryRange("Dependency", LibraryDependencyTarget.Package);
@@ -395,6 +397,14 @@ namespace NuGet.ProjectModel.Test
             originalTargetFrameworkInformation.Dependencies = new List<LibraryDependency>() { dependency };
             originalTargetFrameworkInformation.AssetTargetFallback = false;
             originalTargetFrameworkInformation.Imports = new List<NuGetFramework>() { imports };
+            return originalTargetFrameworkInformation;
+        }
+
+        [Fact]
+        public void TargetFrameworkInformationCloneTest()
+        {
+            // Set up
+            var originalTargetFrameworkInformation = CreateTargetFrameworkInformation();
 
             // Act
             var clone = originalTargetFrameworkInformation.Clone();
