@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using NuGet.Common;
@@ -12,13 +13,19 @@ namespace NuGet.ProjectModel.Test
 {
     public class PackageSpecCloningTests
     {
+        private BuildOptions CreateBuildOptions()
+        {
+            var outputName = "OutputName";
+            var originalBuildOptions = new BuildOptions();
+            originalBuildOptions.OutputName = outputName;
+            return originalBuildOptions;
+        }
+
         [Fact]
         public void BuildOptionsCloneTest()
         {
             //Set up
-            var outputName = "OutputName";
-            var originalBuildOptions = new BuildOptions();
-            originalBuildOptions.OutputName = outputName;
+            var originalBuildOptions = CreateBuildOptions();
 
             // Act
             var clonedBuildOptions = originalBuildOptions.Clone();
@@ -110,6 +117,33 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(1, cloneWithMappings.Mappings.Count);
         }
 
+        private LibraryDependency CreateLibraryDependency()
+        {
+            var dependency = new LibraryDependency();
+            dependency.LibraryRange = new LibraryRange(Guid.NewGuid().ToString(), LibraryDependencyTarget.Package);
+            dependency.Type = LibraryDependencyType.Default;
+            dependency.IncludeType = LibraryIncludeFlags.None;
+            dependency.SuppressParent = LibraryIncludeFlags.ContentFiles;
+            return dependency;
+        }
+
+        private IncludeExcludeFiles CreateIncludeExcludeFiles()
+        {
+            var files = new IncludeExcludeFiles();
+            files.Exclude = new List<string>() { "Exlclude0" };
+            files.Include = new List<string>() { "Include0" };
+            files.IncludeFiles = new List<string>() { "IncludeFiles0" };
+            files.ExcludeFiles = new List<string>() { "ExlcludeFiles0" };
+            return files;
+        }
+        private PackOptions CreatePackOptions()
+        {
+            var originalPackOptions = new PackOptions();
+            originalPackOptions.PackageType = new List<NuGet.Packaging.Core.PackageType>() { new Packaging.Core.PackageType("PackageA", new System.Version("1.0.0")) };
+            originalPackOptions.IncludeExcludeFiles = CreateIncludeExcludeFiles();
+            return originalPackOptions;
+        }
+
         [Fact]
         public void PackageSpecCloneTest()
         {
@@ -121,6 +155,33 @@ namespace NuGet.ProjectModel.Test
             PackageSpec.Name = "Name";
             PackageSpec.Title = "Title";
             PackageSpec.Version = new Versioning.NuGetVersion("1.0.0");
+            PackageSpec.HasVersionSnapshot = true;
+            PackageSpec.Description = "Description";
+            PackageSpec.Summary = "Summary";
+            PackageSpec.ReleaseNotes = "ReleaseNotes";
+            PackageSpec.Authors = new string[] { "Author1" };
+            PackageSpec.Owners = new string[] { "Owner1" };
+            PackageSpec.ProjectUrl = "ProjectUrl";
+            PackageSpec.IconUrl = "IconUrl";
+            PackageSpec.LicenseUrl = "LicenseUrl";
+            PackageSpec.Copyright = "Copyright";
+            PackageSpec.Language = "Language";
+            PackageSpec.RequireLicenseAcceptance = true;
+            PackageSpec.Tags = new string[] { "Tags" };
+            PackageSpec.BuildOptions = CreateBuildOptions();
+            PackageSpec.ContentFiles = new List<string>() { "contentFile1", "contentFile2" };
+            PackageSpec.Dependencies = new List<LibraryDependency>() { CreateLibraryDependency(), CreateLibraryDependency() };
+
+            PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() }); // Test this changing
+            PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
+
+            PackageSpec.PackInclude.Add(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+
+            PackageSpec.PackOptions = CreatePackOptions();
+
+            PackageSpec.RuntimeGraph = new RuntimeModel.RuntimeGraph(); // TODO - Add logic
+            PackageSpec.RestoreSettings = CreateProjectRestoreSettings();
+
             // Act
             var clonedPackageSpec = PackageSpec.Clone();
 
@@ -367,12 +428,18 @@ namespace NuGet.ProjectModel.Test
             Assert.False(object.ReferenceEquals(originalProjectRestoreReference, clone));
         }
 
+        private ProjectRestoreSettings CreateProjectRestoreSettings()
+        {
+            var prs =  new ProjectRestoreSettings();
+            prs.HideWarningsAndErrors = true;
+            return prs;
+        }
+
         [Fact]
         public void ProjectRestoreSettingsCloneTest()
         {
             // Set up
-            var originalProjectRestoreSettings = new ProjectRestoreSettings();
-            originalProjectRestoreSettings.HideWarningsAndErrors = false;
+            var originalProjectRestoreSettings = CreateProjectRestoreSettings();
 
             // Act
             var clone = originalProjectRestoreSettings.Clone();
