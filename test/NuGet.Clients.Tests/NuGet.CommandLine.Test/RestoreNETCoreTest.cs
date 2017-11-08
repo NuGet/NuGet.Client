@@ -20,51 +20,6 @@ namespace NuGet.CommandLine.Test
     public class RestoreNetCoreTest
     {
         [Fact]
-        public void RestoreNetCore_ModifyFilesInPackageVerifyRestoreUpdates()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                var projectA = SimpleTestProjectContext.CreateNETCore(
-                    "a",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse("net45"));
-
-                var pkgX = new SimpleTestPackageContext("x", "1.0.0");
-                pkgX.AddFile("lib/net45/x.dll");
-
-                // Add y to the project
-                projectA.AddPackageToAllFrameworks(pkgX);
-
-                solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
-
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, pkgX);
-
-                // Location where the package will be installed
-                var pathResolver = new VersionFolderPathResolver(pathContext.UserPackagesFolder);
-                var xPath = pathResolver.GetInstallPath("x", NuGetVersion.Parse("1.0.0"));
-
-                // First restore
-                var r = Util.RestoreSolution(pathContext);
-                r.Success.Should().BeTrue();
-
-                // Modify files in package
-                File.WriteAllText(Path.Combine(xPath, "lib", "net45", "test.txt"), "test");
-
-                // Second restore with force
-                r = Util.RestoreSolution(pathContext, 0, "-Force");
-
-                // Assert
-                r.Success.Should().BeTrue();
-                projectA.AssetsFile.GetLibrary("x", NuGetVersion.Parse("1.0.0")).Files.Should().Contain("lib/net45/test.txt");
-            }
-        }
-
-        [Fact]
         public void RestoreNetCore_AddExternalTargetVerifyTargetUsed()
         {
             // Arrange
