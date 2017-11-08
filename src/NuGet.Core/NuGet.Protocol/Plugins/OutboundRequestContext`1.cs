@@ -15,7 +15,6 @@ namespace NuGet.Protocol.Plugins
     /// <typeparam name="TResult">The response payload type.</typeparam>
     public sealed class OutboundRequestContext<TResult> : OutboundRequestContext
     {
-        private readonly CancellationToken _cancellationToken;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly IConnection _connection;
         private int _isCancellationRequested; // int for Interlocked.CompareExchange(...).  0 == false, 1 == true.
@@ -66,7 +65,7 @@ namespace NuGet.Protocol.Plugins
 
             _connection = connection;
             _request = request;
-            _taskCompletionSource = new TaskCompletionSource<TResult>();
+            _taskCompletionSource = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             _timeout = timeout;
             _isKeepAlive = isKeepAlive;
             RequestId = request.RequestId;
@@ -86,7 +85,7 @@ namespace NuGet.Protocol.Plugins
 
             // Capture the cancellation token now because if the cancellation token source
             // is disposed race conditions may cause an exception acccessing its Token property.
-            _cancellationToken = _cancellationTokenSource.Token;
+            CancellationToken = _cancellationTokenSource.Token;
         }
 
         /// <summary>

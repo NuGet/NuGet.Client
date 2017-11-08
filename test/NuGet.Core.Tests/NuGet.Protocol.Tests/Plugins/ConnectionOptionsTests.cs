@@ -1,7 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Moq;
+using NuGet.Common;
 using NuGet.Versioning;
 using Xunit;
 
@@ -169,6 +171,28 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public void CreateDefault_CanOverrideHandshakeTimeout()
+        {
+            var handshakeTimeout = new TimeSpan(hours: 1, minutes: 2, seconds: 3);
+
+            using (var test = ConnectionOptionsTest.Create(handshakeTimeout))
+            {
+                Assert.Equal(test.ConnectionOptions.HandshakeTimeout, handshakeTimeout);
+            }
+        }
+
+        [Fact]
+        public void CreateDefault_CanOverrideRequestTimeoutDefault()
+        {
+            var requestTimeout = new TimeSpan(hours: 1, minutes: 2, seconds: 3);
+
+            using (var test = ConnectionOptionsTest.Create(requestTimeout: requestTimeout))
+            {
+                Assert.Equal(test.ConnectionOptions.RequestTimeout, requestTimeout);
+            }
+        }
+
+        [Fact]
         public void CreateDefault_HasCorrectRequestTimeoutDefault()
         {
             var options = ConnectionOptions.CreateDefault();
@@ -221,6 +245,59 @@ namespace NuGet.Protocol.Plugins.Tests
             options.SetRequestTimeout(ProtocolConstants.MaxTimeout);
 
             Assert.Equal(ProtocolConstants.MaxTimeout, options.RequestTimeout);
+        }
+
+        private sealed class ConnectionOptionsTest : IDisposable
+        {
+            private bool _isDisposed;
+            private readonly Mock<IEnvironmentVariableReader> _mockReader;
+
+            internal ConnectionOptions ConnectionOptions { get; }
+
+            private ConnectionOptionsTest(ConnectionOptions options, Mock<IEnvironmentVariableReader> mockReader)
+            {
+                ConnectionOptions = options;
+                _mockReader = mockReader;
+            }
+
+            internal static ConnectionOptionsTest Create(TimeSpan? handshakeTimeout = null, TimeSpan? requestTimeout = null)
+            {
+                var reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+
+                reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(v => v == "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS")))
+                    .Returns($"{GetTimeoutInSeconds(handshakeTimeout)}");
+
+                reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(v => v == "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS")))
+                    .Returns($"{GetTimeoutInSeconds(requestTimeout)}");
+
+                var options = ConnectionOptions.CreateDefault(reader.Object);
+
+                return new ConnectionOptionsTest(options, reader);
+            }
+
+            private static string GetTimeoutInSeconds(TimeSpan? timespan)
+            {
+                if (!timespan.HasValue)
+                {
+                    return null;
+                }
+
+                return $"{(int)timespan.Value.TotalSeconds}";
+            }
+
+            public void Dispose()
+            {
+                if (!_isDisposed)
+                {
+                    GC.SuppressFinalize(this);
+
+                    _isDisposed = true;
+
+                    _mockReader.VerifyAll();
+                }
+            }
         }
     }
 }
