@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,6 +35,7 @@ namespace NuGet.VisualStudio
         private readonly IVsPackageInstallerServices _packageServices;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
         private readonly Lazy<INuGetProjectContext> _projectContext;
+        private bool _isCPSJTFLoaded;
 
         // Reason it's lazy<object> is because we don't want to load any CPS assemblies until
         // we're really going to use any of CPS api. Which is why we also don't use nameof or typeof apis.
@@ -56,26 +57,27 @@ namespace NuGet.VisualStudio
             _solutionManager = solutionManager;
             _packageServices = packageServices;
             _deleteOnRestartManager = deleteOnRestartManager;
+            _isCPSJTFLoaded = false;
 
             _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext());
 
-            PumpingJTF = null;
+            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
         }
 
         private void RunJTFWithCorrectContext(Project project, Func<Task> asyncTask)
         {
-            if (PumpingJTF == null)
+            if (!_isCPSJTFLoaded)
             {
-                var VsHierarchy = VsHierarchyItem.FromDteProject(project).VsHierarchy;
-
+                var VsHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
                 if (VsHierarchy != null &&
                     VsHierarchyUtility.IsCPSCapabilityComplaint(VsHierarchy))
                 {
                     // Lazy load the CPS enabled JoinableTaskFactory for the UI.
                     NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
-                }
 
-                PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
+                    PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
+                    _isCPSJTFLoaded = true;
+                }
             }
 
             PumpingJTF.Run(asyncTask);
