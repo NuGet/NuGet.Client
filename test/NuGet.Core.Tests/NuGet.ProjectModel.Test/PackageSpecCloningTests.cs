@@ -8,6 +8,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.RuntimeModel;
 using Xunit;
 namespace NuGet.ProjectModel.Test
 {
@@ -144,10 +145,8 @@ namespace NuGet.ProjectModel.Test
             return originalPackOptions;
         }
 
-        [Fact]
-        public void PackageSpecCloneTest()
+        private PackageSpec CreatePackageSpec()
         {
-            // Set up
             var originalTargetFrameworkInformation = CreateTargetFrameworkInformation();
             var PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { originalTargetFrameworkInformation });
             PackageSpec.RestoreMetadata = CreateProjectRestoreMetadata();
@@ -179,16 +178,38 @@ namespace NuGet.ProjectModel.Test
 
             PackageSpec.PackOptions = CreatePackOptions();
 
-            PackageSpec.RuntimeGraph = new RuntimeModel.RuntimeGraph(); // TODO - Add logic
+            PackageSpec.RuntimeGraph = new RuntimeModel.RuntimeGraph();
             PackageSpec.RestoreSettings = CreateProjectRestoreSettings();
+            return PackageSpec;
+        }
+        [Fact]
+        public void PackageSpecCloneTest()
+        {
+            // Set up
+            var PackageSpec = CreatePackageSpec();
 
             // Act
             var clonedPackageSpec = PackageSpec.Clone();
 
-            // TODO NK - Add more tests
             //Assert
             Assert.Equal(PackageSpec, clonedPackageSpec);
             Assert.False(object.ReferenceEquals(PackageSpec, clonedPackageSpec));
+
+            // Act
+            var oldClone = OldClone(PackageSpec);
+        }
+
+        private PackageSpec OldClone(PackageSpec packageSpec)
+        {
+
+            var writer = new JsonObjectWriter();
+            PackageSpecWriter.Write(packageSpec, writer);
+            var json = writer.GetJObject();
+
+            var spec = JsonPackageSpecReader.GetPackageSpec(json);
+            spec.Name = packageSpec.Name;
+            spec.FilePath = packageSpec.FilePath;
+            return spec;
         }
 
         private ProjectRestoreMetadata CreateProjectRestoreMetadata()
@@ -517,7 +538,6 @@ namespace NuGet.ProjectModel.Test
             // Assert
             Assert.Equal(originalWarningProperties, clone);
             Assert.False(object.ReferenceEquals(originalWarningProperties, clone));
-            //Assert.True(EqualityUtility.SetEqualsWithNullCheck(noWarn, clone.NoWarn)); TODO get the equality utility here
             Assert.False(object.ReferenceEquals(noWarn, clone.NoWarn));
 
             // Act again

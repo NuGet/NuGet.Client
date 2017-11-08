@@ -202,35 +202,24 @@ namespace NuGet.ProjectModel
             spec.Authors = (string[]) Authors?.Clone();
             spec.Owners = (string[]) Owners?.Clone();
             spec.ProjectUrl = ProjectUrl;
-
             spec.IconUrl = IconUrl;
             spec.LicenseUrl = LicenseUrl;
             spec.RequireLicenseAcceptance = RequireLicenseAcceptance;
             spec.Language = Language;
-
             spec.Copyright = Copyright;
             spec.Version = Version; 
-
-
             spec.BuildOptions = BuildOptions?.Clone();
-            spec.Tags = (string[])Tags.Clone();
-            
+            spec.Tags = (string[])Tags.Clone();    
             spec.ContentFiles = new List<string>(ContentFiles);
             spec.Dependencies = Dependencies.Select(item => (LibraryDependency)item.Clone()).ToList();
             spec.Scripts = new Dictionary<string, IEnumerable<string>>(Scripts); ;  // This actually needs cloned;
             spec.PackInclude = new Dictionary<string, string>(PackInclude);
-
-            spec.PackOptions = PackOptions.Clone();
+            spec.PackOptions = PackOptions?.Clone();
             spec.TargetFrameworks = TargetFrameworks != null ? TargetFrameworks.Select(item => (TargetFrameworkInformation)item.Clone()).ToList() : null;
             spec.RuntimeGraph = RuntimeGraph?.Clone(); // TODO - Double check this
-            spec.RestoreSettings = RestoreSettings.Clone();
-            spec.RestoreMetadata = RestoreMetadata.Clone(); // The monster that'd be hardest to deal with
+            spec.RestoreSettings = RestoreSettings?.Clone();
+            spec.RestoreMetadata = RestoreMetadata?.Clone(); // The monster that'd be hardest to deal with
             return spec;
-        }
-
-        public PackageSpec WithSettings(ISettings settings)
-        {
-            return null;
         }
     }
 }
