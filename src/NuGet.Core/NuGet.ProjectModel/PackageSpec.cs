@@ -209,17 +209,31 @@ namespace NuGet.ProjectModel
             spec.Copyright = Copyright;
             spec.Version = Version; 
             spec.BuildOptions = BuildOptions?.Clone();
-            spec.Tags = (string[])Tags.Clone();    
-            spec.ContentFiles = new List<string>(ContentFiles);
-            spec.Dependencies = Dependencies.Select(item => (LibraryDependency)item.Clone()).ToList();
-            spec.Scripts = new Dictionary<string, IEnumerable<string>>(Scripts); ;  // This actually needs cloned;
-            spec.PackInclude = new Dictionary<string, string>(PackInclude);
+            spec.Tags = (string[]) Tags?.Clone();    
+            spec.ContentFiles = ContentFiles != null ? new List<string>(ContentFiles) : null;
+            spec.Dependencies = Dependencies?.Select(item => item.Clone()).ToList();
+            spec.Scripts = CloneScripts(Scripts);
+            spec.PackInclude = PackInclude != null ? new Dictionary<string, string>(PackInclude) : null;
             spec.PackOptions = PackOptions?.Clone();
-            spec.TargetFrameworks = TargetFrameworks != null ? TargetFrameworks.Select(item => (TargetFrameworkInformation)item.Clone()).ToList() : null;
-            spec.RuntimeGraph = RuntimeGraph?.Clone(); // TODO - Double check this
+            spec.TargetFrameworks = TargetFrameworks?.Select(item => item.Clone()).ToList();
+            spec.RuntimeGraph = RuntimeGraph?.Clone();
             spec.RestoreSettings = RestoreSettings?.Clone();
-            spec.RestoreMetadata = RestoreMetadata?.Clone(); // The monster that'd be hardest to deal with
+            spec.RestoreMetadata = RestoreMetadata?.Clone();
             return spec;
         }
+
+        private IDictionary<string, IEnumerable<string>> CloneScripts(IDictionary<string, IEnumerable<string>> toBeCloned)
+        {
+            if(toBeCloned != null)
+            {
+                var clone = new Dictionary<string, IEnumerable<string>>();
+                foreach(var kvp in toBeCloned)
+                {
+                    clone.Add(kvp.Key, new List<string>(kvp.Value));
+                }
+            }
+            return null;
+        }
+
     }
 }

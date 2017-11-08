@@ -30,6 +30,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var clonedBuildOptions = originalBuildOptions.Clone();
+
             //Assert
             Assert.Equal(originalBuildOptions.OutputName, clonedBuildOptions.OutputName);
         }
