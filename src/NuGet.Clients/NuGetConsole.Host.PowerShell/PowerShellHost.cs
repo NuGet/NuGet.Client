@@ -732,8 +732,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                var displayNames = new List<Tuple<string, string>>();
-                var displayNameTasks = new List<Task<Tuple<string, string>>>();
+                var safeAndDisplayName = new List<Tuple<string, string>>();
+                var safeAndDisplayNameTasks = new List<Task<Tuple<string, string>>>();
 
                 var allProjects = await _solutionManager.Value.GetNuGetProjectsAsync();
 
@@ -742,30 +742,28 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     {
                         var safeName = await _solutionManager.Value.GetNuGetProjectSafeNameAsync(e);
                         var displayName = await GetDisplayNameAsync(e);
-                        return new Tuple<string, string>(safeName, displayName);
+                        return Tuple.Create(safeName, displayName);
                     });
 
                 foreach (var task in tasks)
                 {
                     // Throttle and wait for a task to finish if we have hit the limit
-                    if (displayNameTasks.Count == MaxTasks)
+                    if (safeAndDisplayNameTasks.Count == MaxTasks)
                     {
-                        var displayName = await CompleteTaskAsync(displayNameTasks);
-                        displayNames.Add(displayName);
+                        var displayName = await CompleteTaskAsync(safeAndDisplayNameTasks);
+                        safeAndDisplayName.Add(displayName);
                     }
-
-                    var displayNameTask = await task;
-                    displayNameTasks.Add(task);
+                    safeAndDisplayNameTasks.Add(task);
                 }
 
                 // wait until all the tasks to retrieve display names are completed
-                while (displayNameTasks.Count > 0)
+                while (safeAndDisplayNameTasks.Count > 0)
                 {
-                    var displayName = await CompleteTaskAsync(displayNameTasks);
-                    displayNames.Add(displayName);
+                    var displayName = await CompleteTaskAsync(safeAndDisplayNameTasks);
+                    safeAndDisplayName.Add(displayName);
                 }
-
-                var sortedDisplayNames = displayNames.OrderBy(i => i.Item1, StringComparer.CurrentCultureIgnoreCase).ToArray();
+                // Sort with respect to the DisplayName
+                var sortedDisplayNames = safeAndDisplayName.OrderBy(i => i.Item2, StringComparer.CurrentCultureIgnoreCase).ToArray();
 
                 _projectSafeNames = sortedDisplayNames.Select(e => e.Item1).ToArray();
                 return _projectSafeNames;
