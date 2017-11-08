@@ -144,7 +144,7 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet Package restore failed for project {0}: {1}..
+        ///   Looks up a localized string similar to NuGet Package restore failed for project {0}: {1}. Please see Error List window for detailed warnings and errors..
         /// </summary>
         internal static string PackageRestoreFailedForProject {
             get {
@@ -171,7 +171,7 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet package restore failed..
+        ///   Looks up a localized string similar to NuGet package restore failed. Please see Error List window for detailed warnings and errors..
         /// </summary>
         internal static string PackageRestoreFinishedWithError {
             get {
