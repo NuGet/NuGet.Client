@@ -41,10 +41,10 @@ namespace NuGet.Options
             this.packageListToolTip = new System.Windows.Forms.ToolTip(this.components);
             this.updateButton = new System.Windows.Forms.Button();
             this.BrowseButton = new System.Windows.Forms.Button();
-            this.NewPackageSource = new System.Windows.Forms.TextBox();
             this.NewPackageSourceLabel = new System.Windows.Forms.Label();
-            this.NewPackageName = new System.Windows.Forms.TextBox();
+            this.NewPackageSource = new System.Windows.Forms.TextBox();
             this.NewPackageNameLabel = new System.Windows.Forms.Label();
+            this.NewPackageName = new System.Windows.Forms.TextBox();
             this.PackageSourcesListBox = new PackageSourceCheckedListBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
@@ -121,25 +121,25 @@ namespace NuGet.Options
             this.BrowseButton.UseVisualStyleBackColor = true;
             this.BrowseButton.Click += new System.EventHandler(this.OnBrowseButtonClicked);
             // 
-            // NewPackageSource
-            // 
-            resources.ApplyResources(this.NewPackageSource, "NewPackageSource");
-            this.NewPackageSource.Name = "NewPackageSource";
-            // 
             // NewPackageSourceLabel
             // 
             resources.ApplyResources(this.NewPackageSourceLabel, "NewPackageSourceLabel");
             this.NewPackageSourceLabel.Name = "NewPackageSourceLabel";
             // 
-            // NewPackageName
+            // NewPackageSource
             // 
-            resources.ApplyResources(this.NewPackageName, "NewPackageName");
-            this.NewPackageName.Name = "NewPackageName";
+            resources.ApplyResources(this.NewPackageSource, "NewPackageSource");
+            this.NewPackageSource.Name = "NewPackageSource";
             // 
             // NewPackageNameLabel
             // 
             resources.ApplyResources(this.NewPackageNameLabel, "NewPackageNameLabel");
             this.NewPackageNameLabel.Name = "NewPackageNameLabel";
+            // 
+            // NewPackageName
+            // 
+            resources.ApplyResources(this.NewPackageName, "NewPackageName");
+            this.NewPackageName.Name = "NewPackageName";
             // 
             // PackageSourcesListBox
             // 
@@ -162,8 +162,8 @@ namespace NuGet.Options
             this.tableLayoutPanel1.Controls.Add(this.MachineWideSourcesLabel, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.MachineWidePackageSourcesListBox, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.NewPackageNameLabel, 0, 4);
-            this.tableLayoutPanel1.Controls.Add(this.NewPackageSourceLabel, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.NewPackageName, 1, 4);
+            this.tableLayoutPanel1.Controls.Add(this.NewPackageSourceLabel, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.NewPackageSource, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.BrowseButton, 2, 5);
             this.tableLayoutPanel1.Controls.Add(this.updateButton, 3, 5);
@@ -254,12 +254,12 @@ namespace NuGet.Options
         private ToolTip packageListToolTip;
         private Button updateButton;
         private Button BrowseButton;
-        private TextBox NewPackageSource;
         private Label NewPackageSourceLabel;
+        private TextBox NewPackageSource;
+        private Label NewPackageNameLabel;
         private TextBox NewPackageName;
         private TableLayoutPanel tableLayoutPanel1;
         private PackageSourceCheckedListBox PackageSourcesListBox;
-        private Label NewPackageNameLabel;
         private TableLayoutPanel tableLayoutPanel2;
         private ImageList images16px;
         private Button addButton;
