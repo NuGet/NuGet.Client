@@ -108,9 +108,9 @@ namespace NuGet.VisualStudio
             }
 
             // FullPath
-            var fullPath = GetPropertyValue<string>(envDTEProject, FullPath);
+            var fullPath = GetPotentialFullPathOrNull(GetPropertyValue<string>(envDTEProject, FullPath));
 
-            if (!string.IsNullOrEmpty(fullPath))
+            if (!String.IsNullOrEmpty(fullPath))
             {
                 // Some Project System implementations (JS metro app) return the project 
                 // file as FullPath. We only need the parent directory
