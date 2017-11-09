@@ -550,7 +550,6 @@ namespace NuGet.Commands
             };
 
             // Resolve dependency graphs
-            var allInstalledPackages = new HashSet<LibraryIdentity>();
             var allGraphs = new List<RestoreTargetGraph>();
             var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
             var projectFrameworkRuntimePairs = CreateFrameworkRuntimePairs(_request.Project, runtimeIds);
@@ -569,7 +568,6 @@ namespace NuGet.Commands
             var result = await projectRestoreCommand.TryRestoreAsync(
                 projectRange,
                 projectFrameworkRuntimePairs,
-                allInstalledPackages,
                 userPackageFolder,
                 fallbackPackageFolders,
                 remoteWalker,
@@ -616,7 +614,6 @@ namespace NuGet.Commands
                 var compatibilityResult = await projectRestoreCommand.TryRestoreAsync(
                     projectRange,
                     _request.CompatibilityProfiles,
-                    allInstalledPackages,
                     userPackageFolder,
                     fallbackPackageFolders,
                     remoteWalker,
