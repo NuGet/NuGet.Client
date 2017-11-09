@@ -80,10 +80,5 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Return true if all the .net core projects are nominated.
         /// </summary>
         Task<bool> IsAllProjectsNominatedAsync();
-
-        /// <summary>
-        /// Return collection of safe name for all supported projects in solution.
-        /// </summary>
-        Task<IEnumerable<string>> GetAllNuGetProjectSafeNameAsync();
     }
 }

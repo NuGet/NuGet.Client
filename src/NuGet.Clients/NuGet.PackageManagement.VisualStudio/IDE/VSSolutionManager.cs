@@ -230,11 +230,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetProject.GetUniqueNameOrName(nuGetProject);
         }
 
-        public async Task<IEnumerable<string>> GetAllNuGetProjectSafeNameAsync()
-        {
-            return await Task.WhenAll((await GetNuGetProjectsAsync()).Select(GetNuGetProjectSafeNameAsync));
-        }
-
         public async Task<IEnumerable<NuGetProject>> GetNuGetProjectsAsync()
         {
             InitializationTask = EnsureInitializeAsync();
