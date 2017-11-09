@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -10,6 +11,11 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public abstract class OutboundRequestContext : IDisposable
     {
+        /// <summary>
+        /// Gets the <see cref="CancellationToken" />.
+        /// </summary>
+        public CancellationToken CancellationToken { get; protected set; }
+
         /// <summary>
         /// Gets the request ID.
         /// </summary>

@@ -69,7 +69,7 @@ namespace NuGet.Protocol.Plugins
             _protocolVersion = protocolVersion;
             _minimumProtocolVersion = minimumProtocolVersion;
             _handshakeFailedResponse = new HandshakeResponse(MessageResponseCode.Error, protocolVersion: null);
-            _responseSentTaskCompletionSource = new TaskCompletionSource<int>();
+            _responseSentTaskCompletionSource = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             _timeoutCancellationTokenSource = new CancellationTokenSource(handshakeTimeout);
 
             _timeoutCancellationTokenSource.Token.Register(() =>

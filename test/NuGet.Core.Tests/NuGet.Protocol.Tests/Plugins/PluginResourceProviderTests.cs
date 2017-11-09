@@ -18,6 +18,8 @@ namespace NuGet.Protocol.Plugins.Tests
 {
     public class PluginResourceProviderTests
     {
+        private const string _pluginHandshakeTimeoutEnvironmentVariable = "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS";
+        private const string _pluginIdleTimeoutEnvironmentVariable = "NUGET_PLUGIN_IDLE_TIMEOUT_IN_SECONDS";
         private const string _pluginPathsEnvironmentVariable = "NUGET_PLUGIN_PATHS";
         private const string _pluginRequestTimeoutEnvironmentVariable = "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS";
         private const string _sourceUri = "https://unit.test";
@@ -208,7 +210,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => provider.Reinitialize(
                     reader: null,
                     pluginDiscoverer: new Lazy<IPluginDiscoverer>(),
-                    pluginFactory: Mock.Of<IPluginFactory>()));
+                    pluginFactoryCreator: (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>()));
 
             Assert.Equal("reader", exception.ParamName);
         }
@@ -221,22 +223,22 @@ namespace NuGet.Protocol.Plugins.Tests
                 () => provider.Reinitialize(
                     Mock.Of<IEnvironmentVariableReader>(),
                     pluginDiscoverer: null,
-                    pluginFactory: Mock.Of<IPluginFactory>()));
+                    pluginFactoryCreator: (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>()));
 
             Assert.Equal("pluginDiscoverer", exception.ParamName);
         }
 
         [Fact]
-        public void Reinitialize_ThrowsForNullPluginFactory()
+        public void Reinitialize_ThrowsForNullPluginFactoryCreator()
         {
             var provider = new PluginResourceProvider();
             var exception = Assert.Throws<ArgumentNullException>(
                 () => provider.Reinitialize(
                     Mock.Of<IEnvironmentVariableReader>(),
                     new Lazy<IPluginDiscoverer>(() => Mock.Of<IPluginDiscoverer>()),
-                    pluginFactory: null));
+                    pluginFactoryCreator: null));
 
-            Assert.Equal("pluginFactory", exception.ParamName);
+            Assert.Equal("pluginFactoryCreator", exception.ParamName);
         }
 
         [Fact]
@@ -248,7 +250,7 @@ namespace NuGet.Protocol.Plugins.Tests
             provider.Reinitialize(
                 reader,
                 new Lazy<IPluginDiscoverer>(() => Mock.Of<IPluginDiscoverer>()),
-                Mock.Of<IPluginFactory>());
+                (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>());
 
             Assert.Same(reader, provider.EnvironmentVariableReader);
         }
@@ -293,6 +295,12 @@ namespace NuGet.Protocol.Plugins.Tests
                 reader.Setup(x => x.GetEnvironmentVariable(
                         It.Is<string>(value => value == _pluginRequestTimeoutEnvironmentVariable)))
                     .Returns("b");
+                reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == _pluginIdleTimeoutEnvironmentVariable)))
+                    .Returns("c");
+                reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == _pluginHandshakeTimeoutEnvironmentVariable)))
+                    .Returns("d");
 
                 var pluginDiscoverer = new Mock<IPluginDiscoverer>(MockBehavior.Strict);
                 var pluginDiscoveryResults = GetPluginDiscoveryResults(pluginsPath);
@@ -305,7 +313,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Provider.Reinitialize(
                     reader.Object,
                     new Lazy<IPluginDiscoverer>(() => pluginDiscoverer.Object),
-                    Mock.Of<IPluginFactory>());
+                    (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>());
             }
 
             private static IEnumerable<PluginDiscoveryResult> GetPluginDiscoveryResults(string pluginPaths)
@@ -354,7 +362,13 @@ namespace NuGet.Protocol.Plugins.Tests
                     .Returns(pluginFilePath);
                 _reader.Setup(x => x.GetEnvironmentVariable(
                         It.Is<string>(value => value == _pluginRequestTimeoutEnvironmentVariable)))
-                    .Returns("timeout");
+                    .Returns("RequestTimeout");
+                _reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == _pluginIdleTimeoutEnvironmentVariable)))
+                    .Returns("IdleTimeout");
+                _reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == _pluginHandshakeTimeoutEnvironmentVariable)))
+                    .Returns("HandshakeTimeout");
 
                 _pluginDiscoverer = new Mock<IPluginDiscoverer>(MockBehavior.Strict);
 
@@ -427,7 +441,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Provider.Reinitialize(
                     _reader.Object,
                     new Lazy<IPluginDiscoverer>(() => _pluginDiscoverer.Object),
-                    _factory.Object);
+                    (TimeSpan idleTimeout) => _factory.Object);
             }
 
             public void Dispose()
