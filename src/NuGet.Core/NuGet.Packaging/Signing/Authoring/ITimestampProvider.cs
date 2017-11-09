@@ -10,6 +10,6 @@ namespace NuGet.Packaging.Signing
     public interface ITimestampProvider
     {
         // Sign and timestamp a file.
-        Task TimestampSignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token);
+        Task<Signature> TimestampSignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token);
     }
 }

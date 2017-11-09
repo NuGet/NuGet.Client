@@ -48,11 +48,9 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            var signature = CreateSignature(request.Certificate, signatureManifest);
+            var authorSignature = CreateSignature(request.Certificate, signatureManifest);
 
-            TimestampSignature(request, logger, signature, token);
-
-            return Task.FromResult(signature);
+            return TimestampSignature(request, logger, authorSignature, token);
         }
 
 #if IS_DESKTOP
@@ -68,11 +66,6 @@ namespace NuGet.Packaging.Signing
                     signingTime.Oid,
                     new AsnEncodedDataCollection(signingTime)));
 
-            cmsSigner.UnsignedAttributes.Add(
-                new CryptographicAttributeObject(
-                    signingTime.Oid,
-                    new AsnEncodedDataCollection(signingTime)));
-
             cmsSigner.IncludeOption = X509IncludeOption.WholeChain;
 
             var cms = new SignedCms(contentInfo);
@@ -82,7 +75,7 @@ namespace NuGet.Packaging.Signing
             return Signature.Load(cms, signerInfoIndex: 0);
         }
 
-        private Task TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
+        private Task<Signature> TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
         {
             var timestampRequest = new TimestampRequest
             {
@@ -100,7 +93,7 @@ namespace NuGet.Packaging.Signing
             throw new NotSupportedException();
         }
 
-        private Task TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
+        private Task<Signature> TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
         {
             throw new NotSupportedException();
         }
