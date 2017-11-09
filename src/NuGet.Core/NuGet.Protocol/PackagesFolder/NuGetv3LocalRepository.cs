@@ -50,21 +50,17 @@ namespace NuGet.Repositories
             _packageFileCache = packageFileCache ?? new LocalPackageFileCache();
         }
 
+        /// <summary>
+        /// True if the package exists.
+        /// </summary>
+        public bool Exists(string packageId, NuGetVersion version)
+        {
+            return FindPackageImpl(packageId, version) != null;
+        }
+
         public LocalPackageInfo FindPackage(string packageId, NuGetVersion version)
         {
-            LocalPackageInfo package = null;
-
-            var packages = FindPackagesByIdImpl(packageId);
-            var count = packages.Count;
-            for (var i = 0; i < count; i++)
-            {
-                var candidatePackage = packages[i];
-                if (candidatePackage.Version == version)
-                {
-                    package = candidatePackage;
-                    break;
-                }
-            }
+            var package = FindPackageImpl(packageId, version);
 
             if (package == null)
             {
@@ -118,6 +114,22 @@ namespace NuGet.Repositories
                     return GetPackages(id);
                 });
             }
+        }
+
+        private LocalPackageInfo FindPackageImpl(string packageId, NuGetVersion version)
+        {
+            var packages = FindPackagesByIdImpl(packageId);
+            var count = packages.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var candidatePackage = packages[i];
+                if (candidatePackage.Version == version)
+                {
+                    return candidatePackage;
+                }
+            }
+
+            return null;
         }
 
         private List<LocalPackageInfo> GetPackages(string id)
