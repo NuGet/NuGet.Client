@@ -21,6 +21,15 @@ namespace NuGet.CommandLine.XPlat
         public string PackageDirectory { get; set; }
         public bool NoRestore { get; set; }
 
+        public PackageReferenceArgs(string projectPath, ILogger logger)
+        {
+            ValidateArgument(projectPath);
+            ValidateArgument(logger);
+
+            ProjectPath = projectPath;
+            Logger = logger;
+        }
+
         public PackageReferenceArgs(string projectPath, PackageDependency packageDependency, ILogger logger, bool noVersion)
         {
             ValidateArgument(projectPath);

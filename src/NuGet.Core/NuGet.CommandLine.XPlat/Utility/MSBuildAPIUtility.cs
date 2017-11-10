@@ -10,6 +10,7 @@ using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 
 namespace NuGet.CommandLine.XPlat
@@ -136,6 +137,62 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        /// <summary>
+        /// List conditional package reference to the project per target framework.
+        /// </summary>
+        /// <param name="projectPath">Path to the csproj file of the project.</param>
+        /// <param name="packageDependency">Package Dependency of the package to be added.</param>
+        /// <param name="userInputFrameworks">Target Frameworks for which the package reference should be added.</param>
+        /// <returns>Returns a dictionary indexed on target frameworks containing a list of package references.
+        /// The list of package references will be null if the target framework is not targeted by the project.</returns>
+        public Dictionary<string, IEnumerable<Tuple<string, string>>> ListPackageReference(string projectPath, 
+            PackageDependency packageDependency,
+            IEnumerable<string> userInputFrameworks)
+        {
+            var project = GetProject(projectPath);
+            var packageReferencesPerFramework = new Dictionary<string, IEnumerable<Tuple<string, string>>>();
+            var projectFrameworkStrings = GetProjectFrameworks(project);
+            var projectFrameworks = new HashSet<NuGetFramework>(GetProjectFrameworks(project).Select(f => NuGetFramework.Parse(f)));
+
+            if (!userInputFrameworks.Any())
+            {
+                var unconditionalpackageReferences = GetPackageReferences(project, packageDependency);
+
+                packageReferencesPerFramework.Add(Strings.ListPkg_AllFrameworks,
+                    unconditionalpackageReferences.Select(i => Tuple.Create(i.EvaluatedInclude, i.GetMetadataValue(VERSION_TAG))));
+
+                foreach (var framework in projectFrameworkStrings)
+                {
+                    var conditionalpackageReferences = GetPackageReferencesPerFramework(project, packageDependency, framework);
+
+                    packageReferencesPerFramework.Add(framework,
+                        conditionalpackageReferences.Select(i => Tuple.Create(i.EvaluatedInclude, i.GetMetadataValue(VERSION_TAG))));
+                }
+            }
+            else
+            {
+                foreach (var userInputFramework in userInputFrameworks)
+                {
+                    var framework = NuGetFramework.Parse(userInputFramework);
+                    if (projectFrameworks.Contains(framework))
+                    {
+                        var conditionalpackageReferences = GetPackageReferencesPerFramework(project, packageDependency, userInputFramework);
+
+                        packageReferencesPerFramework.Add(userInputFramework,
+                            conditionalpackageReferences.Select(i => Tuple.Create(i.EvaluatedInclude, i.GetMetadataValue(VERSION_TAG))));
+                    }
+                    else
+                    {
+                        packageReferencesPerFramework.Add(userInputFramework, null);
+                    }
+                }
+            }
+
+            ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+            return packageReferencesPerFramework;
+        }
+
+
         private void AddPackageReference(Project project,
             PackageDependency packageDependency,
             IEnumerable<ProjectItem> existingPackageReferences,
@@ -261,22 +318,6 @@ namespace NuGet.CommandLine.XPlat
 
         /// <summary>
         /// Returns all package references after evaluating the condition on the item groups.
-        /// This method is used when we need package references for a specific target framework.
-        /// </summary>
-        /// <param name="project">Project for which the package references have to be obtained.
-        /// The project should have the global property set to have a specific framework</param>
-        /// <param name="packageDependency">Dependency of the package.</param>
-        /// <returns>List of Items containing the package reference for the package.</returns>
-        private static IEnumerable<ProjectItem> GetPackageReferences(Project project, PackageDependency packageDependency)
-        {
-            return project.AllEvaluatedItems
-                .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
-                               item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        /// <summary>
-        /// Returns all package references after evaluating the condition on the item groups.
         /// This method is used when we need package references for all target frameworks.
         /// </summary>
         /// <param name="project">Project for which the package references have to be obtained.
@@ -290,17 +331,66 @@ namespace NuGet.CommandLine.XPlat
             var mergedPackageReferences = new List<ProjectItem>();
             foreach (var framework in frameworks)
             {
-                var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                { { "TargetFramework", framework } };
-                var projectPerFramework = GetProject(project.FullPath, globalProperties);
-
-                mergedPackageReferences.AddRange(GetPackageReferences(projectPerFramework, packageDependency));
-                ProjectCollection.GlobalProjectCollection.UnloadProject(projectPerFramework);
+                mergedPackageReferences.AddRange(GetPackageReferencesPerFramework(project, packageDependency, framework));
             }
             return mergedPackageReferences;
         }
 
-        private static IEnumerable<string> GetProjectFrameworks(Project project)
+
+        /// <summary>
+        /// Returns all package references after evaluating the condition on the item groups.
+        /// This method is used when we need package references for all target frameworks.
+        /// </summary>
+        /// <param name="project">Project for which the package references have to be obtained.
+        /// The project should have the global property set to have a specific framework</param>
+        /// <param name="packageDependency">Dependency of the package.</param>
+        /// <param name="framework">Framework for evaluating the project.</param>
+        /// <returns>List of Items containing the package reference for the package.</returns>
+        private static IEnumerable<ProjectItem> GetPackageReferencesPerFramework(Project project,
+            PackageDependency packageDependency, string framework)
+        {
+            var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            { { "TargetFramework", framework } };
+            var projectPerFramework = GetProject(project.FullPath, globalProperties);
+
+            var packageReferences = GetPackageReferences(projectPerFramework, packageDependency);
+            ProjectCollection.GlobalProjectCollection.UnloadProject(projectPerFramework);
+            return packageReferences;
+        }
+
+        /// <summary>
+        /// Returns all package references after evaluating the condition on the item groups.
+        /// This method is used when we need package references from a project.
+        /// </summary>
+        /// <param name="project">Project for which the package references have to be obtained.
+        /// The project should have the global property set to have a specific framework</param>
+        /// <param name="packageDependency">Dependency of the package.</param>
+        /// <returns>List of Items containing the package reference for the package. 
+        /// If the packageDependendy is null then it returns all package references.</returns>
+        private static IEnumerable<ProjectItem> GetPackageReferences(Project project, PackageDependency packageDependency)
+        {
+            var packageReferences = project.AllEvaluatedItems
+                .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase));
+
+            if (packageDependency == null)
+            {
+                return packageReferences
+                    .ToList();
+            }
+            else
+            {
+                return packageReferences
+                    .Where(item => item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+        }
+
+        /// <summary>
+        /// This method returns all the Target Franeworks for a project.
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns><code>IEnumerable</code> of target frameworks in the project as <code>strings</code></returns>
+        public static IEnumerable<string> GetProjectFrameworks(Project project)
         {
             var frameworks = project
                 .AllEvaluatedProperties
@@ -313,7 +403,7 @@ namespace NuGet.CommandLine.XPlat
                     .AllEvaluatedProperties
                     .Where(p => p.Name.Equals(FRAMEWORKS_TAG, StringComparison.OrdinalIgnoreCase))
                     .Select(p => p.EvaluatedValue)
-                    .FirstOrDefault();
+                    .LastOrDefault();
                 frameworks = MSBuildStringUtility.Split(frameworksString);
             }
             return frameworks;
