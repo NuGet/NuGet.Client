@@ -9,6 +9,8 @@ This repo contains the following clients:
   * [NuGet Package Manager for Visual Studio 2017](https://docs.nuget.org/ndocs/tools/package-manager-ui)
   * [PowerShell CmdLets](https://docs.nuget.org/ndocs/tools/powershell-reference)
 
+This repository contains v3.0 and later of the NuGet client libraries, replacing the Nuget2 repository and the NuGet.Core package.
+
 ## Build Status
 
 | VSTS Build |
