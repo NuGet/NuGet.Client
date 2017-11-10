@@ -108,24 +108,23 @@ namespace NuGet.CommandLine
             }
 
             // update with solution as parameter
-            string solutionDir = Path.GetDirectoryName(inputFile);
-            await UpdateAllPackages(solutionDir, context);
+            await UpdateAllPackages(inputFile, context);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        private async Task UpdateAllPackages(string solutionDir, INuGetProjectContext projectContext)
+        private async Task UpdateAllPackages(string solutionFile, INuGetProjectContext projectContext)
         {
             Console.WriteLine(LocalizedResourceManager.GetString("ScanningForProjects"));
-
+            IEnumerable<string> allProjectFileNames = MsBuildUtility.GetAllProjectFileNames(solutionFile, _msbuildDirectory.Value);
             // Search recursively for all packages.xxx.config files
-            string[] packagesConfigFiles = Directory.GetFiles(
-                solutionDir, "*.config", SearchOption.AllDirectories);
+            string[] packagesConfigFiles = allProjectFileNames.SelectMany(x => Directory.GetFiles(Path.GetDirectoryName(x), "packages*.config", SearchOption.AllDirectories)).ToArray();
 
             var projects = packagesConfigFiles.Where(s => Path.GetFileName(s).StartsWith("packages.", StringComparison.OrdinalIgnoreCase))
                                               .Select(s => GetProject(s, projectContext))
                                               .Where(p => p != null)
                                               .Distinct()
                                               .ToList();
+            
 
             if (projects.Count == 0)
             {
@@ -141,7 +140,7 @@ namespace NuGet.CommandLine
             {
                 Console.WriteLine(LocalizedResourceManager.GetString("FoundProjects"), projects.Count, String.Join(", ", projects.Select(p => p.ProjectName)));
             }
-
+            string solutionDir = Path.GetDirectoryName(solutionFile);
             string repositoryPath = GetRepositoryPathFromSolution(solutionDir);
 
             foreach (var project in projects)
