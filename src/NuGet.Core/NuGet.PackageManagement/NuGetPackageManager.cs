@@ -2961,16 +2961,19 @@ namespace NuGet.PackageManagement
 
             // Step-2: Check if the package directory could be deleted
             if (!(nuGetProject is INuGetIntegratedProject)
-                && !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, SolutionManager, token))
+                && !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, SolutionManager, true, token))
             {
                 packageWithDirectoriesToBeDeleted.Add(packageIdentity);
             }
+        }
 
-            // TODO: Consider using CancelEventArgs instead of a regular EventArgs??
-            //if (packageOperationEventArgs.Cancel)
-            //{
-            //    return;
-            //}
+        public static async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject,
+            INuGetProjectContext nuGetProjectContext,
+            PackageIdentity packageIdentity,
+            ISolutionManager solutionManager,
+            CancellationToken token)
+        {
+            return await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, solutionManager, false, token);
         }
 
         /// <summary>
@@ -2978,7 +2981,11 @@ namespace NuGet.PackageManagement
         /// project <paramref name="nuGetProject" /> is also installed in any
         /// other projects in the solution.
         /// </summary>
-        public static async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity, ISolutionManager solutionManager, CancellationToken token)
+        public static async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject,
+            PackageIdentity packageIdentity,
+            ISolutionManager solutionManager,
+            bool ignoreNuGetIntegratedProjects,
+            CancellationToken token)
         {
             if (nuGetProject == null)
             {
@@ -3000,14 +3007,20 @@ namespace NuGet.PackageManagement
             var nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             foreach (var otherNuGetProject in (await solutionManager.GetNuGetProjectsAsync()))
             {
-                var otherNuGetProjectName = NuGetProject.GetUniqueNameOrName(otherNuGetProject);
-                if (!otherNuGetProjectName.Equals(nuGetProjectName, StringComparison.OrdinalIgnoreCase))
+                if (ignoreNuGetIntegratedProjects && otherNuGetProject is INuGetIntegratedProject)
                 {
-                    var packageExistsInAnotherNuGetProject = (await otherNuGetProject.GetInstalledPackagesAsync(token)).Any(pr => pr.PackageIdentity.Equals(packageIdentity));
-                    if (packageExistsInAnotherNuGetProject)
-                    {
-                        return true;
-                    }
+                    continue;
+                }
+
+                var otherNuGetProjectName = NuGetProject.GetUniqueNameOrName(otherNuGetProject);
+                if (otherNuGetProjectName.Equals(nuGetProjectName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if ((await otherNuGetProject.GetInstalledPackagesAsync(token)).Any(pr => pr.PackageIdentity.Equals(packageIdentity)))
+                {
+                    return true;
                 }
             }
 
