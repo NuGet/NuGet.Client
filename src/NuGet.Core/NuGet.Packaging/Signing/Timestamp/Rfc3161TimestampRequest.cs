@@ -3,13 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using HashAlgorithmName = System.Security.Cryptography.HashAlgorithmName;
 
+
+[assembly: InternalsVisibleTo("NuGet.Packaging.FuncTest")]
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
