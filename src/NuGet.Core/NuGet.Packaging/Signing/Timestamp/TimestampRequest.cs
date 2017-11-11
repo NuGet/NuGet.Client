@@ -20,11 +20,6 @@ namespace NuGet.Packaging.Signing
         public Signature Signature { get; set; }
 
         /// <summary>
-        /// Specifies the signer info index for the Signature.SignerInfos collection.
-        /// </summary>
-        public int SignerInfoIndex { get; set; }
-
-        /// <summary>
         /// X509Certificate2 used to generate the Signature.
         /// </summary>
         public X509Certificate2 Certificate { get; set; }

@@ -28,5 +28,8 @@ namespace NuGet.Packaging.Signing
 
         // RFC 3280 "id-kp-timeStamping" https://tools.ietf.org/html/rfc3280.html#section-4.2.1.13
         internal const string TimeStampingEkuOid = "1.3.6.1.5.5.7.3.8";
+
+        // RFC 2459 "id-ce-extKeyUsage" https://tools.ietf.org/html/rfc3280.html#section-4.2.1.13
+        internal const string EnhancedKeyUsageOid = "2.5.29.37";
     }
 }

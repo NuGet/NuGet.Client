@@ -224,7 +224,7 @@ namespace NuGet.Common
         /// Extension method to convert NuGet.Common.HashAlgorithmName to an Oid string
         /// </summary>
         /// <returns>Oid string equivalent of the NuGet.Common.HashAlgorithmName</returns>
-        public static string ConvertOidString(this HashAlgorithmName hashAlgorithm)
+        public static string ConvertToOidString(this HashAlgorithmName hashAlgorithm)
         {
             switch (hashAlgorithm)
             {

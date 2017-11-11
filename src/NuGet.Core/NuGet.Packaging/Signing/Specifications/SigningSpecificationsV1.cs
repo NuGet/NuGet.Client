@@ -30,9 +30,9 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         private static readonly string[] _allowedHashAlgorithmOids = new[]
         {
-            HashAlgorithmName.SHA256.ConvertOidString(),
-            HashAlgorithmName.SHA256.ConvertOidString(),
-            HashAlgorithmName.SHA256.ConvertOidString()
+            HashAlgorithmName.SHA256.ConvertToOidString(),
+            HashAlgorithmName.SHA384.ConvertToOidString(),
+            HashAlgorithmName.SHA512.ConvertToOidString()
         };
 
         /// <summary>

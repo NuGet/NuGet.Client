@@ -12,8 +12,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public static class SigningUtility
     {
-        // Oid for certificate extension: "extKeyUsage" (Extended key usage) 
-        private const string _ekuOid = "2.5.29.37";
 
         /// <summary>
         /// Checks the validity of an X509Certificate2 is valid by building it's X509Chain.
@@ -107,7 +105,7 @@ namespace NuGet.Packaging.Signing
 
             foreach (var ext in certificate.Extensions)
             {
-                if (string.Equals(ext.Oid.Value, _ekuOid))
+                if (string.Equals(ext.Oid.Value, Oids.EnhancedKeyUsageOid))
                 {
                     var eku = (X509EnhancedKeyUsageExtension)ext;
                     oidCollection = eku.EnhancedKeyUsages;
