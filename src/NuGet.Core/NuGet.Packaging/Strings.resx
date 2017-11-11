@@ -223,4 +223,32 @@
   <data name="InvalidPackageSignature" xml:space="preserve">
     <value>Package {0} signature is invalid.</value>
   </data>
+  <data name="TimestampFailureAuthorCertNotValid" xml:space="preserve">
+    <value>Author certificate was not valid when it was timestamped.</value>
+  </data>
+  <data name="TimestampFailureCertChainBuildFailure" xml:space="preserve">
+    <value>Timestamp service's certificate chain does not build.</value>
+  </data>
+  <data name="TimestampFailureCertInvalidEku" xml:space="preserve">
+    <value>Timestamp service's certificate does not contain a valid Enhanced Key Usage for timestamping.</value>
+  </data>
+  <data name="TimestampFailureInvalidHash" xml:space="preserve">
+    <value>Timestamp response contains invalid signature value hash.</value>
+  </data>
+  <data name="TimestampFailureInvalidHashAlgorithmOid" xml:space="preserve">
+    <value>Timestamp response does not contain an acceptable hash algorithm.</value>
+  </data>
+  <data name="TimestampFailureInvalidHttpScheme" xml:space="preserve">
+    <value>The timestamper url '{0}' has an invalid uri scheme. The supported schemes are '{1}' and '{2}'.</value>
+    <comment>0 - url value
+1 - Uri.Http scheme
+2 - Uri.Https scheme</comment>
+  </data>
+  <data name="TimestampFailureNonceMismatch" xml:space="preserve">
+    <value>Timestamp response does not contain a matching response.</value>
+  </data>
+  <data name="TimestampResponseExceptionGeneral" xml:space="preserve">
+    <value>Timestamp service's response does not meet the NuGet package signature specification: '{0}'.</value>
+    <comment>0 - Reason for failure</comment>
+  </data>
 </root>

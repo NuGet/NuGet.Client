@@ -23,13 +23,21 @@ namespace NuGet.Common
     /// 1000 - Restore
     /// 3000 - Signing
     /// 
-    /// Sub groups:
+    /// Sub groups for Restore:
     /// error/warning - Reason
     /// 1000/1500     - Input
     /// 1100/1600     - Resolver
     /// 1200/1700     - Compat
     /// 1300/1800     - Feed
     /// 1400/1900     - Package
+    ///
+    /// Sub groups for Signing:
+    /// error/warning - Reason
+    /// 3000/3500     - 
+    /// 3100/3600     - 
+    /// 3200/3700     - 
+    /// 3300/3800     - 
+    /// 3400/3900     - Timestamp
     /// </summary>
     public enum NuGetLogCode
     {
@@ -208,6 +216,10 @@ namespace NuGet.Common
         /// </summary>
         NU3002 = 3002,
 
+        /// timestamp url not passed to sign command
+        /// </summary>
+        NU3401 = 3401,
+
         /// <summary>
         /// Undefined signature warning
         /// </summary>
@@ -222,6 +234,36 @@ namespace NuGet.Common
         /// Signature information unavailable warning
         /// </summary>
         NU3502 = 3502,
+
+        /// <summary>
+        /// Author cert not valid when timestamped
+        /// </summary>
+        NU3901 = 3901,
+
+        /// <summary>
+        /// Timestamper cert chain does not build
+        /// </summary>
+        NU3902 = 3902,
+
+        /// <summary>
+        /// Timestamper cert does not have the right Enhanced Key Usage
+        /// </summary>
+        NU3903 = 3903,
+
+        /// <summary>
+        /// Timestamp response does not have the right signature value hash
+        /// </summary>
+        NU3904 = 3904,
+
+        /// <summary>
+        /// TImestamp response does not have the right nonce
+        /// </summary>
+        NU3905 = 3905,
+
+        /// <summary>
+        /// Timestamp response does not have a valid hash algorithm oid
+        /// </summary>
+        NU3906 = 3906,
 
         /// <summary>
         /// Undefined Package Error.
@@ -272,5 +314,6 @@ namespace NuGet.Common
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,
+
     }
 }

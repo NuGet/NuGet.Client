@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -36,7 +37,12 @@ namespace NuGet.Packaging.Signing
             if (!string.Equals(timeStampServerUrl.Scheme, Uri.UriSchemeHttp, StringComparison.Ordinal) &&
                 !string.Equals(timeStampServerUrl.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal))
             {
-                throw new ArgumentException($"Invalid scheme for {nameof(timeStampServerUrl)}: {timeStampServerUrl}. The supported schemes are {Uri.UriSchemeHttp} and {Uri.UriSchemeHttps}.");
+                throw new ArgumentException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.TimestampFailureInvalidHttpScheme,
+                    timeStampServerUrl,
+                    nameof(Uri.UriSchemeHttp),
+                    nameof(Uri.UriSchemeHttps)));
             }
 #endif
             _timestamperUrl = timeStampServerUrl ?? throw new ArgumentNullException(nameof(timeStampServerUrl));
@@ -49,17 +55,22 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public Task<Signature> TimestampSignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             // Get the signatureValue from the signerInfo object
             using (var signatureNativeCms = NativeCms.Decode(request.Signature.GetBytes(), detached: false))
             {
                 var signatureValueHashByteArray = GetSignatureValueHash(
                     request.TimestampHashAlgorithm,
                     signatureNativeCms);
-
-                if (signatureValueHashByteArray.Count() == 0)
-                {
-                    throw new InvalidOperationException("Signature hash value is empty");
-                }
 
                 // Allows us to track the request.
                 var nonce = GenerateNonce();
@@ -99,11 +110,6 @@ namespace NuGet.Packaging.Signing
                     timestampByteArray = timestampCms.Encode();
                 }
 
-                if (timestampByteArray.Count() == 0)
-                {
-                    throw new InvalidOperationException("Timestamp Byte Array is empty");
-                }
-
                 signatureNativeCms.AddTimestamp(timestampByteArray);
 
                 // Convert a nativeCms object into a Signature object
@@ -112,7 +118,10 @@ namespace NuGet.Packaging.Signing
             
         }
 
-        private static void InsertTimestamperCertificateChainIntoTimestampCms(SignedCms timestampCms, X509Chain timstampCertChain, NativeCms timestampNativeCms)
+        private static void InsertTimestamperCertificateChainIntoTimestampCms(
+            SignedCms timestampCms,
+            X509Chain timstampCertChain,
+            NativeCms timestampNativeCms)
         {
             timestampNativeCms.AddCertificates(timstampCertChain.ChainElements
                 .Cast<X509ChainElement>()
@@ -120,7 +129,9 @@ namespace NuGet.Packaging.Signing
                 .Select(c => c.Certificate.Export(X509ContentType.Cert)));
         }
 
-        private static void ValidateSignerCertificateAgainstTimestamp(TimestampRequest request, Rfc3161TimestampToken timestampToken)
+        private static void ValidateSignerCertificateAgainstTimestamp(
+            TimestampRequest request,
+            Rfc3161TimestampToken timestampToken)
         {
             var tstInfoGenTime = timestampToken.TokenInfo.Timestamp;
             var tstInfoAccuracy = timestampToken.TokenInfo.AccuracyInMicroseconds;
@@ -148,24 +159,33 @@ namespace NuGet.Packaging.Signing
             if (request.Certificate.NotAfter < timestampUpperGenTime ||
                 request.Certificate.NotBefore > timestampLowerGenTime)
             {
-                throw new InvalidOperationException("Author's certificate was not valid when it was timestamped.");
+                throw new TimestampException(LogMessage.CreateError(
+                    NuGetLogCode.NU3901,
+                    string.Format(CultureInfo.CurrentCulture, Strings.TimestampFailureAuthorCertNotValid)));
             }
         }
 
         private static X509Chain ValidateTimestampCertificate(X509Certificate2 signerCert, SignedCms tokenCms)
         {
-            //validate the certificate chain.
             X509Chain chain = null;
 
             if (!SigningUtility.IsCertificateValid(signerCert, out chain, allowUntrustedRoot: false, checkRevocationStatus: true))
             {
-                //TODO throw better error message
-                throw new InvalidOperationException("The timestamper's certificate chain does not build.");
+                //TODO throw better error message about the chain building failure
+                throw new TimestampException(LogMessage.CreateError(
+                    NuGetLogCode.NU3902,
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.TimestampResponseExceptionGeneral,
+                    Strings.TimestampFailureCertChainBuildFailure)));
             }
 
             if (!SigningUtility.CertificateContainsEku(signerCert, Oids.TimeStampingEkuOid))
             {
-                throw new InvalidOperationException("The timestamper's certificate does not contain a valid EKU for timestamping.");
+                throw new TimestampException(LogMessage.CreateError(
+                    NuGetLogCode.NU3903,
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.TimestampResponseExceptionGeneral,
+                    Strings.TimestampFailureCertInvalidEku)));
             }
 
             return chain;
@@ -179,17 +199,29 @@ namespace NuGet.Packaging.Signing
         {
             if (!timestampToken.TokenInfo.HasMessageHash(signatureValueHashByteArray))
             {
-                throw new InvalidOperationException($"Rfc3161TimestampToken contains invalid {nameof(signatureValueHashByteArray)}.");
+                throw new TimestampException(LogMessage.CreateError(
+                    NuGetLogCode.NU3904,
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.TimestampResponseExceptionGeneral,
+                    Strings.TimestampFailureInvalidHash)));
             }
 
             if (!nonce.SequenceEqual(timestampToken.TokenInfo.GetNonce()))
             {
-                throw new InvalidOperationException($"Rfc3161TimestampToken contains invalid {nameof(nonce)}.");
+                throw new TimestampException(LogMessage.CreateError(
+                    NuGetLogCode.NU3905,
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.TimestampResponseExceptionGeneral,
+                    Strings.TimestampFailureNonceMismatch)));
             }
 
             if (!request.SigningSpec.AllowedHashAlgorithmOids.Contains(tokenSigner.DigestAlgorithm.Value))
             {
-                throw new InvalidOperationException("Rfc3161TimestampToken contains invalid hash algorithm Oid.");
+                throw new TimestampException(LogMessage.CreateError(
+                    NuGetLogCode.NU3906,
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.TimestampResponseExceptionGeneral,
+                    Strings.TimestampFailureInvalidHashAlgorithmOid)));
             }
         }
 
