@@ -116,6 +116,7 @@ namespace NuGet.Versioning
             NuGetVersion minVersion = null;
             NuGetVersion maxVersion = null;
             FloatRange floatRange = null;
+            var originallyRange = false;
 
             if (charArray[0] == '('
                 || charArray[0] == '[')
@@ -178,6 +179,7 @@ namespace NuGet.Versioning
                 // If there is only one piece, we use it for both min and max
                 minVersionString = parts[0];
                 maxVersionString = (parts.Length == 2) ? parts[1] : parts[0];
+                originallyRange = true;
             }
             else
             {
@@ -233,7 +235,8 @@ namespace NuGet.Versioning
                 maxVersion: maxVersion,
                 includeMaxVersion: isMaxInclusive,
                 floatRange: floatRange,
-                originalString: value);
+                originalString: value,
+                wasOriginallyRange: originallyRange);
 
             return true;
         }

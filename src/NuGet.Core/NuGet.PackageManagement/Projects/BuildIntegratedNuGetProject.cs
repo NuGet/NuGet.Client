@@ -29,6 +29,31 @@ namespace NuGet.ProjectManagement.Projects
     {
         protected BuildIntegratedNuGetProject()
         {
+            _dependencyVersionLookup = new DependencyVersionLookup();
+        }
+
+        protected DependencyVersionLookup _dependencyVersionLookup;
+        public DependencyVersionLookup Lookup => _dependencyVersionLookup;
+
+        /// <summary>
+        /// Gets timestamp of assets file if exists, if not return null
+        /// </summary>
+        public async Task<DateTime?> GetAssetsFileTimestampIFExistsAsync()
+        {
+            var lockFilePath = await GetAssetsFilePathOrNullAsync();
+
+            if (lockFilePath == null || !File.Exists(lockFilePath))
+            {
+                return null;
+            }
+
+            var lockFileInfo = new FileInfo(lockFilePath);
+            return lockFileInfo.CreationTime;
+        }
+
+        public Task<IReadOnlyList<PackageIdentity>> GetTopLevelDependencies()
+        {
+            return IntegratedProjectUtility.GetProjectPackageDependenciesAsync(this, false);
         }
 
         /// <summary>

@@ -43,7 +43,8 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectAdapter vsProjectAdapter,
             string projectId,
             INuGetProjectServices projectServices,
-            IVsProjectThreadingService threadingService)
+            IVsProjectThreadingService threadingService) :
+            base()
         {
             Assumes.Present(vsProjectAdapter);
             Assumes.NotNullOrEmpty(projectId);
@@ -131,7 +132,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
             // Settings are not needed for this purpose, this only finds the installed packages
-            return GetPackageReferences(await GetPackageSpecAsync(NullSettings.Instance));
+            return GetPackageReferences(await GetPackageSpecAsync(NullSettings.Instance), _dependencyVersionLookup);
         }
 
         public override async Task<bool> InstallPackageAsync(
@@ -251,30 +252,35 @@ namespace NuGet.PackageManagement.VisualStudio
             return SettingsUtility.GetConfigFilePaths(settings).ToList();
         }
 
-        private static PackageReference[] GetPackageReferences(PackageSpec packageSpec)
+        private static PackageReference[] GetPackageReferences(PackageSpec packageSpec, DependencyVersionLookup lookup)
         {
             var frameworkSorter = new NuGetFrameworkSorter();
 
             return packageSpec
                 .TargetFrameworks
-                .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName))
+                .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, lookup))
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                 .ToArray();
         }
 
-        private static IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework)
+        private static IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, DependencyVersionLookup lookup)
         {
             return libraries
                 .Where(l => l.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
-                .Select(l => ToPackageReference(l, targetFramework));
+                .Select(l => ToPackageReference(l, targetFramework, lookup));
         }
 
-        private static PackageReference ToPackageReference(LibraryDependency library, NuGetFramework targetFramework)
+        private static PackageReference ToPackageReference(LibraryDependency library, NuGetFramework targetFramework, DependencyVersionLookup lookup)
         {
+            NuGetVersion version;
+            if (!lookup.TryGet(library.LibraryRange.Name, out version))
+            {
+                version = library.LibraryRange.VersionRange.MinVersion;
+            }
             var identity = new PackageIdentity(
                 library.LibraryRange.Name,
-                library.LibraryRange.VersionRange.MinVersion);
+                version);
 
             return new PackageReference(identity, targetFramework);
         }

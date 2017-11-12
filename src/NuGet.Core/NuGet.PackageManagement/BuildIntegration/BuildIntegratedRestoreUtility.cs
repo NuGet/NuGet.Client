@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             // Find all dependencies in sorted order
-            var sortedPackages = await BuildIntegratedProjectUtility.GetOrderedProjectPackageDependencies(project);
+            var sortedPackages = await IntegratedProjectUtility.GetProjectPackageDependenciesAsync(project, true);
 
             // Keep track of the packages that need to be executed.
             var packagesToExecute = new HashSet<PackageIdentity>(packages, PackageIdentity.Comparer);

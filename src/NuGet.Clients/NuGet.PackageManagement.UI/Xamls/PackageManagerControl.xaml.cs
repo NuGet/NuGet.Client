@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
@@ -97,6 +98,7 @@ namespace NuGet.PackageManagement.UI
             _uiLogger = uiLogger;
             Model = model;
             Settings = nugetSettings;
+
             if (!Model.IsSolution)
             {
                 _detailModel = new PackageDetailControlModel(Model.Context.SolutionManager, Model.Context.Projects);
@@ -591,6 +593,12 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
+                foreach (var project in Model.Context.Projects)
+                {
+                    // Read the dependencies out off the latest asset file
+                    await Task.Run(() => DependencyVersionLookup.LoadAssetsFileAndCreateLookupForProjectAsync(project as INuGetIntegratedProject));
+                }
+
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);

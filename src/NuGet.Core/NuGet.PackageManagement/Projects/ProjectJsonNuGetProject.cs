@@ -40,7 +40,8 @@ namespace NuGet.ProjectManagement.Projects
         /// <param name="msBuildProjectPath">Path to the msbuild project file.</param>
         public ProjectJsonNuGetProject(
             string jsonConfig,
-            string msBuildProjectPath)
+            string msBuildProjectPath) :
+            base()
         {
             if (jsonConfig == null)
             {
@@ -137,7 +138,12 @@ namespace NuGet.ProjectManagement.Projects
             foreach (var dependency in JsonConfigUtility.GetDependencies(await GetJsonAsync()))
             {
                 // Use the minimum version of the range for the identity
-                var identity = new PackageIdentity(dependency.Id, dependency.VersionRange.MinVersion);
+                NuGetVersion version;
+                if (!_dependencyVersionLookup.TryGet(dependency.Id, out version))
+                {
+                    version = dependency.VersionRange.MinVersion;
+                }
+                var identity = new PackageIdentity(dependency.Id, version);
 
                 // Pass the actual version range as the allowed range
                 packages.Add(new PackageReference(identity,

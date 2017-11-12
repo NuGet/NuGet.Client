@@ -67,7 +67,7 @@ namespace NuGet.VisualStudio
             _settings = settings;
             _solutionManager = solutionManager;
             _logger = logger;
-            _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
+            _getLockFileOrNullAsync = IntegratedProjectUtility.GetLockFileOrNull;
 
             _dte = new AsyncLazy<EnvDTE.DTE>(
                 async () =>
@@ -105,7 +105,7 @@ namespace NuGet.VisualStudio
             _settings = new Lazy<ISettings>(() => settings);
             _solutionManager = new Lazy<IVsSolutionManager>(() => solutionManager);
             _logger = new Lazy<NuGet.Common.ILogger>(() => logger);
-            _getLockFileOrNullAsync = getLockFileOrNullAsync ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
+            _getLockFileOrNullAsync = getLockFileOrNullAsync ?? IntegratedProjectUtility.GetLockFileOrNull;
         }
 
         public bool TryCreateContext(string projectUniqueName, out IVsPathContext outputPathContext)

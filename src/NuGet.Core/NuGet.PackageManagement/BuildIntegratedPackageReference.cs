@@ -24,8 +24,8 @@ namespace NuGet.ProjectManagement
         /// Create a PackageReference based on a LibraryDependency.
         /// </summary>
         /// <param name="dependency">Full PackageReference metadata.</param>
-        public BuildIntegratedPackageReference(LibraryDependency dependency, NuGetFramework projectFramework)
-            : base(GetIdentity(dependency),
+        public BuildIntegratedPackageReference(LibraryDependency dependency, NuGetFramework projectFramework, DependencyVersionLookup lookup)
+            : base(GetIdentity(dependency, lookup),
                   targetFramework: projectFramework,
                   userInstalled: true,
                   developmentDependency: dependency?.SuppressParent == LibraryIncludeFlags.All,
@@ -43,15 +43,19 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Convert range to a PackageIdentity
         /// </summary>
-        private static PackageIdentity GetIdentity(LibraryDependency dependency)
+        private static PackageIdentity GetIdentity(LibraryDependency dependency, DependencyVersionLookup lookup)
         {
             if (dependency == null)
             {
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            // MinVersion may not exist for ranges such as ( , 2.0.0];
-            var version = dependency.LibraryRange?.VersionRange?.MinVersion ?? new NuGetVersion(0, 0, 0);
+            NuGetVersion version;
+            if (!lookup.TryGet(dependency.Name, out version))
+            {
+                // MinVersion may not exist for ranges such as ( , 2.0.0];
+                version = dependency.LibraryRange?.VersionRange?.MinVersion ?? new NuGetVersion(0, 0, 0);
+            }
 
             return new PackageIdentity(dependency.Name, version);
         }
