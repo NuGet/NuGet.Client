@@ -79,7 +79,7 @@ namespace NuGet.Packaging.Signing
         {
             var timestampRequest = new TimestampRequest
             {
-                Signature = signature,
+                SignatureValue = signature.GetBytes(),
                 Certificate = request.Certificate,
                 SigningSpec = SigningSpecifications.V1,
                 TimestampHashAlgorithm = request.TimestampHashAlgorithm

@@ -50,10 +50,20 @@ namespace NuGet.Packaging.Signing
 
 
 #if IS_DESKTOP
+
         /// <summary>
-        /// Timestamps a Signature present in the TimestampRequest.
+        /// Timestamps data present in the TimestampRequest.
         /// </summary>
         public Task<Signature> TimestampSignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token)
+        {
+            var timestampedSignature = TimestampData(request, logger, token);
+            return Task.FromResult(Signature.Load(timestampedSignature));
+        }
+
+        /// <summary>
+        /// Timestamps data present in the TimestampRequest.
+        /// </summary>
+        public byte[] TimestampData(TimestampRequest request, ILogger logger, CancellationToken token)
         {
             if (request == null)
             {
@@ -66,7 +76,7 @@ namespace NuGet.Packaging.Signing
             }
 
             // Get the signatureValue from the signerInfo object
-            using (var signatureNativeCms = NativeCms.Decode(request.Signature.GetBytes(), detached: false))
+            using (var signatureNativeCms = NativeCms.Decode(request.SignatureValue, detached: false))
             {
                 var signatureValueHashByteArray = GetSignatureValueHash(
                     request.TimestampHashAlgorithm,
@@ -113,7 +123,7 @@ namespace NuGet.Packaging.Signing
                 signatureNativeCms.AddTimestamp(timestampByteArray);
 
                 // Convert a nativeCms object into a Signature object
-                 return Task.FromResult(Signature.Load(signatureNativeCms.Encode()));
+                 return signatureNativeCms.Encode();
             }
             
         }

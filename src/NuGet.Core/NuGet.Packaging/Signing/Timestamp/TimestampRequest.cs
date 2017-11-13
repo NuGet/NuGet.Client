@@ -17,7 +17,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Signature that needs to be timestamped.
         /// </summary>
-        public Signature Signature { get; set; }
+        public byte[] SignatureValue { get; set; }
 
         /// <summary>
         /// X509Certificate2 used to generate the Signature.
