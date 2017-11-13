@@ -104,20 +104,10 @@ namespace NuGet.ProjectModel
         {
             try
             {
-                using (var jsonReader = new JsonTextReader(reader))
-                {
-                    while (jsonReader.TokenType != JsonToken.StartObject)
-                    {
-                        if (!jsonReader.Read())
-                        {
-                            throw new InvalidDataException();
-                        }
-                    }
-                    var token = JToken.Load(jsonReader);
-                    var lockFile = ReadLockFile(token as JObject);
-                    lockFile.Path = path;
-                    return lockFile;
-                }
+                var json = JsonUtility.LoadJson(reader);
+                var lockFile = ReadLockFile(json);
+                lockFile.Path = path;
+                return lockFile;
             }
             catch (Exception ex)
             {
