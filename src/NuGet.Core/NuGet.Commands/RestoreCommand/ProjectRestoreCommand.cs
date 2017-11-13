@@ -279,6 +279,7 @@ namespace NuGet.Commands
                         // Returns false if the package was a noop once the lock
                         // was acquired.
                         var installed = await PackageExtractor.InstallFromSourceAsync(
+                            packageIdentity,
                             packageDependency,
                             versionFolderPathResolver,
                             packageExtractionContext,

@@ -223,6 +223,7 @@ namespace NuGet.Common
         /// </summary>
         NU3502 = 3502,
 
+        /// <summary>
         /// Undefined Package Error.
         /// </summary>
         NU5000 = 5000,
