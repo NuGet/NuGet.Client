@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,7 +17,7 @@ namespace NuGet.Protocol
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            var v = JObject.Load(reader);
+            var v = JsonUtility.LoadJson(reader);
             var nugetVersion = NuGetVersion.Parse(v.Value<string>("version"));
             var count = v.Value<int?>("downloads");
             return new VersionInfo(nugetVersion, count);
