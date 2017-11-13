@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -425,6 +425,46 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void InstallCommand_FromPackagesConfigFile_VerifyNoopRestoreExitCode()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                Directory.CreateDirectory(repositoryPath);
+                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+                Util.CreateFile(workingPath, "packages.config",
+    @"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                var args = new string[]
+                {
+                    "-OutputDirectory",
+                    "outputDir",
+                    "-Source",
+                    repositoryPath
+                };
+
+                // Restore 1st time
+                var r = RunInstall(pathContext, "", 0, args);
+                r.ExitCode.Should().Be(0);
+
+                // Restore 2nd time
+                r = RunInstall(pathContext, "", 0, args);
+                r.ExitCode.Should().Be(0);
+            }
+        }
+
+        [Fact]
         public void InstallCommand_ShowsAlreadyInstalledMessageWhenAllPackagesArePresent()
         {
             // Arrange
@@ -470,12 +510,13 @@ namespace NuGet.CommandLine.Test
                     repositoryPath
                 };
 
-                var r1 = RunInstall(pathContext, packagesConfig, 1, args2);
+                var r1 = RunInstall(pathContext, packagesConfig, 0, args2);
 
                 // Assert
                 var message = r1.Item2;
                 var alreadyInstalledMessage = string.Format("All packages listed in {0} are already installed.", packagesConfig);
                 Assert.Contains(alreadyInstalledMessage, message, StringComparison.OrdinalIgnoreCase);
+                r1.ExitCode.Should().Be(0);
             }
         }
 
@@ -1063,6 +1104,106 @@ namespace NuGet.CommandLine.Test
                     Assert.True(getPackageByVersionIsCalled);
                     Assert.True(packageDownloadIsCalled);
                 }
+            }
+        }
+
+        [Fact]
+        public void InstallCommand_RunTwiceWithVersionSpecifiedVerifyExitCode()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                var package = new ZipPackage(packageFileName);
+
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                using (var server = new MockServer())
+                {
+                    var getPackageByVersionIsCalled = false;
+                    var packageDownloadIsCalled = false;
+
+                    server.Get.Add("/nuget/$metadata", r =>
+                       Util.GetMockServerResource());
+                    server.Get.Add("/nuget/Packages(Id='testPackage1',Version='1.1.0')", r =>
+                        new Action<HttpListenerResponse>(response =>
+                        {
+                            getPackageByVersionIsCalled = true;
+                            response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
+                            var p1 = server.ToOData(package);
+                            MockServer.SetResponseContent(response, p1);
+                        }));
+
+                    server.Get.Add("/package/testPackage1", r =>
+                        new Action<HttpListenerResponse>(response =>
+                        {
+                            packageDownloadIsCalled = true;
+                            response.ContentType = "application/zip";
+                            using (var stream = package.GetStream())
+                            {
+                                var content = stream.ReadAllBytes();
+                                MockServer.SetResponseContent(response, content);
+                            }
+                        }));
+
+                    server.Get.Add("/nuget", r => "OK");
+
+                    server.Start();
+                    var nugetexe = Util.GetNuGetExePath();
+
+                    // Act
+                    var args = "install testPackage1 -Version 1.1.0 -Source " + server.Uri + "nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        workingPath,
+                        args,
+                        waitForExit: true);
+
+                    var r2 = CommandRunner.Run(
+                        nugetexe,
+                        workingPath,
+                        args,
+                        waitForExit: true);
+
+                    // Assert
+                    r1.ExitCode.Should().Be(0);
+                    r2.ExitCode.Should().Be(0);
+                }
+            }
+        }
+
+        [Fact]
+        public void InstallCommand_WithVersionNotFoundVerifyExitCode()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                // Arrange
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                var nugetexe = Util.GetNuGetExePath();
+
+                // Act
+                var args = "install packageDoesNotExistInFolderABCX -Version 2.1.0 -Source " + pathContext.PackageSource;
+                var r1 = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    args,
+                    waitForExit: true);
+
+                // Assert
+                r1.ExitCode.Should().Be(1);
             }
         }
 
