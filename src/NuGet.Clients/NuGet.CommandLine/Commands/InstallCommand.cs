@@ -210,7 +210,8 @@ namespace NuGet.CommandLine
                     GetDownloadResultUtility.CleanUpDirectDownloads(downloadContext);
                 }
 
-                if (!result.Restored || failedEvents.Count > 0)
+                // Use failure count to determine errors. result.Restored will be false for noop restores.
+                if (failedEvents.Count > 0)
                 {
                     // Log errors if they exist
                     foreach (var message in failedEvents.Select(e => new RestoreLogMessage(LogLevel.Error, NuGetLogCode.Undefined, e.Exception.Message)))

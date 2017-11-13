@@ -267,11 +267,11 @@ namespace NuGet.ProjectModel
             JObject json;
 
             using (var stream = new FileStream(packageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (var reader = new JsonTextReader(new StreamReader(stream)))
+            using (var reader = new StreamReader(stream))
             {
                 try
                 {
-                    json = JObject.Load(reader);
+                    json = JsonUtility.LoadJson(reader);
                 }
                 catch (JsonReaderException ex)
                 {

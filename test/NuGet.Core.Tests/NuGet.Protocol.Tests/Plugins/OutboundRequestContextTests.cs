@@ -89,6 +89,32 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public void CancellationToken_LinksOriginalCancellationToken()
+        {
+            using (var test = new OutboundRequestContextTest())
+            {
+                Assert.False(test.Context.CancellationToken.IsCancellationRequested);
+
+                test.CancellationTokenSource.Cancel();
+
+                Assert.True(test.Context.CancellationToken.IsCancellationRequested);
+            }
+        }
+
+        [Fact]
+        public void CancellationToken_CancelledWhenDisposed()
+        {
+            using (var test = new OutboundRequestContextTest())
+            {
+                Assert.False(test.Context.CancellationToken.IsCancellationRequested);
+
+                test.Context.Dispose();
+
+                Assert.True(test.Context.CancellationToken.IsCancellationRequested);
+            }
+        }
+
+        [Fact]
         public void Dispose_DoesNotDisposeConnection()
         {
             using (var test = new OutboundRequestContextTest())

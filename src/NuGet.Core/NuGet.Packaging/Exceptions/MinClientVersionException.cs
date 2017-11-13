@@ -16,7 +16,7 @@ namespace NuGet.Packaging
         {
         }
 
-        public ILogMessage AsLogMessage()
+        public override ILogMessage AsLogMessage()
         {
             return LogMessage.CreateError(NuGetLogCode.NU1401, Message);
         }

@@ -18,6 +18,42 @@ namespace NuGet.Packaging.Test
     public class PackageArchiveReaderTests
     {
         [Fact]
+        public void Constructor_WithStringPathParameter_DisposesInvalidStream()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var path = Path.Combine(testDirectory, "invalid.nupkg");
+                File.WriteAllText(path, "This is not a valid .zip archive.");
+
+                // Act & Assert
+                Assert.Throws<InvalidDataException>(() =>
+                    new PackageArchiveReader(path).Dispose());
+                
+                File.Delete(path);
+                Assert.False(File.Exists(path), "The invalid .zip archive should not exist.");
+            }
+        }
+
+        [Fact]
+        public void Dispose_WithStringPathConstructorParameter_DisposesStream()
+        {
+            // Arrange
+            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            {
+                var packageArchiveReader = new PackageArchiveReader(test);
+                var identity = packageArchiveReader.GetIdentity();
+
+                // Act
+                packageArchiveReader.Dispose();
+
+                // Assert
+                File.Delete(test);
+                Assert.False(File.Exists(test), "The .zip archive should not exist.");
+            }
+        }
+
+        [Fact]
         public void GetReferenceItems_RespectsReferencesAccordingToDifferentFrameworks()
         {
             // Copy of the InstallPackageRespectReferencesAccordingToDifferentFrameworks functional test

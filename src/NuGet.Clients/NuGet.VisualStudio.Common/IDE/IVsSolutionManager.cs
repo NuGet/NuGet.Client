@@ -80,22 +80,5 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Return true if all the .net core projects are nominated.
         /// </summary>
         Task<bool> IsAllProjectsNominatedAsync();
-
-        /// <summary>
-        /// Return collection of safe name for all supported projects in solution.
-        /// </summary>
-        Task<IEnumerable<string>> GetAllNuGetProjectSafeNameAsync();
-
-        /// <summary>
-        /// Check for all the pre-conditions before showing manager ui at solution level. And
-        /// return KeyValuePair, where key represents if solution is available to work. And
-        /// value represents if solution has any project which NuGet supports.
-        /// </summary>
-        Task<KeyValuePair<bool, bool>> CheckSolutionUIPreConditionsAsync();
-
-        /// <summary>
-        /// Returns true if solution has any deferred project.
-        /// </summary>
-        Task<bool> SolutionHasDeferredProjectsAsync();
     }
 }

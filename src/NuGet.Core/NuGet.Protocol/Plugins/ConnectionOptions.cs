@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using NuGet.Common;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Plugins
@@ -12,6 +13,9 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public sealed class ConnectionOptions
     {
+        private const string _handshakeTimeoutEnvironmentVariable = "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS";
+        private const string _requestTimeoutEnvironmentVariable = "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS";
+
         /// <summary>
         /// Gets the plugin handshake timeout.
         /// </summary>
@@ -126,14 +130,23 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Instantiates a <see cref="ConnectionOptions" /> class with default values.
         /// </summary>
+        /// <param name="reader">An environment variable reader.</param>
         /// <returns>A <see cref="ConnectionOptions" />.</returns>
-        public static ConnectionOptions CreateDefault()
+        public static ConnectionOptions CreateDefault(IEnvironmentVariableReader reader = null)
         {
+            reader = reader ?? new EnvironmentVariableWrapper();
+
+            var handshakeTimeoutInSeconds = reader.GetEnvironmentVariable(_handshakeTimeoutEnvironmentVariable);
+            var requestTimeoutInSeconds = reader.GetEnvironmentVariable(_requestTimeoutEnvironmentVariable);
+
+            var handshakeTimeout = TimeoutUtilities.GetTimeout(handshakeTimeoutInSeconds, ProtocolConstants.HandshakeTimeout);
+            var requestTimeout = TimeoutUtilities.GetTimeout(requestTimeoutInSeconds, ProtocolConstants.RequestTimeout);
+
             return new ConnectionOptions(
                 protocolVersion: ProtocolConstants.CurrentVersion,
                 minimumProtocolVersion: ProtocolConstants.CurrentVersion,
-                handshakeTimeout: ProtocolConstants.HandshakeTimeout,
-                requestTimeout: ProtocolConstants.RequestTimeout);
+                handshakeTimeout: handshakeTimeout,
+                requestTimeout: requestTimeout);
         }
     }
 }

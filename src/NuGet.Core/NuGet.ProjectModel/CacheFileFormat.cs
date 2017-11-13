@@ -28,19 +28,9 @@ namespace NuGet.ProjectModel
         {
             try
             {
-                using (var jsonReader = new JsonTextReader(reader))
-                {
-                    while (jsonReader.TokenType != JsonToken.StartObject)
-                    {
-                        if (!jsonReader.Read())
-                        {
-                            throw new InvalidDataException();
-                        }
-                    }
-                    var token = JToken.Load(jsonReader);
-                    var cacheFile = ReadCacheFile(token as JObject);
-                    return cacheFile;
-                }
+                var json = JsonUtility.LoadJson(reader);
+                var cacheFile = ReadCacheFile(json);
+                return cacheFile;
             }
             catch (Exception ex)
             {

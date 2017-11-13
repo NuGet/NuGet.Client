@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,9 +32,15 @@ namespace NuGet.RuntimeModel
 
         public static RuntimeGraph ReadRuntimeGraph(TextReader textReader)
         {
+            var loadSettings = new JsonLoadSettings()
+            {
+                LineInfoHandling = LineInfoHandling.Ignore,
+                CommentHandling = CommentHandling.Ignore
+            };
+
             using (var jsonReader = new JsonTextReader(textReader))
             {
-                return ReadRuntimeGraph(JToken.Load(jsonReader));
+                return ReadRuntimeGraph(JToken.Load(jsonReader, loadSettings));
             }
         }
 

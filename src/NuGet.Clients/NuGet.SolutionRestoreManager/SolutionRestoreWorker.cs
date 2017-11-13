@@ -32,6 +32,7 @@ namespace NuGet.SolutionRestoreManager
         private const int RequestQueueLimit = 150;
         private const int PromoteAttemptsLimit = 150;
         private const int DelayAutoRestoreRetries = 50;
+        private const int DelaySolutionLoadRetry = 100;
 
         private readonly IServiceProvider _serviceProvider;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
@@ -321,8 +322,24 @@ namespace NuGet.SolutionRestoreManager
             // Hops onto a background pool thread
             await TaskScheduler.Default;
 
-            // Waits until the solution is fully loaded or canceled
-            await _solutionLoadedEvent.WaitAsync().WithCancellation(token);
+            // Check if the solution is fully loaded
+            while (!_solutionLoadedEvent.IsSet)
+            {
+                // Needed when OnAfterBackgroundSolutionLoadComplete fires before
+                // Advise has been called.
+                if (await IsSolutionFullyLoadedAsync())
+                {
+                    _solutionLoadedEvent.Set();
+                    break;
+                }
+                else
+                {
+                    // Waits for 100ms to let solution fully load or canceled
+                    await _solutionLoadedEvent.WaitAsync()
+                        .WithTimeout(TimeSpan.FromMilliseconds(DelaySolutionLoadRetry))
+                        .WithCancellation(token);
+                }
+            }
 
             // Loops forever until it's get cancelled
             while (!token.IsCancellationRequested)

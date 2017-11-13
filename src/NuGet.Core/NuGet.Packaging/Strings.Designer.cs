@@ -116,6 +116,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Manifest file not found at &apos;{0}&apos;.
+        /// </summary>
+        internal static string ErrorManifestFileNotFound {
+            get {
+                return ResourceManager.GetString("ErrorManifestFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Null or empty package id.
         /// </summary>
         internal static string ErrorNullOrEmptyPackageId {

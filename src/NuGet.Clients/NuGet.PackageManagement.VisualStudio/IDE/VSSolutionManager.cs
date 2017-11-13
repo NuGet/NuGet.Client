@@ -230,11 +230,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetProject.GetUniqueNameOrName(nuGetProject);
         }
 
-        public async Task<IEnumerable<string>> GetAllNuGetProjectSafeNameAsync()
-        {
-            return await Task.WhenAll((await GetNuGetProjectsAsync()).Select(GetNuGetProjectSafeNameAsync));
-        }
-
         public async Task<IEnumerable<NuGetProject>> GetNuGetProjectsAsync()
         {
             InitializationTask = EnsureInitializeAsync();
@@ -296,77 +291,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public async Task<KeyValuePair<bool, bool>> CheckSolutionUIPreConditionsAsync()
-        {
-            // Do NOT initialize VSSolutionManager through this API (by calling EnsureInitializeAsync)
-            // This checks all the pre-conditions before showing NuGet manager UI at solution level
-            // without initializing full VSSolutionManager, otherwise it will create hang issues.
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            await EnsureInitializeAsync();
-
-            bool? isSolutionAvailable = null;
-            var DoesNuGetSupportsAnyProject = false;
-
-            if (!IsSolutionOpen)
-            {
-                // Solution is not open. return immediately with false
-                return new KeyValuePair<bool, bool>(false, false);
-            }
-
-            if (!DoesSolutionRequireAnInitialSaveAs())
-            {
-                // Solution is open and 'Save As' is not required. So solution is available to operate but
-                // we also need to check if solution has any supported NuGet project.
-                isSolutionAvailable = true;
-            }
-
-            // read all deferred projects and check for packages.config based projects
-            var deferredProjects = await GetDeferredProjectsAsync();
-
-            foreach (var project in deferredProjects)
-            {
-                var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForDeferredProjectAsync(project);
-
-                // project is supported in NuGet, then set DoesNuGetSupportsAnyProject
-                if (vsProjectAdapter.IsSupported)
-                {
-                    DoesNuGetSupportsAnyProject = true;
-
-                    if (isSolutionAvailable == true)
-                    {
-                        // solution is available and also has NuGet supported project, so we don't need to go further.
-                        break;
-                    }
-
-                    // construct packages.config file path and check if it exists
-                    var packagesConfigFilePath = Path.Combine(Path.GetDirectoryName(vsProjectAdapter.FullProjectPath), "packages.config");
-                    var DoesPackagesConfigFileExist = await _vsProjectAdapterProvider.EntityExistsAsync(packagesConfigFilePath);
-
-                    if (DoesPackagesConfigFileExist)
-                    {
-                        if (isSolutionAvailable != true)
-                        {
-                            // if there is any project with packages.config and solution is also required to be saved then solution is not available.
-                            isSolutionAvailable = false;
-
-                            // we got the final result for both the conditions so we can break now.
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Finally, solution is open and not saved. And, only contains project.json based projects.
-            // Check if globalPackagesFolder is a full path. If so, solution is available.
-            if (isSolutionAvailable == null)
-            {
-                var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(_settings.Value);
-                isSolutionAvailable = Path.IsPathRooted(globalPackagesFolder);
-            }
-
-            return new KeyValuePair<bool, bool>(isSolutionAvailable == true, DoesNuGetSupportsAnyProject);
-        }
-
         public async Task<bool> IsSolutionAvailableAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -416,34 +340,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Where(EnvDTEProjectUtility.IsSupported)
                 .Any();
 
-            if (isSupported)
-            {
-                return true;
-            }
-
-            var deferredProjects = await GetDeferredProjectsAsync();
-
-            foreach (var project in deferredProjects)
-            {
-                try
-                {
-                    var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForDeferredProjectAsync(project);
-
-                    if (vsProjectAdapter.IsSupported)
-                    {
-                        // as soon as we find a supported project, we returns without checking for all the projects.
-                        return true;
-                    }
-                }
-                catch (Exception e)
-                {
-                    // Ignore failed projects.
-                    _logger.LogWarning($"The project {project} failed to initialize as a NuGet project.");
-                    _logger.LogError(e.ToString());
-                }
-            }
-
-            return false;
+            return isSupported;
         }
 
         public void EnsureSolutionIsLoaded()
@@ -483,80 +380,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     return Path.GetDirectoryName(solutionFilePath);
                 });
             }
-        }
-
-        private async Task<bool> IsSolutionDPLEnabledAsync()
-        {
-#if VS14
-            // for Dev14 always return false since DPL not exists there.
-            return await Task.FromResult(false);
-#else
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            await EnsureInitializeAsync();
-
-            var vsSolution7 = _vsSolution as IVsSolution7;
-
-            if (vsSolution7 != null && vsSolution7.IsSolutionLoadDeferred())
-            {
-                return true;
-            }
-
-            return false;
-#endif
-        }
-
-        public async Task<bool> SolutionHasDeferredProjectsAsync()
-        {
-#if VS14
-            // for Dev14 always return false since DPL not exists there.
-            return await Task.FromResult(false);
-#else
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            await EnsureInitializeAsync();
-
-            // check if solution is DPL enabled or not. 
-            if (!await IsSolutionDPLEnabledAsync())
-            {
-                return false;
-            }
-
-            // Get deferred projects count of current solution
-            var value = GetVSSolutionProperty((int)(__VSPROPID7.VSPROPID_DeferredProjectCount));
-            return (int)value != 0;
-#endif
-        }
-
-        public async Task<IEnumerable<IVsHierarchy>> GetDeferredProjectsAsync()
-        {
-#if VS14
-            // Not applicable for Dev14 so always return empty list.
-            return await Task.FromResult(Enumerable.Empty<IVsHierarchy>());
-#else
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            await EnsureInitializeAsync();
-
-            var projectIVsHierarchys = new List<IVsHierarchy>();
-
-            IEnumHierarchies enumHierarchies;
-            var guid = Guid.Empty;
-
-            var hr = _vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS3.EPF_DEFERRED, ref guid, out enumHierarchies);
-            ErrorHandler.ThrowOnFailure(hr);
-
-            // Loop all projects found
-            if (enumHierarchies != null)
-            {
-                // Loop projects found
-                var hierarchy = new IVsHierarchy[1];
-                uint fetched = 0;
-                while (enumHierarchies.Next(1, hierarchy, out fetched) == VSConstants.S_OK && fetched == 1)
-                {
-                    projectIVsHierarchys.Add(hierarchy[0]);
-                }
-            }
-
-            return projectIVsHierarchys;
-#endif
         }
 
         private async Task<string> GetSolutionFilePathAsync()
@@ -809,26 +632,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     try
                     {
-                        var deferredProjects = await GetDeferredProjectsAsync();
-
-                        foreach (var project in deferredProjects)
-                        {
-                            try
-                            {
-                                var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForDeferredProjectAsync(project);
-                                await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
-                            }
-                            catch (Exception e)
-                            {
-                                // Ignore failed projects.
-                                _logger.LogWarning($"The project {project} failed to initialize as a NuGet project.");
-                                _logger.LogError(e.ToString());
-                            }
-
-                            // Consider that the cache is initialized only when there are any projects to add.
-                            _cacheInitialized = true;
-                        }
-
                         var dte = _serviceProvider.GetDTE();
 
                         var supportedProjects = EnvDTESolutionUtility
@@ -874,7 +677,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            _projectSystemCache.TryGetProjectNameByShortName(vsProjectAdapter.ProjectName, out ProjectNames oldProjectName);
+            _projectSystemCache.TryGetProjectNameByShortName(vsProjectAdapter.ProjectName, out var oldProjectName);
 
             // Create the NuGet project first. If this throws we bail out and do not change the cache.
             var nuGetProject = await CreateNuGetProjectAsync(vsProjectAdapter);
@@ -996,7 +799,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var referencedProjects = await vsProjectAdapter.GetReferencedProjectsAsync();
                 foreach (var projectProjectPath in referencedProjects)
                 {
-                    var result = _projectSystemCache.TryGetVsProjectAdapter(projectProjectPath, out IVsProjectAdapter vsReferencedProject);
+                    var result = _projectSystemCache.TryGetVsProjectAdapter(projectProjectPath, out var vsReferencedProject);
                     if (result)
                     {
                         AddDependentProject(dependentProjectsDictionary, vsReferencedProject, vsProjectAdapter);
@@ -1014,7 +817,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var uniqueName = vsProjectAdapter.UniqueName;
 
-            if (!dependentProjectsDictionary.TryGetValue(uniqueName, out List<IVsProjectAdapter> dependentProjects))
+            if (!dependentProjectsDictionary.TryGetValue(uniqueName, out var dependentProjects))
             {
                 dependentProjects = new List<IVsProjectAdapter>();
                 dependentProjectsDictionary[uniqueName] = dependentProjects;

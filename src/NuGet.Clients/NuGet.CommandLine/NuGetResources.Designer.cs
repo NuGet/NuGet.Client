@@ -19,7 +19,7 @@ namespace NuGet.CommandLine {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class NuGetResources {
@@ -2329,6 +2329,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid AssemblyInformationalVersion {0} on assembly {1}..
         /// </summary>
         public static string Error_AssemblyInformationalVersion {
@@ -3081,6 +3090,51 @@ namespace NuGet.CommandLine {
         public static string Error_ProjectJsonNotAllowed {
             get {
                 return ResourceManager.GetString("Error_ProjectJsonNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Response file &apos;{0}&apos; does not exist.
+        /// </summary>
+        public static string Error_ResponseFileDoesNotExist {
+            get {
+                return ResourceManager.GetString("Error_ResponseFileDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid response file, &apos;@&apos; does not exist.
+        /// </summary>
+        public static string Error_ResponseFileInvalid {
+            get {
+                return ResourceManager.GetString("Error_ResponseFileInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No more than {0} nested response files are allowed.
+        /// </summary>
+        public static string Error_ResponseFileMaxRecursionDepth {
+            get {
+                return ResourceManager.GetString("Error_ResponseFileMaxRecursionDepth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Response file &apos;{0}&apos; cannot be empty.
+        /// </summary>
+        public static string Error_ResponseFileNullOrEmpty {
+            get {
+                return ResourceManager.GetString("Error_ResponseFileNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Response file &apos;{0}&apos; cannot be larger than {1}mb.
+        /// </summary>
+        public static string Error_ResponseFileTooLarge {
+            get {
+                return ResourceManager.GetString("Error_ResponseFileTooLarge", resourceCulture);
             }
         }
         

@@ -176,11 +176,6 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public virtual void CreateProjectLists()
-        {
-            // by default do nothing, since it's only applicable at solution level.
-        }
-
         public virtual void OnFilterChanged(ItemFilter? previousFilter, ItemFilter currentFilter)
         {
             _filter = currentFilter;

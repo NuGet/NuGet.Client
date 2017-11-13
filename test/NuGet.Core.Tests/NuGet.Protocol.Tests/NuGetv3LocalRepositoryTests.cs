@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
@@ -143,6 +144,39 @@ namespace NuGet.Repositories.Test
 
                 // Assert
                 Assert.Empty(packages);
+            }
+        }
+
+        [Theory]
+        [InlineData("foo")]
+        [InlineData("Foo")]
+        public async Task NuGetv3LocalRepository_Exists_WorksForAllCases(string id)
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                var target = new NuGetv3LocalRepository(workingDir);
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    workingDir,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext("foo", "1.0.0"));
+
+                target.Exists(id, NuGetVersion.Parse("1.0.0")).Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task NuGetv3LocalRepository_Exists_DoesNotExist()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                var target = new NuGetv3LocalRepository(workingDir);
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    workingDir,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext("foo", "1.0.0"));
+
+                target.Exists("foo", NuGetVersion.Parse("2.0.0")).Should().BeFalse();
+                target.Exists("bar", NuGetVersion.Parse("1.0.0")).Should().BeFalse();
             }
         }
 

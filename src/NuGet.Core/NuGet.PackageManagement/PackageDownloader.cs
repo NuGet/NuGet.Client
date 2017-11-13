@@ -180,7 +180,16 @@ namespace NuGet.PackageManagement
 
                 foreach (var task in failedTasks)
                 {
-                    var message = ExceptionUtilities.DisplayMessage(task.Exception);
+                    string message;
+
+                    if (task.Exception == null)
+                    {
+                        message = task.Status.ToString();
+                    }
+                    else
+                    {
+                        message = ExceptionUtilities.DisplayMessage(task.Exception);
+                    }
 
                     errors.AppendLine($"  {tasksLookup[task].PackageSource.Source}: {message}");
                 }

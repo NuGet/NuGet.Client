@@ -452,11 +452,11 @@ namespace NuGet.Protocol.Plugins
 
                     try
                     {
-                        await connection.SendAsync(message, cancellationToken);
+                        await connection.SendAsync(message, requestContext.CancellationToken);
 
                         return await requestContext.CompletionTask;
                     }
-                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    catch (OperationCanceledException) when (requestContext.CancellationToken.IsCancellationRequested)
                     {
                         // Keep the request context around if cancellation was requested.
                         // A race condition exists where after sending a cancellation request,

@@ -609,46 +609,21 @@ namespace NuGetVSExtension
                 (uint)_VSRDTFLAGS.RDT_DontAddToMRU |
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
 
-            if (await SolutionManager.Value.SolutionHasDeferredProjectsAsync() && !SolutionManager.Value.IsInitialized)
+            // when VSSolutionManager is already initialized, then use the existing APIs to check pre-conditions.
+            if (!await SolutionManager.Value.IsSolutionAvailableAsync())
             {
-                // when VSSolutionManager is not yet initialized, then do a quick pre-condition checks without initializing it fully
-                // which might take some time so we'll initialize it after showing the manager ui window.
-                var preCheckResult = await SolutionManager.Value.CheckSolutionUIPreConditionsAsync();
-
-                // key represent if solution is available or not.
-                if (!preCheckResult.Key)
-                {
-                    throw new InvalidOperationException(Resources.SolutionIsNotSaved);
-                }
-
-                // value represent if there is any project in the solution which NuGet supports.
-                if (!preCheckResult.Value)
-                {
-                    // NOTE: The menu 'Manage NuGet Packages For Solution' will be disabled in this case.
-                    // But, it is possible, that, before NuGetPackage is loaded in VS, the menu is enabled and used.
-                    // For once, this message will be shown. Once the package is loaded, the menu will get disabled as appropriate
-                    MessageHelper.ShowWarningMessage(Resources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
-                    return null;
-                }
+                throw new InvalidOperationException(Resources.SolutionIsNotSaved);
             }
-            else
-            {
-                // when VSSolutionManager is already initialized, then use the existing APIs to check pre-conditions.
-                if (!await SolutionManager.Value.IsSolutionAvailableAsync())
-                {
-                    throw new InvalidOperationException(Resources.SolutionIsNotSaved);
-                }
 
-                var projects = await SolutionManager.Value.GetNuGetProjectsAsync();
-                if (!projects.Any())
-                {
-                    MessageHelper.ShowWarningMessage(Resources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
-                    return null;
-                }
+            var projects = (await SolutionManager.Value.GetNuGetProjectsAsync()).ToArray();
+            if (projects.Length == 0)
+            {
+                MessageHelper.ShowWarningMessage(Resources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
+                return null;
             }
 
             // pass empty array of NuGetProject
-            var uiController = UIFactory.Value.Create(new NuGetProject[0]);
+            var uiController = UIFactory.Value.Create(projects);
 
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
 
