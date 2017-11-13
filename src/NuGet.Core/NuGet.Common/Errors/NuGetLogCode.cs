@@ -238,32 +238,37 @@ namespace NuGet.Common
         /// <summary>
         /// Author cert not valid when timestamped
         /// </summary>
-        NU3901 = 3901,
+        NU3401 = 3401,
 
         /// <summary>
         /// Timestamper cert chain does not build
         /// </summary>
-        NU3902 = 3902,
+        NU3402 = 3402,
 
         /// <summary>
         /// Timestamper cert does not have the right Enhanced Key Usage
         /// </summary>
-        NU3903 = 3903,
+        NU3403 = 3403,
 
         /// <summary>
         /// Timestamp response does not have the right signature value hash
         /// </summary>
-        NU3904 = 3904,
+        NU3404 = 3404,
 
         /// <summary>
-        /// TImestamp response does not have the right nonce
+        /// Timestamp response does not have the right nonce
         /// </summary>
-        NU3905 = 3905,
+        NU3405 = 3405,
 
         /// <summary>
         /// Timestamp response does not have a valid hash algorithm oid
         /// </summary>
-        NU3906 = 3906,
+        NU3406 = 3406,
+
+        /// <summary>
+        /// Timestamp url not passed to sign command
+        /// </summary>
+        NU3901 = 3901,
 
         /// <summary>
         /// Undefined Package Error.

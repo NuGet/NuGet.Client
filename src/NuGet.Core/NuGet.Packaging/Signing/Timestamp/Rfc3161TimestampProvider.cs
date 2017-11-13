@@ -160,7 +160,7 @@ namespace NuGet.Packaging.Signing
                 request.Certificate.NotBefore > timestampLowerGenTime)
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3901,
+                    NuGetLogCode.NU3401,
                     string.Format(CultureInfo.CurrentCulture, Strings.TimestampFailureAuthorCertNotValid)));
             }
         }
@@ -173,7 +173,7 @@ namespace NuGet.Packaging.Signing
             {
                 //TODO throw better error message about the chain building failure
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3902,
+                    NuGetLogCode.NU3402,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureCertChainBuildFailure)));
@@ -182,7 +182,7 @@ namespace NuGet.Packaging.Signing
             if (!SigningUtility.CertificateContainsEku(signerCert, Oids.TimeStampingEkuOid))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3903,
+                    NuGetLogCode.NU3403,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureCertInvalidEku)));
@@ -200,7 +200,7 @@ namespace NuGet.Packaging.Signing
             if (!timestampToken.TokenInfo.HasMessageHash(signatureValueHashByteArray))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3904,
+                    NuGetLogCode.NU3404,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureInvalidHash)));
@@ -209,7 +209,7 @@ namespace NuGet.Packaging.Signing
             if (!nonce.SequenceEqual(timestampToken.TokenInfo.GetNonce()))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3905,
+                    NuGetLogCode.NU3405,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureNonceMismatch)));
@@ -218,7 +218,7 @@ namespace NuGet.Packaging.Signing
             if (!request.SigningSpec.AllowedHashAlgorithmOids.Contains(tokenSigner.DigestAlgorithm.Value))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3906,
+                    NuGetLogCode.NU3406,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureInvalidHashAlgorithmOid)));

@@ -81,7 +81,7 @@ namespace NuGet.CommandLine
         public SignArgs GetSignArgs()
         {
             ValidatePackagePath();
-            ValidateTimestamper();
+            WarnIfNoTimestamper(Console);
             ValidateCertificateInputs();
             ValidateOutputDirectory();
 
@@ -170,13 +170,11 @@ namespace NuGet.CommandLine
             }
         }
 
-        private void ValidateTimestamper()
+        private void WarnIfNoTimestamper(ILogger logger)
         {
             if (string.IsNullOrEmpty(Timestamper))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    NuGetCommand.SignCommandNoArgumentException,
-                    nameof(Timestamper)));
+                logger.Log(LogMessage.CreateWarning(NuGetLogCode.NU3901, NuGetCommand.SignCommandNoTimestamperWarning));
             }
         }
 

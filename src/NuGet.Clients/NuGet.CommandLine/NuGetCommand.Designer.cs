@@ -11658,6 +11658,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No &apos;-Timestamper&apos; option was provided the signed package will not be timestamped and will become invalid once the signing certificate expires. To learn more about this option, please visit For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandNoTimestamperWarning {
+            get {
+                return ResourceManager.GetString("SignCommandNoTimestamperWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Directory where the signed package should be saved. By default the original package is overwritten by the signed package..
         /// </summary>
         internal static string SignCommandOutputDirectoryDescription {
