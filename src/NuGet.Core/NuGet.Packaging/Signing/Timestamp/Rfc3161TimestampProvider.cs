@@ -5,7 +5,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 #if IS_DESKTOP
@@ -17,7 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 
-[assembly: InternalsVisibleTo("NuGet.Packaging.FuncTest")]
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
@@ -57,8 +55,6 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public Task<Signature> TimestampSignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token)
         {
-            token.ThrowIfCancellationRequested();
-
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
@@ -70,7 +66,7 @@ namespace NuGet.Packaging.Signing
             }
 
             // Get the signatureValue from the signerInfo object
-            using (var signatureNativeCms = NativeCms.Decode(request.SignatureValue, detached: false))
+            using (var signatureNativeCms = NativeCms.Decode(request.Signature.GetBytes(), detached: false))
             {
                 var signatureValueHashByteArray = GetSignatureValueHash(
                     request.TimestampHashAlgorithm,
@@ -80,14 +76,16 @@ namespace NuGet.Packaging.Signing
                 var nonce = GenerateNonce();
 
                 var rfc3161TimestampRequest = new Rfc3161TimestampRequest(
-                    signatureValueHashByteArray,
-                    request.TimestampHashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(),
-                    nonce: nonce,
-                    requestSignerCertificates: true);
+                signatureValueHashByteArray,
+                request.TimestampHashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(),
+                nonce: nonce,
+                requestSignerCertificates: true);
 
                 // Request a timestamp
                 // The response status need not be checked here as lower level api will throw if the response is invalid
-                var timestampToken = GetTimestampToken(rfc3161TimestampRequest);
+                var timestampToken = rfc3161TimestampRequest.SubmitRequest(
+                    _timestamperUrl,
+                    TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
 
                 // Verify the response
                 var timestampCms = timestampToken.AsSignedCms();
@@ -115,16 +113,9 @@ namespace NuGet.Packaging.Signing
                 signatureNativeCms.AddTimestamp(timestampByteArray);
 
                 // Convert a nativeCms object into a Signature object
-                return Task.FromResult(Signature.Load(signatureNativeCms.Encode()));
+                 return Task.FromResult(Signature.Load(signatureNativeCms.Encode()));
             }
-
-        }
-
-        internal virtual Rfc3161TimestampToken GetTimestampToken(Rfc3161TimestampRequest rfc3161TimestampRequest)
-        {
-            return rfc3161TimestampRequest.SubmitRequest(
-                _timestamperUrl,
-                TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
+            
         }
 
         private static void InsertTimestamperCertificateChainIntoTimestampCms(
