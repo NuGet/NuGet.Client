@@ -33,6 +33,8 @@ namespace NuGet.Tests.Apex
 
         public abstract void EnsureVisualStudioHost();
 
+        public abstract void CloseVisualStudioHost();
+
         public virtual NuGetApexTestService GetNuGetTestService()
         {
             EnsureVisualStudioHost();
@@ -41,6 +43,7 @@ namespace NuGet.Tests.Apex
 
         public virtual void Dispose()
         {
+            CloseVisualStudioHost();
             //test cleanup
         }
     }

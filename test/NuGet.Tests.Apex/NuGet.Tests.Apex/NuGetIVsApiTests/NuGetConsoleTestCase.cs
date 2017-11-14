@@ -4,6 +4,7 @@
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.Test.Utility;
 using Xunit;
+using System.Threading;
 
 namespace NuGet.Tests.Apex
 {
@@ -21,12 +22,11 @@ namespace NuGet.Tests.Apex
             {
                 // Arrange
                 EnsureVisualStudioHost();
-                var dte = VisualStudio.Dte;
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                dte.ExecuteCommand("View.PackageManagerConsole");
                 var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
+                OpenNuGetPMC();
 
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
@@ -41,7 +41,6 @@ namespace NuGet.Tests.Apex
                 Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion));
 
                 nugetConsole.Clear();
-                solutionService.Close();
             }
         }
 
@@ -52,12 +51,11 @@ namespace NuGet.Tests.Apex
             {
                 // Arrange
                 EnsureVisualStudioHost();
-                var dte = VisualStudio.Dte;
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                dte.ExecuteCommand("View.PackageManagerConsole");
                 var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
+                OpenNuGetPMC();
 
                 var nugetTestService = GetNuGetTestService();
                 var nugetConsole = nugetTestService.GetPackageManagerConsole(project.UniqueName);
@@ -70,7 +68,6 @@ namespace NuGet.Tests.Apex
                 Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion));
 
                 nugetConsole.Clear();
-                solutionService.Close();
             }
         }
 
@@ -81,12 +78,11 @@ namespace NuGet.Tests.Apex
             {
                 // Arrange
                 EnsureVisualStudioHost();
-                var dte = VisualStudio.Dte;
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                dte.ExecuteCommand("View.PackageManagerConsole");
                 var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
+                OpenNuGetPMC();
 
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
@@ -104,7 +100,6 @@ namespace NuGet.Tests.Apex
                 Assert.False(nugetConsole.IsPackageInstalled(packageName, packageVersion));
 
                 nugetConsole.Clear();
-                solutionService.Close();
             }
         }
 
@@ -115,12 +110,11 @@ namespace NuGet.Tests.Apex
             {
                 // Arrange
                 EnsureVisualStudioHost();
-                var dte = VisualStudio.Dte;
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                dte.ExecuteCommand("View.PackageManagerConsole");
                 var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
+                OpenNuGetPMC();
 
                 var packageName = "TestPackage";
                 var packageVersion1 = "1.0.0";
@@ -141,8 +135,17 @@ namespace NuGet.Tests.Apex
                 Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion2));
 
                 nugetConsole.Clear();
-                solutionService.Close();
             }
+        }
+
+        private void OpenNuGetPMC()
+        {
+            var dte = VisualStudio.Dte;
+            dte.ExecuteCommand("View.PackageManagerConsole");
+            // We need to wait for the tool window to be initialized
+            // Because it is started on idle there is no way to make sure it
+            // has been initialized, so just pause for 10 seconds.
+            Thread.Sleep(10000);
         }
 
 
