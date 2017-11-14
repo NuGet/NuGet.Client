@@ -500,6 +500,12 @@ function Append-TextResult
     )
 
     $row = Get-TextResultRow $Result
+    $numLines = $row | Measure-Object -Line
+    if($numLines.Lines -gt 1)
+    {
+        $rowArray = $row.Split([environment]::NewLine)
+        $row = [string]::Join(" ", $rowArray)
+    }
     $row >> $Path
 }
 

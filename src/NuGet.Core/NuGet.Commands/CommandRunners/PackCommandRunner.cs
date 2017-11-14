@@ -131,8 +131,73 @@ namespace NuGet.Commands
                 PrintVerbose(outputPath, builder);
             }
 
+            if (_packArgs.InstallPackageToOutputPath)
+            {
+                _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "Package", outputPath));
+                WriteResolvedNuSpecToPackageOutputDirectory(builder);
+                WriteSHA512PackageHash(builder);
+            }
+
             _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath));
             return new PackageArchiveReader(outputPath);
+        }
+
+        /// <summary>
+        /// Writes the resolved NuSpec file to the package output directory.
+        /// </summary>
+        /// <param name="builder">The package builder</param>
+        private void WriteResolvedNuSpecToPackageOutputDirectory(PackageBuilder builder)
+        {
+            var outputPath = GetOutputPath(builder, _packArgs, false, builder.Version);
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+
+            var resolvedNuSpecOutputPath = Path.Combine(
+                Path.GetDirectoryName(outputPath), 
+                new VersionFolderPathResolver(outputPath).GetManifestFileName(builder.Id, builder.Version));
+
+            _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "NuSpec", resolvedNuSpecOutputPath));
+
+            if (string.Equals(_packArgs.Path, resolvedNuSpecOutputPath, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new PackagingException(NuGetLogCode.NU5001, string.Format(CultureInfo.CurrentCulture, Strings.Error_WriteResolvedNuSpecOverwriteOriginal, _packArgs.Path));
+            }
+
+            // We must use the Path.GetTempPath() which NuGetFolderPath.Temp uses as a root because writing temp files to the package directory with a guid would break some build tools caching
+            var manifest = new Manifest(new ManifestMetadata(builder), null);
+            var tempOutputPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetFileName(resolvedNuSpecOutputPath));
+            using (Stream stream = new FileStream(tempOutputPath, FileMode.Create))
+            {
+                manifest.Save(stream);
+            }
+
+            FileUtility.Replace(tempOutputPath, resolvedNuSpecOutputPath);
+        }
+
+        /// <summary>
+        /// Writes the sha512 package hash file to the package output directory
+        /// </summary>
+        /// <param name="builder">The package builder</param>
+        private void WriteSHA512PackageHash(PackageBuilder builder)
+        {
+            var outputPath = GetOutputPath(builder, _packArgs, false, builder.Version);
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+
+            var sha512OutputPath = Path.Combine(outputPath + ".sha512");
+
+            // We must use the Path.GetTempPath() which NuGetFolderPath.Temp uses as a root because writing temp files to the package directory with a guid would break some build tools caching
+            var tempOutputPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetFileName(sha512OutputPath));
+
+            _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "SHA512", sha512OutputPath));
+
+            byte[] sha512hash;
+            var cryptoHashProvider = new CryptoHashProvider("SHA512");
+            using (var fileStream = new FileStream(outputPath, FileMode.Open, FileAccess.Read))
+            {
+                sha512hash = cryptoHashProvider.CalculateHash(fileStream);
+            }
+
+            File.WriteAllText(tempOutputPath, Convert.ToBase64String(sha512hash));
+            FileUtility.Replace(tempOutputPath, sha512OutputPath);
         }
 
         private void InitCommonPackageBuilderProperties(PackageBuilder builder)
@@ -184,7 +249,7 @@ namespace NuGet.Commands
 
                 if (!packageBuilder.Files.Any())
                 {
-                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForLibPackage, path, Strings.NuGetDocs));
+                    throw new PackagingException(NuGetLogCode.NU5004, string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForLibPackage, path, Strings.NuGetDocs));
                 }
             }
 
@@ -293,7 +358,7 @@ namespace NuGet.Commands
 
             if (!Directory.Exists(projectOutputDirectory))
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnableToLocateBuildOutput, projectOutputDirectory));
+                throw new PackagingException(NuGetLogCode.NU5007, string.Format(CultureInfo.CurrentCulture, Strings.Error_UnableToLocateBuildOutput, projectOutputDirectory));
             }
 
             var targetFramework = NuGetFramework.AnyFramework;
@@ -544,7 +609,7 @@ namespace NuGet.Commands
                 {
                     if (framework.FrameworkName.IsUnsupported)
                     {
-                        throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, framework.FrameworkName));
+                        throw new PackagingException(NuGetLogCode.NU5003, String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, framework.FrameworkName));
                     }
 
                     builder.TargetFrameworks.Add(framework.FrameworkName);
@@ -668,32 +733,42 @@ namespace NuGet.Commands
         {
             PackageBuilder packageBuilder = CreatePackageBuilderFromNuspec(path);
 
-            if (_packArgs.Symbols)
-            {
-                // remove source related files when building the lib package
-                ExcludeFilesForLibPackage(packageBuilder.Files);
-
-                if (!packageBuilder.Files.Any())
-                {
-                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForLibPackage, path, Strings.NuGetDocs));
-                }
-            }
+            PackageArchiveReader packageArchiveReader = null;
 
             InitCommonPackageBuilderProperties(packageBuilder);
 
-            PackageArchiveReader package = BuildPackage(packageBuilder);
-
-            if (_packArgs.Symbols)
+            if (_packArgs.InstallPackageToOutputPath)
             {
-                BuildSymbolsPackage(path);
+                string outputPath = GetOutputPath(packageBuilder, _packArgs);
+                packageArchiveReader = BuildPackage(packageBuilder, outputPath: outputPath);
+            }
+            else
+            {
+                if (_packArgs.Symbols)
+                {
+                    // remove source related files when building the lib package
+                    ExcludeFilesForLibPackage(packageBuilder.Files);
+
+                    if (!packageBuilder.Files.Any())
+                    {
+                        throw new PackagingException(NuGetLogCode.NU5004, string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForLibPackage, path, Strings.NuGetDocs));
+                    }
+                }
+
+                packageArchiveReader = BuildPackage(packageBuilder);
+
+                if (_packArgs.Symbols)
+                {
+                    BuildSymbolsPackage(path);
+                }
             }
 
-            if (package != null && !_packArgs.NoPackageAnalysis)
+            if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
             {
-                AnalyzePackage(package, packageBuilder);
+                AnalyzePackage(packageArchiveReader, packageBuilder);
             }
 
-            return package;
+            return packageArchiveReader;
         }
 
         private PackageBuilder CreatePackageBuilderFromNuspec(string path)
@@ -742,7 +817,7 @@ namespace NuGet.Commands
 
             if (mainPackageBuilder == null)
             {
-                throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_PackFailed, path));
+                throw new PackagingException(NuGetLogCode.NU5006, string.Format(CultureInfo.CurrentCulture, Strings.Error_PackFailed, path));
             }
 
             InitCommonPackageBuilderProperties(mainPackageBuilder);
@@ -750,17 +825,26 @@ namespace NuGet.Commands
             // Build the main package
             if (GenerateNugetPackage)
             {
-                PackageArchiveReader package = BuildPackage(mainPackageBuilder);
-
-                if (package != null && !_packArgs.NoPackageAnalysis)
+                PackageArchiveReader packageArchiveReader = null;
+                if (_packArgs.InstallPackageToOutputPath)
                 {
-                    AnalyzePackage(package, mainPackageBuilder);
+                    string outputPath = GetOutputPath(mainPackageBuilder, _packArgs);
+                    packageArchiveReader = BuildPackage(mainPackageBuilder, outputPath: outputPath);
+                }
+                else
+                {
+                    packageArchiveReader = BuildPackage(mainPackageBuilder);
+                }
+
+                if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
+                {
+                    AnalyzePackage(packageArchiveReader, mainPackageBuilder);
                 }
 
                 // If we're excluding symbols then do nothing else
-                if (!_packArgs.Symbols)
+                if (!_packArgs.Symbols || _packArgs.InstallPackageToOutputPath)
                 {
-                    return package;
+                    return packageArchiveReader;
                 }
             }
 
@@ -801,7 +885,7 @@ namespace NuGet.Commands
                 {
                     if (framework.IsUnsupported)
                     {
-                        throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, reference.AssemblyName));
+                        throw new PackagingException(NuGetLogCode.NU5003, String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, reference.AssemblyName));
                     }
                 }
             }
@@ -914,7 +998,7 @@ namespace NuGet.Commands
 
             if (!symbolsBuilder.Files.Any())
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForSymbolsPackage, path, Strings.NuGetDocs));
+                throw new PackagingException(NuGetLogCode.NU5005, string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForSymbolsPackage, path, Strings.NuGetDocs));
             }
 
             string outputPath = GetOutputPath(symbolsBuilder, _packArgs, symbols: true);
@@ -1004,20 +1088,18 @@ namespace NuGet.Commands
                 }
             }
 
-            var outputFile = GetOutputFileName(builder.Id, versionToUse , isNupkg: isNupkg, symbols: symbols);
-            
+            var outputFile = GetOutputFileName(builder.Id, versionToUse, isNupkg: isNupkg, symbols: symbols, excludeVersion: packArgs.OutputFileNamesWithoutVersion);
 
             var finalOutputDirectory = packArgs.OutputDirectory ?? packArgs.CurrentDirectory;
             finalOutputDirectory = outputDirectory ?? finalOutputDirectory;
             return Path.Combine(finalOutputDirectory, outputFile);
         }
 
-        public static string GetOutputFileName(string packageId, NuGetVersion version, bool isNupkg, bool symbols)
+        public static string GetOutputFileName(string packageId, NuGetVersion version, bool isNupkg, bool symbols, bool excludeVersion = false)
         {
             // Output file is {id}.{version}
             var normalizedVersion = version.ToNormalizedString();
-            var outputFile = packageId + "." + normalizedVersion;
-            
+            var outputFile = excludeVersion ? packageId : packageId + "." + normalizedVersion;
 
             var extension = isNupkg ? NuGetConstants.PackageExtension : NuGetConstants.ManifestExtension;
             var symbolsExtension = isNupkg
@@ -1085,7 +1167,7 @@ namespace NuGet.Commands
 
             if (!candidates.Any())
             {
-                throw new ArgumentException(Strings.InputFileNotSpecified);
+                throw new PackagingException(NuGetLogCode.NU5002, Strings.Error_InputFileNotSpecified);
             }
             if (candidates.Count == 1)
             {
@@ -1109,7 +1191,7 @@ namespace NuGet.Commands
                     }
                     else
                     {
-                        throw new ArgumentException(Strings.InputFileNotSpecified);
+                        throw new PackagingException(NuGetLogCode.NU5002, Strings.Error_InputFileNotSpecified);
                     }
                 }
             }

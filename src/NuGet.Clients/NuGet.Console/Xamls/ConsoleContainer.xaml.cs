@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Windows;
@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
+using NuGet.VisualStudio;
 
 namespace NuGetConsole
 {
@@ -15,19 +16,29 @@ namespace NuGetConsole
     /// </summary>
     public partial class ConsoleContainer : UserControl
     {
-        public ConsoleContainer(
-            ISolutionManager solutionManager,
-            IProductUpdateService productUpdateService,
-            IPackageRestoreManager packageRestoreManager,
-            IDeleteOnRestartManager deleteOnRestartManager,
-            IVsShell4 shell)
+        public ConsoleContainer(IVsShell4 shell)
         {
 
             InitializeComponent();
 
-            RootLayout.Children.Add(new ProductUpdateBar(productUpdateService));
-            RootLayout.Children.Add(new PackageRestoreBar(solutionManager, packageRestoreManager));
-            RootLayout.Children.Add(new RestartRequestBar(deleteOnRestartManager, shell));
+            ThreadHelper.JoinableTaskFactory.StartOnIdle(
+                async () =>
+                {
+                    await System.Threading.Tasks.Task.Run(
+                        async () =>
+                        {
+                            var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+                            var productUpdateService = ServiceLocator.GetInstance<IProductUpdateService>();
+                            var packageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
+                            var deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+
+                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                            RootLayout.Children.Add(new ProductUpdateBar(productUpdateService));
+                            RootLayout.Children.Add(new PackageRestoreBar(solutionManager, packageRestoreManager));
+                            RootLayout.Children.Add(new RestartRequestBar(deleteOnRestartManager, shell));
+                        });
+                }, VsTaskRunContext.UIThreadIdlePriority);
 
             // Set DynamicResource binding in code
             // The reason we can't set it in XAML is that the VsBrushes class come from either

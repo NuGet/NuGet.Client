@@ -22,12 +22,14 @@ namespace NuGet.Commands
         public ILogger Logger { get; set; }
         public LogLevel LogLevel { get; set; }
         public bool IncludeReferencedProjects { get; set; }
+        public bool InstallPackageToOutputPath { get; set; }
         public IMachineWideSettings MachineWideSettings { get; set; }
         public Version MinClientVersion { get; set; }
         public Lazy<string> MsBuildDirectory { get; set; }
         public bool NoDefaultExcludes { get; set; }
         public bool NoPackageAnalysis { get; set; }
         public string OutputDirectory { get; set; }
+        public bool OutputFileNamesWithoutVersion { get; set; }
         public string Path { get; set; }
         public bool Serviceable { get; set; }
         public string Suffix { get; set; }

@@ -3,16 +3,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace NuGet.Repositories
 {
+    /// <summary>
+    /// Represents a package installed to the user global folder, or a fallback folder.
+    /// Components of the package are cached and across all restores.
+    /// </summary>
     public class LocalPackageInfo
     {
         private readonly Lazy<NuspecReader> _nuspec;
         private readonly Lazy<IReadOnlyList<string>> _files;
+        private readonly Lazy<string> _sha512;
 
         public LocalPackageInfo(
             string packageId,
@@ -20,15 +24,20 @@ namespace NuGet.Repositories
             string path,
             string manifestPath,
             string zipPath,
-            Lazy<NuspecReader> nuspec)
+            string sha512Path,
+            Lazy<NuspecReader> nuspec,
+            Lazy<IReadOnlyList<string>> files,
+            Lazy<string> sha512)
         {
             Id = packageId;
             Version = version;
             ExpandedPath = path;
             ManifestPath = manifestPath;
             ZipPath = zipPath;
+            Sha512Path = sha512Path;
             _nuspec = nuspec;
-            _files = new Lazy<IReadOnlyList<string>>(() => GetFiles());
+            _files = files;
+            _sha512 = sha512;
         }
 
         public string Id { get; }
@@ -40,6 +49,8 @@ namespace NuGet.Repositories
         public string ManifestPath { get; }
 
         public string ZipPath { get; }
+
+        public string Sha512Path { get; }
 
         /// <summary>
         /// Caches the nuspec reader.
@@ -53,46 +64,14 @@ namespace NuGet.Repositories
         /// </summary>
         public IReadOnlyList<string> Files => _files.Value;
 
+        /// <summary>
+        /// SHA512 of the package.
+        /// </summary>
+        public string Sha512 => _sha512.Value;
+
         public override string ToString()
         {
             return Id + " " + Version + " (" + (ManifestPath ?? ZipPath) + ")";
-        }
-
-        /// <summary>
-        /// Read files from a package folder.
-        /// </summary>
-        private IReadOnlyList<string> GetFiles()
-        {
-            using (var packageReader = new PackageFolderReader(ExpandedPath))
-            {
-                // Get package files, excluding directory entries and OPC files
-                // This is sorted before it is written out
-                return packageReader.GetFiles()
-                    .Where(file => IsAllowedLibraryFile(file))
-                    .ToList();
-            }
-        }
-
-        /// <summary>
-        /// True if the file should be added to the lock file library
-        /// Fale if it is an OPC file or empty directory
-        /// </summary>
-        private static bool IsAllowedLibraryFile(string path)
-        {
-            switch (path)
-            {
-                case "_rels/.rels":
-                case "[Content_Types].xml":
-                    return false;
-            }
-
-            if (path.EndsWith("/", StringComparison.Ordinal)
-                || path.EndsWith(".psmdcp", StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            return true;
         }
     }
 }

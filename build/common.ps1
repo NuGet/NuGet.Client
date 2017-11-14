@@ -5,7 +5,7 @@ $DefaultMSBuildVersion = 15
 
 # The pack version can be inferred from the .nuspec files on disk. This is only necessary as long
 # as the following issue is open: https://github.com/NuGet/Home/issues/3530
-$PackageReleaseVersion = "4.5.0"
+$PackageReleaseVersion = "4.6.0"
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $CLIRoot = Join-Path $NuGetClientRoot cli
@@ -415,7 +415,7 @@ Function Set-DelaySigning {
 }
 
 Function Get-BuildNumber() {
-    $SemanticVersionDate = '2017-02-27'
+    $SemanticVersionDate = '2017-10-12'
     try {
         [uint16](((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5)
     }

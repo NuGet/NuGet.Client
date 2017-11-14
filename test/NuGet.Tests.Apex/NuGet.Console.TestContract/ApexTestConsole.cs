@@ -52,6 +52,12 @@ namespace NuGet.Console.TestContract
             return false;
         }
 
+        public void Clear()
+        {
+            EnsureInitilizeConsole();
+            _wpfConsole.Clear();
+        }
+
         public void RunCommand(string command)
         {
             EnsureInitilizeConsole();

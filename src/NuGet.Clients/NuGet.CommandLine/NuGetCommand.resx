@@ -5345,4 +5345,13 @@ nuget locals global-packages -list</value>
   <data name="InstallCommandFrameworkDescription" xml:space="preserve">
     <value>Target framework used for selecting dependencies. Defaults to 'Any' if not specified.</value>
   </data>
+  <data name="PackageCommandInstallPackageToOutputPath" xml:space="preserve">
+    <value>Specify if the command should prepare the package output directory to support share as feed.</value>
+  </data>
+  <data name="PackageCommandOutputFileNamesWithoutVersion" xml:space="preserve">
+    <value>Specify if the command should prepare the package output name without the version.</value>
+  </data>
+  <data name="PackageCommandConfigFile" xml:space="preserve">
+    <value>Specify the configuration file for the pack command.</value>
+  </data>
 </root>

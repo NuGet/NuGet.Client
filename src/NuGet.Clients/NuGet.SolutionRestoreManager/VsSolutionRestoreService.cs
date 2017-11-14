@@ -250,14 +250,17 @@ namespace NuGet.SolutionRestoreManager
                         Path.Combine(
                             projectDirectory,
                             projectRestoreInfo.BaseIntermediatePath));
+
+            var projectName = GetPackageId(projectNames, projectRestoreInfo.TargetFrameworks);
+
             var packageSpec = new PackageSpec(tfis)
             {
-                Name = GetPackageId(projectNames, projectRestoreInfo.TargetFrameworks),
+                Name = projectName,
                 Version = GetPackageVersion(projectRestoreInfo.TargetFrameworks),
                 FilePath = projectFullPath,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
-                    ProjectName = projectNames.ShortName,
+                    ProjectName = projectName,
                     ProjectUniqueName = projectFullPath,
                     ProjectPath = projectFullPath,
                     OutputPath = outputPath,

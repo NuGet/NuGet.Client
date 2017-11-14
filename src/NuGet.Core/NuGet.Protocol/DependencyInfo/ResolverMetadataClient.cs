@@ -33,7 +33,7 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            var ranges = await Utils.LoadRanges(httpClient, registrationUri, range, log, token);
+            var ranges = await RegistrationUtility.LoadRanges(httpClient, registrationUri, range, log, token);
 
             var results = new HashSet<RemoteSourceDependencyInfo>();
             foreach (var rangeObj in ranges)
@@ -93,7 +93,7 @@ namespace NuGet.Protocol
                         foreach (JObject dependencyObj in dependenciesObj)
                         {
                             var dependencyId = dependencyObj.Value<string>("id");
-                            var dependencyRange = Utils.CreateVersionRange(dependencyObj.Value<string>("range"));
+                            var dependencyRange = RegistrationUtility.CreateVersionRange(dependencyObj.Value<string>("range"));
 
                             groupDependencies.Add(new PackageDependency(dependencyId, dependencyRange));
                         }

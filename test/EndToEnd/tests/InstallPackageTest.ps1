@@ -3189,3 +3189,21 @@ function Test-InstallPackageWithEscapedSymbolInPath()
     # Assert
     Assert-Package $p Xam.Plugin.Connectivity
 }
+
+function Test-InstallPackageWithRootNamespaceInPPFile {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-ClassLibrary "testProject"
+
+    # Act
+    Install-Package PackageWithRootNamespaceFileTransform -Source $context.RepositoryRoot
+
+    # Assert
+    Assert-NotNull (Get-ProjectItem $p foo.cs)
+    $path = (Get-ProjectItemPath $p foo.cs)
+    $content = [System.IO.File]::ReadAllText($path)
+    Assert-True ($content.Contains("namespace testProject"))
+}

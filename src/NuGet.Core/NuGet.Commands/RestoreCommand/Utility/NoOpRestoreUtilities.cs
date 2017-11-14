@@ -153,7 +153,7 @@ namespace NuGet.Commands
             packageFolderPaths.AddRange(request.Project.RestoreMetadata.FallbackFolders);
             var pathResolvers = packageFolderPaths.Select(path => new VersionFolderPathResolver(path));
 
-            ISet<PackageIdentity> packagesChecked = new HashSet<PackageIdentity>();
+            var packagesChecked = new HashSet<PackageIdentity>();
 
             var packages = request.ExistingLockFile.Libraries.Where(library => library.Type == LibraryType.Package);
 
@@ -172,12 +172,15 @@ namespace NuGet.Commands
                         // Verify the SHA for each package
                         var hashPath = resolver.GetHashPath(library.Name, library.Version);
 
-                        if (File.Exists(hashPath))
+                        if (request.DependencyProviders.PackageFileCache.Sha512Exists(hashPath))
                         {
                             found = true;
-                            var sha512 = File.ReadAllText(hashPath);
 
-                            if (library.Sha512 != sha512)
+                            // Cache sha512 values across all restores
+                            // If a full restore is done this same value will also be used later
+                            var sha512 = request.DependencyProviders.PackageFileCache.GetOrAddSha512(hashPath);
+
+                            if (!StringComparer.Ordinal.Equals(library.Sha512, sha512.Value))
                             {
                                 // A package has changed
                                 return false;

@@ -17,9 +17,6 @@ Path to a code signing certificate for delay-sigining (optional)
 .PARAMETER NuGetPFXPath
 Path to a code signing certificate for delay-sigining (optional)
 
-.PARAMETER SkipVS14
-Skips building binaries targeting Visual Studio "14" (released as Visual Studio 2015)
-
 .PARAMETER SkipVS15
 Skips building binaries targeting Visual Studio "15"
 
@@ -38,8 +35,8 @@ To run full clean build, e.g after switching branches
 Fast incremental build
 
 .EXAMPLE
-.\build.ps1 -s14 -s15
-To build core projects only
+.\build.ps1 -s15
+To only run unit tests
 
 .EXAMPLE
 .\build.ps1 -v -ea Stop
@@ -59,8 +56,6 @@ param (
     [string]$MSPFXPath,
     [Alias('nugetpfx')]
     [string]$NuGetPFXPath,
-    [Alias('s14')]
-    [switch]$SkipVS14,
     [Alias('s15')]
     [switch]$SkipVS15,
     [Alias('su')]
@@ -92,11 +87,6 @@ Trace-Log "Build #$BuildNumber started at $startTime"
 Test-BuildEnvironment -CI:$CI
 
 # Adjust version skipping if only one version installed - if VS15 is not installed, no need to specify SkipVS15
-if (-not $SkipVS14 -and -not $VS14Installed) {
-    Warning-Log "VS14 build is requested but it appears not to be installed."
-    $SkipVS14 = $True
-}
-
 if (-not $SkipVS15 -and -not $VS15Installed) {
     Warning-Log "VS15 build is requested but it appears not to be installed."
     $SkipVS15 = $True
@@ -117,14 +107,10 @@ Invoke-BuildStep 'Set delay signing options' {
 -ev +BuildErrors
 
 if($SkipUnitTest){
-    $VS14Target = "BuildVS14";
-    $VS14Message = "Running Build for VS 14.0";
     $VS15Target = "BuildVS15;Pack";
     $VS15Message = "Running Build for VS 15.0"
 }
 else {
-    $VS14Target = "RunVS14";
-    $VS14Message = "Running Build and Unit tests for VS 14.0";
     $VS15Target = "RunVS15";
     $VS15Message = "Running Build, Pack, Core unit tests, and Unit tests for VS 15.0";
 }
@@ -159,47 +145,6 @@ Invoke-BuildStep $VS15Message {
 } `
 -skip:$SkipVS15 `
 -ev +BuildErrors
-
-Invoke-BuildStep 'Running Restore for VS 14.0' {
-
-    # Restore for VS 14.0
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS14 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:RestoreVS14 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
-
-    if (-not $?)
-    {
-        Write-Error "Failed - Running Restore for VS 14.0"
-        exit 1
-    }
-} `
--skip:$SkipVS14 `
--ev +BuildErrors
-
-
-Invoke-BuildStep $VS14Message {
-
-    # Build and (If not $SkipUnitTest) Run Unit tests for VS 14.0
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:$VS14Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:$VS14Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
-
-    if (-not $?)
-    {
-        Write-Error "Failed - $VS14Message"
-        exit 1
-    }
-} `
--skip:$SkipVS14 `
--ev +BuildErrors
-
-Invoke-BuildStep 'Publishing the VS14 EndToEnd test package' {
-        param($Configuration)
-        $EndToEndScript = Join-Path $PSScriptRoot scripts\cibuild\CreateEndToEndTestPackage.ps1 -Resolve
-        $OutDir = Join-Path $Artifacts VS14
-        & $EndToEndScript -c $Configuration -tv 14 -out $OutDir
-    } `
-    -args $Configuration `
-    -skip:($Fast -or $SkipVS14) `
-    -ev +BuildErrors
 
 Invoke-BuildStep 'Publishing the VS15 EndToEnd test package' {
         param($Configuration)
