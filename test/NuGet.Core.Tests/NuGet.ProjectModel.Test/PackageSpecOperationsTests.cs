@@ -86,19 +86,32 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void AddDependency_ToSpecificFrameworks_RejectsExistingDependencies() // TODO NK - bad test, Add tests for the End-To-End scenario and make sure all of the package Spec operations and properly and well tested.
+        public void AddDependency_ToSpecificFrameworks_UpdatesExistingDependencies()
         {
             // Arrange
+            var packageId = "NuGet.Versioning";
+            var oldVersion = new NuGetVersion("1.0.0");
+            var newVersion = new NuGetVersion("2.0.0");
+
             var frameworkA = new TargetFrameworkInformation
             {
                 FrameworkName = FrameworkConstants.CommonFrameworks.Net45
             };
+            var ld = new LibraryDependency();
+            ld.LibraryRange = new LibraryRange(packageId, new VersionRange(oldVersion), LibraryDependencyTarget.Package);
             var frameworkB = new TargetFrameworkInformation
             {
-                FrameworkName = FrameworkConstants.CommonFrameworks.NetStandard16
+                FrameworkName = FrameworkConstants.CommonFrameworks.NetStandard16,
+                Dependencies = new List<LibraryDependency>() { ld }
+               
             };
             var spec = new PackageSpec(new[] { frameworkA, frameworkB });
-            var identity = new PackageIdentity("NuGet.Versioning", new NuGetVersion("1.0.0"));
+            var identity = new PackageIdentity(packageId, newVersion);
+
+            //Preconditions
+            Assert.Equal(
+                oldVersion,
+                spec.TargetFrameworks[1].Dependencies[0].LibraryRange.VersionRange.MinVersion);
 
             // Act
             PackageSpecOperations.AddOrUpdateDependency(
@@ -118,33 +131,33 @@ namespace NuGet.ProjectModel.Test
                 spec.TargetFrameworks[1].Dependencies[0].LibraryRange.VersionRange.MinVersion);
         }
 
-
         [Fact]
-        public void AddDependency_ToSpecificFrameworks_UpdatesExistingDependencies()
+        public void AddDependency_ToSpecificFrameworks_AddsNewDependency()
         {
             // Arrange
-            var identity = new PackageIdentity("NuGet.Versioning", new NuGetVersion("2.0.0"));
+            var packageId = "NuGet.Versioning";
+            var oldVersion = new NuGetVersion("1.0.0");
+            var newVersion = new NuGetVersion("2.0.0");
 
             var frameworkA = new TargetFrameworkInformation
             {
                 FrameworkName = FrameworkConstants.CommonFrameworks.Net45
             };
+            var ld = new LibraryDependency();
+            ld.LibraryRange = new LibraryRange(packageId, new VersionRange(oldVersion), LibraryDependencyTarget.Package);
             var frameworkB = new TargetFrameworkInformation
             {
                 FrameworkName = FrameworkConstants.CommonFrameworks.NetStandard16,
-                Dependencies = new List<LibraryDependency>() {
-                    new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange
-                            {
-                                Name = "NuGet.Versioning",
-                                VersionRange = new VersionRange(new NuGetVersion("1.0.0"))
-                            }
-                        }
-                }
-            };
+                Dependencies = new List<LibraryDependency>() { ld }
 
+            };
             var spec = new PackageSpec(new[] { frameworkA, frameworkB });
+            var identity = new PackageIdentity(packageId, newVersion);
+
+            //Preconditions
+            Assert.Equal(
+                oldVersion,
+                spec.TargetFrameworks[1].Dependencies[0].LibraryRange.VersionRange.MinVersion);
 
             // Act
             PackageSpecOperations.AddOrUpdateDependency(
@@ -154,13 +167,15 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.Empty(spec.Dependencies);
+
             Assert.Empty(spec.TargetFrameworks[0].Dependencies);
+
+            Assert.Equal(1, spec.TargetFrameworks[1].Dependencies.Count);
             Assert.Equal(identity.Id, spec.TargetFrameworks[1].Dependencies[0].LibraryRange.Name);
             Assert.Equal(
                 identity.Version,
                 spec.TargetFrameworks[1].Dependencies[0].LibraryRange.VersionRange.MinVersion);
         }
-
 
         [Fact]
         public void RemoveDependency_RemovesFromAllFrameworkLists()

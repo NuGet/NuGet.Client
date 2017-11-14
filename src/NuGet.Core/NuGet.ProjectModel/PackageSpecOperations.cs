@@ -50,11 +50,9 @@ namespace NuGet.ProjectModel
                 includeGenericDependencies: false,
                 frameworksToConsider: frameworksToAdd);
 
-            var range = dependency.VersionRange;
-
             foreach (var list in lists)
             {
-                AddOrUpdateDependency(list, dependency.Id, range);
+                AddOrUpdateDependency(list, dependency.Id, dependency.VersionRange);
             }
         }
 
