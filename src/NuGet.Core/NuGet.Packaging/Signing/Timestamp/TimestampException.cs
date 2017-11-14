@@ -7,13 +7,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using NuGet.Common;
 
-[assembly: InternalsVisibleTo("NuGet.Packaging.FuncTest")]
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
     /// Exceptions that are generated while creating a package timestamp.
     /// </summary>
-    internal class TimestampException : Exception, ILogMessageException
+    public class TimestampException : Exception, ILogMessageException
     {
         private readonly ILogMessage _logMessage;
 

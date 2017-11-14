@@ -216,10 +216,6 @@ namespace NuGet.Common
         /// </summary>
         NU3002 = 3002,
 
-        /// timestamp url not passed to sign command
-        /// </summary>
-        NU3401 = 3401,
-
         /// <summary>
         /// Undefined signature warning
         /// </summary>
