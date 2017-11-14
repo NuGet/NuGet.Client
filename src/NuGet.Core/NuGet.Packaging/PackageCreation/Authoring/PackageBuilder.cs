@@ -725,6 +725,10 @@ namespace NuGet.Packaging
             string entryName = CreatePartEntryName(path);
 
             var entry = package.CreateEntry(entryName, CompressionLevel.Optimal);
+            if(File.Exists(path))
+            {
+                entry.LastWriteTime = File.GetLastWriteTime(path);
+            }
             using (var stream = entry.Open())
             {
                 sourceStream.CopyTo(stream);
