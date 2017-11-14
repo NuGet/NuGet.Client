@@ -127,7 +127,7 @@ namespace Microsoft.Build.Tasks.Windows
                 //
 
                 // GetRandomFileName( ) could return any possible file name and extension, but
-                // some file externsion has special meaning in MSBUILD system, such as a ".sln"
+                // some file extension has special meaning in MSBUILD system, such as a ".sln"
                 // means the file is a solution file with special file format. Since the temporary
                 // file is just for a project, we can use a fixed extension here, but the basic 
                 // file name is still random which can fix above VS.NET bug.
@@ -152,8 +152,11 @@ namespace Microsoft.Build.Tasks.Windows
 
                 try
                 {
-                    // Delete the random project file from disk.
-                    File.Delete(randProjPath);
+                    // Delete the random project file from disk unless an advanced user wants to keep it around to help debug failures.
+                    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envVarWPFDoNotDeleteTemporaryProject)))
+                    {
+                        File.Delete(randProjPath);
+                    }
                 }
                 catch (IOException e)
                 {
@@ -501,6 +504,8 @@ namespace Microsoft.Build.Tasks.Windows
         private const string intermediateOutputPathPropertyName = "IntermediateOutputPath";
         private const string assemblyNamePropertyName = "AssemblyName";
         private const string originalProjectNamePropertyName = "_OriginalProjectName";
+
+        private const string envVarWPFDoNotDeleteTemporaryProject = "WPF_DoNotDeleteTemporaryProject";
 
         private const string ALIASES = "Aliases";
         private const string REFERENCETYPENAME = "Reference";
