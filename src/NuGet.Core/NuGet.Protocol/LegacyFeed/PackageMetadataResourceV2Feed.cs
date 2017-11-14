@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,10 +41,11 @@ namespace NuGet.Protocol
             string packageId,
             bool includePrerelease,
             bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
             Common.ILogger log,
             CancellationToken token)
         {
-            var packages = await _feedParser.FindPackagesByIdAsync(packageId, includeUnlisted, includePrerelease, log, token);
+            var packages = await _feedParser.FindPackagesByIdAsync(packageId, includeUnlisted, includePrerelease, sourceCacheContext, log, token);
 
             var metadataCache = new MetadataReferenceCache();
             return packages.Select(p => new PackageSearchMetadataV2Feed(p, metadataCache)).ToList();
@@ -52,10 +53,11 @@ namespace NuGet.Protocol
 
         public override async Task<IPackageSearchMetadata> GetMetadataAsync(
             PackageIdentity package,
+            SourceCacheContext sourceCacheContext,
             Common.ILogger log,
             CancellationToken token)
         {
-            var v2Package = await _feedParser.GetPackage(package, log, token);
+            var v2Package = await _feedParser.GetPackage(package, sourceCacheContext, log, token);
 
             if (v2Package != null)
             {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,7 +44,13 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="includePrerelease">include versions with prerelease labels</param>
         /// <param name="includeUnlisted">not implemented yet</param>
-        public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
+        public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(
+            IEnumerable<string> packageIds,
+            bool includePrerelease,
+            bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
+            Common.ILogger log,
+            CancellationToken token)
         {
             var results = new List<KeyValuePair<string, NuGetVersion>>();
 
@@ -53,7 +59,7 @@ namespace NuGet.Protocol
                 IEnumerable<NuGetVersion> allVersions;
                 try
                 {
-                    var catalogEntries = await _regResource.GetPackageMetadata(id, includePrerelease, includeUnlisted, log, token);
+                    var catalogEntries = await _regResource.GetPackageMetadata(id, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
                     allVersions = catalogEntries.Select(p => NuGetVersion.Parse(p["version"].ToString()));
                 }
                 catch (Exception ex)
@@ -70,27 +76,44 @@ namespace NuGet.Protocol
             return results;
         }
 
-        public override async Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, Common.ILogger log, CancellationToken token)
+        public override async Task<bool> Exists(
+            PackageIdentity identity,
+            bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
+            Common.ILogger log,
+            CancellationToken token)
         {
             // TODO: get the url and just check the headers?
-            var metadata = await _regResource.GetPackageMetadata(identity, log, token);
+            var metadata = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
 
             // TODO: listed check
             return metadata != null;
         }
 
-        public override async Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
+        public override async Task<bool> Exists(
+            string packageId,
+            bool includePrerelease,
+            bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
+            Common.ILogger log,
+            CancellationToken token)
         {
-            var entries = await GetVersions(packageId, includePrerelease, includeUnlisted, log, token);
+            var entries = await GetVersions(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
 
             return entries != null && entries.Any();
         }
 
-        public override async Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
+        public override async Task<IEnumerable<NuGetVersion>> GetVersions(
+            string packageId,
+            bool includePrerelease,
+            bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
+            Common.ILogger log,
+            CancellationToken token)
         {
             var results = new List<NuGetVersion>();
 
-            var entries = await _regResource.GetPackageEntries(packageId, includeUnlisted, log, token);
+            var entries = await _regResource.GetPackageEntries(packageId, includeUnlisted, sourceCacheContext, log, token);
 
             foreach (var catalogEntry in entries)
             {

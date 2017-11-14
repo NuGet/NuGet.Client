@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -33,7 +34,7 @@ namespace NuGet.Protocol.Tests
             var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
 
             // Act
-            var metadata = await packageMetadataResource.GetMetadataAsync("WindowsAzure.Storage", true, false, NullLogger.Instance, CancellationToken.None);
+            var metadata = await packageMetadataResource.GetMetadataAsync("WindowsAzure.Storage", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
             var latestPackage = (PackageSearchMetadataV2Feed) metadata.OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease).FirstOrDefault();
 
             // Assert
@@ -76,7 +77,7 @@ namespace NuGet.Protocol.Tests
             var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
 
             // Act
-            var metadata = (IEnumerable<PackageSearchMetadataV2Feed>) await packageMetadataResource.GetMetadataAsync("afine", true, false, NullLogger.Instance, CancellationToken.None);
+            var metadata = (IEnumerable<PackageSearchMetadataV2Feed>) await packageMetadataResource.GetMetadataAsync("afine", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             var first = metadata.ElementAt(0);
             var second = metadata.ElementAt(1);
@@ -101,7 +102,7 @@ namespace NuGet.Protocol.Tests
             var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
 
             // Act
-            var metadata = await packageMetadataResource.GetMetadataAsync("not-found", true, false, NullLogger.Instance, CancellationToken.None);
+            var metadata = await packageMetadataResource.GetMetadataAsync("not-found", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal(0, metadata.Count());
@@ -125,7 +126,7 @@ namespace NuGet.Protocol.Tests
             var packageIdentity = new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.2-preview"));
 
             // Act
-            var metadata = await packageMetadataResource.GetMetadataAsync(packageIdentity, NullLogger.Instance, CancellationToken.None);
+            var metadata = await packageMetadataResource.GetMetadataAsync(packageIdentity, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal("WindowsAzure.Storage", metadata.Identity.Id);
@@ -152,7 +153,7 @@ namespace NuGet.Protocol.Tests
             var packageIdentity = new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("0.0.0"));
 
             // Act
-            var metadata = await packageMetadataResource.GetMetadataAsync(packageIdentity, NullLogger.Instance, CancellationToken.None);
+            var metadata = await packageMetadataResource.GetMetadataAsync(packageIdentity, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Null(metadata);

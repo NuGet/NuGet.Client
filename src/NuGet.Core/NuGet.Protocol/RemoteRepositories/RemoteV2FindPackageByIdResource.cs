@@ -363,7 +363,7 @@ namespace NuGet.Protocol
                         paging = await _httpSource.GetAsync(
                             new HttpSourceCachedRequest(
                                 uri,
-                                $"list_{id}_page{page}",
+                                $"list_{id.ToLowerInvariant()}_page{page}",
                                 httpSourceCacheContext)
                             {
                                 AcceptHeaderValues =

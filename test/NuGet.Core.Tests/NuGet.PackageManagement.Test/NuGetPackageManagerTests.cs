@@ -3226,7 +3226,7 @@ namespace NuGet.Test
                 Assert.Equal(singlePackageSource, packageActions[5].SourceRepository.PackageSource.Source);
 
                 // Main Act
-                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(msBuildNuGetProject, packageActions, new TestNuGetProjectContext(), token);
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(msBuildNuGetProject, packageActions, new TestNuGetProjectContext(), NullSourceCacheContext.Instance, token);
 
                 // Check that the packages.config file exists after the installation
                 Assert.True(File.Exists(packagesConfigPath));
@@ -5274,7 +5274,7 @@ namespace NuGet.Test
                     // Main Act
                     await
                         nuGetPackageManager.ExecuteNuGetProjectActionsAsync(projectA, actions,
-                            new TestNuGetProjectContext(), token);
+                            new TestNuGetProjectContext(), NullSourceCacheContext.Instance, token);
 
                     //Assert
                     // Check batch events data
@@ -5410,7 +5410,7 @@ namespace NuGet.Test
                     // Main Act
                     await
                         nuGetPackageManager.ExecuteNuGetProjectActionsAsync(projectA, new List<NuGetProjectAction>(),
-                            new TestNuGetProjectContext(), token);
+                            new TestNuGetProjectContext(), NullSourceCacheContext.Instance, token);
 
                     // Check that the packages.config file exists after the installation
                     Assert.False(File.Exists(projectA.PackagesConfigNuGetProject.FullPath));
@@ -5549,7 +5549,7 @@ namespace NuGet.Test
                     {
                         // Act
                         await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(projectA, projectActions,
-                            new TestNuGetProjectContext(), token);
+                            new TestNuGetProjectContext(), NullSourceCacheContext.Instance, token);
                     }
                     catch (Exception ex)
                     {
@@ -5619,7 +5619,7 @@ namespace NuGet.Test
                     {
                         // Act
                         await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(projectA, projectActions,
-                            new TestNuGetProjectContext(), token);
+                            new TestNuGetProjectContext(), NullSourceCacheContext.Instance, token);
                     }
                     catch (Exception ex)
                     {
@@ -5827,6 +5827,7 @@ namespace NuGet.Test
                     new List<NuGetProject>() {buildIntegratedProjectA, buildIntegratedProjectB },
                     projectActions,
                     new TestNuGetProjectContext(),
+                    NullSourceCacheContext.Instance,
                     token);
 
                 // Assert
@@ -5890,6 +5891,7 @@ namespace NuGet.Test
                     new List<NuGetProject>() { projectA, projectB, projectC },
                     projectActions,
                     new TestNuGetProjectContext(),
+                    NullSourceCacheContext.Instance,
                     token);
 
                 // Assert
@@ -6154,6 +6156,7 @@ namespace NuGet.Test
                     new List<NuGetProject>() { nugetProject },
                     projectActions,
                     nugetProjectContext,
+                    NullSourceCacheContext.Instance,
                     CancellationToken.None);
 
                 // Assert
@@ -6212,6 +6215,7 @@ namespace NuGet.Test
                     new List<NuGetProject>() { buildIntegratedProject },
                     projectActions,
                     nugetProjectContext,
+                    NullSourceCacheContext.Instance,
                     token);
 
                 // Assert

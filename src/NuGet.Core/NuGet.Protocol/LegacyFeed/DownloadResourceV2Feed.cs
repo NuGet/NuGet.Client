@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -70,13 +70,17 @@ namespace NuGet.Protocol
                 }
                 else
                 {
-                    // Look up the package from the id and version and download it.
-                    return await _feedParser.DownloadFromIdentity(
+                    using (var sourceCacheContext = new SourceCacheContext())
+                    {
+                        // Look up the package from the id and version and download it.
+                        return await _feedParser.DownloadFromIdentity(
                         identity,
                         downloadContext,
                         globalPackagesFolder,
+                        sourceCacheContext,
                         logger,
                         token);
+                    }
                 }
             }
             catch (OperationCanceledException)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,7 +26,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [Cmdlet(VerbsLifecycle.Install, "Package")]
     public class InstallPackageCommand : PackageActionBaseCommand
     {
-        private ResolutionContext _context;
         private bool _readFromPackagesConfig;
         private bool _readFromDirectPackagePath;
         private NuGetVersion _nugetVersion;
@@ -107,9 +106,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             try
             {
-                foreach (PackageIdentity identity in identities)
+                using (var sourceCacheContext = new SourceCacheContext())
                 {
-                    await InstallPackageByIdentityAsync(Project, identity, ResolutionContext, this, WhatIf.IsPresent);
+                    var resolutionContext = new ResolutionContext(
+                        GetDependencyBehavior(),
+                        _allowPrerelease,
+                        false,
+                        VersionConstraints.None,
+                        new GatherCache(),
+                        sourceCacheContext);
+
+                    foreach (PackageIdentity identity in identities)
+                    {
+                        await InstallPackageByIdentityAsync(Project, identity, resolutionContext, this, WhatIf.IsPresent);
+                    }
                 }
             }
             catch (Exception ex)
@@ -132,7 +142,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             try
             {
-                await InstallPackageByIdAsync(Project, Id, ResolutionContext, this, WhatIf.IsPresent);
+                using (var sourceCacheContext = new SourceCacheContext())
+                {
+                    var resolutionContext = new ResolutionContext(
+                        GetDependencyBehavior(),
+                        _allowPrerelease,
+                        false,
+                        VersionConstraints.None,
+                        new GatherCache(),
+                        sourceCacheContext);
+
+                    await InstallPackageByIdAsync(Project, Id, resolutionContext, this, WhatIf.IsPresent);
+                }
             }
             catch (FatalProtocolException ex)
             {
@@ -401,21 +422,5 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             _allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
         }
 
-        /// <summary>
-        /// Resolution Context for Install-Package command
-        /// </summary>
-        public ResolutionContext ResolutionContext
-        {
-            get
-            {
-                // ResolutionContext contains a cache, this should only be created once per command
-                if (_context == null)
-                {
-                    _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, VersionConstraints.None);
-                }
-
-                return _context;
-            }
-        }
     }
 }

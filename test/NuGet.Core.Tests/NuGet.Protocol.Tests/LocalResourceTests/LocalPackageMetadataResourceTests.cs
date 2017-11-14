@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Moq;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -61,6 +63,7 @@ namespace NuGet.Protocol.Tests
                         "A",
                         includePrerelease: false,
                         includeUnlisted: false,
+                        sourceCacheContext: NullSourceCacheContext.Instance,
                         log: testLogger,
                         token: CancellationToken.None))
                         .ToList();
@@ -118,6 +121,7 @@ namespace NuGet.Protocol.Tests
                         "A",
                         includePrerelease: true,
                         includeUnlisted: false,
+                        sourceCacheContext: NullSourceCacheContext.Instance,
                         log: testLogger,
                         token: CancellationToken.None))
                         .ToList();
@@ -175,6 +179,7 @@ namespace NuGet.Protocol.Tests
                         "A",
                         includePrerelease: false,
                         includeUnlisted: false,
+                        sourceCacheContext: NullSourceCacheContext.Instance,
                         log: testLogger,
                         token: CancellationToken.None))
                         .ToList();
@@ -206,6 +211,7 @@ namespace NuGet.Protocol.Tests
                         "A",
                         includePrerelease: false,
                         includeUnlisted: false,
+                        sourceCacheContext: NullSourceCacheContext.Instance,
                         log: testLogger,
                         token: CancellationToken.None))
                         .ToList();
@@ -281,6 +287,7 @@ namespace NuGet.Protocol.Tests
                         "A",
                         includePrerelease: true,
                         includeUnlisted: false,
+                        sourceCacheContext: NullSourceCacheContext.Instance,
                         log: testLogger,
                         token: CancellationToken.None))
                         .OrderByDescending(p => p.Identity.Version)
@@ -343,6 +350,7 @@ namespace NuGet.Protocol.Tests
                 // Act
                 var result = await resource.GetMetadataAsync(
                     new PackageIdentity("A", new NuGetVersion("1.0.0")),
+                    NullSourceCacheContext.Instance,
                     log: testLogger,
                     token: CancellationToken.None);
 
@@ -387,6 +395,7 @@ namespace NuGet.Protocol.Tests
                 // Act
                 var result = await resource.GetMetadataAsync(
                     new PackageIdentity("A", new NuGetVersion("2.0.0")),
+                    NullSourceCacheContext.Instance,
                     log: testLogger,
                     token: CancellationToken.None);
 

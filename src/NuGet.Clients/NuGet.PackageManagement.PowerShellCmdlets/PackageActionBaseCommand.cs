@@ -146,7 +146,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 else
                 {
                     NuGetPackageManager.SetDirectInstall(identity, projectContext);
-                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
+                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, resolutionContext.SourceCacheContext, CancellationToken.None);
                     NuGetPackageManager.ClearDirectInstall(projectContext);
                 }
             }
@@ -217,7 +217,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     var identity = actions.Select(v => v.PackageIdentity).Where(p => p.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                     NuGetPackageManager.SetDirectInstall(identity, projectContext);
-                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
+                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, resolutionContext.SourceCacheContext, CancellationToken.None);
                     NuGetPackageManager.ClearDirectInstall(projectContext);
                 }
             }

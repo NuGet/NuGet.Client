@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -106,6 +106,7 @@ namespace NuGet.Protocol
         /// </summary>
         public async Task<V2FeedPackageInfo> GetPackage(
             PackageIdentity package,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {
@@ -123,13 +124,14 @@ namespace NuGet.Protocol
                 package.Id,
                 max: -1,
                 ignoreNotFounds: true,
+                sourceCacheContext: sourceCacheContext,
                 log: log,
                 token: token);
 
             // If not found use FindPackagesById
             if (packages.Items.Count < 1)
             {
-                var allPackages = await FindPackagesByIdAsync(package.Id, log, token);
+                var allPackages = await FindPackagesByIdAsync(package.Id, sourceCacheContext, log, token);
 
                 return allPackages
                     .Where(p => p.Version == package.Version)
@@ -146,6 +148,7 @@ namespace NuGet.Protocol
             string id,
             bool includeUnlisted,
             bool includePrerelease,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {
@@ -167,6 +170,7 @@ namespace NuGet.Protocol
                 id,
                 max: -1,
                 ignoreNotFounds: false,
+                sourceCacheContext: sourceCacheContext,
                 log: log,
                 token: token);
 
@@ -180,9 +184,9 @@ namespace NuGet.Protocol
         /// <summary>
         /// Retrieves all packages with the given Id from a V2 feed.
         /// </summary>
-        public Task<IReadOnlyList<V2FeedPackageInfo>> FindPackagesByIdAsync(string id, ILogger log, CancellationToken token)
+        public Task<IReadOnlyList<V2FeedPackageInfo>> FindPackagesByIdAsync(string id, SourceCacheContext sourceCacheContext, ILogger log, CancellationToken token)
         {
-            return FindPackagesByIdAsync(id, includeUnlisted: true, includePrerelease: true, log: log, token: token);
+            return FindPackagesByIdAsync(id, includeUnlisted: true, includePrerelease: true, sourceCacheContext: sourceCacheContext, log: log, token: token);
         }
 
         public async Task<V2FeedPage> GetPackagesPageAsync(
@@ -204,6 +208,7 @@ namespace NuGet.Protocol
                 id: null,
                 max: take, // Only get the first page.
                 ignoreNotFounds: false,
+                sourceCacheContext: null,
                 log: log,
                 token: token);
 
@@ -229,6 +234,7 @@ namespace NuGet.Protocol
                 id: null,
                 max: take, // Only get the first page.
                 ignoreNotFounds: false,
+                sourceCacheContext: null,
                 log: log,
                 token: token);
 
@@ -250,6 +256,7 @@ namespace NuGet.Protocol
                 id: null,
                 max: take,
                 ignoreNotFounds: false,
+                sourceCacheContext: null,
                 log: log,
                 token: token);
 
@@ -278,10 +285,11 @@ namespace NuGet.Protocol
             PackageIdentity package,
             PackageDownloadContext downloadContext,
             string globalPackagesFolder,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {
-            var packageInfo = await GetPackage(package, log, token);
+            var packageInfo = await GetPackage(package, sourceCacheContext, log, token);
 
             if (packageInfo == null)
             {
@@ -418,6 +426,7 @@ namespace NuGet.Protocol
             string id,
             int max,
             bool ignoreNotFounds,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {
@@ -429,8 +438,11 @@ namespace NuGet.Protocol
             var uri = string.Format("{0}{1}", _baseAddress, relativeUri);
             uris.Add(uri);
 
+            // http cache key
+            var cacheKey = $"list_{relativeUri}_page{page}";
+
             // first request
-            Task<XDocument> docRequest = LoadXmlAsync(uri, ignoreNotFounds, log, token);
+            Task<XDocument> docRequest = LoadXmlAsync(uri, cacheKey, ignoreNotFounds, sourceCacheContext, log, token);
 
             // TODO: re-implement caching at a higher level for both v2 and v3
             string nextUri = null;
@@ -469,7 +481,8 @@ namespace NuGet.Protocol
                                 nextUri));
                         }
 
-                        docRequest = LoadXmlAsync(nextUri, ignoreNotFounds, log, token);
+                        cacheKey = $"list_{relativeUri}_page{page}";
+                        docRequest = LoadXmlAsync(nextUri, cacheKey, ignoreNotFounds, sourceCacheContext, log, token);
                     }
 
                     page++;
@@ -489,11 +502,68 @@ namespace NuGet.Protocol
 
         internal async Task<XDocument> LoadXmlAsync(
             string uri,
+            string cacheKey,
             bool ignoreNotFounds,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {
-            return await _httpSource.ProcessResponseAsync(
+            if (cacheKey != null && sourceCacheContext != null)
+            {
+                var httpSourceCacheContext = HttpSourceCacheContext.Create(sourceCacheContext, 0);
+
+                try
+                {
+                    return await _httpSource.GetAsync(
+                        new HttpSourceCachedRequest(
+                            uri,
+                            cacheKey,
+                            httpSourceCacheContext)
+                        {
+                            AcceptHeaderValues =
+                            {
+                            new MediaTypeWithQualityHeaderValue("application/atom+xml"),
+                            new MediaTypeWithQualityHeaderValue("application/xml")
+                            },
+                            EnsureValidContents = stream => HttpStreamValidation.ValidateXml(uri, stream),
+                            MaxTries = 1,
+                            IgnoreNotFounds = ignoreNotFounds
+                        },
+                        async response =>
+                        {
+                            if (ignoreNotFounds && response.Status == HttpSourceResultStatus.NotFound)
+                            {
+                            // Treat "404 Not Found" as an empty response.
+                            return null;
+                            }
+                            else if (response.Status == HttpSourceResultStatus.NoContent)
+                            {
+                            // Always treat "204 No Content" as exactly that.
+                            return null;
+                            }
+                            else
+                            {
+                                return await LoadXmlAsync(response.Stream);
+                            }
+                        },
+                        log,
+                        token);
+                }
+                catch (Exception ex)
+                {
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Log_FailedToFetchV2FeedHttp,
+                        uri,
+                        ex.Message);
+
+                    throw new FatalProtocolException(message, ex);
+                }
+            }
+            else
+            {
+                // return results without httpCache
+                return await _httpSource.ProcessResponseAsync(
                 new HttpSourceRequest(
                     () =>
                     {
@@ -531,6 +601,7 @@ namespace NuGet.Protocol
                 },
                 log,
                 token);
+            }
         }
 
         internal static string GetNextUrl(XDocument doc)

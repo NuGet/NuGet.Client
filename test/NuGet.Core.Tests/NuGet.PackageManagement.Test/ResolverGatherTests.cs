@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -410,6 +410,7 @@ namespace NuGet.Test
             context.PrimarySources = primaryRepo;
             context.AllSources = repos;
             context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.ResolutionContext = new ResolutionContext();
 
             var contextAOnly = new GatherContext();
             contextAOnly.PrimaryTargets = targets.ToList();
@@ -418,6 +419,7 @@ namespace NuGet.Test
             contextAOnly.PrimarySources = primaryRepo;
             contextAOnly.AllSources = reposAOnly;
             contextAOnly.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            contextAOnly.ResolutionContext = new ResolutionContext();
 
             // Run the first time
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -473,6 +475,7 @@ namespace NuGet.Test
             context.PrimarySources = primaryRepo;
             context.AllSources = repos;
             context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -587,6 +590,7 @@ namespace NuGet.Test
             context.AllSources = repos;
             context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
             context.AllowDowngrades = true;
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -644,6 +648,7 @@ namespace NuGet.Test
             context.AllSources = repos;
             context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
             context.AllowDowngrades = false;
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -695,6 +700,7 @@ namespace NuGet.Test
             context.PrimarySources = primaryRepo;
             context.AllSources = repos;
             context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.ResolutionContext = new ResolutionContext();
 
             // Act and Assert
             await Assert.ThrowsAsync(typeof(InvalidOperationException), async () =>
@@ -746,6 +752,7 @@ namespace NuGet.Test
             context.AllSources = repos;
             context.IsUpdateAll = true;
             context.PackagesFolderSource = CreateRepo("installed", new List<SourcePackageDependencyInfo>());
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -797,6 +804,7 @@ namespace NuGet.Test
             context.PrimarySources = primaryRepo;
             context.AllSources = repos;
             context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -855,6 +863,7 @@ namespace NuGet.Test
             context.PrimarySources = primaryRepo;
             context.AllSources = repos;
             context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -916,6 +925,7 @@ namespace NuGet.Test
             context.PrimarySources = primaryRepo;
             context.AllSources = repos;
             context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -974,6 +984,7 @@ namespace NuGet.Test
             context.PrimarySources = primaryRepo;
             context.AllSources = repos;
             context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -1033,6 +1044,7 @@ namespace NuGet.Test
             context.PrimarySources = primaryRepo;
             context.AllSources = repos;
             context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -1120,6 +1132,7 @@ namespace NuGet.Test
             context.PrimarySources = primaryRepo;
             context.AllSources = repos;
             context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -1197,6 +1210,7 @@ namespace NuGet.Test
             context.PrimarySources = repos;
             context.AllSources = repos;
             context.PackagesFolderSource = repos[2];
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -1261,6 +1275,7 @@ namespace NuGet.Test
             context.PrimarySources = repos;
             context.AllSources = repos;
             context.PackagesFolderSource = repos[2];
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -1324,6 +1339,7 @@ namespace NuGet.Test
             context.PrimarySources = repos;
             context.AllSources = repos;
             context.PackagesFolderSource = repos[2];
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -1389,6 +1405,7 @@ namespace NuGet.Test
             context.PrimarySources = repos;
             context.AllSources = repos;
             context.PackagesFolderSource = repos[2];
+            context.ResolutionContext = new ResolutionContext();
 
             // Act
             var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -1503,12 +1520,12 @@ namespace NuGet.Test
             Exception = ex;
         }
 
-        public override Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, Common.ILogger log, CancellationToken token)
+        public override Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
             throw Exception;
         }
 
-        public override Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, Common.ILogger log, CancellationToken token)
+        public override Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
             throw Exception;
         }
@@ -1524,7 +1541,7 @@ namespace NuGet.Test
 
         }
 
-        public override async Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, Common.ILogger log, CancellationToken token)
+        public override async Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
             while (true)
             {
@@ -1534,7 +1551,7 @@ namespace NuGet.Test
             }
         }
 
-        public override async Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, Common.ILogger log, CancellationToken token)
+        public override async Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
             while (true)
             {
@@ -1560,13 +1577,13 @@ namespace NuGet.Test
             Packages = packages;
         }
 
-        public override Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, Common.ILogger log, CancellationToken token)
+        public override Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
             var matchingPackage = Packages.FirstOrDefault(e => PackageIdentity.Comparer.Equals(e, package));
             return Task.FromResult<SourcePackageDependencyInfo>(ApplySource(matchingPackage));
         }
 
-        public override Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, Common.ILogger log, CancellationToken token)
+        public override Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
             var results = new HashSet<SourcePackageDependencyInfo>(
                 Packages.Where(e => StringComparer.OrdinalIgnoreCase.Equals(packageId, e.Id)),
@@ -1623,7 +1640,7 @@ namespace NuGet.Test
             Packages = packages;
         }
 
-        public override Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
+        public override Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
             return Task.FromResult(Packages
                 .Where(p =>
@@ -1634,7 +1651,7 @@ namespace NuGet.Test
             );
         }
 
-        public override Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, Common.ILogger log, CancellationToken token)
+        public override Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
             return Task.FromResult(Packages
                 .Exists(p =>
@@ -1643,7 +1660,7 @@ namespace NuGet.Test
             );
         }
 
-        public override Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
+        public override Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
             return Task.FromResult(Packages
                 .Exists((p) =>
@@ -1653,13 +1670,13 @@ namespace NuGet.Test
             );
         }
 
-        public async override Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
+        public async override Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
         {
             var results = new List<KeyValuePair<string, NuGetVersion>>();
 
             foreach (var id in packageIds)
             {
-                var versions = await GetVersions(id, log, token);
+                var versions = await GetVersions(id, sourceCacheContext, log, token);
                 var latest = versions.OrderByDescending(p => p, VersionComparer.VersionRelease).FirstOrDefault();
 
                 if (latest != null)

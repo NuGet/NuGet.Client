@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,6 +29,7 @@ namespace NuGet.Protocol.Core.Types
         /// </returns>
         public abstract Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package,
             NuGetFramework projectFramework,
+            SourceCacheContext cacheContext,
             ILogger log,
             CancellationToken token);
 
@@ -42,6 +43,7 @@ namespace NuGet.Protocol.Core.Types
         /// <returns>available packages and their dependencies</returns>
         public abstract Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId,
             NuGetFramework projectFramework,
+            SourceCacheContext cacheContext,
             ILogger log,
             CancellationToken token);
 
@@ -53,6 +55,7 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="token">cancellation token</param>
         /// <returns>available packages and their dependencies</returns>
         public virtual Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId,
+            SourceCacheContext cacheContext,
             Common.ILogger log,
             CancellationToken token)
         {

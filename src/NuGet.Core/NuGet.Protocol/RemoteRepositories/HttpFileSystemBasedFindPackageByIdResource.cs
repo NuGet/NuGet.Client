@@ -339,11 +339,12 @@ namespace NuGet.Protocol
         {
             // Try each base URI 3 times.
             var maxTries = 3 * _baseUris.Count;
+            var packageIdLowerCase = id.ToLowerInvariant();
 
             for (var retry = 0; retry < maxTries; ++retry)
             {
                 var baseUri = _baseUris[retry % _baseUris.Count].OriginalString;
-                var uri = baseUri + id.ToLowerInvariant() + "/index.json";
+                var uri = baseUri + packageIdLowerCase + "/index.json";
                 var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retry);
 
                 try
@@ -351,7 +352,7 @@ namespace NuGet.Protocol
                     return await _httpSource.GetAsync(
                         new HttpSourceCachedRequest(
                             uri,
-                            $"list_{id}",
+                            $"list_{packageIdLowerCase}",
                             httpSourceCacheContext)
                         {
                             IgnoreNotFounds = true,

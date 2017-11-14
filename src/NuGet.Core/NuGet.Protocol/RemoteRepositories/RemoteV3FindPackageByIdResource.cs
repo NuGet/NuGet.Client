@@ -313,7 +313,7 @@ namespace NuGet.Protocol
             {
                 if (cacheContext.RefreshMemoryCache || !_packageVersionsCache.TryGetValue(id, out task))
                 {
-                    task = FindPackagesByIdAsyncCore(id, logger, cancellationToken);
+                    task = FindPackagesByIdAsyncCore(id, cacheContext, logger, cancellationToken);
                     _packageVersionsCache[id] = task;
                 }
             }
@@ -323,13 +323,14 @@ namespace NuGet.Protocol
 
         private async Task<IEnumerable<RemoteSourceDependencyInfo>> FindPackagesByIdAsyncCore(
             string id,
+            SourceCacheContext sourceCacheContext,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             // This is invoked from inside a lock.
             await EnsureDependencyProvider(cancellationToken);
 
-            return await _dependencyInfoResource.ResolvePackages(id, logger, cancellationToken);
+            return await _dependencyInfoResource.ResolvePackages(id, sourceCacheContext, logger, cancellationToken);
         }
 
         private async Task EnsureDependencyProvider(CancellationToken cancellationToken)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -248,7 +248,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     .Build());
 
             Mock.Get(_metadataResource)
-                .Setup(x => x.GetMetadataAsync(id, It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetMetadataAsync(id, It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(metadata));
         }
     }
