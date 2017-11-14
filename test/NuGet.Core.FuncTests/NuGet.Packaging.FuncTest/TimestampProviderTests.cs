@@ -10,6 +10,7 @@ using System.Threading;
 using FluentAssertions;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Org.BouncyCastle.X509;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -17,12 +18,14 @@ namespace NuGet.Packaging.FuncTest
 {
     public class TimestampProviderTests
     {
-        private const string _internalTimestamper = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer ";
+        private const string _internalTimestamper = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
+        private const string _authorCertExpiredExceptionMessage = "Author certificate was not valid when it was timestamped.";
+        private const string _argumentNullExceptionMessage = "Value cannot be null.\r\nParameter name: {0}";
+        private const string _operationCancelledExceptionMessage = "The operation was canceled.";
 
         [Fact]
         public void Rfc3161TimestampProvider_Success()
         {
-
             // Arrange
             var logger = new TestLogger();
             var timestampProvider = new Rfc3161TimestampProvider(new Uri(_internalTimestamper));
@@ -48,8 +51,150 @@ namespace NuGet.Packaging.FuncTest
                 timestampedCms.Decode(timestampedData);
 
                 // Assert
-                Assert.NotNull(timestampedData);
-                Assert.NotNull(timestampedCms);
+                timestampedData.Should().NotBeNull();
+                timestampedCms.Should().NotBeNull();
+                timestampedCms.Detached.Should().BeFalse();
+                timestampedCms.ContentInfo.Should().NotBeNull();
+                timestampedCms.Certificates.Count.Should().Be(1);
+                timestampedCms.SignerInfos.Count.Should().Be(1);
+                timestampedCms.SignerInfos[0].UnsignedAttributes.Count.Should().Be(1);
+                timestampedCms.SignerInfos[0].UnsignedAttributes[0].Oid.Value.Should().Be(Oids.SignatureTimeStampTokenAttributeOid);
+
+            }
+        }
+
+        [Fact]
+        public void Rfc3161TimestampProvider_Failure_NullRequest()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_internalTimestamper));
+            var authorCertName = "author@nuget.func.test";
+            var data = "Test data to be signed and timestamped";
+
+            Action<X509V3CertificateGenerator> modifyGenerator = delegate (X509V3CertificateGenerator gen)
+            {
+                gen.SetNotBefore(DateTime.MinValue);
+                gen.SetNotBefore(DateTime.Now.Subtract(TimeSpan.FromDays(1))); // cert has expired
+            };
+
+            using (var authorCert = SigningTestUtility.GenerateCertificate(authorCertName, modifyGenerator: modifyGenerator))
+            {
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
+                var signatureValue = signedCms.Encode();
+
+                var request = new TimestampRequest
+                {
+                    Certificate = authorCert,
+                    SigningSpec = SigningSpecifications.V1,
+                    TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
+                    SignatureValue = signatureValue
+                };
+
+                // Act
+                Action timestampAction = () => timestampProvider.TimestampData(null, logger, CancellationToken.None);
+
+                // Assert
+                timestampAction.ShouldThrow<ArgumentNullException>()
+                    .WithMessage(string.Format(_argumentNullExceptionMessage, nameof(request)));
+            }
+        }
+
+        [Fact]
+        public void Rfc3161TimestampProvider_Failure_NullLogger()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_internalTimestamper));
+            var authorCertName = "author@nuget.func.test";
+            var data = "Test data to be signed and timestamped";
+
+            using (var authorCert = SigningTestUtility.GenerateCertificate(authorCertName, modifyGenerator: null))
+            {
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
+                var signatureValue = signedCms.Encode();
+
+                var request = new TimestampRequest
+                {
+                    Certificate = authorCert,
+                    SigningSpec = SigningSpecifications.V1,
+                    TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
+                    SignatureValue = signatureValue
+                };
+
+                // Act
+                Action timestampAction = () => timestampProvider.TimestampData(request, null, CancellationToken.None);
+
+                // Assert
+                timestampAction.ShouldThrow<ArgumentNullException>()
+                    .WithMessage(string.Format(_argumentNullExceptionMessage, nameof(logger)));
+            }
+        }
+
+        [Fact]
+        public void Rfc3161TimestampProvider_Failure_Cancelled()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_internalTimestamper));
+            var authorCertName = "author@nuget.func.test";
+            var data = "Test data to be signed and timestamped";
+
+            using (var authorCert = SigningTestUtility.GenerateCertificate(authorCertName, modifyGenerator: null))
+            {
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
+                var signatureValue = signedCms.Encode();
+
+                var request = new TimestampRequest
+                {
+                    Certificate = authorCert,
+                    SigningSpec = SigningSpecifications.V1,
+                    TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
+                    SignatureValue = signatureValue
+                };
+
+                // Act
+                Action timestampAction = () => timestampProvider.TimestampData(request, logger, new CancellationToken(canceled: true));
+
+                // Assert
+                timestampAction.ShouldThrow<OperationCanceledException>()
+                    .WithMessage(_operationCancelledExceptionMessage);
+            }
+        }
+
+        [Fact]
+        public void Rfc3161TimestampProvider_Failure_AutherCertificateNotValidYet()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_internalTimestamper));
+            var authorCertName = "author@nuget.func.test";
+            var data = "Test data to be signed and timestamped";
+
+            Action<X509V3CertificateGenerator> modifyGenerator = delegate(X509V3CertificateGenerator gen)
+            {
+                gen.SetNotBefore(DateTime.Now.AddDays(2)); // cert is not valid yet
+            };
+
+            using (var authorCert = SigningTestUtility.GenerateCertificate(authorCertName, modifyGenerator: modifyGenerator))
+            {
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
+                var signatureValue = signedCms.Encode();
+
+                var request = new TimestampRequest
+                {
+                    Certificate = authorCert,
+                    SigningSpec = SigningSpecifications.V1,
+                    TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
+                    SignatureValue = signatureValue
+                };
+
+                // Act
+                Action timestampAction = () => timestampProvider.TimestampData(request, logger, CancellationToken.None);
+
+                // Assert
+                timestampAction.ShouldThrow<TimestampException>()
+                    .WithMessage(_authorCertExpiredExceptionMessage);
             }
         }
     }

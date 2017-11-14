@@ -65,6 +65,8 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public byte[] TimestampData(TimestampRequest request, ILogger logger, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));

@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using NuGet.Common;
 
+[assembly: InternalsVisibleTo("NuGet.Packaging.FuncTest")]
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
