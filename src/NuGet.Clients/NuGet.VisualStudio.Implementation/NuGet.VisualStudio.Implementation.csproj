@@ -34,6 +34,11 @@
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
     <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
   </ItemGroup>
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem">
+      <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <Compile Remove="Extensibility\VsProjectJsonToPackageReferenceMigrateResult.cs" />
     <Compile Remove="Extensibility\VsProjectJsonToPackageReferenceMigrator.cs" />
