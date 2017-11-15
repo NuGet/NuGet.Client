@@ -99,9 +99,10 @@ namespace NuGet.Packaging.Signing
 
                 // ensure response is for this request
                 ValidateTimestampResponseNonce(nonce, timestampToken);
-                var timestampCms = timestampToken.AsSignedCms();
 
+                var timestampCms = timestampToken.AsSignedCms();
                 var timestampCertChain = GetTimestampCertChain(GetTimestampSignerCertificate(timestampCms));
+
                 byte[] timestampByteArray;
 
                 using (var timestampNativeCms = NativeCms.Decode(timestampCms.Encode(), detached: false))

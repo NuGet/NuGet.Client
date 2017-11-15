@@ -30,13 +30,13 @@ namespace NuGet.Commands
 
             signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.SignCommandDisplayCertificate,
-                CertificateUtility.X509Certificate2ToString(cert)));
+                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(cert)}"));
 
             if (!string.IsNullOrEmpty(signArgs.Timestamper))
             {
                 signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.SignCommandDisplayTimestamper,
-                    signArgs.Timestamper));
+                    $"{Environment.NewLine}{signArgs.Timestamper}"));
             }
 
             var signRequest = GenerateSignPackageRequest(signArgs, cert);

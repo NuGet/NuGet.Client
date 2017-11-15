@@ -611,8 +611,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="SignCommandDisplayCertificate" xml:space="preserve">
     <value>
-Signing package(s) with certificate: 
-{0}</value>
+Signing package(s) with certificate: {0}</value>
     <comment>0 -  X509Certificate2 details in the following format -
 Subject Name:
 SHA1 hash:
@@ -681,8 +680,7 @@ Valid from:</comment>
   </data>
   <data name="SignCommandDisplayTimestamper" xml:space="preserve">
     <value>
-Timestamping package(s) with:
-{0}
+Timestamping package(s) with: {0}
 </value>
     <comment>0 -  url to the timestamping authority</comment>
   </data>
