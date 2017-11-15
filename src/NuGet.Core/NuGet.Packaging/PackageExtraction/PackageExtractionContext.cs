@@ -15,7 +15,7 @@ namespace NuGet.Packaging
 
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; }
 
-        public ISignedPackageVerifier SignedPackageVerifier { get; }
+        public ISignedPackageVerifier SignedPackageVerifier { get; set; }
 
         public bool CopySatelliteFiles { get; set; } = true;
 

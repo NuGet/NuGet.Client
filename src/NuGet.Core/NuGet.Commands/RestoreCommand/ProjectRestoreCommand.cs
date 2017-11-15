@@ -295,7 +295,7 @@ namespace NuGet.Commands
                 }
                 catch (SignatureException e)
                 {
-                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1410, e.Message, packageIdentity.ToString()));
+                    await _logger.LogMessagesAsync(e.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()));
                 }
             }
         }
