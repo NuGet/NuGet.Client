@@ -573,7 +573,7 @@ namespace NuGet.Packaging
                 {
                     try
                     {
-                        CreatePart(package, file.Path, stream);
+                        CreatePart(package, file.Path, stream, file.LastWriteTime); 
                         var fileExtension = Path.GetExtension(file.Path);
 
                         // We have files without extension (e.g. the executables for Nix)
@@ -715,7 +715,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private static void CreatePart(ZipArchive package, string path, Stream sourceStream)
+        private static void CreatePart(ZipArchive package, string path, Stream sourceStream, DateTimeOffset lastWriteTime)
         {
             if (PackageHelper.IsNuspec(path))
             {
@@ -723,12 +723,8 @@ namespace NuGet.Packaging
             }
 
             string entryName = CreatePartEntryName(path);
-
             var entry = package.CreateEntry(entryName, CompressionLevel.Optimal);
-            if(File.Exists(path))
-            {
-                entry.LastWriteTime = File.GetLastWriteTime(path);
-            }
+            entry.LastWriteTime = lastWriteTime;
             using (var stream = entry.Open())
             {
                 sourceStream.CopyTo(stream);
