@@ -1368,7 +1368,7 @@ namespace NuGet.CommandLine
         {
             private readonly Lazy<Func<Stream>> _streamFactory;
             private readonly string _effectivePath;
-            private DateTimeOffset _lastWriteTime;
+            private DateTimeOffset _lastWriteTime = DateTimeOffset.UtcNow;
 
             public ReverseTransformFormFile(Packaging.IPackageFile file, IEnumerable<Packaging.IPackageFile> transforms)
             {
@@ -1393,7 +1393,6 @@ namespace NuGet.CommandLine
 
             public Stream GetStream()
             {
-                _lastWriteTime = DateTimeOffset.UtcNow;
                 return _streamFactory.Value();
             }
 
