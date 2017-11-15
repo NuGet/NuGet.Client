@@ -35,7 +35,7 @@ namespace NuGet.Common
     /// error/warning - Reason
     /// 3000/3500     - Input
     /// 3010/3510     - Certificate
-    /// 3020/3520     - Timesatmping
+    /// 3020/3520     - Timestamping
     /// </summary>
     public enum NuGetLogCode
     {
