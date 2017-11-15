@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 #endif
 
 using System.Threading;
@@ -100,8 +101,6 @@ namespace NuGet.Packaging.Signing
                 ValidateTimestampResponseNonce(nonce, timestampToken);
                 var timestampCms = timestampToken.AsSignedCms();
 
-                // Validate the response contents
-                Rfc3161TimestampVerifier.Validate(timestampCms, request.SigningSpec, request.Certificate, signatureValueHashByteArray);
                 var timestampCertChain = GetTimestampCertChain(GetTimestampSignerCertificate(timestampCms));
                 byte[] timestampByteArray;
 
@@ -123,10 +122,10 @@ namespace NuGet.Packaging.Signing
             if (!SigningUtility.IsCertificateValid(timestampSignerCertificate, out var timestampCertChain, allowUntrustedRoot: false))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3402,
+                    NuGetLogCode.NU3101,
                     string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampResponseExceptionGeneral,
-                    Strings.TimestampFailureCertChainBuildFailure)));
+                    Strings.TimestampCertificateChainBuildFailure,
+                    timestampSignerCertificate.FriendlyName)));
             }
 
             return timestampCertChain;
@@ -139,7 +138,7 @@ namespace NuGet.Packaging.Signing
             if (!nonce.SequenceEqual(timestampToken.TokenInfo.GetNonce()))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3405,
+                    NuGetLogCode.NU3401,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureNonceMismatch)));

@@ -226,9 +226,6 @@
   <data name="TimestampFailureAuthorCertNotValid" xml:space="preserve">
     <value>Author certificate was not valid when it was timestamped.</value>
   </data>
-  <data name="TimestampFailureCertChainBuildFailure" xml:space="preserve">
-    <value>Timestamp service's certificate chain does not build.</value>
-  </data>
   <data name="TimestampFailureCertInvalidEku" xml:space="preserve">
     <value>Timestamp service's certificate does not contain a valid Enhanced Key Usage for timestamping.</value>
   </data>
@@ -253,5 +250,10 @@
   </data>
   <data name="TimestampFailureInvalidContentType" xml:space="preserve">
     <value>Timestamp signature contains invalid content type.</value>
+  </data>
+  <data name="TimestampCertificateChainBuildFailure" xml:space="preserve">
+    <value>The timestamp service's certificate chain could not be built for the following certificate - 
+{0}</value>
+    <comment>0 -  X509Certificate2 friendly name</comment>
   </data>
 </root>

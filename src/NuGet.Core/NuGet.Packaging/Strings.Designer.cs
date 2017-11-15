@@ -341,20 +341,21 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The timestamp service&apos;s certificate chain could not be built for the following certificate - 
+        ///{0}.
+        /// </summary>
+        internal static string TimestampCertificateChainBuildFailure {
+            get {
+                return ResourceManager.GetString("TimestampCertificateChainBuildFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Author certificate was not valid when it was timestamped..
         /// </summary>
         internal static string TimestampFailureAuthorCertNotValid {
             get {
                 return ResourceManager.GetString("TimestampFailureAuthorCertNotValid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Timestamp service&apos;s certificate chain does not build..
-        /// </summary>
-        internal static string TimestampFailureCertChainBuildFailure {
-            get {
-                return ResourceManager.GetString("TimestampFailureCertChainBuildFailure", resourceCulture);
             }
         }
         

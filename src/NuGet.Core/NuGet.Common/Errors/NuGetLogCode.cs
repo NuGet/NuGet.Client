@@ -33,11 +33,11 @@ namespace NuGet.Common
     ///
     /// Sub groups for Signing:
     /// error/warning - Reason
-    /// 3000/3500     - 
-    /// 3100/3600     - 
+    /// 3000/3500     - Input
+    /// 3100/3600     - Certificate
     /// 3200/3700     - 
     /// 3300/3800     - 
-    /// 3400/3900     - Timestamp
+    /// 3400/3900     - Misc
     /// </summary>
     public enum NuGetLogCode
     {
@@ -217,6 +217,21 @@ namespace NuGet.Common
         NU3002 = 3002,
 
         /// <summary>
+        /// Certificate chain does not build
+        /// </summary>
+        NU3101 = 3101,
+
+        /// <summary>
+        /// Certifiate not valid
+        /// </summary>
+        NU3102 = 3102,
+
+        /// <summary>
+        /// Invalid timestamp response
+        /// </summary>
+        NU3401 = 3401,
+
+        /// <summary>
         /// Undefined signature warning
         /// </summary>
         NU3500 = 3500,
@@ -230,41 +245,6 @@ namespace NuGet.Common
         /// Signature information unavailable warning
         /// </summary>
         NU3502 = 3502,
-
-        /// <summary>
-        /// Author cert not valid when timestamped
-        /// </summary>
-        NU3401 = 3401,
-
-        /// <summary>
-        /// Timestamper cert chain does not build
-        /// </summary>
-        NU3402 = 3402,
-
-        /// <summary>
-        /// Timestamper cert does not have the right Enhanced Key Usage
-        /// </summary>
-        NU3403 = 3403,
-
-        /// <summary>
-        /// Timestamp response does not have the right signature value hash
-        /// </summary>
-        NU3404 = 3404,
-
-        /// <summary>
-        /// Timestamp response does not have the right nonce
-        /// </summary>
-        NU3405 = 3405,
-
-        /// <summary>
-        /// Timestamp response does not have a valid hash algorithm oid
-        /// </summary>
-        NU3406 = 3406,
-
-        /// <summary>
-        /// Timestamp response does not have a valid content type
-        /// </summary>
-        NU3407 = 3407,
 
         /// <summary>
         /// Timestamp url not passed to sign command
