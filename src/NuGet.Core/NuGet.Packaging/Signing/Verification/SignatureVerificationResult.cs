@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
@@ -54,6 +56,16 @@ namespace NuGet.Packaging.Signing
         public static SignatureVerificationResult UnsignedPackageResult(SignatureVerificationStatus trust, IEnumerable<SignatureIssue> issues)
         {
             return new SignatureVerificationResult(trust, issues);
+        }
+
+        public IEnumerable<ILogMessage> GetWarningIssues()
+        {
+            return Issues.Where(p => !p.Fatal).Select(p => p.ToLogMessage());
+        }
+
+        public IEnumerable<ILogMessage> GetErrorIssues()
+        {
+            return Issues.Where(p => p.Fatal).Select(p => p.ToLogMessage());
         }
 
         /// <summary>

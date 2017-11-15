@@ -550,10 +550,13 @@ namespace NuGet.Packaging
                             {
                                 await VerifyPackageSignatureAsync(packageIdentity, packageExtractionContext, packageDownloader.SignedPackageReader, token);
                             }
-                            catch(SignatureException e)
+                            catch(SignatureException)
                             {
                                 try
                                 {
+                                    // Dispose of it now because it is holding a lock on the temporary .nupkg file.
+                                    packageDownloader.Dispose();
+
                                     if (File.Exists(targetTempNupkg))
                                     {
                                         File.Delete(targetTempNupkg);
@@ -824,7 +827,7 @@ namespace NuGet.Packaging
 
                 if (!verifyResult.Valid)
                 {
-                    throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidPackageSignature, package.ToString()));
+                    throw new SignatureException(verifyResult.Results, package);
                 }
             }
         }
