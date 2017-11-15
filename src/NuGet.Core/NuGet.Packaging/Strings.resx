@@ -251,4 +251,7 @@
     <value>Timestamp service's response does not meet the NuGet package signature specification: '{0}'.</value>
     <comment>0 - Reason for failure</comment>
   </data>
+  <data name="TimestampFailureInvalidContentType" xml:space="preserve">
+    <value>Timestamp signature contains invalid content type.</value>
+  </data>
 </root>

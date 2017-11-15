@@ -320,8 +320,6 @@ namespace NuGet.Packaging.Signing
                         Marshal.Copy(letThemEncodeIt, really, 0, (int)cbReally);
                     }
 
-                    Console.WriteLine(really.SequenceEqual(rawData));
-
                     return tstInfo;
                 }
                 finally

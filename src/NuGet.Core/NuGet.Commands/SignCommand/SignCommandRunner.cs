@@ -20,7 +20,6 @@ namespace NuGet.Commands
     {
         public int ExecuteCommand(SignArgs signArgs)
         {
-
             var success = true;
 
             // resolve path into multiple packages if needed.
@@ -32,6 +31,13 @@ namespace NuGet.Commands
             signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.SignCommandDisplayCertificate,
                 CertificateUtility.X509Certificate2ToString(cert)));
+
+            if (!string.IsNullOrEmpty(signArgs.Timestamper))
+            {
+                signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    Strings.SignCommandDisplayTimestamper,
+                    signArgs.Timestamper));
+            }
 
             var signRequest = GenerateSignPackageRequest(signArgs, cert);
             var timestampProvider = new Rfc3161TimestampProvider(new Uri(signArgs.Timestamper));

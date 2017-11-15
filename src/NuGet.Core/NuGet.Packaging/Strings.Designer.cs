@@ -368,6 +368,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Timestamp signature contains invalid content type..
+        /// </summary>
+        internal static string TimestampFailureInvalidContentType {
+            get {
+                return ResourceManager.GetString("TimestampFailureInvalidContentType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Timestamp response contains invalid signature value hash..
         /// </summary>
         internal static string TimestampFailureInvalidHash {

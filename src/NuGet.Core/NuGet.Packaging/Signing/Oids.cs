@@ -31,5 +31,8 @@ namespace NuGet.Packaging.Signing
 
         // RFC 2459 "id-ce-extKeyUsage" https://tools.ietf.org/html/rfc3280.html#section-4.2.1.13
         public const string EnhancedKeyUsageOid = "2.5.29.37";
+
+        // RFC 3161 "id-ct-TSTInfo" https://tools.ietf.org/html/rfc3161#section-2.4.2
+        public const string TSTInfoContentTypeOid = "1.2.840.113549.1.9.16.1.4";
     }
 }

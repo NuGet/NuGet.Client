@@ -262,6 +262,11 @@ namespace NuGet.Common
         NU3406 = 3406,
 
         /// <summary>
+        /// Timestamp response does not have a valid content type
+        /// </summary>
+        NU3407 = 3407,
+
+        /// <summary>
         /// Timestamp url not passed to sign command
         /// </summary>
         NU3901 = 3901,
