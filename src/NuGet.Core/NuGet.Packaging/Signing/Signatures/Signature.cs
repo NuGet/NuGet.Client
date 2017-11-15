@@ -26,12 +26,6 @@ namespace NuGet.Packaging.Signing
         public SignedCms SignedCms { get; }
 
         /// <summary>
-        /// Index to the SignerInfo object in the SignedCms.SignInfos.
-        /// The index is used to indicate the SignerInfo for this Signature.
-        /// </summary>
-        public int SignerInfoIndex { get; }
-
-        /// <summary>
         /// Indicates if this is an author or repository signature.
         /// </summary>
         public SignatureType Type { get; }
@@ -44,12 +38,11 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// SignerInfo for this signature.
         /// </summary>
-        public SignerInfo SignerInfo => SignedCms.SignerInfos[SignerInfoIndex];
+        public SignerInfo SignerInfo => SignedCms.SignerInfos[0];
 
-        private Signature(SignedCms signedCms, int signerInfoIndex)
+        private Signature(SignedCms signedCms)
         {
             SignedCms = signedCms ?? throw new ArgumentNullException(nameof(signedCms));
-            SignerInfoIndex = signerInfoIndex;
             SignatureManifest = SignatureManifest.Load(SignedCms.ContentInfo.Content);
         }
 
@@ -73,14 +66,9 @@ namespace NuGet.Packaging.Signing
             return SignedCms.Encode();
         }
 
-        public static Signature Load(SignedCms cms, int signerInfoIndex)
+        public static Signature Load(SignedCms cms)
         {
-            return new Signature(cms, signerInfoIndex);
-        }
-
-        private static Signature Load(SignedCms cms)
-        {
-            return new Signature(cms, signerInfoIndex: 0);
+            return new Signature(cms);
         }
 
         public static Signature Load(byte[] data)

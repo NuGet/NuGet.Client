@@ -123,7 +123,7 @@ namespace NuGet.Packaging.Signing
             if (!SigningUtility.IsCertificateValid(timestampSignerCertificate, out var timestampCertChain, allowUntrustedRoot: false))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3101,
+                    NuGetLogCode.NU3011,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampCertificateChainBuildFailure,
                     timestampSignerCertificate.FriendlyName)));
@@ -139,7 +139,7 @@ namespace NuGet.Packaging.Signing
             if (!nonce.SequenceEqual(timestampToken.TokenInfo.GetNonce()))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3401,
+                    NuGetLogCode.NU3021,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureNonceMismatch)));

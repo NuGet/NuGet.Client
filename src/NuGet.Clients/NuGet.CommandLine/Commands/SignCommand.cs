@@ -174,7 +174,7 @@ namespace NuGet.CommandLine
         {
             if (string.IsNullOrEmpty(Timestamper))
             {
-                logger.Log(LogMessage.CreateWarning(NuGetLogCode.NU3901, NuGetCommand.SignCommandNoTimestamperWarning));
+                logger.Log(LogMessage.CreateWarning(NuGetLogCode.NU3521, NuGetCommand.SignCommandNoTimestamperWarning));
             }
         }
 

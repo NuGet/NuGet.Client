@@ -71,8 +71,7 @@ namespace NuGet.Packaging.Signing
             var cms = new SignedCms(contentInfo);
             cms.ComputeSignature(cmsSigner);
 
-            // 0 - Since we just created this signature and it should contain only 1 signerInfo
-            return Signature.Load(cms, signerInfoIndex: 0);
+            return Signature.Load(cms);
         }
 
         private Task<Signature> TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)

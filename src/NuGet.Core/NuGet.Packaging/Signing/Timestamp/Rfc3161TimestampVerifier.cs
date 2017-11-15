@@ -35,7 +35,7 @@ namespace NuGet.Packaging.Signing
             if (!ValidateTimestampAlgorithm(timestampCms, specifications))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3401,
+                    NuGetLogCode.NU3021,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureInvalidHashAlgorithmOid)));
@@ -46,7 +46,7 @@ namespace NuGet.Packaging.Signing
             if (!TryReadTSTInfoFromSignedCms(timestampCms, out tstInfo))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3401,
+                    NuGetLogCode.NU3021,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureInvalidContentType)));
@@ -55,7 +55,7 @@ namespace NuGet.Packaging.Signing
             if (!ValidateTimestampedData(tstInfo, data))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3401,
+                    NuGetLogCode.NU3021,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureInvalidHash)));
@@ -64,7 +64,7 @@ namespace NuGet.Packaging.Signing
             if (!ValidateSignerCertificateAgainstTimestamp(signerCertificate, tstInfo))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3102,
+                    NuGetLogCode.NU3012,
                     Strings.TimestampFailureAuthorCertNotValid));
             }
 
@@ -73,7 +73,7 @@ namespace NuGet.Packaging.Signing
             if (!ValidateTimestampEnhancedKeyUsage(timestamperCertificate))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3401,
+                    NuGetLogCode.NU3021,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureCertInvalidEku)));
@@ -82,7 +82,7 @@ namespace NuGet.Packaging.Signing
             if (!TryBuildTimestampCertificateChain(timestamperCertificate, out var chain))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3101,
+                    NuGetLogCode.NU3011,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampCertificateChainBuildFailure,
                     timestamperCertificate.FriendlyName)));
