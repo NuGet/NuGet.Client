@@ -55,7 +55,7 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                var issues = new[] { SignatureIssue.InvalidInputError(Strings.ErrorPackageNotSigned) };
+                var issues = new[] { SignatureLog.InvalidInputError(Strings.ErrorPackageNotSigned) };
                 trustResults.Add(new UnsignedPackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
             }
 

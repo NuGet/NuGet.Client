@@ -1215,42 +1215,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SHA1 hash: {0}.
-        /// </summary>
-        internal static string SignCommandCertificateHash {
-            get {
-                return ResourceManager.GetString("SignCommandCertificateHash", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Issued by: {0}.
-        /// </summary>
-        internal static string SignCommandCertificateIssuer {
-            get {
-                return ResourceManager.GetString("SignCommandCertificateIssuer", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Subject Name: {0}.
-        /// </summary>
-        internal static string SignCommandCertificateSubjectName {
-            get {
-                return ResourceManager.GetString("SignCommandCertificateSubjectName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Valid from: {0} to {1}.
-        /// </summary>
-        internal static string SignCommandCertificateValidity {
-            get {
-                return ResourceManager.GetString("SignCommandCertificateValidity", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Please select a valid certificate.
         /// </summary>
         internal static string SignCommandDialogMessage {
@@ -1322,24 +1286,6 @@ namespace NuGet.Commands {
         internal static string SignCommandMultipleCertException {
             get {
                 return ResourceManager.GetString("SignCommandMultipleCertException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ... {0} more..
-        /// </summary>
-        internal static string SignCommandMultipleCertificatesFooter {
-            get {
-                return ResourceManager.GetString("SignCommandMultipleCertificatesFooter", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The following certificates meet all given criteria:.
-        /// </summary>
-        internal static string SignCommandMultipleCertificatesHeader {
-            get {
-                return ResourceManager.GetString("SignCommandMultipleCertificatesHeader", resourceCulture);
             }
         }
         

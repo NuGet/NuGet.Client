@@ -268,4 +268,35 @@
   <data name="ErrorSignatureFileTooBig" xml:space="preserve">
     <value>Signature file is not of a reasonable size. Package contents might have been tampered.</value>
   </data>
+  <data name="CertUtilityCertificateHash" xml:space="preserve">
+    <value>SHA1 hash: {0}</value>
+    <comment>0 - certificate sha1 hash</comment>
+  </data>
+  <data name="CertUtilityCertificateIssuer" xml:space="preserve">
+    <value>Issued by: {0}</value>
+    <comment>0 - certificate issuer</comment>
+  </data>
+  <data name="CertUtilityCertificateSubjectName" xml:space="preserve">
+    <value>Subject Name: {0}</value>
+    <comment>0 - certificate subject name</comment>
+  </data>
+  <data name="CertUtilityCertificateValidity" xml:space="preserve">
+    <value>Valid from: {0} to {1}</value>
+    <comment>0 -  start date
+1 - end date</comment>
+  </data>
+  <data name="CertUtilityMultipleCertificatesFooter" xml:space="preserve">
+    <value>... {0} more.</value>
+  </data>
+  <data name="CertUtilityMultipleCertificatesHeader" xml:space="preserve">
+    <value>The following certificates meet all given criteria:</value>
+  </data>
+  <data name="VerificationAuthorCertDisplay" xml:space="preserve">
+    <value>Verifying signature with author certificate: {0}</value>
+    <comment>0 -  X509Certificate2 details in the following format -
+Subject Name:
+SHA1 hash:
+Issued by:
+Valid from:</comment>
+  </data>
 </root>

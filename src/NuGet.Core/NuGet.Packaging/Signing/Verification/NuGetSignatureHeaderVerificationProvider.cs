@@ -23,18 +23,18 @@ namespace NuGet.Packaging.Signing
         private PackageVerificationResult VerifyHeader(Signature signature)
         {
             var status = SignatureVerificationStatus.Trusted;
-            var issues = new List<SignatureIssue>();
+            var issues = new List<SignatureLog>();
             var header = signature.Header;
 
             if (!SigningSpecifications.V1.SupportedVersions.Contains($"{header.MajorVersion}.{header.MinorVersion}"))
             {
-                issues.Add(SignatureIssue.InvalidPackageError("Signature header version not supported by Specification V1."));
+                issues.Add(SignatureLog.InvalidPackageError("Signature header version not supported by Specification V1."));
                 status = SignatureVerificationStatus.Invalid;
             }
 
             if (!header.VerifySignature(SigningSpecifications.V1.NuGetPackageSignatureFormatSignature))
             {
-                issues.Add(SignatureIssue.InvalidPackageError("Signature header not supported by Specification V1."));
+                issues.Add(SignatureLog.InvalidPackageError("Signature header not supported by Specification V1."));
                 status = SignatureVerificationStatus.Invalid;
             }
 

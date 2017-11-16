@@ -6,59 +6,78 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
-    public class SignatureIssue : IEquatable<SignatureIssue>
+    public class SignatureLog : IEquatable<SignatureLog>
     {
-        public bool Fatal { get; }
+        public LogLevel Level { get; }
 
         public string Message { get; }
 
         public NuGetLogCode Code { get; }
 
-        private SignatureIssue(bool fatal, NuGetLogCode code, string message)
+        private SignatureLog(LogLevel level, NuGetLogCode code, string message)
         {
-            Fatal = fatal;
+            Level = level;
             Code = code;
             Message = message;
         }
 
-        public static SignatureIssue InvalidInputError(string message)
+        public static SignatureLog InformationLog(string message)
         {
-            return new SignatureIssue(true, NuGetLogCode.NU3001, message);
+            // create a log message and make the code undefined to not display the code in any logger
+            return new SignatureLog(LogLevel.Information, NuGetLogCode.Undefined, message);
         }
 
-        public static SignatureIssue InvalidPackageError(string message)
+        public static SignatureLog DetailedLog(string message)
         {
-            return new SignatureIssue(true, NuGetLogCode.NU3002, message);
+            // create a log message and make the code undefined to not display the code in any logger
+            return new SignatureLog(LogLevel.Verbose, NuGetLogCode.Undefined, message);
         }
 
-        public static SignatureIssue UntrustedRootWarning(string message)
+        public static SignatureLog InvalidInputError(string message)
         {
-            return new SignatureIssue(false, NuGetLogCode.NU3501, message);
+            return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3001, message);
         }
 
-        public static SignatureIssue SignatureInformationUnavailableWarning(string message)
+        public static SignatureLog InvalidPackageError(string message)
         {
-            return new SignatureIssue(false, NuGetLogCode.NU3502, message);
+            return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3002, message);
         }
 
-        public static SignatureIssue TrustOfSignatureCannotBeProvenWarning(string message)
+        public static SignatureLog UntrustedRootWarning(string message)
         {
-            return new SignatureIssue(false, NuGetLogCode.NU3502, message);
+            return new SignatureLog(LogLevel.Warning, NuGetLogCode.NU3501, message);
+        }
+
+        public static SignatureLog SignatureInformationUnavailableWarning(string message)
+        {
+            return new SignatureLog(LogLevel.Warning, NuGetLogCode.NU3502, message);
+        }
+
+        public static SignatureLog TrustOfSignatureCannotBeProvenWarning(string message)
+        {
+            return new SignatureLog(LogLevel.Warning, NuGetLogCode.NU3502, message);
         }
 
         public ILogMessage ToLogMessage()
         {
-            if (Fatal)
+            if (Level == LogLevel.Error)
             {
                 return LogMessage.CreateError(Code, Message);
             }
-            return LogMessage.CreateWarning(Code, Message);
+            else if (Level == LogLevel.Warning)
+            {
+                return LogMessage.CreateWarning(Code, Message);
+            }
+            else
+            {
+                return new LogMessage(Level, Message);
+            }
         }
 
-        public bool Equals(SignatureIssue other)
+        public bool Equals(SignatureLog other)
         {
             return other != null &&
-                Equals(Fatal, other.Fatal) &&
+                Equals(Level, other.Level) &&
                 Equals(Code, other.Code) &&
                 string.Equals(Message, other.Message, StringComparison.Ordinal);
         }

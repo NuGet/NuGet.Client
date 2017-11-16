@@ -7,7 +7,7 @@ namespace NuGet.Packaging.Signing
 {
     public class UnsignedPackageVerificationResult : PackageVerificationResult
     {
-        public UnsignedPackageVerificationResult(SignatureVerificationStatus trust, IEnumerable<SignatureIssue> issues) :
+        public UnsignedPackageVerificationResult(SignatureVerificationStatus trust, IEnumerable<SignatureLog> issues) :
             base(trust, issues)
         {
         }

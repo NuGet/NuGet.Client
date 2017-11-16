@@ -21,25 +21,25 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// List of issues found in the verification process
         /// </summary>
-        public virtual IEnumerable<SignatureIssue> Issues { get; }
+        public virtual IEnumerable<SignatureLog> Issues { get; }
 
         /// <summary>
         /// SignatureVerificationResult
         /// </summary>
-        public PackageVerificationResult(SignatureVerificationStatus trust, IEnumerable<SignatureIssue> issues)
+        public PackageVerificationResult(SignatureVerificationStatus trust, IEnumerable<SignatureLog> issues)
         {
             Trust = trust;
-            Issues = issues ?? new List<SignatureIssue>();
+            Issues = issues ?? new List<SignatureLog>();
         }
 
         public IEnumerable<ILogMessage> GetWarningIssues()
         {
-            return Issues.Where(p => !p.Fatal).Select(p => p.ToLogMessage());
+            return Issues.Where(p => p.Level==LogLevel.Warning).Select(p => p.ToLogMessage());
         }
 
         public IEnumerable<ILogMessage> GetErrorIssues()
         {
-            return Issues.Where(p => p.Fatal).Select(p => p.ToLogMessage());
+            return Issues.Where(p => p.Level == LogLevel.Error).Select(p => p.ToLogMessage());
         }
     }
 }

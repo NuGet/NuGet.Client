@@ -5,7 +5,7 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
-namespace NuGet.Commands
+namespace NuGet.Packaging.Signing
 {
     public static class CertificateUtility
     {
@@ -29,10 +29,10 @@ namespace NuGet.Commands
 
         private static void X509Certificate2ToString(X509Certificate2 cert, StringBuilder certStringBuilder)
         {
-            certStringBuilder.AppendLine(string.Format(Strings.SignCommandCertificateSubjectName, cert.Subject));
-            certStringBuilder.AppendLine(string.Format(Strings.SignCommandCertificateHash, cert.Thumbprint));
-            certStringBuilder.AppendLine(string.Format(Strings.SignCommandCertificateIssuer, cert.IssuerName.Name));
-            certStringBuilder.AppendLine(string.Format(Strings.SignCommandCertificateValidity, cert.NotBefore, cert.NotAfter));
+            certStringBuilder.AppendLine(string.Format(Strings.CertUtilityCertificateSubjectName, cert.Subject));
+            certStringBuilder.AppendLine(string.Format(Strings.CertUtilityCertificateHash, cert.Thumbprint));
+            certStringBuilder.AppendLine(string.Format(Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name));
+            certStringBuilder.AppendLine(string.Format(Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter));
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace NuGet.Commands
         {
             var collectionStringBuilder = new StringBuilder();
 
-            collectionStringBuilder.AppendLine(Strings.SignCommandMultipleCertificatesHeader);
+            collectionStringBuilder.AppendLine(Strings.CertUtilityMultipleCertificatesHeader);
 
             for (var i = 0; i < Math.Min(_limit, certCollection.Count); i++)
             {
@@ -66,7 +66,7 @@ namespace NuGet.Commands
 
             if (certCollection.Count > _limit)
             {
-                collectionStringBuilder.AppendLine(string.Format(Strings.SignCommandMultipleCertificatesFooter, certCollection.Count - _limit));
+                collectionStringBuilder.AppendLine(string.Format(Strings.CertUtilityMultipleCertificatesFooter, certCollection.Count - _limit));
             }
 
             return collectionStringBuilder.ToString();
