@@ -28,27 +28,20 @@ namespace NuGet.Packaging.Test.SigningTests
         {
             var nupkg = new SimpleTestPackageContext();
             var testLogger = new TestLogger();
-            var zip = nupkg.Create();
+            var zipReadStream = nupkg.CreateAsStream();
+            var zipWriteStream = nupkg.CreateAsStream();
 
             using (var testCert = TestCertificate.Generate().WithTrust())
-            using (var signPackage = new SignedPackageArchive(zip))
+            using (var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
             {
                 await SignTestUtility.SignPackageAsync(testLogger, testCert.Source.Cert, signPackage);
 
                 var settings = SignedPackageVerifierSettings.RequireSigned;
 
-                var result = await VerifySignatureAsync(testLogger, signPackage, settings);
+                var result = await SignTestUtility.VerifySignatureAsync(testLogger, signPackage, settings);
 
                 result.Valid.Should().BeTrue();
             }
-        }
-
-        private static async Task<VerifySignaturesResult> VerifySignatureAsync(TestLogger testLogger, SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)
-        {
-            var verificationProviders = new[] { new X509SignatureVerificationProvider() };
-            var verifier = new PackageSignatureVerifier(verificationProviders, settings);
-            var result = await verifier.VerifySignaturesAsync(signPackage, testLogger, CancellationToken.None);
-            return result;
         }
     }
 }

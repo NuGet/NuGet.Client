@@ -33,5 +33,13 @@ namespace NuGet.Packaging.Test.SigningTests
 
             await signer.SignAsync(request, testLogger, CancellationToken.None);
         }
+
+        public static async Task<VerifySignaturesResult> VerifySignatureAsync(TestLogger testLogger, SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)
+        {
+            var verificationProviders = new[] { new X509SignatureVerificationProvider() };
+            var verifier = new PackageSignatureVerifier(verificationProviders, settings);
+            var result = await verifier.VerifySignaturesAsync(signPackage, testLogger, CancellationToken.None);
+            return result;
+        }
     }
 }
