@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using System.Globalization;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -26,16 +27,16 @@ namespace NuGet.Packaging.Signing
             //    return Task.FromResult<PackageVerificationResult>(verificationResult);
             //}
 
-            var result = VerifySignature(signature);
+            var result = VerifySignature(signature, logger);
             return Task.FromResult(result);
         }
 
 #if IS_DESKTOP
-        private PackageVerificationResult VerifySignature(Signature signature)
+        private PackageVerificationResult VerifySignature(Signature signature, ILogger logger)
         {
             var status = SignatureVerificationStatus.Trusted;
-            var signatureIssues = new List<SignatureIssue>();
-            var issues = new List<SignatureIssue>();
+            var signatureIssues = new List<SignatureLog>();
+            var issues = new List<SignatureLog>();
 
             //TODO: Check commitment-type-indication == id-cti-ets-proofOfOrigin
             //if (commitment - type - indication == id - cti - ets - proofOfOrigin)
@@ -44,6 +45,7 @@ namespace NuGet.Packaging.Signing
             //    issues.Add(SignatureIssue.TrustOfSignatureCannotBeProvenWarning("Commitment-type-indication is not know."));
             //    return new SignedPackageVerificationResult(status, signature, issues);
             //}
+            
 
             try
             {
@@ -51,14 +53,19 @@ namespace NuGet.Packaging.Signing
             }
             catch (Exception e)
             {
-                issues.Add(SignatureIssue.InvalidPackageError($"Author signature verification failed. {e.Message}"));
+                issues.Add(SignatureLog.InvalidPackageError($"Author signature verification failed. {e.Message}"));
             }
 
             if (signature.SignerInfo.Certificate == null)
             {
-                issues.Add(SignatureIssue.InvalidPackageError("Signature does not have a certificate."));
+                issues.Add(SignatureLog.InvalidPackageError("Signature does not have a certificate."));
                 return new SignedPackageVerificationResult(status, signature, issues);
             }
+
+
+            logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                Strings.VerificationAuthorCertDisplay,
+                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(signature.SignerInfo.Certificate)}"));
 
             status = GetVerificationStatusFromCertificate(signature.SignerInfo.Certificate, signature.Certificates, issues);
 
@@ -66,7 +73,7 @@ namespace NuGet.Packaging.Signing
             {
                 if (!SigningUtility.IsCertificatePublicKeyValid(signature.SignerInfo.Certificate))
                 {
-                    issues.Add(SignatureIssue.InvalidPackageError("Certificate does not meet the public key requirements."));
+                    issues.Add(SignatureLog.InvalidPackageError("Certificate does not meet the public key requirements."));
                     status = SignatureVerificationStatus.Invalid;
                 }
             }
@@ -74,7 +81,7 @@ namespace NuGet.Packaging.Signing
             return new SignedPackageVerificationResult(status, signature, issues);
         }
 
-        private SignatureVerificationStatus GetVerificationStatusFromCertificate(X509Certificate2 certificate, X509Certificate2Collection additionalCertificates, List<SignatureIssue> issues)
+        private SignatureVerificationStatus GetVerificationStatusFromCertificate(X509Certificate2 certificate, X509Certificate2Collection additionalCertificates, List<SignatureLog> issues)
         {
             try
             {
@@ -84,21 +91,21 @@ namespace NuGet.Packaging.Signing
                 }
                 else if (SigningUtility.IsCertificateChainValid(certificate, additionalCertificates, allowUntrustedRoot: true))
                 {
-                    issues.Add(SignatureIssue.UntrustedRootWarning("Signing certificate does not chain to a trusted root."));
+                    issues.Add(SignatureLog.UntrustedRootWarning("Signing certificate does not chain to a trusted root."));
                     return SignatureVerificationStatus.Untrusted;
                 }
 
-                issues.Add(SignatureIssue.InvalidPackageError("Unable to validate signer certificate chain."));
+                issues.Add(SignatureLog.InvalidPackageError("Unable to validate signer certificate chain."));
                 return SignatureVerificationStatus.Invalid;
             }
             catch(SignatureException e)
             {
-                issues.Add(SignatureIssue.InvalidPackageError(e.Message));
+                issues.Add(SignatureLog.InvalidPackageError(e.Message));
                 return SignatureVerificationStatus.Invalid;
             }
         }
 #else
-        private PackageVerificationResult VerifySignature(Signature signature)
+        private PackageVerificationResult VerifySignature(Signature signature, ILogger logger)
         {
             throw new NotSupportedException();
         }

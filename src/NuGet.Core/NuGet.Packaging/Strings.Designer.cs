@@ -62,6 +62,60 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SHA1 hash: {0}.
+        /// </summary>
+        internal static string CertUtilityCertificateHash {
+            get {
+                return ResourceManager.GetString("CertUtilityCertificateHash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Issued by: {0}.
+        /// </summary>
+        internal static string CertUtilityCertificateIssuer {
+            get {
+                return ResourceManager.GetString("CertUtilityCertificateIssuer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subject Name: {0}.
+        /// </summary>
+        internal static string CertUtilityCertificateSubjectName {
+            get {
+                return ResourceManager.GetString("CertUtilityCertificateSubjectName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Valid from: {0} to {1}.
+        /// </summary>
+        internal static string CertUtilityCertificateValidity {
+            get {
+                return ResourceManager.GetString("CertUtilityCertificateValidity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ... {0} more..
+        /// </summary>
+        internal static string CertUtilityMultipleCertificatesFooter {
+            get {
+                return ResourceManager.GetString("CertUtilityMultipleCertificatesFooter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following certificates meet all given criteria:.
+        /// </summary>
+        internal static string CertUtilityMultipleCertificatesHeader {
+            get {
+                return ResourceManager.GetString("CertUtilityMultipleCertificatesHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unsupported targetFramework value &apos;{0}&apos;..
         /// </summary>
         internal static string Error_InvalidTargetFramework {
@@ -473,6 +527,15 @@ namespace NuGet.Packaging {
         internal static string UnableToParseClientVersion {
             get {
                 return ResourceManager.GetString("UnableToParseClientVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verifying signature with author certificate: {0}.
+        /// </summary>
+        internal static string VerificationAuthorCertDisplay {
+            get {
+                return ResourceManager.GetString("VerificationAuthorCertDisplay", resourceCulture);
             }
         }
     }

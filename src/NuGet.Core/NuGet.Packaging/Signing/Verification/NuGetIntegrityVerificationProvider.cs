@@ -25,7 +25,7 @@ namespace NuGet.Packaging.Signing
         private async Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, Signature signature)
         {
             var status = SignatureVerificationStatus.Invalid;
-            var issues = new List<SignatureIssue>();
+            var issues = new List<SignatureLog>();
 
             // TODO: Verify algorithm is supported
             //if (!SigningSpecifications.V1.AllowedHashAlgorithms.Contains(signature.SignatureManifest.HashAlgorithm))
@@ -41,7 +41,7 @@ namespace NuGet.Packaging.Signing
             }
             catch (Exception)
             {
-                issues.Add(SignatureIssue.InvalidPackageError("Package integrity check failed. The package has been tampered."));
+                issues.Add(SignatureLog.InvalidPackageError("Package integrity check failed. The package has been tampered."));
             }
 
             return new SignedPackageVerificationResult(status, signature, issues);

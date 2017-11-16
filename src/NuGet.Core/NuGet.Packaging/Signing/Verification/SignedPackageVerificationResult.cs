@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public Signature Signature { get; }
 
-        public SignedPackageVerificationResult(SignatureVerificationStatus trust, Signature signature, IEnumerable<SignatureIssue> issues):
+        public SignedPackageVerificationResult(SignatureVerificationStatus trust, Signature signature, IEnumerable<SignatureLog> issues):
             base(trust, issues)
         {
             Signature = signature ?? throw new ArgumentNullException(nameof(signature));

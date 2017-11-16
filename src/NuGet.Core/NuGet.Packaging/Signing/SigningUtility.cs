@@ -22,35 +22,7 @@ namespace NuGet.Packaging.Signing
         /// <returns>A bool indicating if the certificate builds a valid X509Chain.</returns>
         public static bool IsCertificateChainValid(X509Certificate2 certificate, X509Certificate2Collection additionalCertificates, bool allowUntrustedRoot)
         {
-            var chain = GetCertificateChain(certificate, additionalCertificates, allowUntrustedRoot);
-
-            return chain != null;
-        }
-
-        public static X509Chain GetCertificateChain(X509Certificate2 certificate, X509Certificate2Collection additionalCertificates, bool allowUntrustedRoot)
-        {
-            if (certificate == null)
-            {
-                throw new ArgumentNullException(nameof(certificate));
-            }
-
-            //TODO: Revocation checks
-
-            // TODO: use additionalCertificates as an additional certificate store to building chain
-
-            var chain = new X509Chain();
-
-            if (allowUntrustedRoot)
-            {
-                chain.ChainPolicy.VerificationFlags |= X509VerificationFlags.AllowUnknownCertificateAuthority;
-            }
-
-            if (chain.Build(certificate))
-            {
-                return chain;
-            }
-
-            return null;
+            return IsCertificateValid(certificate, out var chain, allowUntrustedRoot, checkRevocationStatus: true);
         }
 
         public static bool IsCertificatePublicKeyValid(X509Certificate2 certificate)
@@ -76,6 +48,7 @@ namespace NuGet.Packaging.Signing
         /// <returns>A bool indicating if the certificate builds a valid X509Chain.</returns>
         public static bool IsCertificateValid(X509Certificate2 certificate, out X509Chain chain, bool allowUntrustedRoot, bool checkRevocationStatus)
         {
+            // TODO add support for additional certificates
             if (certificate == null)
             {
                 throw new ArgumentNullException(nameof(certificate));
