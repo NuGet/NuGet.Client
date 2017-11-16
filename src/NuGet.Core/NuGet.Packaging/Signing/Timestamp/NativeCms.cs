@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
@@ -45,6 +47,19 @@ namespace NuGet.Packaging.Signing
                 ref valueLength));
 
             return data;
+        }
+
+        internal static byte[] GetSignatureValueHash(HashAlgorithmName hashAlgorithm, NativeCms nativeCms)
+        {
+            var signatureValue = nativeCms.GetEncryptedDigest();
+
+            var signatureValueStream = new MemoryStream(signatureValue);
+
+            var signatureValueHashByteArray = hashAlgorithm
+                .GetHashProvider()
+                .ComputeHash(signatureValueStream, leaveStreamOpen: false);
+
+            return signatureValueHashByteArray;
         }
 
         internal static NativeCms Decode(byte[] input, bool detached)

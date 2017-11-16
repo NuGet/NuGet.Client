@@ -38,6 +38,11 @@ namespace NuGet.Packaging.Signing
             return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3001, message);
         }
 
+        public static SignatureLog InvalidTimestampInSignatureError(string message)
+        {
+            return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3022, message);
+        }
+
         public static SignatureLog InvalidPackageError(string message)
         {
             return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3002, message);

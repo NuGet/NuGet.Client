@@ -230,6 +230,11 @@ namespace NuGet.Common
         NU3021 = 3021,
 
         /// <summary>
+        /// Invalid timestamp in signature
+        /// </summary>
+        NU3022 = 3022,
+
+        /// <summary>
         /// Undefined signature warning
         /// </summary>
         NU3500 = 3500,

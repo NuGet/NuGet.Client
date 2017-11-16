@@ -538,5 +538,14 @@ namespace NuGet.Packaging {
                 return ResourceManager.GetString("VerificationAuthorCertDisplay", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verifying timestamp with timestamping service certificate: {0}.
+        /// </summary>
+        internal static string VerificationTimestamperCertDisplay {
+            get {
+                return ResourceManager.GetString("VerificationTimestamperCertDisplay", resourceCulture);
+            }
+        }
     }
 }

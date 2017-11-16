@@ -13,7 +13,8 @@ namespace NuGet.Packaging.Signing
             {
                 new X509SignatureVerificationProvider(),
                 new NuGetIntegrityVerificationProvider(),
-                new NuGetSignatureHeaderVerificationProvider()
+                new NuGetSignatureHeaderVerificationProvider(),
+                new TimestampVerificationProvider()
             };
         }
     }
