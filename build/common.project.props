@@ -22,7 +22,7 @@
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' != 'true' ">$(ArtifactsDirectory)nupkgs\</NupkgOutputDirectory>
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' == 'true' ">$(ArtifactsDirectory)ReleaseNupkgs\</NupkgOutputDirectory>
     <SolutionPackagesFolder>$(RepositoryRootDirectory)packages\</SolutionPackagesFolder>
-    <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console.2.2.0\tools\xunit.console.x86.exe</XunitConsoleExePath>
+    <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console.2.3.1\tools\net452\xunit.console.x86.exe</XunitConsoleExePath>
     <ILMergeExePath>$(SolutionPackagesFolder)ILMerge.2.14.1208\tools\ILMerge.exe</ILMergeExePath>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)src</EnlistmentRootSrc>

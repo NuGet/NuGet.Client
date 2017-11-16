@@ -18,11 +18,12 @@ pushd $DIR
 # Download the CLI install script to cli
 echo "Installing dotnet CLI"
 mkdir -p cli
-curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/d2bbe1faa294012cec60b640e6522e0674224d3f/scripts/obtain/dotnet-install.sh
+curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/4bd9bb92cc3636421cd01baedbd8ef3e41aa1e22/scripts/obtain/dotnet-install.sh
 
 # Run install.sh
 chmod +x cli/dotnet-install.sh
-cli/dotnet-install.sh -i cli -c preview -v 1.0.1
+# cli/dotnet-install.sh -i cli -c 2.0 --version 2.0.2
+cli/dotnet-install.sh -i cli -c preview --version 1.0.4
 
 # Display current version
 DOTNET="$(pwd)/cli/dotnet"
@@ -78,11 +79,11 @@ fi
 
 #run mono test
 TestDir="$DIR/artifacts/NuGet.CommandLine.Test/"
-XunitConsole="$DIR/packages/xunit.runner.console.2.2.0/tools/xunit.console.exe"
+XunitConsole="$DIR/packages/xunit.runner.console.2.3.1/tools/net452/xunit.console.exe"
 NuGetExe="$DIR/.nuget/nuget.exe"
 
 #Get NuGet.exe
-curl -o $NuGetExe https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe
+curl -o $NuGetExe https://dist.nuget.org/win-x86-commandline/v4.4.1/nuget.exe
 
 mono --version
 

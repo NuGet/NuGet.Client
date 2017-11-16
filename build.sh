@@ -13,21 +13,12 @@ RESULTCODE=0
 # Download the CLI install script to cli
 echo "Installing dotnet CLI"
 mkdir -p cli
-curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/8c5e955252f93f54e239e5f1c978700b97fc21c1/scripts/obtain/dotnet-install.sh
-
-# Download the CLI install script to cli test
-# echo "Installing dotnet CLI test"
-# mkdir -p cli_test
-# curl -o cli_test/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/d2bbe1faa294012cec60b640e6522e0674224d3f/scripts/obtain/dotnet-install.sh
+curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/4bd9bb92cc3636421cd01baedbd8ef3e41aa1e22/scripts/obtain/dotnet-install.sh
 
 # Run install.sh for cli
 chmod +x cli/dotnet-install.sh
-cli/dotnet-install.sh -i cli -c preview -v 1.0.1
-
-# Run install.sh fot cli test
-# chmod +x cli_test/dotnet-install.sh
-# cli_test/dotnet-install.sh -i cli_test -c preview -v 1.0.0-rc4-004788
-
+# cli/dotnet-install.sh -i cli -c 2.0 --version 2.0.2
+cli/dotnet-install.sh -i cli -c preview --version 1.0.4
 
 # Display current version
 DOTNET_TEST="$(pwd)/cli_test/dotnet"
