@@ -63,7 +63,7 @@ namespace NuGet.Packaging.Signing
         /// Creates a ZipSignatureHeader.
         /// </summary>
         /// <returns>ZipSignatureHeader that can be used while signing.</returns>
-        public ZipSignatureHeader CreateZipHeader(uint signatureBlockSize, CancellationToken token)
+        public ZipSignatureHeader CreateZipHeader(long signatureBlockSize, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
             return new ZipSignatureHeader(_nugetPackageSignatureFormatV1, _majorVersion, _minorVersion, signatureBlockSize);
