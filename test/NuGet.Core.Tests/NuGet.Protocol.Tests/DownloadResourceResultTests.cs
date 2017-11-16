@@ -248,7 +248,7 @@ namespace NuGet.Protocol.Tests
                 throw new NotImplementedException();
             }
 
-            public override Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token)
+            public override Task<PackageSignatureManifest> GetSignManifestAsync(CancellationToken token)
             {
                 throw new NotImplementedException();
             }

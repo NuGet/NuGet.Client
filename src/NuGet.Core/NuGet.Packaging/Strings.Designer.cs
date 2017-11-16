@@ -332,6 +332,33 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package being signed already contains a signature. Please remove the existing signature before adding a new signature..
+        /// </summary>
+        internal static string SignedPackagePackageAlreadySigned {
+            get {
+                return ResourceManager.GetString("SignedPackagePackageAlreadySigned", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package is not signed. Unable to remove signature from an unsigned package..
+        /// </summary>
+        internal static string SignedPackagePackageNotSigned {
+            get {
+                return ResourceManager.GetString("SignedPackagePackageNotSigned", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package was not opened correctly to perform Signature operations. Please use a Stream based constructor to have access to Signature attributes of the package..
+        /// </summary>
+        internal static string SignedPackageUnableToAccessSignature {
+            get {
+                return ResourceManager.GetString("SignedPackageUnableToAccessSignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to String argument &apos;{0}&apos; cannot be null or empty.
         /// </summary>
         internal static string StringCannotBeNullOrEmpty {

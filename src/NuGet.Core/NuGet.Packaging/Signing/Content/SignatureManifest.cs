@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using NuGet.Common;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging.Signing
@@ -16,43 +18,29 @@ namespace NuGet.Packaging.Signing
         private const int MaxSize = 1024 * 1024;
 
         /// <summary>
-        /// Current default manifest version.
+        /// Hashing algorithm used.
         /// </summary>
-        public static readonly SemanticVersion DefaultVersion = new SemanticVersion(1, 0, 0);
+        public HashAlgorithmName HashAlgorithm { get; }
 
         /// <summary>
-        /// Manifest format version.
+        /// Base64 package stream hash.
         /// </summary>
-        public SemanticVersion Version { get; }
+        public string HashValue { get; }
 
-        /// <summary>
-        /// File hashing algorithm used.
-        /// </summary>
-        public Common.HashAlgorithmName SignatureTargetHashAlgorithm { get; }
-
-        /// <summary>
-        /// Package content manifest hash.
-        /// </summary>
-        public string SignatureTargetHashValue { get; }
-
-        public SignatureManifest(SemanticVersion version, Common.HashAlgorithmName signatureTargetHashAlgorithm, string signatureTargetHashValue)
+        public SignatureManifest(HashAlgorithmName hashAlgorithm, string hashValue)
         {
-            Version = version ?? throw new ArgumentNullException(nameof(version));
-            SignatureTargetHashAlgorithm = signatureTargetHashAlgorithm;
-            SignatureTargetHashValue = signatureTargetHashValue ?? throw new ArgumentNullException(nameof(signatureTargetHashValue));
+            HashAlgorithm = hashAlgorithm;
+            HashValue = hashValue;
         }
 
         /// <summary>
         /// Write the manifest to a stream.
         /// </summary>
-        public void Save(Stream stream)
+        private void Save(Stream stream)
         {
             using (var writer = new KeyPairFileWriter(stream, leaveOpen: true))
             {
-                // Write headers
-                writer.WritePair(ManifestConstants.Version, Version.ToNormalizedString());
-                writer.WritePair(ManifestConstants.SignatureTargetHashAlgorithm, SignatureTargetHashAlgorithm.ToString().ToUpperInvariant());
-                writer.WritePair(ManifestConstants.SignatureTargetHashValue, SignatureTargetHashValue);
+                writer.WritePair(CryptoHashUtility.ConvertToOidString(HashAlgorithm), HashValue);
             }
         }
 
@@ -85,31 +73,27 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Load a manifest file from a stream.
         /// </summary>
-        public static SignatureManifest Load(Stream stream)
+        private static SignatureManifest Load(Stream stream)
         {
-            SemanticVersion version = null;
-            var hashAlgorithm = Common.HashAlgorithmName.Unknown;
+            var hashAlgorithm = HashAlgorithmName.Unknown;
             string hash = null;
 
             using (var reader = new KeyPairFileReader(stream))
             {
                 // Read headers from the first section
-                var headers = reader.ReadSection();
+                var properties = reader.ReadSection();
 
-                // Verify the version is 1.0.0 or throw before reading the rest.
-                version = ReadVersion(headers);
-
-                // Throw if any unexpected headers exist
-                if (headers.Count != 3)
+                // Since we only support 1 property now.
+                // In future we should parse all the properties.
+                if (properties.Count > 1)
                 {
                     ThrowInvalidFormat();
                 }
 
-                // Read hash algorithm
-                hashAlgorithm = ReadHashAlgorithm(headers);
+                var hashAlgorithmString = properties.Keys.First();
+                hashAlgorithm = CryptoHashUtility.OidToHashAlgorithmName(hashAlgorithmString);
 
-                // Read hash
-                hash = KeyPairFileUtility.GetValueOrThrow(headers, ManifestConstants.SignatureTargetHashValue);
+                var hashValue = properties.Values.First();
 
                 if (!reader.EndOfStream)
                 {
@@ -118,46 +102,7 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            return new SignatureManifest(version, hashAlgorithm, hash);
-        }
-
-        /// <summary>
-        /// Get the hash algorithm and ensure that it is valid.
-        /// </summary>
-        private static Common.HashAlgorithmName ReadHashAlgorithm(Dictionary<string, string> headers)
-        {
-            var hashAlgorithm = Common.HashAlgorithmName.Unknown;
-            var hashAlgorithmString = KeyPairFileUtility.GetValueOrThrow(headers, ManifestConstants.SignatureTargetHashAlgorithm);
-
-            if (Enum.TryParse<Common.HashAlgorithmName>(hashAlgorithmString, ignoreCase: false, result: out var parsedHashAlgorithm)
-                && parsedHashAlgorithm != Common.HashAlgorithmName.Unknown)
-            {
-                hashAlgorithm = parsedHashAlgorithm;
-            }
-            else
-            {
-                ThrowInvalidFormat();
-            }
-
-            return hashAlgorithm;
-        }
-
-        private static SemanticVersion ReadVersion(Dictionary<string, string> headers)
-        {
-            SemanticVersion version = null;
-            var versionString = KeyPairFileUtility.GetValueOrThrow(headers, ManifestConstants.Version);
-
-            // 1.0.0 is only allowed version
-            if (StringComparer.Ordinal.Equals(versionString, DefaultVersion.ToNormalizedString()))
-            {
-                version = DefaultVersion;
-            }
-            else
-            {
-                throw new SignatureException($"Unknown signature version: '{versionString}'");
-            }
-
-            return version;
+            return new SignatureManifest(hashAlgorithm, hash);
         }
 
         /// <summary>
@@ -166,13 +111,6 @@ namespace NuGet.Packaging.Signing
         private static void ThrowInvalidFormat()
         {
             throw new SignatureException("Invalid signature manifest format");
-        }
-
-        private class ManifestConstants
-        {
-            public const string Version = nameof(Version);
-            public const string SignatureTargetHashAlgorithm = "Signature-Target-Hash-Algorithm";
-            public const string SignatureTargetHashValue = "Signature-Target-Hash-Value";
         }
     }
 }

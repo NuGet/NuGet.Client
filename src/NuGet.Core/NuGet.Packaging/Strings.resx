@@ -256,4 +256,13 @@
 {0}</value>
     <comment>0 -  X509Certificate2 friendly name</comment>
   </data>
+  <data name="SignedPackageUnableToAccessSignature" xml:space="preserve">
+    <value>The package was not opened correctly to perform Signature operations. Please use a Stream based constructor to have access to Signature attributes of the package.</value>
+  </data>
+  <data name="SignedPackagePackageAlreadySigned" xml:space="preserve">
+    <value>The package being signed already contains a signature. Please remove the existing signature before adding a new signature.</value>
+  </data>
+  <data name="SignedPackagePackageNotSigned" xml:space="preserve">
+    <value>The package is not signed. Unable to remove signature from an unsigned package.</value>
+  </data>
 </root>

@@ -7,12 +7,24 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
+    /// <summary>
+    /// Contains a request for generating package signature.
+    /// </summary>
     public class SignPackageRequest
     {
+        /// <summary>
+        /// Hash algorithm used to create the package signature.
+        /// </summary>
         public HashAlgorithmName SignatureHashAlgorithm { get; set; } = HashAlgorithmName.SHA256;
 
+        /// <summary>
+        /// Hash algorithm used to timestamping the signed package.
+        /// </summary>
         public HashAlgorithmName TimestampHashAlgorithm { get; set; } = HashAlgorithmName.SHA256;
 
+        /// <summary>
+        /// X509Certificate2 to be used while signing the package.
+        /// </summary>
         public X509Certificate2 Certificate { get; set; }
 
     }

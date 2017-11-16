@@ -25,6 +25,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public SignedCms SignedCms { get; }
 
+
         /// <summary>
         /// Indicates if this is an author or repository signature.
         /// </summary>
@@ -94,7 +95,8 @@ namespace NuGet.Packaging.Signing
             }
         }
 #else
-        private void VerifySignature(Signature signature)
+
+        public byte[] GetBytes()
         {
             throw new NotSupportedException();
         }
