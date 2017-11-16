@@ -299,4 +299,12 @@ SHA1 hash:
 Issued by:
 Valid from:</comment>
   </data>
+  <data name="VerificationTimestamperCertDisplay" xml:space="preserve">
+    <value>Verifying timestamp with timestamping service certificate: {0}</value>
+    <comment>0 -  X509Certificate2 details in the following format -
+Subject Name:
+SHA1 hash:
+Issued by:
+Valid from:</comment>
+  </data>
 </root>

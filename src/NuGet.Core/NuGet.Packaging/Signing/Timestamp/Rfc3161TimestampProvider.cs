@@ -79,7 +79,7 @@ namespace NuGet.Packaging.Signing
             // Get the signatureValue from the signerInfo object
             using (var signatureNativeCms = NativeCms.Decode(request.SignatureValue, detached: false))
             {
-                var signatureValueHashByteArray = GetSignatureValueHash(
+                var signatureValueHashByteArray = NativeCms.GetSignatureValueHash(
                     request.TimestampHashAlgorithm,
                     signatureNativeCms);
 
@@ -155,19 +155,6 @@ namespace NuGet.Packaging.Signing
                 .Cast<X509ChainElement>()
                 .Where(c => !timestampCms.Certificates.Contains(c.Certificate))
                 .Select(c => c.Certificate.Export(X509ContentType.Cert)));
-        }
-
-        private static byte[] GetSignatureValueHash(Common.HashAlgorithmName hashAlgorithm, NativeCms nativeCms)
-        {
-            var signatureValue = nativeCms.GetEncryptedDigest();
-
-            var signatureValueStream = new MemoryStream(signatureValue);
-
-            var signatureValueHashByteArray = hashAlgorithm
-                .GetHashProvider()
-                .ComputeHash(signatureValueStream, leaveStreamOpen: false);
-
-            return signatureValueHashByteArray;
         }
 
         private static X509Certificate2 GetTimestampSignerCertificate(SignedCms timestampCms)
