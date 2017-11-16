@@ -67,6 +67,7 @@ namespace NuGet.Packaging.Signing
 #else
         private PackageVerificationResult VerifySignature(Signature signature, ILogger logger)
         {
+            throw new NotImplementedException();
         }
 #endif
     }
