@@ -323,6 +323,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to fetch results from V2 feed at &apos;{0}&apos; with following message : {1}.
+        /// </summary>
+        internal static string Log_FailedToFetchV2FeedHttp {
+            get {
+                return ResourceManager.GetString("Log_FailedToFetchV2FeedHttp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to load nuspec from package &apos;{0}&apos;..
         /// </summary>
         internal static string Log_FailedToGetNuspecStream {

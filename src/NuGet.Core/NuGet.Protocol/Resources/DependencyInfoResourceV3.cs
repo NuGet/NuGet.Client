@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -60,7 +60,7 @@ namespace NuGet.Protocol
         /// Returns dependency info for the given package if it exists. If the package is not found null is
         /// returned.
         /// </returns>
-        public override async Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, Common.ILogger log, CancellationToken token)
+        public override async Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
         {
             try
             {
@@ -71,7 +71,7 @@ namespace NuGet.Protocol
 
                 // Retrieve the registration blob
                 var singleVersion = new VersionRange(minVersion: package.Version, includeMinVersion: true, maxVersion: package.Version, includeMaxVersion: true);
-                var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, singleVersion, projectFramework, log, token);
+                var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, package.Id, singleVersion, cacheContext, projectFramework, log, token);
 
                 // regInfo is null if the server returns a 404 for the package to indicate that it does not exist
                 if (regInfo != null)
@@ -99,7 +99,7 @@ namespace NuGet.Protocol
         /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
         /// <param name="token">cancellation token</param>
         /// <returns>available packages and their dependencies</returns>
-        public override async Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, Common.ILogger log, CancellationToken token)
+        public override async Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
         {
             try
             {
@@ -109,7 +109,7 @@ namespace NuGet.Protocol
                 var uri = _regResource.GetUri(packageId);
 
                 // Retrieve the registration blob
-                var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, VersionRange.All, projectFramework, log, token);
+                var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, packageId, VersionRange.All, cacheContext, projectFramework, log, token);
 
                 // regInfo is null if the server returns a 404 for the package to indicate that it does not exist
                 if (regInfo != null)
@@ -139,7 +139,7 @@ namespace NuGet.Protocol
         /// <param name="packageId">package Id to search</param>
         /// <param name="token">cancellation token</param>
         /// <returns>available packages and their dependencies</returns>
-        public override Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId, Common.ILogger log, CancellationToken token)
+        public override Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
         {
             try
             {
@@ -147,7 +147,7 @@ namespace NuGet.Protocol
                 var uri = _regResource.GetUri(packageId);
 
                 // Retrieve the registration blob
-                return ResolverMetadataClient.GetDependencies(_client, uri, VersionRange.All, log, token);
+                return ResolverMetadataClient.GetDependencies(_client, uri, packageId, VersionRange.All, cacheContext, log, token);
             }
             catch (Exception ex)
             {

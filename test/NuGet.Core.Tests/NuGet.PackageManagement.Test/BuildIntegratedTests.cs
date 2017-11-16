@@ -753,6 +753,7 @@ namespace NuGet.Test
                     buildIntegratedProject,
                     actions,
                     new TestNuGetProjectContext(),
+                    NullSourceCacheContext.Instance,
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -833,6 +834,7 @@ namespace NuGet.Test
                         buildIntegratedProject,
                         actions,
                         new TestNuGetProjectContext(),
+                        NullSourceCacheContext.Instance,
                         CancellationToken.None));
 
                 var rollbackProjectJson = File.ReadAllText(projectJson);
@@ -922,6 +924,7 @@ namespace NuGet.Test
                         buildIntegratedProject,
                         actions,
                         new TestNuGetProjectContext(),
+                        cacheContext,
                         CancellationToken.None);
 
                     var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -1004,6 +1007,7 @@ namespace NuGet.Test
                         buildIntegratedProject,
                         actions,
                         new TestNuGetProjectContext(),
+                        cacheContext,
                         CancellationToken.None);
 
                     // Act
@@ -1019,6 +1023,7 @@ namespace NuGet.Test
                         buildIntegratedProject,
                         actions,
                         new TestNuGetProjectContext(),
+                        cacheContext,
                         CancellationToken.None);
 
                     var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -1088,6 +1093,7 @@ namespace NuGet.Test
                     buildIntegratedProject,
                     actions,
                     new TestNuGetProjectContext(),
+                    NullSourceCacheContext.Instance,
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -1182,6 +1188,7 @@ namespace NuGet.Test
                     buildIntegratedProject,
                     actions,
                     new TestNuGetProjectContext(),
+                    NullSourceCacheContext.Instance,
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -1262,6 +1269,7 @@ namespace NuGet.Test
                     buildIntegratedProject,
                     actions,
                     new TestNuGetProjectContext(),
+                    NullSourceCacheContext.Instance,
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);

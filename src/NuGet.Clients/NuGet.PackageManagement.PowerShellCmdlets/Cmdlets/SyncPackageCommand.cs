@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -23,7 +24,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [Cmdlet(VerbsData.Sync, "Package")]
     public class SyncPackageCommand : PackageActionBaseCommand
     {
-        private ResolutionContext _context;
         private bool _allowPrerelease;
 
         private List<NuGetProject> _projects = new List<NuGetProject>();
@@ -82,9 +82,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             try
             {
-                foreach (var project in projects)
+                using (var sourceCacheContext = new SourceCacheContext())
                 {
-                    await InstallPackageByIdentityAsync(project, identity, ResolutionContext, this, WhatIf.IsPresent);
+                    var resolutionContext = new ResolutionContext(
+                        GetDependencyBehavior(),
+                        _allowPrerelease,
+                        false,
+                        VersionConstraints.None,
+                        new GatherCache(),
+                        sourceCacheContext);
+
+                    foreach (var project in projects)
+                    {
+                        await InstallPackageByIdentityAsync(project, identity, resolutionContext, this, WhatIf.IsPresent);
+                    }
                 }
             }
             catch (Exception ex)
@@ -116,23 +127,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     .Select(v => v.PackageIdentity).FirstOrDefault();
             }
             return identity;
-        }
-
-        /// <summary>
-        /// Resolution Context for Sync-Package command
-        /// </summary>
-        public ResolutionContext ResolutionContext
-        {
-            get
-            {
-                // ResolutionContext contains a cache, this should only be created once per command
-                if (_context == null)
-                {
-                    _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, VersionConstraints.None);
-                }
-
-                return _context;
-            }
         }
     }
 }

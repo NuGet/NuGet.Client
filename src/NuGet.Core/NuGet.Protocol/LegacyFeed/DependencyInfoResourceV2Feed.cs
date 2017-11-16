@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,13 +35,14 @@ namespace NuGet.Protocol
         public override async Task<SourcePackageDependencyInfo> ResolvePackage(
             PackageIdentity package,
             NuGetFramework projectFramework,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
             try
             {
-                var packageInfo = await _feedParser.GetPackage(package, log, token);
+                var packageInfo = await _feedParser.GetPackage(package, sourceCacheContext, log, token);
 
                 if (packageInfo == null)
                 {
@@ -62,6 +63,7 @@ namespace NuGet.Protocol
         public override async Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(
             string packageId,
             NuGetFramework projectFramework,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {
@@ -69,7 +71,7 @@ namespace NuGet.Protocol
 
             try
             {
-                var packages = await _feedParser.FindPackagesByIdAsync(packageId, log, token);
+                var packages = await _feedParser.FindPackagesByIdAsync(packageId, sourceCacheContext, log, token);
 
                 var results = new List<SourcePackageDependencyInfo>();
 
@@ -77,7 +79,6 @@ namespace NuGet.Protocol
                 {
                     results.Add(CreateDependencyInfo(package, projectFramework));
                 }
-
                 return results;
             }
             catch (Exception ex)

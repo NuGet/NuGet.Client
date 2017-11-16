@@ -16,6 +16,7 @@ using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -125,6 +126,8 @@ namespace NuGet.SolutionRestoreManager
 
             return _status == NuGetOperationStatus.NoOp || _status == NuGetOperationStatus.Succeeded;
         }
+
+
 
         private async Task RestoreAsync(bool forceRestore, RestoreOperationSource restoreSource, CancellationToken token)
         {
@@ -385,12 +388,23 @@ namespace NuGet.SolutionRestoreManager
                 return;
             }
 
+            if (args.Exception is SignatureException)
+            {
+                _status = NuGetOperationStatus.Failed;
+
+                var ex = args.Exception as SignatureException;
+
+                ex.Results.SelectMany(p => p.Issues).ToList().ForEach(p => _logger.Log(p.ToLogMessage()));
+
+                return;
+            }
+
             if (args.ProjectNames.Any())
             {
                 _status = NuGetOperationStatus.Failed;
 
                 _logger.Do((l, _) =>
-                {
+                { 
                     foreach (var projectName in args.ProjectNames)
                     {
                         var exceptionMessage =

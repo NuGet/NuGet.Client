@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -45,6 +45,7 @@ namespace NuGet.Protocol
         public override Task<SourcePackageDependencyInfo> ResolvePackage(
             PackageIdentity package,
             NuGetFramework projectFramework,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {
@@ -91,6 +92,7 @@ namespace NuGet.Protocol
         public override Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(
             string packageId,
             NuGetFramework projectFramework,
+            SourceCacheContext sourceCacheContext,
             ILogger log,
             CancellationToken token)
         {

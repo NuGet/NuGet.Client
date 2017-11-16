@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
@@ -38,6 +39,7 @@ namespace NuGet.Protocol.Tests
             // Act
             var packages = await parser.FindPackagesByIdAsync(
                 "WindowsAzure.Storage",
+                NullSourceCacheContext.Instance,
                 NullLogger.Instance,
                 CancellationToken.None);
 
@@ -66,7 +68,7 @@ namespace NuGet.Protocol.Tests
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
             // Act
-            var packages = await parser.FindPackagesByIdAsync("ravendb.client", NullLogger.Instance, CancellationToken.None);
+            var packages = await parser.FindPackagesByIdAsync("ravendb.client", NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal(300, packages.Count());
@@ -88,7 +90,7 @@ namespace NuGet.Protocol.Tests
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
             // Act
-            var packages = await parser.FindPackagesByIdAsync("WindowsAzure.Storage", NullLogger.Instance, CancellationToken.None);
+            var packages = await parser.FindPackagesByIdAsync("WindowsAzure.Storage", NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             var latest = packages.OrderByDescending(e => e.Version, VersionComparer.VersionRelease).FirstOrDefault();
 
@@ -132,7 +134,7 @@ namespace NuGet.Protocol.Tests
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
             //// Act
-            var packages = await parser.FindPackagesByIdAsync("afine", NullLogger.Instance, CancellationToken.None);
+            var packages = await parser.FindPackagesByIdAsync("afine", NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             var first = packages[0];
             var second = packages[1];
@@ -166,6 +168,7 @@ namespace NuGet.Protocol.Tests
                     new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
                     new PackageDownloadContext(cacheContext),
                     packagesFolder,
+                    NullSourceCacheContext.Instance,
                     NullLogger.Instance,
                     CancellationToken.None);
 
@@ -354,8 +357,8 @@ namespace NuGet.Protocol.Tests
 
             Assert.Equal(
                 "The V2 feed at '" + serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure'" +
-                "&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1&semVerLevel=2.0.0' " +
-                "returned an unexpected status code '404 Not Found'.",
+                 "&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1&semVerLevel=2.0.0' " +
+                 "returned an unexpected status code '404 Not Found'.",
                 exception.Message);
         }
 
@@ -391,8 +394,8 @@ namespace NuGet.Protocol.Tests
 
             Assert.Equal(
                 "The V2 feed at '" + serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure'" +
-                "&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1&semVerLevel=2.0.0' " +
-                "returned an unexpected status code '500 Internal Server Error'.",
+                 "&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1&semVerLevel=2.0.0' " +
+                 "returned an unexpected status code '500 Internal Server Error'.",
                 exception.Message);
         }
 
@@ -412,7 +415,7 @@ namespace NuGet.Protocol.Tests
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
             // Act
-            var package = await parser.GetPackage(new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.2-preview")), NullLogger.Instance, CancellationToken.None);
+            var package = await parser.GetPackage(new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.2-preview")), NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal("WindowsAzure.Storage", package.Id);
@@ -456,7 +459,7 @@ namespace NuGet.Protocol.Tests
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
             // Act
-            var package = await parser.GetPackage(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")), NullLogger.Instance, CancellationToken.None);
+            var package = await parser.GetPackage(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")), NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Null(package);
@@ -480,7 +483,7 @@ namespace NuGet.Protocol.Tests
             var packageIdentity = new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.2-preview"));
 
             // Act
-            var package = await parser.GetPackage(packageIdentity, NullLogger.Instance, CancellationToken.None);
+            var package = await parser.GetPackage(packageIdentity, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal("WindowsAzure.Storage", package.Id);
@@ -527,12 +530,13 @@ namespace NuGet.Protocol.Tests
 
             var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.GetPackage(
                 packageIdentity,
+                NullSourceCacheContext.Instance,
                 NullLogger.Instance,
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at '" + serviceAddress + "FindPackagesById()?id='xunit'&semVerLevel=2.0.0' " +
-                "returned an unexpected status code '404 Not Found'.",
+                "Failed to fetch results from V2 feed at '" + serviceAddress + "FindPackagesById()?id='xunit'&semVerLevel=2.0.0' " +
+                "with following message : " + exception.InnerException?.Message,
                 exception.Message);
         }
 
@@ -555,11 +559,12 @@ namespace NuGet.Protocol.Tests
             // Act & Assert
             var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.GetPackage(
                 packageIdentity,
+                NullSourceCacheContext.Instance,
                 NullLogger.Instance,
                 CancellationToken.None));
             Assert.Equal(
-                "The V2 feed at '" + serviceAddress + "Packages(Id='xunit',Version='1.0.0-InternalServerError')' " +
-                "returned an unexpected status code '500 Internal Server Error'.",
+                "Failed to fetch results from V2 feed at '" + serviceAddress + "Packages(Id='xunit',Version='1.0.0-InternalServerError')' " +
+                "with following message : " + exception.InnerException?.Message,
                 exception.Message);
         }
 
@@ -581,12 +586,13 @@ namespace NuGet.Protocol.Tests
             // Act & Assert
             var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.FindPackagesByIdAsync(
                 "xunit",
+                NullSourceCacheContext.Instance,
                 NullLogger.Instance,
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at '" + serviceAddress + "FindPackagesById()?id='xunit'&semVerLevel=2.0.0' " +
-                "returned an unexpected status code '404 Not Found'.",
+                "Failed to fetch results from V2 feed at '" + serviceAddress + "FindPackagesById()?id='xunit'&semVerLevel=2.0.0' " +
+                "with following message : " + exception.InnerException?.Message,
                 exception.Message);
         }
 
@@ -608,12 +614,13 @@ namespace NuGet.Protocol.Tests
             // Act & Assert
             var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.FindPackagesByIdAsync(
                 "xunit",
+                NullSourceCacheContext.Instance,
                 NullLogger.Instance,
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at '" + serviceAddress + "FindPackagesById()?id='xunit'&semVerLevel=2.0.0' " +
-                "returned an unexpected status code '500 Internal Server Error'.",
+                "Failed to fetch results from V2 feed at '" + serviceAddress + "FindPackagesById()?id='xunit'&semVerLevel=2.0.0' " +
+                "with following message : " + exception.InnerException?.Message ,
                 exception.Message);
         }
 
@@ -634,7 +641,7 @@ namespace NuGet.Protocol.Tests
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
             // Act
-            var packages = await parser.FindPackagesByIdAsync("PackageA", NullLogger.Instance, CancellationToken.None);
+            var packages = await parser.FindPackagesByIdAsync("PackageA", NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             var latest = packages.OrderByDescending(e => e.Version, VersionComparer.VersionRelease).FirstOrDefault();
 
@@ -680,7 +687,7 @@ namespace NuGet.Protocol.Tests
             {
                 // Act
                 var packages =
-                    await parser.FindPackagesByIdAsync("ravendb.client", NullLogger.Instance, CancellationToken.None);
+                    await parser.FindPackagesByIdAsync("ravendb.client", NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
             }
             catch (FatalProtocolException ex)
             {
@@ -818,7 +825,7 @@ namespace NuGet.Protocol.Tests
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
             // Act
-            var package = await parser.GetPackage(new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.2-preview")), NullLogger.Instance, CancellationToken.None);
+            var package = await parser.GetPackage(new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.2-preview")), NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             // Assert
             // Verify no failures from reading the stream

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -82,11 +82,12 @@ namespace NuGet.Protocol
             string packageId,
             string versionPrefix,
             bool includePrerelease,
+            SourceCacheContext sourceCacheContext,
             Common.ILogger log,
             CancellationToken token)
         {
             //*TODOs : Take prerelease as parameter. Also it should return both listed and unlisted for powershell ?
-            var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, Common.NullLogger.Instance, token);
+            var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, sourceCacheContext, Common.NullLogger.Instance, token);
             var versions = new List<NuGetVersion>();
             foreach (var package in packages)
             {

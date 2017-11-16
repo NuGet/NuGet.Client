@@ -145,17 +145,23 @@ namespace NuGet.ProjectManagement
                 {
                     // 1. Set a default package extraction context, if necessary.
                     var packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
+
                     if (packageExtractionContext == null)
                     {
-                        var signedPackageVerifier = !downloadResourceResult.SignatureVerified? new SignedPackageVerifier(
+                        var signedPackageVerifier = new SignedPackageVerifier(
                             SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default) : null;
+                            SignedPackageVerifierSettings.Default);
 
                         packageExtractionContext = new PackageExtractionContext(
                             PackageSaveMode.Defaultv2,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             new LoggerAdapter(nuGetProjectContext),
                             signedPackageVerifier);
+                    }
+
+                    if (downloadResourceResult.SignatureVerified)
+                    {
+                        packageExtractionContext.SignedPackageVerifier = null;
                     }
 
                     // 2. Check if the Package already exists at root, if so, return false

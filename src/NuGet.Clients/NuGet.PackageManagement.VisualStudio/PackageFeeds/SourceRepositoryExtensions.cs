@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -85,78 +85,99 @@ namespace NuGet.PackageManagement.VisualStudio
             this SourceRepository sourceRepository, PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
-            var packages = await metadataResource?.GetMetadataAsync(
-                identity.Id,
-                includePrerelease: true,
-                includeUnlisted: false,
-                log: Common.NullLogger.Instance,
-                token: cancellationToken);
 
-            if (packages?.FirstOrDefault() == null)
+            using (var sourceCacheContext = new SourceCacheContext())
             {
-                return null;
+                var packages = await metadataResource?.GetMetadataAsync(
+                    identity.Id,
+                    includePrerelease: true,
+                    includeUnlisted: false,
+                    sourceCacheContext: sourceCacheContext,
+                    log: Common.NullLogger.Instance,
+                    token: cancellationToken);
+
+                if (packages?.FirstOrDefault() == null)
+                {
+                    return null;
+                }
+
+                var packageMetadata = packages
+                    .FirstOrDefault(p => p.Identity.Version == identity.Version)
+                    ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
+
+                return packageMetadata.WithVersions(ToVersionInfo(packages, includePrerelease));
             }
-
-            var packageMetadata = packages
-                .FirstOrDefault(p => p.Identity.Version == identity.Version)
-                ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
-
-            return packageMetadata.WithVersions(ToVersionInfo(packages, includePrerelease));
         }
 
         public static async Task<IPackageSearchMetadata> GetPackageMetadataFromLocalSourceAsync(
             this SourceRepository localRepository, PackageIdentity identity, CancellationToken cancellationToken)
         {
             var localResource = await localRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
-            var localPackages = await localResource?.GetMetadataAsync(
-                identity.Id,
-                includePrerelease: true,
-                includeUnlisted: true,
-                log: Common.NullLogger.Instance,
-                token: cancellationToken);
 
-            var packageMetadata = localPackages?.FirstOrDefault(p => p.Identity.Version == identity.Version);
-
-            var versions = new[]
+            using (var sourceCacheContext = new SourceCacheContext())
             {
-                new VersionInfo(identity.Version)
-            };
+                var localPackages = await localResource?.GetMetadataAsync(
+                    identity.Id,
+                    includePrerelease: true,
+                    includeUnlisted: true,
+                    sourceCacheContext: sourceCacheContext,
+                    log: Common.NullLogger.Instance,
+                    token: cancellationToken);
 
-            return packageMetadata?.WithVersions(versions);
+                var packageMetadata = localPackages?.FirstOrDefault(p => p.Identity.Version == identity.Version);
+
+                var versions = new[]
+                {
+                new VersionInfo(identity.Version)
+                };
+
+                return packageMetadata?.WithVersions(versions);
+            }
         }
 
         public static async Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(
             this SourceRepository sourceRepository, string packageId, bool includePrerelease, CancellationToken cancellationToken, VersionRange allowedVersions)
         {
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
-            var packages = await metadataResource?.GetMetadataAsync(
-                packageId,
-                includePrerelease,
-                false,
-                Common.NullLogger.Instance,
-                cancellationToken);
 
-            // filter packages based on allowed versions
-            var updatedPackages = packages.Where(p => allowedVersions.Satisfies(p.Identity.Version));
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var packages = await metadataResource?.GetMetadataAsync(
+                    packageId,
+                    includePrerelease,
+                    false,
+                    sourceCacheContext,
+                    Common.NullLogger.Instance,
+                    cancellationToken);
 
-            var highest = updatedPackages
-                .OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease)
-                .FirstOrDefault();
+                // filter packages based on allowed versions
+                var updatedPackages = packages.Where(p => allowedVersions.Satisfies(p.Identity.Version));
 
-            return highest?.WithVersions(ToVersionInfo(packages, includePrerelease));
+                var highest = updatedPackages
+                    .OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease)
+                    .FirstOrDefault();
+
+                return highest?.WithVersions(ToVersionInfo(packages, includePrerelease));
+            }
         }
 
         public static async Task<IEnumerable<IPackageSearchMetadata>> GetPackageMetadataListAsync(
             this SourceRepository sourceRepository, string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken cancellationToken)
         {
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
-            var packages = await metadataResource?.GetMetadataAsync(
-                packageId,
-                includePrerelease,
-                includeUnlisted,
-                Common.NullLogger.Instance,
-                cancellationToken);
-            return packages;
+
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var packages = await metadataResource?.GetMetadataAsync(
+                    packageId,
+                    includePrerelease,
+                    includeUnlisted,
+                    sourceCacheContext,
+                    Common.NullLogger.Instance,
+                    cancellationToken);
+
+                return packages;
+            }
         }
 
         private static IEnumerable<VersionInfo> ToVersionInfo(IEnumerable<IPackageSearchMetadata> packages, bool includePrerelease)
@@ -187,14 +208,19 @@ namespace NuGet.PackageManagement.VisualStudio
             this SourceRepository sourceRepository, string packageId, string versionPrefix, bool includePrerelease, CancellationToken cancellationToken)
         {
             var autoCompleteResource = await sourceRepository.GetResourceAsync<AutoCompleteResource>(cancellationToken);
-            var versions = await autoCompleteResource?.VersionStartsWith(
-                packageId,
-                versionPrefix,
-                includePrerelease: includePrerelease,
-                log: Common.NullLogger.Instance,
-                token: cancellationToken);
 
-            return versions ?? Enumerable.Empty<NuGetVersion>();
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var versions = await autoCompleteResource?.VersionStartsWith(
+                    packageId,
+                    versionPrefix,
+                    includePrerelease: includePrerelease,
+                    sourceCacheContext: sourceCacheContext,
+                    log: Common.NullLogger.Instance,
+                    token: cancellationToken);
+
+                return versions ?? Enumerable.Empty<NuGetVersion>();
+            }
         }
     }
 }

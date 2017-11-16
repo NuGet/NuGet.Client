@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -24,12 +24,18 @@ namespace NuGet.Protocol
             _reportAbuseResource = reportAbuseResource;
         }
 
-        public override async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
+        public override async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(
+            string packageId,
+            bool includePrerelease,
+            bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
+            Common.ILogger log,
+            CancellationToken token)
         {
             var metadataCache = new MetadataReferenceCache();
 
             var packages =
-                (await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, log, token))
+                (await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token))
                     .Select(ParseMetadata)
                     .Select(m => metadataCache.GetObject(m))
                     .ToArray();
@@ -37,9 +43,13 @@ namespace NuGet.Protocol
             return packages;
         }
 
-        public override async Task<IPackageSearchMetadata> GetMetadataAsync(PackageIdentity package, Common.ILogger log, CancellationToken token)
+        public override async Task<IPackageSearchMetadata> GetMetadataAsync(
+            PackageIdentity package,
+            SourceCacheContext sourceCacheContext,
+            Common.ILogger log,
+            CancellationToken token)
         {
-            var metadata = await _regResource.GetPackageMetadata(package, log, token);
+            var metadata = await _regResource.GetPackageMetadata(package, sourceCacheContext, log, token);
             if (metadata != null)
             {
                 return ParseMetadata(metadata);

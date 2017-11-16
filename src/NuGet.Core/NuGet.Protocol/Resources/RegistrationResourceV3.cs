@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -95,31 +95,38 @@ namespace NuGet.Protocol
         /// Returns the registration blob for the id and version
         /// </summary>
         /// <remarks>The inlined entries are potentially going away soon</remarks>
-        public virtual async Task<JObject> GetPackageMetadata(PackageIdentity identity, Common.ILogger log, CancellationToken token)
+        public virtual async Task<JObject> GetPackageMetadata(PackageIdentity identity, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
         {
-            return (await GetPackageMetadata(identity.Id, new VersionRange(identity.Version, true, identity.Version, true), true, true, log, token)).SingleOrDefault();
+            return (await GetPackageMetadata(identity.Id, new VersionRange(identity.Version, true, identity.Version, true), true, true, cacheContext, log, token)).SingleOrDefault();
         }
 
         /// <summary>
         /// Returns inlined catalog entry items for each registration blob
         /// </summary>
         /// <remarks>The inlined entries are potentially going away soon</remarks>
-        public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
+        public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, bool includePrerelease, bool includeUnlisted, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
         {
-            return await GetPackageMetadata(packageId, VersionRange.All, includePrerelease, includeUnlisted, log, token);
+            return await GetPackageMetadata(packageId, VersionRange.All, includePrerelease, includeUnlisted, cacheContext, log, token);
         }
 
         /// <summary>
         /// Returns inlined catalog entry items for each registration blob
         /// </summary>
         /// <remarks>The inlined entries are potentially going away soon</remarks>
-        public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, VersionRange range, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
+        public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(
+            string packageId,
+            VersionRange range,
+            bool includePrerelease,
+            bool includeUnlisted,
+            SourceCacheContext cacheContext,
+            Common.ILogger log,
+            CancellationToken token)
         {
             var results = new List<JObject>();
 
             var registrationUri = GetUri(packageId);
 
-            var ranges = await RegistrationUtility.LoadRanges(_client, registrationUri, range, log, token);
+            var ranges = await RegistrationUtility.LoadRanges(_client, registrationUri, packageId, range, cacheContext, log, token);
 
             foreach (var rangeObj in ranges)
             {
@@ -155,9 +162,9 @@ namespace NuGet.Protocol
         /// <summary>
         /// Returns all index entries of type Package within the given range and filters
         /// </summary>
-        public virtual Task<IEnumerable<JObject>> GetPackageEntries(string packageId, bool includeUnlisted, Common.ILogger log, CancellationToken token)
+        public virtual Task<IEnumerable<JObject>> GetPackageEntries(string packageId, bool includeUnlisted, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
         {
-            return GetPackageMetadata(packageId, VersionRange.All, true, includeUnlisted, log, token);
+            return GetPackageMetadata(packageId, VersionRange.All, true, includeUnlisted, cacheContext, log, token);
         }
     }
 }
