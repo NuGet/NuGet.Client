@@ -36,25 +36,6 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(_noPackageException, ex.Message);
         }
 
-        [Fact]
-        public void SignCommandArgParsing_NoTimestamper()
-        {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
-            var mockConsole = new Mock<IConsole>();
-            var signCommand = new SignCommand
-            {
-                Console = mockConsole.Object,
-            };
-
-            signCommand.Arguments.Add(packagePath);
-
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
-            Assert.Equal(string.Format(_noArgException, nameof(SignCommand.Timestamper)), ex.Message);
-        }
-
         [Theory]
         [InlineData(@"\\path\file.pfx", "test_cert_subject", "")]
         [InlineData("\\path\file.cert", "", "test_cert_fingerprint")]
@@ -278,7 +259,7 @@ namespace NuGet.CommandLine.Test
             // Act & Assert
             Assert.True(parsable);
             var signArgs = signCommand.GetSignArgs();
-            Assert.Equal(parsedHashAlgorithm, signArgs.HashingAlgorithm);
+            Assert.Equal(parsedHashAlgorithm, signArgs.SignatureHashAlgorithm);
             Assert.Equal(HashAlgorithmName.SHA256, signArgs.TimestampHashAlgorithm);
         }
 
@@ -335,7 +316,7 @@ namespace NuGet.CommandLine.Test
             // Act & Assert
             Assert.True(parsable);
             var signArgs = signCommand.GetSignArgs();
-            Assert.Equal(HashAlgorithmName.SHA256, signArgs.HashingAlgorithm);
+            Assert.Equal(HashAlgorithmName.SHA256, signArgs.SignatureHashAlgorithm);
             Assert.Equal(parsedTimestampHashAlgorithm, signArgs.TimestampHashAlgorithm);
         }
 

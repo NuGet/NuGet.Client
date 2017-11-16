@@ -341,6 +341,88 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The timestamp service&apos;s certificate chain could not be built for the following certificate - 
+        ///{0}.
+        /// </summary>
+        internal static string TimestampCertificateChainBuildFailure {
+            get {
+                return ResourceManager.GetString("TimestampCertificateChainBuildFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Author certificate was not valid when it was timestamped..
+        /// </summary>
+        internal static string TimestampFailureAuthorCertNotValid {
+            get {
+                return ResourceManager.GetString("TimestampFailureAuthorCertNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timestamp service&apos;s certificate does not contain a valid Enhanced Key Usage for timestamping..
+        /// </summary>
+        internal static string TimestampFailureCertInvalidEku {
+            get {
+                return ResourceManager.GetString("TimestampFailureCertInvalidEku", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timestamp signature contains invalid content type..
+        /// </summary>
+        internal static string TimestampFailureInvalidContentType {
+            get {
+                return ResourceManager.GetString("TimestampFailureInvalidContentType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timestamp response contains invalid signature value hash..
+        /// </summary>
+        internal static string TimestampFailureInvalidHash {
+            get {
+                return ResourceManager.GetString("TimestampFailureInvalidHash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timestamp response does not contain an acceptable hash algorithm..
+        /// </summary>
+        internal static string TimestampFailureInvalidHashAlgorithmOid {
+            get {
+                return ResourceManager.GetString("TimestampFailureInvalidHashAlgorithmOid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamper url &apos;{0}&apos; has an invalid uri scheme. The supported schemes are &apos;{1}&apos; and &apos;{2}&apos;..
+        /// </summary>
+        internal static string TimestampFailureInvalidHttpScheme {
+            get {
+                return ResourceManager.GetString("TimestampFailureInvalidHttpScheme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timestamp response does not contain a matching response..
+        /// </summary>
+        internal static string TimestampFailureNonceMismatch {
+            get {
+                return ResourceManager.GetString("TimestampFailureNonceMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timestamp service&apos;s response does not meet the NuGet package signature specification: &apos;{0}&apos;..
+        /// </summary>
+        internal static string TimestampResponseExceptionGeneral {
+            get {
+                return ResourceManager.GetString("TimestampResponseExceptionGeneral", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred while updating packages.config. The file was closed before the entry could be added..
         /// </summary>
         internal static string UnableToAddEntry {

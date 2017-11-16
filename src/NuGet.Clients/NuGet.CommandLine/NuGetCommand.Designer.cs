@@ -19,7 +19,7 @@ namespace NuGet.CommandLine {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class NuGetCommand {
@@ -11654,6 +11654,15 @@ namespace NuGet.CommandLine {
         internal static string SignCommandNoPackageException {
             get {
                 return ResourceManager.GetString("SignCommandNoPackageException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No &apos;-Timestamper&apos; option was provided the signed package will not be timestamped. To learn more about this option, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandNoTimestamperWarning {
+            get {
+                return ResourceManager.GetString("SignCommandNoTimestamperWarning", resourceCulture);
             }
         }
         

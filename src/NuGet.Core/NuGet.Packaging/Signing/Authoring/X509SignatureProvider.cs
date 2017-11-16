@@ -48,8 +48,9 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            var signature = CreateSignature(request.Certificate, signatureManifest);
-            return Task.FromResult(signature);
+            var authorSignature = CreateSignature(request.Certificate, signatureManifest);
+
+            return TimestampSignature(request, logger, authorSignature, token);
         }
 
 #if IS_DESKTOP
@@ -72,8 +73,26 @@ namespace NuGet.Packaging.Signing
 
             return Signature.Load(cms);
         }
+
+        private Task<Signature> TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
+        {
+            var timestampRequest = new TimestampRequest
+            {
+                SignatureValue = signature.GetBytes(),
+                Certificate = request.Certificate,
+                SigningSpec = SigningSpecifications.V1,
+                TimestampHashAlgorithm = request.TimestampHashAlgorithm
+            };
+
+            return _timestampProvider.TimestampSignatureAsync(timestampRequest, logger, token);
+        }
 #else
         private Signature CreateSignature(X509Certificate2 cert, SignatureManifest signatureManifest)
+        {
+            throw new NotSupportedException();
+        }
+
+        private Task<Signature> TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
         {
             throw new NotSupportedException();
         }

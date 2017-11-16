@@ -17,27 +17,34 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class Signature
     {
-        private readonly byte[] _data;
 
-        private Signature(byte[] data)
-        {
-            _data = data ?? throw new ArgumentNullException(nameof(data));
-        }
+#if IS_DESKTOP
+
+        /// <summary>
+        /// A SignedCms object holding the signature and SignerInfo.
+        /// </summary>
+        public SignedCms SignedCms { get; }
 
         /// <summary>
         /// Indicates if this is an author or repository signature.
         /// </summary>
-        public SignatureType Type { get; private set; }
-
-        /// <summary>
-        /// Additional counter signatures.
-        /// </summary>
-        public IReadOnlyList<Signature> AdditionalSignatures { get; private set; } = (new List<Signature>()).AsReadOnly();
+        public SignatureType Type { get; }
 
         /// <summary>
         /// Signature manifest containing the hash of the content manifest.
         /// </summary>
-        public SignatureManifest SignatureManifest { get; private set; }
+        public SignatureManifest SignatureManifest { get; }
+
+        /// <summary>
+        /// SignerInfo for this signature.
+        /// </summary>
+        public SignerInfo SignerInfo => SignedCms.SignerInfos[0];
+
+        private Signature(SignedCms signedCms)
+        {
+            SignedCms = signedCms ?? throw new ArgumentNullException(nameof(signedCms));
+            SignatureManifest = SignatureManifest.Load(SignedCms.ContentInfo.Content);
+        }
 
         /// <summary>
         /// Save the signed cms signature to a stream.
@@ -45,7 +52,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="stream"></param>
         public void Save(Stream stream)
         {
-            using (var ms = new MemoryStream(_data))
+            using (var ms = new MemoryStream(SignedCms.Encode()))
             {
                 ms.CopyTo(stream);
             }
@@ -56,47 +63,12 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public byte[] GetBytes()
         {
-            return _data;
+            return SignedCms.Encode();
         }
-
-#if IS_DESKTOP
-        public SignerInfoCollection SignerInfoCollection { get; private set; }
-
-        public X509Certificate2Collection Certificates { get; private set; }
 
         public static Signature Load(SignedCms cms)
         {
-            return new Signature(cms.Encode())
-            {
-                SignatureManifest = SignatureManifest.Load(cms.ContentInfo.Content),
-                SignerInfoCollection = cms.SignerInfos,
-                Certificates = cms.Certificates
-            };
-        }
-
-        private static Signature Load(SignedCms cms, byte[] data)
-        {
-            if (data == null)
-            {
-                data = cms.Encode();
-            }
-
-            return new Signature(data)
-            {
-                SignatureManifest = SignatureManifest.Load(cms.ContentInfo.Content),
-                SignerInfoCollection = cms.SignerInfos,
-                Certificates = cms.Certificates
-            };
-        }
-
-        public static Signature Load(Stream stream)
-        {
-            using (stream)
-            using (var ms = new MemoryStream())
-            {
-                stream.CopyTo(ms);
-                return Load(ms.ToArray());
-            }
+            return new Signature(cms);
         }
 
         public static Signature Load(byte[] data)
@@ -109,10 +81,25 @@ namespace NuGet.Packaging.Signing
             var cms = new SignedCms();
             cms.Decode(data);
 
-            return Load(cms, data);
+            return Load(cms);
+        }
+
+        public static Signature Load(Stream stream)
+        {
+            using (stream)
+            using (var ms = new MemoryStream())
+            {
+                stream.CopyTo(ms);
+                return Load(ms.ToArray());
+            }
         }
 #else
         private void VerifySignature(Signature signature)
+        {
+            throw new NotSupportedException();
+        }
+
+        public byte[] GetBytes()
         {
             throw new NotSupportedException();
         }

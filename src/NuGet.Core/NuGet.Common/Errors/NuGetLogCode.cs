@@ -20,16 +20,22 @@ namespace NuGet.Common
     ///         These could be used for different errors or warnings within the broad categories set by digits 'xy'.
     ///         
     /// Groups:
-    /// 1000 - Restore
-    /// 3000 - Signing
+    /// 1000      - Restore
+    /// 3000/3500 - Signing
     /// 
-    /// Sub groups:
+    /// Sub groups for Restore:
     /// error/warning - Reason
     /// 1000/1500     - Input
     /// 1100/1600     - Resolver
     /// 1200/1700     - Compat
     /// 1300/1800     - Feed
     /// 1400/1900     - Package
+    ///
+    /// Sub groups for Signing:
+    /// error/warning - Reason
+    /// 3000/3500     - Input
+    /// 3010/3510     - Certificate
+    /// 3020/3520     - Timestamping
     /// </summary>
     public enum NuGetLogCode
     {
@@ -209,6 +215,21 @@ namespace NuGet.Common
         NU3002 = 3002,
 
         /// <summary>
+        /// Certificate chain does not build
+        /// </summary>
+        NU3011 = 3011,
+
+        /// <summary>
+        /// Certifiate not valid
+        /// </summary>
+        NU3012 = 3012,
+
+        /// <summary>
+        /// Invalid timestamp response
+        /// </summary>
+        NU3021 = 3021,
+
+        /// <summary>
         /// Undefined signature warning
         /// </summary>
         NU3500 = 3500,
@@ -222,6 +243,11 @@ namespace NuGet.Common
         /// Signature information unavailable warning
         /// </summary>
         NU3502 = 3502,
+
+        /// <summary>
+        /// Timestamp url not passed to sign command
+        /// </summary>
+        NU3521 = 3521,
 
         /// <summary>
         /// Undefined Package Error.
@@ -272,5 +298,6 @@ namespace NuGet.Common
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,
+
     }
 }

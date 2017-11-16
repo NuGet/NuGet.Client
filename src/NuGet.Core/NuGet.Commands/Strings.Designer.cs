@@ -1269,12 +1269,23 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signing package(s) with certificate: 
-        ///{0}.
+        ///   Looks up a localized string similar to 
+        ///Signing package(s) with certificate: {0}.
         /// </summary>
         internal static string SignCommandDisplayCertificate {
             get {
                 return ResourceManager.GetString("SignCommandDisplayCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ///Timestamping package(s) with: {0}
+        ///.
+        /// </summary>
+        internal static string SignCommandDisplayTimestamper {
+            get {
+                return ResourceManager.GetString("SignCommandDisplayTimestamper", resourceCulture);
             }
         }
         

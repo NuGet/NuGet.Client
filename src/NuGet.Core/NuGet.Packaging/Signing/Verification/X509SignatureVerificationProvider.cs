@@ -28,7 +28,7 @@ namespace NuGet.Packaging.Signing
         private SignatureVerificationResult VerifySignature(Signature signature)
         {
             var status = SignatureVerificationStatus.Invalid;
-            var signerInfo = signature.SignerInfoCollection[0];
+            var signerInfo = signature.SignerInfo;
             var signatureIssues = new List<SignatureIssue>();
 
             var validAndUntrusted = SigningUtility.IsCertificateValid(signerInfo.Certificate, out var chain, allowUntrustedRoot: true);

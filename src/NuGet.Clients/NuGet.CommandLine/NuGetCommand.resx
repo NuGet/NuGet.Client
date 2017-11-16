@@ -5449,4 +5449,7 @@ This option should be used when specifying the certificate via -CertificateSubje
     <comment>0 - primary param name
 1 - other param name</comment>
   </data>
+  <data name="SignCommandNoTimestamperWarning" xml:space="preserve">
+    <value>No '-Timestamper' option was provided the signed package will not be timestamped. To learn more about this option, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+  </data>
 </root>

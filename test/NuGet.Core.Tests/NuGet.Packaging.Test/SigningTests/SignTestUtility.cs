@@ -15,18 +15,20 @@ namespace NuGet.Packaging.Test.SigningTests
 {
     public static class SignTestUtility
     {
+        private const string _internalTimestampServer = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
+
         /// <summary>
         /// Sign a package for test purposes.
         /// </summary>
         public static async Task SignPackageAsync(TestLogger testLogger, X509Certificate2 cert, SignedPackageArchive signPackage)
         {
-            var testSignatureProvider = new X509SignatureProvider(new TimestampProvider());
+            var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(new Uri(_internalTimestampServer)));
             var signer = new Signer(signPackage, testSignatureProvider);
 
             var request = new SignPackageRequest()
             {
                 Certificate = cert,
-                HashAlgorithm = Common.HashAlgorithmName.SHA256
+                SignatureHashAlgorithm = Common.HashAlgorithmName.SHA256
             };
 
             await signer.SignAsync(request, testLogger, CancellationToken.None);

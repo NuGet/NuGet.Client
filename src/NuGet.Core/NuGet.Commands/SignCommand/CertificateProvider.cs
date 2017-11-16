@@ -35,6 +35,7 @@ namespace NuGet.Commands
         public static X509Certificate2Collection GetCertificates(CertificateSourceOptions options)
         {
             // check certificate path
+            var resultCollection = new X509Certificate2Collection();
             if (!string.IsNullOrEmpty(options.CertificatePath))
             {
                 try
@@ -50,7 +51,7 @@ namespace NuGet.Commands
                         cert = new X509Certificate2(options.CertificatePath);                        
                     }
 
-                    return new X509Certificate2Collection(cert);
+                    resultCollection = new X509Certificate2Collection(cert);
                 }
                 catch (CryptographicException ex)
                 {
@@ -87,16 +88,20 @@ namespace NuGet.Commands
 
                 if (!string.IsNullOrEmpty(options.Fingerprint))
                 {
-                    return store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly: true);
+                    resultCollection = store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly: false);
                 }
 
                 if (!string.IsNullOrEmpty(options.SubjectName))
                 {
-                    return store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly: true);
+                    resultCollection =  store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly: false);
                 }
+
+#if IS_DESKTOP
+                store.Close();
+#endif
             }
 
-            return new X509Certificate2Collection();
+            return resultCollection;
         }
 
         /// <summary>
