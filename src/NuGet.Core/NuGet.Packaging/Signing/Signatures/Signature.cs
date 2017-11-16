@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
+using Microsoft.ZipSigningUtilities;
 #endif
 
 namespace NuGet.Packaging.Signing
@@ -17,6 +18,7 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class Signature
     {
+        //TODO: Clean this class
 
 #if IS_DESKTOP
 
@@ -24,7 +26,6 @@ namespace NuGet.Packaging.Signing
         /// A SignedCms object holding the signature and SignerInfo.
         /// </summary>
         public SignedCms SignedCms { get; }
-
 
         /// <summary>
         /// Indicates if this is an author or repository signature.
@@ -37,6 +38,16 @@ namespace NuGet.Packaging.Signing
         public SignatureManifest SignatureManifest { get; }
 
         /// <summary>
+        /// Certificate collection used as an additional certificate store when buildind chain
+        /// </summary>
+        public X509Certificate2Collection Certificates => SignedCms.Certificates;
+
+        /// <summary>
+        /// Signature header for this signature.
+        /// </summary>
+        public ZipSignatureHeader Header { get; set; }
+
+        /// <summary>
         /// SignerInfo for this signature.
         /// </summary>
         public SignerInfo SignerInfo => SignedCms.SignerInfos[0];
@@ -45,6 +56,7 @@ namespace NuGet.Packaging.Signing
         {
             SignedCms = signedCms ?? throw new ArgumentNullException(nameof(signedCms));
             SignatureManifest = SignatureManifest.Load(SignedCms.ContentInfo.Content);
+            Type = GetSignatureType(SignerInfo);
         }
 
         /// <summary>
@@ -69,6 +81,12 @@ namespace NuGet.Packaging.Signing
 
         public static Signature Load(SignedCms cms)
         {
+            var signerInfoCollection = cms.SignerInfos;
+            if (signerInfoCollection.Count != 1)
+            {
+                throw new InvalidOperationException("SignedCms has more than one signer");
+            }
+
             return new Signature(cms);
         }
 
@@ -94,12 +112,23 @@ namespace NuGet.Packaging.Signing
                 return Load(ms.ToArray());
             }
         }
-#else
 
-        public byte[] GetBytes()
+        // TODO Use the new attributes that justin is adding.
+        private static SignatureType GetSignatureType(SignerInfo signer)
         {
-            throw new NotSupportedException();
+            var certificate = signer.Certificate;
+            if (SigningUtility.CertificateContainsEku(certificate, SigningSpecifications.V1.AuthorKeyUsageOID))
+            {
+               return SignatureType.Author;
+            }
+            else if (SigningUtility.CertificateContainsEku(certificate, SigningSpecifications.V1.RepositoryKeyUsageOID))
+            {
+               return SignatureType.Repository;
+            }
+            return SignatureType.Unknown;
         }
+
+#else
 
         public byte[] GetBytes()
         {

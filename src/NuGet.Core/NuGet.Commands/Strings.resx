@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -683,5 +683,11 @@ Valid from:</comment>
 Timestamping package(s) with: {0}
 </value>
     <comment>0 -  url to the timestamping authority</comment>
+  </data>
+  <data name="VerifyCommand_PackageIsNotValid" xml:space="preserve">
+    <value>'{0}' is not a valid package file.</value>
+  </data>
+  <data name="VerifyCommand_VerificationTypeNotSupported" xml:space="preserve">
+    <value>Verification type not supported. Please use only one of the following supported types: -Signatures</value>
   </data>
 </root>

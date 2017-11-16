@@ -14768,5 +14768,56 @@ namespace NuGet.CommandLine {
                 return ResourceManager.GetString("UpdateCommandVersionDescription", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verify that the signer certificate matches with one of the specified fingerprints. A certificate fingerprint is a SHA-1 hash of the certificate used to identify the certificate. If more than one fingerprint is provided, the input should be a string with each fingerprint separated by a semicolon..
+        /// </summary>
+        internal static string VerifyCommandCertificateFingerprintDescription {
+            get {
+                return ResourceManager.GetString("VerifyCommandCertificateFingerprintDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verifies a signed NuGet package..
+        /// </summary>
+        internal static string VerifyCommandDescription {
+            get {
+                return ResourceManager.GetString("VerifyCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the type of verification to be done. Currently only -Signatures verification is supported..
+        /// </summary>
+        internal static string VerifyCommandSignaturesDescription {
+            get {
+                return ResourceManager.GetString("VerifyCommandSignaturesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget verify -Signatures .\..\MyPackage.nupkg -Signer &quot;86C0E8C51FF0EBDAD355315DF82AA6EC7049B542;BE36A4562FB2EE05DBB3D32323ADF445084ED656&quot; -Verbosity detailed
+        ///
+        ///nuget verify -Signatures c:\foo\MyPackage.nupkg -Signer BE36A4562FB2EE05DBB3D32323ADF445084ED656
+        ///
+        ///nuget verify -Signatures MyPackage.nupkg -Verbosity quiet
+        ///
+        ///nuget verify-Signatures  .\*.nupkg.
+        /// </summary>
+        internal static string VerifyCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("VerifyCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;verification_type&gt; &lt;package_path&gt;  [options].
+        /// </summary>
+        internal static string VerifyCommandUsageSummary {
+            get {
+                return ResourceManager.GetString("VerifyCommandUsageSummary", resourceCulture);
+            }
+        }
     }
 }

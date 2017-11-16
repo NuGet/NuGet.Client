@@ -194,7 +194,7 @@ namespace NuGet.Protocol.Core.Types
                             ? PackageSaveMode.Defaultv3
                             : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
 
-                        var signedPackageVerifier = new SignedPackageVerifier(
+                        var signedPackageVerifier = new PackageSignatureVerifier(
                             SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                             SignedPackageVerifierSettings.Default);
 

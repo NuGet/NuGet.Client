@@ -152,6 +152,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Signature file is not of a reasonable size. Package contents might have been tampered..
+        /// </summary>
+        internal static string ErrorSignatureFileTooBig {
+            get {
+                return ResourceManager.GetString("ErrorSignatureFileTooBig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Signing certificate chains to an untrusted root..
         /// </summary>
         internal static string ErrorSigningCertUntrustedRoot {

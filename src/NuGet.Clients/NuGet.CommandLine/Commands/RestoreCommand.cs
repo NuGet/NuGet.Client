@@ -303,7 +303,7 @@ namespace NuGet.CommandLine
 
             var collectorLogger = new RestoreCollectorLogger(Console);
 
-            var signedPackageVerifier = new SignedPackageVerifier(
+            var signedPackageVerifier = new PackageSignatureVerifier(
                             SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                             SignedPackageVerifierSettings.Default);
 

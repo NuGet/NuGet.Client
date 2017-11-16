@@ -134,7 +134,7 @@ namespace NuGet.Commands
 
         private PackageExtractionContext GetPathContext()
         {
-            var signedPackageVerifier = new SignedPackageVerifier(
+            var signedPackageVerifier = new PackageSignatureVerifier(
                             SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                             SignedPackageVerifierSettings.Default);
 

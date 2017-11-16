@@ -93,7 +93,7 @@ namespace NuGet.Packaging.Signing
                 var hashAlgorithmString = properties.Keys.First();
                 hashAlgorithm = CryptoHashUtility.OidToHashAlgorithmName(hashAlgorithmString);
 
-                var hashValue = properties.Values.First();
+                hash = properties.Values.First();
 
                 if (!reader.EndOfStream)
                 {

@@ -7,7 +7,7 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
-    public interface ISignedPackageVerifier
+    public interface IPackageSignatureVerifier
     {
         Task<VerifySignaturesResult> VerifySignaturesAsync(ISignedPackageReader package, ILogger logger, CancellationToken token);
     }

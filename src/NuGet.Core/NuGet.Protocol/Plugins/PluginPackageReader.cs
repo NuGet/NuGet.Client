@@ -1134,6 +1134,11 @@ namespace NuGet.Protocol.Plugins
             return Task.FromResult(false);
         }
 
+        public override Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
         private sealed class FileStreamCreator : IDisposable
         {
             private readonly string _filePath;

@@ -16,13 +16,6 @@ namespace NuGet.Packaging.Signing
         public static readonly SigningSpecificationsV1 V1 = new SigningSpecificationsV1();
 
         /// <summary>
-        /// Returns the set of allowed signature file paths
-        /// in the package. This may also contain
-        /// optional signing file paths.
-        /// </summary>
-        public abstract string[] AllowedPaths { get; }
-
-        /// <summary>
         /// Returns the set of allowed hash algorithms.
         /// </summary>
         public abstract string[] AllowedHashAlgorithms { get; }
@@ -33,23 +26,11 @@ namespace NuGet.Packaging.Signing
         public abstract string[] AllowedHashAlgorithmOids { get; }
 
         /// <summary>
-        /// Paths required for the package to be considered
-        /// signed.
-        /// </summary>
-        public abstract string[] RequiredPaths { get; }
-
-        /// <summary>
-        /// Root signature folder in the package.
-        /// </summary>
-        public string SignatureFolder { get; }
-
-        /// <summary>
         /// Initialize a signing specification with a root folder.
         /// </summary>
         /// <param name="signatureFolder">Root folder within a package where signature files are stored.</param>
-        protected SigningSpecifications(string signatureFolder)
+        protected SigningSpecifications()
         {
-            SignatureFolder = signatureFolder ?? throw new ArgumentNullException(nameof(signatureFolder));
         }
     }
 }

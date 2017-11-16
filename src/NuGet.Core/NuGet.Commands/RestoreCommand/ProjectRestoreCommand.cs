@@ -210,7 +210,7 @@ namespace NuGet.Commands
         {
             var uniquePackages = new HashSet<LibraryIdentity>();
 
-            var signedPackageVerifier = new SignedPackageVerifier(
+            var signedPackageVerifier = new PackageSignatureVerifier(
                             SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                             SignedPackageVerifierSettings.Default);
 
@@ -258,7 +258,7 @@ namespace NuGet.Commands
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
 
-            var signedPackageVerifier = new SignedPackageVerifier(
+            var signedPackageVerifier = new PackageSignatureVerifier(
                             SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                             SignedPackageVerifierSettings.Default);
 

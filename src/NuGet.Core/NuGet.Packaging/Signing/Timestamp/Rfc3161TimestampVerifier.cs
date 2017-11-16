@@ -142,7 +142,7 @@ namespace NuGet.Packaging.Signing
 
         private static bool TryBuildTimestampCertificateChain(X509Certificate2 certificate, out X509Chain chain)
         {
-            return SigningUtility.IsCertificateValid(certificate, out chain, allowUntrustedRoot: false);
+            return SigningUtility.IsCertificateValid(certificate, out chain, allowUntrustedRoot: false, checkRevocationStatus: true);
         }
 
         private static bool ValidateTimestampEnhancedKeyUsage(X509Certificate2 certificate)

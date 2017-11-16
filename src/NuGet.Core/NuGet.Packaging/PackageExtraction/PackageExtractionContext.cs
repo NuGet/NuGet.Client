@@ -15,7 +15,7 @@ namespace NuGet.Packaging
 
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; }
 
-        public ISignedPackageVerifier SignedPackageVerifier { get; set; }
+        public IPackageSignatureVerifier SignedPackageVerifier { get; set; }
 
         public bool CopySatelliteFiles { get; set; } = true;
 
@@ -23,7 +23,7 @@ namespace NuGet.Packaging
             PackageSaveMode packageSaveMode,
             XmlDocFileSaveMode xmlDocFileSaveMode,
             ILogger logger,
-            ISignedPackageVerifier signedPackageVerifier)
+            IPackageSignatureVerifier signedPackageVerifier)
         {
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             PackageSaveMode = packageSaveMode;

@@ -72,7 +72,7 @@ namespace NuGet.Packaging.Signing
             cms.ComputeSignature(cmsSigner);
 
             // 0 since this is the first signerInfo that we just created.
-            return Signature.Load(cms, signerInfoIndex: 0);
+            return Signature.Load(cms);
         }
 
         private Task<Signature> TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
@@ -88,7 +88,7 @@ namespace NuGet.Packaging.Signing
             return _timestampProvider.TimestampSignatureAsync(timestampRequest, logger, token);
         }
 #else
-        private Signature CreateSignature(X509Certificate2 cert, byte[] zipArchiveHash)
+        private Signature CreateSignature(X509Certificate2 cert, SignatureManifest signatureManifest)
         {
             throw new NotSupportedException();
         }

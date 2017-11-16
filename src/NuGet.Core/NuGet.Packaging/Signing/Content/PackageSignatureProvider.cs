@@ -28,7 +28,7 @@ namespace NuGet.Packaging.Signing
         private const ushort _majorVersion = 0; 
         private const ushort _minorVersion = 9;
 
-        private readonly byte[] _nugetPackageSignatureFormatV1 = new byte[] { 0x2C, 0x2F, 0x6E, 0xE1, 0xD1, 0x49, 0xD0, 0xAC, 0xAF, 0x43, 0x5B, 0x08, 0x4F, 0xAA, 0x14, 0x81 };
+        private readonly byte[] _nugetPackageSignatureFormatV1 = new byte[] { 0x81, 0x14, 0xAA, 0x4F, 0x08, 0x5B, 0x43, 0xAF, 0xAC, 0xD0, 0x49, 0xD1, 0xE1, 0x6E, 0x2F, 0x2C };
         private readonly ISignatureProvider _signatureProvider;
         private readonly SignPackageRequest _request;
         private readonly ILogger _logger;
@@ -53,7 +53,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(zipArchiveHash));
             }
 
-            var signatureManifest = GenerateSignatureManifest(_request.HashAlgorithm, zipArchiveHash);
+            var signatureManifest = GenerateSignatureManifest(_request.SignatureHashAlgorithm, zipArchiveHash);
             var signature = _signatureProvider.CreateSignatureAsync(_request, signatureManifest, _logger, token).Result;
 
             return signature.SignedCms;

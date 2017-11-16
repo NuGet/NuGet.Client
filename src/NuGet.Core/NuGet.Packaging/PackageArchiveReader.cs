@@ -113,7 +113,8 @@ namespace NuGet.Packaging
             Stream stream = null;
             try
             {
-                _zipStream = File.OpenRead(filePath);
+                stream = File.OpenRead(filePath);
+                _zipStream = stream;
                 _zipArchive = new ZipArchive(stream, ZipArchiveMode.Read);
             }
             catch
@@ -242,8 +243,7 @@ namespace NuGet.Packaging
                 if (ZipSigningUtilities.TryGetSignature(reader, out var header, out var signedCms))
                 {
                     var signature = Signature.Load(signedCms);
-
-                    //TODO set header in signature to allow header verification
+                    signature.Header = header;
                     signatures.Add(signature);
                 }
             }
@@ -270,6 +270,27 @@ namespace NuGet.Packaging
             }
 #endif
             return Task.FromResult(isSigned);
+        }
+
+        public override Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            if (_zipStream == null)
+            {
+                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
+            }
+
+#if IS_DESKTOP
+            using (var reader = new BinaryReader(_zipStream, _utf8Encoding, leaveOpen: true))
+            {
+                var hashAlgorithm = CryptoHashUtility.GetHashProvider(signatureManifest.HashAlgorithm);
+                var expectedHash = Convert.FromBase64String(signatureManifest.HashValue);
+
+                ZipSigningUtilities.VerifySignedZipIntegrity(reader, hashAlgorithm, expectedHash);
+            }
+#endif
+            return Task.FromResult(0);
         }
     }
 }

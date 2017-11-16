@@ -9,7 +9,12 @@ namespace NuGet.Packaging.Signing
     {
         public static IEnumerable<ISignatureVerificationProvider> GetSignatureVerificationProviders()
         {
-            yield return new X509SignatureVerificationProvider();
+            return new List<ISignatureVerificationProvider>()
+            {
+                new X509SignatureVerificationProvider(),
+                new NuGetIntegrityVerificationProvider(),
+                new NuGetSignatureHeaderVerificationProvider()
+            };
         }
     }
 }

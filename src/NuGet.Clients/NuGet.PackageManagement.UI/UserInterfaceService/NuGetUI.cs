@@ -337,7 +337,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void ProcessSignatureIssues(SignatureVerificationResult result, PackageIdentity packageIdentity)
+        private void ProcessSignatureIssues(PackageVerificationResult result, PackageIdentity packageIdentity)
         {
             var errorList = result.GetErrorIssues().ToList();
             var warningList = result.GetWarningIssues().ToList();

@@ -303,7 +303,7 @@ namespace NuGet.PackageManagement
             // and not have to determine if the package is a satellite package beforehand
             if (nuGetProjectContext.PackageExtractionContext == null)
             {
-                var signedPackageVerifier = new SignedPackageVerifier(
+                var signedPackageVerifier = new PackageSignatureVerifier(
                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                            SignedPackageVerifierSettings.Default);
 

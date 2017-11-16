@@ -25,5 +25,12 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <returns>True if the package is signed.</returns>
         Task<bool> IsSignedAsync(CancellationToken token);
+
+        /// <summary>
+        /// Checks for the integrity of a package
+        /// </summary>
+        /// <param name="signatureManifest">Manifest file with expected hash value and hash algorithm used</param>
+        /// <returns></returns>
+        Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token);
     }
 }

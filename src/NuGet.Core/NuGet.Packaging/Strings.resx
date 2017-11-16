@@ -265,4 +265,7 @@
   <data name="SignedPackagePackageNotSigned" xml:space="preserve">
     <value>The package is not signed. Unable to remove signature from an unsigned package.</value>
   </data>
+  <data name="ErrorSignatureFileTooBig" xml:space="preserve">
+    <value>Signature file is not of a reasonable size. Package contents might have been tampered.</value>
+  </data>
 </root>

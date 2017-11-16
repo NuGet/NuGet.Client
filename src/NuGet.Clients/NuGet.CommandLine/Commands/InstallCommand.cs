@@ -359,7 +359,7 @@ namespace NuGet.CommandLine
                 }
                 else
                 {
-                    var signedPackageVerifier = new SignedPackageVerifier(
+                    var signedPackageVerifier = new PackageSignatureVerifier(
                             SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                             SignedPackageVerifierSettings.Default);
 

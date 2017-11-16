@@ -229,5 +229,10 @@ namespace NuGet.Packaging
         {
             return Task.FromResult(false);
         }
+
+        public override Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

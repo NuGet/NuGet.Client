@@ -20,21 +20,50 @@ namespace NuGet.Packaging.Signing
         /// <param name="chain">X509Chain built from the X509Certificate2 if the return value is true.</param>
         /// <param name="allowUntrustedRoot">Sets X509VerificationFlags.AllowUnknownCertificateAuthority if set to true.</param>
         /// <returns>A bool indicating if the certificate builds a valid X509Chain.</returns>
-        public static bool IsCertificateValid(X509Certificate2 certificate, out X509Chain chain, bool allowUntrustedRoot)
+        public static bool IsCertificateChainValid(X509Certificate2 certificate, X509Certificate2Collection additionalCertificates, bool allowUntrustedRoot)
+        {
+            var chain = GetCertificateChain(certificate, additionalCertificates, allowUntrustedRoot);
+
+            return chain != null;
+        }
+
+        public static X509Chain GetCertificateChain(X509Certificate2 certificate, X509Certificate2Collection additionalCertificates, bool allowUntrustedRoot)
         {
             if (certificate == null)
             {
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            chain = new X509Chain();
+            //TODO: Revocation checks
+
+            // TODO: use additionalCertificates as an additional certificate store to building chain
+
+            var chain = new X509Chain();
 
             if (allowUntrustedRoot)
             {
                 chain.ChainPolicy.VerificationFlags |= X509VerificationFlags.AllowUnknownCertificateAuthority;
             }
 
-            return chain.Build(certificate);
+            if (chain.Build(certificate))
+            {
+                return chain;
+            }
+
+            return null;
+        }
+
+        public static bool IsCertificatePublicKeyValid(X509Certificate2 certificate)
+        {
+            // Check if the public key is RSA with a valid keysize
+            var RSAPublicKey = RSACertificateExtensions.GetRSAPublicKey(certificate);
+            if (RSAPublicKey != null)
+            {
+                return RSAPublicKey.KeySize >= SigningSpecifications.V1.RSAPublicKeyMinLength;
+            }
+
+            // Check if the certificate uses a valid ECDsa public key
+            return SigningSpecifications.V1.IsECDsaPublicKeyCurveValid(certificate.PublicKey.EncodedParameters.RawData);
         }
 
         /// <summary>
