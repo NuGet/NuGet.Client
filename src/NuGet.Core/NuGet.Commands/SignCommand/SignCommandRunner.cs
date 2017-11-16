@@ -41,8 +41,7 @@ namespace NuGet.Commands
             }
 
             var signRequest = GenerateSignPackageRequest(signArgs, cert);
-            var timestampProvider = new Rfc3161TimestampProvider(new Uri(signArgs.Timestamper));
-            var signatureProvider = new X509SignatureProvider(timestampProvider);
+            var signatureProvider = GetSignatureProvider(signArgs);
 
             foreach (var packagePath in packagesToSign)
             {
@@ -63,6 +62,18 @@ namespace NuGet.Commands
             }
 
             return success ? 0 : 1;
+        }
+
+        private static ISignatureProvider GetSignatureProvider(SignArgs signArgs)
+        {
+            Rfc3161TimestampProvider timestampProvider = null;
+
+            if (!string.IsNullOrEmpty(signArgs.Timestamper))
+            {
+                timestampProvider = new Rfc3161TimestampProvider(new Uri(signArgs.Timestamper));
+            }
+
+            return new X509SignatureProvider(timestampProvider);
         }
 
         private int SignPackage(string packagePath, ILogger logger, ISignatureProvider signatureProvider, SignPackageRequest request)
