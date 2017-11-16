@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using System.IO;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -29,7 +30,7 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Sign a manifest hash with an X509Certificate2.
+        /// Sign the package stream hash with an X509Certificate2.
         /// </summary>
         public Task<Signature> CreateSignatureAsync(SignPackageRequest request, SignatureManifest signatureManifest, ILogger logger, CancellationToken token)
         {
@@ -57,7 +58,6 @@ namespace NuGet.Packaging.Signing
         private Signature CreateSignature(X509Certificate2 cert, SignatureManifest signatureManifest)
         {
             var contentInfo = new ContentInfo(signatureManifest.GetBytes());
-
             var cmsSigner = new CmsSigner(SubjectIdentifierType.SubjectKeyIdentifier, cert);
             var signingTime = new Pkcs9SigningTime();
 
@@ -71,7 +71,8 @@ namespace NuGet.Packaging.Signing
             var cms = new SignedCms(contentInfo);
             cms.ComputeSignature(cmsSigner);
 
-            return Signature.Load(cms);
+            // 0 since this is the first signerInfo that we just created.
+            return Signature.Load(cms, signerInfoIndex: 0);
         }
 
         private Task<Signature> TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
@@ -87,7 +88,7 @@ namespace NuGet.Packaging.Signing
             return _timestampProvider.TimestampSignatureAsync(timestampRequest, logger, token);
         }
 #else
-        private Signature CreateSignature(X509Certificate2 cert, SignatureManifest signatureManifest)
+        private Signature CreateSignature(X509Certificate2 cert, byte[] zipArchiveHash)
         {
             throw new NotSupportedException();
         }

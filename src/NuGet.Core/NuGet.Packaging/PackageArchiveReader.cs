@@ -6,9 +6,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+#if IS_DESKTOP
+using Microsoft.ZipSigningUtilities;
+#endif
+
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -22,6 +27,8 @@ namespace NuGet.Packaging
     public class PackageArchiveReader : PackageReaderBase
     {
         private readonly ZipArchive _zipArchive;
+        private readonly Stream _zipStream;
+        private readonly Encoding _utf8Encoding = new UTF8Encoding();
 
         /// <summary>
         /// Underlying zip archive.
@@ -68,6 +75,7 @@ namespace NuGet.Packaging
         public PackageArchiveReader(Stream stream, bool leaveStreamOpen, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
             : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen), frameworkProvider, compatibilityProvider)
         {
+            _zipStream = stream;
         }
 
         /// <summary>
@@ -88,12 +96,7 @@ namespace NuGet.Packaging
         public PackageArchiveReader(ZipArchive zipArchive, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
             : base(frameworkProvider, compatibilityProvider)
         {
-            if (zipArchive == null)
-            {
-                throw new ArgumentNullException(nameof(zipArchive));
-            }
-
-            _zipArchive = zipArchive;
+            _zipArchive = zipArchive ?? throw new ArgumentNullException(nameof(zipArchive));
         }
 
         public PackageArchiveReader(string filePath, IFrameworkNameProvider frameworkProvider = null, IFrameworkCompatibilityProvider compatibilityProvider = null)
@@ -110,7 +113,7 @@ namespace NuGet.Packaging
             Stream stream = null;
             try
             {
-                stream = File.OpenRead(filePath);
+                _zipStream = File.OpenRead(filePath);
                 _zipArchive = new ZipArchive(stream, ZipArchiveMode.Read);
             }
             catch
@@ -223,86 +226,50 @@ namespace NuGet.Packaging
 
         public override Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
+            if (_zipStream == null)
+            {
+                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
+            }
+
             var signatures = new List<Signature>();
 
 #if IS_DESKTOP
-            var sigFile = GetExactEntryOrDefault(SigningSpecifications.V1.SignaturePath1);
-
-            if (sigFile != null)
+            using (var reader = new BinaryReader(_zipStream, _utf8Encoding, leaveOpen: true))
             {
-                signatures.Add(Signature.Load(sigFile.Open()));
-            }
-#endif
 
-            return Task.FromResult<IReadOnlyList<Signature>>(signatures.AsReadOnly());
-        }
-
-        public override Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token)
-        {
-            PackageContentManifest result = null;
-
-            using (var stream = GetExactEntryOrDefault(SigningSpecifications.V1.ManifestPath)?.Open())
-            {
-                if (stream != null)
+                if (ZipSigningUtilities.TryGetSignature(reader, out var header, out var signedCms))
                 {
-                    result = PackageContentManifest.Load(stream);
+                    var signature = Signature.Load(signedCms);
+
+                    //TODO set header in signature to allow header verification
+                    signatures.Add(signature);
                 }
             }
+#endif
+            return Task.FromResult<IReadOnlyList<Signature>>(signatures.AsReadOnly());
 
-            return Task.FromResult(result);
-        }
-
-        public override Task<IReadOnlyList<PackageContentManifestFileEntry>> GetContentManifestEntriesAsync(Common.HashAlgorithmName hashAlgorithm, CancellationToken token)
-        {
-            var hashProvider = hashAlgorithm.GetHashProvider();
-
-            var entries = _zipArchive.Entries
-                .Select(e => new PackageContentManifestFileEntry(
-                    path: e.FullName,
-                    hash: GetEntryHash(e, hashProvider)))
-                .ToList();
-
-            return Task.FromResult<IReadOnlyList<PackageContentManifestFileEntry>>(entries);
-        }
-
-        private static string GetEntryHash(ZipArchiveEntry entry, HashAlgorithm hashProvider)
-        {
-            string hash = null;
-
-            if (IsEmptyDirectory(entry))
-            {
-                hash = "0";
-            }
-            else
-            {
-                hash = hashProvider.ComputeHashAsBase64(entry.Open());
-            }
-
-            return hash;
-        }
-
-        private static bool IsEmptyDirectory(ZipArchiveEntry entry)
-        {
-            return entry.FullName.EndsWith("/", StringComparison.Ordinal);
         }
 
         public override Task<bool> IsSignedAsync(CancellationToken token)
         {
-            // A package is signed if a signature file exists.
-            return Task.FromResult(GetExactEntryOrDefault(SigningSpecifications.V1.SignaturePath1) != null);
-        }
+            token.ThrowIfCancellationRequested();
 
-        private ZipArchiveEntry GetExactEntryOrDefault(string path)
-        {
-            var entry = _zipArchive.GetEntry(path);
-
-            if (entry != null && !StringComparer.Ordinal.Equals(path, entry.FullName))
+            if(_zipStream == null)
             {
-                // The entry casing did not match.
-                entry = null;
+                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
 
-            return entry;
+            var isSigned = false;
+
+#if IS_DESKTOP
+            using (var reader = new BinaryReader(_zipStream, _utf8Encoding, leaveOpen: true))
+            {
+                isSigned = ZipSigningUtilities.IsSigned(reader);
+            }
+#endif
+            return Task.FromResult(isSigned);
         }
     }
 }

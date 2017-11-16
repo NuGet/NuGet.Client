@@ -3,8 +3,14 @@
 
 using System;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+
+#if IS_DESKTOP
+using Microsoft.ZipSigningUtilities;
+#endif
+
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
@@ -28,47 +34,22 @@ namespace NuGet.Packaging.Signing
             _signatureProvider = signatureProvider ?? throw new ArgumentNullException(nameof(signatureProvider));
         }
 
+
+#if IS_DESKTOP
         /// <summary>
         /// Add a signature to a package.
         /// </summary>
         public async Task SignAsync(SignPackageRequest request, ILogger logger, CancellationToken token)
         {
-            // Verify hash is allowed
-
-            // Generate manifest
-            var packageEntries = await _package.GetContentManifestEntriesAsync(request.SignatureHashAlgorithm, token);
-
-            var manifest = new PackageContentManifest(
-                PackageContentManifest.DefaultVersion,
-                request.SignatureHashAlgorithm,
-                packageEntries);
-
-            // Generate manifest hash and add file
-            var manifestHash = await AddManifestAndGetHashAsync(manifest, request.SignatureHashAlgorithm, token);
-
-            // Create signature
-            var signature = await _signatureProvider.CreateSignatureAsync(request, manifestHash, logger, token);
-
-            using (var stream = new MemoryStream(signature.GetBytes()))
+            // TODO Verify hash is allowed
+            if(request == null)
             {
-                await _package.AddAsync(_specifications.SignaturePath1, stream, token);
+                throw new ArgumentNullException(nameof(request));
             }
-        }
 
-        private async Task<SignatureManifest> AddManifestAndGetHashAsync(PackageContentManifest manifest, Common.HashAlgorithmName hashAlgorithmName, CancellationToken token)
-        {
-            using (var manifestStream = new MemoryStream())
-            {
-                manifest.Save(manifestStream);
-                manifestStream.Position = 0;
-
-                var hash = hashAlgorithmName.GetHashProvider().ComputeHashAsBase64(manifestStream, leaveStreamOpen: true);
-                manifestStream.Position = 0;
-
-                await _package.AddAsync(_specifications.ManifestPath, manifestStream, token);
-
-                return new SignatureManifest(SignatureManifest.DefaultVersion, hashAlgorithmName, hash);
-            }
+            var packageSignatureProvider = new PackageSignatureProvider(_signatureProvider, request, logger);
+            var hashAlgorithm = request.HashAlgorithm.GetHashProvider();
+            await _package.AddSignatureAsync(packageSignatureProvider, hashAlgorithm, token);
         }
 
         /// <summary>
@@ -76,19 +57,27 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public async Task RemoveSignaturesAsync(ILogger logger, CancellationToken token)
         {
-            foreach (var file in _specifications.AllowedPaths)
+            if (await _package.IsSignedAsync(token))
             {
-                await _package.RemoveAsync(file, token);
+                await _package.RemoveSignatureAsync(token);
             }
+        }
+#else
+        /// <summary>
+        /// Add a signature to a package.
+        /// </summary>
+        public async Task SignAsync(SignPackageRequest request, ILogger logger, CancellationToken token)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
-        /// Remove a single signature from a package.
+        /// Remove all signatures from a package.
         /// </summary>
-        public Task RemoveSignatureAsync(Signature signature, ILogger logger, CancellationToken token)
+        public async Task RemoveSignaturesAsync(ILogger logger, CancellationToken token)
         {
-            // TODO: counter signing support/removal of counter sign only
-            return RemoveSignaturesAsync(logger, token);
+            throw new NotImplementedException();
         }
+#endif
     }
 }

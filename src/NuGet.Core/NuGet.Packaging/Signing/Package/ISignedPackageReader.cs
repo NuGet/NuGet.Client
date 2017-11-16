@@ -21,16 +21,6 @@ namespace NuGet.Packaging.Signing
         Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token);
 
         /// <summary>
-        /// Read the signed manifest from a package.
-        /// </summary>
-        Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token);
-
-        /// <summary>
-        /// Read and hash all package entries.
-        /// </summary>
-        Task<IReadOnlyList<PackageContentManifestFileEntry>> GetContentManifestEntriesAsync(HashAlgorithmName hashAlgorithm, CancellationToken token);
-
-        /// <summary>
         /// Check if a package contains signing information.
         /// </summary>
         /// <returns>True if the package is signed.</returns>

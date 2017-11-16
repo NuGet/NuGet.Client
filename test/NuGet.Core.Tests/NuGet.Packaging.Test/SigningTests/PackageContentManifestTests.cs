@@ -21,7 +21,7 @@ namespace NuGet.Packaging.Test.SigningTests
             var version = new SemanticVersion(1, 0, 0);
             var files = new List<PackageContentManifestFileEntry>();
 
-            var manifest = new PackageContentManifest(version, HashAlgorithmName.SHA256, files);
+            var manifest = new PackageSignatureManifest(version, HashAlgorithmName.SHA256, files);
 
             manifest.Version.ToNormalizedString().Should().Be("1.0.0");
             manifest.HashAlgorithm.Should().Be(HashAlgorithmName.SHA256);
@@ -34,7 +34,7 @@ namespace NuGet.Packaging.Test.SigningTests
             var version = new SemanticVersion(1, 0, 0);
             var files = new List<PackageContentManifestFileEntry>();
 
-            var manifest = new PackageContentManifest(version, HashAlgorithmName.SHA256, files);
+            var manifest = new PackageSignatureManifest(version, HashAlgorithmName.SHA256, files);
 
             using (var stream = new MemoryStream())
             {
@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Test.SigningTests
                 stream.Position = 0;
 
                 // Read
-                var manifest2 = PackageContentManifest.Load(stream);
+                var manifest2 = PackageSignatureManifest.Load(stream);
 
                 // Verify
                 manifest2.Version.ToNormalizedString().Should().Be("1.0.0");
@@ -58,7 +58,7 @@ namespace NuGet.Packaging.Test.SigningTests
             var version = new SemanticVersion(1, 0, 0);
             var files = new List<PackageContentManifestFileEntry>();
 
-            var manifest = new PackageContentManifest(version, HashAlgorithmName.SHA256, files);
+            var manifest = new PackageSignatureManifest(version, HashAlgorithmName.SHA256, files);
 
             using (var stream = new MemoryStream())
             {
@@ -79,7 +79,7 @@ namespace NuGet.Packaging.Test.SigningTests
                 new PackageContentManifestFileEntry("lib/net46/a.dll", "xyz")
             };
 
-            var manifest = new PackageContentManifest(version, HashAlgorithmName.SHA256, files);
+            var manifest = new PackageSignatureManifest(version, HashAlgorithmName.SHA256, files);
 
             using (var stream = new MemoryStream())
             {
@@ -88,7 +88,7 @@ namespace NuGet.Packaging.Test.SigningTests
                 stream.Position = 0;
 
                 // Read
-                var manifest2 = PackageContentManifest.Load(stream);
+                var manifest2 = PackageSignatureManifest.Load(stream);
 
                 // Verify
                 manifest2.Version.ToNormalizedString().Should().Be("1.0.0");
@@ -107,7 +107,7 @@ namespace NuGet.Packaging.Test.SigningTests
                 new PackageContentManifestFileEntry("lib/net46/a.dll", "xyz")
             };
 
-            var manifest = new PackageContentManifest(version, HashAlgorithmName.SHA256, files);
+            var manifest = new PackageSignatureManifest(version, HashAlgorithmName.SHA256, files);
 
             using (var stream = new MemoryStream())
             {
@@ -131,7 +131,7 @@ namespace NuGet.Packaging.Test.SigningTests
                 new PackageContentManifestFileEntry("lib/net46/a.dll", "xyz")
             };
 
-            var manifest = new PackageContentManifest(version, HashAlgorithmName.SHA256, files);
+            var manifest = new PackageSignatureManifest(version, HashAlgorithmName.SHA256, files);
 
             using (var stream = new MemoryStream())
             {

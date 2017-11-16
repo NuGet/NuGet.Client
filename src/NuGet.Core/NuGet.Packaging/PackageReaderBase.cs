@@ -548,10 +548,6 @@ namespace NuGet.Packaging
 
         public abstract Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token);
 
-        public abstract Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token);
-
-        public abstract Task<IReadOnlyList<PackageContentManifestFileEntry>> GetContentManifestEntriesAsync(HashAlgorithmName hashAlgorithm, CancellationToken token);
-
         public abstract Task<bool> IsSignedAsync(CancellationToken token);
     }
 }

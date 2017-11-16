@@ -210,13 +210,14 @@ namespace NuGet.Common
         {
             switch (hashAlgorithm)
             {
-                default:
                 case HashAlgorithmName.SHA256:
                     return System.Security.Cryptography.HashAlgorithmName.SHA256;
                 case HashAlgorithmName.SHA384:
                     return System.Security.Cryptography.HashAlgorithmName.SHA384;
                 case HashAlgorithmName.SHA512:
                     return System.Security.Cryptography.HashAlgorithmName.SHA512;
+                default:
+                    throw new InvalidDataException();
             }
         }
 
@@ -228,13 +229,34 @@ namespace NuGet.Common
         {
             switch (hashAlgorithm)
             {
-                default:
                 case HashAlgorithmName.SHA256:
                     return SHA256_OID;
                 case HashAlgorithmName.SHA384:
                     return SHA384_OID;
                 case HashAlgorithmName.SHA512:
                     return SHA512_OID;
+                default:
+                    throw new InvalidDataException();
+            }
+        }
+
+        /// <summary>
+        /// Helper method to convert an Oid string to NuGet.Common.HashAlgorithmName
+        /// </summary>
+        /// <param name="oid">An oid string.</param>
+        /// <returns>NuGet.Common.HashAlgorithmName equivalent of the oid string</returns>
+        public static HashAlgorithmName OidToHashAlgorithmName(string oid)
+        {
+            switch (oid)
+            {
+                case SHA256_OID:
+                    return HashAlgorithmName.SHA256;
+                case SHA384_OID:
+                    return HashAlgorithmName.SHA384;
+                case SHA512_OID:
+                    return HashAlgorithmName.SHA512;
+                default:
+                    throw new InvalidDataException();
             }
         }
     }

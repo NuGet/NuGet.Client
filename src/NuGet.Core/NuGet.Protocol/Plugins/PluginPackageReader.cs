@@ -1129,16 +1129,6 @@ namespace NuGet.Protocol.Plugins
             return Task.FromResult<IReadOnlyList<Signature>>(new List<Signature>());
         }
 
-        public override Task<PackageContentManifest> GetSignManifestAsync(CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Task<IReadOnlyList<PackageContentManifestFileEntry>> GetContentManifestEntriesAsync(HashAlgorithmName hashAlgorithm, CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
-
         public override Task<bool> IsSignedAsync(CancellationToken token)
         {
             return Task.FromResult(false);
