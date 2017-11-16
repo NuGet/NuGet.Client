@@ -21,26 +21,22 @@ namespace NuGet.Packaging.Test.SigningTests
         {
             var nupkg = new SimpleTestPackageContext();
             var testLogger = new TestLogger();
-            var zip = nupkg.Create();
+            var zipReadStream = nupkg.CreateAsStream();
+            var zipWriteStream = nupkg.CreateAsStream();
 
             using (var testCert = TestCertificate.Generate().WithTrust())
-            using (var signPackage = new SignedPackageArchive(zip))
+            using (var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
             {
-                var before = new List<string>(zip.Entries.Select(e => e.FullName));
-
                 // Sign the package
                 await SignTestUtility.SignPackageAsync(testLogger, testCert.Source.Cert, signPackage);
 
-                // Verify sign file exists
-                zip.Entries.Select(e => e.FullName)
-                    .Except(before)
-                    .Should()
-                    .BeEquivalentTo(new[]
-                {
-                    SigningSpecifications.V1.ManifestPath,
-                    SigningSpecifications.V1.SignaturePath1,
-                });
+                var settings = SignedPackageVerifierSettings.RequireSigned;
+
+                var result = await SignTestUtility.VerifySignatureAsync(testLogger, signPackage, settings);
+
+                result.Valid.Should().BeTrue();
             }
+
         }
     }
 }

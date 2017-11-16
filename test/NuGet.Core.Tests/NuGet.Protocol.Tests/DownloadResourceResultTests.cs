@@ -228,11 +228,6 @@ namespace NuGet.Protocol.Tests
                 throw new NotImplementedException();
             }
 
-            public override Task<IReadOnlyList<PackageContentManifestFileEntry>> GetContentManifestEntriesAsync(HashAlgorithmName hashAlgorithm, CancellationToken token)
-            {
-                throw new NotImplementedException();
-            }
-
             public override IEnumerable<string> GetFiles()
             {
                 throw new NotImplementedException();
@@ -244,11 +239,6 @@ namespace NuGet.Protocol.Tests
             }
 
             public override Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override Task<PackageSignatureManifest> GetSignManifestAsync(CancellationToken token)
             {
                 throw new NotImplementedException();
             }
