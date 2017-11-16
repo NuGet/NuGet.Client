@@ -1,4 +1,4 @@
-﻿extern alias CoreV2;
+extern alias CoreV2;
 
 using System;
 using System.Collections.Generic;
@@ -141,6 +141,10 @@ namespace NuGet.CommandLine
                 // Log the exception and stack trace.
                 ExceptionUtilities.LogException(unwrappedEx, console, logStackAsError);
                 return 1;
+            }
+            catch (ExitCodeException e)
+            {
+                return e.ExitCode;
             }
             catch (Exception exception)
             {

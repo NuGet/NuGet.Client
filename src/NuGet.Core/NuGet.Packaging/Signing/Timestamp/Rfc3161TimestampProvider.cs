@@ -120,7 +120,7 @@ namespace NuGet.Packaging.Signing
 
         private static X509Chain GetTimestampCertChain(X509Certificate2 timestampSignerCertificate)
         {
-            if (!SigningUtility.IsCertificateValid(timestampSignerCertificate, out var timestampCertChain, allowUntrustedRoot: false))
+            if (!SigningUtility.IsCertificateValid(timestampSignerCertificate, out var timestampCertChain, allowUntrustedRoot: false, checkRevocationStatus: true))
             {
                 throw new TimestampException(LogMessage.CreateError(
                     NuGetLogCode.NU3011,

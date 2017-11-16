@@ -41,6 +41,11 @@ namespace NuGet.Packaging.Signing
             return new SignatureIssue(false, NuGetLogCode.NU3502, message);
         }
 
+        public static SignatureIssue TrustOfSignatureCannotBeProvenWarning(string message)
+        {
+            return new SignatureIssue(false, NuGetLogCode.NU3502, message);
+        }
+
         public ILogMessage ToLogMessage()
         {
             if (Fatal)

@@ -94,7 +94,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(globalPackagesFolder));
             }
 
-            var signedPackageVerifier = new SignedPackageVerifier(
+            var signedPackageVerifier = new PackageSignatureVerifier(
                           SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                           SignedPackageVerifierSettings.Default);
 

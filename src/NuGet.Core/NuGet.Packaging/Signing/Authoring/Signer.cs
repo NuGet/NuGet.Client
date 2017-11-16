@@ -48,7 +48,7 @@ namespace NuGet.Packaging.Signing
             }
 
             var packageSignatureProvider = new PackageSignatureProvider(_signatureProvider, request, logger);
-            var hashAlgorithm = request.HashAlgorithm.GetHashProvider();
+            var hashAlgorithm = request.SignatureHashAlgorithm.GetHashProvider();
             await _package.AddSignatureAsync(packageSignatureProvider, hashAlgorithm, token);
         }
 

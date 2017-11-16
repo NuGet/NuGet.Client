@@ -19,7 +19,7 @@ namespace NuGet.VisualStudio
 
         public VSAPIProjectContext(bool skipAssemblyReferences, bool bindingRedirectsDisabled)
         {
-            var signedPackageVerifier = new SignedPackageVerifier(
+            var signedPackageVerifier = new PackageSignatureVerifier(
                             SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                             SignedPackageVerifierSettings.Default);
 

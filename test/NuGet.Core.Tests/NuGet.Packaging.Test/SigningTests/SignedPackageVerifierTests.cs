@@ -46,7 +46,7 @@ namespace NuGet.Packaging.Test.SigningTests
         private static async Task<VerifySignaturesResult> VerifySignatureAsync(TestLogger testLogger, SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)
         {
             var verificationProviders = new[] { new X509SignatureVerificationProvider() };
-            var verifier = new SignedPackageVerifier(verificationProviders, settings);
+            var verifier = new PackageSignatureVerifier(verificationProviders, settings);
             var result = await verifier.VerifySignaturesAsync(signPackage, testLogger, CancellationToken.None);
             return result;
         }

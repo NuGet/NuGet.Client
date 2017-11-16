@@ -1470,6 +1470,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid package file..
+        /// </summary>
+        internal static string VerifyCommand_PackageIsNotValid {
+            get {
+                return ResourceManager.GetString("VerifyCommand_PackageIsNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verification type not supported. Please use only one of the following supported types: -Signatures.
+        /// </summary>
+        internal static string VerifyCommand_VerificationTypeNotSupported {
+            get {
+                return ResourceManager.GetString("VerifyCommand_VerificationTypeNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; key already exists in Properties collection. Overriding value..
         /// </summary>
         internal static string Warning_DuplicatePropertyKey {

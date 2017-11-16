@@ -549,5 +549,8 @@ namespace NuGet.Packaging
         public abstract Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token);
 
         public abstract Task<bool> IsSignedAsync(CancellationToken token);
+
+        public abstract Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token);
+
     }
 }

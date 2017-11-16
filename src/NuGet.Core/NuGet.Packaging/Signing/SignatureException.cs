@@ -12,7 +12,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Individual trust results.
         /// </summary>
-        public IReadOnlyList<SignatureVerificationResult> Results { get; }
+        public IReadOnlyList<PackageVerificationResult> Results { get; }
 
         public PackageIdentity PackageIdentity { get; }
 
@@ -20,7 +20,7 @@ namespace NuGet.Packaging.Signing
         {
         }
 
-        public SignatureException(IReadOnlyList<SignatureVerificationResult> results, PackageIdentity package)
+        public SignatureException(IReadOnlyList<PackageVerificationResult> results, PackageIdentity package)
             : base(string.Empty)
         {
             Results = results;

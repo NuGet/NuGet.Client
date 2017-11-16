@@ -148,20 +148,15 @@ namespace NuGet.ProjectManagement
 
                     if (packageExtractionContext == null)
                     {
-                        var signedPackageVerifier = new SignedPackageVerifier(
+                        var signedPackageVerifier = !downloadResourceResult.SignatureVerified ? new PackageSignatureVerifier(
                             SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
+                            SignedPackageVerifierSettings.Default) : null;
 
                         packageExtractionContext = new PackageExtractionContext(
                             PackageSaveMode.Defaultv2,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             new LoggerAdapter(nuGetProjectContext),
                             signedPackageVerifier);
-                    }
-
-                    if (downloadResourceResult.SignatureVerified)
-                    {
-                        packageExtractionContext.SignedPackageVerifier = null;
                     }
 
                     // 2. Check if the Package already exists at root, if so, return false
@@ -415,7 +410,7 @@ namespace NuGet.ProjectManagement
             var packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
             if (packageExtractionContext == null)
             {
-                var signedPackageVerifier = new SignedPackageVerifier(
+                var signedPackageVerifier = new PackageSignatureVerifier(
                             SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                             SignedPackageVerifierSettings.Default);
 
