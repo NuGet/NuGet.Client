@@ -467,6 +467,8 @@ namespace NuGet.Test.Utility
 
         private class InMemoryFile : IPackageFile
         {
+            private DateTimeOffset _lastWriteTime;
+
             public string EffectivePath { get; set; }
 
             public string Path { get; set; }
@@ -477,7 +479,16 @@ namespace NuGet.Test.Utility
 
             public Stream GetStream()
             {
+                _lastWriteTime = DateTimeOffset.UtcNow;
                 return Stream;
+            }
+
+            public DateTimeOffset LastWriteTime
+            {
+                get
+                {
+                    return _lastWriteTime;
+                }
             }
         }
     }

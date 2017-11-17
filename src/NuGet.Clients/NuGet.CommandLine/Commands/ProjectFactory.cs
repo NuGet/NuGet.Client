@@ -1368,6 +1368,7 @@ namespace NuGet.CommandLine
         {
             private readonly Lazy<Func<Stream>> _streamFactory;
             private readonly string _effectivePath;
+            private DateTimeOffset _lastWriteTime = DateTimeOffset.UtcNow;
 
             public ReverseTransformFormFile(Packaging.IPackageFile file, IEnumerable<Packaging.IPackageFile> transforms)
             {
@@ -1393,6 +1394,14 @@ namespace NuGet.CommandLine
             public Stream GetStream()
             {
                 return _streamFactory.Value();
+            }
+
+            public DateTimeOffset LastWriteTime
+            {
+                get
+                {
+                    return _lastWriteTime;
+                }
             }
 
             [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "We need to return the MemoryStream for use.")]
