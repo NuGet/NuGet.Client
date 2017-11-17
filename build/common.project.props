@@ -127,7 +127,7 @@
       </PropertyGroup>
     </When>
     <!-- If we are excluding the build number, show the release label unless we are RTM. -->
-    <When Condition="'$(ReleaseLabel)' != 'rtm'">
+    <When Condition="'$(ReleaseLabel)' != 'rtm' AND '$(ReleaseLabel)' != 'svc' ">
       <PropertyGroup>
         <PreReleaseInformationVersion>-$(ReleaseLabel)</PreReleaseInformationVersion>
       </PropertyGroup>
