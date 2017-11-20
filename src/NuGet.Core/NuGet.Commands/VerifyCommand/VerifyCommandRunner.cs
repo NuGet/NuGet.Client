@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.Protocol;
+using static NuGet.Commands.VerifyArgs;
 
 namespace NuGet.Commands
 {
@@ -21,62 +22,80 @@ namespace NuGet.Commands
     {
         public async Task<int> ExecuteCommandAsync(VerifyArgs verifyArgs)
         {
-            if (verifyArgs.Type != VerifyArgs.VerificationType.Signatures)
+            var executedSuccessfully = false;
+            
+            if (ShouldExecuteType(verifyArgs, VerificationType.Signatures))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_VerificationTypeNotSupported));
+                var packagesToVerify = LocalFolderUtility.ResolvePackageFromPath(verifyArgs.PackagePath);
+                LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
+
+                var trustProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders();
+                var verifier = new PackageSignatureVerifier(trustProviders, SignedPackageVerifierSettings.RequireSigned);
+
+                var errorCount = 0;
+
+                foreach (var package in packagesToVerify)
+                {
+                    try
+                    {
+                        errorCount += await VerifySignatureForPackageAsync(package, verifyArgs.Logger, verifier);
+                    }
+                    catch (InvalidDataException e)
+                    {
+                        verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_PackageIsNotValid, package));
+                        verifyArgs.Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Error_CommandFailedWithException, nameof(VerifySignatureForPackageAsync), e.Message));
+                    }
+                }
+                executedSuccessfully = errorCount == 0;
             }
 
-            var packagesToVerify = LocalFolderUtility.ResolvePackageFromPath(verifyArgs.PackagePath);
-            LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
-
-            var trustProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders();
-            var verifier = new PackageSignatureVerifier(trustProviders, SignedPackageVerifierSettings.RequireSigned);
-
-            var errorCount = 0;
-
-            foreach (var package in packagesToVerify)
+            if (verifyArgs.Verifications.Count == 0)
             {
-                try
-                {
-                    errorCount += await VerifyPackageAsync(package, verifyArgs.Logger, verifier);
-                }
-                catch (InvalidDataException)
-                {
-                    verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_PackageIsNotValid, package));
-                }
+                verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_VerificationTypeNotSupported));
             }
 
-            return (errorCount > 0) ? 1 : 0;
+            return executedSuccessfully ? 0 : 1;
         }
 
-        private async Task<int> VerifyPackageAsync(string packagePath, ILogger logger, PackageSignatureVerifier verifier)
+        private async Task<int> VerifySignatureForPackageAsync(string packagePath, ILogger logger, PackageSignatureVerifier verifier)
         {
             var result = 0;
             using (var packageReader = new PackageArchiveReader(packagePath))
             {
-                var verificationResult = await verifier.VerifySignaturesAsync(packageReader, logger, CancellationToken.None);
+                var verificationResult = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+
+                var packageIdentity = packageReader.GetIdentity();
+
+                logger.LogInformation(Environment.NewLine + string.Format(CultureInfo.CurrentCulture,
+                    Strings.VerifyCommand_VerifyingPackage,
+                    packageIdentity.ToString()));
+                logger.LogInformation($"{packagePath}{Environment.NewLine}");
+
+                var logMessages = verificationResult.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()).ToList();
+                await logger.LogMessagesAsync(logMessages);
+
+                if (logMessages.Any(m => m.Level >= LogLevel.Warning))
+                {
+                    var errors = logMessages.Where(m => m.Level == LogLevel.Error).Count();
+                    var warnings = logMessages.Where(m => m.Level == LogLevel.Warning).Count();
+
+                    logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_FinishedWithErrors, errors, warnings));
+
+                    result = errors;
+                }
 
                 if (verificationResult.Valid)
                 {
-                    logger.LogInformation("Successfully verified package integrity and author signature.");
-                }
-                else
-                {
-                    var logMessages = verificationResult.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()).ToList();
-                    await logger.LogMessagesAsync(logMessages);
-                    if (logMessages.Any(m => m.Level >= LogLevel.Warning))
-                    {
-                        var errors = logMessages.Where(m => m.Level == LogLevel.Error).Count();
-                        var warnings = logMessages.Where(m => m.Level == LogLevel.Warning).Count();
-
-                        logger.LogInformation($"Finished with {errors} errors and {warnings} warnings.");
-
-                        result = errors;
-                    }
+                    logger.LogInformation(Environment.NewLine + Strings.VerifyCommand_Success);
                 }
 
                 return result;
             }
+        }
+
+        private bool ShouldExecuteType(VerifyArgs args, VerificationType type)
+        {
+            return args.Verifications.Count() > 0 && (args.Verifications.First() == VerificationType.All || args.Verifications.Contains(type));
         }
     }
 }

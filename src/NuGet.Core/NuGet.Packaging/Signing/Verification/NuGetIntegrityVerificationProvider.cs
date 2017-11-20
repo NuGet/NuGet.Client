@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -11,7 +13,7 @@ namespace NuGet.Packaging.Signing
 {
     public class NuGetIntegrityVerificationProvider : ISignatureVerificationProvider
     {
-        public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, ILogger logger, CancellationToken token)
+        public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, CancellationToken token)
         {
             return VerifyPackageIntegrityAsync(package, signature);
         }
@@ -22,21 +24,26 @@ namespace NuGet.Packaging.Signing
             var status = SignatureVerificationStatus.Invalid;
             var issues = new List<SignatureLog>();
 
-            // TODO: Verify algorithm is supported
-            //if (!SigningSpecifications.V1.AllowedHashAlgorithms.Contains(signature.SignatureManifest.HashAlgorithm))
-            //{
-            //    issues.Add(SignatureIssue.InvalidPackageError("Hash algorithm not supported."));
-            //    return new SignedPackageVerificationResult(status, signature, issues);
-            //}
+            var validHashOids = SigningSpecifications.V1.AllowedHashAlgorithmOids;
+            var signatureHashOid = signature.SignatureManifest.HashAlgorithm.ConvertToOidString();
+            if (!validHashOids.Contains(signatureHashOid, StringComparer.InvariantCultureIgnoreCase))
+            {
+                issues.Add(SignatureLog.InvalidPackageError(Strings.SignatureFailureInvalidHashAlgorithmOid));
+                issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureDebug_HashOidFound, signatureHashOid)));
+                return new SignedPackageVerificationResult(status, signature, issues);
+            }
+
+            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureHashAlgorithm, signature.SignatureManifest.HashAlgorithm)));
 
             try
             {
                 await package.ValidateIntegrityAsync(signature.SignatureManifest, CancellationToken.None);
                 status = SignatureVerificationStatus.Trusted;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                issues.Add(SignatureLog.InvalidPackageError("Package integrity check failed. The package has been tampered."));
+                issues.Add(SignatureLog.InvalidPackageError(Strings.SignatureFailurePackageTampered));
+                issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedWithException, nameof(VerifyPackageIntegrityAsync), e.Message)));
             }
 
             return new SignedPackageVerificationResult(status, signature, issues);

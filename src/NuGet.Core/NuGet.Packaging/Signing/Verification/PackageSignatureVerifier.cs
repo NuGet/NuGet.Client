@@ -25,26 +25,24 @@ namespace NuGet.Packaging.Signing
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public async Task<VerifySignaturesResult> VerifySignaturesAsync(ISignedPackageReader package, ILogger logger, CancellationToken token)
+        public async Task<VerifySignaturesResult> VerifySignaturesAsync(ISignedPackageReader package, CancellationToken token)
         {
             var valid = false;
             var trustResults = new List<PackageVerificationResult>();
 
             var isSigned = await package.IsSignedAsync(token);
-
             if (isSigned)
             {
                 try
                 {
                     // Read package signatures
                     var signatures = await package.GetSignaturesAsync(token);
-
                     var signaturesAreValid = signatures.Count > 0; // Fail if there are no signatures
 
                     // Verify that the signatures are trusted
                     foreach (var signature in signatures)
                     {
-                        var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, logger, token)));
+                        var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, token)));
                         signaturesAreValid &= IsValid(sigTrustResults, _settings.AllowUntrusted);
                         trustResults.AddRange(sigTrustResults);
                     }
@@ -54,7 +52,10 @@ namespace NuGet.Packaging.Signing
                 catch(CryptographicException e)
                 {
                     // CryptographicException generated while parsing the SignedCms object
-                    var issues = new[] { SignatureLog.InvalidInputError(Strings.ErrorPackageSignatureInvalid), SignatureLog.DetailedLog(e.Message) };
+                    var issues = new[] {
+                        SignatureLog.InvalidInputError(Strings.ErrorPackageSignatureInvalid),
+                        SignatureLog.DebugLog($"VerifySignature failed with exception: {e.Message}")
+                    };
                     trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
                 }
             }
@@ -78,9 +79,23 @@ namespace NuGet.Packaging.Signing
         private static bool IsValid(IEnumerable<PackageVerificationResult> trustResults, bool allowUntrusted)
         {
             var hasItems = trustResults.Any();
-            var valid = trustResults.All(e => e.Trust == SignatureVerificationStatus.Trusted || (allowUntrusted && SignatureVerificationStatus.Untrusted == e.Trust));
 
-            return valid && hasItems;
+            var timestampResult = trustResults.Where(tr => tr is TimestampedPackageVerificationResult).FirstOrDefault();
+            var timestampIsTrusted = timestampResult != null && timestampResult.Trust == SignatureVerificationStatus.Trusted;
+
+            foreach (var result in trustResults)
+            {
+                var resultIsValidByTrusted = result.Trust == SignatureVerificationStatus.Trusted;
+                var resultIsValidByUntrusted = allowUntrusted && result.Trust == SignatureVerificationStatus.Untrusted;
+                var resultIsValidByRevoked = timestampIsTrusted && result.Trust == SignatureVerificationStatus.Revoked;
+
+                if (!resultIsValidByTrusted && !resultIsValidByUntrusted && !resultIsValidByRevoked)
+                {
+                    return false;
+                }
+            }
+
+            return hasItems;
         }
     }
 }

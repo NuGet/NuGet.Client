@@ -33,6 +33,11 @@ namespace NuGet.Packaging.Signing
             return new SignatureLog(LogLevel.Verbose, NuGetLogCode.Undefined, message);
         }
 
+        public static SignatureLog DebugLog(string message)
+        {
+            return new SignatureLog(LogLevel.Debug, NuGetLogCode.Undefined, message);
+        }
+
         public static SignatureLog InvalidInputError(string message)
         {
             return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3001, message);

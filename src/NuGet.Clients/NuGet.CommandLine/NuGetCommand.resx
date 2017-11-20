@@ -5375,7 +5375,7 @@ nuget verify-Signatures  .\*.nupkg</value>
     <comment>Please don't localize this string</comment>
   </data>
   <data name="VerifyCommandSignaturesDescription" xml:space="preserve">
-    <value>Specifies the type of verification to be done. Currently only -Signatures verification is supported.</value>
+    <value>Specifies that a verification of the signature of the package(s) should be performed.</value>
   </data>
   <data name="SignCommandCertificatePasswordDescription" xml:space="preserve">
     <value>Password for the certificate, if needed.
@@ -5474,5 +5474,8 @@ This option should be used when specifying the certificate via -CertificateSubje
   </data>
   <data name="SignCommandNoTimestamperWarning" xml:space="preserve">
     <value>No '-Timestamper' option was provided the signed package will not be timestamped. To learn more about this option, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+  </data>
+  <data name="VerifyCommandAllDescription" xml:space="preserve">
+    <value>Specifies that all verifications possible should be performed to the package(s).</value>
   </data>
 </root>

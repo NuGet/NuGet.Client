@@ -11,8 +11,8 @@ namespace NuGet.Packaging.Signing
         {
             return new List<ISignatureVerificationProvider>()
             {
-                new X509SignatureVerificationProvider(),
                 new NuGetIntegrityVerificationProvider(),
+                new X509SignatureVerificationProvider(),
                 new TimestampVerificationProvider()
             };
         }

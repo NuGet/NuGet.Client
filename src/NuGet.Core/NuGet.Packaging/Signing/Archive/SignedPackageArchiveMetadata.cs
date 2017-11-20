@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
@@ -13,46 +11,37 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Position of the signature file header
         /// </summary>
-        public long SignatureLocalFileHeaderPosition { get; set; }
+        internal long SignatureLocalFileHeaderPosition { get; set; }
 
         /// <summary>
-        /// Size of extra fields in the signature file header
+        /// Total size of file entry for signature
+        /// This should include size of local file header + encryption header + file data + data descriptir
         /// </summary>
-        public long SignatureFileHeaderExtraSize { get; set; }
+        internal long SignatureFileEntryTotalSize { get; set; }
 
         /// <summary>
-        /// Size of the signature file
+        /// Position of the signature file central directory header
         /// </summary>
-        public uint SignatureFileCompressedSize { get; set; }
+        internal long SignatureCentralDirectoryHeaderPosition { get; set; }
 
         /// <summary>
-        /// True if the signature file has data descriptors
+        /// Size of central directory header for signature file
         /// </summary>
-        public bool SignatureHasDataDescriptor { get; set; }
-
-        /// <summary>
-        /// Position of the signature file EOCD header
-        /// </summary>
-        public long SignatureCentralDirectoryHeaderPosition { get; set; }
+        internal long SignatureCentralDirectoryEntrySize { get; set; }
 
         /// <summary>
         /// True if the archive is Zip64
         /// </summary>
-        public bool IsZip64 { get; set; }
+        internal bool IsZip64 { get; set; }
 
         /// <summary>
         /// Position of the EOCD record if the archive is Zip64
         /// </summary>
-        public long Zip64EndOfCentralDirectoryRecordPosition { get; set; }
-
-        /// <summary>
-        /// Position of the EOCD Locator if the archive is Zip64
-        /// </summary>
-        public long Zip64EndOfCentralDirectoryLocatorPosition { get; set; }
+        internal long Zip64EndOfCentralDirectoryRecordPosition { get; set; }
 
         /// <summary>
         /// Position of the EOCD record
         /// </summary>
-        public long EndOfCentralDirectoryRecordPosition { get; set; }
+        internal long EndOfCentralDirectoryRecordPosition { get; set; }
     }
 }

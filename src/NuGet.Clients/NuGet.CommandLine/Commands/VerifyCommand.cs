@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using NuGet.Commands;
+using static NuGet.Commands.VerifyArgs;
 
 namespace NuGet.CommandLine
 {
@@ -29,6 +27,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "VerifyCommandSignaturesDescription")]
         public bool Signatures { get; set; }
 
+        [Option(typeof(NuGetCommand), "VerifyCommandAllDescription")]
+        public bool All { get; set; }
+
         public override Task ExecuteCommandAsync()
         {
             var PackagePath = Arguments[0];
@@ -40,7 +41,7 @@ namespace NuGet.CommandLine
 
             var verifyArgs = new VerifyArgs()
             {
-                Type = Signatures ? VerifyArgs.VerificationType.Signatures : VerifyArgs.VerificationType.Unknown,
+                Verifications = GetVerificationTypes(),
                 PackagePath = PackagePath,
                 CertificateFingerprint = CertificateFingerprint,
                 Logger = Console
@@ -66,6 +67,23 @@ namespace NuGet.CommandLine
                 throw new ExitCodeException(1);
             }
             return Task.FromResult(result);
+        }
+
+        private IList<VerificationType> GetVerificationTypes()
+        {
+            if (All)
+            {
+                return new[] { VerificationType.All };
+            }
+
+            var verifications = new List<VerificationType>();
+
+            if (Signatures)
+            {
+                verifications.Add(VerificationType.Signatures);
+            }
+
+            return verifications;
         }
     }
 }

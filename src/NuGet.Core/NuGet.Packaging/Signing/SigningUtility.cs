@@ -12,19 +12,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public static class SigningUtility
     {
-
-        /// <summary>
-        /// Checks the validity of an X509Certificate2 is valid by building it's X509Chain.
-        /// </summary>
-        /// <param name="certificate">X509Certificate2 to be checked.</param>
-        /// <param name="chain">X509Chain built from the X509Certificate2 if the return value is true.</param>
-        /// <param name="allowUntrustedRoot">Sets X509VerificationFlags.AllowUnknownCertificateAuthority if set to true.</param>
-        /// <returns>A bool indicating if the certificate builds a valid X509Chain.</returns>
-        public static bool IsCertificateChainValid(X509Certificate2 certificate, X509Certificate2Collection additionalCertificates, bool allowUntrustedRoot)
-        {
-            return IsCertificateValid(certificate, out var chain, allowUntrustedRoot, checkRevocationStatus: true);
-        }
-
         public static bool IsCertificatePublicKeyValid(X509Certificate2 certificate)
         {
             // Check if the public key is RSA with a valid keysize
@@ -34,8 +21,7 @@ namespace NuGet.Packaging.Signing
                 return RSAPublicKey.KeySize >= SigningSpecifications.V1.RSAPublicKeyMinLength;
             }
 
-            // Check if the certificate uses a valid ECDsa public key
-            return SigningSpecifications.V1.IsECDsaPublicKeyCurveValid(certificate.PublicKey.EncodedParameters.RawData);
+            return false;
         }
 
         /// <summary>
@@ -44,11 +30,10 @@ namespace NuGet.Packaging.Signing
         /// <param name="certificate">X509Certificate2 to be checked.</param>
         /// <param name="chain">X509Chain built from the X509Certificate2 if the return value is true.</param>
         /// <param name="allowUntrustedRoot">Sets X509VerificationFlags.AllowUnknownCertificateAuthority if set to true.</param>
-        /// <param name="checkRevocationStatus">Sets X509Chain.ChainPolicy.RevocationMode to allow online revocation checks.</param>
+        /// <param name="checkRevocationMode">X509Chain.ChainPolicy.RevocationMode to allow revocation checks.</param>
         /// <returns>A bool indicating if the certificate builds a valid X509Chain.</returns>
-        public static bool IsCertificateValid(X509Certificate2 certificate, out X509Chain chain, bool allowUntrustedRoot, bool checkRevocationStatus)
+        public static bool IsCertificateValid(X509Certificate2 certificate, X509Certificate2Collection additionalCertificates, out X509Chain chain, bool allowUntrustedRoot, X509RevocationMode checkRevocationMode)
         {
-            // TODO add support for additional certificates
             if (certificate == null)
             {
                 throw new ArgumentNullException(nameof(certificate));
@@ -56,16 +41,19 @@ namespace NuGet.Packaging.Signing
 
             chain = new X509Chain();
 
-            if (checkRevocationStatus)
-            {
-                chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
-                chain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain;
-            }
-
             if (allowUntrustedRoot)
             {
                 chain.ChainPolicy.VerificationFlags |= X509VerificationFlags.AllowUnknownCertificateAuthority;
             }
+
+            chain.ChainPolicy.RevocationMode = checkRevocationMode;
+            if (checkRevocationMode != X509RevocationMode.NoCheck)
+            {
+                chain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain;
+            }
+
+            var extraStore = chain.ChainPolicy.ExtraStore;
+            extraStore.AddRange(additionalCertificates);
 
             return chain.Build(certificate);
         }

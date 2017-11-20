@@ -313,4 +313,58 @@ Valid from:</comment>
   <data name="ErrorPackageSignatureInvalid" xml:space="preserve">
     <value>Package signature is invalid.</value>
   </data>
+  <data name="Error_FailedWithException" xml:space="preserve">
+    <value>{0} failed with exception: {1}</value>
+  </data>
+  <data name="DebugNoCertificate" xml:space="preserve">
+    <value>Certificate inside main SignerInfo is null.</value>
+  </data>
+  <data name="ErrorByteSignatureNotFound" xml:space="preserve">
+    <value>Byte signature not found in package archive:</value>
+  </data>
+  <data name="ErrorByteSignatureTooBig" xml:space="preserve">
+    <value>Byte signature too big to seek in current stream position.</value>
+  </data>
+  <data name="ErrorInvalidCertificateChain" xml:space="preserve">
+    <value>Unable to validate signer certificate chain.</value>
+  </data>
+  <data name="ErrorInvalidPublicKey" xml:space="preserve">
+    <value>Could not validate signature. Certificate does not meet the public key requirements.</value>
+  </data>
+  <data name="ErrorNoCertificate" xml:space="preserve">
+    <value>Could not validate signature. Signature does not have a certificate.</value>
+  </data>
+  <data name="ErrorSignatureVerificationFailed" xml:space="preserve">
+    <value>Signature verification failed.</value>
+  </data>
+  <data name="SignatureDebug_HashOidFound" xml:space="preserve">
+    <value>Signature hash oid found: {0}</value>
+  </data>
+  <data name="SignatureFailureInvalidHashAlgorithmOid" xml:space="preserve">
+    <value>Signature response does not contain an acceptable hash algorithm.</value>
+  </data>
+  <data name="SignatureFailurePackageTampered" xml:space="preserve">
+    <value>Package integrity check failed. The package has been tampered.</value>
+  </data>
+  <data name="SignatureHashAlgorithm" xml:space="preserve">
+    <value>Signature Hash Algorithm: {0}</value>
+  </data>
+  <data name="SignatureType" xml:space="preserve">
+    <value>SignatureType: {0}</value>
+  </data>
+  <data name="TimestampInvalid" xml:space="preserve">
+    <value>The signature contains an invalid timestamp.</value>
+  </data>
+  <data name="TimestampValue" xml:space="preserve">
+    <value>Timestamp: {0}</value>
+  </data>
+  <data name="WarningOfflineRevocationCheck" xml:space="preserve">
+    <value>Could not check revocation status of signing certificate online.</value>
+  </data>
+  <data name="WarningUnknownSignatureType" xml:space="preserve">
+    <value>Could not validate signature. Unknown signature type.</value>
+  </data>
+  <data name="WarningUntrustedRoot" xml:space="preserve">
+    <value>Signing certificate does not chain to a trusted root.</value>
+  </data>
 </root>

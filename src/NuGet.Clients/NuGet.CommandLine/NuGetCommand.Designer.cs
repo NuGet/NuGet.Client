@@ -14770,6 +14770,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specifies that all verifications possible should be performed to the package(s)..
+        /// </summary>
+        internal static string VerifyCommandAllDescription {
+            get {
+                return ResourceManager.GetString("VerifyCommandAllDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Verify that the signer certificate matches with one of the specified fingerprints. A certificate fingerprint is a SHA-1 hash of the certificate used to identify the certificate. If more than one fingerprint is provided, the input should be a string with each fingerprint separated by a semicolon..
         /// </summary>
         internal static string VerifyCommandCertificateFingerprintDescription {
@@ -14788,7 +14797,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the type of verification to be done. Currently only -Signatures verification is supported..
+        ///   Looks up a localized string similar to Specifies that a verification of the signature of the package(s) should be performed..
         /// </summary>
         internal static string VerifyCommandSignaturesDescription {
             get {

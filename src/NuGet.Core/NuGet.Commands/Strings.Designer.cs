@@ -107,6 +107,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet Command failed. {0} threw exception: {1}.
+        /// </summary>
+        internal static string Error_CommandFailedWithException {
+            get {
+                return ResourceManager.GetString("Error_CommandFailedWithException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A source file was added with an empty path..
         /// </summary>
         internal static string Error_EmptySourceFilePath {
@@ -1422,6 +1431,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Finished with {0} errors and {1} warnings..
+        /// </summary>
+        internal static string VerifyCommand_FinishedWithErrors {
+            get {
+                return ResourceManager.GetString("VerifyCommand_FinishedWithErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid package file..
         /// </summary>
         internal static string VerifyCommand_PackageIsNotValid {
@@ -1431,11 +1449,29 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Verification type not supported. Please use only one of the following supported types: -Signatures.
+        ///   Looks up a localized string similar to Successfully verified package..
+        /// </summary>
+        internal static string VerifyCommand_Success {
+            get {
+                return ResourceManager.GetString("VerifyCommand_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verification type not supported. Please use only one of the following supported types: -All, -Signatures.
         /// </summary>
         internal static string VerifyCommand_VerificationTypeNotSupported {
             get {
                 return ResourceManager.GetString("VerifyCommand_VerificationTypeNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verifying {0}.
+        /// </summary>
+        internal static string VerifyCommand_VerifyingPackage {
+            get {
+                return ResourceManager.GetString("VerifyCommand_VerifyingPackage", resourceCulture);
             }
         }
         

@@ -21,9 +21,9 @@ namespace NuGet.Commands
         };
 
         /// <summary>
-        /// Type of verification to be performed.
+        /// Types of verifications to be performed.
         /// </summary>
-        public VerificationType Type { get; set; }
+        public IList<VerificationType> Verifications { get; set; }
 
         /// <summary>
         /// Path to the package that has to be signed.

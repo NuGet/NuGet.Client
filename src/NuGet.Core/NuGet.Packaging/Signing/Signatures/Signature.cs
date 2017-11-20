@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -17,10 +15,7 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class Signature
     {
-        //TODO: Clean this class
-
 #if IS_DESKTOP
-
         /// <summary>
         /// A SignedCms object holding the signature and SignerInfo.
         /// </summary>
@@ -35,11 +30,6 @@ namespace NuGet.Packaging.Signing
         /// Signature manifest containing the hash of the content manifest.
         /// </summary>
         public SignatureManifest SignatureManifest { get; }
-
-        /// <summary>
-        /// Certificate collection used as an additional certificate store when buildind chain
-        /// </summary>
-        public X509Certificate2Collection Certificates => SignedCms.Certificates;
 
         /// <summary>
         /// SignerInfo for this signature.
@@ -73,17 +63,24 @@ namespace NuGet.Packaging.Signing
             return SignedCms.Encode();
         }
 
+        /// <summary>
+        /// Create a signature based on a valid signed cms
+        /// </summary>
+        /// <param name="cms">signature data</param>
         public static Signature Load(SignedCms cms)
         {
-            var signerInfoCollection = cms.SignerInfos;
-            if (signerInfoCollection.Count != 1)
+            if (cms.SignerInfos.Count < 1)
             {
-                throw new InvalidOperationException("SignedCms has more than one signer");
+                throw new InvalidOperationException("SignedCms does not have one primary signature.");
             }
 
             return new Signature(cms);
         }
 
+        /// <summary>
+        /// Create a signature based on a valid byte array to be decoded as a signed cms
+        /// </summary>
+        /// <param name="data">signature data</param>
         public static Signature Load(byte[] data)
         {
             if (data == null)
@@ -97,6 +94,10 @@ namespace NuGet.Packaging.Signing
             return Load(cms);
         }
 
+        /// <summary>
+        /// Create a signature based on a valid byte stream to be decoded as a signed cms
+        /// </summary>
+        /// <param name="stream">signature data</param>
         public static Signature Load(Stream stream)
         {
             using (stream)
@@ -107,23 +108,20 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        // TODO Use the new attributes that justin is adding.
+        /// <summary>
+        /// Get Signature type depending on signature metadata
+        /// </summary>
+        /// <param name="signer">SignerInfo containing signature metadata</param>
         private static SignatureType GetSignatureType(SignerInfo signer)
         {
-            var certificate = signer.Certificate;
-            if (SigningUtility.CertificateContainsEku(certificate, SigningSpecifications.V1.AuthorKeyUsageOID))
-            {
-               return SignatureType.Author;
-            }
-            else if (SigningUtility.CertificateContainsEku(certificate, SigningSpecifications.V1.RepositoryKeyUsageOID))
-            {
-               return SignatureType.Repository;
-            }
-            return SignatureType.Unknown;
+            // TODO: Change this to use the new attributes that justin is adding.
+            return SignatureType.Author;
         }
 
 #else
-
+        /// <summary>
+        /// Retrieve the bytes of the signed cms signature.
+        /// </summary>
         public byte[] GetBytes()
         {
             throw new NotSupportedException();

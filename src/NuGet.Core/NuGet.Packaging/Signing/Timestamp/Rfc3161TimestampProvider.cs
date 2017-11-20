@@ -101,7 +101,7 @@ namespace NuGet.Packaging.Signing
                 ValidateTimestampResponseNonce(nonce, timestampToken);
 
                 var timestampCms = timestampToken.AsSignedCms();
-                var timestampCertChain = GetTimestampCertChain(GetTimestampSignerCertificate(timestampCms));
+                var timestampCertChain = GetTimestampCertChain(GetTimestampSignerCertificate(timestampCms), timestampCms.Certificates);
 
                 byte[] timestampByteArray;
 
@@ -118,9 +118,9 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private static X509Chain GetTimestampCertChain(X509Certificate2 timestampSignerCertificate)
+        private static X509Chain GetTimestampCertChain(X509Certificate2 timestampSignerCertificate, X509Certificate2Collection additionalCertificates)
         {
-            if (!SigningUtility.IsCertificateValid(timestampSignerCertificate, out var timestampCertChain, allowUntrustedRoot: false, checkRevocationStatus: true))
+            if (!SigningUtility.IsCertificateValid(timestampSignerCertificate, additionalCertificates, out var timestampCertChain, allowUntrustedRoot: false, checkRevocationMode: X509RevocationMode.Online))
             {
                 throw new TimestampException(LogMessage.CreateError(
                     NuGetLogCode.NU3011,
