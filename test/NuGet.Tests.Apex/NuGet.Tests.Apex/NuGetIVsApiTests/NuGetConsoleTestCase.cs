@@ -41,6 +41,7 @@ namespace NuGet.Tests.Apex
                 Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion));
 
                 nugetConsole.Clear();
+                solutionService.Save();
             }
         }
 
@@ -68,6 +69,7 @@ namespace NuGet.Tests.Apex
                 Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion));
 
                 nugetConsole.Clear();
+                solutionService.Save();
             }
         }
 
@@ -100,6 +102,7 @@ namespace NuGet.Tests.Apex
                 Assert.False(nugetConsole.IsPackageInstalled(packageName, packageVersion));
 
                 nugetConsole.Clear();
+                solutionService.Save();
             }
         }
 
@@ -135,6 +138,7 @@ namespace NuGet.Tests.Apex
                 Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion2));
 
                 nugetConsole.Clear();
+                solutionService.Save();
             }
         }
 
