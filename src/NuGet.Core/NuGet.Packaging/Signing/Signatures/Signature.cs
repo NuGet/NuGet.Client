@@ -55,7 +55,7 @@ namespace NuGet.Packaging.Signing
         private Signature(SignedCms signedCms)
         {
             SignedCms = signedCms ?? throw new ArgumentNullException(nameof(signedCms));
-            SignatureManifest = SignatureManifest.Load(SignedCms.ContentInfo.Content);
+            //SignatureManifest = SignatureManifest.Load(SignedCms.ContentInfo.Content);
             Type = GetSignatureType(SignerInfo);
         }
 

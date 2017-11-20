@@ -3,7 +3,13 @@
 
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Security.Cryptography;
+
+#if IS_DESKTOP
+using System.Security.Cryptography.Pkcs;
+#endif
+
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,14 +62,28 @@ namespace NuGet.Packaging.Signing
             }
 
             using (var reader = new BinaryReader(_zipReadStream, _utf8Encoding, leaveOpen: true))
-            using (var writer = new BinaryWriter(_zipWriteStream, _utf8Encoding, leaveOpen: true))
             {
                 if (await IsSignedAsync(token))
                 {
                     throw new SignatureException(Strings.SignedPackagePackageAlreadySigned);
                 }
 
-                ZipSigningUtilities.Sign(reader, writer, hashAlgorithm, packageSignatureProvider);
+                ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Length);
+                hashAlgorithm.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
+
+                var signedCms = packageSignatureProvider.CreateSignedCms(hashAlgorithm.Hash, token);
+
+                using (var writeZip = new ZipArchive(_zipWriteStream, ZipArchiveMode.Update, leaveOpen: true))
+                {
+                    var signatureEntry = writeZip.CreateEntry(".signature", CompressionLevel.NoCompression);
+                    using (var sigWriter = new BinaryWriter(signatureEntry.Open()))
+                    {
+                        sigWriter.Write(signedCms.Encode());
+                    }
+
+                    var checksignature = new SignedCms();
+                    checksignature.Decode(signedCms.Encode());
+                }
             }
         }
 
@@ -90,6 +110,42 @@ namespace NuGet.Packaging.Signing
 
                 ZipSigningUtilities.RemoveSignature(reader, writer);
             }
+        }
+
+        public static void ReadAndHashUntilPosition(BinaryReader reader, HashAlgorithm hashAlgorithm, long position)
+        {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            if (hashAlgorithm == null)
+            {
+                throw new ArgumentNullException(nameof(hashAlgorithm));
+            }
+
+            var bufferSize = 4;
+            while (reader.BaseStream.Position + bufferSize < position)
+            {
+                var bytes = reader.ReadBytes(bufferSize);
+                HashBytes(hashAlgorithm, bytes);
+            }
+            var remainingBytes = position - reader.BaseStream.Position;
+            if (remainingBytes > 0)
+            {
+                var bytes = reader.ReadBytes((int)remainingBytes);
+                HashBytes(hashAlgorithm, bytes);
+            }
+        }
+
+        /// <summary>
+        /// Hashes given byte array with a specified HashAlgorithm
+        /// </summary>
+        /// <param name="hashAlgorithm">HashAlgorithm used to hash contents</param>
+        /// <param name="bytes">Content to hash</param>
+        public static void HashBytes(HashAlgorithm hashAlgorithm, byte[] bytes)
+        {
+            hashAlgorithm.TransformBlock(bytes, 0, bytes.Length, outputBuffer: null, outputOffset: 0);
         }
 #endif
     }

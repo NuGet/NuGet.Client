@@ -7,7 +7,6 @@ using System;
 using System.Security.Cryptography.Pkcs;
 #endif
 
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 
 #if IS_DESKTOP

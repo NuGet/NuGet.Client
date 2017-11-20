@@ -2,14 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using System.IO;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -78,7 +75,6 @@ namespace NuGet.Packaging.Signing
             var cms = new SignedCms(contentInfo);
             cms.ComputeSignature(cmsSigner);
 
-            // 0 since this is the first signerInfo that we just created.
             return Task.FromResult(Signature.Load(cms));
         }
 
