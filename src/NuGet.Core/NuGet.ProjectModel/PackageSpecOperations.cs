@@ -52,7 +52,7 @@ namespace NuGet.ProjectModel
 
             foreach (var list in lists)
             {
-                AddOrUpdateDependency(list, dependency.Id, dependency.VersionRange);
+                AddOrUpdateDependencyInDependencyList(list, dependency.Id, dependency.VersionRange);
             }
         }
 
@@ -125,7 +125,7 @@ namespace NuGet.ProjectModel
                     .ToList();
         }
 
-        private static void AddOrUpdateDependency(
+        private static void AddOrUpdateDependencyInDependencyList(
             IList<LibraryDependency> list,
             string packageId,
             VersionRange range)
