@@ -35,7 +35,7 @@ namespace Test.Utility.Signing
 
             var random = new SecureRandom();
             var pairGenerator = new RsaKeyPairGenerator();
-            var genParams = new KeyGenerationParameters(random, 1024);
+            var genParams = new KeyGenerationParameters(random, 2048);
             pairGenerator.Init(genParams);
             var pair = pairGenerator.GenerateKeyPair();
 

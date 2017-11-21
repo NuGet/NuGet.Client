@@ -4,7 +4,11 @@
 #if IS_DESKTOP
 
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Packaging.Signing;
@@ -16,28 +20,35 @@ namespace NuGet.Packaging.Test.SigningTests
 {
     public class SignerTests
     {
-        // Skipping test to unblock merge into feature branch. The test needs to be adapted to zip signing.
-        //[Fact]
-        public async Task Signer_CreateSignedPackage()
+
+        private static readonly IList<ISignatureVerificationProvider> _trustProviders = new List<ISignatureVerificationProvider>()
         {
+            new X509SignatureVerificationProvider(),
+            new NuGetIntegrityVerificationProvider(),
+            new TimestampVerificationProvider()
+        };
+
+        private static readonly SigningSpecifications _signingSpecifications = SigningSpecifications.V1;
+
+        [Fact]
+        public async Task Signer_SignPackageAsync()
+        {
+            // Arrange
             var nupkg = new SimpleTestPackageContext();
             var testLogger = new TestLogger();
-            var zipReadStream = nupkg.CreateAsStream();
-            var zipWriteStream = nupkg.CreateAsStream();
 
-            using (var testCert = TestCertificate.Generate().WithTrust())
-            using (var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
+            using (var testCert = TestCertificate.Generate().WithTrust())         
             {
-                // Sign the package
-                await SignTestUtility.SignPackageAsync(testLogger, testCert.Source.Cert, signPackage);
+                // Act
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCert, nupkg);
 
-                var settings = SignedPackageVerifierSettings.RequireSigned;
-
-                var result = await SignTestUtility.VerifySignatureAsync(testLogger, signPackage, settings);
-
-                result.Valid.Should().BeTrue();
+                // Assert
+                using (var stream = File.OpenRead(signedPackagePath))
+                using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+                {
+                    zip.GetEntry(_signingSpecifications.SignaturePath).Should().NotBeNull();
+                }
             }
-
         }
     }
 }
