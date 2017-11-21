@@ -793,6 +793,12 @@ namespace NuGet.XPlat.FuncTest
                     .Result;
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
 
+                //Preconditions
+                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packageX.Id, userInputVersionOld));
+
+                //The model fom which the args are generated needs updated as well
+                projectA.AddPackageToAllFrameworks(new SimpleTestPackageContext(packageX.Id, userInputVersionOld));
+
                 packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, userInputVersionNew, projectA);
                 commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -904,7 +910,6 @@ namespace NuGet.XPlat.FuncTest
             string userInputFrameworks, string userInputVersionOld, string userInputVersionNew)
         {
             // Arrange
-
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
@@ -925,9 +930,13 @@ namespace NuGet.XPlat.FuncTest
                     .Result;
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
 
+                //Preconditions
+                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packageX.Id, userInputVersionOld));
+                //The model fom which the args are generated needs updated as well - not 100% correct, but does the job
+                projectA.AddPackageToAllFrameworks(new SimpleTestPackageContext(packageX.Id, userInputVersionOld));
+
                 packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, userInputVersionNew, projectA);
                 commandRunner = new AddPackageReferenceCommandRunner();
-                var commonFramework = XPlatTestUtils.GetCommonFramework(packageFrameworks, projectFrameworks, userInputFrameworks);
 
                 // Act
                 // Create a package ref with new version
