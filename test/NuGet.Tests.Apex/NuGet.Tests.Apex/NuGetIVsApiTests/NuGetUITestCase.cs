@@ -1,7 +1,4 @@
-using System.IO;
 using Microsoft.Test.Apex.VisualStudio.Solution;
-using NuGet.Configuration;
-using NuGet.VisualStudio;
 using Xunit;
 
 namespace NuGet.Tests.Apex
@@ -128,7 +125,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public void PackagesConfig_UpdatePackageFromUI()
+        public void UpdatePackageFromUI()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -145,51 +142,6 @@ namespace NuGet.Tests.Apex
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
 
-            // Assert
-            VisualStudio.HasNoErrorsInErrorList();
-            VisualStudio.HasNoErrorsInOutputWindows();
-            Assert.True(uiwindow.IsPackageInstalled("newtonsoft.json", "9.0.1"));
-
-            // Act
-            VisualStudio.ClearOutputWindow();
-            uiwindow.UpdatePackageFromUI("newtonsoft.json", "10.0.3");
-
-            // Assert
-            VisualStudio.HasNoErrorsInErrorList();
-            VisualStudio.HasNoErrorsInOutputWindows();
-            Assert.True(uiwindow.IsPackageInstalled("newtonsoft.json", "10.0.3"));
-        }
-
-        [StaFact]
-        public void PackageReference_UpdatePackageFromUI()
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-            var dte = VisualStudio.Dte;
-            var solutionService = VisualStudio.Get<SolutionService>();
-
-            solutionService.CreateEmptySolution();
-            solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
-            VisualStudio.ClearOutputWindow();
-
-            // Change to Pack Ref
-            var solutionFile = solutionService.UserFilePath;
-            solutionService.SaveAndClose();
-            solutionService.Open(solutionFile);
-            solutionService.WaitForFullyLoaded();
-
-            var configDirectory = Path.GetDirectoryName(solutionFile);
-            var settings = new Settings(configDirectory);
-            settings.SetValue("packageManagement", "format", "1");
-
-            var project = solutionService.StartupProjects[0];
-
-            // Act
-            dte.ExecuteCommand("Project.ManageNuGetPackages");
-            var nugetTestService = GetNuGetTestService();
-            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            
-            uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
             // Assert
             VisualStudio.HasNoErrorsInErrorList();
             VisualStudio.HasNoErrorsInOutputWindows();
