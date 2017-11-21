@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -426,6 +426,7 @@ namespace NuGet.Build.Tasks.Pack
                         newTargetPaths.Add(PathUtility.GetStringComparerBasedOnOS().
                             Compare(Path.GetExtension(fileName),
                             Path.GetExtension(targetPath)) == 0
+                            && !String.IsNullOrEmpty(Path.GetExtension(fileName))
                                 ? targetPath
                                 : Path.Combine(targetPath, recursiveDir));
                     }
@@ -505,7 +506,8 @@ namespace NuGet.Build.Tasks.Pack
             {
                 var currentPath = targetPath;
                 var fileName = Path.GetFileName(sourcePath);
-                if (!Path.GetExtension(fileName)
+                if (String.IsNullOrEmpty(Path.GetExtension(fileName)) ||
+                    !Path.GetExtension(fileName)
                     .Equals(Path.GetExtension(targetPath), StringComparison.OrdinalIgnoreCase))
                 {
                     currentPath = Path.Combine(targetPath, fileName);

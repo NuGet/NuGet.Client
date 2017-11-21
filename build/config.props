@@ -16,8 +16,8 @@
     <NewtonsoftJsonVersionDeskop>6.0.4</NewtonsoftJsonVersionDeskop>
     <XunitVersion>2.2.0</XunitVersion>
     <TestSDKVersion>15.0.0</TestSDKVersion>
-    <MoqVersion>4.7.63</MoqVersion>
-    <FluentAssertionsVersion>4.19.2</FluentAssertionsVersion>
+    <MoqVersion>4.7.145</MoqVersion>
+    <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
     <MicrosoftBuildPackageVersion>15.1.1012</MicrosoftBuildPackageVersion>
   </PropertyGroup>
 

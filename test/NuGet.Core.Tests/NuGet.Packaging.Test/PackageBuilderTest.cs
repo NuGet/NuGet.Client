@@ -2474,11 +2474,44 @@ Enabling license acceptance requires a license url.");
             }
         }
 
+        [Fact]
+        public void PackageBuilderPreserveFileLastWriteTime()
+        {
+            // Act
+            var lastWriteTime = new DateTimeOffset(2017, 1, 15, 23, 59, 0, new TimeSpan(0, 0, 0));
+            using (var directory = new TestLastWriteTimeDirectory(lastWriteTime))
+            {
+                var builder = new PackageBuilder { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
+                builder.Authors.Add("test");
+                builder.AddFiles(directory.Path, "**", "Content");
+
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    builder.Save(stream);
+
+                    // Assert
+                    using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
+                    {
+                        foreach(var entry in archive.Entries)
+                        {
+                            var path = directory.Path + Path.DirectorySeparatorChar + entry.Name;
+                            // Only checks the entries that originated from files in test directory
+                            if(File.Exists(path))
+                            {
+                                Assert.Equal(entry.LastWriteTime.DateTime, File.GetLastWriteTimeUtc(path));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private static IPackageFile CreatePackageFile(string name)
         {
             var file = new Mock<IPackageFile>();
             file.SetupGet(f => f.Path).Returns(name);
             file.Setup(f => f.GetStream()).Returns(new MemoryStream());
+            file.Setup(f => f.LastWriteTime).Returns(DateTimeOffset.UtcNow);
 
             string effectivePath;
             var fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
@@ -2577,6 +2610,47 @@ Enabling license acceptance requires a license url.");
             {
                 File.WriteAllText(System.IO.Path.Combine(directory.FullName, "file1.txt"), string.Empty);
                 File.WriteAllText(System.IO.Path.Combine(directory.FullName, "file2.txt"), string.Empty);
+            }
+        }
+
+        public sealed class TestLastWriteTimeDirectory : IDisposable
+        {
+            private TestDirectory _testDirectory;
+            private DateTimeOffset _lastWriteTime;
+
+            public string Path
+            {
+                get { return _testDirectory.Path; }
+            }
+
+            public TestLastWriteTimeDirectory(DateTimeOffset lastWriteTime)
+            {
+                _testDirectory = TestDirectory.Create();
+                _lastWriteTime = lastWriteTime;
+
+                PopulateTestDirectory();
+            }
+
+            public void Dispose()
+            {
+                _testDirectory.Dispose();
+            }
+
+            private void PopulateTestDirectory()
+            {
+                var rootDirectory = new DirectoryInfo(_testDirectory.Path);
+                var directory1 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir1"));
+                var directory2 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir2"));
+
+                CreateTestFiles(rootDirectory);
+                CreateTestFiles(directory1);
+                CreateTestFiles(directory2);
+            }
+
+            private void CreateTestFiles(DirectoryInfo directory)
+            {
+                File.WriteAllText(System.IO.Path.Combine(directory.FullName, "file1.txt"), string.Empty);
+                File.SetLastWriteTime(System.IO.Path.Combine(directory.FullName, "file1.txt"), _lastWriteTime.DateTime);
             }
         }
     }
