@@ -310,4 +310,7 @@ Valid from:</comment>
   <data name="SignedPackageNotSignedOnVerify" xml:space="preserve">
     <value>The package is not signed. Unable to verify signature from an unsigned package.</value>
   </data>
+  <data name="ErrorPackageSignatureInvalid" xml:space="preserve">
+    <value>Package signature is invalid.</value>
+  </data>
 </root>

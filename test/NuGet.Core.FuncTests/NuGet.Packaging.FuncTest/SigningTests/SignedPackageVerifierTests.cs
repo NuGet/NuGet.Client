@@ -26,6 +26,7 @@ namespace NuGet.Packaging.FuncTest
     {
         private const string _packageTamperedError = "Package integrity check failed. The package has been tampered.";
         private const string _packageUnsignedError = "Package is not signed.";
+        private const string _packageInvalidSignatureError = "Package signature is invalid.";
 
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
@@ -55,7 +56,6 @@ namespace NuGet.Packaging.FuncTest
                 // Assert
                 result.Valid.Should().BeTrue();
             }
-
         }
 
         [Fact]
@@ -89,7 +89,44 @@ namespace NuGet.Packaging.FuncTest
                 totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
                 totalErrorIssues.First().Message.Should().Be(_packageTamperedError);
             }
+        }
 
+        [Fact]
+        public async Task Signer_VerifyOnTamperedPackage_FileAddedAsync()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var testLogger = new TestLogger();
+            var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(_trustedTestCert, nupkg);
+            var newEntryData = "malicious code";
+            var newEntryName = "malicious file";
+
+            // tamper with the package
+            using (var stream = File.Open(signedPackagePath, FileMode.Open))
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Update))
+            using (var newEntryStream = zip.CreateEntry(newEntryName).Open())
+            using (var newEntryDataStream = new MemoryStream(Encoding.UTF8.GetBytes(newEntryData)))
+            {
+                newEntryStream.Seek(offset: 0, origin: SeekOrigin.End);
+                newEntryDataStream.CopyTo(newEntryStream);
+            }
+
+            var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+
+            using (var packageReader = new PackageArchiveReader(signedPackagePath))
+            {
+                // Act
+                var result = await verifier.VerifySignaturesAsync(packageReader, testLogger, CancellationToken.None);
+                var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+
+                // Assert
+                result.Valid.Should().BeFalse();
+                resultsWithErrors.Count().Should().Be(1);
+                totalErrorIssues.Count().Should().Be(1);
+                totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                totalErrorIssues.First().Message.Should().Be(_packageTamperedError);
+            }
         }
 
         [Fact]
@@ -127,7 +164,6 @@ namespace NuGet.Packaging.FuncTest
                 totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
                 totalErrorIssues.First().Message.Should().Be(_packageTamperedError);
             }
-
         }
 
         [Fact]
@@ -199,7 +235,6 @@ namespace NuGet.Packaging.FuncTest
                 totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
                 totalErrorIssues.First().Message.Should().Be(_packageTamperedError);
             }
-
         }
 
         [Fact]
@@ -234,7 +269,72 @@ namespace NuGet.Packaging.FuncTest
                 totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3001);
                 totalErrorIssues.First().Message.Should().Be(_packageUnsignedError);
             }
+        }
 
+        [Fact]
+        public async Task Signer_VerifyOnTamperedPackage_SignatureMetadataModifiedAsync()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var testLogger = new TestLogger();
+            var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(_trustedTestCert, nupkg);
+
+            // unsign the package
+            using (var stream = File.Open(signedPackagePath, FileMode.Open))
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Update))
+            {
+                var entry = zip.GetEntry(SigningSpecifications.V1.SignaturePath);
+
+                // ZipArchiveEntry.LastWriteTime supports a resolution of two seconds.
+                // https://msdn.microsoft.com/en-us/library/system.io.compression.ziparchiveentry.lastwritetime(v=vs.110).aspx
+                entry.LastWriteTime = entry.LastWriteTime.AddSeconds(2);
+            }
+
+            var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+
+            using (var packageReader = new PackageArchiveReader(signedPackagePath))
+            {
+                // Act
+                var result = await verifier.VerifySignaturesAsync(packageReader, testLogger, CancellationToken.None);
+
+                // Assert
+                // No failure expected as the signature file or its metadata is not part of the original hash
+                result.Valid.Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task Signer_VerifyOnTamperedPackage_SignatureTruncatedAsync()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var testLogger = new TestLogger();
+            var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(_trustedTestCert, nupkg);
+
+            // tamper with the signature
+            using (var stream = File.Open(signedPackagePath, FileMode.Open))
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Update))
+            using (var entryStream = zip.GetEntry(SigningSpecifications.V1.SignaturePath).Open())
+            {
+                entryStream.SetLength(entryStream.Length - 1);
+            }
+
+            var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+
+            using (var packageReader = new PackageArchiveReader(signedPackagePath))
+            {
+                // Act
+                var result = await verifier.VerifySignaturesAsync(packageReader, testLogger, CancellationToken.None);
+                var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+
+                // Assert
+                result.Valid.Should().BeFalse();
+                resultsWithErrors.Count().Should().Be(1);
+                totalErrorIssues.Count().Should().Be(1);
+                totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3001);
+                totalErrorIssues.First().Message.Should().Be(_packageInvalidSignatureError);
+            }
         }
     }
 }

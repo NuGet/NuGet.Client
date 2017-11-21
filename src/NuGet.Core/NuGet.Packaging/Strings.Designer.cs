@@ -197,6 +197,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package signature is invalid..
+        /// </summary>
+        internal static string ErrorPackageSignatureInvalid {
+            get {
+                return ResourceManager.GetString("ErrorPackageSignatureInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package contents might have been tampered..
         /// </summary>
         internal static string ErrorPackageTampered {
