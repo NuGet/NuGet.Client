@@ -221,7 +221,7 @@ namespace NuGet.XPlat.FuncTest
             string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false)
         {
             var logger = new TestCommandOutputLogger();
-            var packageDependency = new PackageDependency(packageId,VersionRange.Parse(packageVersion));
+            var packageDependency = new PackageDependency(packageId, VersionRange.Parse(packageVersion));
             var dgFilePath = string.Empty;
             if (!noRestore)
             {
