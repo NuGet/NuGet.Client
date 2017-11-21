@@ -10,7 +10,7 @@ using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 
-namespace NuGet.Packaging.Test.SigningTests
+namespace NuGet.Packaging.FuncTest
 {
     internal static class SignedArchiveTestUtility
     {

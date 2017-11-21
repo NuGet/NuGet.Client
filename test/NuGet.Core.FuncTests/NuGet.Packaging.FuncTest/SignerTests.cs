@@ -16,7 +16,7 @@ using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
 
-namespace NuGet.Packaging.Test.SigningTests
+namespace NuGet.Packaging.FuncTest
 {
     public class SignerTests
     {
