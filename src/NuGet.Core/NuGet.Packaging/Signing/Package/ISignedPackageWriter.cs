@@ -7,10 +7,6 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
-#if IS_DESKTOP
-using Microsoft.ZipSigningUtilities;
-#endif
-
 namespace NuGet.Packaging.Signing
 {
     /// <summary>

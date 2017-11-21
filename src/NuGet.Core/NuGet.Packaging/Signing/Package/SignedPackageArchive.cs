@@ -16,18 +16,17 @@ namespace NuGet.Packaging.Signing
     {
         private readonly Stream _zipWriteStream;
         private readonly Stream _zipReadStream;
-        private readonly SigningSpecifications _signingSpecification;
+        private readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
         public Stream ZipWriteStream => _zipWriteStream;
 
         public Stream ZipReadStream => _zipReadStream;
 
-        public SignedPackageArchive(Stream packageReadStream, Stream packageWriteStream, SigningSpecifications signingSpecifications)
+        public SignedPackageArchive(Stream packageReadStream, Stream packageWriteStream)
             : base(packageReadStream)
         {
             _zipWriteStream = packageWriteStream ?? throw new ArgumentNullException(nameof(packageWriteStream));
             _zipReadStream = packageReadStream ?? throw new ArgumentNullException(nameof(packageReadStream));
-            _signingSpecification = signingSpecifications ?? throw new ArgumentNullException(nameof(signingSpecifications));
         }
 
         /// <summary>
@@ -75,7 +74,7 @@ namespace NuGet.Packaging.Signing
 
             if (!await IsSignedAsync(token))
             {
-                throw new SignatureException(Strings.SignedPackagePackageNotSigned);
+                throw new SignatureException(Strings.SignedPackageNotSignedOnRemove);
             }
 
             Zip.GetEntry(_signingSpecification.SignaturePath)?.Delete();

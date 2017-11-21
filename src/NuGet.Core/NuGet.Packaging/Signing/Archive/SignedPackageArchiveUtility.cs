@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace NuGet.Packaging.Signing
 {
-    public static class SignedArchiveUtility
+    internal static class SignedPackageArchiveUtility
     {
 
 #if IS_DESKTOP
@@ -19,7 +18,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="reader">Binary reader pointing to a zip archive.</param>
         /// <returns>true if the given archive is signed</returns>
-        public static bool IsSigned(BinaryReader reader)
+        private static bool IsSigned(BinaryReader reader)
         {
             if (reader == null)
             {
@@ -27,11 +26,11 @@ namespace NuGet.Packaging.Signing
             }
 
             reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
-            SignedArchiveIOUtility.SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(SignedArchiveIOUtility.LocalFileHeaderSignature));
+            SignedPackageArchiveIOUtility.SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(SignedPackageArchiveIOUtility.LocalFileHeaderSignature));
 
             // Read local file headers until signature is found
             var possibleSignature = reader.ReadUInt32();
-            while (possibleSignature == SignedArchiveIOUtility.LocalFileHeaderSignature)
+            while (possibleSignature == SignedPackageArchiveIOUtility.LocalFileHeaderSignature)
             {
                 // Jump to file name length
                 reader.BaseStream.Seek(offset: 14, origin: SeekOrigin.Current);
@@ -44,7 +43,7 @@ namespace NuGet.Packaging.Signing
 
                 var filename = reader.ReadBytes(filenameLength);
                 var filenameString = Encoding.UTF8.GetString(filename);
-                if (string.Equals(filenameString, SignedArchiveIOUtility.SignatureFilename))
+                if (string.Equals(filenameString, SignedPackageArchiveIOUtility.SignatureFilename))
                 {
                     return true;
                 }
@@ -64,17 +63,17 @@ namespace NuGet.Packaging.Signing
         /// <param name="verificationProvider">Provider for validations</param>
         public static void VerifySignedZipIntegrity(BinaryReader reader, HashAlgorithm hashAlgorithm, byte[] expectedHash)
         {
-            // Make sure it is signed
+            // Make sure it is signed with a valid signature file
             if (!IsSigned(reader))
             {
                 throw new Exception("Zip archive is not signed.");
             }
 
-            var zipMetadata = SignedArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+            var zipMetadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
             var signatureFileCentralDirectoryRecordHeaderSize = 0L;
 
             reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
-            SignedArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, zipMetadata.SignatureLocalFileHeaderPosition);
+            SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, zipMetadata.SignatureLocalFileHeaderPosition);
 
             // Skip hashing of signature file
             var extraEntrySize = 30 + zipMetadata.SignatureFileCompressedSize + zipMetadata.FileHeaderExtraSize;
@@ -84,7 +83,7 @@ namespace NuGet.Packaging.Signing
             {
                 reader.BaseStream.Seek(offset: 12, origin: SeekOrigin.Current);
             }
-            SignedArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, zipMetadata.SignatureCentralDirectoryHeaderPosition);
+            SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, zipMetadata.SignatureCentralDirectoryHeaderPosition);
 
             // skip until file name length
             reader.BaseStream.Seek(offset: 28, origin: SeekOrigin.Current);
@@ -98,7 +97,7 @@ namespace NuGet.Packaging.Signing
 
             if (zipMetadata.IsZip64)
             {
-                SignedArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, zipMetadata.Zip64EndOfCentralDirectoryRecordPosition + 16);
+                SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, zipMetadata.Zip64EndOfCentralDirectoryRecordPosition + 16);
 
                 var numberOfThisDisk = reader.ReadUInt32();
                 var numberOfDisks = reader.ReadInt32();
@@ -108,19 +107,19 @@ namespace NuGet.Packaging.Signing
                     throw new Exception("Disk number not supported");
                 }
 
-                SignedArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(numberOfThisDisk));
-                SignedArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(numberOfDisks));
+                SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(numberOfThisDisk));
+                SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(numberOfDisks));
 
                 var entryCountInDisk = reader.ReadUInt64();
-                SignedArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(entryCountInDisk - 1));
+                SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(entryCountInDisk - 1));
 
                 var entryCount = reader.ReadUInt64();
-                SignedArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(entryCount - 1));
+                SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(entryCount - 1));
 
                 var sizeOfCentralDirectory = reader.ReadUInt64();
-                SignedArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(sizeOfCentralDirectory - (ulong)signatureFileCentralDirectoryRecordHeaderSize));
+                SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(sizeOfCentralDirectory - (ulong)signatureFileCentralDirectoryRecordHeaderSize));
 
-                SignedArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, zipMetadata.Zip64EndOfCentralDirectoryLocatorPosition + 16);
+                SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, zipMetadata.Zip64EndOfCentralDirectoryLocatorPosition + 16);
 
                 var totalNumberOfDisks = reader.ReadUInt32();
 
@@ -128,10 +127,10 @@ namespace NuGet.Packaging.Signing
                 {
                     throw new Exception("Total disk number not supported");
                 }
-                SignedArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(totalNumberOfDisks));
+                SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(totalNumberOfDisks));
             }
 
-            SignedArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, zipMetadata.EndOfCentralDirectoryRecordPosition + 4);
+            SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, zipMetadata.EndOfCentralDirectoryRecordPosition + 4);
 
             var eocdrNumberOfDisks = reader.ReadUInt16();
             var eocdrDiskWithStart = reader.ReadUInt16();
@@ -141,22 +140,22 @@ namespace NuGet.Packaging.Signing
                 throw new Exception("Disk number not supported");
             }
 
-            SignedArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrNumberOfDisks));
-            SignedArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrDiskWithStart));
+            SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrNumberOfDisks));
+            SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrDiskWithStart));
 
             var eocdrTotalEntries = (ushort)(reader.ReadUInt16() - 1);
             var eocdrTotalEntriesOnDisk = (ushort)(reader.ReadUInt16() - 1);
 
-            SignedArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntries));
-            SignedArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntriesOnDisk));
+            SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntries));
+            SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntriesOnDisk));
 
             var eocdrSizeOfCentralDirectory = (uint)(reader.ReadUInt32() - (uint)signatureFileCentralDirectoryRecordHeaderSize);
-            SignedArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrSizeOfCentralDirectory));
+            SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrSizeOfCentralDirectory));
 
             var eocdrOffsetOfCentralDirectory = (uint)(reader.ReadUInt32() - (uint)extraEntrySize);
-            SignedArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrOffsetOfCentralDirectory));
+            SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrOffsetOfCentralDirectory));
 
-            SignedArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Length);
+            SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Length);
 
             hashAlgorithm.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
 

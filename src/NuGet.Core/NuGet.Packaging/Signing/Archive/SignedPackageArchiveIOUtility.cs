@@ -8,8 +8,7 @@ using System.Text;
 
 namespace NuGet.Packaging.Signing
 {
-    [CLSCompliant(true)]
-    public static class SignedArchiveIOUtility
+    internal static class SignedPackageArchiveIOUtility
     {
         internal const uint CentralDirectoryHeaderSignature = 0x02014b50;
         internal const uint EndOfCentralDirectorySignature = 0x06054b50;
@@ -103,7 +102,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="reader">binary reader to zip archive</param>
         /// <returns>zip metadata with offsets and positions</returns>
-        internal static SignedArchiveMetadata ReadSignedArchiveMetadata(BinaryReader reader)
+        internal static SignedPackageArchiveMetadata ReadSignedArchiveMetadata(BinaryReader reader)
         {
             var signatureLocalFileHeaderPosition = 0L;
             var signatureFileCompressedSize = 0U;
@@ -214,7 +213,7 @@ namespace NuGet.Packaging.Signing
 
             var endOfCentralDirectoryRecordPosition = reader.BaseStream.Position - positionOffset;
 
-            return new SignedArchiveMetadata()
+            return new SignedPackageArchiveMetadata()
             {
                 SignatureLocalFileHeaderPosition = signatureLocalFileHeaderPosition,
                 SignatureFileCompressedSize = signatureFileCompressedSize,

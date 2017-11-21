@@ -5,7 +5,7 @@ using System;
 
 namespace NuGet.Packaging.Signing
 {
-    internal sealed class SignedArchiveMetadata
+    internal sealed class SignedPackageArchiveMetadata
     {
         public long SignatureLocalFileHeaderPosition { get; set; }
 

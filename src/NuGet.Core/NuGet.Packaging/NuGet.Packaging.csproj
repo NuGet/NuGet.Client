@@ -63,10 +63,6 @@
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
-    <PackageReference Include="NuGet.ZipSigning" Version="1.0.0-alpha.7" />
-  </ItemGroup>
   
   <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>

@@ -83,7 +83,7 @@ namespace NuGet.Commands
             using (var packageWriteStream = File.Open(tempFilePath, FileMode.Open))
             using (var packageReadStream = File.OpenRead(packagePath))
             {
-                var package = new SignedPackageArchive(packageReadStream, packageWriteStream, SigningSpecifications.V1);
+                var package = new SignedPackageArchive(packageReadStream, packageWriteStream);
                 var signer = new Signer(package, signatureProvider);
                 signer.SignAsync(request, logger, CancellationToken.None).Wait();
             }

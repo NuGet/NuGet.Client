@@ -8,7 +8,6 @@ using System.Security.Cryptography.X509Certificates;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-using Microsoft.ZipSigningUtilities;
 #endif
 
 namespace NuGet.Packaging.Signing
@@ -43,11 +42,6 @@ namespace NuGet.Packaging.Signing
         public X509Certificate2Collection Certificates => SignedCms.Certificates;
 
         /// <summary>
-        /// Signature header for this signature.
-        /// </summary>
-        public ZipSignatureHeader Header { get; set; }
-
-        /// <summary>
         /// SignerInfo for this signature.
         /// </summary>
         public SignerInfo SignerInfo => SignedCms.SignerInfos[0];
@@ -55,7 +49,7 @@ namespace NuGet.Packaging.Signing
         private Signature(SignedCms signedCms)
         {
             SignedCms = signedCms ?? throw new ArgumentNullException(nameof(signedCms));
-            //SignatureManifest = SignatureManifest.Load(SignedCms.ContentInfo.Content);
+            SignatureManifest = SignatureManifest.Load(SignedCms.ContentInfo.Content);
             Type = GetSignatureType(SignerInfo);
         }
 
