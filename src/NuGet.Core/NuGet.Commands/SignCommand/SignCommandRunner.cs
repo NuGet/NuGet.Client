@@ -87,7 +87,7 @@ namespace NuGet.Commands
                 var signer = new Signer(package, signatureProvider);
                 signer.SignAsync(request, logger, CancellationToken.None).Wait();
             }
-        
+
             OverwritePackage(tempFilePath, packagePath);
             
             return 0;

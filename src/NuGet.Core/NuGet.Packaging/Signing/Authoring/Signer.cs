@@ -45,8 +45,6 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            // TODO Verify hash is allowed
-
             var zipArchiveHash = await _package.GetArchiveHashAsync(request.SignatureHashAlgorithm, token);
 
             var signatureManifest = GenerateSignatureManifest(request.SignatureHashAlgorithm, zipArchiveHash);
