@@ -188,7 +188,7 @@ namespace NuGet.Tests.Apex
                     window.Show();
                     return true;
                 }
-                found = UIShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fFindFirst, powerConsoleToolWindowGUID, out window);
+                found = UIShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fForceCreate, powerConsoleToolWindowGUID, out window);
 
                 System.Threading.Thread.Sleep(100);
             }
