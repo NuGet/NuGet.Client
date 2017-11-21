@@ -763,28 +763,31 @@ namespace NuGet.XPlat.FuncTest
         // Update Related Tests
 
         [Theory]
-        [InlineData("0.0.5", "1.0.0")]
-        [InlineData("0.0.5", "0.9")]
-        [InlineData("0.0.5", "*")]
-        [InlineData("*", "1.0.0")]
-        [InlineData("*", "0.9")]
-        [InlineData("*", "1.*")]
-        public async void AddPkg_UnconditionalAddAsUpdate_Succcess(string userInputVersionOld, string userInputVersionNew)
+        [InlineData("0.0.5", "1.0.0", false)]
+        [InlineData("0.0.5", "0.9", false)]
+        [InlineData("0.0.5", "*", false)]
+        [InlineData("*", "1.0.0", false)]
+        [InlineData("*", "0.9", false)]
+        [InlineData("*", "1.*", false)]
+        public async void AddPkg_UnconditionalAddAsUpdate_Succcess(string userInputVersionOld, string userInputVersionNew, bool noVersion)
         {
             // Arrange
 
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46; netcoreapp1.0");
-                var packageX = XPlatTestUtils.CreatePackage();
+                var latestVersion = "1.0.0";
+                var packages = new SimpleTestPackageContext[] { XPlatTestUtils.CreatePackage(packageVersion: latestVersion),
+                        XPlatTestUtils.CreatePackage(packageVersion: "0.0.5"), XPlatTestUtils.CreatePackage(packageVersion: "0.0.9") };
+
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
-                    packageX);
+                    packages);
 
-                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, userInputVersionOld, projectA);
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packages[0].Id, userInputVersionOld, projectA);
                 var commandRunner = new AddPackageReferenceCommandRunner();
                 var msBuild = MsBuild;
 
@@ -794,12 +797,12 @@ namespace NuGet.XPlat.FuncTest
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
 
                 //Preconditions
-                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packageX.Id, userInputVersionOld));
+                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packages[0].Id, userInputVersionOld));
 
                 //The model fom which the args are generated needs updated as well
                 projectA.AddPackageToAllFrameworks(new SimpleTestPackageContext(packageX.Id, userInputVersionOld));
 
-                packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, userInputVersionNew, projectA);
+                packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packages[0].Id, userInputVersionNew, projectA, noVersion: noVersion);
                 commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
@@ -811,103 +814,103 @@ namespace NuGet.XPlat.FuncTest
                 // Assert
                 // Verify that the only package reference is with the new version
                 Assert.Equal(0, result);
-                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packageX.Id, userInputVersionNew));
+                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packages[0].Id, noVersion ? latestVersion : userInputVersionNew));
             }
         }
 
         [Theory]
-        [InlineData("net46", "net46; netcoreapp1.0", "net46", "0.0.5", "1.0.0")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "0.0.5", "1.0.0")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "0.0.5", "1.0.0")]
-        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "1.0.0")]
-        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "1.0.0")]
-        [InlineData("net46", "net46; netcoreapp1.0", "net46", "0.0.5", "0.9")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "0.0.5", "0.9")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "0.0.5", "0.9")]
-        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "0.9")]
-        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "0.9")]
-        [InlineData("net46", "net46; netcoreapp1.0", "net46", "0.0.5", "*")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "0.0.5", "*")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "0.0.5", "*")]
-        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "*")]
-        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "*")]
-        [InlineData("net46", "net46; netcoreapp1.0", "net46", "*", "1.0.0")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "*", "1.0.0")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "*", "1.0.0")]
-        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.0.0")]
-        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.0.0")]
-        [InlineData("net46", "net46; netcoreapp1.0", "net46", "*", "0.9")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "*", "0.9")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "*", "0.9")]
-        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "0.9")]
-        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "0.9")]
-        [InlineData("net46", "net46; netcoreapp1.0", "net46", "*", "1.*")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "*", "1.*")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "*", "1.*")]
-        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.*")]
-        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.*")]
-        [InlineData("net46", "net46; netcoreapp2.0", "net46", "0.0.5", "1.0.0")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "0.0.5", "1.0.0")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "0.0.5", "1.0.0")]
-        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "1.0.0")]
-        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "1.0.0")]
-        [InlineData("net46", "net46; netcoreapp2.0", "net46", "0.0.5", "0.9")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "0.0.5", "0.9")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "0.0.5", "0.9")]
-        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "0.9")]
-        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "0.9")]
-        [InlineData("net46", "net46; netcoreapp2.0", "net46", "0.0.5", "*")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "0.0.5", "*")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "0.0.5", "*")]
-        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "*")]
-        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "*")]
-        [InlineData("net46", "net46; netcoreapp2.0", "net46", "*", "1.0.0")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "*", "1.0.0")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "*", "1.0.0")]
-        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "1.0.0")]
-        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "1.0.0")]
-        [InlineData("net46", "net46; netcoreapp2.0", "net46", "*", "0.9")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "*", "0.9")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "*", "0.9")]
-        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "0.9")]
-        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "0.9")]
-        [InlineData("net46", "net46; netcoreapp2.0", "net46", "*", "1.*")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "*", "1.*")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "*", "1.*")]
-        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "1.*")]
-        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "1.*")]
-        [InlineData("net46", "net46; netstandard2.0", "net46", "0.0.5", "1.0.0")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "0.0.5", "1.0.0")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "0.0.5", "1.0.0")]
-        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "1.0.0")]
-        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "1.0.0")]
-        [InlineData("net46", "net46; netstandard2.0", "net46", "0.0.5", "0.9")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "0.0.5", "0.9")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "0.0.5", "0.9")]
-        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "0.9")]
-        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "0.9")]
-        [InlineData("net46", "net46; netstandard2.0", "net46", "0.0.5", "*")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "0.0.5", "*")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "0.0.5", "*")]
-        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "*")]
-        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "*")]
-        [InlineData("net46", "net46; netstandard2.0", "net46", "*", "1.0.0")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "*", "1.0.0")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "*", "1.0.0")]
-        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.0.0")]
-        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.0.0")]
-        [InlineData("net46", "net46; netstandard2.0", "net46", "*", "0.9")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "*", "0.9")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "*", "0.9")]
-        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "*", "0.9")]
-        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "*", "0.9")]
-        [InlineData("net46", "net46; netstandard2.0", "net46", "*", "1.*")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "*", "1.*")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "*", "1.*")]
-        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.*")]
-        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.*")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46", "0.0.5", "1.0.0", false)]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "0.0.5", "1.0.0", false)]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "0.0.5", "1.0.0", false)]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "1.0.0", false)]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "1.0.0", false)]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46", "0.0.5", "0.9", false)]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "0.0.5", "0.9", false)]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "0.0.5", "0.9", false)]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "0.9", false)]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "0.9", false)]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46", "0.0.5", "*", false)]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "0.0.5", "*", false)]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "0.0.5", "*", false)]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "*", false)]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "*", false)]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46", "*", "1.0.0", false)]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "*", "1.0.0", false)]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "*", "1.0.0", false)]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.0.0", false)]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.0.0", false)]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46", "*", "0.9", false)]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "*", "0.9", false)]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "*", "0.9", false)]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "0.9", false)]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "0.9", false)]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46", "*", "1.*", false)]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "*", "1.*", false)]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "*", "1.*", false)]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.*", false)]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.*", false)]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46", "0.0.5", "1.0.0", false)]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "0.0.5", "1.0.0", false)]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "0.0.5", "1.0.0", false)]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "1.0.0", false)]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "1.0.0", false)]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46", "0.0.5", "0.9", false)]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "0.0.5", "0.9", false)]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "0.0.5", "0.9", false)]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "0.9", false)]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "0.9", false)]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46", "0.0.5", "*", false)]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "0.0.5", "*", false)]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "0.0.5", "*", false)]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "*", false)]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "0.0.5", "*", false)]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46", "*", "1.0.0", false)]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "*", "1.0.0", false)]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "*", "1.0.0", false)]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "1.0.0", false)]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "1.0.0", false)]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46", "*", "0.9", false)]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "*", "0.9", false)]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "*", "0.9", false)]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "0.9", false)]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "0.9", false)]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46", "*", "1.*", false)]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "net46", "*", "1.*", false)]
+        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "netcoreapp2.0", "*", "1.*", false)]
+        [InlineData("net46", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "1.*", false)]
+        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "net46; netcoreapp2.0", "*", "1.*", false)]
+        [InlineData("net46", "net46; netstandard2.0", "net46", "0.0.5", "1.0.0", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "0.0.5", "1.0.0", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "0.0.5", "1.0.0", false)]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "1.0.0", false)]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "1.0.0", false)]
+        [InlineData("net46", "net46; netstandard2.0", "net46", "0.0.5", "0.9", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "0.0.5", "0.9", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "0.0.5", "0.9", false)]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "0.9", false)]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "0.9", false)]
+        [InlineData("net46", "net46; netstandard2.0", "net46", "0.0.5", "*", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "0.0.5", "*", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "0.0.5", "*", false)]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "*", false)]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "*", false)]
+        [InlineData("net46", "net46; netstandard2.0", "net46", "*", "1.0.0", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "*", "1.0.0", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "*", "1.0.0", false)]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.0.0", false)]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.0.0", false)]
+        [InlineData("net46", "net46; netstandard2.0", "net46", "*", "0.9", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "*", "0.9", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "*", "0.9", false)]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "*", "0.9", false)]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "*", "0.9", false)]
+        [InlineData("net46", "net46; netstandard2.0", "net46", "*", "1.*", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "*", "1.*", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "*", "1.*", false)]
+        [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.*", false)]
+        [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.*", false)]
         public async void AddPkg_ConditionalAddAsUpdate_Succcess(string packageFrameworks, string projectFrameworks,
-            string userInputFrameworks, string userInputVersionOld, string userInputVersionNew)
+            string userInputFrameworks, string userInputVersionOld, string userInputVersionNew, bool noVersion)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -935,7 +938,7 @@ namespace NuGet.XPlat.FuncTest
                 //The model fom which the args are generated needs updated as well - not 100% correct, but does the job
                 projectA.AddPackageToAllFrameworks(new SimpleTestPackageContext(packageX.Id, userInputVersionOld));
 
-                packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, userInputVersionNew, projectA);
+                packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, userInputVersionNew, projectA, noVersion: noVersion);
                 commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
