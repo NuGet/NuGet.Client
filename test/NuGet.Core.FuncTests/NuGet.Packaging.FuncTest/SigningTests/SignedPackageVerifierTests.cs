@@ -177,7 +177,10 @@ namespace NuGet.Packaging.FuncTest
             using (var zip = new ZipArchive(stream, ZipArchiveMode.Update))
             {
                 var entry = zip.Entries.First();
-                entry.LastWriteTime = DateTimeOffset.Now;
+
+                // ZipArchiveEntry.LastWriteTime supports a resolution of two seconds.
+                // https://msdn.microsoft.com/en-us/library/system.io.compression.ziparchiveentry.lastwritetime(v=vs.110).aspx
+                entry.LastWriteTime = entry.LastWriteTime.AddSeconds(2);
             }
 
             var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
