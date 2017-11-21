@@ -1,19 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Console.TestContract;
 using NuGet.PackageManagement.UI.TestContract;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGetConsole.Implementation;
 
 namespace NuGet.Tests.Apex
 {
@@ -168,6 +172,28 @@ namespace NuGet.Tests.Apex
         {
             var pmconsole = NuGetApexConsoleTestService.GetApexTestConsole();
             return new NuGetConsoleTestExtension(pmconsole, project);
+        }
+
+        public bool EnsurePackageManagerConsoleIsOpen()
+        {
+            IVsWindowFrame window = null;
+            var powerConsoleToolWindowGUID = new Guid("0AD07096-BBA9-4900-A651-0598D26F6D24");
+            var stopwatch = Stopwatch.StartNew();
+            var timeout = TimeSpan.FromSeconds(10);
+
+            var found = UIShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fForceCreate, powerConsoleToolWindowGUID, out window);
+            do
+            {
+                if (found == VSConstants.S_OK && window != null) {
+                    window.Show();
+                    return true;
+                }
+                found = UIShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fFindFirst, powerConsoleToolWindowGUID, out window);
+
+                System.Threading.Thread.Sleep(100);
+            }
+            while (stopwatch.Elapsed < timeout);
+            return false;
         }
     }
 }
