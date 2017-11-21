@@ -800,7 +800,7 @@ namespace NuGet.XPlat.FuncTest
                 Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packages[0].Id, userInputVersionOld));
 
                 //The model fom which the args are generated needs updated as well
-                projectA.AddPackageToAllFrameworks(new SimpleTestPackageContext(packageX.Id, userInputVersionOld));
+                projectA.AddPackageToAllFrameworks(new SimpleTestPackageContext(packages[0].Id, userInputVersionOld));
 
                 packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packages[0].Id, userInputVersionNew, projectA, noVersion: noVersion);
                 commandRunner = new AddPackageReferenceCommandRunner();
@@ -909,6 +909,9 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "*", "1.*", false)]
         [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.*", false)]
         [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "*", "1.*", false)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0", "0.0.5", "*", true)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46", "0.0.5", "*", true)]
+        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0", "0.0.5", "*", true)]
         public async void AddPkg_ConditionalAddAsUpdate_Succcess(string packageFrameworks, string projectFrameworks,
             string userInputFrameworks, string userInputVersionOld, string userInputVersionNew, bool noVersion)
         {
@@ -916,15 +919,17 @@ namespace NuGet.XPlat.FuncTest
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFrameworks);
-                var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageFrameworks);
+                var latestVersion = "1.0.0";
+                var packages = new SimpleTestPackageContext[] { XPlatTestUtils.CreatePackage(packageVersion: latestVersion),
+                        XPlatTestUtils.CreatePackage(packageVersion: "0.0.5"), XPlatTestUtils.CreatePackage(packageVersion: "0.0.9") };
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
-                    packageX);
+                    packages);
 
-                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, userInputVersionOld, projectA);
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packages[0].Id, userInputVersionOld, projectA);
                 var commandRunner = new AddPackageReferenceCommandRunner();
                 var msBuild = MsBuild;
 
@@ -934,11 +939,11 @@ namespace NuGet.XPlat.FuncTest
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
 
                 //Preconditions
-                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packageX.Id, userInputVersionOld));
+                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packages[0].Id, userInputVersionOld));
                 //The model fom which the args are generated needs updated as well - not 100% correct, but does the job
-                projectA.AddPackageToAllFrameworks(new SimpleTestPackageContext(packageX.Id, userInputVersionOld));
+                projectA.AddPackageToAllFrameworks(new SimpleTestPackageContext(packages[0].Id, userInputVersionOld));
 
-                packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, userInputVersionNew, projectA, noVersion: noVersion);
+                packageArgs = XPlatTestUtils.GetPackageReferenceArgs(packages[0].Id, userInputVersionNew, projectA, noVersion: noVersion);
                 commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
@@ -950,7 +955,7 @@ namespace NuGet.XPlat.FuncTest
                 // Assert
                 // Verify that the only package reference is with the new version
                 Assert.Equal(0, result);
-                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packageX.Id, userInputVersionNew));
+                Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packages[0].Id, noVersion ? latestVersion : userInputVersionNew));
             }
         }
     }
