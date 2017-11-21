@@ -3,14 +3,8 @@
 
 using System;
 using System.IO;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-
-#if IS_DESKTOP
-using Microsoft.ZipSigningUtilities;
-#endif
-
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
@@ -41,15 +35,29 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public async Task SignAsync(SignPackageRequest request, ILogger logger, CancellationToken token)
         {
-            // TODO Verify hash is allowed
             if(request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var packageSignatureProvider = new PackageSignatureProvider(_signatureProvider, request, logger);
-            var hashAlgorithm = request.SignatureHashAlgorithm.GetHashProvider();
-            await _package.AddSignatureAsync(packageSignatureProvider, hashAlgorithm, token);
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            // TODO Verify hash is allowed
+
+            var zipArchiveHash = await _package.GetArchiveHashAsync(request.SignatureHashAlgorithm, token);
+
+            var signatureManifest = GenerateSignatureManifest(request.SignatureHashAlgorithm, zipArchiveHash);
+
+            // Create signature
+            var signature = await _signatureProvider.CreateSignatureAsync(request, signatureManifest, logger, token);
+
+            using (var stream = new MemoryStream(signature.GetBytes()))
+            {
+                await _package.AddSignatureAsync(stream, token);
+            }
         }
 
         /// <summary>
@@ -62,22 +70,23 @@ namespace NuGet.Packaging.Signing
                 await _package.RemoveSignatureAsync(token);
             }
         }
+
+        private SignatureManifest GenerateSignatureManifest(HashAlgorithmName hashAlgorithmName, byte[] zipArchiveHash)
+        {
+            var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
+
+            return new SignatureManifest(hashAlgorithmName, base64ZipArchiveHash);
+        }
 #else
         /// <summary>
         /// Add a signature to a package.
         /// </summary>
-        public async Task SignAsync(SignPackageRequest request, ILogger logger, CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
+        public Task SignAsync(SignPackageRequest request, ILogger logger, CancellationToken token) => throw new NotImplementedException();
 
         /// <summary>
         /// Remove all signatures from a package.
         /// </summary>
-        public async Task RemoveSignaturesAsync(ILogger logger, CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
+        public Task RemoveSignaturesAsync(ILogger logger, CancellationToken token) => throw new NotImplementedException();
 #endif
     }
 }

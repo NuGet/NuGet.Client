@@ -32,9 +32,9 @@ namespace NuGet.Packaging.Signing
         /// Adds a signature in the package.
         /// Throws exception if the package is already signed.
         /// </summary>
-        /// <param name="packageSignatureProvider">A signature provider that can be used to generate a SignedCms object.</param>
+        /// <param name="packageSignatureProvider">A stream of the signature to be added to the package.</param>
         /// <param name="token">Cancellation token.</param>
-        Task AddSignatureAsync(IZipSignatureProvider packageSignatureProvider, HashAlgorithm hashAlgorithm, CancellationToken token);
+        Task AddSignatureAsync(Stream signatureStream, CancellationToken token);
 #endif
     }
 }

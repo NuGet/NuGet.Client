@@ -292,5 +292,19 @@ namespace NuGet.Packaging
 #endif
             return Task.FromResult(0);
         }
+
+        public override Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithm, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            if (_zipStream == null)
+            {
+                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
+            }
+
+            var hash = hashAlgorithm.GetHashProvider().ComputeHash(_zipStream, leaveStreamOpen: true);
+
+            return Task.FromResult(hash);
+        }
     }
 }

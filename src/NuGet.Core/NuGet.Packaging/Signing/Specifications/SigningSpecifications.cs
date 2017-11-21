@@ -16,6 +16,11 @@ namespace NuGet.Packaging.Signing
         public static readonly SigningSpecificationsV1 V1 = new SigningSpecificationsV1();
 
         /// <summary>
+        /// Returns the path for the signature file.
+        /// </summary>
+        public abstract string SignaturePath { get; }
+
+        /// <summary>
         /// Returns the set of allowed hash algorithms.
         /// </summary>
         public abstract string[] AllowedHashAlgorithms { get; }

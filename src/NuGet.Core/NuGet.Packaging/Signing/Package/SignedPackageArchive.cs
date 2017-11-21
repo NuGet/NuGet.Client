@@ -4,19 +4,8 @@
 using System;
 using System.IO;
 using System.IO.Compression;
-using System.Security.Cryptography;
-
-#if IS_DESKTOP
-using System.Security.Cryptography.Pkcs;
-#endif
-
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-#if IS_DESKTOP
-using Microsoft.ZipSigningUtilities;
-#endif
 
 namespace NuGet.Packaging.Signing
 {
@@ -27,62 +16,46 @@ namespace NuGet.Packaging.Signing
     {
         private readonly Stream _zipWriteStream;
         private readonly Stream _zipReadStream;
-        private readonly Encoding _utf8Encoding = new UTF8Encoding();
-
+        private readonly SigningSpecifications _signingSpecification;
 
         public Stream ZipWriteStream => _zipWriteStream;
 
         public Stream ZipReadStream => _zipReadStream;
 
-        public SignedPackageArchive(Stream packageReadStream, Stream packageWriteStream)
+        public SignedPackageArchive(Stream packageReadStream, Stream packageWriteStream, SigningSpecifications signingSpecifications)
             : base(packageReadStream)
         {
             _zipWriteStream = packageWriteStream ?? throw new ArgumentNullException(nameof(packageWriteStream));
             _zipReadStream = packageReadStream ?? throw new ArgumentNullException(nameof(packageReadStream));
+            _signingSpecification = signingSpecifications ?? throw new ArgumentNullException(nameof(signingSpecifications));
         }
 
-#if IS_DESKTOP
         /// <summary>
-        /// Adds signature to a package
+        /// Adds a signature to a apckage if it is not already signed.
         /// </summary>
-        /// <param name="packageSignatureProvider">A signature provider that can be used to generate a SignedCms object.</param>
-        /// <param name="token">Cancellation token.</param>
-        public async Task AddSignatureAsync(IZipSignatureProvider packageSignatureProvider, HashAlgorithm hashAlgorithm, CancellationToken token)
+        /// <param name="signatureStream">Stream of the signature SignedCms object to be added to the package.</param>
+        /// <param name="token">Cancellation Token.</param>
+        /// <returns></returns>
+        public async Task AddSignatureAsync(Stream signatureStream, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-
-            if (packageSignatureProvider == null)
-            {
-                throw new ArgumentNullException(nameof(packageSignatureProvider));
-            }
 
             if (_zipReadStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
 
-            using (var reader = new BinaryReader(_zipReadStream, _utf8Encoding, leaveOpen: true))
+            if (await IsSignedAsync(token))
             {
-                if (await IsSignedAsync(token))
+                throw new SignatureException(Strings.SignedPackagePackageAlreadySigned);
+            }
+
+            using (var writeZip = new ZipArchive(_zipWriteStream, ZipArchiveMode.Update, leaveOpen: true))
+            {
+                var signatureEntry = writeZip.CreateEntry(_signingSpecification.SignaturePath, CompressionLevel.NoCompression);
+                using (var signatureEntryStream = signatureEntry.Open())
                 {
-                    throw new SignatureException(Strings.SignedPackagePackageAlreadySigned);
-                }
-
-                ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Length);
-                hashAlgorithm.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
-
-                var signedCms = packageSignatureProvider.CreateSignedCms(hashAlgorithm.Hash, token);
-
-                using (var writeZip = new ZipArchive(_zipWriteStream, ZipArchiveMode.Update, leaveOpen: true))
-                {
-                    var signatureEntry = writeZip.CreateEntry(".signature", CompressionLevel.NoCompression);
-                    using (var sigWriter = new BinaryWriter(signatureEntry.Open()))
-                    {
-                        sigWriter.Write(signedCms.Encode());
-                    }
-
-                    var checksignature = new SignedCms();
-                    checksignature.Decode(signedCms.Encode());
+                    signatureStream.CopyTo(signatureEntryStream);
                 }
             }
         }
@@ -100,53 +73,12 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
 
-            using (var reader = new BinaryReader(_zipReadStream, _utf8Encoding, leaveOpen: true))
-            using (var writer = new BinaryWriter(_zipWriteStream, _utf8Encoding, leaveOpen: true))
+            if (!await IsSignedAsync(token))
             {
-                if (!await IsSignedAsync(token))
-                {
-                    throw new SignatureException(Strings.SignedPackagePackageNotSigned);
-                }
-
-                ZipSigningUtilities.RemoveSignature(reader, writer);
+                throw new SignatureException(Strings.SignedPackagePackageNotSigned);
             }
+
+            Zip.GetEntry(_signingSpecification.SignaturePath)?.Delete();
         }
-
-        public static void ReadAndHashUntilPosition(BinaryReader reader, HashAlgorithm hashAlgorithm, long position)
-        {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            if (hashAlgorithm == null)
-            {
-                throw new ArgumentNullException(nameof(hashAlgorithm));
-            }
-
-            var bufferSize = 4;
-            while (reader.BaseStream.Position + bufferSize < position)
-            {
-                var bytes = reader.ReadBytes(bufferSize);
-                HashBytes(hashAlgorithm, bytes);
-            }
-            var remainingBytes = position - reader.BaseStream.Position;
-            if (remainingBytes > 0)
-            {
-                var bytes = reader.ReadBytes((int)remainingBytes);
-                HashBytes(hashAlgorithm, bytes);
-            }
-        }
-
-        /// <summary>
-        /// Hashes given byte array with a specified HashAlgorithm
-        /// </summary>
-        /// <param name="hashAlgorithm">HashAlgorithm used to hash contents</param>
-        /// <param name="bytes">Content to hash</param>
-        public static void HashBytes(HashAlgorithm hashAlgorithm, byte[] bytes)
-        {
-            hashAlgorithm.TransformBlock(bytes, 0, bytes.Length, outputBuffer: null, outputOffset: 0);
-        }
-#endif
     }
 }
