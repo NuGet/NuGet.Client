@@ -120,7 +120,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(1, cloneWithMappings.Mappings.Count);
         }
 
-        private LibraryDependency CreateLibraryDependency()
+        internal static LibraryDependency CreateLibraryDependency()
         {
             var dependency = new LibraryDependency();
             dependency.LibraryRange = new LibraryRange(Guid.NewGuid().ToString(), LibraryDependencyTarget.Package);
@@ -190,6 +190,12 @@ namespace NuGet.ProjectModel.Test
         [InlineData("ModifyOriginalTargetFrameworkInformationAdd")]
         [InlineData("ModifyOriginalTargetFrameworkInformationEdit")]
         [InlineData("ModifyRestoreMetadata")]
+        [InlineData("ModifyVersion")]
+        [InlineData("ModifyOwners")]
+        [InlineData("ModifyTags")]
+        [InlineData("ModifyBuildOptions")]
+        [InlineData("ModifyContentFiles")]
+        [InlineData("ModifyDependencies")]
         public void PackageSpecCloneTest(string methodName)
         {
             // Set up
@@ -213,7 +219,7 @@ namespace NuGet.ProjectModel.Test
 
             public static void ModifyAuthors(PackageSpec packageSpec)
             {
-                packageSpec.Authors = new string[] { "NewAuthor" };
+                packageSpec.Authors[0] = "NewAuthor";
             }
 
             public static void ModifyOriginalTargetFrameworkInformationAdd(PackageSpec packageSpec)
@@ -230,9 +236,37 @@ namespace NuGet.ProjectModel.Test
             {
                 packageSpec.TargetFrameworks[0].Imports.Add(NuGetFramework.Parse("net461"));
             }
-        }
 
- 
+            public static void ModifyVersion(PackageSpec packageSpec)
+            {
+                packageSpec.Version = new Versioning.NuGetVersion("2.0.0");
+            }
+
+            public static void ModifyOwners(PackageSpec packageSpec)
+            {
+                packageSpec.Owners[0] = "BetterOwner";
+            }
+
+            public static void ModifyTags(PackageSpec packageSpec)
+            {
+                packageSpec.Tags[0] = "better tag!";
+            }
+
+            public static void ModifyBuildOptions(PackageSpec packageSpec)
+            {
+                packageSpec.BuildOptions.OutputName = Guid.NewGuid().ToString();
+            }
+
+            public static void ModifyContentFiles(PackageSpec packageSpec)
+            {
+                packageSpec.ContentFiles.Add("New fnacy content file");
+            }
+
+            public static void ModifyDependencies(PackageSpec packageSpec)
+            {
+                packageSpec.Dependencies.Add(CreateLibraryDependency());
+            }
+        }
 
         private ProjectRestoreMetadata CreateProjectRestoreMetadata()
         {
