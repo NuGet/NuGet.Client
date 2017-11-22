@@ -30,7 +30,6 @@ namespace Test.Utility.Signing
             return new TrustedTestCert<TestCertificate>(this, e => PublicCert);
         }
 
-#if IS_DESKTOP
         public static TestCertificate Generate()
         {
             var certName = "NuGetTest " + Guid.NewGuid().ToString();
@@ -42,6 +41,5 @@ namespace Test.Utility.Signing
 
             return pair;
         }
-#endif
     }
 }
