@@ -138,7 +138,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Delete Files="@(_PackageFilesToDelete)"/>
   </Target>
 
-  <Target Name="_CalculateInputsOutputsForPack">
+  <Target Name="_CalculateInputsOutputsForPack" DependsOnTargets="_GetOutputItemsFromPack">
     <PropertyGroup Condition="$(ContinuePackingAfterGeneratingNuspec) == '' ">
       <ContinuePackingAfterGeneratingNuspec>false</ContinuePackingAfterGeneratingNuspec>
     </PropertyGroup>
@@ -169,18 +169,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <NuGetPackInput Include="@(_TargetPathsToSymbols->'%(FinalOutputPath)')"/>
       <NuGetPackInput Include="@(_SourceFiles)"/>
       <NuGetPackInput Include="@(_References)"/>
-      <NuGetPackOutput Include="$(RestoreOutputAbsolutePath)$(PackageId).$(PackageVersion).nuspec"/>
-
-      <NuGetPackOutput Include="$(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).nupkg"
-                       Condition="'$(ContinuePackingAfterGeneratingNuspec)' == 'true'"/>
-
-      <NuGetPackOutput Include="$(PackageOutputAbsolutePath)$(PackageId).$(PackageVersion).symbols.nupkg"
-                       Condition="'$(IncludeSource)' == 'true'
-                               OR '$(IncludeSymbols)' == 'true'"/>
-
-      <NuGetPackOutput Include="$(RestoreOutputAbsolutePath)$(PackageId).$(PackageVersion).symbols.nuspec"
-                       Condition="'$(IncludeSource)' == 'true'
-                             OR '$(IncludeSymbols)' == 'true'"/>
+      <NuGetPackOutput Include="@(_OutputPackItems)" />
     </ItemGroup>
   </Target>
 
