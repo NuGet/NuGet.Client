@@ -27,6 +27,11 @@ namespace NuGet.Packaging.Signing
         Task<bool> IsSignedAsync(CancellationToken token);
 
         /// <summary>
+        /// Gets the hash of an archive to be embedded in the package signature.
+        /// </summary>
+        Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithm, CancellationToken token);
+
+        /// <summary>
         /// Checks for the integrity of a package
         /// </summary>
         /// <param name="signatureManifest">Manifest file with expected hash value and hash algorithm used</param>

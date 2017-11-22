@@ -72,10 +72,6 @@
       <Link>Lucene.Net.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="$(OutputPath)NuGet.ZipSigning.dll">
-      <Link>NuGet.ZipSigning.dll</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
     <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\Add-WrapperMembers.ps1">
       <Link>Modules\NuGet\Add-WrapperMembers.ps1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>

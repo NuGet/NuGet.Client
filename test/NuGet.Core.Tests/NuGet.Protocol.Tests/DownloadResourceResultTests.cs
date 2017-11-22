@@ -228,6 +228,11 @@ namespace NuGet.Protocol.Tests
                 throw new NotImplementedException();
             }
 
+            public override Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithm, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
             public override IEnumerable<string> GetFiles()
             {
                 throw new NotImplementedException();

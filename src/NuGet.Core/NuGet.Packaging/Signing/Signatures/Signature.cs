@@ -8,7 +8,6 @@ using System.Security.Cryptography.X509Certificates;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-using Microsoft.ZipSigningUtilities;
 #endif
 
 namespace NuGet.Packaging.Signing
@@ -41,11 +40,6 @@ namespace NuGet.Packaging.Signing
         /// Certificate collection used as an additional certificate store when buildind chain
         /// </summary>
         public X509Certificate2Collection Certificates => SignedCms.Certificates;
-
-        /// <summary>
-        /// Signature header for this signature.
-        /// </summary>
-        public ZipSignatureHeader Header { get; set; }
 
         /// <summary>
         /// SignerInfo for this signature.

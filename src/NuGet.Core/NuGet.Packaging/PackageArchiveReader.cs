@@ -9,11 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-#if IS_DESKTOP
-using Microsoft.ZipSigningUtilities;
-#endif
-
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -29,6 +24,7 @@ namespace NuGet.Packaging
         private readonly ZipArchive _zipArchive;
         private readonly Stream _zipStream;
         private readonly Encoding _utf8Encoding = new UTF8Encoding();
+        private readonly SigningSpecifications _signingSpecifications = SigningSpecifications.V1;
 
         /// <summary>
         /// Underlying zip archive.
@@ -225,7 +221,7 @@ namespace NuGet.Packaging
             }
         }
 
-        public override Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
+        public override async Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -236,20 +232,20 @@ namespace NuGet.Packaging
 
             var signatures = new List<Signature>();
 
-#if IS_DESKTOP
-            using (var reader = new BinaryReader(_zipStream, _utf8Encoding, leaveOpen: true))
+            if (await IsSignedAsync(token))
             {
-
-                if (ZipSigningUtilities.TryGetSignature(reader, out var header, out var signedCms))
+                var signatureEntry = Zip.GetEntry(_signingSpecifications.SignaturePath);
+                using (var signatureEntryStream = signatureEntry.Open())
                 {
-                    var signature = Signature.Load(signedCms);
-                    signature.Header = header;
+#if IS_DESKTOP
+
+                    var signature = Signature.Load(signatureEntryStream);
                     signatures.Add(signature);
+#endif
                 }
             }
-#endif
-            return Task.FromResult<IReadOnlyList<Signature>>(signatures.AsReadOnly());
 
+            return signatures.AsReadOnly();
         }
 
         public override Task<bool> IsSignedAsync(CancellationToken token)
@@ -264,15 +260,18 @@ namespace NuGet.Packaging
             var isSigned = false;
 
 #if IS_DESKTOP
-            using (var reader = new BinaryReader(_zipStream, _utf8Encoding, leaveOpen: true))
+            var signatureEntry = Zip.GetEntry(_signingSpecifications.SignaturePath);
+
+            if (signatureEntry != null &&
+                string.Equals(signatureEntry.Name, _signingSpecifications.SignaturePath, StringComparison.Ordinal))
             {
-                isSigned = ZipSigningUtilities.IsSigned(reader);
+                isSigned = true;
             }
 #endif
             return Task.FromResult(isSigned);
         }
 
-        public override Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token)
+        public override async Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -281,16 +280,34 @@ namespace NuGet.Packaging
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
 
+            if (!await IsSignedAsync(token))
+            {
+                throw new SignatureException(Strings.SignedPackageNotSignedOnVerify);
+            }
+
 #if IS_DESKTOP
             using (var reader = new BinaryReader(_zipStream, _utf8Encoding, leaveOpen: true))
             {
-                var hashAlgorithm = CryptoHashUtility.GetHashProvider(signatureManifest.HashAlgorithm);
+                var hashAlgorithm = signatureManifest.HashAlgorithm.GetHashProvider();
                 var expectedHash = Convert.FromBase64String(signatureManifest.HashValue);
-
-                ZipSigningUtilities.VerifySignedZipIntegrity(reader, hashAlgorithm, expectedHash);
+                SignedPackageArchiveUtility.VerifySignedZipIntegrity(reader, hashAlgorithm, expectedHash);
             }
 #endif
-            return Task.FromResult(0);
+        }
+
+        public override Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithm, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            if (_zipStream == null)
+            {
+                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
+            }
+
+            _zipStream.Seek(offset: 0, origin: SeekOrigin.Begin);
+            var hash = hashAlgorithm.GetHashProvider().ComputeHash(_zipStream, leaveStreamOpen: true);
+
+            return Task.FromResult(hash);
         }
     }
 }

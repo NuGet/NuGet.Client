@@ -5,11 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
-#if IS_DESKTOP
-using Microsoft.ZipSigningUtilities;
-#endif
-
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing

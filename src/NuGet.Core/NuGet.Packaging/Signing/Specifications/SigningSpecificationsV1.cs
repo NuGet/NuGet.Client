@@ -8,6 +8,7 @@ namespace NuGet.Packaging.Signing
 {
     public sealed class SigningSpecificationsV1 : SigningSpecifications
     {
+        private const string _signaturePath = ".signature";
         private const string _SHA256String = "SHA256";
         private const string _SHA384String = "SHA384";
         private const string _SHA512String = "SHA512";
@@ -53,6 +54,8 @@ namespace NuGet.Packaging.Signing
         {
             "0.9"
         };
+
+        public override string SignaturePath => _signaturePath;
 
         public override string[] AllowedHashAlgorithms => _allowedHashAlgorithms;
 

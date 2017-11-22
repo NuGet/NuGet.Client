@@ -3,14 +3,9 @@
 
 using System;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
+using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
-
-#if IS_DESKTOP
-using Microsoft.ZipSigningUtilities;
-#endif
 
 namespace NuGet.Packaging.Signing
 {
@@ -21,8 +16,7 @@ namespace NuGet.Packaging.Signing
     {
         private readonly Stream _zipWriteStream;
         private readonly Stream _zipReadStream;
-        private readonly Encoding _utf8Encoding = new UTF8Encoding();
-
+        private readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
         public Stream ZipWriteStream => _zipWriteStream;
 
@@ -35,35 +29,33 @@ namespace NuGet.Packaging.Signing
             _zipReadStream = packageReadStream ?? throw new ArgumentNullException(nameof(packageReadStream));
         }
 
-#if IS_DESKTOP
         /// <summary>
-        /// Adds signature to a package
+        /// Adds a signature to a package if it is not already signed.
         /// </summary>
-        /// <param name="packageSignatureProvider">A signature provider that can be used to generate a SignedCms object.</param>
-        /// <param name="token">Cancellation token.</param>
-        public async Task AddSignatureAsync(IZipSignatureProvider packageSignatureProvider, HashAlgorithm hashAlgorithm, CancellationToken token)
+        /// <param name="signatureStream">Stream of the signature SignedCms object to be added to the package.</param>
+        /// <param name="token">Cancellation Token.</param>
+        /// <returns></returns>
+        public async Task AddSignatureAsync(Stream signatureStream, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-
-            if (packageSignatureProvider == null)
-            {
-                throw new ArgumentNullException(nameof(packageSignatureProvider));
-            }
 
             if (_zipReadStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
 
-            using (var reader = new BinaryReader(_zipReadStream, _utf8Encoding, leaveOpen: true))
-            using (var writer = new BinaryWriter(_zipWriteStream, _utf8Encoding, leaveOpen: true))
+            if (await IsSignedAsync(token))
             {
-                if (await IsSignedAsync(token))
-                {
-                    throw new SignatureException(Strings.SignedPackagePackageAlreadySigned);
-                }
+                throw new SignatureException(Strings.SignedPackagePackageAlreadySigned);
+            }
 
-                ZipSigningUtilities.Sign(reader, writer, hashAlgorithm, packageSignatureProvider);
+            using (var writeZip = new ZipArchive(_zipWriteStream, ZipArchiveMode.Update, leaveOpen: true))
+            {
+                var signatureEntry = writeZip.CreateEntry(_signingSpecification.SignaturePath, CompressionLevel.NoCompression);
+                using (var signatureEntryStream = signatureEntry.Open())
+                {
+                    signatureStream.CopyTo(signatureEntryStream);
+                }
             }
         }
 
@@ -80,17 +72,25 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
 
-            using (var reader = new BinaryReader(_zipReadStream, _utf8Encoding, leaveOpen: true))
-            using (var writer = new BinaryWriter(_zipWriteStream, _utf8Encoding, leaveOpen: true))
+            if (!await IsSignedAsync(token))
             {
-                if (!await IsSignedAsync(token))
-                {
-                    throw new SignatureException(Strings.SignedPackagePackageNotSigned);
-                }
+                throw new SignatureException(Strings.SignedPackageNotSignedOnRemove);
+            }
 
-                ZipSigningUtilities.RemoveSignature(reader, writer);
+            using (var writeZip = new ZipArchive(_zipWriteStream, ZipArchiveMode.Update, leaveOpen: true))
+            {
+                writeZip.GetEntry(_signingSpecification.SignaturePath).Delete();
             }
         }
-#endif
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _zipWriteStream.Dispose();                
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }

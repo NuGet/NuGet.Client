@@ -197,6 +197,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package signature is invalid..
+        /// </summary>
+        internal static string ErrorPackageSignatureInvalid {
+            get {
+                return ResourceManager.GetString("ErrorPackageSignatureInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package contents might have been tampered..
         /// </summary>
         internal static string ErrorPackageTampered {
@@ -395,20 +404,29 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package being signed already contains a signature. Please remove the existing signature before adding a new signature..
+        ///   Looks up a localized string similar to The package is not signed. Unable to remove signature from an unsigned package..
         /// </summary>
-        internal static string SignedPackagePackageAlreadySigned {
+        internal static string SignedPackageNotSignedOnRemove {
             get {
-                return ResourceManager.GetString("SignedPackagePackageAlreadySigned", resourceCulture);
+                return ResourceManager.GetString("SignedPackageNotSignedOnRemove", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package is not signed. Unable to remove signature from an unsigned package..
+        ///   Looks up a localized string similar to The package is not signed. Unable to verify signature from an unsigned package..
         /// </summary>
-        internal static string SignedPackagePackageNotSigned {
+        internal static string SignedPackageNotSignedOnVerify {
             get {
-                return ResourceManager.GetString("SignedPackagePackageNotSigned", resourceCulture);
+                return ResourceManager.GetString("SignedPackageNotSignedOnVerify", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package already contains a signature. Please remove the existing signature before adding a new signature..
+        /// </summary>
+        internal static string SignedPackagePackageAlreadySigned {
+            get {
+                return ResourceManager.GetString("SignedPackagePackageAlreadySigned", resourceCulture);
             }
         }
         

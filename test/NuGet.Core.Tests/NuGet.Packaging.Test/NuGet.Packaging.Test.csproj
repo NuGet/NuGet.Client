@@ -9,12 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="SigningTests\Providers\**" />
-    <EmbeddedResource Remove="SigningTests\Providers\**" />
-    <None Remove="SigningTests\Providers\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
 

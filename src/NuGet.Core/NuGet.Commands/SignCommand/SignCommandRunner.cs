@@ -80,7 +80,7 @@ namespace NuGet.Commands
         {
             var tempFilePath = CopyPackage(packagePath);
 
-            using (var packageWriteStream = File.OpenWrite(tempFilePath))
+            using (var packageWriteStream = File.Open(tempFilePath, FileMode.Open))
             using (var packageReadStream = File.OpenRead(packagePath))
             {
                 var package = new SignedPackageArchive(packageReadStream, packageWriteStream);

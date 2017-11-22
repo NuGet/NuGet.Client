@@ -1139,6 +1139,11 @@ namespace NuGet.Protocol.Plugins
             throw new NotImplementedException();
         }
 
+        public override Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithm, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
         private sealed class FileStreamCreator : IDisposable
         {
             private readonly string _filePath;

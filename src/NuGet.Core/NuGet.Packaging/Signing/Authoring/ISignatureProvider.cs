@@ -17,7 +17,7 @@ namespace NuGet.Packaging.Signing
         /// Create a signature.
         /// </summary>
         /// <param name="certificate">Certificate to be used while signing the package.</param>
-        /// <param name="zipArchiveHash">Hash of the package to be inserted into the package signature.</param>
+        /// <param name="SignatureManifest">SignatureManifest containing the Hash of the package and the signature version.</param>
         /// <param name="logger">Logger</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>A signature for the package.</returns>
