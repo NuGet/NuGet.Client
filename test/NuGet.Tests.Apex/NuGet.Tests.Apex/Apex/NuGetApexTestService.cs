@@ -179,7 +179,7 @@ namespace NuGet.Tests.Apex
             IVsWindowFrame window = null;
             var powerConsoleToolWindowGUID = new Guid("0AD07096-BBA9-4900-A651-0598D26F6D24");
             var stopwatch = Stopwatch.StartNew();
-            var timeout = TimeSpan.FromSeconds(10);
+            var timeout = TimeSpan.FromMinutes(5);
 
             var found = UIShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fForceCreate, powerConsoleToolWindowGUID, out window);
             do

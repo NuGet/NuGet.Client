@@ -26,7 +26,7 @@ namespace NuGet.Console.TestContract
         {
             _wpfConsole.Dispatcher.Start();
             var stopwatch = Stopwatch.StartNew();
-            var timeout = TimeSpan.FromSeconds(5);
+            var timeout = TimeSpan.FromMinutes(5);
             do
             {
                 if (_wpfConsole.Dispatcher.IsStartCompleted && _wpfConsole.Host != null) { return true; }
@@ -40,7 +40,7 @@ namespace NuGet.Console.TestContract
         {
             _wpfConsole.Clear();
             var command = $"Get-Package {packageId} -ProjectName {projectName}";
-            if (WaitForActionComplete(() => RunCommand(command), TimeSpan.FromSeconds(5)))
+            if (WaitForActionComplete(() => RunCommand(command), TimeSpan.FromMinutes(5)))
             {
                 var snapshot = (_wpfConsole.Content as IWpfTextViewHost).TextView.TextBuffer.CurrentSnapshot;
                 for (var i = 0; i < snapshot.LineCount; i++)
