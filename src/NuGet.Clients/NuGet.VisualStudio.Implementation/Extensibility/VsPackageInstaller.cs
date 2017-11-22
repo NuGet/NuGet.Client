@@ -72,9 +72,9 @@ namespace NuGet.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var VsHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
-                    if (VsHierarchy != null &&
-                        VsHierarchyUtility.IsCPSCapabilityComplaint(VsHierarchy))
+                    var vsHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                    if (vsHierarchy != null &&
+                        VsHierarchyUtility.IsCPSCapabilityComplaint(vsHierarchy))
                     {
                         // Lazy load the CPS enabled JoinableTaskFactory for the UI.
                         NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
