@@ -68,16 +68,21 @@ namespace NuGet.VisualStudio
         {
             if (!_isCPSJTFLoaded)
             {
-                var VsHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
-                if (VsHierarchy != null &&
-                    VsHierarchyUtility.IsCPSCapabilityComplaint(VsHierarchy))
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    // Lazy load the CPS enabled JoinableTaskFactory for the UI.
-                    NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
-                    _isCPSJTFLoaded = true;
-                }
+                    var VsHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                    if (VsHierarchy != null &&
+                        VsHierarchyUtility.IsCPSCapabilityComplaint(VsHierarchy))
+                    {
+                        // Lazy load the CPS enabled JoinableTaskFactory for the UI.
+                        NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
+
+                        PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
+                        _isCPSJTFLoaded = true;
+                    }
+                });
             }
 
             PumpingJTF.Run(asyncTask);
