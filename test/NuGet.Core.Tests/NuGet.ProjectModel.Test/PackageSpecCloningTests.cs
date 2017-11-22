@@ -9,6 +9,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 using Xunit;
 namespace NuGet.ProjectModel.Test
@@ -142,7 +143,7 @@ namespace NuGet.ProjectModel.Test
         private PackOptions CreatePackOptions()
         {
             var originalPackOptions = new PackOptions();
-            originalPackOptions.PackageType = new List<NuGet.Packaging.Core.PackageType>() { new Packaging.Core.PackageType("PackageA", new System.Version("1.0.0")) };
+            originalPackOptions.PackageType = new List<PackageType>() { new PackageType("PackageA", new System.Version("1.0.0")) };
             originalPackOptions.IncludeExcludeFiles = CreateIncludeExcludeFiles();
             return originalPackOptions;
         }
@@ -176,29 +177,41 @@ namespace NuGet.ProjectModel.Test
             PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
             PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
 
-            PackageSpec.PackInclude.Add(Guid.NewGuid().ToString(), Guid.NewGuid().ToString()); // Continue from here
+            PackageSpec.PackInclude.Add(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
 
             PackageSpec.PackOptions = CreatePackOptions();
 
-            PackageSpec.RuntimeGraph = new RuntimeModel.RuntimeGraph();
+            PackageSpec.RuntimeGraph = new RuntimeGraph(); // TODO use CreatRuntimeGraph
             PackageSpec.RestoreSettings = CreateProjectRestoreSettings();
             return PackageSpec;
         }
 
+        private RuntimeGraph CreateRuntimeGraph()
+        {
+            var runtimeDescription = new RuntimeDescription(Guid.NewGuid().ToString());
+            var compatibilityProfile = new CompatibilityProfile(Guid.NewGuid().ToString());
+
+            return new RuntimeGraph(new RuntimeDescription[] { runtimeDescription }, new CompatibilityProfile[] { compatibilityProfile });
+        }
+
         [Theory]
-        [InlineData("ModifyAuthors")]
-        [InlineData("ModifyOriginalTargetFrameworkInformationAdd")]
-        [InlineData("ModifyOriginalTargetFrameworkInformationEdit")]
-        [InlineData("ModifyRestoreMetadata")]
-        [InlineData("ModifyVersion")]
-        [InlineData("ModifyOwners")]
-        [InlineData("ModifyTags")]
-        [InlineData("ModifyBuildOptions")]
-        [InlineData("ModifyContentFiles")]
-        [InlineData("ModifyDependencies")]
-        [InlineData("ModifyScriptsAdd")]
-        [InlineData("ModifyScriptsEdit")]
-        public void PackageSpecCloneTest(string methodName)
+        [InlineData("ModifyAuthors", true)]
+        [InlineData("ModifyOriginalTargetFrameworkInformationAdd", true)]
+        [InlineData("ModifyOriginalTargetFrameworkInformationEdit", true)]
+        [InlineData("ModifyRestoreMetadata", true)]
+        [InlineData("ModifyVersion", true)]
+        [InlineData("ModifyOwners", true)]
+        [InlineData("ModifyTags", true)]
+        [InlineData("ModifyBuildOptions", false)]
+        [InlineData("ModifyContentFiles", true)]
+        [InlineData("ModifyDependencies", true)]
+        [InlineData("ModifyScriptsAdd", true)]
+        [InlineData("ModifyScriptsEdit", true)]
+        [InlineData("ModifyPackInclude", true)]
+        [InlineData("ModifyPackOptions", true)]
+        //        [InlineData("ModifyRuntimeGraph", true)] - TODO NK - Look into this deeper = https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/RuntimeModel/RuntimeGraph.cs#L51-L54
+        //[InlineData("ModifyRestoreSettings", true)] = Not really included in the equals and hash code comparisons
+        public void PackageSpecCloneTest(string methodName, bool validateJson)
         {
             // Set up
             var PackageSpec = CreatePackageSpec();
@@ -206,18 +219,32 @@ namespace NuGet.ProjectModel.Test
 
             //Preconditions
             Assert.Equal(PackageSpec, clonedPackageSpec);
+            var originalPackageSpecWriter = new JsonObjectWriter();
+            var clonedPackageSpecWriter = new JsonObjectWriter();
+            PackageSpecWriter.Write(PackageSpec, originalPackageSpecWriter);
+            PackageSpecWriter.Write(clonedPackageSpec, clonedPackageSpecWriter);
+            Assert.Equal(originalPackageSpecWriter.GetJson().ToString(), clonedPackageSpecWriter.GetJson().ToString());
             Assert.False(object.ReferenceEquals(PackageSpec, clonedPackageSpec));
 
             // Act
-            var methodInfo = typeof(ToolsetDataSource).GetMethod(methodName);
+            var methodInfo = typeof(PackageSpecModify).GetMethod(methodName);
             methodInfo.Invoke(null, new object[] { PackageSpec });
 
             // Assert
+            
             Assert.NotEqual(PackageSpec, clonedPackageSpec);
+            if (validateJson)
+            {
+                var oPackageSpecWriter = new JsonObjectWriter();
+                var cPackageSpecWriter = new JsonObjectWriter();
+                PackageSpecWriter.Write(PackageSpec, oPackageSpecWriter);
+                PackageSpecWriter.Write(clonedPackageSpec, cPackageSpecWriter);
+                Assert.NotEqual(oPackageSpecWriter.GetJson().ToString(), cPackageSpecWriter.GetJson().ToString());
+            }
             Assert.False(object.ReferenceEquals(PackageSpec, clonedPackageSpec));
         }
 
-        public class ToolsetDataSource { 
+        public class PackageSpecModify { 
 
             public static void ModifyAuthors(PackageSpec packageSpec)
             {
@@ -226,7 +253,7 @@ namespace NuGet.ProjectModel.Test
 
             public static void ModifyOriginalTargetFrameworkInformationAdd(PackageSpec packageSpec)
             {
-                packageSpec.TargetFrameworks.Add(CreateTargetFrameworkInformation());
+                packageSpec.TargetFrameworks.Add(CreateTargetFrameworkInformation("net40"));
             }
 
             public static void ModifyOriginalTargetFrameworkInformationEdit(PackageSpec packageSpec)
@@ -276,9 +303,32 @@ namespace NuGet.ProjectModel.Test
 
             public static void ModifyScriptsEdit(PackageSpec packageSpec)
             {
-                var key = packageSpec.Scripts.Keys.GetEnumerator().Current;
+                var enumerator = packageSpec.Scripts.Keys.GetEnumerator();
+                enumerator.MoveNext();
+                var key = enumerator.Current;
                 ((List<string>)packageSpec.Scripts[key]).Add(Guid.NewGuid().ToString());
             }
+
+            public static void ModifyPackInclude(PackageSpec packageSpec)
+            {
+                packageSpec.PackInclude.Add(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+            }
+
+            public static void ModifyPackOptions(PackageSpec packageSpec)
+            {
+                ((List<PackageType>)packageSpec.PackOptions.PackageType).Add(PackageType.DotnetCliTool);
+            }
+
+            public static void ModifyRuntimeGraph(PackageSpec packageSpec)
+            {
+                packageSpec.RuntimeGraph = new RuntimeGraph();
+            }
+
+            public static void ModifyRestoreSettings(PackageSpec packageSpec)
+            {
+                packageSpec.RestoreSettings.HideWarningsAndErrors = false;
+            }
+
         }
 
         private ProjectRestoreMetadata CreateProjectRestoreMetadata()
@@ -535,9 +585,9 @@ namespace NuGet.ProjectModel.Test
             Assert.False(object.ReferenceEquals(originalProjectRestoreSettings, clone));
         }
 
-        internal static TargetFrameworkInformation CreateTargetFrameworkInformation()
+        internal static TargetFrameworkInformation CreateTargetFrameworkInformation(string tfm = "net461")
         {
-            var framework = NuGetFramework.Parse("net461");
+            var framework = NuGetFramework.Parse(tfm);
             var dependency = new LibraryDependency();
             dependency.LibraryRange = new LibraryRange("Dependency", LibraryDependencyTarget.Package);
             dependency.Type = LibraryDependencyType.Default;
