@@ -11555,16 +11555,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name of the cryptographic service provider which contains the private key container.
-        ///This option, along with -KeyContainer, can be used to specify the private key if the certificate file does not contain one..
-        /// </summary>
-        internal static string SignCommandCryptographicServiceProviderDescription {
-            get {
-                return ResourceManager.GetString("SignCommandCryptographicServiceProviderDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Signs a NuGet package with the specified certificate..
         /// </summary>
         internal static string SignCommandDescription {
@@ -11599,16 +11589,6 @@ namespace NuGet.CommandLine {
         internal static string SignCommandInvalidArgumentException {
             get {
                 return ResourceManager.GetString("SignCommandInvalidArgumentException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Name of the key container which has the private key.
-        ///This option, along with -CryptographicServiceProvider, can be used to specify the private key if the certificate file does not contain one..
-        /// </summary>
-        internal static string SignCommandKeyContainerDescription {
-            get {
-                return ResourceManager.GetString("SignCommandKeyContainerDescription", resourceCulture);
             }
         }
         

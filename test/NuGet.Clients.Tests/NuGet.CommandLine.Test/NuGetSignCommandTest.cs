@@ -180,56 +180,6 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.CertificateStoreLocation)), ex.Message);
         }
 
-        [Fact]
-        public void SignCommandArgParsing_KeyCntainerButNoCryptographicServiceProvider()
-        {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certificatePath = @"\\path\file.pfx";
-            var keyContainer = "some_container";
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
-            var mockConsole = new Mock<IConsole>();
-            var signCommand = new SignCommand
-            {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificatePath = certificatePath,
-                KeyContainer = keyContainer
-            };
-
-            signCommand.Arguments.Add(packagePath);
-
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
-            Assert.Equal(string.Format(_missingArgumentException, nameof(SignArgs.CryptographicServiceProvider), nameof(SignArgs.KeyContainer)), ex.Message);
-        }
-
-        [Fact]
-        public void SignCommandArgParsing_CryptographicServiceProviderButNoKeyCntainer()
-        {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certificatePath = @"\\path\file.pfx";
-            var cryptographicServiceProvider = "some_provider";
-            var mockSignCommandRunner = new Mock<ISignCommandRunner>();
-            var mockConsole = new Mock<IConsole>();
-            var signCommand = new SignCommand
-            {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificatePath = certificatePath,
-                CryptographicServiceProvider = cryptographicServiceProvider
-            };
-
-            signCommand.Arguments.Add(packagePath);
-
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetSignArgs());
-            Assert.Equal(string.Format(_missingArgumentException, nameof(SignArgs.KeyContainer), nameof(SignArgs.CryptographicServiceProvider)), ex.Message);
-        }
-
         [Theory]
         [InlineData("sha256")]
         [InlineData("sha384")]
@@ -380,8 +330,6 @@ namespace NuGet.CommandLine.Test
                 OutputDirectory = outputDir,
                 NonInteractive = nonInteractive,
                 Overwrite = overwrite,
-                CryptographicServiceProvider = csp,
-                KeyContainer = kc
             };
 
             signCommand.Arguments.Add(packagePath);
@@ -394,8 +342,6 @@ namespace NuGet.CommandLine.Test
             Assert.Null(signArgs.CertificateSubjectName);
             Assert.Equal(parsedStoreLocation, signArgs.CertificateStoreLocation);
             Assert.Equal(parsedStoreName, signArgs.CertificateStoreName);
-            Assert.Equal(csp, signArgs.CryptographicServiceProvider, StringComparer.Ordinal);
-            Assert.Equal(kc, signArgs.KeyContainer, StringComparer.Ordinal);
             Assert.Equal(mockConsole.Object, signArgs.Logger);
             Assert.Equal(nonInteractive, signArgs.NonInteractive);
             Assert.Equal(overwrite, signArgs.Overwrite);
@@ -440,8 +386,6 @@ namespace NuGet.CommandLine.Test
                 OutputDirectory = outputDir,
                 NonInteractive = nonInteractive,
                 Overwrite = overwrite,
-                CryptographicServiceProvider = csp,
-                KeyContainer = kc
             };
 
             signCommand.Arguments.Add(packagePath);
@@ -454,8 +398,6 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(certificateSubjectName, signArgs.CertificateSubjectName, StringComparer.Ordinal);
             Assert.Equal(parsedStoreLocation, signArgs.CertificateStoreLocation);
             Assert.Equal(parsedStoreName, signArgs.CertificateStoreName);
-            Assert.Equal(csp, signArgs.CryptographicServiceProvider, StringComparer.Ordinal);
-            Assert.Equal(kc, signArgs.KeyContainer, StringComparer.Ordinal);
             Assert.Equal(mockConsole.Object, signArgs.Logger);
             Assert.Equal(nonInteractive, signArgs.NonInteractive);
             Assert.Equal(overwrite, signArgs.Overwrite);
@@ -498,8 +440,6 @@ namespace NuGet.CommandLine.Test
                 OutputDirectory = outputDir,
                 NonInteractive = nonInteractive,
                 Overwrite = overwrite,
-                CryptographicServiceProvider = csp,
-                KeyContainer = kc
             };
 
             signCommand.Arguments.Add(packagePath);
@@ -512,8 +452,6 @@ namespace NuGet.CommandLine.Test
             Assert.Null(signArgs.CertificateSubjectName);
             Assert.Equal(parsedStoreLocation, signArgs.CertificateStoreLocation);
             Assert.Equal(parsedStoreName, signArgs.CertificateStoreName);
-            Assert.Equal(csp, signArgs.CryptographicServiceProvider, StringComparer.Ordinal);
-            Assert.Equal(kc, signArgs.KeyContainer, StringComparer.Ordinal);
             Assert.Equal(mockConsole.Object, signArgs.Logger);
             Assert.Equal(nonInteractive, signArgs.NonInteractive);
             Assert.Equal(overwrite, signArgs.Overwrite);

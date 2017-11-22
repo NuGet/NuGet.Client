@@ -3,6 +3,9 @@
 
 using System;
 using System.Security.Cryptography;
+#if IS_DESKTOP
+using System.Security.Cryptography.Pkcs;
+#endif
 using System.Security.Cryptography.X509Certificates;
 
 namespace NuGet.Packaging.Signing
@@ -90,6 +93,17 @@ namespace NuGet.Packaging.Signing
 
             return false;
         }
+
+#if IS_DESKTOP
+        public static CryptographicAttributeObjectCollection GetSignAttributes()
+        {
+            var attributes = new CryptographicAttributeObjectCollection();
+
+            attributes.Add(new Pkcs9SigningTime());
+
+            return attributes;
+        }
+#endif
 
         /// <summary>
         /// Returns the Enhanced Key Usage of an X509Certificate2.

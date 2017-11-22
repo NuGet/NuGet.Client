@@ -46,36 +46,59 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            var authorSignature = CreateSignature(request.Certificate, signatureManifest);
+            var authorSignature = CreateSignature(request, signatureManifest);
 
             if (_timestampProvider == null)
             {
-                return authorSignature;
+                return Task.FromResult(authorSignature);
             }
             else
             {
-                return TimestampSignature(request, logger, authorSignature.Result, token);
+                return TimestampSignature(request, logger, authorSignature, token);
             }
         }
 
 #if IS_DESKTOP
-        private Task<Signature> CreateSignature(X509Certificate2 cert, SignatureManifest signatureManifest)
+        private Signature CreateSignature(SignPackageRequest request, SignatureManifest signatureManifest)
         {
-            var contentInfo = new ContentInfo(signatureManifest.GetBytes());
-            var cmsSigner = new CmsSigner(SubjectIdentifierType.SubjectKeyIdentifier, cert);
-            var signingTime = new Pkcs9SigningTime();
+            var attributes = SigningUtility.GetSignAttributes();
 
-            cmsSigner.SignedAttributes.Add(
-                new CryptographicAttributeObject(
-                    signingTime.Oid,
-                    new AsnEncodedDataCollection(signingTime)));
+            using (request)
+            {
+                if (request.PrivateKey != null)
+                {
+                    return CreateSignature(request.Certificate, signatureManifest, request.PrivateKey, request.SignatureHashAlgorithm, attributes);
+                }
 
-            cmsSigner.IncludeOption = X509IncludeOption.WholeChain;
+                var contentInfo = new ContentInfo(signatureManifest.GetBytes());
+                var cmsSigner = new CmsSigner(SubjectIdentifierType.SubjectKeyIdentifier, request.Certificate);
 
-            var cms = new SignedCms(contentInfo);
-            cms.ComputeSignature(cmsSigner);
+                foreach (var attribute in attributes)
+                {
+                    cmsSigner.SignedAttributes.Add(attribute);
+                }
 
-            return Task.FromResult(Signature.Load(cms));
+                cmsSigner.IncludeOption = X509IncludeOption.WholeChain;
+
+                var cms = new SignedCms(contentInfo);
+                cms.ComputeSignature(cmsSigner);
+
+                return Signature.Load(cms);
+            }
+        }
+
+        private Signature CreateSignature(
+            X509Certificate2 cert,
+            SignatureManifest signatureManifest,
+            CngKey privateKey,
+            Common.HashAlgorithmName hashAlgorithm,
+            CryptographicAttributeObjectCollection attributes
+            )
+        {
+            var cms = NativeUtilities.NativeSign(
+                signatureManifest.GetBytes(), cert, privateKey, attributes, hashAlgorithm);
+
+            return Signature.Load(cms);
         }
 
         private Task<Signature> TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
@@ -91,10 +114,11 @@ namespace NuGet.Packaging.Signing
             return _timestampProvider.TimestampSignatureAsync(timestampRequest, logger, token);
         }
 #else
-        private Task<Signature> CreateSignature(X509Certificate2 cert, SignatureManifest signatureManifest)
+        private Signature CreateSignature(SignPackageRequest request, SignatureManifest signatureManifest)
         {
             throw new NotSupportedException();
         }
+
 
         private Task<Signature> TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
         {

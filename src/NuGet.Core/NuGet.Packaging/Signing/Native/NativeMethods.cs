@@ -14,6 +14,17 @@ namespace NuGet.Packaging.Signing
         internal const uint X509_ASN_ENCODING = 0x1;
         internal const uint PKCS_ATTRIBUTE = 22;
         internal const int ERROR_MORE_DATA = 234;
+        internal const uint CMSG_SIGNED = 2;
+
+        [DllImport("Crypt32.dll", SetLastError = true)]
+        public static extern SafeCryptMsgHandle CryptMsgOpenToEncode(
+            uint dwMsgEncodingType,
+            uint dwFlags,
+            uint dwMsgType,
+            ref CMSG_SIGNED_ENCODE_INFO pvMsgEncodeInfo,
+            string pszInnerContentObjID,
+            IntPtr pStreamInfo
+        );
 
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380228(v=vs.85).aspx
         [DllImport("crypt32.dll", SetLastError = true)]
@@ -65,6 +76,9 @@ namespace NuGet.Packaging.Signing
             IntPtr pvEncoded,
             ref uint pcbEncoded);
 
+        [DllImport("advapi32.dll", SetLastError = true)]
+        internal static extern bool CryptReleaseContext(IntPtr hProv, int dwFlags);
+
         internal static int GetHRForWin32Error(int err)
         {
             if ((err & 0x80000000) == 0x80000000)
@@ -103,6 +117,27 @@ namespace NuGet.Packaging.Signing
         }
     }
 
+    internal sealed class SafeLocalAllocHandle : SafeHandle
+    {
+        public override bool IsInvalid { get { return handle == IntPtr.Zero; } }
+
+        internal SafeLocalAllocHandle(IntPtr handle) : base(handle, ownsHandle: true)
+        {
+        }
+
+        protected override bool ReleaseHandle()
+        {
+            if (!IsInvalid)
+            {
+                Marshal.FreeHGlobal(handle);
+
+                handle = IntPtr.Zero;
+            }
+
+            return true;
+        }
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     internal struct CRYPT_INTEGER_BLOB_INTPTR
     {
@@ -112,11 +147,9 @@ namespace NuGet.Packaging.Signing
 
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa381139(v=vs.85).aspx
     [StructLayout(LayoutKind.Sequential)]
-    internal struct CRYPT_ATTRIBUTE
+    internal unsafe struct CRYPT_ATTRIBUTE
     {
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string pszObjId;
-
+        internal IntPtr pszObjId;
         internal uint cValue;
         internal IntPtr rgValue;
     }
@@ -208,5 +241,78 @@ namespace NuGet.Packaging.Signing
         CMSG_UNPROTECTED_ATTR_PARAM = 37,
         CMSG_SIGNER_CERT_ID_PARAM = 38,
         CMSG_CMS_SIGNER_INFO_PARAM = 39
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct CMSG_SIGNER_ENCODE_INFO
+    {
+        internal uint cbSize;
+        internal IntPtr pCertInfo;
+        internal IntPtr hCryptProvOrhNCryptKey;
+        internal int dwKeySpec;
+        internal CRYPT_ALGORITHM_IDENTIFIER HashAlgorithm;
+        internal IntPtr pvHashAuxInfo;
+        internal int cAuthAttr;
+        internal IntPtr rgAuthAttr;
+        internal int cUnauthAttr;
+        internal IntPtr rgUnauthAttr;
+        internal CERT_ID SignerId;
+        internal CRYPT_ALGORITHM_IDENTIFIER HashEncryptionAlgorithm;
+        internal IntPtr pvHashEncryptionAuxInfo;
+
+        public void Dispose()
+        {
+            if (!hCryptProvOrhNCryptKey.Equals(IntPtr.Zero)) { NativeMethods.CryptReleaseContext(hCryptProvOrhNCryptKey, 0); }
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct CRYPT_ALGORITHM_IDENTIFIER
+    {
+        public string pszObjId;
+        public CRYPT_INTEGER_BLOB_INTPTR Parameters;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct BLOB
+    {
+        public int cbData;
+        public IntPtr pbData;
+
+        public void Dispose()
+        {
+            NativeUtilities.SafeFree(pbData);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct CERT_ID
+    {
+        internal int dwIdChoice;
+        internal BLOB IssuerSerialNumberOrKeyIdOrHashId;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct CMSG_SIGNED_ENCODE_INFO
+    {
+        internal int cbSize;
+        internal int cSigners;
+        internal IntPtr rgSigners;
+        internal int cCertEncoded;
+        internal IntPtr rgCertEncoded;
+        internal int cCrlEncoded;
+        internal IntPtr rgCrlEncoded;
+        internal int cAttrCertEncoded;
+        internal IntPtr rgAttrCertEncoded;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct CERT_CONTEXT
+    {
+        public int dwCertEncodingType;
+        public IntPtr pbCertEncoded;
+        public int cbCertEncoded;
+        public IntPtr pCertInfo;
+        public IntPtr hCertStore;
     }
 }

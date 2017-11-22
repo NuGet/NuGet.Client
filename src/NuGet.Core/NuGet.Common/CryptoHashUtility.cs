@@ -122,6 +122,21 @@ namespace NuGet.Common
             return GetHashAlgorithm(result);
         }
 
+        public static HashAlgorithmName GetHashAlgorithmName(string hashAlgorithm)
+        {
+            if (hashAlgorithm == null)
+            {
+                throw new ArgumentNullException(nameof(hashAlgorithm));
+            }
+
+            if(Enum.TryParse<HashAlgorithmName>(hashAlgorithm, ignoreCase: true, result: out var result))
+            {
+                return result;
+            }
+
+            return HashAlgorithmName.Unknown;
+        }
+
         public static HashAlgorithm GetHashAlgorithm(HashAlgorithmName hashAlgorithmName)
         {
             return hashAlgorithmName.GetHashProvider();
