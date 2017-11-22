@@ -173,10 +173,10 @@ namespace NuGet.ProjectModel.Test
             PackageSpec.ContentFiles = new List<string>() { "contentFile1", "contentFile2" };
             PackageSpec.Dependencies = new List<LibraryDependency>() { CreateLibraryDependency(), CreateLibraryDependency() };
 
-            PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() }); // Test this changing
+            PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
             PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
 
-            PackageSpec.PackInclude.Add(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+            PackageSpec.PackInclude.Add(Guid.NewGuid().ToString(), Guid.NewGuid().ToString()); // Continue from here
 
             PackageSpec.PackOptions = CreatePackOptions();
 
@@ -196,6 +196,8 @@ namespace NuGet.ProjectModel.Test
         [InlineData("ModifyBuildOptions")]
         [InlineData("ModifyContentFiles")]
         [InlineData("ModifyDependencies")]
+        [InlineData("ModifyScriptsAdd")]
+        [InlineData("ModifyScriptsEdit")]
         public void PackageSpecCloneTest(string methodName)
         {
             // Set up
@@ -265,6 +267,17 @@ namespace NuGet.ProjectModel.Test
             public static void ModifyDependencies(PackageSpec packageSpec)
             {
                 packageSpec.Dependencies.Add(CreateLibraryDependency());
+            }
+
+            public static void ModifyScriptsAdd(PackageSpec packageSpec)
+            {
+                packageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
+            }
+
+            public static void ModifyScriptsEdit(PackageSpec packageSpec)
+            {
+                var key = packageSpec.Scripts.Keys.GetEnumerator().Current;
+                ((List<string>)packageSpec.Scripts[key]).Add(Guid.NewGuid().ToString());
             }
         }
 
