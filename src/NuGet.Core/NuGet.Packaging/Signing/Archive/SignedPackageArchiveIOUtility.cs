@@ -16,7 +16,7 @@ namespace NuGet.Packaging.Signing
         internal const uint Zip64EndOfCentralDirectoryLocatorSignature = 0x07064b50;
         internal const uint LocalFileHeaderSignature = 0x04034b50;
 
-        internal const string SignatureFilename = ".signature";
+        private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
         /// <summary>
         /// Takes a binary reader and moves forwards the current position of it's base stream until it finds the specified signature.
@@ -132,7 +132,7 @@ namespace NuGet.Packaging.Signing
 
                 var filename = reader.ReadBytes(filenameLength);
                 var filenameString = Encoding.UTF8.GetString(filename);
-                if (string.Equals(filenameString, SignatureFilename))
+                if (string.Equals(filenameString, _signingSpecification.SignaturePath))
                 {
                     signatureFileCompressedSize = possibleSignatureCompressedSize;
                     signatureLocalFileHeaderPosition = possibleSignaturePosition;
@@ -176,7 +176,7 @@ namespace NuGet.Packaging.Signing
 
                 var filename = reader.ReadBytes(filenameLength);
                 var filenameString = Encoding.UTF8.GetString(filename);
-                if (string.Equals(filenameString, SignatureFilename))
+                if (string.Equals(filenameString, _signingSpecification.SignaturePath))
                 {
                     signatureCentralDirectoryHeaderPosition = possibleSignatureCentralDirectoryHeader;
                 }
@@ -219,7 +219,7 @@ namespace NuGet.Packaging.Signing
                 SignatureFileCompressedSize = signatureFileCompressedSize,
                 SignatureHasDataDescriptor = signatureHasDataDescriptor,
                 SignatureCentralDirectoryHeaderPosition = signatureCentralDirectoryHeaderPosition,
-                FileHeaderExtraSize = fileHeaderExtraSize,
+                SignatureFileHeaderExtraSize = fileHeaderExtraSize,
                 IsZip64 = isZip64,
                 Zip64EndOfCentralDirectoryRecordPosition = zip64EndOfCentralDirectoryRecordPosition,
                 Zip64EndOfCentralDirectoryLocatorPosition = zip64EndOfCentralDirectoryLocatorPosition,

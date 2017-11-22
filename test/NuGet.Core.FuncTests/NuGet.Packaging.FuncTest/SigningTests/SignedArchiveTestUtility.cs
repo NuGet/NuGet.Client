@@ -76,6 +76,30 @@ namespace NuGet.Packaging.FuncTest
         }
 
         /// <summary>
+        /// unsigns a package for test purposes.
+        /// This does not timestamp a signature and can be used outside corp network.
+        /// </summary>
+        public static async Task UnsignPackageAsync(string signedPackagePath)
+        {
+            var testLogger = new TestLogger();
+            var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
+
+            var copiedSignedPackagePath = Path.GetTempFileName();
+            File.Copy(signedPackagePath, copiedSignedPackagePath, overwrite: true);
+
+            using (var zipReadStream = File.OpenRead(signedPackagePath))
+            using (var zipWriteStream = File.Open(copiedSignedPackagePath, FileMode.Open))
+            {
+                var signedPackage = new SignedPackageArchive(zipReadStream, zipWriteStream);
+                var signer = new Signer(signedPackage, testSignatureProvider);
+
+                await signer.RemoveSignaturesAsync(testLogger, CancellationToken.None);
+            }
+
+            File.Copy(copiedSignedPackagePath, signedPackagePath, overwrite: true);
+        }
+
+        /// <summary>
         /// Sign a package for test purposes.
         /// This does not timestamp a signature and can be used outside corp network.
         /// </summary>

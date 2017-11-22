@@ -10,6 +10,7 @@ namespace NuGet.Packaging.Signing
 {
     internal static class SignedPackageArchiveUtility
     {
+        private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
 #if IS_DESKTOP
 
@@ -43,7 +44,7 @@ namespace NuGet.Packaging.Signing
 
                 var filename = reader.ReadBytes(filenameLength);
                 var filenameString = Encoding.UTF8.GetString(filename);
-                if (string.Equals(filenameString, SignedPackageArchiveIOUtility.SignatureFilename))
+                if (string.Equals(filenameString, _signingSpecification.SignaturePath, StringComparison.Ordinal))
                 {
                     return true;
                 }
@@ -76,7 +77,7 @@ namespace NuGet.Packaging.Signing
             SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, zipMetadata.SignatureLocalFileHeaderPosition);
 
             // Skip hashing of signature file
-            var extraEntrySize = 30 + zipMetadata.SignatureFileCompressedSize + zipMetadata.FileHeaderExtraSize;
+            var extraEntrySize = 30 + zipMetadata.SignatureFileCompressedSize + zipMetadata.SignatureFileHeaderExtraSize;
             reader.BaseStream.Seek(offset: extraEntrySize, origin: SeekOrigin.Current);
 
             if (zipMetadata.SignatureHasDataDescriptor)

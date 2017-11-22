@@ -221,7 +221,7 @@ namespace NuGet.Packaging
             }
         }
 
-        public override Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
+        public override async Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -232,19 +232,20 @@ namespace NuGet.Packaging
 
             var signatures = new List<Signature>();
 
-#if IS_DESKTOP
-            if (IsSignedAsync(token).Result)
+            if (await IsSignedAsync(token))
             {
                 var signatureEntry = Zip.GetEntry(_signingSpecifications.SignaturePath);
                 using (var signatureEntryStream = signatureEntry.Open())
                 {
+#if IS_DESKTOP
+
                     var signature = Signature.Load(signatureEntryStream);
                     signatures.Add(signature);
+#endif
                 }
             }
-#endif
-            return Task.FromResult<IReadOnlyList<Signature>>(signatures.AsReadOnly());
 
+            return signatures.AsReadOnly();
         }
 
         public override Task<bool> IsSignedAsync(CancellationToken token)
@@ -259,7 +260,10 @@ namespace NuGet.Packaging
             var isSigned = false;
 
 #if IS_DESKTOP
-            if (Zip.GetEntry(_signingSpecifications.SignaturePath) != null)
+            var signatureEntry = Zip.GetEntry(_signingSpecifications.SignaturePath);
+
+            if (signatureEntry != null &&
+                string.Equals(signatureEntry.Name, _signingSpecifications.SignaturePath, StringComparison.Ordinal))
             {
                 isSigned = true;
             }
@@ -267,7 +271,7 @@ namespace NuGet.Packaging
             return Task.FromResult(isSigned);
         }
 
-        public override Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token)
+        public override async Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -276,7 +280,7 @@ namespace NuGet.Packaging
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
 
-            if (!IsSignedAsync(token).Result)
+            if (!await IsSignedAsync(token))
             {
                 throw new SignatureException(Strings.SignedPackageNotSignedOnVerify);
             }
@@ -289,7 +293,6 @@ namespace NuGet.Packaging
                 SignedPackageArchiveUtility.VerifySignedZipIntegrity(reader, hashAlgorithm, expectedHash);
             }
 #endif
-            return Task.FromResult(0);
         }
 
         public override Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithm, CancellationToken token)

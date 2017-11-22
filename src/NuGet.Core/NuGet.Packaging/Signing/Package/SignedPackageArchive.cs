@@ -30,7 +30,7 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Adds a signature to a apckage if it is not already signed.
+        /// Adds a signature to a package if it is not already signed.
         /// </summary>
         /// <param name="signatureStream">Stream of the signature SignedCms object to be added to the package.</param>
         /// <param name="token">Cancellation Token.</param>
@@ -77,7 +77,10 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.SignedPackageNotSignedOnRemove);
             }
 
-            Zip.GetEntry(_signingSpecification.SignaturePath)?.Delete();
+            using (var writeZip = new ZipArchive(_zipWriteStream, ZipArchiveMode.Update, leaveOpen: true))
+            {
+                writeZip.GetEntry(_signingSpecification.SignaturePath).Delete();
+            }
         }
     }
 }

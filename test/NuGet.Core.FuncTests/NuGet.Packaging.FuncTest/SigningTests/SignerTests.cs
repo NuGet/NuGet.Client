@@ -48,7 +48,31 @@ namespace NuGet.Packaging.FuncTest
             {
                 zip.GetEntry(_signingSpecifications.SignaturePath).Should().NotBeNull();
             }
+        }
 
+        [Fact]
+        public async Task Signer_UnsignPackageAsync()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var testLogger = new TestLogger();
+
+            // Act
+            var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(_trustedTestCert, nupkg);
+
+            using (var stream = File.OpenRead(signedPackagePath))
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+            {
+                zip.GetEntry(_signingSpecifications.SignaturePath).Should().NotBeNull();
+            }
+
+            await SignedArchiveTestUtility.UnsignPackageAsync(signedPackagePath);
+
+            using (var stream = File.OpenRead(signedPackagePath))
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+            {
+                zip.GetEntry(_signingSpecifications.SignaturePath).Should().BeNull();
+            }
         }
     }
 }
