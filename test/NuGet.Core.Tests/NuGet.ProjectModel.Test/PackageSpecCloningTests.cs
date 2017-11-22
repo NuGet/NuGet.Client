@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -183,19 +184,55 @@ namespace NuGet.ProjectModel.Test
             PackageSpec.RestoreSettings = CreateProjectRestoreSettings();
             return PackageSpec;
         }
-        [Fact]
-        public void PackageSpecCloneTest()
+
+        [Theory]
+        [InlineData("ModifyAuthors")]
+        [InlineData("ModifyOriginalTargetFrameworkInformationAdd")]
+        [InlineData("ModifyOriginalTargetFrameworkInformationEdit")]
+        [InlineData("ModifyRestoreMetadata")]
+        public void PackageSpecCloneTest(string methodName)
         {
             // Set up
             var PackageSpec = CreatePackageSpec();
-
-            // Act
             var clonedPackageSpec = PackageSpec.Clone();
 
-            //Assert
+            //Preconditions
             Assert.Equal(PackageSpec, clonedPackageSpec);
             Assert.False(object.ReferenceEquals(PackageSpec, clonedPackageSpec));
+
+            // Act
+            var methodInfo = typeof(ToolsetDataSource).GetMethod(methodName);
+            methodInfo.Invoke(null, new object[] { PackageSpec });
+
+            // Assert
+            Assert.NotEqual(PackageSpec, clonedPackageSpec);
+            Assert.False(object.ReferenceEquals(PackageSpec, clonedPackageSpec));
         }
+
+        public class ToolsetDataSource { 
+
+            public static void ModifyAuthors(PackageSpec packageSpec)
+            {
+                packageSpec.Authors = new string[] { "NewAuthor" };
+            }
+
+            public static void ModifyOriginalTargetFrameworkInformationAdd(PackageSpec packageSpec)
+            {
+                packageSpec.TargetFrameworks.Add(CreateTargetFrameworkInformation());
+            }
+
+            public static void ModifyOriginalTargetFrameworkInformationEdit(PackageSpec packageSpec)
+            {
+                packageSpec.TargetFrameworks[0].Imports.Add(NuGetFramework.Parse("net461"));
+            }
+
+            public static void ModifyRestoreMetadata(PackageSpec packageSpec)
+            {
+                packageSpec.TargetFrameworks[0].Imports.Add(NuGetFramework.Parse("net461"));
+            }
+        }
+
+ 
 
         private ProjectRestoreMetadata CreateProjectRestoreMetadata()
         {
@@ -206,9 +243,7 @@ namespace NuGet.ProjectModel.Test
             projectReference.ExcludeAssets = LibraryIncludeFlags.Analyzers;
             projectReference.PrivateAssets = LibraryIncludeFlags.Build;
             var nugetFramework = NuGetFramework.Parse("net461");
-            var originalFrameworkName = "net461";
             var originalPRMFI = new ProjectRestoreMetadataFrameworkInfo(nugetFramework);
-            originalPRMFI.OriginalFrameworkName = originalFrameworkName;
             originalPRMFI.ProjectReferences = new List<ProjectRestoreReference>() { projectReference };
             var targetframeworks = new List<ProjectRestoreMetadataFrameworkInfo>() { originalPRMFI };
 
@@ -395,10 +430,8 @@ namespace NuGet.ProjectModel.Test
             projectReference.PrivateAssets = LibraryModel.LibraryIncludeFlags.Build;
 
             var nugetFramework = NuGetFramework.Parse("net461");
-            var originalFrameworkName = "net461";
 
             var originalPRMFI = new ProjectRestoreMetadataFrameworkInfo(nugetFramework);
-            originalPRMFI.OriginalFrameworkName = originalFrameworkName;
             originalPRMFI.ProjectReferences = new List<ProjectRestoreReference>() { projectReference };
 
             // Act
@@ -455,7 +488,7 @@ namespace NuGet.ProjectModel.Test
             Assert.False(object.ReferenceEquals(originalProjectRestoreSettings, clone));
         }
 
-        private TargetFrameworkInformation CreateTargetFrameworkInformation()
+        internal static TargetFrameworkInformation CreateTargetFrameworkInformation()
         {
             var framework = NuGetFramework.Parse("net461");
             var dependency = new LibraryDependency();

@@ -17,12 +17,6 @@ namespace NuGet.ProjectModel
         public NuGetFramework FrameworkName { get; set; }
 
         /// <summary>
-        /// The original string before parsing the framework name. In some cases, it is important to keep this around
-        /// because MSBuild framework conditions require the framework name to be the original string (non-normalized).
-        /// </summary>
-        public string OriginalFrameworkName { get; set; } // TODO NK - Remove this? Or maybe clean everything up so it shows up correctly!
-
-        /// <summary>
         /// Project references
         /// </summary>
         public IList<ProjectRestoreReference> ProjectReferences { get; set; } = new List<ProjectRestoreReference>();
@@ -46,7 +40,6 @@ namespace NuGet.ProjectModel
             var hashCode = new HashCodeCombiner();
 
             hashCode.AddObject(FrameworkName);
-            hashCode.AddObject(OriginalFrameworkName);
             hashCode.AddSequence(ProjectReferences);
 
             return hashCode.CombinedHash;
@@ -70,7 +63,6 @@ namespace NuGet.ProjectModel
             }
 
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
-                   OriginalFrameworkName == other.OriginalFrameworkName &&
                    EqualityUtility.SequenceEqualWithNullCheck(ProjectReferences, other.ProjectReferences);
         }
 
@@ -78,7 +70,6 @@ namespace NuGet.ProjectModel
         {
             var clonedObject = new ProjectRestoreMetadataFrameworkInfo();
             clonedObject.FrameworkName = FrameworkName;
-            clonedObject.OriginalFrameworkName = OriginalFrameworkName;
             clonedObject.ProjectReferences = ProjectReferences?.Select(c => c.Clone()).ToList();
             return clonedObject;
         }
