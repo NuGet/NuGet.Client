@@ -50,16 +50,6 @@ namespace NuGet.Commands
         public string CertificateFingerprint { get; set; }
 
         /// <summary>
-        /// Cryptographic Service Provider name that can be used to get the private key.
-        /// </summary>
-        public string CryptographicServiceProvider { get; set; }
-
-        /// <summary>
-        /// Key Container name that can be used to get the private key.
-        /// </summary>
-        public string KeyContainer { get; set; }
-
-        /// <summary>
         /// Hashing Algorithm to be used to digest the package files.
         /// </summary>
         public HashAlgorithmName SignatureHashAlgorithm { get; set; }

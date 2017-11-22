@@ -5393,10 +5393,6 @@ The certificate store can be specified by -CertificateStoreName and -Certificate
 The search is a case-insensitive string comparison using the supplied value, which will find all certificates with the subject name containing that string, regardless of other subject values.
 The certificate store can be specified by -CertificateStoreName and -CertificateStoreLocation options.</value>
   </data>
-  <data name="SignCommandCryptographicServiceProviderDescription" xml:space="preserve">
-    <value>Name of the cryptographic service provider which contains the private key container.
-This option, along with -KeyContainer, can be used to specify the private key if the certificate file does not contain one.</value>
-  </data>
   <data name="SignCommandDescription" xml:space="preserve">
     <value>Signs a NuGet package with the specified certificate.</value>
   </data>
@@ -5411,10 +5407,6 @@ nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -Outp
   </data>
   <data name="SignCommandHashAlgorithmDescription" xml:space="preserve">
     <value>Hash algorithm to be used while generating the package manifest file. Defaults to SHA256.</value>
-  </data>
-  <data name="SignCommandKeyContainerDescription" xml:space="preserve">
-    <value>Name of the key container which has the private key.
-This option, along with -CryptographicServiceProvider, can be used to specify the private key if the certificate file does not contain one.</value>
   </data>
   <data name="SignCommandOutputDirectoryDescription" xml:space="preserve">
     <value>Directory where the signed package should be saved. By default the original package is overwritten by the signed package.</value>

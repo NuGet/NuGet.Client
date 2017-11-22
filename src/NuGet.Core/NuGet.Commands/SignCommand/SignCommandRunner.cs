@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -23,8 +24,6 @@ namespace NuGet.Commands
 
         public async Task<int> ExecuteCommandAsync(SignArgs signArgs)
         {
-            var success = true;
-
             // resolve path into multiple packages if needed.
             var packagesToSign = LocalFolderUtility.ResolvePackageFromPath(signArgs.PackagePath);
             LocalFolderUtility.EnsurePackageFileExists(signArgs.PackagePath, packagesToSign);
@@ -51,7 +50,22 @@ namespace NuGet.Commands
             }
 
             var signRequest = GenerateSignPackageRequest(signArgs, cert);
-            var signatureProvider = GetSignatureProvider(signArgs);
+            return await ExecuteCommandAsync(packagesToSign,
+                signRequest, signArgs.Timestamper, signArgs.Logger, signArgs.OutputDirectory, signArgs.Overwrite, signArgs.Token);
+        }
+
+        public async Task<int> ExecuteCommandAsync(
+            IEnumerable<string> packagesToSign,
+            SignPackageRequest signPackageRequest,
+            string Timestamper,
+            ILogger logger,
+            string outputDirectory,
+            bool overwrite,
+            CancellationToken token)
+        {
+            var success = true;
+
+            var signatureProvider = GetSignatureProvider(Timestamper);
 
             foreach (var packagePath in packagesToSign)
             {
@@ -59,39 +73,39 @@ namespace NuGet.Commands
                 {
                     string outputPath;
 
-                    if (string.IsNullOrEmpty(signArgs.OutputDirectory))
+                    if (string.IsNullOrEmpty(outputDirectory))
                     {
                         outputPath = packagePath;
                     }
                     else
                     {
-                        outputPath = Path.Combine(signArgs.OutputDirectory, Path.GetFileName(packagePath));
+                        outputPath = Path.Combine(outputDirectory, Path.GetFileName(packagePath));
                     }
 
-                    await SignPackageAsync(packagePath, outputPath, signArgs, signatureProvider, signRequest);
+                    await SignPackageAsync(packagePath, outputPath, logger, overwrite, signatureProvider, signPackageRequest, token);
                 }
                 catch (Exception e)
                 {
                     success = false;
-                    ExceptionUtilities.LogException(e, signArgs.Logger);
+                    ExceptionUtilities.LogException(e, logger);
                 }
             }
 
             if (success)
             {
-                signArgs.Logger.LogInformation(Strings.SignCommandSuccess);
+                logger.LogInformation(Strings.SignCommandSuccess);
             }
 
             return success ? 0 : 1;
         }
 
-        private static ISignatureProvider GetSignatureProvider(SignArgs signArgs)
+        private static ISignatureProvider GetSignatureProvider(string timestamper)
         {
             Rfc3161TimestampProvider timestampProvider = null;
 
-            if (!string.IsNullOrEmpty(signArgs.Timestamper))
+            if (!string.IsNullOrEmpty(timestamper))
             {
-                timestampProvider = new Rfc3161TimestampProvider(new Uri(signArgs.Timestamper));
+                timestampProvider = new Rfc3161TimestampProvider(new Uri(timestamper));
             }
 
             return new X509SignatureProvider(timestampProvider);
@@ -100,21 +114,23 @@ namespace NuGet.Commands
         private async Task<int> SignPackageAsync(
             string packagePath,
             string outputPath,
-            SignArgs signArgs,
+            ILogger logger,
+            bool Overwrite,
             ISignatureProvider signatureProvider,
-            SignPackageRequest request)
+            SignPackageRequest request,
+            CancellationToken token)
         {
             var tempFilePath = CopyPackage(packagePath);
 
             using (var packageWriteStream = File.Open(tempFilePath, FileMode.Open))
             {
 
-                if (signArgs.Overwrite)
+                if (Overwrite)
                 {
-                    await RemoveSignatureAsync(signArgs.Logger, signatureProvider, packageWriteStream, signArgs.Token);
+                    await RemoveSignatureAsync(logger, signatureProvider, packageWriteStream, token);
                 }
 
-                await AddSignatureAsync(signArgs.Logger, signatureProvider, request, packageWriteStream, signArgs.Token);
+                await AddSignatureAsync(logger, signatureProvider, request, packageWriteStream, token);
             }
 
             OverwritePackage(tempFilePath, outputPath);

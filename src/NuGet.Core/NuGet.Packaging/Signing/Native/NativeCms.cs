@@ -89,13 +89,10 @@ namespace NuGet.Packaging.Signing
         {
             foreach (var cert in encodedCertificates)
             {
-                // Construct the blob
-                var unmanagedCert = IntPtr.Zero;
-                var unmanagedBlob = IntPtr.Zero;
-                try
+                using (var hb = new HeapBlockRetainer())
                 {
                     // Build blob holder
-                    unmanagedCert = Marshal.AllocHGlobal(cert.Length);
+                    var unmanagedCert = hb.Alloc(cert.Length);
                     Marshal.Copy(cert, 0, unmanagedCert, cert.Length);
                     var blob = new CRYPT_INTEGER_BLOB_INTPTR()
                     {
@@ -104,7 +101,7 @@ namespace NuGet.Packaging.Signing
                     };
 
                     // Copy it to unmanaged memory
-                    unmanagedBlob = Marshal.AllocHGlobal(Marshal.SizeOf(blob));
+                    var unmanagedBlob = hb.Alloc(Marshal.SizeOf(blob));
                     Marshal.StructureToPtr(blob, unmanagedBlob, fDeleteOld: false);
 
                     // Invoke the request
@@ -117,43 +114,31 @@ namespace NuGet.Packaging.Signing
                         Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                     }
                 }
-                finally
-                {
-                    NativeUtilities.SafeFree(unmanagedCert);
-                    NativeUtilities.SafeFree(unmanagedBlob);
-                }
             }
         }
 
-        internal void AddTimestamp(byte[] timeStampCms)
+        internal unsafe void AddTimestamp(byte[] timeStampCms)
         {
-            var unmanagedTimestamp = IntPtr.Zero;
-            var unmanagedBlob = IntPtr.Zero;
-            var unmanagedAttr = IntPtr.Zero;
-            var unmanagedEncoded = IntPtr.Zero;
-            var unmanagedAddAttr = IntPtr.Zero;
-
-            try
+            using (var hb = new HeapBlockRetainer())
             {
                 // Wrap the timestamp in a CRYPT_INTEGER_BLOB and copy that to unmanaged memory
-                unmanagedTimestamp = Marshal.AllocHGlobal(timeStampCms.Length);
+                var unmanagedTimestamp = hb.Alloc(timeStampCms.Length);
                 Marshal.Copy(timeStampCms, 0, unmanagedTimestamp, timeStampCms.Length);
                 var blob = new CRYPT_INTEGER_BLOB_INTPTR()
                 {
                     cbData = (uint)timeStampCms.Length,
                     pbData = unmanagedTimestamp
                 };
-                unmanagedBlob = Marshal.AllocHGlobal(Marshal.SizeOf(blob));
-                Marshal.StructureToPtr(blob, unmanagedBlob, fDeleteOld: false);
+                var unmanagedBlob = (CRYPT_INTEGER_BLOB_INTPTR*)hb.Alloc(Marshal.SizeOf(blob));
 
                 // Wrap it in a CRYPT_ATTRIBUTE and copy that too
                 var attr = new CRYPT_ATTRIBUTE()
                 {
-                    pszObjId = Oids.SignatureTimeStampTokenAttributeOid,
+                    pszObjId = hb.AllocAsciiString(Oids.SignatureTimeStampTokenAttributeOid),
                     cValue = 1,
-                    rgValue = unmanagedBlob
+                    rgValue = (IntPtr)unmanagedBlob
                 };
-                unmanagedAttr = Marshal.AllocHGlobal(Marshal.SizeOf(attr));
+                var unmanagedAttr = hb.Alloc(Marshal.SizeOf(attr));
                 Marshal.StructureToPtr(attr, unmanagedAttr, fDeleteOld: false);
 
                 // Now encode the object using ye olde double-call-to-find-out-the-length mechanism :)
@@ -174,7 +159,7 @@ namespace NuGet.Packaging.Signing
                     }
                 }
 
-                unmanagedEncoded = Marshal.AllocHGlobal((int)encodedLength);
+                var unmanagedEncoded = hb.Alloc((int)encodedLength);
                 if (!NativeMethods.CryptEncodeObjectEx(
                     dwCertEncodingType: NativeMethods.X509_ASN_ENCODING | NativeMethods.PKCS_7_ASN_ENCODING,
                     lpszStructType: new IntPtr(NativeMethods.PKCS_ATTRIBUTE),
@@ -198,7 +183,7 @@ namespace NuGet.Packaging.Signing
                     }
                 };
                 addAttr.cbSize = (uint)Marshal.SizeOf(addAttr);
-                unmanagedAddAttr = Marshal.AllocHGlobal(Marshal.SizeOf(addAttr));
+                var unmanagedAddAttr = hb.Alloc(Marshal.SizeOf(addAttr));
                 Marshal.StructureToPtr(addAttr, unmanagedAddAttr, fDeleteOld: false);
 
                 // Now store the timestamp in the message... FINALLY
@@ -210,14 +195,6 @@ namespace NuGet.Packaging.Signing
                 {
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                 }
-            }
-            finally
-            {
-                NativeUtilities.SafeFree(unmanagedTimestamp);
-                NativeUtilities.SafeFree(unmanagedBlob);
-                NativeUtilities.SafeFree(unmanagedAttr);
-                NativeUtilities.SafeFree(unmanagedEncoded);
-                NativeUtilities.SafeFree(unmanagedAddAttr);
             }
         }
 

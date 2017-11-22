@@ -47,12 +47,6 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "SignCommandCertificatePasswordDescription")]
         public string CertificatePassword { get; set; }
 
-        [Option(typeof(NuGetCommand), "SignCommandCryptographicServiceProviderDescription")]
-        public string CryptographicServiceProvider { get; set; }
-
-        [Option(typeof(NuGetCommand), "SignCommandKeyContainerDescription")]
-        public string KeyContainer { get; set; }
-
         [Option(typeof(NuGetCommand), "SignCommandHashAlgorithmDescription")]
         public string HashAlgorithm { get; set; }
 
@@ -104,8 +98,6 @@ namespace NuGet.CommandLine
                 CertificateSubjectName = CertificateSubjectName,
                 CertificateFingerprint = CertificateFingerprint,
                 CertificatePassword = CertificatePassword,
-                CryptographicServiceProvider = CryptographicServiceProvider,
-                KeyContainer = KeyContainer,
                 SignatureHashAlgorithm = hashAlgorithm,
                 Logger = Console,
                 Overwrite = Overwrite,
@@ -117,17 +109,21 @@ namespace NuGet.CommandLine
 
         private HashAlgorithmName ValidateAndParseHashAlgorithm(string value, string name, SigningSpecifications spec)
         {
-            var hashAlgorithm = HashAlgorithmName.SHA256;
+            var hashAlgorithm = Common.HashAlgorithmName.SHA256;
 
             if (!string.IsNullOrEmpty(value))
             {
-                if (!spec.AllowedHashAlgorithms.Contains(value, StringComparer.InvariantCultureIgnoreCase) ||
-                    !Enum.TryParse(value, ignoreCase: true, result: out hashAlgorithm))
+                if (!spec.AllowedHashAlgorithms.Contains(value, StringComparer.OrdinalIgnoreCase))
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
+                    hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(value);
+                }
+            }
+
+            if (hashAlgorithm == Common.HashAlgorithmName.Unknown)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                         NuGetCommand.SignCommandInvalidArgumentException,
                         name));
-                }
             }
 
             return hashAlgorithm;
@@ -140,7 +136,7 @@ namespace NuGet.CommandLine
             if (!string.IsNullOrEmpty(CertificateStoreName) &&
                 !Enum.TryParse(CertificateStoreName, ignoreCase: true, result: out storeName))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     NuGetCommand.SignCommandInvalidArgumentException,
                     nameof(CertificateStoreName)));
             }
@@ -155,7 +151,7 @@ namespace NuGet.CommandLine
             if (!string.IsNullOrEmpty(CertificateStoreLocation) &&
                 !Enum.TryParse(CertificateStoreLocation, ignoreCase: true, result: out storeLocation))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     NuGetCommand.SignCommandInvalidArgumentException,
                     nameof(CertificateStoreLocation)));
             }
@@ -212,22 +208,6 @@ namespace NuGet.CommandLine
             {
                 // Thow if the user provided a fingerprint and a subject
                 throw new ArgumentException(NuGetCommand.SignCommandMultipleCertificateException);
-            }
-            else if (!string.IsNullOrEmpty(KeyContainer) && string.IsNullOrEmpty(CryptographicServiceProvider))
-            {
-                // Throw if the user provides a csp but no key container
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    NuGetCommand.SignCommandMissingArgumentException,
-                    nameof(CryptographicServiceProvider),
-                    nameof(KeyContainer)));
-            }
-            else if (!string.IsNullOrEmpty(CryptographicServiceProvider) && string.IsNullOrEmpty(KeyContainer))
-            {
-                // Throw if the user provides a key container but no csps
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    NuGetCommand.SignCommandMissingArgumentException,
-                    nameof(KeyContainer),
-                    nameof(CryptographicServiceProvider)));
             }
         }
     }

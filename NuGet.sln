@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27101.0
+VisualStudioVersion = 15.0.27119.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BD1946CE-5544-4F28-A04A-9C3D51113E1A}"
 EndProject
@@ -213,6 +213,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.CommandLine.Xplat.Tests", "test\NuGet.Core.Tests\NuGet.CommandLine.Xplat.Tests\NuGet.CommandLine.Xplat.Tests.csproj", "{8882D8C0-A77E-4B3D-9FC6-E9BF965031AB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Packaging.FuncTest", "test\NuGet.Core.FuncTests\NuGet.Packaging.FuncTest\NuGet.Packaging.FuncTest.csproj", "{6666CC37-75E0-451E-A24A-C51AF71B0C8E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.MSSigning.Extensions", "src\NuGet.Clients\NuGet.MSSigning.Extensions\NuGet.MSSigning.Extensions.csproj", "{32D8179F-2E22-441C-9DEE-6EB4AB8A5800}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -480,10 +482,6 @@ Global
 		{F4CA95DA-0045-4AC4-ABA0-560008CEB963}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4CA95DA-0045-4AC4-ABA0-560008CEB963}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4CA95DA-0045-4AC4-ABA0-560008CEB963}.Release|Any CPU.Build.0 = Release|Any CPU
-		{51600987-4126-4721-9F54-5EB1BE147E06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{51600987-4126-4721-9F54-5EB1BE147E06}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{51600987-4126-4721-9F54-5EB1BE147E06}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{51600987-4126-4721-9F54-5EB1BE147E06}.Release|Any CPU.Build.0 = Release|Any CPU
 		{34750BB3-4A21-433A-9C55-C051CA70C4AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{34750BB3-4A21-433A-9C55-C051CA70C4AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34750BB3-4A21-433A-9C55-C051CA70C4AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -512,6 +510,10 @@ Global
 		{6666CC37-75E0-451E-A24A-C51AF71B0C8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6666CC37-75E0-451E-A24A-C51AF71B0C8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6666CC37-75E0-451E-A24A-C51AF71B0C8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32D8179F-2E22-441C-9DEE-6EB4AB8A5800}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32D8179F-2E22-441C-9DEE-6EB4AB8A5800}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32D8179F-2E22-441C-9DEE-6EB4AB8A5800}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32D8179F-2E22-441C-9DEE-6EB4AB8A5800}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -599,6 +601,7 @@ Global
 		{57FB5B86-E5F9-46A1-B019-2A62C974C088} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
 		{8882D8C0-A77E-4B3D-9FC6-E9BF965031AB} = {7323F93B-D141-4001-BB9E-7AF14031143E}
 		{6666CC37-75E0-451E-A24A-C51AF71B0C8E} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
+		{32D8179F-2E22-441C-9DEE-6EB4AB8A5800} = {08F523EC-3C2A-4A00-A54C-2E54C5AC856B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3747A66A-00D1-41B8-A9C5-ED0D7BEA9D25}
