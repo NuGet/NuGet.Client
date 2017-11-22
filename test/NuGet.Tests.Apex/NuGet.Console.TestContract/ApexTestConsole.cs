@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,20 +22,25 @@ namespace NuGet.Console.TestContract
             _wpfConsole = WpfConsole;
         }
 
-        private void EnsureInitilizeConsole()
+        private bool EnsureInitilizeConsole()
         {
-            while (!_wpfConsole.Dispatcher.IsStartCompleted || _wpfConsole.Host == null)
+            _wpfConsole.Dispatcher.Start();
+            var stopwatch = Stopwatch.StartNew();
+            var timeout = TimeSpan.FromMinutes(5);
+            do
             {
-                Thread.Sleep(100);
+                if (_wpfConsole.Dispatcher.IsStartCompleted && _wpfConsole.Host != null) { return true; }
+                System.Threading.Thread.Sleep(100);
             }
+            while (stopwatch.Elapsed < timeout);
+            return false;
         }
 
         public bool IsPackageInstalled(string projectName, string packageId, string version)
         {
-            EnsureInitilizeConsole();
             _wpfConsole.Clear();
             var command = $"Get-Package {packageId} -ProjectName {projectName}";
-            if (WaitForActionComplete(() => RunCommand(command), TimeSpan.FromSeconds(5)))
+            if (WaitForActionComplete(() => RunCommand(command), TimeSpan.FromMinutes(5)))
             {
                 var snapshot = (_wpfConsole.Content as IWpfTextViewHost).TextView.TextBuffer.CurrentSnapshot;
                 for (var i = 0; i < snapshot.LineCount; i++)
@@ -54,13 +60,11 @@ namespace NuGet.Console.TestContract
 
         public void Clear()
         {
-            EnsureInitilizeConsole();
             _wpfConsole.Clear();
         }
 
         public void RunCommand(string command)
         {
-            EnsureInitilizeConsole();
             if (!string.IsNullOrEmpty(command))
             {
                 UIInvoke(async () =>
@@ -77,7 +81,10 @@ namespace NuGet.Console.TestContract
 
         public bool WaitForActionComplete(Action action, TimeSpan timeout)
         {
-            EnsureInitilizeConsole();
+            if (!EnsureInitilizeConsole())
+            {
+                return false;
+            }
             var taskCompletionSource = new TaskCompletionSource<bool>();
             EventHandler eventHandler = (s, e) => taskCompletionSource.TrySetResult(true);
 

@@ -45,6 +45,11 @@ namespace NuGet.Tests.Apex
             _hostFixture.Value.EnsureHost();
         }
 
+        public override void CloseVisualStudioHost()
+        {
+            VisualStudio.Stop();
+        }
+
         public IOperations Operations
         {
             get

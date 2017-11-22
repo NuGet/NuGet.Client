@@ -9,7 +9,7 @@ namespace NuGet.Tests.Apex
     public class NuGetConsoleTestExtension : NuGetBaseTestExtension<object, NuGetConsoleTestExtensionVerifier>
     {
         private ApexTestConsole _pmConsole;
-        private TimeSpan _timeout = TimeSpan.FromSeconds(5);
+        private TimeSpan _timeout = TimeSpan.FromMinutes(5);
 
         public string _projectName { get; set; }
 

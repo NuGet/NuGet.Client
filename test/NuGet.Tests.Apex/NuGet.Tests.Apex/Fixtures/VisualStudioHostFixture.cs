@@ -43,7 +43,7 @@ namespace NuGet.Tests.Apex
                     // VSO 178569: Access to DTE during shutdown may throw a variety of COM exceptions
                     // if inaccessible.
                 }
-                catch (Exception filterException)
+                catch (Exception)
                 {
                     //this.Logger.WriteException(EntryType.Warning, filterException, "Could not to tear down the message filter.");
                 }
