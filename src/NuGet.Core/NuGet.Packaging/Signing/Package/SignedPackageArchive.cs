@@ -82,5 +82,15 @@ namespace NuGet.Packaging.Signing
                 writeZip.GetEntry(_signingSpecification.SignaturePath).Delete();
             }
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _zipWriteStream.Dispose();                
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }
