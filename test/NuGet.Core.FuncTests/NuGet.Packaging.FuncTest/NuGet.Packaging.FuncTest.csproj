@@ -2,9 +2,10 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net46</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.0;net46</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">netcoreapp1.0</TargetFrameworks>
     <TestProject>true</TestProject>
-    <TestProjectType>functional</TestProjectType>
+    <UseParallelXunit>true</UseParallelXunit>
   </PropertyGroup>
 
   <ItemGroup>
