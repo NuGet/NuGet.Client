@@ -1038,8 +1038,10 @@ namespace NuGet.Test
         private ISettings PopulateSettingsWithSources(SourceRepositoryProvider sourceRepositoryProvider, TestDirectory settingsDirectory)
         {
             var Settings = new Settings(settingsDirectory);
+
             foreach (var source in sourceRepositoryProvider.GetRepositories())
-                Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+                if (source.PackageSource.Source != NuGetConstants.V3FeedUrl) 
+                    Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
 
             return Settings;
         }
