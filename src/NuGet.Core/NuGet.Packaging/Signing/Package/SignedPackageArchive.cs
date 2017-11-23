@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Signing
         private readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
         public SignedPackageArchive(Stream packageStream)
-            : base(new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: false), DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
+            : base(new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true), DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
             ZipStream = packageStream ?? throw new ArgumentNullException(nameof(packageStream));
         }

@@ -108,16 +108,14 @@ namespace NuGet.Commands
             var tempFilePath = CopyPackage(packagePath);
 
             using (var packageWriteStream = File.Open(tempFilePath, FileMode.Open))
-            using (var package = new SignedPackageArchive(packageWriteStream))
-            {               
-                var signer = new Signer(package, signatureProvider);
+            {
 
                 if (overwrite)
                 {
-                    await signer.RemoveSignaturesAsync(logger, CancellationToken.None);
+                    await RemoveSignatureAsync(logger, signatureProvider, packageWriteStream);
                 }
 
-                await signer.SignAsync(request, logger, CancellationToken.None);
+                await AddSignatureAsync(logger, signatureProvider, request, packageWriteStream);
             }
 
             OverwritePackage(tempFilePath, outputPath);
@@ -125,6 +123,24 @@ namespace NuGet.Commands
             FileUtility.Delete(tempFilePath);
 
             return 0;
+        }
+
+        private static async Task AddSignatureAsync(ILogger logger, ISignatureProvider signatureProvider, SignPackageRequest request, FileStream packageWriteStream)
+        {
+            using (var package = new SignedPackageArchive(packageWriteStream))
+            {
+                var signer = new Signer(package, signatureProvider);
+                await signer.SignAsync(request, logger, CancellationToken.None);
+            }
+        }
+
+        private static async Task RemoveSignatureAsync(ILogger logger, ISignatureProvider signatureProvider, FileStream packageWriteStream)
+        {
+            using (var package = new SignedPackageArchive(packageWriteStream))
+            {
+                var signer = new Signer(package, signatureProvider);
+                await signer.RemoveSignaturesAsync(logger, CancellationToken.None);
+            }
         }
 
         private static string CopyPackage(string sourceFilePath)
