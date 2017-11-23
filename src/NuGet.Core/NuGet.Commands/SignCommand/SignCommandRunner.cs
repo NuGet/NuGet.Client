@@ -21,6 +21,7 @@ namespace NuGet.Commands
     {
         public int ExecuteCommand(SignArgs signArgs)
         {
+
             var success = true;
 
             // resolve path into multiple packages if needed.
@@ -29,6 +30,7 @@ namespace NuGet.Commands
 
             var cert = GetCertificate(signArgs);
 
+            signArgs.Logger.LogInformation(Environment.NewLine);
             signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.SignCommandDisplayCertificate,
                 $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(cert)}"));
@@ -37,7 +39,14 @@ namespace NuGet.Commands
             {
                 signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.SignCommandDisplayTimestamper,
-                    $"{Environment.NewLine}{signArgs.Timestamper}"));
+                    $"{Environment.NewLine}{signArgs.Timestamper}{Environment.NewLine}"));
+            }
+
+            if (!string.IsNullOrEmpty(signArgs.OutputDirectory))
+            {
+                signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    Strings.SignCommandOutputPath,
+                    $"{Environment.NewLine}{signArgs.OutputDirectory}{Environment.NewLine}"));
             }
 
             var signRequest = GenerateSignPackageRequest(signArgs, cert);
@@ -47,7 +56,18 @@ namespace NuGet.Commands
             {
                 try
                 {
-                    SignPackage(packagePath, signArgs.Logger, signatureProvider, signRequest);
+                    string outputPath;
+
+                    if (string.IsNullOrEmpty(signArgs.OutputDirectory))
+                    {
+                        outputPath = packagePath;
+                    }
+                    else
+                    {
+                        outputPath = Path.Combine(signArgs.OutputDirectory, Path.GetFileName(packagePath));
+                    }
+
+                    SignPackage(packagePath, outputPath, signArgs.Logger, signatureProvider, signRequest);
                 }
                 catch (Exception e)
                 {
@@ -76,7 +96,7 @@ namespace NuGet.Commands
             return new X509SignatureProvider(timestampProvider);
         }
 
-        private int SignPackage(string packagePath, ILogger logger, ISignatureProvider signatureProvider, SignPackageRequest request)
+        private int SignPackage(string packagePath, string outputPath, ILogger logger, ISignatureProvider signatureProvider, SignPackageRequest request)
         {
             var tempFilePath = CopyPackage(packagePath);
 
@@ -88,8 +108,10 @@ namespace NuGet.Commands
                 signer.SignAsync(request, logger, CancellationToken.None).Wait();
             }
 
-            OverwritePackage(tempFilePath, packagePath);
-            
+            OverwritePackage(tempFilePath, outputPath);
+
+            FileUtility.Delete(tempFilePath);
+
             return 0;
         }
 

@@ -610,8 +610,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Detected package version outside of dependency constraint: {0} requires {1} but version {2} was resolved.</value>
   </data>
   <data name="SignCommandDisplayCertificate" xml:space="preserve">
-    <value>
-Signing package(s) with certificate: {0}</value>
+    <value>Signing package(s) with certificate: {0}</value>
     <comment>0 -  X509Certificate2 details in the following format -
 Subject Name:
 SHA1 hash:
@@ -656,9 +655,7 @@ Valid from:</comment>
 3 - second property value</comment>
   </data>
   <data name="SignCommandDisplayTimestamper" xml:space="preserve">
-    <value>
-Timestamping package(s) with: {0}
-</value>
+    <value>Timestamping package(s) with: {0}</value>
     <comment>0 -  url to the timestamping authority</comment>
   </data>
   <data name="VerifyCommand_PackageIsNotValid" xml:space="preserve">
@@ -666,5 +663,9 @@ Timestamping package(s) with: {0}
   </data>
   <data name="VerifyCommand_VerificationTypeNotSupported" xml:space="preserve">
     <value>Verification type not supported. Please use only one of the following supported types: -Signatures</value>
+  </data>
+  <data name="SignCommandOutputPath" xml:space="preserve">
+    <value>Signed package(s) output path: {0}</value>
+    <comment>0 - output directory path</comment>
   </data>
 </root>
