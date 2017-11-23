@@ -14,7 +14,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public interface ISignedPackageWriter
     {
-        Stream ZipWriteStream { get; }
 
 #if IS_DESKTOP
         /// <summary>

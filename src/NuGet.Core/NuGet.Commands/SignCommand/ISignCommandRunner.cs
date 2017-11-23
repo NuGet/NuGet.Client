@@ -4,11 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NuGet.Commands
 {
     public interface ISignCommandRunner
     {
-        int ExecuteCommand(SignArgs signArgs);
+        Task<int> ExecuteCommandAsync(SignArgs signArgs);
     }
 }

@@ -25,10 +25,9 @@ namespace NuGet.Packaging.FuncTest
         public static async Task<string> CreateSignedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg)
         {
             var testLogger = new TestLogger();
-            var zipReadStream = nupkg.CreateAsStream();
             var zipWriteStream = nupkg.CreateAsStream();
 
-            var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream);
+            var signPackage = new SignedPackageArchive(zipWriteStream);
 
             var signedPackagePath = Path.GetTempFileName();
 
@@ -55,10 +54,9 @@ namespace NuGet.Packaging.FuncTest
         public static async Task<string> CreateSignedAndTimeStampedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg)
         {
             var testLogger = new TestLogger();
-            var zipReadStream = nupkg.CreateAsStream();
             var zipWriteStream = nupkg.CreateAsStream();
 
-            var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream);
+            var signPackage = new SignedPackageArchive(zipWriteStream);
 
             var signedPackagePath = Path.GetTempFileName();
 
@@ -87,10 +85,9 @@ namespace NuGet.Packaging.FuncTest
             var copiedSignedPackagePath = Path.GetTempFileName();
             File.Copy(signedPackagePath, copiedSignedPackagePath, overwrite: true);
 
-            using (var zipReadStream = File.OpenRead(signedPackagePath))
             using (var zipWriteStream = File.Open(copiedSignedPackagePath, FileMode.Open))
             {
-                var signedPackage = new SignedPackageArchive(zipReadStream, zipWriteStream);
+                var signedPackage = new SignedPackageArchive(zipWriteStream);
                 var signer = new Signer(signedPackage, testSignatureProvider);
 
                 await signer.RemoveSignaturesAsync(testLogger, CancellationToken.None);

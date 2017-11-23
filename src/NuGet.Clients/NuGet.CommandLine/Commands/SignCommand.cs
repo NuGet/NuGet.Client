@@ -65,13 +65,16 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "SignCommandOverwriteDescription")]
         public bool Overwrite { get; set; }
 
-        public override Task ExecuteCommandAsync()
+        public override async Task ExecuteCommandAsync()
         {
             var signArgs = GetSignArgs();
             var signCommandRunner = new SignCommandRunner();
-            var result = signCommandRunner.ExecuteCommand(signArgs);
+            var result = await signCommandRunner.ExecuteCommandAsync(signArgs);
 
-            return Task.FromResult(result);
+            if (result != 0)
+            {
+                throw new ExitCodeException(exitCode: result);
+            }
         }
 
         /// <summary>

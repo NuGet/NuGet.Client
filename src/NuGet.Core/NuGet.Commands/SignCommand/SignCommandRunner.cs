@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Protocol;
@@ -19,9 +20,9 @@ namespace NuGet.Commands
     /// </summary>
     public class SignCommandRunner : ISignCommandRunner
     {
-        public int ExecuteCommand(SignArgs signArgs)
-        {
 
+        public async Task<int> ExecuteCommandAsync(SignArgs signArgs)
+        {
             var success = true;
 
             // resolve path into multiple packages if needed.
@@ -67,7 +68,7 @@ namespace NuGet.Commands
                         outputPath = Path.Combine(signArgs.OutputDirectory, Path.GetFileName(packagePath));
                     }
 
-                    SignPackage(packagePath, outputPath, signArgs.Logger, signatureProvider, signRequest);
+                    await SignPackageAsync(packagePath, outputPath, signArgs.Logger, signatureProvider, signRequest, signArgs.Overwrite);
                 }
                 catch (Exception e)
                 {
@@ -96,16 +97,27 @@ namespace NuGet.Commands
             return new X509SignatureProvider(timestampProvider);
         }
 
-        private int SignPackage(string packagePath, string outputPath, ILogger logger, ISignatureProvider signatureProvider, SignPackageRequest request)
+        private async Task<int> SignPackageAsync(
+            string packagePath,
+            string outputPath,
+            ILogger logger,
+            ISignatureProvider signatureProvider,
+            SignPackageRequest request,
+            bool overwrite)
         {
             var tempFilePath = CopyPackage(packagePath);
 
             using (var packageWriteStream = File.Open(tempFilePath, FileMode.Open))
-            using (var packageReadStream = File.OpenRead(packagePath))
             {
-                var package = new SignedPackageArchive(packageReadStream, packageWriteStream);
+                var package = new SignedPackageArchive(packageWriteStream);
                 var signer = new Signer(package, signatureProvider);
-                signer.SignAsync(request, logger, CancellationToken.None).Wait();
+
+                if (overwrite)
+                {
+                    await signer.RemoveSignaturesAsync(logger, CancellationToken.None);
+                }
+
+                await signer.SignAsync(request, logger, CancellationToken.None);
             }
 
             OverwritePackage(tempFilePath, outputPath);
