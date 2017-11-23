@@ -110,17 +110,9 @@ namespace NuGet.Commands
 
             OverwritePackage(tempFilePath, outputPath);
 
-            CleanUp(tempFilePath);
+            FileUtility.Delete(tempFilePath);
 
             return 0;
-        }
-
-        private static void CleanUp(string tempFilePath)
-        {
-            if (File.Exists(tempFilePath))
-            {
-                File.Delete(tempFilePath);
-            }
         }
 
         private static string CopyPackage(string sourceFilePath)
