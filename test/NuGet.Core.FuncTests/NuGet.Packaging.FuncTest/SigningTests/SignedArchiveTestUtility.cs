@@ -21,15 +21,16 @@ namespace NuGet.Packaging.FuncTest
         /// </summary>
         /// <param name="testCert">Certificate to be used while signing the package</param>
         /// <param name="nupkg">Package to be signed</param>
+        /// <param name="dir">Directory for placing the signed package</param>
         /// <returns>Path to the signed copy of the package</returns>
-        public static async Task<string> CreateSignedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg)
+        public static async Task<string> CreateSignedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg, string dir)
         {
             var testLogger = new TestLogger();
             var zipWriteStream = nupkg.CreateAsStream();
 
             var signPackage = new SignedPackageArchive(zipWriteStream);
 
-            var signedPackagePath = Path.GetTempFileName();
+            var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
 
             // Sign the package
             await SignPackageAsync(testLogger, testCert.Source.Cert, signPackage);
@@ -51,14 +52,14 @@ namespace NuGet.Packaging.FuncTest
         /// <param name="testCert">Certificate to be used while signing the package</param>
         /// <param name="nupkg">Package to be signed</param>
         /// <returns>Path to the signed copy of the package</returns>
-        public static async Task<string> CreateSignedAndTimeStampedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg)
+        public static async Task<string> CreateSignedAndTimeStampedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg, string dir)
         {
             var testLogger = new TestLogger();
             var zipWriteStream = nupkg.CreateAsStream();
 
             var signPackage = new SignedPackageArchive(zipWriteStream);
 
-            var signedPackagePath = Path.GetTempFileName();
+            var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
 
             // Sign the package
             await SignAndTimeStampPackageAsync(testLogger, testCert.Source.Cert, signPackage);

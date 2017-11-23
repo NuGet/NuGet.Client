@@ -60,6 +60,7 @@ namespace NuGet.Packaging
         public PackageArchiveReader(Stream stream, bool leaveStreamOpen)
             : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen), DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
+            ZipStream = stream;
         }
 
         /// <summary>
@@ -72,6 +73,7 @@ namespace NuGet.Packaging
         public PackageArchiveReader(Stream stream, bool leaveStreamOpen, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
             : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen), frameworkProvider, compatibilityProvider)
         {
+            ZipStream = stream;
         }
 
         /// <summary>

@@ -108,8 +108,8 @@ namespace NuGet.Commands
             var tempFilePath = CopyPackage(packagePath);
 
             using (var packageWriteStream = File.Open(tempFilePath, FileMode.Open))
-            {
-                var package = new SignedPackageArchive(packageWriteStream);
+            using (var package = new SignedPackageArchive(packageWriteStream))
+            {               
                 var signer = new Signer(package, signatureProvider);
 
                 if (overwrite)

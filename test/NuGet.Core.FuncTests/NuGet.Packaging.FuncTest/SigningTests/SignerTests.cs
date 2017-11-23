@@ -39,14 +39,17 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
             var testLogger = new TestLogger();
 
-            // Act
-            var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(_trustedTestCert, nupkg);
-
-            // Assert
-            using (var stream = File.OpenRead(signedPackagePath))
-            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+            using (var dir = TestDirectory.Create())
             {
-                zip.GetEntry(_signingSpecifications.SignaturePath).Should().NotBeNull();
+                // Act
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(_trustedTestCert, nupkg, dir);
+
+                // Assert
+                using (var stream = File.OpenRead(signedPackagePath))
+                using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+                {
+                    zip.GetEntry(_signingSpecifications.SignaturePath).Should().NotBeNull();
+                }
             }
         }
 
@@ -57,21 +60,24 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
             var testLogger = new TestLogger();
 
-            // Act
-            var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(_trustedTestCert, nupkg);
-
-            using (var stream = File.OpenRead(signedPackagePath))
-            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+            using (var dir = TestDirectory.Create())
             {
-                zip.GetEntry(_signingSpecifications.SignaturePath).Should().NotBeNull();
-            }
+                // Act
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(_trustedTestCert, nupkg, dir);
 
-            await SignedArchiveTestUtility.UnsignPackageAsync(signedPackagePath);
+                using (var stream = File.OpenRead(signedPackagePath))
+                using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+                {
+                    zip.GetEntry(_signingSpecifications.SignaturePath).Should().NotBeNull();
+                }
 
-            using (var stream = File.OpenRead(signedPackagePath))
-            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
-            {
-                zip.GetEntry(_signingSpecifications.SignaturePath).Should().BeNull();
+                await SignedArchiveTestUtility.UnsignPackageAsync(signedPackagePath);
+
+                using (var stream = File.OpenRead(signedPackagePath))
+                using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+                {
+                    zip.GetEntry(_signingSpecifications.SignaturePath).Should().BeNull();
+                }
             }
         }
     }
