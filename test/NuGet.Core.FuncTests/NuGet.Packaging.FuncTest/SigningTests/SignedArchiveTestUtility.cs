@@ -26,24 +26,26 @@ namespace NuGet.Packaging.FuncTest
         public static async Task<string> CreateSignedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg, string dir)
         {
             var testLogger = new TestLogger();
-            var zipWriteStream = nupkg.CreateAsStream();
 
-            using (var signPackage = new SignedPackageArchive(zipWriteStream))
+            using (var zipWriteStream = nupkg.CreateAsStream())
             {
-                // Sign the package
-                await SignPackageAsync(testLogger, testCert.Source.Cert, signPackage);
+                var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                using (var signPackage = new SignedPackageArchive(zipWriteStream))
+                {
+                    // Sign the package
+                    await SignPackageAsync(testLogger, testCert.Source.Cert, signPackage);
+                }
+
+                zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (Stream fileStream = File.OpenWrite(signedPackagePath))
+                {
+                    zipWriteStream.CopyTo(fileStream);
+                }
+
+                return signedPackagePath;
             }
-
-            var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
-
-            zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-            using (Stream fileStream = File.OpenWrite(signedPackagePath))
-            {
-                zipWriteStream.CopyTo(fileStream);
-            }
-
-            return signedPackagePath;
         }
 
         /// <summary>
@@ -56,24 +58,26 @@ namespace NuGet.Packaging.FuncTest
         public static async Task<string> CreateSignedAndTimeStampedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg, string dir)
         {
             var testLogger = new TestLogger();
-            var zipWriteStream = nupkg.CreateAsStream();
 
-            using (var signPackage = new SignedPackageArchive(zipWriteStream))
+            using (var zipWriteStream = nupkg.CreateAsStream())
             {
-                // Sign the package
-                await SignAndTimeStampPackageAsync(testLogger, testCert.Source.Cert, signPackage);
+                var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                using (var signPackage = new SignedPackageArchive(zipWriteStream))
+                {
+                    // Sign the package
+                    await SignAndTimeStampPackageAsync(testLogger, testCert.Source.Cert, signPackage);
+                }
+
+                zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (Stream fileStream = File.OpenWrite(signedPackagePath))
+                {
+                    zipWriteStream.CopyTo(fileStream);
+                }
+
+                return signedPackagePath;
             }
-
-            var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
-
-            zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-            using (Stream fileStream = File.OpenWrite(signedPackagePath))
-            {
-                zipWriteStream.CopyTo(fileStream);
-            }
-
-            return signedPackagePath;
         }
 
         /// <summary>

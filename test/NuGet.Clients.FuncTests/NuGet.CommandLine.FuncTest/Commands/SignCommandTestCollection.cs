@@ -3,10 +3,10 @@
 
 using Xunit;
 
-namespace NuGet.Packaging.FuncTest
+namespace NuGet.CommandLine.FuncTest.Commands
 {
-    [CollectionDefinition("Signing Funtional Test Collection")]
-    public class SigningTestCollection : ICollectionFixture<SigningTestFixture>
+    [CollectionDefinition("Sign Command Test Collection")]
+    public class SignCommandTestCollection : ICollectionFixture<SignCommandTestFixture>
     {
         // This class has no code, and is never created. Its purpose is simply
         // to be the place to apply [CollectionDefinition] and all the
