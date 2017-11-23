@@ -71,8 +71,9 @@ namespace NuGet.Packaging.FuncTest
                     zip.GetEntry(_signingSpecifications.SignaturePath).Should().NotBeNull();
                 }
 
-                await SignedArchiveTestUtility.UnsignPackageAsync(signedPackagePath);
+                await SignedArchiveTestUtility.UnsignPackageAsync(signedPackagePath, dir);
 
+                // Assert
                 using (var stream = File.OpenRead(signedPackagePath))
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
                 {

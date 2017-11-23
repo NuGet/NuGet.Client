@@ -28,12 +28,13 @@ namespace NuGet.Packaging.FuncTest
             var testLogger = new TestLogger();
             var zipWriteStream = nupkg.CreateAsStream();
 
-            var signPackage = new SignedPackageArchive(zipWriteStream);
+            using (var signPackage = new SignedPackageArchive(zipWriteStream))
+            {
+                // Sign the package
+                await SignPackageAsync(testLogger, testCert.Source.Cert, signPackage);
+            }
 
             var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
-
-            // Sign the package
-            await SignPackageAsync(testLogger, testCert.Source.Cert, signPackage);
 
             zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
 
@@ -57,12 +58,13 @@ namespace NuGet.Packaging.FuncTest
             var testLogger = new TestLogger();
             var zipWriteStream = nupkg.CreateAsStream();
 
-            var signPackage = new SignedPackageArchive(zipWriteStream);
+            using (var signPackage = new SignedPackageArchive(zipWriteStream))
+            {
+                // Sign the package
+                await SignAndTimeStampPackageAsync(testLogger, testCert.Source.Cert, signPackage);
+            }
 
             var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
-
-            // Sign the package
-            await SignAndTimeStampPackageAsync(testLogger, testCert.Source.Cert, signPackage);
 
             zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
 
@@ -78,19 +80,18 @@ namespace NuGet.Packaging.FuncTest
         /// unsigns a package for test purposes.
         /// This does not timestamp a signature and can be used outside corp network.
         /// </summary>
-        public static async Task UnsignPackageAsync(string signedPackagePath)
+        public static async Task UnsignPackageAsync(string signedPackagePath, string dir)
         {
             var testLogger = new TestLogger();
             var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
 
-            var copiedSignedPackagePath = Path.GetTempFileName();
+            var copiedSignedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
             File.Copy(signedPackagePath, copiedSignedPackagePath, overwrite: true);
 
             using (var zipWriteStream = File.Open(copiedSignedPackagePath, FileMode.Open))
+            using (var signedPackage = new SignedPackageArchive(zipWriteStream))
             {
-                var signedPackage = new SignedPackageArchive(zipWriteStream);
                 var signer = new Signer(signedPackage, testSignatureProvider);
-
                 await signer.RemoveSignaturesAsync(testLogger, CancellationToken.None);
             }
 
