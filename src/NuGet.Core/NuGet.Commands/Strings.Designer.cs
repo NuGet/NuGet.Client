@@ -1233,8 +1233,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 
-        ///Signing package(s) with certificate: {0}.
+        ///   Looks up a localized string similar to Signing package(s) with certificate: {0}.
         /// </summary>
         internal static string SignCommandDisplayCertificate {
             get {
@@ -1243,9 +1242,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 
-        ///Timestamping package(s) with: {0}
-        ///.
+        ///   Looks up a localized string similar to Timestamping package(s) with: {0}.
         /// </summary>
         internal static string SignCommandDisplayTimestamper {
             get {
@@ -1295,6 +1292,15 @@ namespace NuGet.Commands {
         internal static string SignCommandNoCertException {
             get {
                 return ResourceManager.GetString("SignCommandNoCertException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Signed package(s) output path: {0}.
+        /// </summary>
+        internal static string SignCommandOutputPath {
+            get {
+                return ResourceManager.GetString("SignCommandOutputPath", resourceCulture);
             }
         }
         
