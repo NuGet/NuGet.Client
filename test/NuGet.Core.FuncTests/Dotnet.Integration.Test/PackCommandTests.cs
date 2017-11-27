@@ -1940,5 +1940,49 @@ namespace ClassLibrary
                 
             }
         }
+        
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("TargetFramework", "netstandard1.4")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net46")]
+        public void PackCommand_PackTarget_IsIncremental(string tfmProperty, string tfmValue)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                Directory.CreateDirectory(workingDirectory);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, tfmProperty, tfmValue);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+
+                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+
+                var nupkgLastWriteTime = File.GetLastWriteTimeUtc(nupkgPath);
+                var nuspecLastWriteTime = File.GetLastWriteTimeUtc(nuspecPath);
+
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                Assert.Equal(nupkgLastWriteTime, File.GetLastWriteTimeUtc(nupkgPath));
+                Assert.Equal(nuspecLastWriteTime, File.GetLastWriteTimeUtc(nuspecPath));
+            }
+        }
     }
 }
