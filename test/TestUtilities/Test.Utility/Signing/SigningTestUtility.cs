@@ -111,5 +111,14 @@ namespace Test.Utility.Signing
         {
             return new X509Certificate2(cert.Export(X509ContentType.Cert));
         }
+
+        /// <summary>
+        /// Returns the public cert with the private key.
+        /// </summary>
+        public static X509Certificate2 GetPublicCertWithPrivateKey(X509Certificate2 cert)
+        {
+            var pass = new Guid().ToString();
+            return new X509Certificate2(cert.Export(X509ContentType.Pfx, pass), pass, X509KeyStorageFlags.PersistKeySet);
+        }
     }
 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 
@@ -92,5 +93,10 @@ namespace NuGet.Commands
         /// Logger to be used to display the logs during the execution of sign command.
         /// </summary>
         public ILogger Logger { get; set; }
+
+        /// <summary>
+        /// Cancellation Token.
+        /// </summary>
+        public CancellationToken Token { get; set; }
     }
 }

@@ -22,12 +22,26 @@ namespace Test.Utility.Signing
         public X509Certificate2 PublicCert => SigningTestUtility.GetPublicCert(Cert);
 
         /// <summary>
+        /// Public cert.
+        /// </summary>
+        public X509Certificate2 PublicCertWithPrivateKey => SigningTestUtility.GetPublicCertWithPrivateKey(Cert);
+
+        /// <summary>
         /// Trust the PublicCert cert for the life of the object.
         /// </summary>
         /// <remarks>Dispose of the object returned!</remarks>
         public TrustedTestCert<TestCertificate> WithTrust()
         {
             return new TrustedTestCert<TestCertificate>(this, e => PublicCert);
+        }
+
+        /// <summary>
+        /// Trust the PublicCert cert for the life of the object.
+        /// </summary>
+        /// <remarks>Dispose of the object returned!</remarks>
+        public TrustedTestCert<TestCertificate> WithPrivateKeyAndTrust()
+        {
+            return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey);
         }
 
         public static TestCertificate Generate()

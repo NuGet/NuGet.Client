@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Frameworks;
 
 namespace NuGet.Packaging.Signing
 {
@@ -14,19 +15,12 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class SignedPackageArchive : PackageArchiveReader, ISignedPackage
     {
-        private readonly Stream _zipWriteStream;
-        private readonly Stream _zipReadStream;
         private readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
-        public Stream ZipWriteStream => _zipWriteStream;
-
-        public Stream ZipReadStream => _zipReadStream;
-
-        public SignedPackageArchive(Stream packageReadStream, Stream packageWriteStream)
-            : base(packageReadStream)
+        public SignedPackageArchive(Stream packageStream)
+            : base(new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true), DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
-            _zipWriteStream = packageWriteStream ?? throw new ArgumentNullException(nameof(packageWriteStream));
-            _zipReadStream = packageReadStream ?? throw new ArgumentNullException(nameof(packageReadStream));
+            ZipStream = packageStream ?? throw new ArgumentNullException(nameof(packageStream));
         }
 
         /// <summary>
@@ -39,7 +33,7 @@ namespace NuGet.Packaging.Signing
         {
             token.ThrowIfCancellationRequested();
 
-            if (_zipReadStream == null)
+            if (ZipStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
@@ -49,13 +43,10 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.SignedPackagePackageAlreadySigned);
             }
 
-            using (var writeZip = new ZipArchive(_zipWriteStream, ZipArchiveMode.Update, leaveOpen: true))
+            var signatureEntry = Zip.CreateEntry(_signingSpecification.SignaturePath, CompressionLevel.NoCompression);
+            using (var signatureEntryStream = signatureEntry.Open())
             {
-                var signatureEntry = writeZip.CreateEntry(_signingSpecification.SignaturePath, CompressionLevel.NoCompression);
-                using (var signatureEntryStream = signatureEntry.Open())
-                {
-                    signatureStream.CopyTo(signatureEntryStream);
-                }
+                signatureStream.CopyTo(signatureEntryStream);
             }
         }
 
@@ -67,7 +58,7 @@ namespace NuGet.Packaging.Signing
         {
             token.ThrowIfCancellationRequested();
 
-            if (_zipReadStream == null)
+            if (ZipStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
@@ -77,19 +68,11 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.SignedPackageNotSignedOnRemove);
             }
 
-            using (var writeZip = new ZipArchive(_zipWriteStream, ZipArchiveMode.Update, leaveOpen: true))
-            {
-                writeZip.GetEntry(_signingSpecification.SignaturePath).Delete();
-            }
+            Zip.GetEntry(_signingSpecification.SignaturePath).Delete();
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _zipWriteStream.Dispose();                
-            }
-
             base.Dispose(disposing);
         }
     }

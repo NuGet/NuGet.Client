@@ -21,28 +21,31 @@ namespace NuGet.Packaging.FuncTest
         /// </summary>
         /// <param name="testCert">Certificate to be used while signing the package</param>
         /// <param name="nupkg">Package to be signed</param>
+        /// <param name="dir">Directory for placing the signed package</param>
         /// <returns>Path to the signed copy of the package</returns>
-        public static async Task<string> CreateSignedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg)
+        public static async Task<string> CreateSignedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg, string dir)
         {
             var testLogger = new TestLogger();
-            var zipReadStream = nupkg.CreateAsStream();
-            var zipWriteStream = nupkg.CreateAsStream();
 
-            var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream);
-
-            var signedPackagePath = Path.GetTempFileName();
-
-            // Sign the package
-            await SignPackageAsync(testLogger, testCert.Source.Cert, signPackage);
-
-            zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-            using (Stream fileStream = File.OpenWrite(signedPackagePath))
+            using (var zipWriteStream = nupkg.CreateAsStream())
             {
-                zipWriteStream.CopyTo(fileStream);
-            }
+                var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
 
-            return signedPackagePath;
+                using (var signPackage = new SignedPackageArchive(zipWriteStream))
+                {
+                    // Sign the package
+                    await SignPackageAsync(testLogger, testCert.Source.Cert, signPackage);
+                }
+
+                zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (Stream fileStream = File.OpenWrite(signedPackagePath))
+                {
+                    zipWriteStream.CopyTo(fileStream);
+                }
+
+                return signedPackagePath;
+            }
         }
 
         /// <summary>
@@ -52,47 +55,47 @@ namespace NuGet.Packaging.FuncTest
         /// <param name="testCert">Certificate to be used while signing the package</param>
         /// <param name="nupkg">Package to be signed</param>
         /// <returns>Path to the signed copy of the package</returns>
-        public static async Task<string> CreateSignedAndTimeStampedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg)
+        public static async Task<string> CreateSignedAndTimeStampedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg, string dir)
         {
             var testLogger = new TestLogger();
-            var zipReadStream = nupkg.CreateAsStream();
-            var zipWriteStream = nupkg.CreateAsStream();
 
-            var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream);
-
-            var signedPackagePath = Path.GetTempFileName();
-
-            // Sign the package
-            await SignAndTimeStampPackageAsync(testLogger, testCert.Source.Cert, signPackage);
-
-            zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-            using (Stream fileStream = File.OpenWrite(signedPackagePath))
+            using (var zipWriteStream = nupkg.CreateAsStream())
             {
-                zipWriteStream.CopyTo(fileStream);
-            }
+                var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
 
-            return signedPackagePath;
+                using (var signPackage = new SignedPackageArchive(zipWriteStream))
+                {
+                    // Sign the package
+                    await SignAndTimeStampPackageAsync(testLogger, testCert.Source.Cert, signPackage);
+                }
+
+                zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (Stream fileStream = File.OpenWrite(signedPackagePath))
+                {
+                    zipWriteStream.CopyTo(fileStream);
+                }
+
+                return signedPackagePath;
+            }
         }
 
         /// <summary>
         /// unsigns a package for test purposes.
         /// This does not timestamp a signature and can be used outside corp network.
         /// </summary>
-        public static async Task UnsignPackageAsync(string signedPackagePath)
+        public static async Task UnsignPackageAsync(string signedPackagePath, string dir)
         {
             var testLogger = new TestLogger();
             var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
 
-            var copiedSignedPackagePath = Path.GetTempFileName();
+            var copiedSignedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
             File.Copy(signedPackagePath, copiedSignedPackagePath, overwrite: true);
 
-            using (var zipReadStream = File.OpenRead(signedPackagePath))
             using (var zipWriteStream = File.Open(copiedSignedPackagePath, FileMode.Open))
+            using (var signedPackage = new SignedPackageArchive(zipWriteStream))
             {
-                var signedPackage = new SignedPackageArchive(zipReadStream, zipWriteStream);
                 var signer = new Signer(signedPackage, testSignatureProvider);
-
                 await signer.RemoveSignaturesAsync(testLogger, CancellationToken.None);
             }
 
