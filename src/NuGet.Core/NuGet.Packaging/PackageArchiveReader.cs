@@ -30,6 +30,10 @@ namespace NuGet.Packaging
         /// </summary>
         protected ZipArchive Zip => _zipArchive;
 
+        /// <summary>
+        /// Stream underlying the ZipArchive. Used to do signature verification on a SignedPackageArchive.
+        /// If this is null then we cannot perform signature verification.
+        /// </summary>
         protected Stream ZipStream { get; set; }
 
         /// <summary>

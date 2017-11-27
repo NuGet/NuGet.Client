@@ -63,7 +63,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void SignCommand_SignPackageWithTimestamping()
         {
             // Arrange

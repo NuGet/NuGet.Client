@@ -68,7 +68,7 @@ namespace NuGet.Commands
                         outputPath = Path.Combine(signArgs.OutputDirectory, Path.GetFileName(packagePath));
                     }
 
-                    await SignPackageAsync(packagePath, outputPath, signArgs.Logger, signatureProvider, signRequest, signArgs.Overwrite);
+                    await SignPackageAsync(packagePath, outputPath, signArgs, signatureProvider, signRequest);
                 }
                 catch (Exception e)
                 {
@@ -100,22 +100,21 @@ namespace NuGet.Commands
         private async Task<int> SignPackageAsync(
             string packagePath,
             string outputPath,
-            ILogger logger,
+            SignArgs signArgs,
             ISignatureProvider signatureProvider,
-            SignPackageRequest request,
-            bool overwrite)
+            SignPackageRequest request)
         {
             var tempFilePath = CopyPackage(packagePath);
 
             using (var packageWriteStream = File.Open(tempFilePath, FileMode.Open))
             {
 
-                if (overwrite)
+                if (signArgs.Overwrite)
                 {
-                    await RemoveSignatureAsync(logger, signatureProvider, packageWriteStream);
+                    await RemoveSignatureAsync(signArgs.Logger, signatureProvider, packageWriteStream, signArgs.Token);
                 }
 
-                await AddSignatureAsync(logger, signatureProvider, request, packageWriteStream);
+                await AddSignatureAsync(signArgs.Logger, signatureProvider, request, packageWriteStream, signArgs.Token);
             }
 
             OverwritePackage(tempFilePath, outputPath);
@@ -125,21 +124,30 @@ namespace NuGet.Commands
             return 0;
         }
 
-        private static async Task AddSignatureAsync(ILogger logger, ISignatureProvider signatureProvider, SignPackageRequest request, FileStream packageWriteStream)
+        private static async Task AddSignatureAsync(
+            ILogger logger,
+            ISignatureProvider signatureProvider,
+            SignPackageRequest request,
+            FileStream packageWriteStream,
+            CancellationToken token)
         {
             using (var package = new SignedPackageArchive(packageWriteStream))
             {
                 var signer = new Signer(package, signatureProvider);
-                await signer.SignAsync(request, logger, CancellationToken.None);
+                await signer.SignAsync(request, logger, token);
             }
         }
 
-        private static async Task RemoveSignatureAsync(ILogger logger, ISignatureProvider signatureProvider, FileStream packageWriteStream)
+        private static async Task RemoveSignatureAsync(
+            ILogger logger,
+            ISignatureProvider signatureProvider,
+            FileStream packageWriteStream,
+            CancellationToken token)
         {
             using (var package = new SignedPackageArchive(packageWriteStream))
             {
                 var signer = new Signer(package, signatureProvider);
-                await signer.RemoveSignaturesAsync(logger, CancellationToken.None);
+                await signer.RemoveSignaturesAsync(logger, token);
             }
         }
 
