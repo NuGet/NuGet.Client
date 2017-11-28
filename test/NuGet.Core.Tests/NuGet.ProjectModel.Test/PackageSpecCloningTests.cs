@@ -35,6 +35,8 @@ namespace NuGet.ProjectModel.Test
 
             //Assert
             Assert.Equal(originalBuildOptions.OutputName, clonedBuildOptions.OutputName);
+            Assert.False(object.ReferenceEquals(originalBuildOptions, clonedBuildOptions));
+
         }
 
         [Fact]

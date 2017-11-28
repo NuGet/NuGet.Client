@@ -235,6 +235,5 @@ namespace NuGet.ProjectModel
             }
             return null;
         }
-
     }
 }

@@ -41,9 +41,9 @@ namespace NuGet.ProjectModel
 
         public BuildOptions Clone()
         {
-            var options = new BuildOptions();
-            options.OutputName = OutputName;
-            return options;
+            var clone = new BuildOptions();
+            clone.OutputName = OutputName;
+            return clone;
         }
     }
 }
