@@ -7,6 +7,7 @@ using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading.Tasks;
 using NuGet.Common;
 
 namespace NuGet.Commands
@@ -28,11 +29,6 @@ namespace NuGet.Commands
         // Used to throw "Certificate store file not found"
         private const string CERTIFICATE_STORE = "Certificate store";
 
-#if IS_DESKTOP
-        [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "isatty")]
-        extern static int _isatty(int fd);
-#endif
-
         /// <summary>
         /// Looks for X509Certificates using the CertificateSourceOptions.
         /// Throws an InvalidOperationException if the option specifies a CertificateFilePath with invalid password.
@@ -40,7 +36,7 @@ namespace NuGet.Commands
         /// <param name="options">CertificateSourceOptions to be used while searching for the certificates.</param>
         /// <returns>An X509Certificate2Collection object containing matching certificates.
         /// If no matching certificates are found then it returns an empty collection.</returns>
-        public static X509Certificate2Collection GetCertificates(CertificateSourceOptions options)
+        public static async Task<X509Certificate2Collection> GetCertificatesAsync(CertificateSourceOptions options)
         {
             // check certificate path
             var resultCollection = new X509Certificate2Collection();
@@ -48,7 +44,7 @@ namespace NuGet.Commands
             {
                 try
                 {
-                    var cert = LoadCertificateFromFile(options);
+                    var cert = await LoadCertificateFromFileAsync(options);
 
                     resultCollection = new X509Certificate2Collection(cert);
                 }
@@ -87,9 +83,10 @@ namespace NuGet.Commands
             return resultCollection;
         }
 
-        private static X509Certificate2 LoadCertificateFromFile(CertificateSourceOptions options)
+        private static async Task<X509Certificate2> LoadCertificateFromFileAsync(CertificateSourceOptions options)
         {
             X509Certificate2 cert;
+
             if (!string.IsNullOrEmpty(options.CertificatePassword))
             {
                 cert = new X509Certificate2(options.CertificatePath, options.CertificatePassword); // use the password if the user provided it.
@@ -107,10 +104,7 @@ namespace NuGet.Commands
                     if (ex.HResult == ERROR_INVALID_PASSWORD_HRESULT &&
                         !options.NonInteractive)
                     {
-                        options.Logger.LogInformation($"Please provide password for: {options.CertificatePath}");
-                        options.Logger.LogInformation("Password: ");
-
-                        using (var password = ReadPasswordFromConsole())
+                        using (var password = await options.PasswordProvider.GetPassword(options.CertificatePath, options.Token))
                         {
                             cert = new X509Certificate2(options.CertificatePath, password);
                         }
@@ -172,43 +166,5 @@ namespace NuGet.Commands
                 }
             }
         }
-
-#if IS_DESKTOP
-        private static SecureString ReadPasswordFromConsole()
-        {
-            // When you redirect nuget.exe input, either from the shell with "<" or
-            // from code with ProcessStartInfo, throw exception on mono.
-            if (!RuntimeEnvironmentHelper.IsWindows && RuntimeEnvironmentHelper.IsMono && _isatty(1) != 1)
-            {
-                throw new InvalidOperationException();
-            }
-
-            var password = new SecureString();
-
-            ConsoleKeyInfo keyInfo;
-            while ((keyInfo = Console.ReadKey(intercept: true)).Key != ConsoleKey.Enter)
-            {
-                if (keyInfo.Key == ConsoleKey.Backspace)
-                {
-                    if (password.Length < 1)
-                    {
-                        continue;
-                    }
-                    Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
-                    Console.Write(' ');
-                    Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
-                    password.RemoveAt(password.Length - 1);
-                }
-                else
-                {
-                    password.AppendChar(keyInfo.KeyChar);
-                    Console.Write('*');
-                }
-            }
-            Console.WriteLine();
-
-            return password;
-        }
-#endif
     }
 }

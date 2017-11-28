@@ -4,8 +4,8 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using NuGet.Commands.SignCommand;
 using NuGet.Common;
-using NuGet.Packaging.Signing;
 
 namespace NuGet.Commands
 {
@@ -93,6 +93,11 @@ namespace NuGet.Commands
         /// Logger to be used to display the logs during the execution of sign command.
         /// </summary>
         public ILogger Logger { get; set; }
+
+        /// <summary>
+        /// Password provider to get the password from user for opening a pfx file.
+        /// </summary>
+        public IPasswordProvider PasswordProvider { get; set; }
 
         /// <summary>
         /// Cancellation Token.

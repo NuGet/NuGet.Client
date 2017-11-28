@@ -29,7 +29,7 @@ namespace NuGet.Commands
             var packagesToSign = LocalFolderUtility.ResolvePackageFromPath(signArgs.PackagePath);
             LocalFolderUtility.EnsurePackageFileExists(signArgs.PackagePath, packagesToSign);
 
-            var cert = GetCertificate(signArgs);
+            var cert = await GetCertificateAsync(signArgs);
 
             signArgs.Logger.LogInformation(Environment.NewLine);
             signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
@@ -174,7 +174,7 @@ namespace NuGet.Commands
             };
         }
 
-        private static X509Certificate2 GetCertificate(SignArgs signArgs)
+        private static async Task<X509Certificate2> GetCertificateAsync(SignArgs signArgs)
         {
             var certFindOptions = new CertificateSourceOptions()
             {
@@ -185,11 +185,12 @@ namespace NuGet.Commands
                 StoreName = signArgs.CertificateStoreName,
                 SubjectName = signArgs.CertificateSubjectName,
                 NonInteractive = signArgs.NonInteractive,
-                Logger = signArgs.Logger
+                PasswordProvider = signArgs.PasswordProvider,
+                Token = signArgs.Token
             };
 
             // get matching certificates
-            var matchingCertCollection = CertificateProvider.GetCertificates(certFindOptions);
+            var matchingCertCollection = await CertificateProvider.GetCertificatesAsync(certFindOptions);
 
             if (matchingCertCollection.Count > 1)
             {
