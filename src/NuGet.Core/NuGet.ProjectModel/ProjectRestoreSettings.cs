@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
@@ -47,7 +48,9 @@ namespace NuGet.ProjectModel
 
         public override int GetHashCode()
         {
-            return 318094734 + HideWarningsAndErrors.GetHashCode();
+            var hashCode = new HashCodeCombiner();
+            hashCode.AddObject(HideWarningsAndErrors);
+            return hashCode.CombinedHash;
         }
     }
 }
