@@ -181,16 +181,15 @@ namespace NuGet.ProjectModel.Test
 
             PackageSpec.PackOptions = CreatePackOptions();
 
-            PackageSpec.RuntimeGraph = new RuntimeGraph(); // TODO use CreatRuntimeGraph
+            PackageSpec.RuntimeGraph = CreateRuntimeGraph();
             PackageSpec.RestoreSettings = CreateProjectRestoreSettings();
             return PackageSpec;
         }
 
-        private RuntimeGraph CreateRuntimeGraph()
+        public static RuntimeGraph CreateRuntimeGraph()
         {
             var runtimeDescription = new RuntimeDescription(Guid.NewGuid().ToString());
-            var compatibilityProfile = new CompatibilityProfile(Guid.NewGuid().ToString());
-
+            var compatibilityProfile = CreateCompatibilityProfile("CompatibilityProfile");
             return new RuntimeGraph(new RuntimeDescription[] { runtimeDescription }, new CompatibilityProfile[] { compatibilityProfile });
         }
 
@@ -209,7 +208,7 @@ namespace NuGet.ProjectModel.Test
         [InlineData("ModifyScriptsEdit", true)]
         [InlineData("ModifyPackInclude", true)]
         [InlineData("ModifyPackOptions", true)]
-        //        [InlineData("ModifyRuntimeGraph", true)] - TODO NK - Look into this deeper = https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/RuntimeModel/RuntimeGraph.cs#L51-L54
+        [InlineData("ModifyRuntimeGraph", true)]
         //[InlineData("ModifyRestoreSettings", true)] = Not really included in the equals and hash code comparisons
         public void PackageSpecCloneTest(string methodName, bool validateJson)
         {
@@ -321,7 +320,7 @@ namespace NuGet.ProjectModel.Test
 
             public static void ModifyRuntimeGraph(PackageSpec packageSpec)
             {
-                packageSpec.RuntimeGraph = new RuntimeGraph();
+                packageSpec.RuntimeGraph.Supports["CompatibilityProfile"].RestoreContexts.Add(CreateFrameworkRuntimePair(rid : "win10-x64"));
             }
 
             public static void ModifyRestoreSettings(PackageSpec packageSpec)
@@ -661,6 +660,49 @@ namespace NuGet.ProjectModel.Test
             //Assert again
             Assert.NotEqual(originalWarningProperties, clone);
             Assert.Equal(2, clone.NoWarn.Count);
+        }
+
+        private static FrameworkRuntimePair CreateFrameworkRuntimePair(string tfm = "net461", string rid = "win-x64")
+        {
+            return new FrameworkRuntimePair(NuGetFramework.Parse(tfm), rid);
+        }
+
+        [Fact]
+        public void FrameworkRuntimePairCloneTest()
+        {
+            //Setup
+            var frp = CreateFrameworkRuntimePair();
+            //Act
+            var clone = frp.Clone();
+            //Assert
+            Assert.Equal(frp, clone);
+            Assert.False(object.ReferenceEquals(frp, clone));
+        }
+
+        private static CompatibilityProfile CreateCompatibilityProfile(string name, string tfm = "net461")
+        {
+            return new CompatibilityProfile(name, new FrameworkRuntimePair[] { CreateFrameworkRuntimePair(tfm, "win-x64"), CreateFrameworkRuntimePair(tfm, "win-x86") });
+        }
+
+        [Fact]
+        public void CompatibilityProfileCloneTest()
+        {
+            // Setup
+            var compat = CreateCompatibilityProfile("bla");
+            //Act
+            var clone = compat.Clone();
+            //Assert
+            Assert.Equal(compat, clone);
+            Assert.False(object.ReferenceEquals(compat, clone));
+            Assert.False(object.ReferenceEquals(compat.RestoreContexts[0], clone.RestoreContexts[0]));
+
+            // Act - Change the list of compat
+            compat.RestoreContexts.Add(CreateFrameworkRuntimePair(rid: "win10-x64"));
+
+            // Assert
+            Assert.NotEqual(compat, clone);
+            Assert.Equal(3, compat.RestoreContexts.Count);
+            Assert.Equal(2, clone.RestoreContexts.Count);
         }
 
     }
