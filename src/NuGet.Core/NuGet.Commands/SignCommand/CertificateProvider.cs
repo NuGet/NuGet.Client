@@ -3,8 +3,11 @@
 
 using System;
 using System.Globalization;
+using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Commands
 {
@@ -25,6 +28,11 @@ namespace NuGet.Commands
         // Used to throw "Certificate store file not found"
         private const string CERTIFICATE_STORE = "Certificate store";
 
+#if IS_DESKTOP
+        [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "isatty")]
+        extern static int _isatty(int fd);
+#endif
+
         /// <summary>
         /// Looks for X509Certificates using the CertificateSourceOptions.
         /// Throws an InvalidOperationException if the option specifies a CertificateFilePath with invalid password.
@@ -40,16 +48,7 @@ namespace NuGet.Commands
             {
                 try
                 {
-                    X509Certificate2 cert;
-
-                    if (!string.IsNullOrEmpty(options.CertificatePassword))
-                    {
-                        cert = new X509Certificate2(options.CertificatePath, options.CertificatePassword); // use the password if the user provided it.
-                    }
-                    else
-                    {
-                        cert = new X509Certificate2(options.CertificatePath);                        
-                    }
+                    var cert = LoadCertificateFromFile(options);
 
                     resultCollection = new X509Certificate2Collection(cert);
                 }
@@ -82,25 +81,72 @@ namespace NuGet.Commands
             }
             else
             {
-                var store = new X509Store(options.StoreName, options.StoreLocation);
+                resultCollection = LoadCertificateFromStore(options);
+            }
 
-                OpenStore(store);
+            return resultCollection;
+        }
 
-                if (!string.IsNullOrEmpty(options.Fingerprint))
-                {
-                    resultCollection = store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly: false);
-                }
-
-                if (!string.IsNullOrEmpty(options.SubjectName))
-                {
-                    resultCollection =  store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly: false);
-                }
-
+        private static X509Certificate2 LoadCertificateFromFile(CertificateSourceOptions options)
+        {
+            X509Certificate2 cert;
+            if (!string.IsNullOrEmpty(options.CertificatePassword))
+            {
+                cert = new X509Certificate2(options.CertificatePath, options.CertificatePassword); // use the password if the user provided it.
+            }
+            else
+            {
 #if IS_DESKTOP
-                store.Close();
+                try
+                {
+                    cert = new X509Certificate2(options.CertificatePath);
+                }
+                catch (CryptographicException ex)
+                {
+                    // prompt user for password if needed
+                    if (ex.HResult == ERROR_INVALID_PASSWORD_HRESULT &&
+                        !options.NonInteractive)
+                    {
+                        options.Logger.LogInformation($"Please provide password for: {options.CertificatePath}");
+                        options.Logger.LogInformation("Password: ");
+
+                        using (var password = ReadPasswordFromConsole())
+                        {
+                            cert = new X509Certificate2(options.CertificatePath, password);
+                        }
+                    }
+                    else
+                    {
+                        throw ex;
+                    }
+                }
+#else
+                cert = new X509Certificate2(options.CertificatePath);
 #endif
             }
 
+            return cert;
+        }
+
+        private static X509Certificate2Collection LoadCertificateFromStore(CertificateSourceOptions options)
+        {
+            var resultCollection = new X509Certificate2Collection();
+            var store = new X509Store(options.StoreName, options.StoreLocation);
+
+            OpenStore(store);
+
+            if (!string.IsNullOrEmpty(options.Fingerprint))
+            {
+                resultCollection = store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly: true);
+            }
+            else if (!string.IsNullOrEmpty(options.SubjectName))
+            {
+                resultCollection = store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly: true);
+            }
+
+#if IS_DESKTOP
+            store.Close();
+#endif
             return resultCollection;
         }
 
@@ -126,5 +172,43 @@ namespace NuGet.Commands
                 }
             }
         }
+
+#if IS_DESKTOP
+        private static SecureString ReadPasswordFromConsole()
+        {
+            // When you redirect nuget.exe input, either from the shell with "<" or
+            // from code with ProcessStartInfo, throw exception on mono.
+            if (!RuntimeEnvironmentHelper.IsWindows && RuntimeEnvironmentHelper.IsMono && _isatty(1) != 1)
+            {
+                throw new InvalidOperationException();
+            }
+
+            var password = new SecureString();
+
+            ConsoleKeyInfo keyInfo;
+            while ((keyInfo = Console.ReadKey(intercept: true)).Key != ConsoleKey.Enter)
+            {
+                if (keyInfo.Key == ConsoleKey.Backspace)
+                {
+                    if (password.Length < 1)
+                    {
+                        continue;
+                    }
+                    Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                    Console.Write(' ');
+                    Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                    password.RemoveAt(password.Length - 1);
+                }
+                else
+                {
+                    password.AppendChar(keyInfo.KeyChar);
+                    Console.Write('*');
+                }
+            }
+            Console.WriteLine();
+
+            return password;
+        }
+#endif
     }
 }

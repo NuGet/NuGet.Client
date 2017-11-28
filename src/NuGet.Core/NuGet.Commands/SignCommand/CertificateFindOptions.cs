@@ -4,6 +4,7 @@
 using System;
 using System.Security;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Common;
 
 namespace NuGet.Commands
 {
@@ -42,6 +43,16 @@ namespace NuGet.Commands
         /// The SHA-1 fingerprint of the certificate.
         /// </summary>
         public string Fingerprint { get; set; }
+
+        /// <summary>
+        /// bool used to indicate if the user can be prompted for password.
+        /// </summary>
+        public bool NonInteractive { get; set; }
+
+        /// <summary>
+        /// bool used to indicate if the user can be prompted for password.
+        /// </summary>
+        public ILogger Logger { get; set; }
 
     }
 }

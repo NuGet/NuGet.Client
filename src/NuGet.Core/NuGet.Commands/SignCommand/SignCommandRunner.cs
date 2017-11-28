@@ -183,7 +183,9 @@ namespace NuGet.Commands
                 Fingerprint = signArgs.CertificateFingerprint,
                 StoreLocation = signArgs.CertificateStoreLocation,
                 StoreName = signArgs.CertificateStoreName,
-                SubjectName = signArgs.CertificateSubjectName
+                SubjectName = signArgs.CertificateSubjectName,
+                NonInteractive = signArgs.NonInteractive,
+                Logger = signArgs.Logger
             };
 
             // get matching certificates
