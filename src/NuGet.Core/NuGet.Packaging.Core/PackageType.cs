@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,9 @@ using NuGet.Shared;
 
 namespace NuGet.Packaging.Core
 {
+    /**
+     * It is important that this type remains immutable due to the cloning of package specs
+     **/
     public class PackageType : IEquatable<PackageType>
     {
         public static readonly Version EmptyVersion = new Version(0, 0);

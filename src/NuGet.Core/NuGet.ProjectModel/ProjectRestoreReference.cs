@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -68,6 +68,17 @@ namespace NuGet.ProjectModel
                 && IncludeAssets == other.IncludeAssets
                 && ExcludeAssets == other.ExcludeAssets
                 && PrivateAssets == other.PrivateAssets;
+        }
+
+        public ProjectRestoreReference Clone()
+        {
+            var clonedObject = new ProjectRestoreReference();
+            clonedObject.ProjectPath = ProjectPath;
+            clonedObject.ProjectUniqueName = ProjectUniqueName;
+            clonedObject.ExcludeAssets = ExcludeAssets;
+            clonedObject.IncludeAssets = IncludeAssets;
+            clonedObject.PrivateAssets = PrivateAssets;
+            return clonedObject;
         }
     }
 }

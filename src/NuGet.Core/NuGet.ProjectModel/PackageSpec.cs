@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
@@ -185,23 +186,53 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// Clone a PackageSpec and underlying JObject.
+        /// Clone a PackageSpec
         /// </summary>
         public PackageSpec Clone()
         {
-            var writer = new JsonObjectWriter();
-            PackageSpecWriter.Write(this, writer);
-            var json = writer.GetJObject();
-
-            var spec = JsonPackageSpecReader.GetPackageSpec(json);
+            var spec = new PackageSpec();
             spec.Name = Name;
             spec.FilePath = FilePath;
-
+            spec.Title = Title;
+            spec.IsDefaultVersion = IsDefaultVersion;
+            spec.HasVersionSnapshot = HasVersionSnapshot;
+            spec.Description = Description;
+            spec.Summary = Summary;
+            spec.ReleaseNotes = ReleaseNotes;
+            spec.Authors = (string[]) Authors?.Clone();
+            spec.Owners = (string[]) Owners?.Clone();
+            spec.ProjectUrl = ProjectUrl;
+            spec.IconUrl = IconUrl;
+            spec.LicenseUrl = LicenseUrl;
+            spec.RequireLicenseAcceptance = RequireLicenseAcceptance;
+            spec.Language = Language;
+            spec.Copyright = Copyright;
+            spec.Version = Version; 
+            spec.BuildOptions = BuildOptions?.Clone();
+            spec.Tags = (string[]) Tags?.Clone();    
+            spec.ContentFiles = ContentFiles != null ? new List<string>(ContentFiles) : null;
+            spec.Dependencies = Dependencies?.Select(item => item.Clone()).ToList();
+            spec.Scripts = CloneScripts(Scripts);
+            spec.PackInclude = PackInclude != null ? new Dictionary<string, string>(PackInclude) : null;
+            spec.PackOptions = PackOptions?.Clone();
+            spec.TargetFrameworks = TargetFrameworks?.Select(item => item.Clone()).ToList();
+            spec.RuntimeGraph = RuntimeGraph?.Clone();
+            spec.RestoreSettings = RestoreSettings?.Clone();
+            spec.RestoreMetadata = RestoreMetadata?.Clone();
             return spec;
         }
 
-        public PackageSpec WithSettings(ISettings settings)
+        private IDictionary<string, IEnumerable<string>> CloneScripts(IDictionary<string, IEnumerable<string>> toBeCloned)
         {
+            if (toBeCloned != null)
+            {
+                var clone = new Dictionary<string, IEnumerable<string>>();
+                foreach (var kvp in toBeCloned)
+                {
+                    clone.Add(kvp.Key, new List<string>(kvp.Value));
+                }
+                return clone;
+            }
             return null;
         }
     }

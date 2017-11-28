@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -76,5 +76,11 @@ namespace NuGet.ProjectModel
         {
             return StringComparer.Ordinal.Compare(PackagePath, other.PackagePath);
         }
+
+        public ProjectRestoreMetadataFile Clone()
+        {
+            return new ProjectRestoreMetadataFile(PackagePath, AbsolutePath);
+        }
+
     }
 }

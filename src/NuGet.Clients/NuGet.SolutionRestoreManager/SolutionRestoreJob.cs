@@ -284,7 +284,6 @@ namespace NuGet.SolutionRestoreManager
                 var pathContext = NuGetPathContext.Create(_settings);
 
                 // Get full dg spec
-                // TODO: pass this down instead of creating it twice.
                 var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(_solutionManager, cacheContext);
 
                 // Avoid restoring solutions with zero potential PackageReference projects.

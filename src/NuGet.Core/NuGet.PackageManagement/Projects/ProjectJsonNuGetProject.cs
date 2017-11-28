@@ -349,7 +349,7 @@ namespace NuGet.ProjectManagement.Projects
             // Update the internal target framework with TPMinV from csproj
             await UpdateInternalTargetFrameworkAsync();
 
-            if (TryGetInternalFramework(out object newTargetFrameworkObject))
+            if (TryGetInternalFramework(out var newTargetFrameworkObject))
             {
                 var frameworks = JsonConfigUtility.GetFrameworks(json);
                 var newTargetFramework = newTargetFrameworkObject as NuGetFramework;
