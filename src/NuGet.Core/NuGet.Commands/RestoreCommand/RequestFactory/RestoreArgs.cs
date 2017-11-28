@@ -131,9 +131,9 @@ namespace NuGet.Commands
             var packageSourceProvider = new PackageSourceProvider(settings);
             var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
             var sourceObjects = new Dictionary<string, PackageSource>();
-            foreach(var source in dgSpecSources)
+            for(var i = 0; i < dgSpecSources.Count; i++)
             {
-                sourceObjects[source.Source] = source;
+                sourceObjects[dgSpecSources[i].Source] = dgSpecSources[i];
             }
 
             foreach (var sourceUri in Sources)
