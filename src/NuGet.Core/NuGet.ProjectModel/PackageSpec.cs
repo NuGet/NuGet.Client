@@ -224,10 +224,10 @@ namespace NuGet.ProjectModel
 
         private IDictionary<string, IEnumerable<string>> CloneScripts(IDictionary<string, IEnumerable<string>> toBeCloned)
         {
-            if(toBeCloned != null)
+            if (toBeCloned != null)
             {
                 var clone = new Dictionary<string, IEnumerable<string>>();
-                foreach(var kvp in toBeCloned)
+                foreach (var kvp in toBeCloned)
                 {
                     clone.Add(kvp.Key, new List<string>(kvp.Value));
                 }
