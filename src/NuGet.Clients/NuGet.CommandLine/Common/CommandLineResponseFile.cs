@@ -1,4 +1,4 @@
-﻿#if IS_DESKTOP
+#if IS_DESKTOP
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,8 +10,6 @@ namespace NuGet.Common
 {
     public static class CommandLineResponseFile
     {
-        private static int ParseArgsResponseFileRecursionDepth = 0;
-
         /// <summary>
         /// Takes command line args and parses response files prefixed with the @ symbol.  
         /// Response files are text files that contain command line switches. 
@@ -23,6 +21,11 @@ namespace NuGet.Common
         /// <param name="args">The args to parse which can contain response files</param>
         /// <returns></returns>
         public static string[] ParseArgsResponseFiles(string[] args)
+        {
+            return ParseArgsResponseFiles(args, parseArgsResponseFileRecursionDepth: 0);
+        }
+
+        private static string[] ParseArgsResponseFiles(string[] args, int parseArgsResponseFileRecursionDepth)
         {
             if (args.Length == 0)
             {
@@ -88,13 +91,13 @@ namespace NuGet.Common
                     if (a.StartsWith("@", StringComparison.InvariantCultureIgnoreCase))
                     {
 
-                        if (ParseArgsResponseFileRecursionDepth > MaxRecursionDepth)
+                        if (parseArgsResponseFileRecursionDepth > MaxRecursionDepth)
                         {
                             throw new ArgumentException(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileMaxRecursionDepth"), MaxRecursionDepth));
                         }
 
-                        ParseArgsResponseFileRecursionDepth++;
-                        var nestedResponseFileArgs = ParseArgsResponseFiles(new string[] { a });
+                        parseArgsResponseFileRecursionDepth++;
+                        var nestedResponseFileArgs = ParseArgsResponseFiles(new string[] { a }, parseArgsResponseFileRecursionDepth);
                         if (nestedResponseFileArgs.Length != 0)
                         {
                             parsedArgs.AddRange(nestedResponseFileArgs);
