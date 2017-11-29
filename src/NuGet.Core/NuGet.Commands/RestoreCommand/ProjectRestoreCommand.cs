@@ -46,6 +46,7 @@ namespace NuGet.Commands
             var frameworkTasks = new List<Task<RestoreTargetGraph>>();
             var graphs = new List<RestoreTargetGraph>();
             var runtimesByFramework = frameworkRuntimePairs.ToLookup(p => p.Framework, p => p.RuntimeIdentifier);
+            var success = true;
 
             foreach (var pair in runtimesByFramework)
             {
@@ -62,7 +63,7 @@ namespace NuGet.Commands
 
             graphs.AddRange(frameworkGraphs);
 
-            await InstallPackagesAsync(graphs,
+            success &= await InstallPackagesAsync(graphs,
                 userPackageFolder,
                 token);
 
@@ -108,7 +109,7 @@ namespace NuGet.Commands
                 graphs.AddRange(runtimeGraphs);
 
                 // Install runtime-specific packages
-                await InstallPackagesAsync(runtimeGraphs,
+                success &= await InstallPackagesAsync(runtimeGraphs,
                     userPackageFolder,
                     token);
             }
@@ -121,7 +122,7 @@ namespace NuGet.Commands
             // versions that have been bumped up unexpectedly.
             await UnexpectedDependencyMessages.LogAsync(graphs, _request.Project, _logger);
 
-            var success = await ResolutionSucceeded(graphs, context, token);
+            success &= (await ResolutionSucceeded(graphs, context, token));
 
             return Tuple.Create(success, graphs, allRuntimes);
         }
@@ -204,25 +205,17 @@ namespace NuGet.Commands
             return success;
         }
 
-        private async Task InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs,
+        private async Task<bool> InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs,
             NuGetv3LocalRepository userPackageFolder,
             CancellationToken token)
         {
             var uniquePackages = new HashSet<LibraryIdentity>();
 
-            var signedPackageVerifier = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
-
-            var packageExtractionContext = new PackageExtractionContext(
-                _request.PackageSaveMode,
-                _request.XmlDocFileSaveMode,
-                _logger,
-                signedPackageVerifier);
-
             var packagesToInstall = graphs
                 .SelectMany(g => g.Install.Where(match => uniquePackages.Add(match.Library)))
                 .ToList();
+
+            var success = true;
 
             if (packagesToInstall.Count > 0)
             {
@@ -234,7 +227,7 @@ namespace NuGet.Commands
                 {
                     foreach (var match in packagesToInstall)
                     {
-                        await InstallPackageAsync(match, userPackageFolder, packageExtractionContext, token);
+                        success &= (await InstallPackageAsync(match, userPackageFolder, _request.PackageExtractionContext, token));
                     }
                 }
                 else
@@ -244,17 +237,21 @@ namespace NuGet.Commands
                         .Select(async _ =>
                         {
                             RemoteMatch match;
+                            var result = true;
                             while (bag.TryTake(out match))
                             {
-                                await InstallPackageAsync(match, userPackageFolder, packageExtractionContext, token);
+                                result = await InstallPackageAsync(match, userPackageFolder, _request.PackageExtractionContext, token);
                             }
+                            return result;
                         });
-                    await Task.WhenAll(tasks);
+                    success = (await Task.WhenAll(tasks)).All(p => p);
                 }
             }
+
+            return success;
         }
 
-        private async Task InstallPackageAsync(RemoteMatch installItem, NuGetv3LocalRepository userPackageFolder, PackageExtractionContext packageExtractionContext, CancellationToken token)
+        private async Task<bool> InstallPackageAsync(RemoteMatch installItem, NuGetv3LocalRepository userPackageFolder, PackageExtractionContext packageExtractionContext, CancellationToken token)
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
 
@@ -296,8 +293,11 @@ namespace NuGet.Commands
                 catch (SignatureException e)
                 {
                     await _logger.LogMessagesAsync(e.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()));
+                    return false;
                 }
             }
+
+            return true;
         }
 
         private Task<RestoreTargetGraph[]> WalkRuntimeDependenciesAsync(LibraryRange projectRange,
