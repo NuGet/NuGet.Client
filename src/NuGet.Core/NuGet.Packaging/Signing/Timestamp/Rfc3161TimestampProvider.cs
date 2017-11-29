@@ -126,7 +126,7 @@ namespace NuGet.Packaging.Signing
                     NuGetLogCode.NU3011,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampCertificateChainBuildFailure,
-                    timestampSignerCertificate.FriendlyName)));
+                    CertificateUtility.X509Certificate2ToString(timestampSignerCertificate))));
             }
 
             return timestampCertChain;
