@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -33,6 +32,7 @@ namespace NuGet.Commands
             PackageSaveMode = request.PackageSaveMode;
             Project = packageSpec;
             XmlDocFileSaveMode = request.XmlDocFileSaveMode;
+            PackageExtractionContext = new PackageExtractionContext(request.PackageSaveMode, request.XmlDocFileSaveMode, log, request.PackageSignatureVerifier);
         }
 
         public SourceCacheContext CacheContext { get; }
@@ -45,5 +45,6 @@ namespace NuGet.Commands
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; }
         public Dictionary<NuGetFramework, RuntimeGraph> RuntimeGraphCache { get; }
         public ConcurrentDictionary<PackageIdentity, RuntimeGraph> RuntimeGraphCacheByPackage { get; }
+        public PackageExtractionContext PackageExtractionContext { get; }
     }
 }
