@@ -139,11 +139,11 @@ namespace NuGet.Packaging.FuncTest
         }
 
 
-        public static async Task<VerifySignaturesResult> VerifySignatureAsync(TestLogger testLogger, SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)
+        public static async Task<VerifySignaturesResult> VerifySignatureAsync(SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)
         {
             var verificationProviders = new[] { new X509SignatureVerificationProvider() };
             var verifier = new PackageSignatureVerifier(verificationProviders, settings);
-            var result = await verifier.VerifySignaturesAsync(signPackage, testLogger, CancellationToken.None);
+            var result = await verifier.VerifySignaturesAsync(signPackage, CancellationToken.None);
             return result;
         }
     }
