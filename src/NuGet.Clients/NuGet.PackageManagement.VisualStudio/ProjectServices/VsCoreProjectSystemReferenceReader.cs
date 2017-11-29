@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var itemsFactory = ServiceLocator.GetInstance<IVsEnumHierarchyItemsFactory>();
 
             // Verify ReferenceOutputAssembly
-            var excludedProjects = GetExcludedReferences(itemsFactory);
+            var excludedProjects = GetExcludedReferences(itemsFactory, logger);
             var hasMissingReferences = false;
 
             // find all references in the project
@@ -64,26 +64,23 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     var reference3 = childReference as Reference3;
 
-                    // Set missing reference if
-                    // 1. reference is null OR
-                    // 2. reference is not resolved which means project is not loaded or assembly not found.
-                    if (reference3 == null || !reference3.Resolved)
+                    // Verify that this is a project reference
+                    if (IsProjectReference(reference3, logger))
                     {
-                        // Skip missing references and show a warning
-                        hasMissingReferences = true;
-                        continue;
-                    }
+                        // Verify that this is a valid and resolved project reference
+                        if (!IsReferenceResolved(reference3, logger))
+                        {
+                            hasMissingReferences = true;
+                            continue;
+                        }
 
-                    // Skip missing references
-                    if (childReference.SourceProject != null)
-                    {
-                        if (EnvDTEProjectUtility.HasUnsupportedProjectCapability(childReference.SourceProject))
+                        if (EnvDTEProjectUtility.HasUnsupportedProjectCapability(reference3.SourceProject))
                         {
                             // Skip this shared project
                             continue;
                         }
 
-                        var childProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(childReference.SourceProject);
+                        var childProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(reference3.SourceProject);
 
                         // Skip projects which have ReferenceOutputAssembly=false
                         if (!string.IsNullOrEmpty(childProjectPath)
@@ -97,6 +94,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
                             results.Add(restoreReference);
                         }
+                    }
+                    else
+                    {
+                        hasMissingReferences = true;
                     }
                 }
                 catch (Exception ex)
@@ -142,7 +143,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Get the unique names of all references which have ReferenceOutputAssembly set to false.
         /// </summary>
         private IList<string> GetExcludedReferences(
-            IVsEnumHierarchyItemsFactory itemsFactory)
+            IVsEnumHierarchyItemsFactory itemsFactory,
+            Common.ILogger logger)
         {
             _threadingService.ThrowIfNotOnUIThread();
 
@@ -190,7 +192,7 @@ namespace NuGet.PackageManagement.VisualStudio
                                 // 3. Follow the reference to the DTE project and get the unique name
                                 var reference = childObject as Reference3;
 
-                                if (reference != null && reference.Resolved && reference.SourceProject != null)
+                                if (IsProjectReference(reference, logger) && IsReferenceResolved(reference, logger))
                                 {
                                     var childPath = EnvDTEProjectInfoUtility
                                         .GetFullProjectPath(reference.SourceProject);
@@ -204,6 +206,40 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return excludedReferences;
+        }
+
+        private bool IsProjectReference(Reference3 reference, Common.ILogger logger)
+        {
+            _threadingService.ThrowIfNotOnUIThread();
+
+            try
+            {
+                // Verify that this is a project reference
+                return reference != null && reference.SourceProject != null;
+            }
+            catch (Exception ex)
+            {
+                logger.LogDebug(ex.ToString());
+            }
+
+            return false;
+        }
+
+        private bool IsReferenceResolved(Reference3 reference, Common.ILogger logger)
+        {
+            _threadingService.ThrowIfNotOnUIThread();
+
+            try
+            {
+                // Verify that this is a valid and resolved reference
+                return reference != null && reference.Resolved;
+            }
+            catch (Exception ex)
+            {
+                logger.LogDebug(ex.ToString());
+            }
+
+            return false;
         }
 
         public Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(
