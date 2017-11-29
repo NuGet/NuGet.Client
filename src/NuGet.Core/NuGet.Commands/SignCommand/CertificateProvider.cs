@@ -3,8 +3,12 @@
 
 using System;
 using System.Globalization;
+using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading.Tasks;
+using NuGet.Common;
 
 namespace NuGet.Commands
 {
@@ -32,7 +36,7 @@ namespace NuGet.Commands
         /// <param name="options">CertificateSourceOptions to be used while searching for the certificates.</param>
         /// <returns>An X509Certificate2Collection object containing matching certificates.
         /// If no matching certificates are found then it returns an empty collection.</returns>
-        public static X509Certificate2Collection GetCertificates(CertificateSourceOptions options)
+        public static async Task<X509Certificate2Collection> GetCertificatesAsync(CertificateSourceOptions options)
         {
             // check certificate path
             var resultCollection = new X509Certificate2Collection();
@@ -40,16 +44,7 @@ namespace NuGet.Commands
             {
                 try
                 {
-                    X509Certificate2 cert;
-
-                    if (!string.IsNullOrEmpty(options.CertificatePassword))
-                    {
-                        cert = new X509Certificate2(options.CertificatePath, options.CertificatePassword); // use the password if the user provided it.
-                    }
-                    else
-                    {
-                        cert = new X509Certificate2(options.CertificatePath);                        
-                    }
+                    var cert = await LoadCertificateFromFileAsync(options);
 
                     resultCollection = new X509Certificate2Collection(cert);
                 }
@@ -82,25 +77,70 @@ namespace NuGet.Commands
             }
             else
             {
-                var store = new X509Store(options.StoreName, options.StoreLocation);
+                resultCollection = LoadCertificateFromStore(options);
+            }
 
-                OpenStore(store);
+            return resultCollection;
+        }
 
-                if (!string.IsNullOrEmpty(options.Fingerprint))
-                {
-                    resultCollection = store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly: false);
-                }
+        private static async Task<X509Certificate2> LoadCertificateFromFileAsync(CertificateSourceOptions options)
+        {
+            X509Certificate2 cert;
 
-                if (!string.IsNullOrEmpty(options.SubjectName))
-                {
-                    resultCollection =  store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly: false);
-                }
-
+            if (!string.IsNullOrEmpty(options.CertificatePassword))
+            {
+                cert = new X509Certificate2(options.CertificatePath, options.CertificatePassword); // use the password if the user provided it.
+            }
+            else
+            {
 #if IS_DESKTOP
-                store.Close();
+                try
+                {
+                    cert = new X509Certificate2(options.CertificatePath);
+                }
+                catch (CryptographicException ex)
+                {
+                    // prompt user for password if needed
+                    if (ex.HResult == ERROR_INVALID_PASSWORD_HRESULT &&
+                        !options.NonInteractive)
+                    {
+                        using (var password = await options.PasswordProvider.GetPassword(options.CertificatePath, options.Token))
+                        {
+                            cert = new X509Certificate2(options.CertificatePath, password);
+                        }
+                    }
+                    else
+                    {
+                        throw ex;
+                    }
+                }
+#else
+                cert = new X509Certificate2(options.CertificatePath);
 #endif
             }
 
+            return cert;
+        }
+
+        private static X509Certificate2Collection LoadCertificateFromStore(CertificateSourceOptions options)
+        {
+            var resultCollection = new X509Certificate2Collection();
+            var store = new X509Store(options.StoreName, options.StoreLocation);
+
+            OpenStore(store);
+
+            if (!string.IsNullOrEmpty(options.Fingerprint))
+            {
+                resultCollection = store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly: true);
+            }
+            else if (!string.IsNullOrEmpty(options.SubjectName))
+            {
+                resultCollection = store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly: true);
+            }
+
+#if IS_DESKTOP
+            store.Close();
+#endif
             return resultCollection;
         }
 

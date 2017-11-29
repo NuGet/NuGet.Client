@@ -19,7 +19,7 @@ namespace NuGet.CommandLine {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class NuGetResources {
@@ -1092,6 +1092,24 @@ namespace NuGet.CommandLine {
         public static string ConsoleConfirmMessageAccept_trk {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please provide password for: {0}.
+        /// </summary>
+        public static string ConsolePasswordProvider_DisplayFile {
+            get {
+                return ResourceManager.GetString("ConsolePasswordProvider_DisplayFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password: .
+        /// </summary>
+        public static string ConsolePasswordProvider_PromptForPassword {
+            get {
+                return ResourceManager.GetString("ConsolePasswordProvider_PromptForPassword", resourceCulture);
             }
         }
         

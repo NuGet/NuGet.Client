@@ -6151,4 +6151,11 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Error_ResponseFileTooLarge" xml:space="preserve">
     <value>Response file '{0}' cannot be larger than {1}mb</value>
   </data>
+  <data name="ConsolePasswordProvider_DisplayFile" xml:space="preserve">
+    <value>Please provide password for: {0}</value>
+    <comment>0 - file that requires password</comment>
+  </data>
+  <data name="ConsolePasswordProvider_PromptForPassword" xml:space="preserve">
+    <value>Password: </value>
+  </data>
 </root>

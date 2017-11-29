@@ -111,7 +111,8 @@ namespace NuGet.CommandLine
                 Overwrite = Overwrite,
                 NonInteractive = NonInteractive,
                 Timestamper = Timestamper,
-                TimestampHashAlgorithm = timestampHashAlgorithm
+                TimestampHashAlgorithm = timestampHashAlgorithm,
+                PasswordProvider = new ConsolePasswordProvider(Console)
             };
         }
 

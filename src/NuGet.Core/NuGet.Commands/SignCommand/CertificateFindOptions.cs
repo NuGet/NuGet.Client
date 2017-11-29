@@ -4,6 +4,9 @@
 using System;
 using System.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using NuGet.Commands.SignCommand;
+using NuGet.Common;
 
 namespace NuGet.Commands
 {
@@ -42,6 +45,21 @@ namespace NuGet.Commands
         /// The SHA-1 fingerprint of the certificate.
         /// </summary>
         public string Fingerprint { get; set; }
+
+        /// <summary>
+        /// bool used to indicate if the user can be prompted for password.
+        /// </summary>
+        public bool NonInteractive { get; set; }
+
+        /// <summary>
+        /// Password provider to get the password from user for opening a pfx file.
+        /// </summary>
+        public IPasswordProvider PasswordProvider { get; set; }
+
+        /// <summary>
+        /// Cancellation token.
+        /// </summary>
+        public CancellationToken Token { get; set; }
 
     }
 }
