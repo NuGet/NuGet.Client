@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
@@ -67,6 +68,9 @@ namespace NuGet.Build.Tasks
         /// The Warnings and Errors are written into the assets file and will be read by an sdk target.
         /// </summary>
         public bool HideWarningsAndErrors { get; set; }
+
+        [Output]
+        public string OutputRestoreChangedImportsProjectList { get; set; }
 
         public override bool Execute()
         {
@@ -167,6 +171,18 @@ namespace NuGet.Build.Tasks
 
                 // Summary
                 RestoreSummary.Log(log, restoreSummaries);
+
+                var projectsWithImportsChanged = new StringBuilder();
+                foreach (var summary in restoreSummaries)
+                {
+                    if(!summary.NoOpRestore & summary.Success)
+                    {
+                        projectsWithImportsChanged.Append(summary.InputPath).Append(';');
+                    }
+                }
+
+                OutputRestoreChangedImportsProjectList = projectsWithImportsChanged.ToString();
+                BuildTasksUtility.LogOutputParam(log, nameof(OutputRestoreChangedImportsProjectList), OutputRestoreChangedImportsProjectList);
 
                 return restoreSummaries.All(x => x.Success);
             }

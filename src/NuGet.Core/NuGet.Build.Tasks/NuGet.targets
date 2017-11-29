@@ -89,7 +89,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Main entry point for restoring packages
     ============================================================
   -->
-  <Target Name="Restore" DependsOnTargets="_GenerateRestoreGraph">
+  <Target Name="Restore" DependsOnTargets="_GenerateRestoreGraph" Returns="$(RestoreChangedImportsProjectList)">
 
     <!-- Drop any duplicate items -->
     <RemoveDuplicates
@@ -107,7 +107,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreIgnoreFailedSources="$(RestoreIgnoreFailedSources)"
       RestoreRecursive="$(RestoreRecursive)"
       RestoreForce="$(RestoreForce)"
-      HideWarningsAndErrors="$(HideWarningsAndErrors)"/>
+      HideWarningsAndErrors="$(HideWarningsAndErrors)">
+      <Output
+        TaskParameter="OutputRestoreChangedImportsProjectList"
+        PropertyName="RestoreChangedImportsProjectList"/>
+      </RestoreTask>
   </Target>
 
   <!--
