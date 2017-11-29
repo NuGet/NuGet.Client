@@ -258,6 +258,99 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
+
+        [Fact]
+        public void SignCommand_SignPackageWithPfxFileInteractiveSuccess()
+        {
+            // Arrange
+            var testLogger = new TestLogger();
+
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
+            {
+                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+                var pfxPath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                var password = Guid.NewGuid().ToString();
+                var pfxBytes = _trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, password);
+
+                using (var fileStream = File.OpenWrite(pfxPath))
+                using (var pfxStream = new MemoryStream(pfxBytes))
+                {
+                    pfxStream.CopyTo(fileStream);
+                }
+
+                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    zipStream.CopyTo(fileStream);
+                }
+
+                // Act
+                var firstResult = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"sign {packagePath} -CertificatePath {pfxPath}",
+                    waitForExit: true,
+                    inputAction: (w) =>
+                    {
+                        w.WriteLine(password);
+                    },
+                    timeOutInMilliseconds: 10000);
+
+                // Assert
+                firstResult.Success.Should().BeTrue();
+                firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
+            }
+        }
+
+        [Fact]
+        public void SignCommand_SignPackageWithPfxFileInteractiveInvalidPasswordFails()
+        {
+            // Arrange
+            var testLogger = new TestLogger();
+
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
+            {
+                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+                var pfxPath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                var password = Guid.NewGuid().ToString();
+                var pfxBytes = _trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, password);
+
+                using (var fileStream = File.OpenWrite(pfxPath))
+                using (var pfxStream = new MemoryStream(pfxBytes))
+                {
+                    pfxStream.CopyTo(fileStream);
+                }
+
+                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    zipStream.CopyTo(fileStream);
+                }
+
+                // Act
+                var firstResult = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"sign {packagePath} -CertificatePath {pfxPath}",
+                    waitForExit: true,
+                    inputAction: (w) =>
+                    {
+                        w.WriteLine(Guid.NewGuid().ToString());
+                    },
+                    timeOutInMilliseconds: 10000);
+
+                // Assert
+                firstResult.Success.Should().BeFalse();
+                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordError, pfxPath));
+            }
+        }
+
         [Fact]
         public void SignCommand_SignPackageWithPfxFileWithoutPasswordAndWithNonInteractiveFails()
         {
@@ -292,6 +385,52 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     dir,
                     $"sign {packagePath} -CertificatePath {pfxPath} -NonInteractive",
                     waitForExit: true,
+                    timeOutInMilliseconds: 10000);
+
+                // Assert
+                firstResult.Success.Should().BeFalse();
+                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordError, pfxPath));
+            }
+        }
+
+        [Fact]
+        public void SignCommand_SignPackageWithPfxFileWithNonInteractiveAndStdInPasswordFails()
+        {
+            // Arrange
+            var testLogger = new TestLogger();
+
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
+            {
+                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+                var pfxPath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                var password = Guid.NewGuid().ToString();
+                var pfxBytes = _trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, password);
+
+                using (var fileStream = File.OpenWrite(pfxPath))
+                using (var pfxStream = new MemoryStream(pfxBytes))
+                {
+                    pfxStream.CopyTo(fileStream);
+                }
+
+                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    zipStream.CopyTo(fileStream);
+                }
+
+                // Act
+                var firstResult = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"sign {packagePath} -CertificatePath {pfxPath} -NonInteractive",
+                    waitForExit: true,
+                    inputAction: (w) =>
+                    {
+                        w.WriteLine(Guid.NewGuid().ToString());
+                    },
                     timeOutInMilliseconds: 10000);
 
                 // Assert
