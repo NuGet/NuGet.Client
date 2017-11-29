@@ -85,7 +85,7 @@ namespace NuGet.Packaging.Signing
                     NuGetLogCode.NU3011,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampCertificateChainBuildFailure,
-                    timestamperCertificate.FriendlyName)));
+                    CertificateUtility.X509Certificate2ToString(timestamperCertificate))));
             }
         }
 
