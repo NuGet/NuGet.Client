@@ -175,7 +175,8 @@ namespace NuGet.Build.Tasks
                 var projectsWithImportsChanged = new StringBuilder();
                 foreach (var summary in restoreSummaries)
                 {
-                    if(!summary.NoOpRestore & summary.Success)
+                    //  Success does not matter here, as long as the files are not changed
+                    if(summary.BuildFilesChanged)
                     {
                         projectsWithImportsChanged.Append(summary.InputPath).Append(';');
                     }

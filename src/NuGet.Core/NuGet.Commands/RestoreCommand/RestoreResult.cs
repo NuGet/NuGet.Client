@@ -65,6 +65,12 @@ namespace NuGet.Commands
         /// </summary>
         protected string CacheFilePath { get;  }
 
+        /// <summary>
+        /// Indicates whether the build files have changed. It will only be updated after the restore result has been committed. It will false Commit has not be called.
+        /// Used to report the status in the restore build task.
+        /// </summary>
+        public bool BuildFilesChanged { get; private set; }
+
         public RestoreResult(
             bool success,
             IEnumerable<RestoreTargetGraph> restoreGraphs,
@@ -153,7 +159,9 @@ namespace NuGet.Commands
             // Visual Studio typically watches the assets file for changes
             // and begins a reload when that file changes.
             var buildFilesToWrite = result.MSBuildOutputFiles
-                    .Where(e => BuildAssetsUtils.HasChanges(e.Content, e.Path, log));
+                    .Where(e => BuildAssetsUtils.HasChanges(e.Content, e.Path, log)).ToList();
+            // Update whether build files have changed
+            BuildFilesChanged = buildFilesToWrite.Count != 0;
 
             BuildAssetsUtils.WriteFiles(buildFilesToWrite, log);
 
