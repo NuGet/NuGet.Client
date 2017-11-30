@@ -69,6 +69,9 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public bool HideWarningsAndErrors { get; set; }
 
+        /// <summary>
+        /// Semicolon delimited list of projects that have had updates in their targets/props. This is used to avoid throwaway msbuild evaluation during build /restore calls
+        /// </summary>
         [Output]
         public string OutputRestoreChangedImportsProjectList { get; set; }
 
@@ -175,7 +178,7 @@ namespace NuGet.Build.Tasks
                 var projectsWithImportsChanged = new StringBuilder();
                 foreach (var summary in restoreSummaries)
                 {
-                    //  Success does not matter here, as long as the files are not changed
+                    // Success does not matter here, as long as the files are not changed
                     if(summary.BuildFilesChanged)
                     {
                         projectsWithImportsChanged.Append(summary.InputPath).Append(';');

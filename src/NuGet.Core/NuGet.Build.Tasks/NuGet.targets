@@ -87,6 +87,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     Restore
     Main entry point for restoring packages
+    Returns a property with comma delimited projects whose imports
+    have been updated. Used by MSBuild in build /restore calls
     ============================================================
   -->
   <Target Name="Restore" DependsOnTargets="_GenerateRestoreGraph" Returns="$(RestoreChangedImportsProjectList)">
