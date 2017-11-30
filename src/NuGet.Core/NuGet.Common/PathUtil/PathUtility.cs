@@ -179,7 +179,7 @@ namespace NuGet.Common
             {
                 compare = StringComparison.OrdinalIgnoreCase;
                 // check if paths are on the same volume
-                if (!string.Equals(Path.GetPathRoot(path1), Path.GetPathRoot(path2)))
+                if (!string.Equals(Path.GetPathRoot(path1), Path.GetPathRoot(path2), compare))
                 {
                     // on different volumes, "relative" path is just path2
                     return path2;
