@@ -66,7 +66,7 @@ namespace NuGet.Commands
         protected string CacheFilePath { get;  }
 
         /// <summary>
-        /// Indicates whether the build files have changed. It will only be updated after the restore result has been committed. It will false Commit has not be called.
+        /// Indicates whether the build files have changed. It will only be updated after the restore result has been committed. It will be false if Commit has not be called.
         /// Used to report the status in the restore build task.
         /// </summary>
         public bool BuildFilesChanged { get; private set; }
