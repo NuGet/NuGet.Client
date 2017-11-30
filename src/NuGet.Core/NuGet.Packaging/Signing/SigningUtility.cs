@@ -25,40 +25,6 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Checks the validity of an X509Certificate2 is valid by building it's X509Chain.
-        /// </summary>
-        /// <param name="certificate">X509Certificate2 to be checked.</param>
-        /// <param name="chain">X509Chain built from the X509Certificate2 if the return value is true.</param>
-        /// <param name="allowUntrustedRoot">Sets X509VerificationFlags.AllowUnknownCertificateAuthority if set to true.</param>
-        /// <param name="checkRevocationMode">X509Chain.ChainPolicy.RevocationMode to allow revocation checks.</param>
-        /// <returns>A bool indicating if the certificate builds a valid X509Chain.</returns>
-        public static bool IsCertificateValid(X509Certificate2 certificate, X509Certificate2Collection additionalCertificates, out X509Chain chain, bool allowUntrustedRoot, X509RevocationMode checkRevocationMode)
-        {
-            if (certificate == null)
-            {
-                throw new ArgumentNullException(nameof(certificate));
-            }
-
-            chain = new X509Chain();
-
-            if (allowUntrustedRoot)
-            {
-                chain.ChainPolicy.VerificationFlags |= X509VerificationFlags.AllowUnknownCertificateAuthority;
-            }
-
-            chain.ChainPolicy.RevocationMode = checkRevocationMode;
-            if (checkRevocationMode != X509RevocationMode.NoCheck)
-            {
-                chain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain;
-            }
-
-            var extraStore = chain.ChainPolicy.ExtraStore;
-            extraStore.AddRange(additionalCertificates);
-
-            return chain.Build(certificate);
-        }
-
-        /// <summary>
         /// Checks if an X509Certificate2 contains a Enhanced Key Usage specified in the form of an Oid.
         /// </summary>
         /// <param name="certificate">X509Certificate2 to be checked.</param>

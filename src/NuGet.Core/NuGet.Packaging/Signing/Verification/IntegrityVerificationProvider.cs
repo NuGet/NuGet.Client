@@ -11,7 +11,7 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
-    public class NuGetIntegrityVerificationProvider : ISignatureVerificationProvider
+    public class IntegrityVerificationProvider : ISignatureVerificationProvider
     {
         public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, CancellationToken token)
         {

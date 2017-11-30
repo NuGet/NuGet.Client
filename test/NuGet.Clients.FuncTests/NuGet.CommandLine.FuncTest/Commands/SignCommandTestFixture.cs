@@ -43,8 +43,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 {
                     _trustProviders = new List<ISignatureVerificationProvider>()
                     {
-                        new X509SignatureVerificationProvider(),
-                        new NuGetIntegrityVerificationProvider(),
+                        new SignatureTrustAndValidityVerificationProvider(),
+                        new IntegrityVerificationProvider(),
                         new TimestampVerificationProvider()
                     };
                 }

@@ -21,18 +21,13 @@ namespace NuGet.Packaging.Signing
         Invalid = 1,
 
         /// <summary>
-        /// Signature certificate is revoked.
-        /// </summary>
-        Revoked = 2,
-
-        /// <summary>
         /// Signature is NOT trusted.
         /// </summary>
-        Untrusted = 3,
+        Untrusted = 2,
 
         /// <summary>
         /// Signature is trusted.
         /// </summary>
-        Trusted = 4
+        Trusted = 3
     }
 }

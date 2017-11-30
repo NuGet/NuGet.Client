@@ -326,7 +326,7 @@ Valid from:</comment>
     <value>Byte signature too big to seek in current stream position.</value>
   </data>
   <data name="ErrorInvalidCertificateChain" xml:space="preserve">
-    <value>Unable to validate signer certificate chain.</value>
+    <value>Certificate chain validation failed with error: {0}</value>
   </data>
   <data name="ErrorInvalidPublicKey" xml:space="preserve">
     <value>Could not validate signature. Certificate does not meet the public key requirements.</value>
@@ -350,7 +350,7 @@ Valid from:</comment>
     <value>Signature Hash Algorithm: {0}</value>
   </data>
   <data name="SignatureType" xml:space="preserve">
-    <value>SignatureType: {0}</value>
+    <value>Signature type: {0}</value>
   </data>
   <data name="TimestampInvalid" xml:space="preserve">
     <value>The signature contains an invalid timestamp.</value>
@@ -366,5 +366,14 @@ Valid from:</comment>
   </data>
   <data name="WarningUntrustedRoot" xml:space="preserve">
     <value>Signing certificate does not chain to a trusted root.</value>
+  </data>
+  <data name="VerificationDefaultCertDisplay" xml:space="preserve">
+    <value>Verifying signature with certificate: {0}</value>
+  </data>
+  <data name="ErrorCertificateHasLifetimeSignerEKU" xml:space="preserve">
+    <value>Certificates with lifetime signer EKU are not supported.</value>
+  </data>
+  <data name="ErrorCertificateNotCodeSigning" xml:space="preserve">
+    <value>Certificate is not a valid code signing certificate.</value>
   </data>
 </root>

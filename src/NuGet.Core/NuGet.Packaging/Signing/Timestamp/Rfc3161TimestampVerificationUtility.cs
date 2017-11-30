@@ -2,22 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
-using System.Linq;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
 #endif
 
 using System.Security.Cryptography.X509Certificates;
-using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
     /// Provides convinience method for verification of a RFC 3161 Timestamp.
     /// </summary>
-    internal static class Rfc3161TimestampVerifier
+    internal static class Rfc3161TimestampVerificationUtility
     {
         private const long _ticksPerMicroSecond = 10;
 
@@ -131,38 +128,24 @@ namespace NuGet.Packaging.Signing
             SignedCms timestampCms,
             out Rfc3161TimestampTokenInfo tstInfo)
         {
+            tstInfo = null;
             if (timestampCms.ContentInfo.ContentType.Value.Equals(Oids.TSTInfoContentTypeOid))
             {
                 tstInfo = new Rfc3161TimestampTokenInfo(timestampCms.ContentInfo.Content);
                 return true;
             }
-            else
+            // return false if the signedCms object does not contain the right ContentType
+            return false;
+        }
+
+        internal static DateTimeOffset GetUpperLimit(SignedCms timestampCms)
+        {
+            var result = DateTimeOffset.Now;
+            if (TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
             {
-                // return false if the signedCms object does not contain the right ContentType
-                tstInfo = null;
-                return false;
+                // TODO: Get upper limit
             }
-        }
-
-        internal static bool TryBuildTimestampCertificateChain(X509Certificate2 certificate, X509Certificate2Collection additionalCertificates, out X509Chain chain)
-        {
-            return SigningUtility.IsCertificateValid(certificate, additionalCertificates, out chain, allowUntrustedRoot: false, checkRevocationMode: X509RevocationMode.Online);
-        }
-
-        internal static bool ValidateTimestampEnhancedKeyUsage(X509Certificate2 certificate)
-        {
-            return SigningUtility.CertificateContainsEku(certificate, Oids.TimeStampingEkuOid);
-        }
-
-        internal static bool ValidateTimestampedData(Rfc3161TimestampTokenInfo tstInfo, byte[] data)
-        {
-            return tstInfo.HasMessageHash(data);
-        }
-
-        internal static bool ValidateTimestampAlgorithm(SignedCms timestampSignedCms, SigningSpecifications specifications)
-        {
-            var timestampSignerInfo = timestampSignedCms.SignerInfos[0];
-            return specifications.AllowedHashAlgorithmOids.Contains(timestampSignerInfo.DigestAlgorithm.Value);
+            return result;
         }
 #endif
     }

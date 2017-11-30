@@ -34,5 +34,8 @@ namespace NuGet.Packaging.Signing
 
         // RFC 3161 "id-ct-TSTInfo" https://tools.ietf.org/html/rfc3161#section-2.4.2
         public const string TSTInfoContentTypeOid = "1.2.840.113549.1.9.16.1.4";
+
+        // XCN_OID_KP_LIFETIME_SIGNING https://msdn.microsoft.com/en-us/library/windows/desktop/aa378132(v=vs.85).aspx
+        public const string LifetimeSignerEkuOid = "1.3.6.1.4.1.311.10.3.13";
     }
 }

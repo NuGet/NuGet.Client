@@ -53,9 +53,9 @@ namespace NuGet.Packaging.Signing
             return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3002, message);
         }
 
-        public static SignatureLog UntrustedRootWarning(string message)
+        public static SignatureLog UntrustedRootError(string message)
         {
-            return new SignatureLog(LogLevel.Warning, NuGetLogCode.NU3501, message);
+            return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3002, message);
         }
 
         public static SignatureLog SignatureInformationUnavailableWarning(string message)

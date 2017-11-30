@@ -680,4 +680,7 @@ Valid from:</comment>
   <data name="VerifyCommand_VerifyingPackage" xml:space="preserve">
     <value>Verifying {0}</value>
   </data>
+  <data name="VerifyCommand_Failed" xml:space="preserve">
+    <value>Could not verify package signature.</value>
+  </data>
 </root>

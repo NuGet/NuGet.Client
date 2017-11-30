@@ -1431,6 +1431,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not verify package signature..
+        /// </summary>
+        internal static string VerifyCommand_Failed {
+            get {
+                return ResourceManager.GetString("VerifyCommand_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Finished with {0} errors and {1} warnings..
         /// </summary>
         internal static string VerifyCommand_FinishedWithErrors {

@@ -140,6 +140,14 @@ namespace NuGet.Packaging.Signing
 
                     var sizeOfCentralDirectory = reader.ReadUInt64() -(ulong)metadata.SignatureCentralDirectoryEntrySize;
                     SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(sizeOfCentralDirectory));
+
+                    var offsetOfStartOfCentralDirectory = reader.ReadUInt64() - (ulong)metadata.SignatureFileEntryTotalSize;
+                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(offsetOfStartOfCentralDirectory));
+
+                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, SignedPackageArchiveIOUtility.Zip64EndOfCentralDirectoryLocatorSignature + 8);
+
+                    var offsetOfZip64EOCD = reader.ReadUInt64() - (ulong)metadata.SignatureFileEntryTotalSize - (ulong)metadata.SignatureCentralDirectoryEntrySize;
+                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(offsetOfZip64EOCD));
                 }
 
                 // Update EOCD data

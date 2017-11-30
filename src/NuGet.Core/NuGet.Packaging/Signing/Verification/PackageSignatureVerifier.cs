@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
@@ -54,7 +55,7 @@ namespace NuGet.Packaging.Signing
                     // CryptographicException generated while parsing the SignedCms object
                     var issues = new[] {
                         SignatureLog.InvalidInputError(Strings.ErrorPackageSignatureInvalid),
-                        SignatureLog.DebugLog($"VerifySignature failed with exception: {e.Message}")
+                        SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedWithException, nameof(VerifySignaturesAsync), e.Message))
                     };
                     trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
                 }
@@ -79,23 +80,9 @@ namespace NuGet.Packaging.Signing
         private static bool IsValid(IEnumerable<PackageVerificationResult> trustResults, bool allowUntrusted)
         {
             var hasItems = trustResults.Any();
+            var valid = trustResults.All(e => e.Trust == SignatureVerificationStatus.Trusted || (allowUntrusted && SignatureVerificationStatus.Untrusted == e.Trust));
 
-            var timestampResult = trustResults.Where(tr => tr is TimestampedPackageVerificationResult).FirstOrDefault();
-            var timestampIsTrusted = timestampResult != null && timestampResult.Trust == SignatureVerificationStatus.Trusted;
-
-            foreach (var result in trustResults)
-            {
-                var resultIsValidByTrusted = result.Trust == SignatureVerificationStatus.Trusted;
-                var resultIsValidByUntrusted = allowUntrusted && result.Trust == SignatureVerificationStatus.Untrusted;
-                var resultIsValidByRevoked = timestampIsTrusted && result.Trust == SignatureVerificationStatus.Revoked;
-
-                if (!resultIsValidByTrusted && !resultIsValidByUntrusted && !resultIsValidByRevoked)
-                {
-                    return false;
-                }
-            }
-
-            return hasItems;
+            return valid && hasItems;
         }
     }
 }
