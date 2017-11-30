@@ -174,18 +174,9 @@ namespace NuGet.Build.Tasks
 
                 // Summary
                 RestoreSummary.Log(log, restoreSummaries);
-
-                var projectsWithImportsChanged = new StringBuilder();
-                foreach (var summary in restoreSummaries)
-                {
-                    // Success does not matter here, as long as the files are not changed
-                    if(summary.BuildFilesChanged)
-                    {
-                        projectsWithImportsChanged.Append(summary.InputPath).Append(';');
-                    }
-                }
-
-                OutputRestoreChangedImportsProjectList = projectsWithImportsChanged.ToString();
+                // Success does not matter here, as long as the files are not changed
+                OutputRestoreChangedImportsProjectList = string.Join(";", restoreSummaries.Where(e => e.BuildFilesChanged).Select(e => e.InputPath))
+                 
                 BuildTasksUtility.LogOutputParam(log, nameof(OutputRestoreChangedImportsProjectList), OutputRestoreChangedImportsProjectList);
 
                 return restoreSummaries.All(x => x.Success);
