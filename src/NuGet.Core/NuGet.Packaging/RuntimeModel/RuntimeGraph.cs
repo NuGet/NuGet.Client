@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -50,7 +50,7 @@ namespace NuGet.RuntimeModel
 
         public RuntimeGraph Clone()
         {
-            return new RuntimeGraph(Runtimes.Values.Select(r => r.Clone()));
+            return new RuntimeGraph(Runtimes.Values.Select(r => r.Clone()), Supports.Values.Select( s => s.Clone()));
         }
 
         /// <summary>

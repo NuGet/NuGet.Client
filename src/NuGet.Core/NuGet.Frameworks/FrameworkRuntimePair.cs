@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -64,6 +64,11 @@ namespace NuGet.Frameworks
                 "{0}~{1}",
                 Framework.GetShortFolderName(),
                 RuntimeIdentifier);
+        }
+
+        public FrameworkRuntimePair Clone()
+        {
+            return new FrameworkRuntimePair(Framework, RuntimeIdentifier);
         }
 
         public int CompareTo(FrameworkRuntimePair other)

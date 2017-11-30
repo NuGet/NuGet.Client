@@ -128,9 +128,13 @@ namespace NuGet.Commands
 
         private List<SourceRepository> GetEffectiveSourcesCore(ISettings settings, IList<PackageSource> dgSpecSources)
         {
-            var sourceObjects = dgSpecSources.ToDictionary(k => k.Source, v => v, StringComparer.Ordinal);
             var packageSourceProvider = new PackageSourceProvider(settings);
             var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
+            var sourceObjects = new Dictionary<string, PackageSource>();
+            for(var i = 0; i < dgSpecSources.Count; i++)
+            {
+                sourceObjects[dgSpecSources[i].Source] = dgSpecSources[i];
+            }
 
             foreach (var sourceUri in Sources)
             {

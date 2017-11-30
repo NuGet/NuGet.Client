@@ -691,3 +691,11 @@ function Test-BuildIntegratedVSandMSBuildNoOp {
     #Assert
     Assert-True ($MsBuildRestoreTimestamp -eq $VSRestoreTimestamp)
 }
+
+function BuildProjectTemplateTestCases([string[]]$ProjectTemplates) {		
+    $ProjectTemplates | ForEach-Object{		
+        $testCase = New-Object System.Object		
+        $testCase | Add-Member -Type NoteProperty -Name ProjectTemplate -Value $_		
+        $testCase		
+    }		
+}
