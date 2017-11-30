@@ -17,8 +17,9 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier> 
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <IncludeBuildOutput>false</IncludeBuildOutput> <!-- We only collect the ILMerged dll when packing on desktop. Build from does not do an ILMerge -->
+    <IncludeBuildOutput>false</IncludeBuildOutput> <!-- We only collect the ILMerged dll when packing on desktop. Build from source does not do an ILMerge -->
     <XPLATProject>true</XPLATProject>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CollectPackageFiles</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,46 +42,31 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">
-    <None Include="$(OutputPath)net46\ilmerge\NuGet.Build.Tasks.Pack.dll">
-      <PackagePath>Desktop</PackagePath>
-      <Pack>true</Pack>
-      <Visible>false</Visible>
-    </None>
-    <None Include="$(OutputPath)net46\ilmerge\NuGet.Build.Tasks.Pack.xml">
-      <PackagePath>Desktop</PackagePath>
-      <Pack>true</Pack>
-      <Visible>false</Visible>
-    </None>
-    <None Include="$(OutputPath)net46\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll">
-      <PackagePath>Desktop</PackagePath>
-      <Pack>true</Pack>
-      <Visible>false</Visible>
-    </None>
-    <None Include="$(OutputPath)netstandard1.3\ilmerge\NuGet.Build.Tasks.Pack.dll">
-      <PackagePath>CoreCLR</PackagePath>
-      <Pack>true</Pack>
-      <Visible>false</Visible>
-    </None>
-    <None Include="$(OutputPath)netstandard1.3\ilmerge\NuGet.Build.Tasks.Pack.xml">
-      <PackagePath>CoreCLR</PackagePath>
-      <Pack>true</Pack>
-      <Visible>false</Visible>
-    </None>
-    <None Include="$(OutputPath)netstandard1.3\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll">
-      <PackagePath>CoreCLR</PackagePath>
-      <Pack>true</Pack>
-      <Visible>false</Visible>
-    </None>
-  </ItemGroup>
+  <Target Name="CollectPackageFiles">
+    
+    <PropertyGroup>
+      <CustomPackagePath Condition=" '$(TargetFramework)'=='net46' ">Desktop</CustomPackagePath>
+      <CustomPackagePath Condition=" '$(TargetFramework)'=='netstandard1.3' ">CoreCLR</CustomPackagePath>
+    </PropertyGroup>
+    
+    <ItemGroup  Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">
+      <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\NuGet.Build.Tasks.Pack.dll">
+        <PackagePath>$(CustomPackagePath)</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\NuGet.Build.Tasks.Pack.xml">
+        <PackagePath>$(CustomPackagePath)</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll">
+        <PackagePath>$(CustomPackagePath)</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">
-    <None Include="$(OutputPath)netstandard1.3\*.dll">
-      <PackagePath>CoreCLR</PackagePath>
-      <Pack>true</Pack>
-      <Visible>false</Visible>
-    </None>
-  </ItemGroup>  
+    <ItemGroup  Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">
+      <TfmSpecificPackageFile Include="$(OutputPath)\*.dll">
+        <PackagePath>$(CustomPackagePath)</PackagePath>
+      </TfmSpecificPackageFile>  
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <None Include="NuGet.Build.Tasks.Pack.targets">
