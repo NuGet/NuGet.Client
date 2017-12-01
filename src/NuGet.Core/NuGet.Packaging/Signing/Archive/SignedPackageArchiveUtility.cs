@@ -101,10 +101,10 @@ namespace NuGet.Packaging.Signing
                 throw new Exception(Strings.SignedPackageNotSignedOnVerify);
             }
 
+            var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+
             try
             {
-                var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-
                 reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, metadata.SignatureLocalFileHeaderPosition);
 
@@ -145,29 +145,6 @@ namespace NuGet.Packaging.Signing
 
                 // Seek back the last 4 bytes we read as a possible signature
                 reader.BaseStream.Seek(offset: -4, origin: SeekOrigin.Current);
-
-                // Update zip64 data
-                if (metadata.IsZip64)
-                {
-                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, metadata.Zip64EndOfCentralDirectoryRecordPosition + 24);
-
-                    var entryCountInDisk = (ulong)(reader.ReadUInt64() - 1);
-                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(entryCountInDisk));
-
-                    var entryCount = (ulong)(reader.ReadUInt64() -1);
-                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(entryCount));
-
-                    var sizeOfCentralDirectory = reader.ReadUInt64() -(ulong)metadata.SignatureCentralDirectoryHeaderSize;
-                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(sizeOfCentralDirectory));
-
-                    var offsetOfStartOfCentralDirectory = reader.ReadUInt64() - (ulong)metadata.SignatureFileEntryTotalSize;
-                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(offsetOfStartOfCentralDirectory));
-
-                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, SignedPackageArchiveIOUtility.Zip64EndOfCentralDirectoryLocatorSignature + 8);
-
-                    var offsetOfZip64EOCD = reader.ReadUInt64() - (ulong)metadata.SignatureFileEntryTotalSize - (ulong)metadata.SignatureCentralDirectoryHeaderSize;
-                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(offsetOfZip64EOCD));
-                }
 
                 // Update EOCD data
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, metadata.EndOfCentralDirectoryRecordPosition + 8);

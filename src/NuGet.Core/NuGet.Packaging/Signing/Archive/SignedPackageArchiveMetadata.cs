@@ -30,16 +30,6 @@ namespace NuGet.Packaging.Signing
         internal long SignatureCentralDirectoryHeaderSize { get; set; }
 
         /// <summary>
-        /// True if the archive is Zip64
-        /// </summary>
-        internal bool IsZip64 { get; set; }
-
-        /// <summary>
-        /// Position of the EOCD record if is IsZip64 is true
-        /// </summary>
-        internal long Zip64EndOfCentralDirectoryRecordPosition { get; set; }
-
-        /// <summary>
         /// Position of the EOCD record
         /// </summary>
         internal long EndOfCentralDirectoryRecordPosition { get; set; }

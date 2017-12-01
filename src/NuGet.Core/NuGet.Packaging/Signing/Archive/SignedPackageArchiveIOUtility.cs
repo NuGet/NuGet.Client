@@ -225,18 +225,22 @@ namespace NuGet.Packaging.Signing
 
             if (!hasFoundSignatureEntry)
             {
-                throw new Exception(Strings.ErrorPackageNotSigned);
+                throw new SignatureException(Strings.ErrorPackageNotSigned);
             }
 
+            var isZip64 = false;
             try
             {
                 SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(Zip64EndOfCentralDirectorySignature));
-
-                metadata.IsZip64 = true;
-                metadata.Zip64EndOfCentralDirectoryRecordPosition = reader.BaseStream.Position;
+                isZip64 = true;
             }
-            // Failure means package is not a zip64 arhcive, then is safe to ignore.
+            // Failure means package is not a zip64 archive, then is safe to ignore.
             catch { }
+
+            if (isZip64)
+            {
+                throw new InvalidDataException(Strings.ErrorZip64NotSupported);
+            }
 
             return metadata;
         }

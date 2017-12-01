@@ -341,6 +341,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Zip64 archives are not supported.
+        /// </summary>
+        internal static string ErrorZip64NotSupported {
+            get {
+                return ResourceManager.GetString("ErrorZip64NotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to update file time for {0}: {1}.
         /// </summary>
         internal static string FailedFileTime {

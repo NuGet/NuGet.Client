@@ -376,6 +376,9 @@ Valid from:</comment>
   <data name="ErrorInvalidPackageArchive" xml:space="preserve">
     <value>Invalid package archive.</value>
   </data>
+  <data name="ErrorZip64NotSupported" xml:space="preserve">
+    <value>Zip64 archives are not supported</value>
+  </data>
   <data name="Error_NotOnePrimarySignature" xml:space="preserve">
     <value>SignedCms does not have one primary signature.</value>
   </data>
