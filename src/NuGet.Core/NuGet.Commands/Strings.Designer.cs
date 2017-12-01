@@ -107,15 +107,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet Command failed. {0} threw exception: {1}.
-        /// </summary>
-        internal static string Error_CommandFailedWithException {
-            get {
-                return ResourceManager.GetString("Error_CommandFailedWithException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to A source file was added with an empty path..
         /// </summary>
         internal static string Error_EmptySourceFilePath {
@@ -1431,7 +1422,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not verify package signature..
+        ///   Looks up a localized string similar to Could not verify package(s) signature..
         /// </summary>
         internal static string VerifyCommand_Failed {
             get {
@@ -1458,7 +1449,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Successfully verified package..
+        ///   Looks up a localized string similar to Successfully verified package(s)..
         /// </summary>
         internal static string VerifyCommand_Success {
             get {

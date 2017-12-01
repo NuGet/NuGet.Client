@@ -313,9 +313,6 @@ Valid from:</comment>
   <data name="ErrorPackageSignatureInvalid" xml:space="preserve">
     <value>Package signature is invalid.</value>
   </data>
-  <data name="Error_FailedWithException" xml:space="preserve">
-    <value>{0} failed with exception: {1}</value>
-  </data>
   <data name="DebugNoCertificate" xml:space="preserve">
     <value>Certificate inside main SignerInfo is null.</value>
   </data>
@@ -375,5 +372,11 @@ Valid from:</comment>
   </data>
   <data name="ErrorCertificateNotCodeSigning" xml:space="preserve">
     <value>Certificate is not a valid code signing certificate.</value>
+  </data>
+  <data name="ErrorInvalidPackageArchive" xml:space="preserve">
+    <value>Invalid package archive.</value>
+  </data>
+  <data name="Error_NotOnePrimarySignature" xml:space="preserve">
+    <value>SignedCms does not have one primary signature.</value>
   </data>
 </root>

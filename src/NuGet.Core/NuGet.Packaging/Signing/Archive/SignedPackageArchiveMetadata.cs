@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Signing
 
         /// <summary>
         /// Total size of file entry for signature
-        /// This should include size of local file header + encryption header + file data + data descriptir
+        /// This should include size of local file header + encryption header + file data + data descriptor
         /// </summary>
         internal long SignatureFileEntryTotalSize { get; set; }
 
@@ -27,7 +27,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Size of central directory header for signature file
         /// </summary>
-        internal long SignatureCentralDirectoryEntrySize { get; set; }
+        internal long SignatureCentralDirectoryHeaderSize { get; set; }
 
         /// <summary>
         /// True if the archive is Zip64
@@ -35,7 +35,7 @@ namespace NuGet.Packaging.Signing
         internal bool IsZip64 { get; set; }
 
         /// <summary>
-        /// Position of the EOCD record if the archive is Zip64
+        /// Position of the EOCD record if is IsZip64 is true
         /// </summary>
         internal long Zip64EndOfCentralDirectoryRecordPosition { get; set; }
 

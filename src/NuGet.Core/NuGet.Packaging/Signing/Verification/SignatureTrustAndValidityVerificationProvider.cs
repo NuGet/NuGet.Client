@@ -42,7 +42,7 @@ namespace NuGet.Packaging.Signing
             var timestampCms = new SignedCms();
             var dateTimeToCheckRevocation = DateTime.Now;
 
-            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, signature.Type.GetString())));
+            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, signature.Type.ToString())));
 
             foreach (var attribute in authorUnsignedAttributes)
             {
@@ -111,7 +111,7 @@ namespace NuGet.Packaging.Signing
             catch (Exception e)
             {
                 issues.Add(SignatureLog.InvalidPackageError(Strings.ErrorSignatureVerificationFailed));
-                issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedWithException, nameof(signature.SignerInfo.CheckSignature), e.Message)));
+                issues.Add(SignatureLog.DebugLog(e.ToString()));
                 return SignatureVerificationStatus.Invalid;
             }
 

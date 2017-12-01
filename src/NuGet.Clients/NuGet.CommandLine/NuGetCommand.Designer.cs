@@ -14797,7 +14797,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies that a verification of the signature of the package(s) should be performed..
+        ///   Looks up a localized string similar to Specifies that package signature verification should be performed..
         /// </summary>
         internal static string VerifyCommandSignaturesDescription {
             get {

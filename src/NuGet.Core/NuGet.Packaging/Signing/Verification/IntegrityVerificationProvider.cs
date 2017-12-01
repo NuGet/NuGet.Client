@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Signing
             catch (Exception e)
             {
                 issues.Add(SignatureLog.InvalidPackageError(Strings.SignatureFailurePackageTampered));
-                issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedWithException, nameof(VerifyPackageIntegrityAsync), e.Message)));
+                issues.Add(SignatureLog.DebugLog(e.ToString()));
             }
 
             return new SignedPackageVerificationResult(status, signature, issues);

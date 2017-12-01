@@ -25,20 +25,4 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         Repository = 2
     }
-
-    static class SignatureTypeMethods
-    {
-        public static string GetString(this SignatureType type)
-        {
-            switch (type)
-            {
-                case SignatureType.Author:
-                    return "Author";
-                case SignatureType.Repository:
-                    return "Repository";
-                default:
-                    return "Unknown";
-            }
-        }
-    }
 }

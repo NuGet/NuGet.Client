@@ -125,20 +125,20 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} failed with exception: {1}.
-        /// </summary>
-        internal static string Error_FailedWithException {
-            get {
-                return ResourceManager.GetString("Error_FailedWithException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unsupported targetFramework value &apos;{0}&apos;..
         /// </summary>
         internal static string Error_InvalidTargetFramework {
             get {
                 return ResourceManager.GetString("Error_InvalidTargetFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SignedCms does not have one primary signature..
+        /// </summary>
+        internal static string Error_NotOnePrimarySignature {
+            get {
+                return ResourceManager.GetString("Error_NotOnePrimarySignature", resourceCulture);
             }
         }
         
@@ -211,6 +211,15 @@ namespace NuGet.Packaging {
         internal static string ErrorInvalidMinClientVersion {
             get {
                 return ResourceManager.GetString("ErrorInvalidMinClientVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid package archive..
+        /// </summary>
+        internal static string ErrorInvalidPackageArchive {
+            get {
+                return ResourceManager.GetString("ErrorInvalidPackageArchive", resourceCulture);
             }
         }
         

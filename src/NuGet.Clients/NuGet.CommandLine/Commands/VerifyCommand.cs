@@ -69,18 +69,18 @@ namespace NuGet.CommandLine
             return Task.FromResult(result);
         }
 
-        private IList<VerificationType> GetVerificationTypes()
+        private IList<Verification> GetVerificationTypes()
         {
             if (All)
             {
-                return new[] { VerificationType.All };
+                return new[] { Verification.All };
             }
 
-            var verifications = new List<VerificationType>();
+            var verifications = new List<Verification>();
 
             if (Signatures)
             {
-                verifications.Add(VerificationType.Signatures);
+                verifications.Add(Verification.Signatures);
             }
 
             return verifications;

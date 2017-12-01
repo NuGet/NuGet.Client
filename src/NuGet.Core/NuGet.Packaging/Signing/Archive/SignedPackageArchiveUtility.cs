@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -41,20 +42,37 @@ namespace NuGet.Packaging.Signing
                 // Look for signature central directory record
                 reader.BaseStream.Seek(offset: offsetOfStartOfCD, origin: SeekOrigin.Begin);
 
+                var centralDirectoryHeaderSignature = reader.ReadUInt32();
+                if (centralDirectoryHeaderSignature != SignedPackageArchiveIOUtility.CentralDirectoryHeaderSignature)
+                {
+                    throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
+                }
+
                 var ReadingCentralDirectoryHeaders = true;
                 while (ReadingCentralDirectoryHeaders)
                 {
                     // Skip until file name length
-                    reader.BaseStream.Seek(offset: 28, origin: SeekOrigin.Current);
+                    reader.BaseStream.Seek(offset: 24, origin: SeekOrigin.Current);
                     var filenameLength = reader.ReadUInt16();
 
                     // Skip to read filename
-                    reader.BaseStream.Seek(offset: 16, origin: SeekOrigin.Current);
+                    reader.BaseStream.Seek(offset: 12, origin: SeekOrigin.Current);
+
+                    var localHeaderOffset = reader.ReadUInt32();
 
                     var filename = reader.ReadBytes(filenameLength);
-                    var filenameString = Encoding.UTF8.GetString(filename);
+                    var filenameString = Encoding.ASCII.GetString(filename);
                     if (string.Equals(filenameString, _signingSpecification.SignaturePath, StringComparison.Ordinal))
                     {
+                        // Go to local file header
+                        reader.BaseStream.Seek(offset: localHeaderOffset, origin: SeekOrigin.Begin);
+
+                        var fileHeaderSignature = reader.ReadUInt32();
+                        if (fileHeaderSignature != SignedPackageArchiveIOUtility.LocalFileHeaderSignature)
+                        {
+                            throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
+                        }
+
                         return true;
                     }
 
@@ -69,10 +87,11 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Verifies that a signed zip archive's signature is valid and it has not been tampered with.
+        /// Verifies that a signed package archive's signature is valid and it has not been tampered with.
         /// </summary>
         /// <param name="reader">Signed zip archive to verify</param>
-        /// <param name="verificationProvider">Provider for validations</param>
+        /// <param name="hashAlgorithm">Hash algorithm to be used to hash data.</param>
+        /// <param name="expectedHash">Hash value of the original data.</param>
         /// <returns>True if package archive's hash matches the expected hash</returns>
         public static bool VerifySignedZipIntegrity(BinaryReader reader, HashAlgorithm hashAlgorithm, byte[] expectedHash)
         {
@@ -94,8 +113,8 @@ namespace NuGet.Packaging.Signing
 
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, metadata.SignatureCentralDirectoryHeaderPosition);
 
-                // Skip hashing of central directory for signature file
-                reader.BaseStream.Seek(offset: metadata.SignatureCentralDirectoryEntrySize, origin: SeekOrigin.Current);
+                // Skip hashing of central directory header for signature file
+                reader.BaseStream.Seek(offset: metadata.SignatureCentralDirectoryHeaderSize, origin: SeekOrigin.Current);
 
                 // Update offset of any central directory that comes after signature
                 var possibleCentralDirectoryHeaderSignature = reader.ReadUInt32();
@@ -115,8 +134,8 @@ namespace NuGet.Packaging.Signing
 
                     SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + 8);
 
-                    var relativeOffset = (uint)(reader.ReadUInt32() - metadata.SignatureFileEntryTotalSize);
-                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(relativeOffset));
+                    var relativeOffsetOfLocalFileHeader = (uint)(reader.ReadUInt32() - metadata.SignatureFileEntryTotalSize);
+                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(relativeOffsetOfLocalFileHeader));
 
                     SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm,
                         reader.BaseStream.Position + filenameLength + extraFieldLength + fileCommentLength);
@@ -138,7 +157,7 @@ namespace NuGet.Packaging.Signing
                     var entryCount = (ulong)(reader.ReadUInt64() -1);
                     SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(entryCount));
 
-                    var sizeOfCentralDirectory = reader.ReadUInt64() -(ulong)metadata.SignatureCentralDirectoryEntrySize;
+                    var sizeOfCentralDirectory = reader.ReadUInt64() -(ulong)metadata.SignatureCentralDirectoryHeaderSize;
                     SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(sizeOfCentralDirectory));
 
                     var offsetOfStartOfCentralDirectory = reader.ReadUInt64() - (ulong)metadata.SignatureFileEntryTotalSize;
@@ -146,7 +165,7 @@ namespace NuGet.Packaging.Signing
 
                     SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, SignedPackageArchiveIOUtility.Zip64EndOfCentralDirectoryLocatorSignature + 8);
 
-                    var offsetOfZip64EOCD = reader.ReadUInt64() - (ulong)metadata.SignatureFileEntryTotalSize - (ulong)metadata.SignatureCentralDirectoryEntrySize;
+                    var offsetOfZip64EOCD = reader.ReadUInt64() - (ulong)metadata.SignatureFileEntryTotalSize - (ulong)metadata.SignatureCentralDirectoryHeaderSize;
                     SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(offsetOfZip64EOCD));
                 }
 
@@ -159,7 +178,7 @@ namespace NuGet.Packaging.Signing
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntries));
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntriesOnDisk));
 
-                var eocdrSizeOfCentralDirectory = reader.ReadUInt32() - (uint)metadata.SignatureCentralDirectoryEntrySize;
+                var eocdrSizeOfCentralDirectory = reader.ReadUInt32() - (uint)metadata.SignatureCentralDirectoryHeaderSize;
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrSizeOfCentralDirectory));
 
                 var eocdrOffsetOfCentralDirectory = reader.ReadUInt32() - (uint)metadata.SignatureFileEntryTotalSize;

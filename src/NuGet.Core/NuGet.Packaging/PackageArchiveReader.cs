@@ -298,7 +298,7 @@ namespace NuGet.Packaging
                 var expectedHash = Convert.FromBase64String(signatureManifest.HashValue);
                 if (!SignedPackageArchiveUtility.VerifySignedZipIntegrity(reader, hashAlgorithm, expectedHash))
                 {
-                    throw new SignatureException(Strings.SignatureFailurePackageTampered);
+                    throw new SignatureException(Strings.SignatureFailurePackageTampered, GetIdentity());
                 }
             }
 #endif

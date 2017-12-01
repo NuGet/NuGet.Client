@@ -5375,7 +5375,7 @@ nuget verify-Signatures  .\*.nupkg</value>
     <comment>Please don't localize this string</comment>
   </data>
   <data name="VerifyCommandSignaturesDescription" xml:space="preserve">
-    <value>Specifies that a verification of the signature of the package(s) should be performed.</value>
+    <value>Specifies that package signature verification should be performed.</value>
   </data>
   <data name="SignCommandCertificatePasswordDescription" xml:space="preserve">
     <value>Password for the certificate, if needed.

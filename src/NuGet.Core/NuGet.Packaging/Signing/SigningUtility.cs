@@ -12,6 +12,11 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public static class SigningUtility
     {
+        /// <summary>
+        /// Validates the public key requiriements for a certificate
+        /// </summary>
+        /// <param name="certificate">Certificate to validate</param>
+        /// <returns>True if the certificate's public key is valid within NuGet signature requirements</returns>
         public static bool IsCertificatePublicKeyValid(X509Certificate2 certificate)
         {
             // Check if the public key is RSA with a valid keysize

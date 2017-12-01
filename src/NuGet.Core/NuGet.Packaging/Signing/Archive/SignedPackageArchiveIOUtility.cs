@@ -36,7 +36,7 @@ namespace NuGet.Packaging.Signing
 
             if (originalPosition + byteSignature.Length > stream.Length)
             {
-                throw new Exception(Strings.ErrorByteSignatureTooBig);
+                throw new ArgumentOutOfRangeException(Strings.ErrorByteSignatureTooBig);
             }
 
             while (stream.Position != (stream.Length - byteSignature.Length))
@@ -50,7 +50,7 @@ namespace NuGet.Packaging.Signing
             }
 
             stream.Seek(offset: originalPosition, origin: SeekOrigin.Begin);
-            throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.ErrorByteSignatureNotFound, BitConverter.ToString(byteSignature)));
+            throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorByteSignatureNotFound, BitConverter.ToString(byteSignature)));
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace NuGet.Packaging.Signing
 
             if (originalPosition + byteSignature.Length > stream.Length)
             {
-                throw new Exception(Strings.ErrorByteSignatureTooBig);
+                throw new ArgumentOutOfRangeException(Strings.ErrorByteSignatureTooBig);
             }
 
             while (stream.Position != 0)
@@ -84,7 +84,7 @@ namespace NuGet.Packaging.Signing
             }
 
             stream.Seek(offset: originalPosition, origin: SeekOrigin.Begin);
-            throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.ErrorByteSignatureNotFound, BitConverter.ToString(byteSignature)));
+            throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorByteSignatureNotFound, BitConverter.ToString(byteSignature)));
         }
 
         /// <summary>
@@ -154,14 +154,19 @@ namespace NuGet.Packaging.Signing
 
             // Look for signature central directory record
             reader.BaseStream.Seek(offset: offsetOfStartOfCD, origin: SeekOrigin.Begin);
+            var possibleSignatureCentralDirectoryRecordPosition = reader.BaseStream.Position;
+            var centralDirectoryHeaderSignature = reader.ReadUInt32();
+
+            if (centralDirectoryHeaderSignature != CentralDirectoryHeaderSignature)
+            {
+                throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
+            }
 
             var hasFoundSignatureEntry = false;
             while (!hasFoundSignatureEntry)
             {
-                var possibleSignatureCentralDirectoryRecordPosition = reader.BaseStream.Position;
-
                 // Skip until file name length
-                reader.BaseStream.Seek(offset: 28, origin: SeekOrigin.Current);
+                reader.BaseStream.Seek(offset: 24, origin: SeekOrigin.Current);
                 var filenameLength = reader.ReadUInt16();
                 var extraFieldLength = reader.ReadUInt16();
                 var fileCommentLength = reader.ReadUInt16();
@@ -172,18 +177,25 @@ namespace NuGet.Packaging.Signing
                 var localHeaderOffset = reader.ReadUInt32();
 
                 var filename = reader.ReadBytes(filenameLength);
-                var filenameString = Encoding.UTF8.GetString(filename);
+                var filenameString = Encoding.ASCII.GetString(filename);
                 if (string.Equals(filenameString, _signingSpecification.SignaturePath))
                 {
                     hasFoundSignatureEntry = true;
 
                     metadata.SignatureCentralDirectoryHeaderPosition = possibleSignatureCentralDirectoryRecordPosition;
-                    metadata.SignatureCentralDirectoryEntrySize = 46 + filenameLength + extraFieldLength + fileCommentLength;
+                    metadata.SignatureCentralDirectoryHeaderSize = 46 + filenameLength + extraFieldLength + fileCommentLength;
 
                     metadata.SignatureLocalFileHeaderPosition = localHeaderOffset;
 
-                    // Go to local file header and skip signature
-                    reader.BaseStream.Seek(offset: metadata.SignatureLocalFileHeaderPosition + 4, origin: SeekOrigin.Begin);
+                    // Go to local file header
+                    reader.BaseStream.Seek(offset: metadata.SignatureLocalFileHeaderPosition, origin: SeekOrigin.Begin);
+
+                    var fileHeaderSignature = reader.ReadUInt32();
+
+                    if (fileHeaderSignature != LocalFileHeaderSignature)
+                    {
+                        throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
+                    }
 
                     // The total size of file entry is from the start of the file header until
                     // the start of the next file header (or the start of the first central directory header)
@@ -203,6 +215,7 @@ namespace NuGet.Packaging.Signing
                 try
                 {
                     SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(CentralDirectoryHeaderSignature));
+                    possibleSignatureCentralDirectoryRecordPosition = reader.BaseStream.Position;
                 }
                 catch
                 {
@@ -222,6 +235,7 @@ namespace NuGet.Packaging.Signing
                 metadata.IsZip64 = true;
                 metadata.Zip64EndOfCentralDirectoryRecordPosition = reader.BaseStream.Position;
             }
+            // Failure means package is not a zip64 arhcive, then is safe to ignore.
             catch { }
 
             return metadata;
@@ -234,6 +248,11 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(reader));
             }
 
+            if (byteSignature == null || byteSignature.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(byteSignature));
+            }
+
             var stream = reader.BaseStream;
 
             if (stream.Length < byteSignature.Length)
@@ -241,24 +260,22 @@ namespace NuGet.Packaging.Signing
                 return false;
             }
 
+            var startingOffset = stream.Position;
+
             for (var i = 0; i < byteSignature.Length; ++i)
             {
-                var @byte = stream.ReadByte();
+                var b = stream.ReadByte();
 
-                if (@byte != byteSignature[i])
+                if (b != byteSignature[i])
                 {
-                    stream.Seek(offset: -(i + 1), origin: SeekOrigin.Current);
+                    stream.Seek(offset: startingOffset, origin: SeekOrigin.Current);
                     return false;
-                }
-
-                if (i == byteSignature.Length - 1)
-                {
-                    stream.Seek(offset: -(byteSignature.Length), origin: SeekOrigin.Current);
-                    return true;
                 }
             }
 
-            return false;
+            stream.Seek(offset: startingOffset, origin: SeekOrigin.Current);
+
+            return true;
         }
     }
 }

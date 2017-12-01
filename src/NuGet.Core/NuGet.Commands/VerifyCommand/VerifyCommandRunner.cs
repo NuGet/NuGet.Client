@@ -22,17 +22,22 @@ namespace NuGet.Commands
     {
         public async Task<int> ExecuteCommandAsync(VerifyArgs verifyArgs)
         {
-            var executedSuccessfully = false;
-            
-            if (ShouldExecuteType(verifyArgs, VerificationType.Signatures))
+            if (verifyArgs.Verifications.Count == 0)
+            {
+                verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_VerificationTypeNotSupported));
+                return 1;
+            }
+
+            var errorCount = 0;
+
+            if (ShouldExecuteVerification(verifyArgs, Verification.Signatures))
             {
                 var packagesToVerify = LocalFolderUtility.ResolvePackageFromPath(verifyArgs.PackagePath);
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
 
-                var trustProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders();
-                var verifier = new PackageSignatureVerifier(trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders();
+                var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.RequireSigned);
 
-                var errorCount = 0;
 
                 foreach (var package in packagesToVerify)
                 {
@@ -43,18 +48,12 @@ namespace NuGet.Commands
                     catch (InvalidDataException e)
                     {
                         verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_PackageIsNotValid, package));
-                        verifyArgs.Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Error_CommandFailedWithException, nameof(VerifySignatureForPackageAsync), e.Message));
+                        ExceptionUtilities.LogException(e, verifyArgs.Logger);
                     }
                 }
-                executedSuccessfully = errorCount == 0;
             }
 
-            if (verifyArgs.Verifications.Count == 0)
-            {
-                verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_VerificationTypeNotSupported));
-            }
-
-            return executedSuccessfully ? 0 : 1;
+            return errorCount == 0 ? 0 : 1;
         }
 
         private async Task<int> VerifySignatureForPackageAsync(string packagePath, ILogger logger, PackageSignatureVerifier verifier)
@@ -94,9 +93,9 @@ namespace NuGet.Commands
             }
         }
 
-        private bool ShouldExecuteType(VerifyArgs args, VerificationType type)
+        private bool ShouldExecuteVerification(VerifyArgs args, Verification v)
         {
-            return args.Verifications.Count() > 0 && (args.Verifications.First() == VerificationType.All || args.Verifications.Contains(type));
+            return args.Verifications.Any(verification => verification == Verification.All || verification == v);
         }
     }
 }

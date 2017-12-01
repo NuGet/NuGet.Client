@@ -69,9 +69,9 @@ namespace NuGet.Packaging.Signing
         /// <param name="cms">signature data</param>
         public static Signature Load(SignedCms cms)
         {
-            if (cms.SignerInfos.Count < 1)
+            if (cms.SignerInfos.Count != 1)
             {
-                throw new InvalidOperationException("SignedCms does not have one primary signature.");
+                throw new InvalidOperationException(Strings.Error_NotOnePrimarySignature);
             }
 
             return new Signature(cms);
@@ -100,6 +100,11 @@ namespace NuGet.Packaging.Signing
         /// <param name="stream">signature data</param>
         public static Signature Load(Stream stream)
         {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
             using (stream)
             using (var ms = new MemoryStream())
             {

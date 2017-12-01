@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -20,19 +21,19 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="cert">X509Certificate2 to be converted to string.</param>
         /// <returns>string representation of the X509Certificate2.</returns>
-        public static string X509Certificate2ToString(X509Certificate2 cert, string indentation = "")
+        public static string X509Certificate2ToString(X509Certificate2 cert)
         {
             var certStringBuilder = new StringBuilder();
-            X509Certificate2ToString(cert, certStringBuilder, indentation);
+            X509Certificate2ToString(cert, certStringBuilder, indentation: "");
             return certStringBuilder.ToString();
         }
 
         private static void X509Certificate2ToString(X509Certificate2 cert, StringBuilder certStringBuilder, string indentation)
         {
-            certStringBuilder.AppendLine($"{indentation}{string.Format(Strings.CertUtilityCertificateSubjectName, cert.Subject)}");
-            certStringBuilder.AppendLine($"{indentation}{string.Format(Strings.CertUtilityCertificateHash, cert.Thumbprint)}");
-            certStringBuilder.AppendLine($"{indentation}{string.Format(Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name)}");
-            certStringBuilder.AppendLine($"{indentation}{string.Format(Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter)}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateSubjectName, cert.Subject)}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, cert.Thumbprint)}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name)}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter)}");
         }
 
         /// <summary>
@@ -51,7 +52,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="certCollection">X509Certificate2Collection to be converted to string.</param>
         /// <returns>string representation of the X509Certificate2Collection.</returns>
-        public static string X509Certificate2CollectionToString(X509Certificate2Collection certCollection, string indentation = "")
+        public static string X509Certificate2CollectionToString(X509Certificate2Collection certCollection)
         {
             var collectionStringBuilder = new StringBuilder();
 
@@ -60,7 +61,7 @@ namespace NuGet.Packaging.Signing
             for (var i = 0; i < Math.Min(_limit, certCollection.Count); i++)
             {
                 var cert = certCollection[i];
-                X509Certificate2ToString(cert, collectionStringBuilder, indentation);
+                X509Certificate2ToString(cert, collectionStringBuilder, "");
                 collectionStringBuilder.AppendLine();
             }
 

@@ -55,7 +55,7 @@ namespace NuGet.Packaging.Signing
                     // CryptographicException generated while parsing the SignedCms object
                     var issues = new[] {
                         SignatureLog.InvalidInputError(Strings.ErrorPackageSignatureInvalid),
-                        SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedWithException, nameof(VerifySignaturesAsync), e.Message))
+                        SignatureLog.DebugLog(e.ToString())
                     };
                     trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
                 }
