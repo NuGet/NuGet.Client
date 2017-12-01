@@ -138,23 +138,6 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-<<<<<<< HEAD
-        private static X509Chain GetTimestampCertChain(X509Certificate2 timestampSignerCertificate, X509Certificate2Collection additionalCertificates)
-        {
-            if (!SigningUtility.IsCertificateValid(timestampSignerCertificate, additionalCertificates, out var timestampCertChain, allowUntrustedRoot: false, checkRevocationMode: X509RevocationMode.Online))
-            {
-                throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3011,
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampCertificateChainBuildFailure,
-                    CertificateUtility.X509Certificate2ToString(timestampSignerCertificate))));
-            }
-
-            return timestampCertChain;
-        }
-
-=======
->>>>>>> Update verify to address spec
         private static void ValidateTimestampResponseNonce(
                 byte[] nonce,
                 Rfc3161TimestampToken timestampToken)

@@ -44,8 +44,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _trustProviders = new List<ISignatureVerificationProvider>()
                     {
                         new SignatureTrustAndValidityVerificationProvider(),
-                        new IntegrityVerificationProvider(),
-                        new TimestampVerificationProvider()
+                        new IntegrityVerificationProvider()
                     };
                 }
 

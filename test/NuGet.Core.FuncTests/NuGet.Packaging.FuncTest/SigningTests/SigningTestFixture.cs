@@ -39,8 +39,7 @@ namespace NuGet.Packaging.FuncTest
                     _trustProviders = new List<ISignatureVerificationProvider>()
                     {
                         new SignatureTrustAndValidityVerificationProvider(),
-                        new IntegrityVerificationProvider(),
-                        new TimestampVerificationProvider()
+                        new IntegrityVerificationProvider()
                     };
                 }
 

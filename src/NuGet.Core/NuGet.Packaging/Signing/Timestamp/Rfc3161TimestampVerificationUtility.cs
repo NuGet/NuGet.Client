@@ -20,77 +20,7 @@ namespace NuGet.Packaging.Signing
 
 #if IS_DESKTOP
 
-<<<<<<< HEAD
-        /// <summary>
-        /// Validates a SignedCms object containing a timestamp response.
-        /// </summary>
-        /// <param name="timestampCms">SignedCms response from the timestamp authority.</param>
-        /// <param name="specifications">SigningSpecifications used to validate allowed hash algorithms.</param>
-        /// <param name="signerCertificate">X509Certificate2 used to sign the data that was timestamped.</param>
-        /// <param name="data">byte[] data that was signed and timestamped.</param>
-        public static void Validate(SignedCms timestampCms, SigningSpecifications specifications, X509Certificate2 signerCertificate, byte[] data)
-        {
-            if (!ValidateTimestampAlgorithm(timestampCms, specifications))
-            {
-                throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3021,
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampResponseExceptionGeneral,
-                    Strings.TimestampFailureInvalidHashAlgorithmOid)));
-            }
-
-            Rfc3161TimestampTokenInfo tstInfo;
-
-            if (!TryReadTSTInfoFromSignedCms(timestampCms, out tstInfo))
-            {
-                throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3021,
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampResponseExceptionGeneral,
-                    Strings.TimestampFailureInvalidContentType)));
-            }
-
-            if (!ValidateTimestampedData(tstInfo, data))
-            {
-                throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3021,
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampResponseExceptionGeneral,
-                    Strings.TimestampFailureInvalidHash)));
-            }
-
-            if (!ValidateSignerCertificateAgainstTimestamp(signerCertificate, tstInfo))
-            {
-                throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3012,
-                    Strings.TimestampFailureAuthorCertNotValid));
-            }
-
-            var timestamperCertificate = timestampCms.SignerInfos[0].Certificate;
-
-            if (!ValidateTimestampEnhancedKeyUsage(timestamperCertificate))
-            {
-                throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3021,
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampResponseExceptionGeneral,
-                    Strings.TimestampFailureCertInvalidEku)));
-            }
-
-            if (!TryBuildTimestampCertificateChain(timestamperCertificate, out var chain))
-            {
-                throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3011,
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampCertificateChainBuildFailure,
-                    CertificateUtility.X509Certificate2ToString(timestamperCertificate))));
-            }
-        }
-
-        private static bool ValidateSignerCertificateAgainstTimestamp(
-=======
         internal static bool ValidateSignerCertificateAgainstTimestamp(
->>>>>>> Update verify command
             X509Certificate2 signerCertificate,
             Rfc3161TimestampTokenInfo tstInfo)
         {
