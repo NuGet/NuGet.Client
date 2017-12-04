@@ -45,5 +45,9 @@ namespace NuGet.Packaging.Signing
 #endif
         }
 
+        /// <summary>
+        /// Author or Repository signature type.
+        /// </summary>
+        public SignatureType SignatureType { get; set; } = SignatureType.Author;
     }
 }

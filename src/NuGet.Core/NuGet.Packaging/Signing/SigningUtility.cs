@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -33,6 +34,27 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
+        /// Create an ordered list of certificates. The leaf node is returned first.
+        /// </summary>
+        /// <remarks>This does not check validity or trust. It returns the chain as-is.</remarks>
+        public static IReadOnlyList<X509Certificate2> GetCertificateChain(X509Chain certChain)
+        {
+            if (certChain == null)
+            {
+                throw new ArgumentNullException(nameof(certChain));
+            }
+
+            var certs = new List<X509Certificate2>();
+
+            foreach (var item in certChain.ChainElements)
+            {
+                certs.Add(item.Certificate);
+            }
+
+            return certs;
+        }
+
+        /// <summary>
         /// Checks if an X509Certificate2 contains a Enhanced Key Usage specified in the form of an Oid.
         /// </summary>
         /// <param name="certificate">X509Certificate2 to be checked.</param>
@@ -54,11 +76,20 @@ namespace NuGet.Packaging.Signing
         }
 
 #if IS_DESKTOP
-        public static CryptographicAttributeObjectCollection GetSignAttributes()
+        public static CryptographicAttributeObjectCollection GetSignAttributes(SignPackageRequest request)
         {
             var attributes = new CryptographicAttributeObjectCollection();
 
             attributes.Add(new Pkcs9SigningTime());
+
+            if (request.SignatureType != SignatureType.Unknown)
+            {
+                // Add signature type if set.
+                attributes.Add(AttributeUtility.GetCommitmentTypeIndication(request.SignatureType));
+            }
+
+            // Add the full chain of certificate hashes
+            attributes.Add(AttributeUtility.GetSigningCertificateV2(request.Certificate, request.SignatureHashAlgorithm));
 
             return attributes;
         }

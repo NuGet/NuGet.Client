@@ -65,6 +65,17 @@ namespace NuGet.Common
         /// <summary>
         /// Compute the hash as a byte[].
         /// </summary>
+        public static byte[] ComputeHash(this HashAlgorithmName hashAlgorithmName, byte[] data)
+        {
+            using (var provider = hashAlgorithmName.GetHashProvider())
+            {
+                return provider.ComputeHash(data);
+            }
+        }
+
+        /// <summary>
+        /// Compute the hash as a byte[].
+        /// </summary>
         /// <remarks>Closes the stream by default.</remarks>
         /// <param name="hashAlgorithm">Algorithm to use for hashing.</param>
         /// <param name="data">Stream to hash.</param>

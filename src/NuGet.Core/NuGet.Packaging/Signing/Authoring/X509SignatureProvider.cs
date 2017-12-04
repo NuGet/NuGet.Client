@@ -61,7 +61,7 @@ namespace NuGet.Packaging.Signing
 #if IS_DESKTOP
         private Signature CreateSignature(SignPackageRequest request, SignatureManifest signatureManifest)
         {
-            var attributes = SigningUtility.GetSignAttributes();
+            var attributes = SigningUtility.GetSignAttributes(request);
 
             using (request)
             {

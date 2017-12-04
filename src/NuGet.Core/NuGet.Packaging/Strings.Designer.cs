@@ -116,6 +116,24 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to commitment-type-indication attribute contains an invalid value..
+        /// </summary>
+        internal static string CommitmentTypeIndicationAttributeInvalid {
+            get {
+                return ResourceManager.GetString("CommitmentTypeIndicationAttributeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to commitment-type-indication attribute is invalid..
+        /// </summary>
+        internal static string CommitmentTypeIndicationInvalid {
+            get {
+                return ResourceManager.GetString("CommitmentTypeIndicationInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Certificate inside main SignerInfo is null..
         /// </summary>
         internal static string DebugNoCertificate {
@@ -512,6 +530,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package signature contains an invalid attribute: {0}.
+        /// </summary>
+        internal static string SignatureContainsInvalidAttribute {
+            get {
+                return ResourceManager.GetString("SignatureContainsInvalidAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Signature hash oid found: {0}.
         /// </summary>
         internal static string SignatureDebug_HashOidFound {
@@ -589,6 +616,15 @@ namespace NuGet.Packaging {
         internal static string SignedPackageUnableToAccessSignature {
             get {
                 return ResourceManager.GetString("SignedPackageUnableToAccessSignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to signing-certificate-v2 attribute value does not match the current certificate chain..
+        /// </summary>
+        internal static string SigningCertificateV2Invalid {
+            get {
+                return ResourceManager.GetString("SigningCertificateV2Invalid", resourceCulture);
             }
         }
         

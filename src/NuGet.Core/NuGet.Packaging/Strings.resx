@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -316,8 +316,14 @@ Valid from:</comment>
   <data name="DebugNoCertificate" xml:space="preserve">
     <value>Certificate inside main SignerInfo is null.</value>
   </data>
+  <data name="CommitmentTypeIndicationAttributeInvalid" xml:space="preserve">
+    <value>commitment-type-indication attribute contains an invalid value.</value>
+  </data>
   <data name="ErrorByteSignatureNotFound" xml:space="preserve">
     <value>Byte signature not found in package archive:</value>
+  </data>
+  <data name="SignatureContainsInvalidAttribute" xml:space="preserve">
+    <value>Package signature contains an invalid attribute: {0}</value>
   </data>
   <data name="ErrorByteSignatureTooBig" xml:space="preserve">
     <value>Byte signature too big to seek in current stream position.</value>
@@ -386,5 +392,11 @@ Valid from:</comment>
     <value>The timestamp service's certificate has a valid time in the future. -
 {0}</value>
     <comment>0 -  X509Certificate2 friendly name</comment>
+  </data>
+  <data name="SigningCertificateV2Invalid" xml:space="preserve">
+    <value>signing-certificate-v2 attribute value does not match the current certificate chain.</value>
+  </data>
+  <data name="CommitmentTypeIndicationInvalid" xml:space="preserve">
+    <value>commitment-type-indication attribute is invalid.</value>
   </data>
 </root>
