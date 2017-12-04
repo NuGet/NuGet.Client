@@ -17,7 +17,7 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     internal static class Rfc3161TimestampVerificationUtility
     {
-        internal static double _millisecondsPerMicrosecond = 0.001;
+        private const double _millisecondsPerMicrosecond = 0.001;
 
 #if IS_DESKTOP
 
