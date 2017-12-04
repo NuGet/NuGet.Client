@@ -155,16 +155,16 @@ namespace NuGet.Packaging.Signing
             // Look for signature central directory record
             reader.BaseStream.Seek(offset: offsetOfStartOfCD, origin: SeekOrigin.Begin);
             var possibleSignatureCentralDirectoryRecordPosition = reader.BaseStream.Position;
-            var centralDirectoryHeaderSignature = reader.ReadUInt32();
-
-            if (centralDirectoryHeaderSignature != CentralDirectoryHeaderSignature)
-            {
-                throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
-            }
 
             var hasFoundSignatureEntry = false;
             while (!hasFoundSignatureEntry)
             {
+                var centralDirectoryHeaderSignature = reader.ReadUInt32();
+                if (centralDirectoryHeaderSignature != CentralDirectoryHeaderSignature)
+                {
+                    throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
+                }
+
                 // Skip until file name length
                 reader.BaseStream.Seek(offset: 24, origin: SeekOrigin.Current);
                 var filenameLength = reader.ReadUInt16();
@@ -272,12 +272,12 @@ namespace NuGet.Packaging.Signing
 
                 if (b != byteSignature[i])
                 {
-                    stream.Seek(offset: startingOffset, origin: SeekOrigin.Current);
+                    stream.Seek(offset: startingOffset, origin: SeekOrigin.Begin);
                     return false;
                 }
             }
 
-            stream.Seek(offset: startingOffset, origin: SeekOrigin.Current);
+            stream.Seek(offset: startingOffset, origin: SeekOrigin.Begin);
 
             return true;
         }

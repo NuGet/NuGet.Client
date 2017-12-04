@@ -42,15 +42,15 @@ namespace NuGet.Packaging.Signing
                 // Look for signature central directory record
                 reader.BaseStream.Seek(offset: offsetOfStartOfCD, origin: SeekOrigin.Begin);
 
-                var centralDirectoryHeaderSignature = reader.ReadUInt32();
-                if (centralDirectoryHeaderSignature != SignedPackageArchiveIOUtility.CentralDirectoryHeaderSignature)
-                {
-                    throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
-                }
-
                 var ReadingCentralDirectoryHeaders = true;
                 while (ReadingCentralDirectoryHeaders)
                 {
+                    var centralDirectoryHeaderSignature = reader.ReadUInt32();
+                    if (centralDirectoryHeaderSignature != SignedPackageArchiveIOUtility.CentralDirectoryHeaderSignature)
+                    {
+                        throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
+                    }
+
                     // Skip until file name length
                     reader.BaseStream.Seek(offset: 24, origin: SeekOrigin.Current);
                     var filenameLength = reader.ReadUInt16();
