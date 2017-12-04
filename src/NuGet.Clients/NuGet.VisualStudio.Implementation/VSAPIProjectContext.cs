@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
@@ -65,6 +66,6 @@ namespace NuGet.VisualStudio
 
         public NuGetActionType ActionType { get; set; }
 
-        public TelemetryServiceHelper TelemetryService { get; set; }
+        public INuGetTelemetryService TelemetryService { get; set; }
     }
 }

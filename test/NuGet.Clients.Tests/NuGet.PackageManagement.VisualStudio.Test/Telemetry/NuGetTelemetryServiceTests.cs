@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Moq;
+using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
@@ -40,26 +41,26 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Assert
             telemetrySession.Verify(x => x.PostEvent(It.IsAny<TelemetryEvent>()), Times.Once);
             Assert.NotNull(lastTelemetryEvent);
-            Assert.Equal("VS/NuGet/ProjectInformation", lastTelemetryEvent.Name);
+            Assert.Equal("ProjectInformation", lastTelemetryEvent.Name);
             Assert.Equal(4, lastTelemetryEvent.Properties.Count);
 
             object nuGetVersion;
-            Assert.True(lastTelemetryEvent.Properties.TryGetValue("VS.NuGet.NuGetVersion", out nuGetVersion));
+            Assert.True(lastTelemetryEvent.Properties.TryGetValue("NuGetVersion", out nuGetVersion));
             Assert.IsType<string>(nuGetVersion);
             Assert.Equal(projectInformation.NuGetVersion, nuGetVersion);
 
             object projectId;
-            Assert.True(lastTelemetryEvent.Properties.TryGetValue("VS.NuGet.ProjectId", out projectId));
+            Assert.True(lastTelemetryEvent.Properties.TryGetValue("ProjectId", out projectId));
             Assert.IsType<string>(projectId);
             Assert.Equal(projectInformation.ProjectId.ToString(), projectId);
 
             object actualProjectType;
-            Assert.True(lastTelemetryEvent.Properties.TryGetValue("VS.NuGet.NuGetProjectType", out actualProjectType));
+            Assert.True(lastTelemetryEvent.Properties.TryGetValue("NuGetProjectType", out actualProjectType));
             Assert.IsType<NuGetProjectType>(actualProjectType);
             Assert.Equal(projectInformation.NuGetProjectType, actualProjectType);
 
             object installedPackageCount;
-            Assert.True(lastTelemetryEvent.Properties.TryGetValue("VS.NuGet.InstalledPackageCount", out installedPackageCount));
+            Assert.True(lastTelemetryEvent.Properties.TryGetValue("InstalledPackageCount", out installedPackageCount));
             Assert.IsType<int>(installedPackageCount);
             Assert.Equal(projectInformation.InstalledPackageCount, installedPackageCount);
         }

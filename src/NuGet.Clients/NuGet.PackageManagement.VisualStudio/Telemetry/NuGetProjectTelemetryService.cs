@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
@@ -29,7 +30,7 @@ namespace NuGet.PackageManagement.Telemetry
         public static NuGetProjectTelemetryService Instance =
             new NuGetProjectTelemetryService(TelemetrySession.Instance);
 
-        private readonly ITelemetrySession telemetrySession;
+        private readonly ITelemetrySession _telemetrySession;
 
         public NuGetProjectTelemetryService(ITelemetrySession telemetryService)
         {
@@ -38,7 +39,7 @@ namespace NuGet.PackageManagement.Telemetry
                 throw new ArgumentNullException(nameof(telemetryService));
             }
 
-            telemetrySession = telemetryService;
+            _telemetrySession = telemetryService;
         }
 
         public void EmitNuGetProject(NuGetProject nuGetProject)
@@ -122,7 +123,7 @@ namespace NuGet.PackageManagement.Telemetry
                     { TelemetryConstants.NuGetVersionPropertyName, projectInformation.NuGetVersion },
                     { TelemetryConstants.ProjectIdPropertyName, projectInformation.ProjectId.ToString() }
                 });
-            telemetrySession.PostEvent(telemetryEvent);
+            _telemetrySession.PostEvent(telemetryEvent);
         }
     }
 }

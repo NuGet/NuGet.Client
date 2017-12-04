@@ -1,7 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using NuGet.Common;
+using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
 {
@@ -11,7 +14,6 @@ namespace NuGet.VisualStudio
     public class RestoreTelemetryEvent : ActionEventBase
     {
         public RestoreTelemetryEvent(
-            string operationId,
             string[] projectIds,
             RestoreOperationSource source,
             DateTimeOffset startTime,
@@ -19,14 +21,34 @@ namespace NuGet.VisualStudio
             int packageCount,
             int noOpProjectsCount,
             DateTimeOffset endTime,
-            double duration) : base(operationId, projectIds, startTime, status, packageCount, endTime, duration)
+            double duration) : base(projectIds, startTime, status, packageCount, endTime, duration)
         {
-            Source = source;
+            OperationSource = source;
             NoOpProjectsCount = noOpProjectsCount;
         }
 
-        public RestoreOperationSource Source { get; }
+        public RestoreOperationSource OperationSource { get; }
 
         public int NoOpProjectsCount { get; }
+
+        public override TelemetryEvent ToTelemetryEvent(string operationId)
+        {
+            return new TelemetryEvent(
+                TelemetryConstants.RestoreActionEventName,
+                new Dictionary<string, object>
+                {
+                    { TelemetryConstants.OperationIdPropertyName, operationId },
+                    { nameof(ProjectIds), string.Join(",", ProjectIds) },
+                    { nameof(OperationSource), OperationSource },
+                    { nameof(PackagesCount), PackagesCount },
+                    { nameof(Status), Status },
+                    { nameof(StartTime), StartTime.ToString() },
+                    { nameof(EndTime), EndTime.ToString() },
+                    { nameof(Duration), Duration },
+                    { nameof(ProjectsCount), ProjectsCount },
+                    { nameof(NoOpProjectsCount), NoOpProjectsCount }
+                }
+            );
+        }
     }
 }
