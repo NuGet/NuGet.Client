@@ -5,6 +5,8 @@
   <PropertyGroup>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
+    <PackProject>true</PackProject>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
     <RestoreNuGetPackages>true</RestoreNuGetPackages>
     <PackagesDir>$(UserProfile)\.nuget\packages</PackagesDir>
@@ -480,4 +482,10 @@
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.4.0" PrivateAssets="all"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <IncludeContentInPack>false</IncludeContentInPack>
+  </PropertyGroup>
 </Project>
