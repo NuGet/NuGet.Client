@@ -52,7 +52,7 @@ namespace NuGet.Packaging.Signing
 
                     using (var authorSignatureNativeCms = NativeCms.Decode(signature.SignedCms.Encode(), detached: false))
                     {
-                        var signatureHash = NativeCms.GetSignatureValueHash(signature.SignatureManifest.HashAlgorithm, authorSignatureNativeCms);
+                        var signatureHash = NativeCms.GetSignatureValueHash(signature.SignatureContent.HashAlgorithm, authorSignatureNativeCms);
 
                         status = VerifyTimestamp(timestampCms, signature.SignerInfo.Certificate, signatureHash, issues);
                         if (status == SignatureVerificationStatus.Invalid)

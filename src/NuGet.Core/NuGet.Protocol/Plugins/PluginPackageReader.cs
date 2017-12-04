@@ -1134,7 +1134,7 @@ namespace NuGet.Protocol.Plugins
             return Task.FromResult(false);
         }
 
-        public override Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token)
+        public override Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)
         {
             throw new NotImplementedException();
         }

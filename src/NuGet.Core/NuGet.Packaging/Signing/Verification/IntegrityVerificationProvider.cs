@@ -25,7 +25,7 @@ namespace NuGet.Packaging.Signing
             var issues = new List<SignatureLog>();
 
             var validHashOids = SigningSpecifications.V1.AllowedHashAlgorithmOids;
-            var signatureHashOid = signature.SignatureManifest.HashAlgorithm.ConvertToOidString();
+            var signatureHashOid = signature.SignatureContent.HashAlgorithm.ConvertToOidString();
             if (!validHashOids.Contains(signatureHashOid, StringComparer.InvariantCultureIgnoreCase))
             {
                 issues.Add(SignatureLog.InvalidPackageError(Strings.SignatureFailureInvalidHashAlgorithmOid));
@@ -33,11 +33,11 @@ namespace NuGet.Packaging.Signing
                 return new SignedPackageVerificationResult(status, signature, issues);
             }
 
-            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureHashAlgorithm, signature.SignatureManifest.HashAlgorithm)));
+            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureHashAlgorithm, signature.SignatureContent.HashAlgorithm)));
 
             try
             {
-                await package.ValidateIntegrityAsync(signature.SignatureManifest, CancellationToken.None);
+                await package.ValidateIntegrityAsync(signature.SignatureContent, CancellationToken.None);
                 status = SignatureVerificationStatus.Trusted;
             }
             catch (Exception e)

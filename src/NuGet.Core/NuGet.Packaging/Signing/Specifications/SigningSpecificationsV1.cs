@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Common;
-using System.Linq;
 
 namespace NuGet.Packaging.Signing
 {
@@ -12,10 +11,8 @@ namespace NuGet.Packaging.Signing
         private const string _SHA256String = "SHA256";
         private const string _SHA384String = "SHA384";
         private const string _SHA512String = "SHA512";
-        private const int _majorVersion = 0;
-        private const int _minorVersion = 9;
         private const int _rsaPublicKeyMinLength = 2048;
-        
+
         /// <summary>
         /// Allowed digest algorithms for signature and timestamp hashing.
         /// </summary>
@@ -36,10 +33,10 @@ namespace NuGet.Packaging.Signing
             HashAlgorithmName.SHA512.ConvertToOidString()
         };
 
-        private static readonly int[] _supportedMajorVersions = new[]
-        {
-            1
-        };
+        /// <summary>
+        /// Gets the signature format version.
+        /// </summary>
+        public override string Version => "1";
 
         public override string SignaturePath => _signaturePath;
 
@@ -49,7 +46,6 @@ namespace NuGet.Packaging.Signing
 
         public override int RSAPublicKeyMinLength => _rsaPublicKeyMinLength;
 
-        public override int[] SupportedMajorVersions => _supportedMajorVersions;
 
         public SigningSpecificationsV1()
             : base()

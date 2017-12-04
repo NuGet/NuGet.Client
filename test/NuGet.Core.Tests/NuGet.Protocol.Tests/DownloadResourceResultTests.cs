@@ -258,7 +258,7 @@ namespace NuGet.Protocol.Tests
                 throw new NotImplementedException();
             }
 
-            public override Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token)
+            public override Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)
             {
                 throw new NotImplementedException();
             }

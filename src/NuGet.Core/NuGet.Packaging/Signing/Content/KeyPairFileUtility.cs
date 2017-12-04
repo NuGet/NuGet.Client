@@ -9,11 +9,6 @@ namespace NuGet.Packaging.Signing
     public static class KeyPairFileUtility
     {
         /// <summary>
-        /// Max file size.
-        /// </summary>
-        public const int MaxSize = 1024 * 1024;
-
-        /// <summary>
         /// File encoding.
         /// </summary>
         public static readonly Encoding Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);

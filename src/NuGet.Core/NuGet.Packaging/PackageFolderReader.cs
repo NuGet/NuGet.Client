@@ -180,7 +180,7 @@ namespace NuGet.Packaging
 
             var parts = parents.Select(d => d.Name).Concat(new string[] { file.Name });
 
-            return String.Join("/", parts);
+            return string.Join("/", parts);
         }
 
         public override IEnumerable<string> CopyFiles(
@@ -230,7 +230,7 @@ namespace NuGet.Packaging
             return Task.FromResult(false);
         }
 
-        public override Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token)
+        public override Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)
         {
             throw new NotImplementedException();
         }
