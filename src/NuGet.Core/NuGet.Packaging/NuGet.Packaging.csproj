@@ -50,6 +50,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Signing\DerEncoding\SR.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SR.resx</DependentUpon>
+    </Compile>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -58,6 +63,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Signing\DerEncoding\SR.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>SR.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Update="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>

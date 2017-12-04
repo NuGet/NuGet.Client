@@ -37,5 +37,19 @@ namespace NuGet.Packaging.Signing
 
         // XCN_OID_KP_LIFETIME_SIGNING https://msdn.microsoft.com/en-us/library/windows/desktop/aa378132(v=vs.85).aspx
         public const string LifetimeSignerEkuOid = "1.3.6.1.4.1.311.10.3.13";
+        
+        // RFC 5126 "commitment-type-indication" https://tools.ietf.org/html/rfc5126.html#section-5.11.1
+        public const string CommitmentTypeIndication = "1.2.840.113549.1.9.16.2.16";
+
+        // RFC 5126 "id-cti-ets-proofOfOrigin" https://tools.ietf.org/html/rfc5126.html#section-5.11.1
+        public const string CommitmentTypeIdentifierProofOfOrigin = "1.2.840.113549.1.9.16.6.1";
+
+        // RFC 5126 "id-cti-ets-proofOfReceipt" https://tools.ietf.org/html/rfc5126.html#section-5.11.1
+        public const string CommitmentTypeIdentifierProofOfReceipt = "1.2.840.113549.1.9.16.6.2";
+
+        // RFC 5126 "signing-certificate-v2" https://tools.ietf.org/html/rfc5126.html#page-34
+        public const string SigningCertificateV2 = "1.2.840.113549.1.9.16.2.47";
+
+
     }
 }

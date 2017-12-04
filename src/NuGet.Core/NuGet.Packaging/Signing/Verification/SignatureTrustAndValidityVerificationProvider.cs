@@ -104,6 +104,16 @@ namespace NuGet.Packaging.Signing
                 return SignatureVerificationStatus.Invalid;
             }
 
+
+            var commitmentTypeIndication = signature.SignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.CommitmentTypeIndication);
+
+            if (commitmentTypeIndication != null
+                && !AttributeUtility.IsValidCommitmentTypeIndication(commitmentTypeIndication))
+            {
+                issues.Add(SignatureLog.InvalidPackageError(Strings.CommitmentTypeIndicationInvalid));
+                return SignatureVerificationStatus.Invalid;
+            }
+
             try
             {
                 signature.SignerInfo.CheckSignature(verifySignatureOnly: true);
@@ -115,7 +125,11 @@ namespace NuGet.Packaging.Signing
                 return SignatureVerificationStatus.Invalid;
             }
 
-            return VerifyCertificateChain(certificate, signature.SignedCms.Certificates, verificationTime, NuGetVerificationCertificateType.Signature, issues);
+            // Read signed attribute containing the original cert hashes
+            var signingCertificateV2Attribute = signature.SignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningCertificateV2);
+
+            // Verify chain
+            return VerifyCertificateChain(certificate, signature.SignedCms.Certificates, verificationTime, NuGetVerificationCertificateType.Signature, issues, signingCertificateV2Attribute);
         }
 
         /// <summary>
@@ -170,14 +184,15 @@ namespace NuGet.Packaging.Signing
                 Strings.TimestampValue,
                 tstInfo.Timestamp.LocalDateTime.ToString()) + Environment.NewLine));
 
-            return VerifyCertificateChain(timestamperCertificate, timestampCms.Certificates, DateTime.Now, NuGetVerificationCertificateType.Timestamp, issues);
+            return VerifyCertificateChain(timestamperCertificate, timestampCms.Certificates, DateTime.Now, NuGetVerificationCertificateType.Timestamp, issues, signingCertificateV2Attribute: null);
         }
 
         private SignatureVerificationStatus VerifyCertificateChain(X509Certificate2 certificate,
             X509Certificate2Collection additionalCertificates,
             DateTime verificationTime,
             NuGetVerificationCertificateType certificateType,
-            List<SignatureLog> issues)
+            List<SignatureLog> issues,
+            CryptographicAttributeObject signingCertificateV2Attribute)
         {
             if (certificate == null)
             {
@@ -194,11 +209,23 @@ namespace NuGet.Packaging.Signing
 
                 if (chain.Build(certificate))
                 {
-                    result = SignatureVerificationStatus.Trusted;
-                    issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
-                                certificateDisplayFormat,
-                                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(certificate)}")));
-                    issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
+                    // Verify signing-certificate-v2 to ensure that the certificates used at signing time are
+                    // the same certificates used during validation.
+                    if (signingCertificateV2Attribute == null
+                            || AttributeUtility.IsValidSigningCertificateV2(certificate, chain, signingCertificateV2Attribute, SigningSpecifications.V1))
+                    {
+                        result = SignatureVerificationStatus.Trusted;
+                        issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
+                                    certificateDisplayFormat,
+                                    $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(certificate)}")));
+                        issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
+                    }
+                    else
+                    {
+                        // signing-certificate-v2 did match the local cert chain
+                        issues.Add(SignatureLog.InvalidPackageError(Strings.SigningCertificateV2Invalid));
+                        result = SignatureVerificationStatus.Invalid;
+                    }
                 }
 
                 foreach (var chainStatus in chain.ChainStatus)
