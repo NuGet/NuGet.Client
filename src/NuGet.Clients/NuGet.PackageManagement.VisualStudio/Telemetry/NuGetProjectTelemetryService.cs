@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -27,18 +26,13 @@ namespace NuGet.PackageManagement.Telemetry
             = new Lazy<string>(() => ClientVersionUtility.GetNuGetAssemblyVersion());
 
         public static NuGetProjectTelemetryService Instance =
-            new NuGetProjectTelemetryService(TelemetrySession.Instance);
+            new NuGetProjectTelemetryService(VSTelemetrySession.Instance);
 
-        private readonly ITelemetrySession telemetrySession;
+        private readonly ITelemetrySession _telemetrySession;
 
         public NuGetProjectTelemetryService(ITelemetrySession telemetryService)
         {
-            if (telemetryService == null)
-            {
-                throw new ArgumentNullException(nameof(telemetryService));
-            }
-
-            telemetrySession = telemetryService;
+            _telemetrySession = telemetryService ?? throw new ArgumentNullException(nameof(telemetryService));
         }
 
         public void EmitNuGetProject(NuGetProject nuGetProject)
@@ -112,17 +106,8 @@ namespace NuGet.PackageManagement.Telemetry
         }
 
         public void EmitProjectInformation(ProjectTelemetryEvent projectInformation)
-        {
-            var telemetryEvent = new TelemetryEvent(
-                TelemetryConstants.ProjectInformationEventName,
-                new Dictionary<string, object>
-                {
-                    { TelemetryConstants.InstalledPackageCountPropertyName, projectInformation.InstalledPackageCount },
-                    { TelemetryConstants.NuGetProjectTypePropertyName, projectInformation.NuGetProjectType },
-                    { TelemetryConstants.NuGetVersionPropertyName, projectInformation.NuGetVersion },
-                    { TelemetryConstants.ProjectIdPropertyName, projectInformation.ProjectId.ToString() }
-                });
-            telemetrySession.PostEvent(telemetryEvent);
+        { 
+            _telemetrySession.PostEvent(projectInformation);
         }
     }
 }

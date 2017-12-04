@@ -24,6 +24,8 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Test.Utility;
 using Xunit;
 
@@ -5978,8 +5980,15 @@ namespace NuGet.Test
             var sourceRepositoryProvider = CreateSource(packages);
 
             // set up telemetry service
-            var telemetryService = new TelemetryServiceHelper();
+            var telemetrySession = new Mock<ITelemetrySession>();
+
+            var telemetryEvents= new List<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
+
             var nugetProjectContext = new TestNuGetProjectContext();
+            var telemetryService = new NuGetVSActionTelemetryService(telemetrySession.Object);
             nugetProjectContext.TelemetryService = telemetryService;
 
             // Create Package Manager
@@ -6006,11 +6015,10 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 // Assert
-                var telemetryEvents = telemetryService.TelemetryEvents;
                 Assert.Equal(3, telemetryEvents.Count);
                 var projectId = string.Empty;
                 nugetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
-                VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents);
+                VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents.Select(p => (string)p["StepName"]));
             }
         }
 
@@ -6021,8 +6029,15 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
 
             // set up telemetry service
-            var telemetryService = new TelemetryServiceHelper();
+            var telemetrySession = new Mock<ITelemetrySession>();
+
+            var telemetryEvents = new List<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
+
             var nugetProjectContext = new TestNuGetProjectContext();
+            var telemetryService = new NuGetVSActionTelemetryService(telemetrySession.Object);
             nugetProjectContext.TelemetryService = telemetryService;
 
             // Create Package Manager
@@ -6049,12 +6064,11 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 // Assert
-                var telemetryEvents = telemetryService.TelemetryEvents;
                 Assert.Equal(1, telemetryEvents.Count);
                 var projectId = string.Empty;
                 buildIntegratedProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
-                Assert.True(telemetryEvents.ContainsKey(
-                    string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId)));
+                Assert.Equal(telemetryEvents[0]["StepName"],
+                    string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId));
             }
         }
 
@@ -6087,8 +6101,15 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // set up telemetry service
-            var telemetryService = new TelemetryServiceHelper();
+            var telemetrySession = new Mock<ITelemetrySession>();
+
+            var telemetryEvents = new List<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
+
             var nugetProjectContext = new TestNuGetProjectContext();
+            var telemetryService = new NuGetVSActionTelemetryService(telemetrySession.Object);
             nugetProjectContext.TelemetryService = telemetryService;
 
             // Create Package Manager
@@ -6113,11 +6134,10 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 // Assert
-                var telemetryEvents = telemetryService.TelemetryEvents;
                 Assert.Equal(3, telemetryEvents.Count);
                 var projectId = string.Empty;
                 nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
-                VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents);
+                VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents.Select(p => (string)p["StepName"]));
             }
         }        
 
@@ -6128,8 +6148,15 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
 
             // set up telemetry service
-            var telemetryService = new TelemetryServiceHelper();
+            var telemetrySession = new Mock<ITelemetrySession>();
+
+            var telemetryEvents = new List<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
+
             var nugetProjectContext = new TestNuGetProjectContext();
+            var telemetryService = new NuGetVSActionTelemetryService(telemetrySession.Object);
             nugetProjectContext.TelemetryService = telemetryService;
 
             // Create Package Manager
@@ -6160,12 +6187,11 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 // Assert
-                var telemetryEvents = telemetryService.TelemetryEvents;
                 var projectId = string.Empty;
                 nugetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
 
                 Assert.Equal(1, telemetryEvents.Count);
-                Assert.True(telemetryEvents.ContainsKey(
+                Assert.Equal(telemetryEvents[0]["StepName"],(
                     string.Format(TelemetryConstants.ExecuteActionStepName, projectId)));
             }
         }
@@ -6177,8 +6203,15 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
 
             // set up telemetry service
-            var telemetryService = new TelemetryServiceHelper();
+            var telemetrySession = new Mock<ITelemetrySession>();
+
+            var telemetryEvents = new List<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
+
             var nugetProjectContext = new TestNuGetProjectContext();
+            var telemetryService = new NuGetVSActionTelemetryService(telemetrySession.Object);
             nugetProjectContext.TelemetryService = telemetryService;
 
             using (var settingsdir = TestDirectory.Create())
@@ -6219,29 +6252,28 @@ namespace NuGet.Test
                     token);
 
                 // Assert
-                var telemetryEvents = telemetryService.TelemetryEvents;
                 var projectId = string.Empty;
                 buildIntegratedProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
 
                 Assert.Equal(2, telemetryEvents.Count);
-                Assert.True(telemetryEvents.ContainsKey(
-                    string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId)));
-                Assert.True(telemetryEvents.ContainsKey(
-                    string.Format(TelemetryConstants.ExecuteActionStepName, projectId)));
+                Assert.Equal(telemetryEvents[0]["StepName"],
+                    string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId));
+                Assert.Equal(telemetryEvents[1]["StepName"],
+                    string.Format(TelemetryConstants.ExecuteActionStepName, projectId));
 
             }
         }
 
-        private void VerifyPreviewActionsTelemetryEvents_PackagesConfig(string operationId, IDictionary<string, double> actual)
+        private void VerifyPreviewActionsTelemetryEvents_PackagesConfig(string operationId, IEnumerable<string> actual)
         {
             var key = string.Format(TelemetryConstants.GatherDependencyStepName, operationId);
-            Assert.True(actual.ContainsKey(key));
+            Assert.True(actual.Contains(key));
 
             key = string.Format(TelemetryConstants.ResolveDependencyStepName, operationId);
-            Assert.True(actual.ContainsKey(key));
+            Assert.True(actual.Contains(key));
 
             key = string.Format(TelemetryConstants.ResolvedActionsStepName, operationId);
-            Assert.True(actual.ContainsKey(key));
+            Assert.True(actual.Contains(key));
         }
 
         private static void AddToPackagesFolder(PackageIdentity package, string root)

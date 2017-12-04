@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft;
+using NuGet.PackageManagement;
 
 namespace NuGet.VisualStudio
 {

@@ -1095,7 +1095,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public NuGetActionType ActionType { get; set; }
 
-        public TelemetryServiceHelper TelemetryService { get; set; }
+        public INuGetTelemetryService TelemetryService { get; set; }
     }
 
     public class ProgressRecordCollection : KeyedCollection<int, ProgressRecord>

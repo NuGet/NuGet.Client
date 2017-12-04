@@ -176,7 +176,6 @@
     <Compile Include="Setting\WritableSettingsStoreWrapper.cs" />
     <Compile Include="SourceControl\DTESourceControlUtility.cs" />
     <Compile Include="SourceControl\VsSourceControlTracker.cs" />
-    <Compile Include="Telemetry\ActionsTelemetryService.cs" />
     <Compile Include="Telemetry\NuGetProjectType.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="Telemetry\NuGetProjectTelemetryService.cs" />
@@ -313,9 +312,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.4.0" PrivateAssets="all"/>
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.4.0" PrivateAssets="all" />
   </ItemGroup>
-
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -210,7 +210,7 @@ namespace NuGet.PackageManagement.UI
             var operationId = Guid.NewGuid().ToString();
 
             // Enable granular level telemetry events for nuget ui operation
-            var telemetryService = new TelemetryServiceHelper();
+            var telemetryService = new NuGetVSActionTelemetryService();
             uiService.ProjectContext.TelemetryService = telemetryService;
 
             await _lockService.ExecuteNuGetOperationAsync(async () =>
@@ -225,7 +225,7 @@ namespace NuGet.PackageManagement.UI
                         return;
                     }
 
-                    TelemetryUtility.StartorResumeTimer();
+                    TelemetryServiceUtility.StartOrResumeTimer();
 
                     using (var sourceCacheContext = new SourceCacheContext())
                     {
@@ -255,7 +255,7 @@ namespace NuGet.PackageManagement.UI
                             }
                         }
 
-                        TelemetryUtility.StopTimer();
+                        TelemetryServiceUtility.StopTimer();
 
                         // Show the preview window.
                         if (uiService.DisplayPreviewWindow)
@@ -267,12 +267,12 @@ namespace NuGet.PackageManagement.UI
                             }
                         }
 
-                        TelemetryUtility.StartorResumeTimer();
+                        TelemetryServiceUtility.StartOrResumeTimer();
 
                         // Show the license acceptance window.
                         var accepted = await CheckLicenseAcceptanceAsync(uiService, results, token);
 
-                        TelemetryUtility.StartorResumeTimer();
+                        TelemetryServiceUtility.StartOrResumeTimer();
 
                         if (!accepted)
                         {
@@ -284,7 +284,7 @@ namespace NuGet.PackageManagement.UI
                         {
                             var shouldContinue = ShouldContinueDueToDotnetDeprecation(uiService, actions, token);
 
-                            TelemetryUtility.StartorResumeTimer();
+                            TelemetryServiceUtility.StartOrResumeTimer();
 
                             if (!shouldContinue)
                             {
@@ -321,16 +321,16 @@ namespace NuGet.PackageManagement.UI
                 }
                 finally
                 {
-                    TelemetryUtility.StopTimer();
+                    TelemetryServiceUtility.StopTimer();
 
-                    var duration = TelemetryUtility.GetTimerElapsedTime();
+                    var duration = TelemetryServiceUtility.GetTimerElapsedTime();
 
                     uiService.ProjectContext.Log(MessageLevel.Info,
                         string.Format(CultureInfo.CurrentCulture, Resources.Operation_TotalTime, duration));
 
                     uiService.EndOperation();
 
-                    var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
+                    var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                         uiService.Projects,
                         operationType,
                         OperationSource.UI,
@@ -339,7 +339,7 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         duration.TotalSeconds);
 
-                    ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, telemetryService.TelemetryEvents);
+                    telemetryService.EmitTelemetryEvent(actionTelemetryEvent);
                 }
             }, token);
         }
@@ -429,7 +429,7 @@ namespace NuGet.PackageManagement.UI
             var sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
             var licenseMetadata = await GetPackageMetadataAsync(sources, licenseCheck, token);
 
-            TelemetryUtility.StopTimer();
+            TelemetryServiceUtility.StopTimer();
 
             // show license agreement
             if (licenseMetadata.Any(e => e.RequireLicenseAcceptance))
@@ -454,7 +454,7 @@ namespace NuGet.PackageManagement.UI
         {
             var projects = DotnetDeprecatedPrompt.GetAffectedProjects(actions);
 
-            TelemetryUtility.StopTimer();
+            TelemetryServiceUtility.StopTimer();
 
             if (projects.Any())
             {

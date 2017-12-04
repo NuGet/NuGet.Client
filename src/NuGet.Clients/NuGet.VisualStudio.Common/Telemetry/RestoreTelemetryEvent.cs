@@ -1,7 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Common;
+using NuGet.PackageManagement;
 
 namespace NuGet.VisualStudio
 {
@@ -11,7 +13,6 @@ namespace NuGet.VisualStudio
     public class RestoreTelemetryEvent : ActionEventBase
     {
         public RestoreTelemetryEvent(
-            string operationId,
             string[] projectIds,
             RestoreOperationSource source,
             DateTimeOffset startTime,
@@ -19,14 +20,16 @@ namespace NuGet.VisualStudio
             int packageCount,
             int noOpProjectsCount,
             DateTimeOffset endTime,
-            double duration) : base(operationId, projectIds, startTime, status, packageCount, endTime, duration)
+            double duration) : base(RestoreActionEventName, projectIds, startTime, status, packageCount, endTime, duration)
         {
-            Source = source;
-            NoOpProjectsCount = noOpProjectsCount;
+            base[nameof(OperationSource)] = source;
+            base[(nameof(NoOpProjectsCount))] = noOpProjectsCount;
         }
 
-        public RestoreOperationSource Source { get; }
+        public const string RestoreActionEventName = "RestoreInformation";
 
-        public int NoOpProjectsCount { get; }
+        public RestoreOperationSource OperationSource => (RestoreOperationSource)base[nameof(OperationSource)];
+
+        public int NoOpProjectsCount => (int)base[nameof(NoOpProjectsCount)];
     }
 }

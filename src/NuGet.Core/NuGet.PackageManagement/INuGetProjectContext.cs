@@ -3,6 +3,7 @@
 
 using System.Xml.Linq;
 using NuGet.Packaging;
+using NuGet.Common;
 
 namespace NuGet.ProjectManagement
 {
@@ -37,7 +38,7 @@ namespace NuGet.ProjectManagement
 
         NuGetActionType ActionType { get; set; }
 
-        TelemetryServiceHelper TelemetryService { get; set; }
+        INuGetTelemetryService TelemetryService { get; set; }
     }
 
     /// <summary>
