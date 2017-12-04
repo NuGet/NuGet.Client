@@ -101,14 +101,43 @@ namespace NuGet.Packaging.Signing
                 ValidateTimestampResponseNonce(nonce, timestampToken);
 
                 var timestampCms = timestampToken.AsSignedCms();
-                var timestampCertChain = GetTimestampCertChain(GetTimestampSignerCertificate(timestampCms));
 
                 byte[] timestampByteArray;
 
                 using (var timestampNativeCms = NativeCms.Decode(timestampCms.Encode(), detached: false))
+                using (var timestampCertChain = new X509Chain())
                 {
+                    var policy = timestampCertChain.ChainPolicy;
+
+                    policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEkuOid));
+                    policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
+
+                    policy.ExtraStore.AddRange(timestampCms.Certificates);
+
+                    policy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+                    policy.RevocationMode = X509RevocationMode.Online;
+
+                    var timestampSignerCertificate = GetTimestampSignerCertificate(timestampCms);
+                    if (DateTime.UtcNow < timestampSignerCertificate.NotBefore)
+                    {
+                        throw new TimestampException(LogMessage.CreateError(
+                            NuGetLogCode.NU3011,
+                            string.Format(CultureInfo.CurrentCulture,
+                            Strings.TimestampCertificateInvalid,
+                            timestampSignerCertificate.FriendlyName)));
+                    }
+
+                    if (!timestampCertChain.Build(timestampSignerCertificate))
+                    {
+                        throw new TimestampException(LogMessage.CreateError(
+                            NuGetLogCode.NU3011,
+                            string.Format(CultureInfo.CurrentCulture,
+                            Strings.TimestampCertificateChainBuildFailure,
+                            timestampSignerCertificate.FriendlyName)));
+                    }
+
                     // Insert all the certificates into timestampCms
-                    InsertTimestampCertChainIntoTimestampCms(timestampCms, timestampCertChain, timestampNativeCms);                    
+                    InsertTimestampCertChainIntoTimestampCms(timestampCms, timestampCertChain, timestampNativeCms);
                     timestampByteArray = timestampCms.Encode();
                 }
 
@@ -118,23 +147,9 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private static X509Chain GetTimestampCertChain(X509Certificate2 timestampSignerCertificate)
-        {
-            if (!SigningUtility.IsCertificateValid(timestampSignerCertificate, out var timestampCertChain, allowUntrustedRoot: false, checkRevocationStatus: true))
-            {
-                throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3011,
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampCertificateChainBuildFailure,
-                    CertificateUtility.X509Certificate2ToString(timestampSignerCertificate))));
-            }
-
-            return timestampCertChain;
-        }
-
         private static void ValidateTimestampResponseNonce(
-            byte[] nonce,
-            Rfc3161TimestampToken timestampToken)
+                byte[] nonce,
+                Rfc3161TimestampToken timestampToken)
         {
             if (!nonce.SequenceEqual(timestampToken.TokenInfo.GetNonce()))
             {

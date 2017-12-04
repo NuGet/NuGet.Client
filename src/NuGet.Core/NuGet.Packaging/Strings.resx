@@ -313,4 +313,78 @@ Valid from:</comment>
   <data name="ErrorPackageSignatureInvalid" xml:space="preserve">
     <value>Package signature is invalid.</value>
   </data>
+  <data name="DebugNoCertificate" xml:space="preserve">
+    <value>Certificate inside main SignerInfo is null.</value>
+  </data>
+  <data name="ErrorByteSignatureNotFound" xml:space="preserve">
+    <value>Byte signature not found in package archive:</value>
+  </data>
+  <data name="ErrorByteSignatureTooBig" xml:space="preserve">
+    <value>Byte signature too big to seek in current stream position.</value>
+  </data>
+  <data name="ErrorInvalidCertificateChain" xml:space="preserve">
+    <value>Certificate chain validation failed with error: {0}</value>
+  </data>
+  <data name="ErrorInvalidPublicKey" xml:space="preserve">
+    <value>Could not validate signature. Certificate does not meet the public key requirements.</value>
+  </data>
+  <data name="ErrorNoCertificate" xml:space="preserve">
+    <value>Could not validate signature. Signature does not have a certificate.</value>
+  </data>
+  <data name="ErrorSignatureVerificationFailed" xml:space="preserve">
+    <value>Signature verification failed.</value>
+  </data>
+  <data name="SignatureDebug_HashOidFound" xml:space="preserve">
+    <value>Signature hash oid found: {0}</value>
+  </data>
+  <data name="SignatureFailureInvalidHashAlgorithmOid" xml:space="preserve">
+    <value>Signature response does not contain an acceptable hash algorithm.</value>
+  </data>
+  <data name="SignaturePackageIntegrityFailure" xml:space="preserve">
+    <value>Package integrity check failed.</value>
+  </data>
+  <data name="SignatureHashAlgorithm" xml:space="preserve">
+    <value>Signature Hash Algorithm: {0}</value>
+  </data>
+  <data name="SignatureType" xml:space="preserve">
+    <value>Signature type: {0}</value>
+  </data>
+  <data name="TimestampInvalid" xml:space="preserve">
+    <value>The signature contains an invalid timestamp.</value>
+  </data>
+  <data name="TimestampValue" xml:space="preserve">
+    <value>Timestamp: {0}</value>
+  </data>
+  <data name="WarningOfflineRevocationCheck" xml:space="preserve">
+    <value>Could not check revocation status of signing certificate online.</value>
+  </data>
+  <data name="WarningUnknownSignatureType" xml:space="preserve">
+    <value>Could not validate signature. Unknown signature type.</value>
+  </data>
+  <data name="WarningUntrustedRoot" xml:space="preserve">
+    <value>Signing certificate does not chain to a trusted root.</value>
+  </data>
+  <data name="VerificationDefaultCertDisplay" xml:space="preserve">
+    <value>Verifying signature with certificate: {0}</value>
+  </data>
+  <data name="ErrorCertificateHasLifetimeSignerEKU" xml:space="preserve">
+    <value>Certificates with lifetime signer EKU are not supported.</value>
+  </data>
+  <data name="ErrorCertificateNotCodeSigning" xml:space="preserve">
+    <value>Certificate is not a valid code signing certificate.</value>
+  </data>
+  <data name="ErrorInvalidPackageArchive" xml:space="preserve">
+    <value>Invalid package archive.</value>
+  </data>
+  <data name="ErrorZip64NotSupported" xml:space="preserve">
+    <value>Zip64 archives are not supported</value>
+  </data>
+  <data name="Error_NotOnePrimarySignature" xml:space="preserve">
+    <value>SignedCms does not have one primary signature.</value>
+  </data>
+  <data name="TimestampCertificateInvalid" xml:space="preserve">
+    <value>The timestamp service's certificate has a valid time in the future. -
+{0}</value>
+    <comment>0 -  X509Certificate2 friendly name</comment>
+  </data>
 </root>

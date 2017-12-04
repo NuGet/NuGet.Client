@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -23,16 +24,16 @@ namespace NuGet.Packaging.Signing
         public static string X509Certificate2ToString(X509Certificate2 cert)
         {
             var certStringBuilder = new StringBuilder();
-            X509Certificate2ToString(cert, certStringBuilder);
+            X509Certificate2ToString(cert, certStringBuilder, indentation: "");
             return certStringBuilder.ToString();
         }
 
-        private static void X509Certificate2ToString(X509Certificate2 cert, StringBuilder certStringBuilder)
+        private static void X509Certificate2ToString(X509Certificate2 cert, StringBuilder certStringBuilder, string indentation)
         {
-            certStringBuilder.AppendLine(string.Format(Strings.CertUtilityCertificateSubjectName, cert.Subject));
-            certStringBuilder.AppendLine(string.Format(Strings.CertUtilityCertificateHash, cert.Thumbprint));
-            certStringBuilder.AppendLine(string.Format(Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name));
-            certStringBuilder.AppendLine(string.Format(Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter));
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateSubjectName, cert.Subject)}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, cert.Thumbprint)}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name)}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter)}");
         }
 
         /// <summary>
@@ -60,13 +61,37 @@ namespace NuGet.Packaging.Signing
             for (var i = 0; i < Math.Min(_limit, certCollection.Count); i++)
             {
                 var cert = certCollection[i];
-                X509Certificate2ToString(cert, collectionStringBuilder);
+                X509Certificate2ToString(cert, collectionStringBuilder, indentation: "");
                 collectionStringBuilder.AppendLine();
             }
 
             if (certCollection.Count > _limit)
             {
                 collectionStringBuilder.AppendLine(string.Format(Strings.CertUtilityMultipleCertificatesFooter, certCollection.Count - _limit));
+            }
+
+            return collectionStringBuilder.ToString();
+        }
+
+
+        public static string X509ChainToString(X509Chain chain)
+        {
+            var collectionStringBuilder = new StringBuilder();
+            var indentationLevel = "    ";
+            var indentation = indentationLevel;
+
+            var chainElementsCount = chain.ChainElements.Count;
+            // Start in 1 to omit main certificate (only build the chain)
+            for (var i = 1; i < Math.Min(_limit, chainElementsCount); i++)
+            {
+                X509Certificate2ToString(chain.ChainElements[i].Certificate, collectionStringBuilder, indentation);
+                collectionStringBuilder.AppendLine();
+                indentation += indentationLevel;
+            }
+
+            if (chainElementsCount > _limit)
+            {
+                collectionStringBuilder.AppendLine(string.Format(Strings.CertUtilityMultipleCertificatesFooter, chainElementsCount - _limit));
             }
 
             return collectionStringBuilder.ToString();

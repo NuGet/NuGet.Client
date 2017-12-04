@@ -822,7 +822,6 @@ namespace NuGet.Packaging
             {
                 var verifyResult = await packageExtractionContext.SignedPackageVerifier.VerifySignaturesAsync(
                     signedPackageReader,
-                    packageExtractionContext.Logger,
                     token);
 
                 if (!verifyResult.Valid)

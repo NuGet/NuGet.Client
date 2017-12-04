@@ -662,10 +662,24 @@ Valid from:</comment>
     <value>'{0}' is not a valid package file.</value>
   </data>
   <data name="VerifyCommand_VerificationTypeNotSupported" xml:space="preserve">
-    <value>Verification type not supported. Please use only one of the following supported types: -Signatures</value>
+    <value>Verification type not supported. Please use only one of the following supported types: -All, -Signatures</value>
   </data>
   <data name="SignCommandOutputPath" xml:space="preserve">
     <value>Signed package(s) output path: {0}</value>
     <comment>0 - output directory path</comment>
+  </data>
+  <data name="VerifyCommand_FinishedWithErrors" xml:space="preserve">
+    <value>Finished with {0} errors and {1} warnings.</value>
+    <comment>{0} is the number of errors produced and {1} is the number of warnings.</comment>
+  </data>
+  <data name="VerifyCommand_Success" xml:space="preserve">
+    <value>Successfully verified package(s).</value>
+  </data>
+  <data name="VerifyCommand_VerifyingPackage" xml:space="preserve">
+    <value>Verifying {0}</value>
+    <comment>{0} should be the package identity of the package to verify</comment>
+  </data>
+  <data name="VerifyCommand_Failed" xml:space="preserve">
+    <value>Could not verify package(s) signature.</value>
   </data>
 </root>

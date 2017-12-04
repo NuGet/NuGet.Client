@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
@@ -25,26 +26,24 @@ namespace NuGet.Packaging.Signing
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public async Task<VerifySignaturesResult> VerifySignaturesAsync(ISignedPackageReader package, ILogger logger, CancellationToken token)
+        public async Task<VerifySignaturesResult> VerifySignaturesAsync(ISignedPackageReader package, CancellationToken token)
         {
             var valid = false;
             var trustResults = new List<PackageVerificationResult>();
 
             var isSigned = await package.IsSignedAsync(token);
-
             if (isSigned)
             {
                 try
                 {
                     // Read package signatures
                     var signatures = await package.GetSignaturesAsync(token);
-
                     var signaturesAreValid = signatures.Count > 0; // Fail if there are no signatures
 
                     // Verify that the signatures are trusted
                     foreach (var signature in signatures)
                     {
-                        var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, logger, token)));
+                        var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, token)));
                         signaturesAreValid &= IsValid(sigTrustResults, _settings.AllowUntrusted);
                         trustResults.AddRange(sigTrustResults);
                     }
@@ -54,7 +53,10 @@ namespace NuGet.Packaging.Signing
                 catch(CryptographicException e)
                 {
                     // CryptographicException generated while parsing the SignedCms object
-                    var issues = new[] { SignatureLog.InvalidInputError(Strings.ErrorPackageSignatureInvalid), SignatureLog.DetailedLog(e.Message) };
+                    var issues = new[] {
+                        SignatureLog.InvalidInputError(Strings.ErrorPackageSignatureInvalid),
+                        SignatureLog.DebugLog(e.ToString())
+                    };
                     trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
                 }
             }

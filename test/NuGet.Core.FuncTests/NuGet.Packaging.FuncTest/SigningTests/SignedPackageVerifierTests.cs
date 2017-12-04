@@ -27,6 +27,7 @@ namespace NuGet.Packaging.FuncTest
         private const string _packageTamperedError = "Package integrity check failed. The package has been tampered.";
         private const string _packageUnsignedError = "Package is not signed.";
         private const string _packageInvalidSignatureError = "Package signature is invalid.";
+        private SigningSpecifications _specification => SigningSpecifications.V1;
 
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
@@ -44,7 +45,6 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
 
             using (var dir = TestDirectory.Create())
             {
@@ -54,7 +54,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, testLogger, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
 
                     // Assert
                     result.Valid.Should().BeTrue();
@@ -67,7 +67,6 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
 
             using (var dir = TestDirectory.Create())
             {
@@ -85,7 +84,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, testLogger, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -104,7 +103,6 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
             var newEntryData = "malicious code";
             var newEntryName = "malicious file";
             using (var dir = TestDirectory.Create())
@@ -126,7 +124,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, testLogger, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -145,7 +143,6 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
             var extraData = "tampering data";
 
             using (var dir = TestDirectory.Create())
@@ -167,7 +164,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, testLogger, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -186,7 +183,6 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
 
             using (var dir = TestDirectory.Create())
             {
@@ -205,7 +201,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, testLogger, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -224,7 +220,6 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
 
             using (var dir = TestDirectory.Create())
             {
@@ -246,7 +241,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, testLogger, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -265,7 +260,6 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
 
             using (var dir = TestDirectory.Create())
             {
@@ -284,7 +278,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, testLogger, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -303,7 +297,6 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
 
             using (var dir = TestDirectory.Create())
             {
@@ -325,7 +318,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, testLogger, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
 
                     // Assert
                     // No failure expected as the signature file or its metadata is not part of the original hash
@@ -339,7 +332,6 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
 
             using (var dir = TestDirectory.Create())
             {
@@ -358,7 +350,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, testLogger, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 

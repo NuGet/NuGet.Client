@@ -31,9 +31,18 @@ namespace NuGet.Packaging.Signing
         public abstract string[] AllowedHashAlgorithmOids { get; }
 
         /// <summary>
+        /// Returns minumum length required for RSA public keys
+        /// </summary>
+        public abstract int RSAPublicKeyMinLength { get; }
+
+        /// <summary>
+        /// Returns a set of signature major versions supported by this client
+        /// </summary>
+        public abstract int[] SupportedMajorVersions { get; }
+
+        /// <summary>
         /// Initialize a signing specification with a root folder.
         /// </summary>
-        /// <param name="signatureFolder">Root folder within a package where signature files are stored.</param>
         protected SigningSpecifications()
         {
         }

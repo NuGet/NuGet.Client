@@ -26,5 +26,11 @@ namespace NuGet.Packaging.Signing
             Results = results;
             PackageIdentity = package;
         }
+
+        public SignatureException(string message, PackageIdentity package)
+            : base(message)
+        {
+            PackageIdentity = package;
+        }
     }
 }

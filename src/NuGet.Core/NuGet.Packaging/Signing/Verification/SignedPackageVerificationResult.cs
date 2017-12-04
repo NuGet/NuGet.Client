@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging.Signing
 {
