@@ -17,7 +17,7 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     internal static class Rfc3161TimestampVerificationUtility
     {
-        internal static double _milliesecondsPerMicrosecond = 0.001;
+        internal static double _millisecondsPerMicrosecond = 0.001;
 
 #if IS_DESKTOP
 
@@ -80,7 +80,7 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                accuracyInMilliseconds = tstInfo.AccuracyInMicroseconds.Value * _milliesecondsPerMicrosecond;
+                accuracyInMilliseconds = tstInfo.AccuracyInMicroseconds.Value * _millisecondsPerMicrosecond;
             }
 
             if (accuracyInMilliseconds < 0)
