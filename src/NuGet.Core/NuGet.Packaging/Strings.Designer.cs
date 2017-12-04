@@ -530,20 +530,20 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package integrity check failed. The package has been tampered..
-        /// </summary>
-        internal static string SignatureFailurePackageTampered {
-            get {
-                return ResourceManager.GetString("SignatureFailurePackageTampered", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Signature Hash Algorithm: {0}.
         /// </summary>
         internal static string SignatureHashAlgorithm {
             get {
                 return ResourceManager.GetString("SignatureHashAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package integrity check failed..
+        /// </summary>
+        internal static string SignaturePackageIntegrityFailure {
+            get {
+                return ResourceManager.GetString("SignaturePackageIntegrityFailure", resourceCulture);
             }
         }
         
@@ -608,6 +608,16 @@ namespace NuGet.Packaging {
         internal static string TimestampCertificateChainBuildFailure {
             get {
                 return ResourceManager.GetString("TimestampCertificateChainBuildFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp service&apos;s certificate has a valid time in the future. -
+        ///{0}.
+        /// </summary>
+        internal static string TimestampCertificateInvalid {
+            get {
+                return ResourceManager.GetString("TimestampCertificateInvalid", resourceCulture);
             }
         }
         

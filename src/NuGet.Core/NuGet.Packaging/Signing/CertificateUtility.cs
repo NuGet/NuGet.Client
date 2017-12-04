@@ -61,7 +61,7 @@ namespace NuGet.Packaging.Signing
             for (var i = 0; i < Math.Min(_limit, certCollection.Count); i++)
             {
                 var cert = certCollection[i];
-                X509Certificate2ToString(cert, collectionStringBuilder, "");
+                X509Certificate2ToString(cert, collectionStringBuilder, indentation: "");
                 collectionStringBuilder.AppendLine();
             }
 

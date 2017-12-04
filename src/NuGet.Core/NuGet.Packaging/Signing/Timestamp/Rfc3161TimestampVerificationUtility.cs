@@ -16,8 +16,8 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     internal static class Rfc3161TimestampVerificationUtility
     {
-        private const long _ticksPerMicroSecond = 10;
 
+        internal static double _milliesecondsPerMicrosecond = 0.001;
 #if IS_DESKTOP
 
         internal static bool ValidateSignerCertificateAgainstTimestamp(
@@ -25,30 +25,30 @@ namespace NuGet.Packaging.Signing
             Rfc3161TimestampTokenInfo tstInfo)
         {
             var tstInfoGenTime = tstInfo.Timestamp;
-            var tstInfoAccuracy = tstInfo.AccuracyInMicroseconds;
-            long tstInfoAccuracyInTicks;
+            double accuracyInMilliseconds;
 
-            if (!tstInfoAccuracy.HasValue)
+            if (!tstInfo.AccuracyInMicroseconds.HasValue)
             {
                 if (string.Equals(tstInfo.PolicyId, Oids.BaselineTimestampPolicyOid))
                 {
-                    tstInfoAccuracyInTicks = TimeSpan.TicksPerSecond;
+                    accuracyInMilliseconds = 1000;
                 }
                 else
                 {
-                    tstInfoAccuracyInTicks = 0;
+                    accuracyInMilliseconds = 0;
                 }
             }
             else
             {
-                tstInfoAccuracyInTicks = tstInfoAccuracy.Value * _ticksPerMicroSecond;
+                accuracyInMilliseconds = tstInfo.AccuracyInMicroseconds.Value * _milliesecondsPerMicrosecond;
             }
 
             // everything to UTC
-            var timestampUpperGenTimeUtcTicks = tstInfoGenTime.AddTicks(tstInfoAccuracyInTicks).UtcTicks;
-            var timestampLowerGenTimeUtcTicks = tstInfoGenTime.Subtract(TimeSpan.FromTicks(tstInfoAccuracyInTicks)).UtcTicks;
-            var signerCertExpiryUtcTicks = signerCertificate.NotAfter.ToUniversalTime().Ticks;
-            var signerCertBeginUtcTicks = signerCertificate.NotBefore.ToUniversalTime().Ticks;
+            var timestampUpperGenTimeUtcTicks = tstInfoGenTime.AddMilliseconds(accuracyInMilliseconds);
+            var timestampLowerGenTimeUtcTicks = tstInfoGenTime.Subtract(TimeSpan.FromMilliseconds(accuracyInMilliseconds));
+
+            var signerCertExpiryUtcTicks = signerCertificate.NotAfter.ToUniversalTime();
+            var signerCertBeginUtcTicks = signerCertificate.NotBefore.ToUniversalTime();
 
             return timestampUpperGenTimeUtcTicks < signerCertExpiryUtcTicks &&
                 timestampLowerGenTimeUtcTicks > signerCertBeginUtcTicks;

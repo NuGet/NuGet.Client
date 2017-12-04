@@ -42,7 +42,7 @@ namespace NuGet.Packaging.Signing
             }
             catch (Exception e)
             {
-                issues.Add(SignatureLog.InvalidPackageError(Strings.SignatureFailurePackageTampered));
+                issues.Add(SignatureLog.InvalidPackageError(Strings.SignaturePackageIntegrityFailure));
                 issues.Add(SignatureLog.DebugLog(e.ToString()));
             }
 

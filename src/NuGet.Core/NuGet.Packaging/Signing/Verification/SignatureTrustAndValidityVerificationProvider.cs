@@ -186,7 +186,7 @@ namespace NuGet.Packaging.Signing
 
             var result = SignatureVerificationStatus.Invalid;
 
-            using (var chain = new X509Chain(useMachineContext: true))
+            using (var chain = new X509Chain())
             {
                 var certificateDisplayFormat = Strings.VerificationDefaultCertDisplay;
                 var policy = chain.ChainPolicy;

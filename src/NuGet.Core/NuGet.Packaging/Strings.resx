@@ -340,8 +340,8 @@ Valid from:</comment>
   <data name="SignatureFailureInvalidHashAlgorithmOid" xml:space="preserve">
     <value>Signature response does not contain an acceptable hash algorithm.</value>
   </data>
-  <data name="SignatureFailurePackageTampered" xml:space="preserve">
-    <value>Package integrity check failed. The package has been tampered.</value>
+  <data name="SignaturePackageIntegrityFailure" xml:space="preserve">
+    <value>Package integrity check failed.</value>
   </data>
   <data name="SignatureHashAlgorithm" xml:space="preserve">
     <value>Signature Hash Algorithm: {0}</value>
@@ -381,5 +381,10 @@ Valid from:</comment>
   </data>
   <data name="Error_NotOnePrimarySignature" xml:space="preserve">
     <value>SignedCms does not have one primary signature.</value>
+  </data>
+  <data name="TimestampCertificateInvalid" xml:space="preserve">
+    <value>The timestamp service's certificate has a valid time in the future. -
+{0}</value>
+    <comment>0 -  X509Certificate2 friendly name</comment>
   </data>
 </root>

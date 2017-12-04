@@ -7,7 +7,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using System.Diagnostics;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;

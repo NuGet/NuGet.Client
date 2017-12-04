@@ -15,14 +15,15 @@ namespace NuGet.Packaging.Test.SigningTests
 {
     public static class SignTestUtility
     {
-        private const string _internalTimestampServer = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
+        // Environment variable to internal timestamp server. Server will be used as a valid valid rfc3161 timestamping service.
+        private static readonly string _testTimestampServer = Environment.GetEnvironmentVariable("TIMESTAMP_SERVER_URL");
 
         /// <summary>
         /// Sign a package for test purposes.
         /// </summary>
         public static async Task SignPackageAsync(TestLogger testLogger, X509Certificate2 cert, SignedPackageArchive signPackage)
         {
-            var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(new Uri(_internalTimestampServer)));
+            var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(new Uri(_testTimestampServer)));
             var signer = new Signer(signPackage, testSignatureProvider);
 
             var request = new SignPackageRequest()

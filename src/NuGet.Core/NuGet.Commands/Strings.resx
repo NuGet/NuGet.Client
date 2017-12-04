@@ -670,12 +670,14 @@ Valid from:</comment>
   </data>
   <data name="VerifyCommand_FinishedWithErrors" xml:space="preserve">
     <value>Finished with {0} errors and {1} warnings.</value>
+    <comment>{0} is the number of errors produced and {1} is the number of warnings.</comment>
   </data>
   <data name="VerifyCommand_Success" xml:space="preserve">
     <value>Successfully verified package(s).</value>
   </data>
   <data name="VerifyCommand_VerifyingPackage" xml:space="preserve">
     <value>Verifying {0}</value>
+    <comment>{0} should be the package identity of the package to verify</comment>
   </data>
   <data name="VerifyCommand_Failed" xml:space="preserve">
     <value>Could not verify package(s) signature.</value>

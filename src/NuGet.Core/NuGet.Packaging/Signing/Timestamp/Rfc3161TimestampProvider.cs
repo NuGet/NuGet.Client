@@ -105,7 +105,7 @@ namespace NuGet.Packaging.Signing
                 byte[] timestampByteArray;
 
                 using (var timestampNativeCms = NativeCms.Decode(timestampCms.Encode(), detached: false))
-                using (var timestampCertChain = new X509Chain(useMachineContext: true))
+                using (var timestampCertChain = new X509Chain())
                 {
                     var policy = timestampCertChain.ChainPolicy;
 
@@ -118,6 +118,15 @@ namespace NuGet.Packaging.Signing
                     policy.RevocationMode = X509RevocationMode.Online;
 
                     var timestampSignerCertificate = GetTimestampSignerCertificate(timestampCms);
+                    if (DateTime.UtcNow < timestampSignerCertificate.NotBefore)
+                    {
+                        throw new TimestampException(LogMessage.CreateError(
+                            NuGetLogCode.NU3011,
+                            string.Format(CultureInfo.CurrentCulture,
+                            Strings.TimestampCertificateInvalid,
+                            timestampSignerCertificate.FriendlyName)));
+                    }
+
                     if (!timestampCertChain.Build(timestampSignerCertificate))
                     {
                         throw new TimestampException(LogMessage.CreateError(

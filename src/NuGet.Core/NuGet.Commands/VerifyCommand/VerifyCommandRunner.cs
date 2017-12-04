@@ -20,12 +20,15 @@ namespace NuGet.Commands
     /// </summary>
     public class VerifyCommandRunner : IVerifyCommandRunner
     {
+        private const int SuccessCode = 0;
+        private const int FailureCode = 1;
+
         public async Task<int> ExecuteCommandAsync(VerifyArgs verifyArgs)
         {
             if (verifyArgs.Verifications.Count == 0)
             {
                 verifyArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_VerificationTypeNotSupported));
-                return 1;
+                return FailureCode;
             }
 
             var errorCount = 0;
@@ -53,7 +56,7 @@ namespace NuGet.Commands
                 }
             }
 
-            return errorCount == 0 ? 0 : 1;
+            return errorCount == 0 ? SuccessCode : FailureCode;
         }
 
         private async Task<int> VerifySignatureForPackageAsync(string packagePath, ILogger logger, PackageSignatureVerifier verifier)
@@ -75,8 +78,8 @@ namespace NuGet.Commands
 
                 if (logMessages.Any(m => m.Level >= LogLevel.Warning))
                 {
-                    var errors = logMessages.Where(m => m.Level == LogLevel.Error).Count();
-                    var warnings = logMessages.Where(m => m.Level == LogLevel.Warning).Count();
+                    var errors = logMessages.Count(m => m.Level == LogLevel.Error);
+                    var warnings = logMessages.Count(m => m.Level == LogLevel.Warning);
 
                     logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_FinishedWithErrors, errors, warnings));
                     logger.LogError(Environment.NewLine + Strings.VerifyCommand_Failed);
