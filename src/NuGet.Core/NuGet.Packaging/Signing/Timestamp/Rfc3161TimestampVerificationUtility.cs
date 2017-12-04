@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -16,8 +17,8 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     internal static class Rfc3161TimestampVerificationUtility
     {
+        private const double _millisecondsPerMicrosecond = 0.001;
 
-        internal static double _milliesecondsPerMicrosecond = 0.001;
 #if IS_DESKTOP
 
         internal static bool ValidateSignerCertificateAgainstTimestamp(
@@ -25,33 +26,16 @@ namespace NuGet.Packaging.Signing
             Rfc3161TimestampTokenInfo tstInfo)
         {
             var tstInfoGenTime = tstInfo.Timestamp;
-            double accuracyInMilliseconds;
+            var accuracyInMilliseconds = GetAccuracyInMilliseconds(tstInfo);
 
-            if (!tstInfo.AccuracyInMicroseconds.HasValue)
-            {
-                if (string.Equals(tstInfo.PolicyId, Oids.BaselineTimestampPolicyOid))
-                {
-                    accuracyInMilliseconds = 1000;
-                }
-                else
-                {
-                    accuracyInMilliseconds = 0;
-                }
-            }
-            else
-            {
-                accuracyInMilliseconds = tstInfo.AccuracyInMicroseconds.Value * _milliesecondsPerMicrosecond;
-            }
+            var timestampUpperGenTime = tstInfoGenTime.AddMilliseconds(accuracyInMilliseconds);
+            var timestampLowerGenTime = tstInfoGenTime.Subtract(TimeSpan.FromMilliseconds(accuracyInMilliseconds));
 
-            // everything to UTC
-            var timestampUpperGenTimeUtcTicks = tstInfoGenTime.AddMilliseconds(accuracyInMilliseconds);
-            var timestampLowerGenTimeUtcTicks = tstInfoGenTime.Subtract(TimeSpan.FromMilliseconds(accuracyInMilliseconds));
+            DateTimeOffset signerCertExpiry = DateTime.SpecifyKind(signerCertificate.NotAfter, DateTimeKind.Local);
+            DateTimeOffset signerCertBegin = DateTime.SpecifyKind(signerCertificate.NotBefore, DateTimeKind.Local);
 
-            var signerCertExpiryUtcTicks = signerCertificate.NotAfter.ToUniversalTime();
-            var signerCertBeginUtcTicks = signerCertificate.NotBefore.ToUniversalTime();
-
-            return timestampUpperGenTimeUtcTicks < signerCertExpiryUtcTicks &&
-                timestampLowerGenTimeUtcTicks > signerCertBeginUtcTicks;
+            return timestampUpperGenTime < signerCertExpiry &&
+                timestampLowerGenTime > signerCertBegin;
         }
 
         internal static bool TryReadTSTInfoFromSignedCms(
@@ -73,9 +57,38 @@ namespace NuGet.Packaging.Signing
             var result = DateTimeOffset.Now;
             if (TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
             {
-                // TODO: Get upper limit
+                var accuracyInMilliseconds = GetAccuracyInMilliseconds(tstInfo);
+                return tstInfo.Timestamp.AddMilliseconds(accuracyInMilliseconds);
             }
             return result;
+        }
+
+        internal static double GetAccuracyInMilliseconds(Rfc3161TimestampTokenInfo tstInfo)
+        {
+            double accuracyInMilliseconds;
+
+            if (!tstInfo.AccuracyInMicroseconds.HasValue)
+            {
+                if (string.Equals(tstInfo.PolicyId, Oids.BaselineTimestampPolicyOid))
+                {
+                    accuracyInMilliseconds = 1000;
+                }
+                else
+                {
+                    accuracyInMilliseconds = 0;
+                }
+            }
+            else
+            {
+                accuracyInMilliseconds = tstInfo.AccuracyInMicroseconds.Value * _millisecondsPerMicrosecond;
+            }
+
+            if (accuracyInMilliseconds < 0)
+            {
+                throw new InvalidDataException(Strings.TimestampInvalid);
+            }
+
+            return accuracyInMilliseconds;
         }
 #endif
     }
