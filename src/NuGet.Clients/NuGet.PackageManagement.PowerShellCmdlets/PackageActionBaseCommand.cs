@@ -10,6 +10,7 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Text;
 using System.Threading;
+using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -127,17 +128,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
 
                 // stop telemetry event timer to avoid UI interaction
-                TelemetryUtility.StopTimer();
+                TelemetryServiceUtility.StopTimer();
 
                 if (!ShouldContinueDueToDotnetDeprecation(actions, isPreview))
                 {
                     // resume telemetry event timer after ui confirmation
-                    TelemetryUtility.StartorResumeTimer();
+                    TelemetryServiceUtility.StartOrResumeTimer();
                     return;
                 }
 
                 // resume telemetry event timer after ui confirmation
-                TelemetryUtility.StartorResumeTimer();
+                TelemetryServiceUtility.StartOrResumeTimer();
 
                 if (isPreview)
                 {
@@ -200,17 +201,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
 
                 // stop telemetry event timer to avoid UI interaction
-                TelemetryUtility.StopTimer();
+                TelemetryServiceUtility.StopTimer();
 
                 if (!ShouldContinueDueToDotnetDeprecation(actions, isPreview))
                 {
                     // resume telemetry event timer after ui confirmation
-                    TelemetryUtility.StartorResumeTimer();
+                    TelemetryServiceUtility.StartOrResumeTimer();
                     return;
                 }
 
                 // resume telemetry event timer after ui confirmation
-                TelemetryUtility.StartorResumeTimer();
+                TelemetryServiceUtility.StartOrResumeTimer();
 
                 if (isPreview)
                 {

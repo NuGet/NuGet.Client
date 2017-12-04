@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 
@@ -64,6 +65,6 @@ namespace NuGet.CommandLine
 
         public NuGetActionType ActionType { get; set; }
 
-        public TelemetryServiceHelper TelemetryService { get; set; }
+        public INuGetTelemetryService TelemetryService { get; set; }
     }
 }

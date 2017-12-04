@@ -13,6 +13,7 @@ using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -135,8 +136,8 @@ namespace NuGet.SolutionRestoreManager
             _status = NuGetOperationStatus.NoOp;
 
             // start timer for telemetry event
-            TelemetryUtility.StartorResumeTimer();
-
+            TelemetryServiceUtility.StartOrResumeTimer();
+            var telemetryService = new NuGetVSActionTelemetryService();
             var projects = Enumerable.Empty<NuGetProject>();
 
             _packageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
@@ -201,8 +202,8 @@ namespace NuGet.SolutionRestoreManager
                 _packageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
                 _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
 
-                TelemetryUtility.StopTimer();
-                var duration = TelemetryUtility.GetTimerElapsedTime();
+                TelemetryServiceUtility.StopTimer();
+                var duration = TelemetryServiceUtility.GetTimerElapsedTime();
 
                 // Do not log any restore message if user disabled restore.
                 if (_packageRestoreConsent.IsGranted)
@@ -216,6 +217,7 @@ namespace NuGet.SolutionRestoreManager
                 // Emit telemetry event for restore operation
                 EmitRestoreTelemetryEvent(
                     projects,
+                    new NuGetVSActionTelemetryService(),
                     restoreSource,
                     startTime,
                     duration.TotalSeconds);
@@ -223,6 +225,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         private void EmitRestoreTelemetryEvent(IEnumerable<NuGetProject> projects,
+            INuGetTelemetryService telemetryService,
             RestoreOperationSource source,
             DateTimeOffset startTime,
             double duration)
@@ -233,7 +236,6 @@ namespace NuGet.SolutionRestoreManager
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)).ToArray();
 
             var restoreTelemetryEvent = new RestoreTelemetryEvent(
-                Guid.NewGuid().ToString(),
                 projectIds,
                 source,
                 startTime,
@@ -243,7 +245,7 @@ namespace NuGet.SolutionRestoreManager
                 DateTimeOffset.Now,
                 duration);
 
-            RestoreTelemetryService.Instance.EmitRestoreEvent(restoreTelemetryEvent);
+            telemetryService.EmitTelemetryEvent(restoreTelemetryEvent);
         }
 
         private async Task RestorePackageSpecProjectsAsync(

@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
@@ -12,10 +12,8 @@ namespace NuGet.VisualStudio
     /// <summary>
     /// Some utility apis for telemetry operations.
     /// </summary>
-    public static class TelemetryUtility
+    public static class VSTelemetryServiceUtility
     {
-        private static Stopwatch _stopWatch;
-
         /// <summary>
         /// Create ActionTelemetryEvent instance.
         /// </summary>
@@ -29,7 +27,7 @@ namespace NuGet.VisualStudio
         /// <param name="endTime"></param>
         /// <param name="duration"></param>
         /// <returns></returns>
-        public static ActionsTelemetryEvent GetActionTelemetryEvent(
+        public static VSActionsTelemetryEvent GetActionTelemetryEvent(
             IEnumerable<NuGetProject> projects,
             NuGetOperationType operationType,
             OperationSource source,
@@ -44,8 +42,7 @@ namespace NuGet.VisualStudio
             var projectIds = sortedProjects.Select(
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)).ToArray();
 
-            return new ActionsTelemetryEvent(
-                Guid.NewGuid().ToString(),
+            return new VSActionsTelemetryEvent(
                 projectIds,
                 operationType,
                 source,
@@ -54,41 +51,6 @@ namespace NuGet.VisualStudio
                 packageCount,
                 DateTimeOffset.Now,
                 duration);
-        }
-
-        public static void StartorResumeTimer()
-        {
-            if (_stopWatch == null)
-            {
-                _stopWatch = Stopwatch.StartNew();
-            }
-            else
-            {
-                _stopWatch.Start();
-            }
-        }
-
-        public static void StopTimer()
-        {
-            _stopWatch?.Stop();
-        }
-
-        public static TimeSpan GetTimerElapsedTime()
-        {
-            var duration = new TimeSpan();
-
-            if (_stopWatch != null)
-            {
-                duration = _stopWatch.Elapsed;
-                _stopWatch.Reset();
-            }
-
-            return duration;
-        }
-
-        public static double GetTimerElapsedTimeInSeconds()
-        {
-            return GetTimerElapsedTime().TotalSeconds;
         }
     }
 }

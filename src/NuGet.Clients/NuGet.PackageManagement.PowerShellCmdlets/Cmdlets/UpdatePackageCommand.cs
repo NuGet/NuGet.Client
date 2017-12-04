@@ -103,10 +103,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var startTime = DateTimeOffset.Now;
 
             // Set to log telemetry granular events for this update operation 
-            TelemetryService = new TelemetryServiceHelper();
+            TelemetryService = new NuGetVSActionTelemetryService();
 
             // start timer for telemetry event
-            TelemetryUtility.StartorResumeTimer();
+            TelemetryServiceUtility.StartOrResumeTimer();
 
             // Run Preprocess outside of JTF
             Preprocess();
@@ -136,18 +136,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             });
 
             // stop timer for telemetry event and create action telemetry event instance
-            TelemetryUtility.StopTimer();
-            var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
+            TelemetryServiceUtility.StopTimer();
+            var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 new[] { Project },
                 NuGetOperationType.Update,
                 OperationSource.PMC,
                 startTime,
                 _status,
                 _packageCount,
-                TelemetryUtility.GetTimerElapsedTimeInSeconds());
+                TelemetryServiceUtility.GetTimerElapsedTimeInSeconds());
 
             // emit telemetry event along with granular level for update operation
-            ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, TelemetryService.TelemetryEvents);
+            TelemetryService.EmitTelemetryEvent(actionTelemetryEvent);
         }
 
         /// <summary>
@@ -335,17 +335,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private async Task ExecuteActions(IEnumerable<NuGetProjectAction> actions, SourceCacheContext sourceCacheContext)
         {
             // stop telemetry event timer to avoid ui interaction
-            TelemetryUtility.StopTimer();
+            TelemetryServiceUtility.StopTimer();
 
             if (!ShouldContinueDueToDotnetDeprecation(actions, WhatIf.IsPresent))
             {
                 // resume telemetry event timer after ui interaction
-                TelemetryUtility.StartorResumeTimer();
+                TelemetryServiceUtility.StartOrResumeTimer();
                 return;
             }
 
             // resume telemetry event timer after ui interaction
-            TelemetryUtility.StartorResumeTimer();
+            TelemetryServiceUtility.StartOrResumeTimer();
 
             if (WhatIf.IsPresent)
             {
