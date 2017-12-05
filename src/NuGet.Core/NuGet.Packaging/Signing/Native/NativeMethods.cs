@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace NuGet.Packaging.Signing
 {
@@ -16,7 +14,7 @@ namespace NuGet.Packaging.Signing
         internal const int ERROR_MORE_DATA = 234;
         internal const uint CMSG_SIGNED = 2;
 
-        [DllImport("Crypt32.dll", SetLastError = true)]
+        [DllImport("crypt32.dll", SetLastError = true)]
         public static extern SafeCryptMsgHandle CryptMsgOpenToEncode(
             uint dwMsgEncodingType,
             uint dwFlags,
@@ -91,7 +89,7 @@ namespace NuGet.Packaging.Signing
     }
 
     internal sealed class SafeCryptMsgHandle : SafeHandle
-    { 
+    {
         internal static SafeCryptMsgHandle InvalidHandle => new SafeCryptMsgHandle(IntPtr.Zero);
 
         public override bool IsInvalid => handle == IntPtr.Zero;
@@ -139,7 +137,7 @@ namespace NuGet.Packaging.Signing
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct CRYPT_INTEGER_BLOB_INTPTR
+    internal struct CRYPT_INTEGER_BLOB
     {
         internal uint cbData;
         internal IntPtr pbData;
@@ -159,7 +157,7 @@ namespace NuGet.Packaging.Signing
     {
         internal uint cbSize;
         internal uint dwSignerIndex;
-        internal CRYPT_INTEGER_BLOB_INTPTR BLOB;
+        internal CRYPT_INTEGER_BLOB BLOB;
     }
 
     [Flags]
@@ -270,13 +268,13 @@ namespace NuGet.Packaging.Signing
     internal struct CRYPT_ALGORITHM_IDENTIFIER
     {
         public string pszObjId;
-        public CRYPT_INTEGER_BLOB_INTPTR Parameters;
+        public CRYPT_INTEGER_BLOB Parameters;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct BLOB
     {
-        public int cbData;
+        public uint cbData;
         public IntPtr pbData;
 
         public void Dispose()
@@ -288,7 +286,7 @@ namespace NuGet.Packaging.Signing
     [StructLayout(LayoutKind.Sequential)]
     internal struct CERT_ID
     {
-        internal int dwIdChoice;
+        internal uint dwIdChoice;
         internal BLOB IssuerSerialNumberOrKeyIdOrHashId;
     }
 
@@ -309,9 +307,9 @@ namespace NuGet.Packaging.Signing
     [StructLayout(LayoutKind.Sequential)]
     internal struct CERT_CONTEXT
     {
-        public int dwCertEncodingType;
+        public uint dwCertEncodingType;
         public IntPtr pbCertEncoded;
-        public int cbCertEncoded;
+        public uint cbCertEncoded;
         public IntPtr pCertInfo;
         public IntPtr hCertStore;
     }

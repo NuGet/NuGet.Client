@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using NuGet.Common;
 #endif
 
@@ -153,17 +152,15 @@ namespace NuGet.Packaging.Signing
                 checked
                 {
                     var attributeSize = Marshal.SizeOf<CRYPT_ATTRIBUTE>();
-                    var blobSize = Marshal.SizeOf<CRYPT_INTEGER_BLOB_INTPTR>();
+                    var blobSize = Marshal.SizeOf<CRYPT_INTEGER_BLOB>();
                     var attributesArray = (CRYPT_ATTRIBUTE*)hb.Alloc(attributeSize * attributes.Count);
                     var currentAttribute = attributesArray;
 
                     foreach (var attribute in attributes)
                     {
-                        var dataBlob = (CRYPT_INTEGER_BLOB_INTPTR*)hb.Alloc(blobSize);
-
                         currentAttribute->pszObjId = hb.AllocAsciiString(attribute.Oid.Value);
                         currentAttribute->cValue = (uint)attribute.Values.Count;
-                        currentAttribute->rgValue = (IntPtr)dataBlob;
+                        currentAttribute->rgValue = hb.Alloc(blobSize);
 
                         foreach (var value in attribute.Values)
                         {
@@ -171,13 +168,12 @@ namespace NuGet.Packaging.Signing
 
                             if (attrData.Length > 0)
                             {
-                                var rawData = hb.Alloc(value.RawData.Length);
+                                var blob = (CRYPT_INTEGER_BLOB*)currentAttribute->rgValue;
 
-                                // Assign data to datablob
-                                dataBlob->cbData = (uint)attrData.Length;
-                                dataBlob->pbData = rawData;
+                                blob->cbData = (uint)attrData.Length;
+                                blob->pbData = hb.Alloc(value.RawData.Length);
 
-                                Marshal.Copy(attrData, 0, rawData, attrData.Length);
+                                Marshal.Copy(attrData, 0, blob->pbData, attrData.Length);
                             }
                         }
 
