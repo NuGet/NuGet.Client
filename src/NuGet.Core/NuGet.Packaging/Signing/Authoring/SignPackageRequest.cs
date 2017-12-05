@@ -28,6 +28,8 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public X509Certificate2 Certificate { get; set; }
 
+        public X509Certificate2Collection AdditionalCertificates { get; set; }
+
 #if IS_DESKTOP
         /// <summary>
         /// PrivateKey is only used in mssign command.

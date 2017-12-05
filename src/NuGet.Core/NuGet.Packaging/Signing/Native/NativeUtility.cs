@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 #if IS_DESKTOP
 using System.Security.Cryptography;
@@ -31,13 +32,29 @@ namespace NuGet.Packaging.Signing
             }
         }
 #if IS_DESKTOP
-        internal static SignedCms NativeSign(byte[] data, X509Certificate2 certificate, CngKey privateKey, CryptographicAttributeObjectCollection attributes, Common.HashAlgorithmName hashAlgorithm)
+        internal static SignedCms NativeSign(
+            byte[] data,
+            X509Certificate2 certificate,
+            CngKey privateKey,
+            CryptographicAttributeObjectCollection attributes,
+            Common.HashAlgorithmName hashAlgorithm,
+            X509Certificate2Collection additionalCertificates)
         {
             using (var hb = new HeapBlockRetainer())
             using (var chain = new X509Chain())
             {
-                // Skipping a bunch of chain building options we should normally set otherwise
-                chain.Build(certificate);
+                SigningUtility.SetCertBuildChainPolicy(chain, additionalCertificates, DateTime.Now, NuGetVerificationCertificateType.Signature);
+
+                if (!chain.Build(certificate))
+                {
+                    foreach (var chainStatus in chain.ChainStatus)
+                    {
+                        if (chainStatus.Status != X509ChainStatusFlags.NoError)
+                        {
+                            throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString()));
+                        }
+                    }
+                }
 
                 var certificateBlobs = new BLOB[chain.ChainElements.Count];
 
