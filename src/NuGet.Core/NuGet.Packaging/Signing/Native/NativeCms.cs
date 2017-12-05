@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
@@ -76,7 +75,6 @@ namespace NuGet.Packaging.Signing
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
 
-            // Load the data into the message
             if (!NativeMethods.CryptMsgUpdate(handle, input, (uint)input.Length, fFinal: true))
             {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
@@ -91,20 +89,17 @@ namespace NuGet.Packaging.Signing
             {
                 using (var hb = new HeapBlockRetainer())
                 {
-                    // Build blob holder
                     var unmanagedCert = hb.Alloc(cert.Length);
                     Marshal.Copy(cert, 0, unmanagedCert, cert.Length);
-                    var blob = new CRYPT_INTEGER_BLOB_INTPTR()
+                    var blob = new CRYPT_INTEGER_BLOB()
                     {
                         cbData = (uint)cert.Length,
                         pbData = unmanagedCert
                     };
 
-                    // Copy it to unmanaged memory
                     var unmanagedBlob = hb.Alloc(Marshal.SizeOf(blob));
                     Marshal.StructureToPtr(blob, unmanagedBlob, fDeleteOld: false);
 
-                    // Invoke the request
                     if (!NativeMethods.CryptMsgControl(
                         _handle,
                         dwFlags: 0,
@@ -121,27 +116,25 @@ namespace NuGet.Packaging.Signing
         {
             using (var hb = new HeapBlockRetainer())
             {
-                // Wrap the timestamp in a CRYPT_INTEGER_BLOB and copy that to unmanaged memory
                 var unmanagedTimestamp = hb.Alloc(timeStampCms.Length);
                 Marshal.Copy(timeStampCms, 0, unmanagedTimestamp, timeStampCms.Length);
-                var blob = new CRYPT_INTEGER_BLOB_INTPTR()
+                var blob = new CRYPT_INTEGER_BLOB()
                 {
                     cbData = (uint)timeStampCms.Length,
                     pbData = unmanagedTimestamp
                 };
-                var unmanagedBlob = (CRYPT_INTEGER_BLOB_INTPTR*)hb.Alloc(Marshal.SizeOf(blob));
+                var unmanagedBlob = hb.Alloc(Marshal.SizeOf(blob));
+                Marshal.StructureToPtr(blob, unmanagedBlob, fDeleteOld: false);
 
-                // Wrap it in a CRYPT_ATTRIBUTE and copy that too
                 var attr = new CRYPT_ATTRIBUTE()
                 {
                     pszObjId = hb.AllocAsciiString(Oids.SignatureTimeStampTokenAttributeOid),
                     cValue = 1,
-                    rgValue = (IntPtr)unmanagedBlob
+                    rgValue = unmanagedBlob
                 };
                 var unmanagedAttr = hb.Alloc(Marshal.SizeOf(attr));
                 Marshal.StructureToPtr(attr, unmanagedAttr, fDeleteOld: false);
 
-                // Now encode the object using ye olde double-call-to-find-out-the-length mechanism :)
                 uint encodedLength = 0;
                 if (!NativeMethods.CryptEncodeObjectEx(
                     dwCertEncodingType: NativeMethods.X509_ASN_ENCODING | NativeMethods.PKCS_7_ASN_ENCODING,
@@ -172,11 +165,10 @@ namespace NuGet.Packaging.Signing
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                 }
 
-                // Create the structure used to add the attribute
                 var addAttr = new CMSG_CTRL_ADD_SIGNER_UNAUTH_ATTR_PARA()
                 {
                     dwSignerIndex = 0,
-                    BLOB = new CRYPT_INTEGER_BLOB_INTPTR()
+                    BLOB = new CRYPT_INTEGER_BLOB()
                     {
                         cbData = encodedLength,
                         pbData = unmanagedEncoded
@@ -186,7 +178,6 @@ namespace NuGet.Packaging.Signing
                 var unmanagedAddAttr = hb.Alloc(Marshal.SizeOf(addAttr));
                 Marshal.StructureToPtr(addAttr, unmanagedAddAttr, fDeleteOld: false);
 
-                // Now store the timestamp in the message... FINALLY
                 if (!NativeMethods.CryptMsgControl(
                     _handle,
                     dwFlags: 0,

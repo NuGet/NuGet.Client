@@ -6,7 +6,6 @@ using System.Security.Cryptography.X509Certificates;
 using Moq;
 using NuGet.Commands;
 using NuGet.Common;
-using NuGet.Packaging.Signing;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -313,8 +312,6 @@ namespace NuGet.CommandLine.Test
             var nonInteractive = true;
             var overwrite = true;
             var outputDir = @".\test\output\path";
-            var csp = "csp_name";
-            var kc = "kc_name";
             var mockConsole = new Mock<IConsole>();
             mockConsole.Setup(c => c.Verbosity).Returns(Verbosity.Detailed);
 
@@ -369,8 +366,6 @@ namespace NuGet.CommandLine.Test
             var nonInteractive = true;
             var overwrite = true;
             var outputDir = @".\test\output\path";
-            var csp = "csp_name";
-            var kc = "kc_name";
             var mockConsole = new Mock<IConsole>();
             mockConsole.Setup(c => c.Verbosity).Returns(Verbosity.Detailed);
 
@@ -425,8 +420,6 @@ namespace NuGet.CommandLine.Test
             var nonInteractive = true;
             var overwrite = true;
             var outputDir = @".\test\output\path";
-            var csp = "csp_name";
-            var kc = "kc_name";
             var mockConsole = new Mock<IConsole>();
             mockConsole.Setup(c => c.Verbosity).Returns(Verbosity.Detailed);
 
