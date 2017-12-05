@@ -219,8 +219,12 @@ namespace NuGet.MSSigning.Extensions
             {
                 if (!spec.AllowedHashAlgorithms.Contains(value, StringComparer.OrdinalIgnoreCase))
                 {
-                    hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(value);
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                        NuGetMSSignCommand.MSSignCommandInvalidArgumentException,
+                        name));
                 }
+
+                hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(value);
             }
 
             if (hashAlgorithm == Common.HashAlgorithmName.Unknown)

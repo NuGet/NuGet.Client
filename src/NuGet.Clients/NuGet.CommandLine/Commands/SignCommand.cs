@@ -110,17 +110,21 @@ namespace NuGet.CommandLine
 
         private HashAlgorithmName ValidateAndParseHashAlgorithm(string value, string name, SigningSpecifications spec)
         {
-            var hashAlgorithm = Common.HashAlgorithmName.SHA256;
+            var hashAlgorithm = HashAlgorithmName.SHA256;
 
             if (!string.IsNullOrEmpty(value))
             {
                 if (!spec.AllowedHashAlgorithms.Contains(value, StringComparer.OrdinalIgnoreCase))
                 {
-                    hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(value);
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                        NuGetCommand.SignCommandInvalidArgumentException,
+                        name));
                 }
+
+                hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(value);
             }
 
-            if (hashAlgorithm == Common.HashAlgorithmName.Unknown)
+            if (hashAlgorithm == HashAlgorithmName.Unknown)
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                         NuGetCommand.SignCommandInvalidArgumentException,
