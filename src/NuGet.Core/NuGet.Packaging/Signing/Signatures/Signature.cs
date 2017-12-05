@@ -27,9 +27,9 @@ namespace NuGet.Packaging.Signing
         public SignatureType Type { get; }
 
         /// <summary>
-        /// Signature manifest containing the hash of the content manifest.
+        /// Signature content.
         /// </summary>
-        public SignatureManifest SignatureManifest { get; }
+        public SignatureContent SignatureContent { get; }
 
         /// <summary>
         /// SignerInfo for this signature.
@@ -39,7 +39,7 @@ namespace NuGet.Packaging.Signing
         private Signature(SignedCms signedCms)
         {
             SignedCms = signedCms ?? throw new ArgumentNullException(nameof(signedCms));
-            SignatureManifest = SignatureManifest.Load(SignedCms.ContentInfo.Content);
+            SignatureContent = SignatureContent.Load(SignedCms.ContentInfo.Content, SigningSpecifications.V1);
             Type = GetSignatureType(SignerInfo);
         }
 

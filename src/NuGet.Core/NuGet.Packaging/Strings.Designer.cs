@@ -440,6 +440,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package signature content is invalid..
+        /// </summary>
+        internal static string InvalidSignatureContent {
+            get {
+                return ResourceManager.GetString("InvalidSignatureContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installing {0} {1}..
         /// </summary>
         internal static string Log_InstallingPackage {
@@ -762,6 +771,24 @@ namespace NuGet.Packaging {
         internal static string UnableToParseClientVersion {
             get {
                 return ResourceManager.GetString("UnableToParseClientVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package hash information could not be read from the package signature..
+        /// </summary>
+        internal static string UnableToReadPackageHashInformation {
+            get {
+                return ResourceManager.GetString("UnableToReadPackageHashInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package signature format version is unsupported.  Updating your client may solve this problem..
+        /// </summary>
+        internal static string UnsupportedSignatureFormatVersion {
+            get {
+                return ResourceManager.GetString("UnsupportedSignatureFormatVersion", resourceCulture);
             }
         }
         

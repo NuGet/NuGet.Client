@@ -399,4 +399,13 @@ Valid from:</comment>
   <data name="CommitmentTypeIndicationInvalid" xml:space="preserve">
     <value>commitment-type-indication attribute is invalid.</value>
   </data>
+  <data name="InvalidSignatureContent" xml:space="preserve">
+    <value>The package signature content is invalid.</value>
+  </data>
+  <data name="UnableToReadPackageHashInformation" xml:space="preserve">
+    <value>Package hash information could not be read from the package signature.</value>
+  </data>
+  <data name="UnsupportedSignatureFormatVersion" xml:space="preserve">
+    <value>The package signature format version is unsupported.  Updating your client may solve this problem.</value>
+  </data>
 </root>

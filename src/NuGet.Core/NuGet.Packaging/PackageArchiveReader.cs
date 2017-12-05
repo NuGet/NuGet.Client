@@ -277,7 +277,7 @@ namespace NuGet.Packaging
             return Task.FromResult(isSigned);
         }
 
-        public override async Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token)
+        public override async Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -294,8 +294,8 @@ namespace NuGet.Packaging
 #if IS_DESKTOP
             using (var reader = new BinaryReader(ZipStream, _utf8Encoding, leaveOpen: true))
             {
-                var hashAlgorithm = signatureManifest.HashAlgorithm.GetHashProvider();
-                var expectedHash = Convert.FromBase64String(signatureManifest.HashValue);
+                var hashAlgorithm = signatureContent.HashAlgorithm.GetHashProvider();
+                var expectedHash = Convert.FromBase64String(signatureContent.HashValue);
                 if (!SignedPackageArchiveUtility.VerifySignedZipIntegrity(reader, hashAlgorithm, expectedHash))
                 {
                     throw new SignatureException(Strings.SignaturePackageIntegrityFailure, GetIdentity());

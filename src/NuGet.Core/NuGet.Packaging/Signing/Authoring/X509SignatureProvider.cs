@@ -29,16 +29,16 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Sign the package stream hash with an X509Certificate2.
         /// </summary>
-        public Task<Signature> CreateSignatureAsync(SignPackageRequest request, SignatureManifest signatureManifest, ILogger logger, CancellationToken token)
+        public Task<Signature> CreateSignatureAsync(SignPackageRequest request, SignatureContent signatureContent, ILogger logger, CancellationToken token)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (signatureManifest == null)
+            if (signatureContent == null)
             {
-                throw new ArgumentNullException(nameof(signatureManifest));
+                throw new ArgumentNullException(nameof(signatureContent));
             }
 
             if (logger == null)
@@ -46,7 +46,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            var authorSignature = CreateSignature(request, signatureManifest);
+            var authorSignature = CreateSignature(request, signatureContent);
 
             if (_timestampProvider == null)
             {
@@ -59,7 +59,7 @@ namespace NuGet.Packaging.Signing
         }
 
 #if IS_DESKTOP
-        private Signature CreateSignature(SignPackageRequest request, SignatureManifest signatureManifest)
+        private Signature CreateSignature(SignPackageRequest request, SignatureContent signatureContent)
         {
             var attributes = SigningUtility.GetSignAttributes(request);
 
@@ -67,10 +67,10 @@ namespace NuGet.Packaging.Signing
             {
                 if (request.PrivateKey != null)
                 {
-                    return CreateSignature(request.Certificate, signatureManifest, request.PrivateKey, request.SignatureHashAlgorithm, attributes, request.AdditionalCertificates);
+                    return CreateSignature(request.Certificate, signatureContent, request.PrivateKey, request.SignatureHashAlgorithm, attributes, request.AdditionalCertificates);
                 }
 
-                var contentInfo = new ContentInfo(signatureManifest.GetBytes());
+                var contentInfo = new ContentInfo(signatureContent.GetBytes());
                 var cmsSigner = new CmsSigner(SubjectIdentifierType.SubjectKeyIdentifier, request.Certificate);
 
                 foreach (var attribute in attributes)
@@ -89,7 +89,7 @@ namespace NuGet.Packaging.Signing
 
         private Signature CreateSignature(
             X509Certificate2 cert,
-            SignatureManifest signatureManifest,
+            SignatureContent signatureContent,
             CngKey privateKey,
             Common.HashAlgorithmName hashAlgorithm,
             CryptographicAttributeObjectCollection attributes,
@@ -97,7 +97,7 @@ namespace NuGet.Packaging.Signing
             )
         {
             var cms = NativeUtilities.NativeSign(
-                signatureManifest.GetBytes(), cert, privateKey, attributes, hashAlgorithm, additionalCertificates);
+                signatureContent.GetBytes(), cert, privateKey, attributes, hashAlgorithm, additionalCertificates);
 
             return Signature.Load(cms);
         }
@@ -115,7 +115,7 @@ namespace NuGet.Packaging.Signing
             return _timestampProvider.TimestampSignatureAsync(timestampRequest, logger, token);
         }
 #else
-        private Signature CreateSignature(SignPackageRequest request, SignatureManifest signatureManifest)
+        private Signature CreateSignature(SignPackageRequest request, SignatureContent signatureContent)
         {
             throw new NotSupportedException();
         }

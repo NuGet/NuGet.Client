@@ -4,11 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace NuGet.Packaging.Signing
 {
     public class KeyPairFileReader : IDisposable
     {
+        private static readonly Regex _namePattern = new Regex("^[a-zA-Z0-9\\.\\-/]+$");
+
         private readonly StreamReader _reader;
 
         public KeyPairFileReader(Stream stream)
@@ -16,11 +19,6 @@ namespace NuGet.Packaging.Signing
             if (stream == null)
             {
                 throw new ArgumentNullException(nameof(stream));
-            }
-
-            if (stream.Length > KeyPairFileUtility.MaxSize)
-            {
-                throw new SignatureException("Manifest file is too large.");
             }
 
             _reader = new StreamReader(stream, KeyPairFileUtility.Encoding, detectEncodingFromByteOrderMarks: false);
@@ -33,81 +31,65 @@ namespace NuGet.Packaging.Signing
         /// <remarks>Returns an empty set if the file has reached the end.</remarks>
         public Dictionary<string, string> ReadSection()
         {
-            var hasEntries = false;
             var entries = new Dictionary<string, string>(StringComparer.Ordinal);
 
             var line = _reader.ReadLine();
-            while (line != null)
+
+            if (line == null)
             {
-                if (line.Length == 0)
+                return entries;
+            }
+
+            while (!string.IsNullOrEmpty(line))
+            {
+                var property = GetProperty(line);
+
+                if (entries.ContainsKey(property.Key))
                 {
-                    // End of section
-                    if (!hasEntries)
-                    {
-                        // Empty sections are invalid
-                        ThrowInvalidFormat();
-                    }
-
-                    break;
-                }
-
-                hasEntries = true;
-                var pair = GetPair(line);
-                var key = pair.Key;
-
-                if (!entries.ContainsKey(key))
-                {
-                    entries.Add(key, pair.Value);
+                    ThrowInvalidFormat();
                 }
                 else
                 {
-                    // Key is not allowed or a duplicate
-                    ThrowInvalidFormat();
+                    entries.Add(property.Key, property.Value);
                 }
 
                 line = _reader.ReadLine();
             }
 
+            // Read section break.
+            if (line != string.Empty)
+            {
+                ThrowInvalidFormat();
+            }
+
             return entries;
         }
 
-        private static KeyValuePair<string, string> GetPair(string line)
+        private static KeyValuePair<string, string> GetProperty(string line)
         {
-            if (line != null)
-            {
-                var pos = line.IndexOf(':');
+            var pos = line.IndexOf(':');
 
-                // Verify that : exists
-                if (pos > 0)
+            if (pos > 0)
+            {
+                var key = line.Substring(0, pos);
+
+                if (_namePattern.IsMatch(key))
                 {
-                    // Verify the key is the expected name.
-                    var key = line.Substring(0, pos);
                     var value = line.Substring(pos + 1);
-                    return new KeyValuePair<string, string>(key, value);
+
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        return new KeyValuePair<string, string>(key, value);
+                    }
                 }
             }
 
-            // fail if anything is out of place
-            throw new SignatureException("Invalid key value pair found in signature files.");
+            throw new SignatureException(Strings.InvalidSignatureContent);
         }
 
-        /// <summary>
-        /// True if the reader has reached the end of the file.
-        /// </summary>
-        public bool EndOfStream
-        {
-            get
-            {
-                return _reader.EndOfStream;
-            }
-        }
-
-        /// <summary>
-        /// Fail due to an invalid manifest format.
-        /// </summary>
         private static void ThrowInvalidFormat()
         {
-            throw new SignatureException("Invalid signing manifest format");
+            throw new SignatureException(Strings.InvalidSignatureContent);
         }
 
         public void Dispose()

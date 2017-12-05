@@ -47,10 +47,10 @@ namespace NuGet.Packaging.Signing
 
             var zipArchiveHash = await _package.GetArchiveHashAsync(request.SignatureHashAlgorithm, token);
 
-            var signatureManifest = GenerateSignatureManifest(request.SignatureHashAlgorithm, zipArchiveHash);
+            var signatureContent = GenerateSignatureContent(request.SignatureHashAlgorithm, zipArchiveHash);
 
             // Create signature
-            var signature = await _signatureProvider.CreateSignatureAsync(request, signatureManifest, logger, token);
+            var signature = await _signatureProvider.CreateSignatureAsync(request, signatureContent, logger, token);
 
             using (var stream = new MemoryStream(signature.GetBytes()))
             {
@@ -69,11 +69,11 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private SignatureManifest GenerateSignatureManifest(HashAlgorithmName hashAlgorithmName, byte[] zipArchiveHash)
+        private SignatureContent GenerateSignatureContent(HashAlgorithmName hashAlgorithmName, byte[] zipArchiveHash)
         {
             var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
 
-            return new SignatureManifest(hashAlgorithmName, base64ZipArchiveHash);
+            return new SignatureContent(hashAlgorithmName, base64ZipArchiveHash);
         }
 #else
         /// <summary>

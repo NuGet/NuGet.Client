@@ -34,8 +34,8 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Checks for the integrity of a package
         /// </summary>
-        /// <param name="signatureManifest">Manifest file with expected hash value and hash algorithm used</param>
+        /// <param name="signatureContent">SignatureContent with expected hash value and hash algorithm used</param>
         /// <returns></returns>
-        Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token);
+        Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token);
     }
 }

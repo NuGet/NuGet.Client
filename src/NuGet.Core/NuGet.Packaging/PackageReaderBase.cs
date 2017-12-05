@@ -550,7 +550,7 @@ namespace NuGet.Packaging
 
         public abstract Task<bool> IsSignedAsync(CancellationToken token);
 
-        public abstract Task ValidateIntegrityAsync(SignatureManifest signatureManifest, CancellationToken token);
+        public abstract Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token);
         public abstract Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithm, CancellationToken token);
     }
 }
