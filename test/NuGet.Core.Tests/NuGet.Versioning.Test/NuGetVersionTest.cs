@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -123,6 +123,15 @@ namespace NuGet.Versioning.Test
             // Assert
             Assert.Equal(expected.Version, actual.Version);
             Assert.Equal(expected.Release, actual.Release);
+        }
+
+        [Theory]
+        [InlineData("$version$")]
+        public void ParseReadsTokenizedVersion(string versionString)
+        {
+            var actual = NuGetVersion.Parse(versionString);
+
+            // TODO verifiy tokenized
         }
 
         [Theory]
