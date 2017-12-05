@@ -215,6 +215,11 @@ namespace NuGet.Common
         NU3002 = 3002,
 
         /// <summary>
+        /// Invalid number of certificates were found while signing package
+        /// </summary>
+        NU3003 = 3003,
+
+        /// <summary>
         /// Certificate chain does not build
         /// </summary>
         NU3011 = 3011,
@@ -228,6 +233,11 @@ namespace NuGet.Common
         /// SignedCms.ComputeSignature cannot read the certificate private key
         /// </summary>
         NU3013 = 3013,
+
+        /// <summary>
+        /// Invalid password provided for a certificate
+        /// </summary>
+        NU3014 = 3014,
 
         /// <summary>
         /// Invalid timestamp response

@@ -22,8 +22,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
     public class SignCommandTests
     {
         private const string _packageAlreadySignedError = "Error NU5000: The package already contains a signature. Please remove the existing signature before adding a new signature.";
-        private const string _invalidPasswordError = @"Invalid password was provided for the certificate file '{0}'. Please provide a valid password using the '-CertificatePassword' option";
-        private const string _invalidEkuError = "The following certificate cannot be used for signing a package as it does not have Code Signing enhanced key usage";
+        private const string _invalidPasswordErrorCode = "NU3014";
+        private const string _invalidEkuErrorCode = "NU3013";
         private const string _noTimestamperWarningCode = "NU3521";
 
         private SignCommandTestFixture _testFixture;
@@ -100,7 +100,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Assert
                 result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
-                result.AllOutput.Should().Contain(_invalidEkuError);
+                result.AllOutput.Should().Contain(_invalidEkuErrorCode);
             }
         }
 
@@ -376,7 +376,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 firstResult.Success.Should().BeFalse();
-                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordError, pfxPath));
+                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
             }
         }
 
@@ -417,7 +417,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 firstResult.Success.Should().BeFalse();
-                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordError, pfxPath));
+                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
             }
         }
 
@@ -462,7 +462,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 firstResult.Success.Should().BeFalse();
-                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordError, pfxPath));
+                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
             }
         }
     }
