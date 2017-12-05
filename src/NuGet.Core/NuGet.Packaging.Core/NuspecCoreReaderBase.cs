@@ -88,7 +88,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public virtual NuGetVersion GetVersion()
         {
-            return GetVersion(false);
+            return GetVersion(allowToken: false);
         }
 
         /// <summary>
@@ -214,12 +214,12 @@ namespace NuGet.Packaging.Core
 
         public virtual PackageIdentity GetIdentity()
         {
-            return GetIdentity(false);
+            return GetIdentity(allowToken: false);
         }
 
         public virtual PackageIdentity GetIdentity(bool allowToken)
         {
-            return new PackageIdentity(GetId(), GetVersion());
+            return new PackageIdentity(GetId(), GetVersion(allowToken: allowToken));
         }
 
         private static XDocument LoadXml(Stream stream, bool leaveStreamOpen)
