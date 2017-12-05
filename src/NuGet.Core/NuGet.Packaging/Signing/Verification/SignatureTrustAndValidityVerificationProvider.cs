@@ -188,27 +188,9 @@ namespace NuGet.Packaging.Signing
 
             using (var chain = new X509Chain())
             {
-                var certificateDisplayFormat = Strings.VerificationDefaultCertDisplay;
-                var policy = chain.ChainPolicy;
+                var certificateDisplayFormat = certificateType == NuGetVerificationCertificateType.Signature ? Strings.VerificationAuthorCertDisplay : Strings.VerificationTimestamperCertDisplay;
 
-                if (certificateType == NuGetVerificationCertificateType.Signature)
-                {
-                    policy.ApplicationPolicy.Add(new Oid(Oids.CodeSigningEkuOid));
-                    certificateDisplayFormat = Strings.VerificationAuthorCertDisplay;
-                }
-                else if (certificateType == NuGetVerificationCertificateType.Timestamp)
-                {
-                    policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEkuOid));
-                    policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
-                    certificateDisplayFormat = Strings.VerificationTimestamperCertDisplay;
-                }
-
-                policy.ExtraStore.AddRange(additionalCertificates);
-
-                policy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
-                policy.RevocationMode = X509RevocationMode.Online;
-
-                policy.VerificationTime = verificationTime;
+                SigningUtility.SetCertBuildChainPolicy(chain, additionalCertificates, verificationTime, certificateType);
 
                 if (chain.Build(certificate))
                 {

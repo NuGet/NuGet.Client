@@ -67,7 +67,7 @@ namespace NuGet.Packaging.Signing
             {
                 if (request.PrivateKey != null)
                 {
-                    return CreateSignature(request.Certificate, signatureManifest, request.PrivateKey, request.SignatureHashAlgorithm, attributes);
+                    return CreateSignature(request.Certificate, signatureManifest, request.PrivateKey, request.SignatureHashAlgorithm, attributes, request.AdditionalCertificates);
                 }
 
                 var contentInfo = new ContentInfo(signatureManifest.GetBytes());
@@ -92,11 +92,12 @@ namespace NuGet.Packaging.Signing
             SignatureManifest signatureManifest,
             CngKey privateKey,
             Common.HashAlgorithmName hashAlgorithm,
-            CryptographicAttributeObjectCollection attributes
+            CryptographicAttributeObjectCollection attributes,
+            X509Certificate2Collection additionalCertificates
             )
         {
             var cms = NativeUtilities.NativeSign(
-                signatureManifest.GetBytes(), cert, privateKey, attributes, hashAlgorithm);
+                signatureManifest.GetBytes(), cert, privateKey, attributes, hashAlgorithm, additionalCertificates);
 
             return Signature.Load(cms);
         }

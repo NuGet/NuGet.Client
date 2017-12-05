@@ -62,6 +62,32 @@ namespace NuGet.Packaging.Signing
 
             return attributes;
         }
+
+        internal static void SetCertBuildChainPolicy(
+            X509Chain x509Chain,
+            X509Certificate2Collection additionalCertificates,
+            DateTime verificationTime,
+            NuGetVerificationCertificateType certificateType)
+        {
+            var policy = x509Chain.ChainPolicy;
+
+            if (certificateType == NuGetVerificationCertificateType.Signature)
+            {
+                policy.ApplicationPolicy.Add(new Oid(Oids.CodeSigningEkuOid));
+            }
+            else if (certificateType == NuGetVerificationCertificateType.Timestamp)
+            {
+                policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEkuOid));
+                policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
+            }
+
+            policy.ExtraStore.AddRange(additionalCertificates);
+
+            policy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+            policy.RevocationMode = X509RevocationMode.Online;
+
+            policy.VerificationTime = verificationTime;
+        }
 #endif
 
         /// <summary>

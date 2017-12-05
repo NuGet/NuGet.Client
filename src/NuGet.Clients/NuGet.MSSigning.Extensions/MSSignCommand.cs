@@ -84,7 +84,8 @@ namespace NuGet.MSSigning.Extensions
             var signingSpec = SigningSpecifications.V1;
             var hashAlgorithm = ValidateAndParseHashAlgorithm(HashAlgorithm, nameof(HashAlgorithm), signingSpec);
             var timestampHashAlgorithm = ValidateAndParseHashAlgorithm(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm), signingSpec);
-            var cert = GetCertificate();
+            var certCollection = GetCertificateCollection();
+            var cert = GetCertificate(certCollection);
             var privateKey = GetPrivateKey(cert);
 
             return new SignPackageRequest()
@@ -92,7 +93,8 @@ namespace NuGet.MSSigning.Extensions
                 SignatureHashAlgorithm = hashAlgorithm,
                 TimestampHashAlgorithm = timestampHashAlgorithm,
                 Certificate = cert,
-                PrivateKey = privateKey
+                PrivateKey = privateKey,
+                AdditionalCertificates = certCollection
             };
         }
 
@@ -130,11 +132,8 @@ namespace NuGet.MSSigning.Extensions
             return cngkey;
         }
 
-        private X509Certificate2 GetCertificate()
+        private X509Certificate2 GetCertificate(X509Certificate2Collection certCollection)
         {
-            var certCollection = new X509Certificate2Collection();
-            certCollection.Import(CertificateFile);
-
             var matchingCertCollection = certCollection.Find(X509FindType.FindByThumbprint, CertificateFingerprint, validOnly: false);
 
             if (matchingCertCollection == null || matchingCertCollection.Count == 0)
@@ -143,6 +142,14 @@ namespace NuGet.MSSigning.Extensions
             }
 
             return matchingCertCollection[0];
+        }
+
+        private X509Certificate2Collection GetCertificateCollection()
+        {
+            var certCollection = new X509Certificate2Collection();
+            certCollection.Import(CertificateFile);
+
+            return certCollection;
         }
 
         private void ValidatePackagePath()
