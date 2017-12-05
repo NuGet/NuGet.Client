@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -88,8 +88,16 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public virtual NuGetVersion GetVersion()
         {
+            return GetVersion(false);
+        }
+
+        /// <summary>
+        /// Version of the package
+        /// </summary>
+        public virtual NuGetVersion GetVersion(bool allowToken)
+        {
             var node = MetadataNode.Elements(XName.Get(Version, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
-            return node == null ? null : NuGetVersion.Parse(node.Value);
+            return node == null ? null : NuGetVersion.Parse(node.Value, allowToken);
         }
 
         /// <summary>
@@ -205,6 +213,11 @@ namespace NuGet.Packaging.Core
         }
 
         public virtual PackageIdentity GetIdentity()
+        {
+            return GetIdentity(false);
+        }
+
+        public virtual PackageIdentity GetIdentity(bool allowToken)
         {
             return new PackageIdentity(GetId(), GetVersion());
         }

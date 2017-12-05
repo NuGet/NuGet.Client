@@ -86,6 +86,7 @@ namespace NuGet.Versioning.Test
 
         [Theory]
         [InlineData("1beta")]
+        [InlineData("$version$")]
         [InlineData("1.2Av^c")]
         [InlineData("1.2..")]
         [InlineData("1.2.3.4.5")]
@@ -129,7 +130,7 @@ namespace NuGet.Versioning.Test
         [InlineData("$version$")]
         public void ParseReadsTokenizedVersion(string versionString)
         {
-            var actual = NuGetVersion.Parse(versionString);
+            var actual = NuGetVersion.Parse(versionString, true);
 
             Assert.True(actual.IsTokenized);
             Assert.Equal(versionString, actual.ToFullString());

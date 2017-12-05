@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -627,6 +627,33 @@ namespace NuGet.Versioning.Test
             Assert.Equal("'(1.2.3.4.5,1.2]' is not a valid version string.", exception.Message);
         }
 
+        [Theory]
+        [InlineData("(1.2.3.4,$version$]", "1.2.3.4", "$version$")]
+        [InlineData("($version$,1.2]", "$version$", "1.2")]
+        public void ParseVersionThrowsIfVersionRangeContainsToken(string versionString, string min, string max)
+        {
+            // Assert
+            var range = VersionRange.Parse(versionString, true, true);
+
+            var minVer = NuGetVersion.Parse(min, true);
+            var maxVer = NuGetVersion.Parse(max, true);
+
+            Assert.Equal(minVer, range.MinVersion);
+            Assert.Equal(maxVer, range.MaxVersion);
+        }
+
+        [Theory]
+        [InlineData("(1.2.3.4.5,$version$]")]
+        [InlineData("($version$,1.2]")]
+        [InlineData("$version$")]
+        public void ParseVersionSucceedsWithToken(string versionString)
+        {
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(() => VersionRange.Parse(versionString));
+            Assert.Equal($"'{versionString}' is not a valid version string.", exception.Message);
+        }
+
+
         [Fact]
         public void ParseVersionToNormalizedVersion()
         {
@@ -636,6 +663,7 @@ namespace NuGet.Versioning.Test
             // Assert
             Assert.Equal("(1.0.0, 1.2.0]", VersionRange.Parse(versionString).ToString());
         }
+
 
         [Theory]
         [InlineData("1.2.0")]

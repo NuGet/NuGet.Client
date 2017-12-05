@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,12 +59,20 @@ namespace NuGet.Versioning
         /// </summary>
         public static VersionRange Parse(string value, bool allowFloating)
         {
+            return Parse(value, allowFloating, false);  
+        }
+
+        /// <summary>
+        /// Direct parse 
+        /// </summary>
+        public static VersionRange Parse(string value, bool allowFloating, bool allowToken)
+        {
             VersionRange versionInfo;
-            if (!TryParse(value, allowFloating, out versionInfo))
+            if (!TryParse(value, allowFloating, allowToken, out versionInfo))
             {
                 throw new ArgumentException(
                     String.Format(CultureInfo.CurrentCulture,
-                        Resources.Invalidvalue, value));
+                                  Resources.Invalidvalue, value));
             }
 
             return versionInfo;
@@ -82,6 +90,11 @@ namespace NuGet.Versioning
         /// Parses a VersionRange from its string representation.
         /// </summary>
         public static bool TryParse(string value, bool allowFloating, out VersionRange versionRange)
+        {
+            return TryParse(value, allowFloating, false, out versionRange);
+        }
+
+        public static bool TryParse(string value, bool allowFloating, bool allowToken, out VersionRange versionRange)
         {
             if (value == null)
             {
@@ -208,7 +221,7 @@ namespace NuGet.Versioning
                 else
                 {
                     // single non-floating version
-                    if (!NuGetVersion.TryParse(minVersionString, out minVersion))
+                    if (!NuGetVersion.TryParse(minVersionString, allowToken, out minVersion))
                     {
                         // invalid version
                         return false;
@@ -219,7 +232,7 @@ namespace NuGet.Versioning
             // parse the max version string, the max cannot float
             if (!String.IsNullOrWhiteSpace(maxVersionString))
             {
-                if (!NuGetVersion.TryParse(maxVersionString, out maxVersion))
+                if (!NuGetVersion.TryParse(maxVersionString, allowToken, out maxVersion))
                 {
                     // invalid version
                     return false;

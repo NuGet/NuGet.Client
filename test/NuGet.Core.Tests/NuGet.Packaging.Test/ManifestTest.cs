@@ -719,13 +719,13 @@ namespace NuGet.Packaging.Test
             {
                 Id = "id",
                 Authors = new[] { "author" },
-                Version = NuGetVersion.Parse("$version$"),
+                Version = NuGetVersion.Parse("$version$", true),
                 Description = "description",
                 DependencyGroups = new List<PackageDependencyGroup>
                 {
                     new PackageDependencyGroup(NuGetFramework.AnyFramework, new List<PackageDependency>
                     {
-                        new PackageDependency("dep.id", new VersionRange(NuGetVersion.Parse("$depver$")))
+                        new PackageDependency("dep.id", new VersionRange(NuGetVersion.Parse("$depver$", true)))
                     })
                 }
             };
@@ -741,7 +741,7 @@ namespace NuGet.Packaging.Test
             memoryStream.Seek(0, SeekOrigin.Begin);
 
             // read the serialized manifest.
-            var newManifest = Manifest.ReadFrom(memoryStream, validateSchema: true);
+            var newManifest = Manifest.ReadFrom(memoryStream, validateSchema: true, allowTokens: true);
             Assert.Equal(newManifest.Metadata.Version, manifest.Metadata.Version);
             Assert.Equal(newManifest.Metadata.Version.OriginalVersion, manifest.Metadata.Version.OriginalVersion);
             Assert.Equal(newManifest.Metadata.DependencyGroups.First().Packages.First().VersionRange.MinVersion,

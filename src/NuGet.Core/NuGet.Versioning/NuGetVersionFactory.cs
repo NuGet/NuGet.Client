@@ -15,13 +15,23 @@ namespace NuGet.Versioning
         /// </summary>
         public new static NuGetVersion Parse(string value)
         {
+            return Parse(value, false);
+        }
+
+        /// <summary>
+        /// Creates a NuGetVersion from a string representing the semantic version.
+        /// </summary>
+        /// <param name="allowToken">true to allow use of tokens ($version$)</param>
+        /// <param name="value">value to parse</param>
+        public static NuGetVersion Parse(string value, bool allowToken)
+        {
             if (String.IsNullOrEmpty(value))
             {
                 throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, value), "value");
             }
 
             NuGetVersion ver = null;
-            if (!TryParse(value, out ver))
+            if (!TryParse(value, allowToken, out ver))
             {
                 throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Invalidvalue, value), "value");
             }
@@ -34,6 +44,18 @@ namespace NuGet.Versioning
         /// by an optional special version.
         /// </summary>
         public static bool TryParse(string value, out NuGetVersion version)
+        {
+            return TryParse(value, false, out version);
+        }
+
+        /// <summary>
+        /// Parses a version string using loose semantic versioning rules that allows 2-4 version components followed
+        /// by an optional special version.
+        /// </summary>
+        /// <param name="value">Value to parse</param>
+        /// <param name="allowToken">true to allow use of tokens ($version$)</param>
+        /// <param name="version">Parsed version</param>
+        public static bool TryParse(string value, bool allowToken, out NuGetVersion version)
         {
             version = null;
 
@@ -52,7 +74,8 @@ namespace NuGet.Versioning
 
                     // See if it's a token
                     // Length must be at least 3 $v$ and there must be another $ after the first
-                    if (versionPart.Length >= 3 &&
+                    if (allowToken &&
+                        versionPart.Length >= 3 &&
                         versionPart.IndexOf('$') >= 0 &&
                         versionPart.IndexOf('$', versionPart.IndexOf('$') + 1) >= 0)
                     {

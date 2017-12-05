@@ -1253,7 +1253,7 @@ namespace NuGet.Packaging.Test
             PackageBuilder builder = new PackageBuilder()
             {
                 Id = "A",
-                Version = NuGetVersion.Parse("$version$"),
+                Version = NuGetVersion.Parse("$version$", true),
                 Description = "Descriptions",
                 Summary = "Summary",
             };
@@ -1285,7 +1285,7 @@ namespace NuGet.Packaging.Test
             builder.Authors.Add("JohnDoe");
 
             var dependencySet = new PackageDependencyGroup(NuGetFramework.AnyFramework, new[] {
-                new PackageDependency("B", new VersionRange(NuGetVersion.Parse("$version$"), true))
+                new PackageDependency("B", new VersionRange(NuGetVersion.Parse("$version$", true), true))
             });
 
             builder.DependencyGroups.Add(dependencySet);
