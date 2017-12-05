@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -49,6 +49,17 @@ namespace NuGet.Versioning
                     && !string.IsNullOrEmpty(sections.Item1))
                 {
                     var versionPart = sections.Item1;
+
+                    // See if it's a token
+                    // Length must be at least 3 $v$ and there must be another $ after the first
+                    if (versionPart.Length >= 3 &&
+                        versionPart.IndexOf('$') >= 0 &&
+                        versionPart.IndexOf('$', versionPart.IndexOf('$') + 1) >= 0)
+                    {
+                        // don't try to parse this, it's a token,
+                        version = new NuGetVersion(new Version(0, 0, 0, 0), EmptyReleaseLabels, null, versionPart);
+                        return true;
+                    }
 
                     if (versionPart.IndexOf('.') < 0)
                     {

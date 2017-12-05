@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1244,6 +1244,56 @@ namespace NuGet.Packaging.Test
 
             // Act
             ExceptionAssert.Throws<InvalidOperationException>(() => Manifest.Create(builder).Save(ms), "'A' already has a dependency defined for 'B'.");
+        }
+
+        [Fact]
+        public void SavingPackageWithTokenizedVersionThrows()
+        {
+            // Arrange
+            PackageBuilder builder = new PackageBuilder()
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("$version$"),
+                Description = "Descriptions",
+                Summary = "Summary",
+            };
+            builder.Authors.Add("JohnDoe");
+
+            var dependencySet = new PackageDependencyGroup(NuGetFramework.AnyFramework, new[] {
+                new PackageDependency("B", new VersionRange(NuGetVersion.Parse("1.0"), true))
+            });
+
+            builder.DependencyGroups.Add(dependencySet);
+
+            var ms = new MemoryStream();
+
+            // Act
+            ExceptionAssert.Throws<InvalidOperationException>(() => builder.Save(ms), "Cannot create package with a token '$version$'.");
+        }
+
+        [Fact]
+        public void SavingPackageWithTokenizedDependencyVersionThrows()
+        {
+            // Arrange
+            PackageBuilder builder = new PackageBuilder()
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Descriptions",
+                Summary = "Summary",
+            };
+            builder.Authors.Add("JohnDoe");
+
+            var dependencySet = new PackageDependencyGroup(NuGetFramework.AnyFramework, new[] {
+                new PackageDependency("B", new VersionRange(NuGetVersion.Parse("$version$"), true))
+            });
+
+            builder.DependencyGroups.Add(dependencySet);
+
+            var ms = new MemoryStream();
+
+            // Act
+            ExceptionAssert.Throws<InvalidOperationException>(() => builder.Save(ms), "Cannot create package with a token '$version$'.");
         }
 
         [Fact]

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -452,9 +452,21 @@ namespace NuGet.Packaging
                 return;
             }
 
+            ValidateVersion(version);
+
             foreach (var dep in dependencies.SelectMany(s => s.Packages))
             {
                 PackageIdValidator.ValidatePackageId(dep.Id);
+                ValidateVersion(dep.VersionRange.MaxVersion);
+                ValidateVersion(dep.VersionRange.MinVersion);
+            }
+        }
+
+        private static void ValidateVersion(SemanticVersion version)
+        {
+            if (version is NuGetVersion ngv && ngv.IsTokenized)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidWithToken, ngv.OriginalVersion));
             }
         }
 

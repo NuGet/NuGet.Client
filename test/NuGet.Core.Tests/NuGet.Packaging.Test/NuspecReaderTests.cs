@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -297,6 +297,7 @@ namespace NuGet.Packaging.Test
 
         private static IEnumerable<string> ValidVersionRange()
         {
+            yield return "$version$";
             yield return "0.0.0";
             yield return "1.0.0-beta";
             yield return "1.0.1-alpha.1.2.3";
@@ -306,6 +307,9 @@ namespace NuGet.Packaging.Test
             yield return "1.0.1-a.really.long.version.release.label";
             yield return "00.00.00.00-alpha";
             yield return "0.0-alpha.1";
+            yield return "($version$, )";
+            yield return "[$version$]";
+            yield return "[1.0.0, $version$)";
             yield return "(1.0.0-alpha.1, )";
             yield return "[1.0.0-alpha.1+metadata]";
             yield return "[1.0, 2.0.0+metadata)";
@@ -317,11 +321,12 @@ namespace NuGet.Packaging.Test
             yield return null;
             yield return string.Empty;
             yield return " ";
+            yield return "$version";
+            yield return "ve$rsion";
             yield return "\t";
             yield return "~1";
             yield return "~1.0.0";
             yield return "0.0.0-~4";
-            yield return "$version$";
             yield return "Invalid";
             yield return "[15.106.0.preview]";
             yield return "15.106.0-preview.01"; // no leading zeros in numeric identifiers of release label

@@ -131,7 +131,8 @@ namespace NuGet.Versioning.Test
         {
             var actual = NuGetVersion.Parse(versionString);
 
-            // TODO verifiy tokenized
+            Assert.True(actual.IsTokenized);
+            Assert.Equal(versionString, actual.ToFullString());
         }
 
         [Theory]

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -70,6 +70,14 @@ namespace NuGet.Versioning
             {
                 combiner.AddObject(nuGetVersion.Revision);
             }
+            if (nuGetVersion != null)
+            {
+                // Take tokenization into account
+                if (nuGetVersion.IsTokenized)
+                {
+                    combiner.AddObject(nuGetVersion.OriginalVersion);
+                }
+            }
 
             if (_mode == VersionComparison.Default
                 || _mode == VersionComparison.VersionRelease
@@ -112,6 +120,17 @@ namespace NuGet.Versioning
                 return -1;
             }
 
+
+            var legacyX = x as NuGetVersion;
+            var legacyY = y as NuGetVersion;
+
+            // If one is a NuGetVersion, check tokenization first
+            if (legacyX?.IsTokenized == true || legacyY?.IsTokenized == true)
+            {
+                // In this case, compare based on original string only since one of them is tokenized
+                return StringComparer.Ordinal.Compare(legacyX?.OriginalVersion, legacyY?.OriginalVersion);
+            }
+
             // compare version
             var result = x.Major.CompareTo(y.Major);
             if (result != 0)
@@ -131,8 +150,6 @@ namespace NuGet.Versioning
                 return result;
             }
 
-            var legacyX = x as NuGetVersion;
-            var legacyY = y as NuGetVersion;
 
             result = CompareLegacyVersion(legacyX, legacyY);
             if (result != 0)
