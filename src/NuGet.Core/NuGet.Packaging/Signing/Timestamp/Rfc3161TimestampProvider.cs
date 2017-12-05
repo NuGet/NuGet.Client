@@ -9,10 +9,10 @@ using System.Security.Cryptography;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 #endif
 
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -145,6 +145,20 @@ namespace NuGet.Packaging.Signing
 
                 return signatureNativeCms.Encode();
             }
+        }
+
+        private static X509Chain GetTimestampCertChain(X509Certificate2 timestamperCertificate)
+        {
+            if (!SigningUtility.IsCertificateValid(timestamperCertificate, out var timestampCertChain, allowUntrustedRoot: false, checkRevocationStatus: true))
+            {
+                var exceptionBuilder = new StringBuilder();
+                exceptionBuilder.AppendLine(Strings.TimestampCertificateChainBuildFailure);
+                exceptionBuilder.AppendLine(CertificateUtility.X509Certificate2ToString(timestamperCertificate));
+
+                throw new TimestampException(LogMessage.CreateError(NuGetLogCode.NU3011, exceptionBuilder.ToString()));
+            }
+
+            return timestampCertChain;
         }
 
         private static void ValidateTimestampResponseNonce(

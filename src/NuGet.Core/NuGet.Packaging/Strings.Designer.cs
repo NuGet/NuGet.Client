@@ -629,11 +629,19 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+<<<<<<< HEAD
         ///   Looks up a localized string similar to signing-certificate-v2 attribute value does not match the current certificate chain..
         /// </summary>
         internal static string SigningCertificateV2Invalid {
             get {
                 return ResourceManager.GetString("SigningCertificateV2Invalid", resourceCulture);
+=======
+        ///   Looks up a localized string similar to The following certificate cannot be used for package signing as the private key provider is unsupported:.
+        /// </summary>
+        internal static string SignFailureCertificateInvalidProviderType {
+            get {
+                return ResourceManager.GetString("SignFailureCertificateInvalidProviderType", resourceCulture);
+>>>>>>> dev-anmishr-certvalidation
             }
         }
         
@@ -647,8 +655,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp service&apos;s certificate chain could not be built for the following certificate - 
-        ///{0}.
+        ///   Looks up a localized string similar to The timestamp service&apos;s certificate chain could not be built for the following certificate:.
         /// </summary>
         internal static string TimestampCertificateChainBuildFailure {
             get {

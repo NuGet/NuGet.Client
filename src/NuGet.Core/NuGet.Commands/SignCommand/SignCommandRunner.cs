@@ -6,8 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -21,7 +22,6 @@ namespace NuGet.Commands
     /// </summary>
     public class SignCommandRunner : ISignCommandRunner
     {
-
         public async Task<int> ExecuteCommandAsync(SignArgs signArgs)
         {
             // resolve path into multiple packages if needed.
@@ -30,23 +30,22 @@ namespace NuGet.Commands
 
             var cert = await GetCertificateAsync(signArgs);
 
+            ValidateCertificate(cert);
+
             signArgs.Logger.LogInformation(Environment.NewLine);
-            signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                Strings.SignCommandDisplayCertificate,
-                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(cert)}"));
+            signArgs.Logger.LogInformation(Strings.SignCommandDisplayCertificate);
+            signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2ToString(cert));
 
             if (!string.IsNullOrEmpty(signArgs.Timestamper))
             {
-                signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.SignCommandDisplayTimestamper,
-                    $"{Environment.NewLine}{signArgs.Timestamper}{Environment.NewLine}"));
+                signArgs.Logger.LogInformation(Strings.SignCommandDisplayTimestamper);
+                signArgs.Logger.LogInformation(signArgs.Timestamper);
             }
 
             if (!string.IsNullOrEmpty(signArgs.OutputDirectory))
             {
-                signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.SignCommandOutputPath,
-                    $"{Environment.NewLine}{signArgs.OutputDirectory}{Environment.NewLine}"));
+                signArgs.Logger.LogInformation(Strings.SignCommandOutputPath);
+                signArgs.Logger.LogInformation(signArgs.OutputDirectory);
             }
 
             var signRequest = GenerateSignPackageRequest(signArgs, cert);
@@ -99,7 +98,23 @@ namespace NuGet.Commands
             return success ? 0 : 1;
         }
 
-        private static ISignatureProvider GetSignatureProvider(string timestamper)
+        /// <summary>
+        /// Used to validate a user specified certificate.
+        /// </summary>
+        /// <param name="cert">Certificate to be validated</param>
+        private static void ValidateCertificate(X509Certificate2 cert)
+        {
+            if (!SigningUtility.CertificateContainsEku(cert, Oids.CodeSigningEkuOid))
+            {
+                var exceptionBuilder = new StringBuilder();
+                exceptionBuilder.AppendLine(Strings.SignCommandInvalidCertEku);
+                exceptionBuilder.AppendLine(CertificateUtility.X509Certificate2ToString(cert));
+
+                throw new InvalidOperationException(exceptionBuilder.ToString());
+            }
+        }
+
+        private static ISignatureProvider GetSignatureProvider(SignArgs signArgs)
         {
             Rfc3161TimestampProvider timestampProvider = null;
 
@@ -221,7 +236,7 @@ namespace NuGet.Commands
                 {
                     // Else launch UI to select
                     matchingCertCollection = X509Certificate2UI.SelectFromCollection(
-                        matchingCertCollection,
+                        FilterCodeSigningCertificates(matchingCertCollection),
                         Strings.SignCommandDialogTitle,
                         Strings.SignCommandDialogMessage,
                         X509SelectionFlag.SingleSelection);
@@ -239,6 +254,21 @@ namespace NuGet.Commands
             }
 
             return matchingCertCollection[0];
+        }
+
+        private static X509Certificate2Collection FilterCodeSigningCertificates(X509Certificate2Collection matchingCollection)
+        {
+            var filteredCollection = new X509Certificate2Collection();
+
+            foreach (var cert in matchingCollection)
+            {
+                if (SigningUtility.CertificateContainsEku(cert, Oids.CodeSigningEkuOid))
+                {
+                    filteredCollection.Add(cert);
+                }
+            }
+
+            return filteredCollection;
         }
     }
 }

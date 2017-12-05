@@ -225,6 +225,11 @@ namespace NuGet.Common
         NU3012 = 3012,
 
         /// <summary>
+        /// SignedCms.ComputeSignature cannot read the certificate private key
+        /// </summary>
+        NU3013 = 3013,
+
+        /// <summary>
         /// Invalid timestamp response
         /// </summary>
         NU3021 = 3021,

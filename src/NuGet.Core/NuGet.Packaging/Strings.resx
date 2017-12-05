@@ -252,9 +252,7 @@
     <value>Timestamp signature contains invalid content type.</value>
   </data>
   <data name="TimestampCertificateChainBuildFailure" xml:space="preserve">
-    <value>The timestamp service's certificate chain could not be built for the following certificate - 
-{0}</value>
-    <comment>0 -  X509Certificate2 friendly name</comment>
+    <value>The timestamp service's certificate chain could not be built for the following certificate:</value>
   </data>
   <data name="SignedPackageUnableToAccessSignature" xml:space="preserve">
     <value>The package was not opened correctly to perform Signature operations. Please use a Stream based constructor to have access to Signature attributes of the package.</value>
@@ -407,5 +405,8 @@ Valid from:</comment>
   </data>
   <data name="UnsupportedSignatureFormatVersion" xml:space="preserve">
     <value>The package signature format version is unsupported.  Updating your client may solve this problem.</value>
+  </data>
+  <data name="SignFailureCertificateInvalidProviderType" xml:space="preserve">
+    <value>The following certificate cannot be used for package signing as the private key provider is unsupported:</value>
   </data>
 </root>

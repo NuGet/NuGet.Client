@@ -32,7 +32,7 @@ namespace NuGet.Packaging.FuncTest
             _signingSpecifications = _testFixture.SigningSpecifications;
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task Signer_SignPackageAsync()
         {
             // Arrange
@@ -53,7 +53,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task Signer_UnsignPackageAsync()
         {
             // Arrange

@@ -610,12 +610,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Detected package version outside of dependency constraint: {0} requires {1} but version {2} was resolved.</value>
   </data>
   <data name="SignCommandDisplayCertificate" xml:space="preserve">
-    <value>Signing package(s) with certificate: {0}</value>
-    <comment>0 -  X509Certificate2 details in the following format -
-Subject Name:
-SHA1 hash:
-Issued by:
-Valid from:</comment>
+    <value>Signing package(s) with certificate:</value>
   </data>
   <data name="SignCommandDialogMessage" xml:space="preserve">
     <value>Please select a valid certificate</value>
@@ -655,8 +650,7 @@ Valid from:</comment>
 3 - second property value</comment>
   </data>
   <data name="SignCommandDisplayTimestamper" xml:space="preserve">
-    <value>Timestamping package(s) with: {0}</value>
-    <comment>0 -  url to the timestamping authority</comment>
+    <value>Timestamping package(s) with:</value>
   </data>
   <data name="VerifyCommand_PackageIsNotValid" xml:space="preserve">
     <value>'{0}' is not a valid package file.</value>
@@ -665,8 +659,10 @@ Valid from:</comment>
     <value>Verification type not supported. Please use only one of the following supported types: -All, -Signatures</value>
   </data>
   <data name="SignCommandOutputPath" xml:space="preserve">
-    <value>Signed package(s) output path: {0}</value>
-    <comment>0 - output directory path</comment>
+    <value>Signed package(s) output path:</value>
+  </data>
+  <data name="SignCommandInvalidCertEku" xml:space="preserve">
+    <value>The following certificate cannot be used for signing a package as it does not have Code Signing enhanced key usage:</value>
   </data>
   <data name="VerifyCommand_FinishedWithErrors" xml:space="preserve">
     <value>Finished with {0} errors and {1} warnings.</value>
