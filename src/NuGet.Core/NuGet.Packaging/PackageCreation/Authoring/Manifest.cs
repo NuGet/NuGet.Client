@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -98,10 +98,21 @@ namespace NuGet.Packaging
 
         public static Manifest ReadFrom(Stream stream, bool validateSchema)
         {
-            return ReadFrom(stream, null, validateSchema);
+            return ReadFrom(stream, null, validateSchema, false);
+        }
+
+
+        public static Manifest ReadFrom(Stream stream, bool validateSchema, bool allowTokens)
+        {
+            return ReadFrom(stream, null, validateSchema, allowTokens);
         }
 
         public static Manifest ReadFrom(Stream stream, Func<string, string> propertyProvider, bool validateSchema)
+        {
+            return ReadFrom(stream, null, validateSchema, false);
+        }
+
+        public static Manifest ReadFrom(Stream stream, Func<string, string> propertyProvider, bool validateSchema, bool allowTokens)
         {
             XDocument document;
             if (propertyProvider == null)
@@ -131,7 +142,7 @@ namespace NuGet.Packaging
             }
 
             // Deserialize it
-            var manifest = ManifestReader.ReadManifest(document);
+            var manifest = ManifestReader.ReadManifest(document, allowTokens);
 
             // Validate before returning
             Validate(manifest);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -114,6 +114,14 @@ namespace NuGet.Packaging
         /// </summary>
         public IEnumerable<PackageDependencyGroup> GetDependencyGroups(bool useStrictVersionCheck)
         {
+            return GetDependencyGroups(useStrictVersionCheck: useStrictVersionCheck, allowTokens: false);
+        }
+
+        /// <summary>
+        /// Read package dependencies for all frameworks
+        /// </summary>
+        public IEnumerable<PackageDependencyGroup> GetDependencyGroups(bool useStrictVersionCheck, bool allowTokens)
+        {
             var ns = MetadataNode.GetDefaultNamespace().NamespaceName;
             var dependencyNode = MetadataNode
                 .Elements(XName.Get(Dependencies, ns));
@@ -131,7 +139,7 @@ namespace NuGet.Packaging
                 var dependencies = depGroup
                     .Elements(XName.Get(Dependency, ns));
 
-                var packages = GetPackageDependencies(dependencies, useStrictVersionCheck);
+                var packages = GetPackageDependencies(dependencies, useStrictVersionCheck, allowTokens);
 
                 var framework = string.IsNullOrEmpty(groupFramework)
                     ? NuGetFramework.AnyFramework
@@ -146,7 +154,7 @@ namespace NuGet.Packaging
                 var legacyDependencies = dependencyNode
                     .Elements(XName.Get(Dependency, ns));
 
-                var packages = GetPackageDependencies(legacyDependencies, useStrictVersionCheck);
+                var packages = GetPackageDependencies(legacyDependencies, useStrictVersionCheck, allowTokens);
 
                 if (packages.Any())
                 {
@@ -289,7 +297,7 @@ namespace NuGet.Packaging
                         CultureInfo.CurrentCulture,
                         Strings.InvalidNuspecEntry,
                         filesNode.ToString().Trim(),
-                        GetIdentity());
+                        GetIdentity(true));
 
                     throw new PackagingException(message);
                 }
@@ -452,7 +460,7 @@ namespace NuGet.Packaging
             return set.OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList();
         }
 
-        private HashSet<PackageDependency> GetPackageDependencies(IEnumerable<XElement> nodes, bool useStrictVersionCheck)
+        private HashSet<PackageDependency> GetPackageDependencies(IEnumerable<XElement> nodes, bool useStrictVersionCheck, bool allowTokens)
         {
             var packages = new HashSet<PackageDependency>();
 
@@ -464,7 +472,7 @@ namespace NuGet.Packaging
 
                 if (!string.IsNullOrEmpty(rangeNode))
                 {
-                    var versionParsedSuccessfully = VersionRange.TryParse(rangeNode, out range);
+                    var versionParsedSuccessfully = VersionRange.TryParse(rangeNode, true, allowTokens, out range);
                     if (!versionParsedSuccessfully && useStrictVersionCheck)
                     {
                         // Invalid version
@@ -473,7 +481,7 @@ namespace NuGet.Packaging
                             CultureInfo.CurrentCulture,
                             Strings.ErrorInvalidPackageVersionForDependency,
                             dependencyId,
-                            GetIdentity(),
+                            GetIdentity(allowTokens),
                             rangeNode);
 
                         throw new PackagingException(message);
@@ -487,7 +495,7 @@ namespace NuGet.Packaging
                         CultureInfo.CurrentCulture,
                         Strings.ErrorInvalidPackageVersionForDependency,
                         dependencyId,
-                        GetIdentity(),
+                        GetIdentity(allowTokens),
                         rangeNode);
 
                     throw new PackagingException(message);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -144,6 +144,7 @@ namespace NuGet.Versioning
             : base(version, releaseLabels, metadata)
         {
             _originalString = originalVersion;
+            IsTokenized = originalVersion?.IndexOf('$') >= 0;
         }
 
         /// <summary>
@@ -200,5 +201,11 @@ namespace NuGet.Versioning
         /// Returns the original, non-normalized version string.
         /// </summary>
         public string OriginalVersion => _originalString;
+
+
+        /// <summary>
+        /// Returns true if the version contains a token ($version$)
+        /// </summary>
+        public bool IsTokenized { get; }
     }
 }

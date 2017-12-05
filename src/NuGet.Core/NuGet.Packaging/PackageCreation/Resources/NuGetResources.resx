@@ -180,4 +180,7 @@
   <data name="Manifest_ReferencesIsEmpty" xml:space="preserve">
     <value>The element package\metadata\references\group must contain at least one &lt;reference&gt; child element.</value>
   </data>
+  <data name="InvalidWithToken" xml:space="preserve">
+    <value>Cannot create package with a token '{0}'.</value>
+  </data>
 </root>

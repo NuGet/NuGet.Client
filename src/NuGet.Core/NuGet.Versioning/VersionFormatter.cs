@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -120,6 +120,10 @@ namespace NuGet.Versioning
         private static string Format(char c, SemanticVersion version)
         {
             string s = null;
+
+            // Don't format tokenized versions
+            if (version is NuGetVersion ngv && ngv.IsTokenized)
+                return ngv.OriginalVersion;
 
             switch (c)
             {

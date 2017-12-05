@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -709,6 +709,46 @@ namespace NuGet.Packaging.Test
             {
                 AssertFile(expectedFiles[i], actualFiles[i]);
             }
+        }
+
+        // Test that manifest is serialized correctly.
+        [Fact]
+        public void ManifestSerializationWithTokens()
+        {
+            var manifestMetadata = new ManifestMetadata()
+            {
+                Id = "id",
+                Authors = new[] { "author" },
+                Version = NuGetVersion.Parse("$version$", true),
+                Description = "description",
+                DependencyGroups = new List<PackageDependencyGroup>
+                {
+                    new PackageDependencyGroup(NuGetFramework.AnyFramework, new List<PackageDependency>
+                    {
+                        new PackageDependency("dep.id", new VersionRange(NuGetVersion.Parse("$depver$", true)))
+                    })
+                }
+            };
+
+            var manifest = new Manifest(manifestMetadata, new List<ManifestFile>());
+            var file = new ManifestFile();
+            file.Source = "file_source";
+            file.Target = "file_target";
+            manifest.Files.Add(file);
+
+            var memoryStream = new MemoryStream();
+            manifest.Save(memoryStream);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+
+            // read the serialized manifest.
+            var newManifest = Manifest.ReadFrom(memoryStream, validateSchema: true, allowTokens: true);
+            Assert.Equal(newManifest.Metadata.Version, manifest.Metadata.Version);
+            Assert.Equal(newManifest.Metadata.Version.OriginalVersion, manifest.Metadata.Version.OriginalVersion);
+            Assert.Equal(newManifest.Metadata.DependencyGroups.First().Packages.First().VersionRange.MinVersion,
+                         manifest.Metadata.DependencyGroups.First().Packages.First().VersionRange.MinVersion);
+            Assert.Equal(newManifest.Metadata.DependencyGroups.First().Packages.First().VersionRange.MinVersion.OriginalVersion,
+                         manifest.Metadata.DependencyGroups.First().Packages.First().VersionRange.MinVersion.OriginalVersion);
+
         }
 
         private void AssertManifest(Manifest expected, Manifest actual)

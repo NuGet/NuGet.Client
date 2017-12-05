@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -273,21 +273,32 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
-        public static IEnumerable<object[]> GetValidVersions()
+        public static IEnumerable<object[]> GetValidVersionsWithoutToken()
         {
-            return GetVersionRange(validVersions: true);
+            return GetVersionRange(validVersions: true, allowToken: false);
         }
 
-        public static IEnumerable<object[]> GetInValidVersions()
+        public static IEnumerable<object[]> GetInValidVersionsWithoutToken()
         {
-            return GetVersionRange(validVersions: false);
+            return GetVersionRange(validVersions: false, allowToken: false);
         }
 
-        private static IEnumerable<object[]> GetVersionRange(bool validVersions)
+        public static IEnumerable<object[]> GetValidVersionsWithToken()
+        {
+            return GetVersionRange(validVersions: true, allowToken: true);
+        }
+
+        public static IEnumerable<object[]> GetInValidVersionsWithToken()
+        {
+            return GetVersionRange(validVersions: false, allowToken: true);
+        }
+
+
+        private static IEnumerable<object[]> GetVersionRange(bool validVersions, bool allowToken)
         {
             var range = validVersions
-                ? ValidVersionRange()
-                : InvalidVersionRange();
+                ? ValidVersionRange(allowToken)
+                : InvalidVersionRange(allowToken);
 
             foreach (var s in range)
             {
@@ -295,8 +306,9 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        private static IEnumerable<string> ValidVersionRange()
+        private static IEnumerable<string> ValidVersionRange(bool allowToken)
         {
+            if (allowToken) yield return "$version$";
             yield return "0.0.0";
             yield return "1.0.0-beta";
             yield return "1.0.1-alpha.1.2.3";
@@ -306,22 +318,27 @@ namespace NuGet.Packaging.Test
             yield return "1.0.1-a.really.long.version.release.label";
             yield return "00.00.00.00-alpha";
             yield return "0.0-alpha.1";
+            if (allowToken) yield return "($version$, )";
+            if (allowToken) yield return "[$version$]";
+            if (allowToken) yield return "[1.0.0, $version$)";
             yield return "(1.0.0-alpha.1, )";
             yield return "[1.0.0-alpha.1+metadata]";
             yield return "[1.0, 2.0.0+metadata)";
             yield return "[1.0+metadata, 2.0.0+metadata)";
         }
 
-        private static IEnumerable<string> InvalidVersionRange()
+        private static IEnumerable<string> InvalidVersionRange(bool allowToken)
         {
             yield return null;
             yield return string.Empty;
             yield return " ";
+            if(!allowToken) yield return "$version$";
+            yield return "$version";
+            yield return "ve$rsion";
             yield return "\t";
             yield return "~1";
             yield return "~1.0.0";
             yield return "0.0.0-~4";
-            yield return "$version$";
             yield return "Invalid";
             yield return "[15.106.0.preview]";
             yield return "15.106.0-preview.01"; // no leading zeros in numeric identifiers of release label
@@ -380,8 +397,8 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [MemberData(nameof(GetValidVersions))]
-        [MemberData(nameof(GetInValidVersions))]
+        [MemberData(nameof(GetValidVersionsWithoutToken))]
+        [MemberData(nameof(GetInValidVersionsWithoutToken))]
         public void NuspecReaderTests_NonStrictCheckInDependencyShouldNotThrowException(string versionRange)
         {
             // Arrange
@@ -396,7 +413,23 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [MemberData(nameof(GetInValidVersions))]
+        [MemberData(nameof(GetValidVersionsWithToken))]
+        [MemberData(nameof(GetInValidVersionsWithToken))]
+        public void NuspecReaderTests_NonStrictCheckInDependencyWithTokensShouldNotThrowException(string versionRange)
+        {
+            // Arrange
+            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
+            var nuspecReader = GetReader(formattedNuspec);
+
+            // Act
+            var dependencies = nuspecReader.GetDependencyGroups(useStrictVersionCheck: false, allowTokens: true).ToList();
+
+            // Assert
+            Assert.Equal(1, dependencies.Count);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetInValidVersionsWithoutToken))]
         public void NuspecReaderTests_NonStrictCheckInDependencyShouldFallbackToAllRangeForInvalidVersions(
             string versionRange)
         {
@@ -412,7 +445,23 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [MemberData(nameof(GetInValidVersions))]
+        [MemberData(nameof(GetInValidVersionsWithToken))]
+        public void NuspecReaderTests_NonStrictCheckInDependencyWithTokenShouldFallbackToAllRangeForInvalidVersions(
+            string versionRange)
+        {
+            // Arrange
+            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
+            var nuspecReader = GetReader(formattedNuspec);
+
+            // Act
+            var dependencies = nuspecReader.GetDependencyGroups(useStrictVersionCheck: false, allowTokens: true).ToList();
+
+            // Assert
+            Assert.Equal(VersionRange.All, dependencies.First().Packages.First().VersionRange);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetInValidVersionsWithoutToken))]
         public void NuspecReaderTests_InvalidVersionRangeInDependencyThrowsExceptionForStrictCheck(string versionRange)
         {
             // Arrange
@@ -425,7 +474,20 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [MemberData(nameof(GetValidVersions))]
+        [MemberData(nameof(GetInValidVersionsWithToken))]
+        public void NuspecReaderTests_InvalidVersionRangeWithTokenInDependencyThrowsExceptionForStrictCheck(string versionRange)
+        {
+            // Arrange
+            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
+            var nuspecReader = GetReader(formattedNuspec);
+            Action action = () => nuspecReader.GetDependencyGroups(useStrictVersionCheck: true, allowTokens: true).ToList();
+
+            // Act & Assert
+            Assert.Throws<PackagingException>(action);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetValidVersionsWithoutToken))]
         public void NuspecReaderTests_ValidVersionRangeInDependencyReturnsResultForStrictCheck(string versionRange)
         {
             // Arrange
@@ -435,6 +497,23 @@ namespace NuGet.Packaging.Test
 
             // Act
             var dependencyGroups = nuspecReader.GetDependencyGroups(useStrictVersionCheck: true).ToList();
+
+            // Assert
+            Assert.Equal(1, dependencyGroups.Count);
+            Assert.Equal(expectedVersionRange, dependencyGroups.First().Packages.First().VersionRange);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetValidVersionsWithToken))]
+        public void NuspecReaderTests_ValidVersionRangeWithTokenInDependencyReturnsResultForStrictCheck(string versionRange)
+        {
+            // Arrange
+            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
+            var nuspecReader = GetReader(formattedNuspec);
+            var expectedVersionRange = string.IsNullOrEmpty(versionRange) ? VersionRange.All : VersionRange.Parse(versionRange, true, true);
+
+            // Act
+            var dependencyGroups = nuspecReader.GetDependencyGroups(useStrictVersionCheck: true, allowTokens: true).ToList();
 
             // Assert
             Assert.Equal(1, dependencyGroups.Count);
