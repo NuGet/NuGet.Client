@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Security.Cryptography;
-
-#if IS_DESKTOP
-using System.Security.Cryptography.Pkcs;
-#endif
-
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+
+#if IS_DESKTOP
+using System.Security.Cryptography.Pkcs;
+#endif
 
 namespace NuGet.Packaging.Signing
 {
@@ -67,26 +67,14 @@ namespace NuGet.Packaging.Signing
 #if IS_DESKTOP
         private Signature CreateSignature(SignPackageRequest request, SignatureContent signatureContent)
         {
-            var attributes = SigningUtility.GetSignAttributes(request);
+            var cmsSigner = CreateCmsSigner(request);
 
-            using (request)
+            if (request.PrivateKey != null)
             {
-                if (request.PrivateKey != null)
-                {
-                    return CreateSignature(request.Certificate, signatureContent, request.PrivateKey, request.SignatureHashAlgorithm, attributes, request.AdditionalCertificates);
-                }
+                return CreateSignature(cmsSigner, signatureContent, request.PrivateKey);
+            }
 
-                var contentInfo = new ContentInfo(signatureContent.GetBytes());
-                var cmsSigner = new CmsSigner(SubjectIdentifierType.SubjectKeyIdentifier, request.Certificate);
-
-                foreach (var attribute in attributes)
-                {
-                    cmsSigner.SignedAttributes.Add(attribute);
-                }
-
-            cmsSigner.IncludeOption = X509IncludeOption.WholeChain;
-            cmsSigner.DigestAlgorithm = request.Certificate.SignatureAlgorithm;
-
+            var contentInfo = new ContentInfo(signatureContent.GetBytes());
             var cms = new SignedCms(contentInfo);
 
             try
@@ -102,21 +90,71 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(NuGetLogCode.NU3013, exceptionBuilder.ToString());
             }
 
-                return Signature.Load(cms);
-            }
+            return Signature.Load(cms);
         }
 
-        private Signature CreateSignature(
-            X509Certificate2 cert,
-            SignatureContent signatureContent,
-            CngKey privateKey,
-            Common.HashAlgorithmName hashAlgorithm,
-            CryptographicAttributeObjectCollection attributes,
-            X509Certificate2Collection additionalCertificates
-            )
+        private static CmsSigner CreateCmsSigner(SignPackageRequest request)
         {
-            var cms = NativeUtilities.NativeSign(
-                signatureContent.GetBytes(), cert, privateKey, attributes, hashAlgorithm, additionalCertificates);
+            // Subject Key Identifier (SKI) is smaller and less prone to accidental matching than issuer and serial
+            // number.  However, to ensure cross-platform verification, SKI should only be used if the certificate
+            // has the SKI extension attribute.
+            CmsSigner signer;
+
+            if (request.Certificate.Extensions[Oids.SubjectKeyIdentifier] == null)
+            {
+                signer = new CmsSigner(SubjectIdentifierType.IssuerAndSerialNumber, request.Certificate);
+            }
+            else
+            {
+                signer = new CmsSigner(SubjectIdentifierType.SubjectKeyIdentifier, request.Certificate);
+            }
+
+            var attributes = SigningUtility.GetSignAttributes(request);
+
+            foreach (var attribute in attributes)
+            {
+                signer.SignedAttributes.Add(attribute);
+            }
+
+            using (var chain = new X509Chain())
+            {
+                SigningUtility.SetCertBuildChainPolicy(
+                    chain,
+                    request.AdditionalCertificates,
+                    DateTime.Now,
+                    NuGetVerificationCertificateType.Signature);
+
+                if (chain.Build(request.Certificate))
+                {
+                    foreach (var chainElement in chain.ChainElements)
+                    {
+                        signer.Certificates.Add(chainElement.Certificate);
+                    }
+                }
+                else
+                {
+                    foreach (var chainStatus in chain.ChainStatus)
+                    {
+                        if (chainStatus.Status != X509ChainStatusFlags.NoError)
+                        {
+                            throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString()));
+                        }
+                    }
+                }
+            }
+
+            // We built the chain ourselves and added certificates.
+            // Passing any other value here would trigger another chain build
+            // and possibly add duplicate certs to the collection.
+            signer.IncludeOption = X509IncludeOption.None;
+            signer.DigestAlgorithm = request.SignatureHashAlgorithm.ConvertToOid();
+
+            return signer;
+        }
+
+        private Signature CreateSignature(CmsSigner cmsSigner, SignatureContent signatureContent, CngKey privateKey)
+        {
+            var cms = NativeUtilities.NativeSign(cmsSigner, signatureContent.GetBytes(), privateKey);
 
             return Signature.Load(cms);
         }

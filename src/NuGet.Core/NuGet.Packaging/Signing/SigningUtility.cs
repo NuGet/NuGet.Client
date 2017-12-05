@@ -64,7 +64,7 @@ namespace NuGet.Packaging.Signing
         {
             var certEkuOidCollection = GetCertificateEKU(certificate);
 
-            foreach(var ekuOid in certEkuOidCollection)
+            foreach (var ekuOid in certEkuOidCollection)
             {
                 if (string.Equals(ekuOid.Value, oid))
                 {

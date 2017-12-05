@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Runtime.InteropServices;
 #if IS_DESKTOP
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
-using System.Security.Cryptography.X509Certificates;
-using NuGet.Common;
 #endif
 
 namespace NuGet.Packaging.Signing
@@ -31,42 +28,22 @@ namespace NuGet.Packaging.Signing
             }
         }
 #if IS_DESKTOP
-        internal static SignedCms NativeSign(
-            byte[] data,
-            X509Certificate2 certificate,
-            CngKey privateKey,
-            CryptographicAttributeObjectCollection attributes,
-            Common.HashAlgorithmName hashAlgorithm,
-            X509Certificate2Collection additionalCertificates)
+        internal static SignedCms NativeSign(CmsSigner cmsSigner, byte[] data, CngKey privateKey)
         {
             using (var hb = new HeapBlockRetainer())
-            using (var chain = new X509Chain())
             {
-                SigningUtility.SetCertBuildChainPolicy(chain, additionalCertificates, DateTime.Now, NuGetVerificationCertificateType.Signature);
+                var certificateBlobs = new BLOB[cmsSigner.Certificates.Count];
 
-                if (!chain.Build(certificate))
+                for (var i = 0; i < cmsSigner.Certificates.Count; ++i)
                 {
-                    foreach (var chainStatus in chain.ChainStatus)
-                    {
-                        if (chainStatus.Status != X509ChainStatusFlags.NoError)
-                        {
-                            throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString()));
-                        }
-                    }
-                }
-
-                var certificateBlobs = new BLOB[chain.ChainElements.Count];
-
-                for (var i = 0; i < chain.ChainElements.Count; ++i)
-                {
-                    var cert = chain.ChainElements[i].Certificate;
+                    var cert = cmsSigner.Certificates[i];
                     var context = Marshal.PtrToStructure<CERT_CONTEXT>(cert.Handle);
 
                     certificateBlobs[i] = new BLOB() { cbData = context.cbCertEncoded, pbData = context.pbCertEncoded };
                 }
 
                 byte[] encodedData;
-                var signerInfo = CreateEncodeInfo(certificate, privateKey, attributes, hashAlgorithm, hb);
+                var signerInfo = CreateSignerInfo(cmsSigner, privateKey, hb);
 
                 var signedInfo = new CMSG_SIGNED_ENCODE_INFO();
                 signedInfo.cbSize = Marshal.SizeOf(signedInfo);
@@ -132,31 +109,71 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private unsafe static CMSG_SIGNER_ENCODE_INFO CreateEncodeInfo(
-            X509Certificate2 certificate,
+        private unsafe static CMSG_SIGNER_ENCODE_INFO CreateSignerInfo(
+            CmsSigner cmsSigner,
             CngKey privateKey,
-            CryptographicAttributeObjectCollection attributes,
-            Common.HashAlgorithmName hashAlgorithm,
             HeapBlockRetainer hb)
         {
             var signerInfo = new CMSG_SIGNER_ENCODE_INFO();
-            signerInfo.cbSize = (uint)Marshal.SizeOf(signerInfo);
-            signerInfo.pCertInfo = Marshal.PtrToStructure<CERT_CONTEXT>(certificate.Handle).pCertInfo;
-            signerInfo.hCryptProvOrhNCryptKey = privateKey.Handle.DangerousGetHandle();
-            signerInfo.HashAlgorithm.pszObjId = hashAlgorithm.ConvertToOidString();
 
-            if (attributes.Count != 0)
+            signerInfo.cbSize = (uint)Marshal.SizeOf(signerInfo);
+            signerInfo.pCertInfo = Marshal.PtrToStructure<CERT_CONTEXT>(cmsSigner.Certificate.Handle).pCertInfo;
+            signerInfo.hCryptProvOrhNCryptKey = privateKey.Handle.DangerousGetHandle();
+            signerInfo.HashAlgorithm.pszObjId = cmsSigner.DigestAlgorithm.Value;
+
+            if (cmsSigner.SignerIdentifierType == SubjectIdentifierType.SubjectKeyIdentifier)
             {
-                signerInfo.cAuthAttr = attributes.Count;
+                var certContextHandle = IntPtr.Zero;
+
+                try
+                {
+                    certContextHandle = NativeMethods.CertDuplicateCertificateContext(cmsSigner.Certificate.Handle);
+
+                    uint cbData = 0;
+                    var pbData = IntPtr.Zero;
+
+                    ThrowIfFailed(NativeMethods.CertGetCertificateContextProperty(
+                        certContextHandle,
+                        NativeMethods.CERT_KEY_IDENTIFIER_PROP_ID,
+                        pbData,
+                        ref cbData));
+
+                    if (cbData > 0)
+                    {
+                        pbData = hb.Alloc((int)cbData);
+
+                        ThrowIfFailed(NativeMethods.CertGetCertificateContextProperty(
+                            certContextHandle,
+                            NativeMethods.CERT_KEY_IDENTIFIER_PROP_ID,
+                            pbData,
+                            ref cbData));
+
+                        signerInfo.SignerId.dwIdChoice = NativeMethods.CERT_ID_KEY_IDENTIFIER;
+                        signerInfo.SignerId.KeyId.cbData = cbData;
+                        signerInfo.SignerId.KeyId.pbData = pbData;
+                    }
+                }
+                finally
+                {
+                    if (certContextHandle != IntPtr.Zero)
+                    {
+                        NativeMethods.CertFreeCertificateContext(certContextHandle);
+                    }
+                }
+            }
+
+            if (cmsSigner.SignedAttributes.Count != 0)
+            {
+                signerInfo.cAuthAttr = cmsSigner.SignedAttributes.Count;
 
                 checked
                 {
                     var attributeSize = Marshal.SizeOf<CRYPT_ATTRIBUTE>();
                     var blobSize = Marshal.SizeOf<CRYPT_INTEGER_BLOB>();
-                    var attributesArray = (CRYPT_ATTRIBUTE*)hb.Alloc(attributeSize * attributes.Count);
+                    var attributesArray = (CRYPT_ATTRIBUTE*)hb.Alloc(attributeSize * cmsSigner.SignedAttributes.Count);
                     var currentAttribute = attributesArray;
 
-                    foreach (var attribute in attributes)
+                    foreach (var attribute in cmsSigner.SignedAttributes)
                     {
                         currentAttribute->pszObjId = hb.AllocAsciiString(attribute.Oid.Value);
                         currentAttribute->cValue = (uint)attribute.Values.Count;
@@ -179,9 +196,11 @@ namespace NuGet.Packaging.Signing
 
                         currentAttribute++;
                     }
+
                     signerInfo.rgAuthAttr = new IntPtr(attributesArray);
                 }
             }
+
             return signerInfo;
         }
 #endif

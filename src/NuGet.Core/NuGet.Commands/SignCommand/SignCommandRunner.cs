@@ -3,10 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -48,16 +45,17 @@ namespace NuGet.Commands
                 signArgs.Logger.LogInformation(signArgs.OutputDirectory);
             }
 
-            var signRequest = GenerateSignPackageRequest(signArgs, cert);
-
-            return await ExecuteCommandAsync(
-                packagesToSign,
-                signRequest,
-                signArgs.Timestamper,
-                signArgs.Logger,
-                signArgs.OutputDirectory,
-                signArgs.Overwrite,
-                signArgs.Token);
+            using (var signRequest = GenerateSignPackageRequest(signArgs, cert))
+            {
+                return await ExecuteCommandAsync(
+                    packagesToSign,
+                    signRequest,
+                    signArgs.Timestamper,
+                    signArgs.Logger,
+                    signArgs.OutputDirectory,
+                    signArgs.Overwrite,
+                    signArgs.Token);
+            }
         }
 
         public async Task<int> ExecuteCommandAsync(

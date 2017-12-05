@@ -13,6 +13,8 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class SignPackageRequest : IDisposable
     {
+        private readonly X509Certificate2Collection _additionalCertificates = new X509Certificate2Collection();
+
         /// <summary>
         /// Hash algorithm used to create the package signature.
         /// </summary>
@@ -28,7 +30,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public X509Certificate2 Certificate { get; set; }
 
-        public X509Certificate2Collection AdditionalCertificates { get; set; }
+        public X509Certificate2Collection AdditionalCertificates => _additionalCertificates;
 
 #if IS_DESKTOP
         /// <summary>

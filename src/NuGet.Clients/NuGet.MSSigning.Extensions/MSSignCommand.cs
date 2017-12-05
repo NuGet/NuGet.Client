@@ -88,14 +88,17 @@ namespace NuGet.MSSigning.Extensions
             var cert = GetCertificate(certCollection);
             var privateKey = GetPrivateKey(cert);
 
-            return new SignPackageRequest()
+            var request = new SignPackageRequest()
             {
                 SignatureHashAlgorithm = hashAlgorithm,
                 TimestampHashAlgorithm = timestampHashAlgorithm,
                 Certificate = cert,
-                PrivateKey = privateKey,
-                AdditionalCertificates = certCollection
+                PrivateKey = privateKey
             };
+
+            request.AdditionalCertificates.AddRange(certCollection);
+
+            return request;
         }
 
         private IEnumerable<string> GetPackages()
