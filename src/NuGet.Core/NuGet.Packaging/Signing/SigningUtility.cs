@@ -78,9 +78,10 @@ namespace NuGet.Packaging.Signing
 #if IS_DESKTOP
         public static CryptographicAttributeObjectCollection GetSignAttributes(SignPackageRequest request)
         {
-            var attributes = new CryptographicAttributeObjectCollection();
-
-            attributes.Add(new Pkcs9SigningTime());
+            var attributes = new CryptographicAttributeObjectCollection
+            {
+                new Pkcs9SigningTime()
+            };
 
             if (request.SignatureType != SignatureType.Unknown)
             {

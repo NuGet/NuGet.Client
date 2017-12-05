@@ -85,7 +85,7 @@ namespace NuGet.Packaging.Signing
                 }
 
             cmsSigner.IncludeOption = X509IncludeOption.WholeChain;
-            cmsSigner.DigestAlgorithm = cert.SignatureAlgorithm;
+            cmsSigner.DigestAlgorithm = request.Certificate.SignatureAlgorithm;
 
             var cms = new SignedCms(contentInfo);
 
@@ -97,7 +97,7 @@ namespace NuGet.Packaging.Signing
             {
                 var exceptionBuilder = new StringBuilder();
                 exceptionBuilder.AppendLine(Strings.SignFailureCertificateInvalidProviderType);
-                exceptionBuilder.AppendLine(CertificateUtility.X509Certificate2ToString(cert));
+                exceptionBuilder.AppendLine(CertificateUtility.X509Certificate2ToString(request.Certificate));
 
                 throw new SignatureException(NuGetLogCode.NU3013, exceptionBuilder.ToString());
             }

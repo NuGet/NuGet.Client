@@ -49,14 +49,21 @@ namespace NuGet.Commands
             }
 
             var signRequest = GenerateSignPackageRequest(signArgs, cert);
-            return await ExecuteCommandAsync(packagesToSign,
-                signRequest, signArgs.Timestamper, signArgs.Logger, signArgs.OutputDirectory, signArgs.Overwrite, signArgs.Token);
+
+            return await ExecuteCommandAsync(
+                packagesToSign,
+                signRequest,
+                signArgs.Timestamper,
+                signArgs.Logger,
+                signArgs.OutputDirectory,
+                signArgs.Overwrite,
+                signArgs.Token);
         }
 
         public async Task<int> ExecuteCommandAsync(
             IEnumerable<string> packagesToSign,
             SignPackageRequest signPackageRequest,
-            string Timestamper,
+            string timestamper,
             ILogger logger,
             string outputDirectory,
             bool overwrite,
@@ -64,7 +71,7 @@ namespace NuGet.Commands
         {
             var success = true;
 
-            var signatureProvider = GetSignatureProvider(Timestamper);
+            var signatureProvider = GetSignatureProvider(timestamper);
 
             foreach (var packagePath in packagesToSign)
             {
@@ -114,7 +121,7 @@ namespace NuGet.Commands
             }
         }
 
-        private static ISignatureProvider GetSignatureProvider(SignArgs signArgs)
+        private static ISignatureProvider GetSignatureProvider(string timestamper)
         {
             Rfc3161TimestampProvider timestampProvider = null;
 
