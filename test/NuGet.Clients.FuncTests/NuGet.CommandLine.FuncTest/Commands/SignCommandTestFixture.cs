@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.CommandLine.Test;
 using NuGet.Packaging.Signing;
@@ -32,16 +31,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_trustedTestCert == null)
                 {
-                    Action<X509V3CertificateGenerator> actionGenerator = delegate (X509V3CertificateGenerator gen)
-                    {
-                        // CodeSigning EKU
-                        var usages = new[] { KeyPurposeID.IdKPCodeSigning };
-
-                        gen.AddExtension(
-                            X509Extensions.ExtendedKeyUsage.Id,
-                            critical: true,
-                            extensionValue: new ExtendedKeyUsage(usages));
-                    };
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCodeSigningEku;
 
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
@@ -59,16 +49,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_trustedTestCertWithInvalidEku == null)
                 {
-                    Action<X509V3CertificateGenerator> actionGenerator = delegate (X509V3CertificateGenerator gen)
-                    {
-                        // any EKU besides CodeSigning
-                        var usages = new[] { KeyPurposeID.IdKPClientAuth };
-
-                        gen.AddExtension(
-                            X509Extensions.ExtendedKeyUsage.Id,
-                            critical: true,
-                            extensionValue: new ExtendedKeyUsage(usages));
-                    };
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForInvalidEku;
 
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege

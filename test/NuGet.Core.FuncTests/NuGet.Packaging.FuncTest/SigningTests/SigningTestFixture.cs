@@ -26,16 +26,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_trustedTestCert == null)
                 {
-                    Action<X509V3CertificateGenerator> actionGenerator = delegate (X509V3CertificateGenerator gen)
-                    {
-                        // CodeSigning EKU
-                        var usages = new[] { KeyPurposeID.IdKPCodeSigning };
-
-                        gen.AddExtension(
-                            X509Extensions.ExtendedKeyUsage.Id,
-                            critical: true,
-                            extensionValue: new ExtendedKeyUsage(usages));
-                    };
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCodeSigningEku;
 
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog

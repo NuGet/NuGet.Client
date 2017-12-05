@@ -64,8 +64,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    waitForExit: true);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -96,8 +95,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {_trustedTestCertWithInvalidEku.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCertWithInvalidEku.StoreName} -CertificateStoreLocation {_trustedTestCertWithInvalidEku.StoreLocation}",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    waitForExit: true);
 
                 // Assert
                 result.Success.Should().BeFalse();
@@ -129,8 +127,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Timestamper {_timestamper}",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    waitForExit: true);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -164,8 +161,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -OutputDirectory {outputDir}",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    waitForExit: true);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -196,16 +192,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    waitForExit: true);
 
                 // Act
                 var secondResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    waitForExit: true);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -238,15 +232,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    waitForExit: true);
 
                 var secondResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Overwrite",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    waitForExit: true);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -289,8 +281,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificatePath {pfxPath} -CertificatePassword {password}",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    waitForExit: true);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -336,8 +327,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     inputAction: (w) =>
                     {
                         w.WriteLine(password);
-                    },
-                    timeOutInMilliseconds: 10000);
+                    });
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -382,8 +372,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     inputAction: (w) =>
                     {
                         w.WriteLine(Guid.NewGuid().ToString());
-                    },
-                    timeOutInMilliseconds: 10000);
+                    });
 
                 // Assert
                 firstResult.Success.Should().BeFalse();
@@ -424,8 +413,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificatePath {pfxPath} -NonInteractive",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    waitForExit: true);
 
                 // Assert
                 firstResult.Success.Should().BeFalse();
@@ -470,8 +458,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     inputAction: (w) =>
                     {
                         w.WriteLine(Guid.NewGuid().ToString());
-                    },
-                    timeOutInMilliseconds: 10000);
+                    });
 
                 // Assert
                 firstResult.Success.Should().BeFalse();

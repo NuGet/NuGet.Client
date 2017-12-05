@@ -24,6 +24,36 @@ namespace Test.Utility.Signing
     public static class SigningTestUtility
     {
         /// <summary>
+        /// Modification generator that can be passed to TestCertificate.Generate().
+        /// The generator will change the certificate EKU to ClientAuth.
+        /// </summary>
+        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorForInvalidEku = delegate (X509V3CertificateGenerator gen)
+        {
+            // any EKU besides CodeSigning
+            var usages = new[] { KeyPurposeID.IdKPClientAuth };
+
+            gen.AddExtension(
+                X509Extensions.ExtendedKeyUsage.Id,
+                critical: true,
+                extensionValue: new ExtendedKeyUsage(usages));
+        };
+
+        /// <summary>
+        /// Modification generator that can be passed to TestCertificate.Generate().
+        /// The generator will change the certificate EKU to CodeSigning.
+        /// </summary>
+        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorForCodeSigningEku = delegate (X509V3CertificateGenerator gen)
+        {
+            // CodeSigning EKU
+            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
+
+            gen.AddExtension(
+                X509Extensions.ExtendedKeyUsage.Id,
+                critical: true,
+                extensionValue: new ExtendedKeyUsage(usages));
+        };
+
+        /// <summary>
         /// Create a self signed certificate with bouncy castle.
         /// </summary>
         public static X509Certificate2 GenerateCertificate(string subjectName, Action<X509V3CertificateGenerator> modifyGenerator)
