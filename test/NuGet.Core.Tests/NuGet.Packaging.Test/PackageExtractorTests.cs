@@ -1945,7 +1945,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     Assert.False(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
                     Assert.True(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
-                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "a.dll")), "The asset should exist.");
                 }
             }
         }
@@ -2028,7 +2028,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
                     Assert.False(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
-                    Assert.False(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                    Assert.False(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "a.dll")), "The asset should exist.");
                 }
             }
         }
@@ -2069,7 +2069,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     Assert.False(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
                     Assert.True(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
-                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                    Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "a.dll")), "The asset should exist.");
                 }
             }
         }
@@ -2110,7 +2110,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
                     Assert.False(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
-                    Assert.False(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "A.dll")), "The asset should exist.");
+                    Assert.False(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "a.dll")), "The asset should exist.");
                 }
             }
         }
@@ -2188,7 +2188,7 @@ namespace NuGet.Packaging.Test
                     var installPath = resolver.GetInstallPath(identity);
                     Assert.False(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
                     Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
-                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
+                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "a.dll")));
                 }
             }
         }
@@ -2267,7 +2267,7 @@ namespace NuGet.Packaging.Test
                     var installPath = resolver.GetInstallPath(identity);
                     Assert.False(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
                     Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
-                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
+                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "a.dll")));
                 }
             }
         }
@@ -2347,7 +2347,7 @@ namespace NuGet.Packaging.Test
                     var installPath = resolver.GetInstallPath(identity);
                     Assert.False(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
                     Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
-                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
+                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "a.dll")));
                 }
             }
 
