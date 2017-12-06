@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Packaging.Signing;
@@ -40,9 +41,10 @@ namespace NuGet.Packaging.FuncTest
             var testLogger = new TestLogger();
 
             using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 // Act
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(_trustedTestCert, nupkg, dir);
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 // Assert
                 using (var stream = File.OpenRead(signedPackagePath))
@@ -61,9 +63,10 @@ namespace NuGet.Packaging.FuncTest
             var testLogger = new TestLogger();
 
             using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 // Act
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(_trustedTestCert, nupkg, dir);
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 using (var stream = File.OpenRead(signedPackagePath))
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))

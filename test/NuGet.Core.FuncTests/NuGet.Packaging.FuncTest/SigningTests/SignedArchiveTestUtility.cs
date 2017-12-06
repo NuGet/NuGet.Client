@@ -23,7 +23,7 @@ namespace NuGet.Packaging.FuncTest
         /// <param name="nupkg">Package to be signed</param>
         /// <param name="dir">Directory for placing the signed package</param>
         /// <returns>Path to the signed copy of the package</returns>
-        public static async Task<string> CreateSignedPackageAsync(TrustedTestCert<TestCertificate> testCert, SimpleTestPackageContext nupkg, string dir)
+        public static async Task<string> CreateSignedPackageAsync(X509Certificate2 testCert, SimpleTestPackageContext nupkg, string dir)
         {
             var testLogger = new TestLogger();
 
@@ -34,7 +34,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var signPackage = new SignedPackageArchive(zipWriteStream))
                 {
                     // Sign the package
-                    await SignPackageAsync(testLogger, testCert.Source.Cert, signPackage);
+                    await SignPackageAsync(testLogger, testCert, signPackage);
                 }
 
                 zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
