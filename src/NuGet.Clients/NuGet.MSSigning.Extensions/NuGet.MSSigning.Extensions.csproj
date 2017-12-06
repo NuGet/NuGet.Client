@@ -1,28 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="ilmerge.props" />
 
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
     <Shipping>true</Shipping>
-    <PackProject>true</PackProject>
+    <PackProject>false</PackProject>
     <IncludeInVsix>false</IncludeInVsix>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,4 +31,35 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
+
+  <Target Name="ILMergeNuGetMssignExe" AfterTargets="Build" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+    <ItemGroup>
+      <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
+    </ItemGroup>
+    <Error Text="Build dependencies are inconsistent with mergeinclude specified in ilmerge.props" Condition="'@(BuildArtifacts-&gt;Count())' != '@(MergeInclude-&gt;Count())'" />
+    <PropertyGroup>
+      <PathToBuiltNuGetExe>$(OutputPath)NuGet.exe</PathToBuiltNuGetExe>
+      <IlmergeCommand>$(ILMergeExePath) $(PathToBuiltNuGetExe) /lib:$(OutputPath) @(BuildArtifacts->'%(filename)%(extension)', ' ') /out:$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.Mssign.exe @(MergeAllowDup -> '/allowdup:%(Identity)', ' ')</IlmergeCommand>
+      <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
+    </PropertyGroup>
+    <MakeDir Directories="$(ArtifactsDirectory)$(VsixOutputDirName)" />
+    <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
+  </Target>
+
+  <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
+    <ItemGroup>
+      <DllsToSign Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.Mssign.exe">
+        <StrongName>MsSharedLib72</StrongName>
+        <Authenticode>Microsoft</Authenticode>
+      </DllsToSign>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetSymbolsToIndex" Returns="@(SymbolsToIndex)">
+    <ItemGroup>
+      <SymbolsToIndex Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.Mssign.exe" />
+      <SymbolsToIndex Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.Mssign.pdb" />
+    </ItemGroup>
+  </Target>
+  
 </Project>
