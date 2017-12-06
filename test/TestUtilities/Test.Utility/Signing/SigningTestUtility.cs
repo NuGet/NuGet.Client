@@ -23,23 +23,6 @@ namespace Test.Utility.Signing
 {
     public static class SigningTestUtility
     {
-        private static string _testCertPassword = Guid.NewGuid().ToString();
-
-        /// <summary>
-        /// Creates a copy of an X509Certificate2 by exporting the original certificate into a pfx file.
-        /// </summary>
-        /// <param name="originalCertificate">X509Certificate2 to be copied.</param>
-        /// <returns>X509Certificate2 copy of the originalCertificate.</returns>
-        public static X509Certificate2 CopyCertificate(X509Certificate2 originalCertificate)
-        {
-            var copiedCertificate = new X509Certificate2(
-                originalCertificate.Export(X509ContentType.Pfx, _testCertPassword),
-                _testCertPassword,
-                X509KeyStorageFlags.PersistKeySet);
-
-            return copiedCertificate;
-        }
-
         /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().
         /// The generator will change the certificate EKU to ClientAuth.

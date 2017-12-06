@@ -4,9 +4,8 @@
 #if IS_DESKTOP
 
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Security.Cryptography.Pkcs;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using FluentAssertions;
@@ -18,6 +17,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
+    [Collection("Signing Funtional Test Collection")]
     public class TimestampProviderTests
     {
         private const string _internalTimestamper = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
@@ -25,16 +25,26 @@ namespace NuGet.Packaging.FuncTest
         private const string _argumentNullExceptionMessage = "Value cannot be null.\r\nParameter name: {0}";
         private const string _operationCancelledExceptionMessage = "The operation was canceled.";
 
+        private SigningTestFixture _testFixture;
+        private TrustedTestCert<TestCertificate> _trustedTestCert;
+        private SigningSpecifications _signingSpecifications;
+
+        public TimestampProviderTests(SigningTestFixture fixture)
+        {
+            _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+            _trustedTestCert = _testFixture.TrustedTestCertificate;
+            _signingSpecifications = _testFixture.SigningSpecifications;
+        }
+
         [CIOnlyFact]
         public void Rfc3161TimestampProvider_Success()
         {
             // Arrange
             var logger = new TestLogger();
             var timestampProvider = new Rfc3161TimestampProvider(new Uri(_internalTimestamper));
-            var authorCertName = "author@nuget.func.test";
             var data = "Test data to be signed and timestamped";
 
-            using (var authorCert = SigningTestUtility.GenerateCertificate(authorCertName, modifyGenerator: null))
+            using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
                 var signatureValue = signedCms.Encode();
@@ -108,10 +118,9 @@ namespace NuGet.Packaging.FuncTest
             // Arrange
             var logger = new TestLogger();
             var timestampProvider = new Rfc3161TimestampProvider(new Uri(_internalTimestamper));
-            var authorCertName = "author@nuget.func.test";
             var data = "Test data to be signed and timestamped";
 
-            using (var authorCert = SigningTestUtility.GenerateCertificate(authorCertName, modifyGenerator: null))
+            using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
                 var signatureValue = signedCms.Encode();
@@ -139,10 +148,9 @@ namespace NuGet.Packaging.FuncTest
             // Arrange
             var logger = new TestLogger();
             var timestampProvider = new Rfc3161TimestampProvider(new Uri(_internalTimestamper));
-            var authorCertName = "author@nuget.func.test";
             var data = "Test data to be signed and timestamped";
 
-            using (var authorCert = SigningTestUtility.GenerateCertificate(authorCertName, modifyGenerator: null))
+            using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
                 var signatureValue = signedCms.Encode();

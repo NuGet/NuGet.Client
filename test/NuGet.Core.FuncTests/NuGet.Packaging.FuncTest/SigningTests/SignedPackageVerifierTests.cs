@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,7 +49,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
                 var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
@@ -71,7 +72,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
@@ -110,7 +111,7 @@ namespace NuGet.Packaging.FuncTest
             var newEntryName = "malicious file";
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
@@ -151,7 +152,7 @@ namespace NuGet.Packaging.FuncTest
             var extraData = "tampering data";
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
@@ -191,7 +192,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
@@ -229,7 +230,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
@@ -270,7 +271,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
@@ -308,7 +309,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
@@ -344,7 +345,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
