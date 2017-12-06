@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Security.Cryptography;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -32,6 +33,51 @@ namespace NuGet.Packaging.Signing
 
             return false;
         }
+
+#if IS_DESKTOP
+        /// <summary>
+        /// Create an ordered list of certificates. The leaf node is returned first.
+        /// </summary>
+        public static IReadOnlyList<X509Certificate2> GetCertificateChain(
+            X509Certificate2 certificate,
+            X509Certificate2Collection extraStore)
+        {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+
+            if (extraStore == null)
+            {
+                throw new ArgumentNullException(nameof(extraStore));
+            }
+
+            using (var chain = new X509Chain())
+            {
+                SetCertBuildChainPolicy(
+                    chain,
+                    extraStore,
+                    DateTime.Now,
+                    NuGetVerificationCertificateType.Signature);
+
+                if (chain.Build(certificate))
+                {
+                    return GetCertificateChain(chain);
+                }
+
+                foreach (var chainStatus in chain.ChainStatus)
+                {
+                    if (chainStatus.Status != X509ChainStatusFlags.NoError)
+                    {
+                        throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString()));
+                    }
+                }
+
+                // Should be unreachable.
+                throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChainUnspecifiedReason));
+            }
+        }
+#endif
 
         /// <summary>
         /// Create an ordered list of certificates. The leaf node is returned first.
@@ -76,7 +122,9 @@ namespace NuGet.Packaging.Signing
         }
 
 #if IS_DESKTOP
-        public static CryptographicAttributeObjectCollection GetSignAttributes(SignPackageRequest request)
+        public static CryptographicAttributeObjectCollection GetSignAttributes(
+            SignPackageRequest request,
+            IReadOnlyList<X509Certificate2> chain)
         {
             var attributes = new CryptographicAttributeObjectCollection
             {
@@ -90,7 +138,7 @@ namespace NuGet.Packaging.Signing
             }
 
             // Add the full chain of certificate hashes
-            attributes.Add(AttributeUtility.GetSigningCertificateV2(request.Certificate, request.SignatureHashAlgorithm));
+            attributes.Add(AttributeUtility.GetSigningCertificateV2(chain, request.SignatureHashAlgorithm));
 
             return attributes;
         }

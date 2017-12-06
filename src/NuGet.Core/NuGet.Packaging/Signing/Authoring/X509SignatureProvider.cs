@@ -109,38 +109,18 @@ namespace NuGet.Packaging.Signing
                 signer = new CmsSigner(SubjectIdentifierType.SubjectKeyIdentifier, request.Certificate);
             }
 
-            var attributes = SigningUtility.GetSignAttributes(request);
+            var chain = SigningUtility.GetCertificateChain(request.Certificate, request.AdditionalCertificates);
+
+            foreach (var certificate in chain)
+            {
+                signer.Certificates.Add(certificate);
+            }
+
+            var attributes = SigningUtility.GetSignAttributes(request, chain);
 
             foreach (var attribute in attributes)
             {
                 signer.SignedAttributes.Add(attribute);
-            }
-
-            using (var chain = new X509Chain())
-            {
-                SigningUtility.SetCertBuildChainPolicy(
-                    chain,
-                    request.AdditionalCertificates,
-                    DateTime.Now,
-                    NuGetVerificationCertificateType.Signature);
-
-                if (chain.Build(request.Certificate))
-                {
-                    foreach (var chainElement in chain.ChainElements)
-                    {
-                        signer.Certificates.Add(chainElement.Certificate);
-                    }
-                }
-                else
-                {
-                    foreach (var chainStatus in chain.ChainStatus)
-                    {
-                        if (chainStatus.Status != X509ChainStatusFlags.NoError)
-                        {
-                            throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString()));
-                        }
-                    }
-                }
             }
 
             // We built the chain ourselves and added certificates.

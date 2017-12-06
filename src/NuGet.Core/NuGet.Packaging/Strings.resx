@@ -409,4 +409,7 @@ Valid from:</comment>
   <data name="SignFailureCertificateInvalidProviderType" xml:space="preserve">
     <value>The following certificate cannot be used for package signing as the private key provider is unsupported:</value>
   </data>
+  <data name="ErrorInvalidCertificateChainUnspecifiedReason" xml:space="preserve">
+    <value>Certificate chain validation failed for an unspecified reason.</value>
+  </data>
 </root>
