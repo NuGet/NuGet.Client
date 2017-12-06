@@ -175,7 +175,7 @@ namespace NuGet.Build.Tasks
                 // Summary
                 RestoreSummary.Log(log, restoreSummaries);
                 // Success does not matter here, as long as the files are not changed
-                OutputRestoreChangedImportsProjectList = string.Join(";", restoreSummaries.Where(e => e.BuildFilesChanged).Select(e => e.InputPath))
+                OutputRestoreChangedImportsProjectList = string.Join(";", restoreSummaries.Where(e => e.BuildFilesChanged).Select(e => e.InputPath));
                  
                 BuildTasksUtility.LogOutputParam(log, nameof(OutputRestoreChangedImportsProjectList), OutputRestoreChangedImportsProjectList);
 
