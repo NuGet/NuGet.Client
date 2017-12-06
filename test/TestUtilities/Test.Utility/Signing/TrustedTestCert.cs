@@ -17,7 +17,14 @@ namespace Test.Utility.Signing
 
         public T Source { get; }
 
-        public TrustedTestCert(T source, Func<T, X509Certificate2> getCert)
+        public StoreName StoreName { get; }
+
+        public StoreLocation StoreLocation { get; }
+
+        public TrustedTestCert(T source,
+            Func<T, X509Certificate2> getCert,
+            StoreName storeName = StoreName.TrustedPeople,
+            StoreLocation storeLocation = StoreLocation.CurrentUser)
         {
             Source = source;
 
@@ -31,8 +38,9 @@ namespace Test.Utility.Signing
                 throw new InvalidOperationException("The cert used is valid for more than two hours.");
             }
 #endif
-
-            _store = new X509Store(StoreName.TrustedPeople, StoreLocation.CurrentUser);
+            StoreName = storeName;
+            StoreLocation = storeLocation;
+            _store = new X509Store(StoreName, StoreLocation);
             _store.Open(OpenFlags.ReadWrite);
             _store.Add(TrustedCert);
         }
@@ -42,6 +50,9 @@ namespace Test.Utility.Signing
             using (_store)
             {
                 _store.Remove(TrustedCert);
+#if IS_DESKTOP
+                _store.Close();
+#endif
             }
         }
     }

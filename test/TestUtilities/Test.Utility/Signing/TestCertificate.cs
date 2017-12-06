@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using Org.BouncyCastle.X509;
 
 namespace Test.Utility.Signing
 {
@@ -30,27 +31,27 @@ namespace Test.Utility.Signing
         /// Trust the PublicCert cert for the life of the object.
         /// </summary>
         /// <remarks>Dispose of the object returned!</remarks>
-        public TrustedTestCert<TestCertificate> WithTrust()
+        public TrustedTestCert<TestCertificate> WithTrust(StoreName storeName = StoreName.TrustedPeople, StoreLocation storeLocation = StoreLocation.CurrentUser)
         {
-            return new TrustedTestCert<TestCertificate>(this, e => PublicCert);
+            return new TrustedTestCert<TestCertificate>(this, e => PublicCert, storeName, storeLocation);
         }
 
         /// <summary>
         /// Trust the PublicCert cert for the life of the object.
         /// </summary>
         /// <remarks>Dispose of the object returned!</remarks>
-        public TrustedTestCert<TestCertificate> WithPrivateKeyAndTrust()
+        public TrustedTestCert<TestCertificate> WithPrivateKeyAndTrust(StoreName storeName = StoreName.TrustedPeople, StoreLocation storeLocation = StoreLocation.CurrentUser)
         {
-            return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey);
+            return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, storeLocation);
         }
 
-        public static TestCertificate Generate()
+        public static TestCertificate Generate(Action<X509V3CertificateGenerator> modifyGenerator = null)
         {
             var certName = "NuGetTest " + Guid.NewGuid().ToString();
 
             var pair = new TestCertificate
             {
-                Cert = SigningTestUtility.GenerateCertificate(certName, modifyGenerator: null)
+                Cert = SigningTestUtility.GenerateCertificate(certName, modifyGenerator)
             };
 
             return pair;

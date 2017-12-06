@@ -54,21 +54,27 @@ namespace NuGet.Commands
                     switch (ex.HResult)
                     {
                         case ERROR_INVALID_PASSWORD_HRESULT:
-                            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                            throw new SignCommandException(
+                                LogMessage.CreateError(NuGetLogCode.NU3014,
+                                string.Format(CultureInfo.CurrentCulture,
                                 Strings.SignCommandInvalidPasswordException,
                                 options.CertificatePath,
-                                nameof(options.CertificatePassword)));
+                                nameof(options.CertificatePassword))));
 
                         case ERROR_FILE_NOT_FOUND_HRESULT:
-                            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                            throw new SignCommandException(
+                                LogMessage.CreateError(NuGetLogCode.NU3001,
+                                string.Format(CultureInfo.CurrentCulture,
                                     Strings.SignCommandFileNotFound,
                                     CERTIFICATE,
-                                    options.CertificatePath));
+                                    options.CertificatePath)));
 
                         case CRYPT_E_NO_MATCH_HRESULT:
-                            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                            throw new SignCommandException(
+                                LogMessage.CreateError(NuGetLogCode.NU3001,
+                                string.Format(CultureInfo.CurrentCulture,
                                     Strings.SignCommandInvalidCertException,
-                                    options.CertificatePath));
+                                    options.CertificatePath)));
 
                         default:
                             throw ex;

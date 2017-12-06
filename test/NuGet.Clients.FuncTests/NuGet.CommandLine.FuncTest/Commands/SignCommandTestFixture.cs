@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.CommandLine.Test;
 using NuGet.Packaging.Signing;
+using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.X509;
 using Test.Utility.Signing;
 
 namespace NuGet.CommandLine.FuncTest.Commands
@@ -18,6 +20,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private const string _timestamper = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
 
         private TrustedTestCert<TestCertificate> _trustedTestCert;
+        private TrustedTestCert<TestCertificate> _trustedTestCertWithInvalidEku;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
         private string _nugetExePath;
@@ -28,10 +31,32 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_trustedTestCert == null)
                 {
-                    _trustedTestCert = TestCertificate.Generate().WithPrivateKeyAndTrust();
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCodeSigningEku;
+
+                    // Code Sign EKU needs trust to a root authority
+                    // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
+                    // This makes all the associated tests to require admin privilege
+                    _trustedTestCert = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
                 }
 
                 return _trustedTestCert;
+            }
+        }
+
+        public TrustedTestCert<TestCertificate> TrustedTestCertificateWithInvalidEku
+        {
+            get
+            {
+                if (_trustedTestCertWithInvalidEku == null)
+                {
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForInvalidEku;
+
+                    // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
+                    // This makes all the associated tests to require admin privilege
+                    _trustedTestCertWithInvalidEku = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                }
+
+                return _trustedTestCertWithInvalidEku;
             }
         }
 
@@ -83,6 +108,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void Dispose()
         {
             _trustedTestCert?.Dispose();
+            _trustedTestCertWithInvalidEku?.Dispose();
         }
     }
 }

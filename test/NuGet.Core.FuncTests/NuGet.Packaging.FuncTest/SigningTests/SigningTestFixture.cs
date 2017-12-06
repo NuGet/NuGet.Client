@@ -3,7 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using NuGet.Packaging.Signing;
+using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.X509;
 using Test.Utility.Signing;
 
 namespace NuGet.Packaging.FuncTest
@@ -23,7 +26,12 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_trustedTestCert == null)
                 {
-                    _trustedTestCert = TestCertificate.Generate().WithTrust();
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCodeSigningEku;
+
+                    // Code Sign EKU needs trust to a root authority
+                    // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
+                    // This makes all the associated tests to require admin privilege
+                    _trustedTestCert = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
                 }
 
                 return _trustedTestCert;

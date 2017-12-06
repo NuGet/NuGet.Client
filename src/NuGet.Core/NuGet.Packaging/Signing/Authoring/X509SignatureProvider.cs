@@ -3,14 +3,16 @@
 
 using System;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
-using NuGet.Common;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
 #endif
+
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
@@ -19,6 +21,10 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class X509SignatureProvider : ISignatureProvider
     {
+        // Occurs when SignedCms.ComputeSignature cannot read the certificate private key
+        // "Invalid provider type specified." (INVALID_PROVIDER_TYPE)
+        private const int INVALID_PROVIDER_TYPE_HRESULT = unchecked((int)0x80090014);
+
         private readonly ITimestampProvider _timestampProvider;
 
         public X509SignatureProvider(ITimestampProvider timestampProvider)
@@ -78,10 +84,23 @@ namespace NuGet.Packaging.Signing
                     cmsSigner.SignedAttributes.Add(attribute);
                 }
 
-                cmsSigner.IncludeOption = X509IncludeOption.WholeChain;
+            cmsSigner.IncludeOption = X509IncludeOption.WholeChain;
+            cmsSigner.DigestAlgorithm = request.Certificate.SignatureAlgorithm;
 
-                var cms = new SignedCms(contentInfo);
+            var cms = new SignedCms(contentInfo);
+
+            try
+            {
                 cms.ComputeSignature(cmsSigner);
+            }
+            catch (CryptographicException ex) when (ex.HResult == INVALID_PROVIDER_TYPE_HRESULT)
+            {
+                var exceptionBuilder = new StringBuilder();
+                exceptionBuilder.AppendLine(Strings.SignFailureCertificateInvalidProviderType);
+                exceptionBuilder.AppendLine(CertificateUtility.X509Certificate2ToString(request.Certificate));
+
+                throw new SignatureException(NuGetLogCode.NU3013, exceptionBuilder.ToString());
+            }
 
                 return Signature.Load(cms);
             }

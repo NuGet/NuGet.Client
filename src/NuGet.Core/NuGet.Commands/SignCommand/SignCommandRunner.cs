@@ -6,8 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -21,7 +22,6 @@ namespace NuGet.Commands
     /// </summary>
     public class SignCommandRunner : ISignCommandRunner
     {
-
         public async Task<int> ExecuteCommandAsync(SignArgs signArgs)
         {
             // resolve path into multiple packages if needed.
@@ -30,34 +30,40 @@ namespace NuGet.Commands
 
             var cert = await GetCertificateAsync(signArgs);
 
+            ValidateCertificate(cert);
+
             signArgs.Logger.LogInformation(Environment.NewLine);
-            signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                Strings.SignCommandDisplayCertificate,
-                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(cert)}"));
+            signArgs.Logger.LogInformation(Strings.SignCommandDisplayCertificate);
+            signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2ToString(cert));
 
             if (!string.IsNullOrEmpty(signArgs.Timestamper))
             {
-                signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.SignCommandDisplayTimestamper,
-                    $"{Environment.NewLine}{signArgs.Timestamper}{Environment.NewLine}"));
+                signArgs.Logger.LogInformation(Strings.SignCommandDisplayTimestamper);
+                signArgs.Logger.LogInformation(signArgs.Timestamper);
             }
 
             if (!string.IsNullOrEmpty(signArgs.OutputDirectory))
             {
-                signArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.SignCommandOutputPath,
-                    $"{Environment.NewLine}{signArgs.OutputDirectory}{Environment.NewLine}"));
+                signArgs.Logger.LogInformation(Strings.SignCommandOutputPath);
+                signArgs.Logger.LogInformation(signArgs.OutputDirectory);
             }
 
             var signRequest = GenerateSignPackageRequest(signArgs, cert);
-            return await ExecuteCommandAsync(packagesToSign,
-                signRequest, signArgs.Timestamper, signArgs.Logger, signArgs.OutputDirectory, signArgs.Overwrite, signArgs.Token);
+
+            return await ExecuteCommandAsync(
+                packagesToSign,
+                signRequest,
+                signArgs.Timestamper,
+                signArgs.Logger,
+                signArgs.OutputDirectory,
+                signArgs.Overwrite,
+                signArgs.Token);
         }
 
         public async Task<int> ExecuteCommandAsync(
             IEnumerable<string> packagesToSign,
             SignPackageRequest signPackageRequest,
-            string Timestamper,
+            string timestamper,
             ILogger logger,
             string outputDirectory,
             bool overwrite,
@@ -65,7 +71,7 @@ namespace NuGet.Commands
         {
             var success = true;
 
-            var signatureProvider = GetSignatureProvider(Timestamper);
+            var signatureProvider = GetSignatureProvider(timestamper);
 
             foreach (var packagePath in packagesToSign)
             {
@@ -97,6 +103,22 @@ namespace NuGet.Commands
             }
 
             return success ? 0 : 1;
+        }
+
+        /// <summary>
+        /// Used to validate a user specified certificate.
+        /// </summary>
+        /// <param name="cert">Certificate to be validated</param>
+        private static void ValidateCertificate(X509Certificate2 cert)
+        {
+            if (!SigningUtility.CertificateContainsEku(cert, Oids.CodeSigningEkuOid))
+            {
+                var exceptionBuilder = new StringBuilder();
+                exceptionBuilder.AppendLine(Strings.SignCommandInvalidCertEku);
+                exceptionBuilder.AppendLine(CertificateUtility.X509Certificate2ToString(cert));
+
+                throw new SignCommandException(LogMessage.CreateError(NuGetLogCode.NU3013, exceptionBuilder.ToString()));
+            }
         }
 
         private static ISignatureProvider GetSignatureProvider(string timestamper)
@@ -215,13 +237,16 @@ namespace NuGet.Commands
                 {
                     // if on non-windows os or in non interactive mode - display the certs and error out
                     signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2CollectionToString(matchingCertCollection));
-                    throw new InvalidOperationException(string.Format(Strings.SignCommandMultipleCertException, nameof(SignArgs.CertificateFingerprint)));
+                    throw new SignCommandException(
+                        LogMessage.CreateError(NuGetLogCode.NU3003,
+                        string.Format(Strings.SignCommandMultipleCertException,
+                        nameof(SignArgs.CertificateFingerprint))));
                 }
                 else
                 {
                     // Else launch UI to select
                     matchingCertCollection = X509Certificate2UI.SelectFromCollection(
-                        matchingCertCollection,
+                        FilterCodeSigningCertificates(matchingCertCollection),
                         Strings.SignCommandDialogTitle,
                         Strings.SignCommandDialogMessage,
                         X509SelectionFlag.SingleSelection);
@@ -229,16 +254,37 @@ namespace NuGet.Commands
 #else
                 // if on non-windows os or in non interactive mode - display and error out
                 signArgs.Logger.LogError(CertificateUtility.X509Certificate2CollectionToString(matchingCertCollection));
-                throw new InvalidOperationException(string.Format(Strings.SignCommandMultipleCertException, nameof(SignArgs.CertificateFingerprint)));
+
+                throw new SignCommandException(
+                    LogMessage.CreateError(NuGetLogCode.NU3003,
+                    string.Format(Strings.SignCommandMultipleCertException,
+                    nameof(SignArgs.CertificateFingerprint))));
 #endif
             }
 
             if (matchingCertCollection.Count == 0)
             {
-                throw new InvalidOperationException(Strings.SignCommandNoCertException);
+                throw new SignCommandException(
+                    LogMessage.CreateError(NuGetLogCode.NU3003,
+                    Strings.SignCommandNoCertException));
             }
 
             return matchingCertCollection[0];
+        }
+
+        private static X509Certificate2Collection FilterCodeSigningCertificates(X509Certificate2Collection matchingCollection)
+        {
+            var filteredCollection = new X509Certificate2Collection();
+
+            foreach (var cert in matchingCollection)
+            {
+                if (SigningUtility.CertificateContainsEku(cert, Oids.CodeSigningEkuOid))
+                {
+                    filteredCollection.Add(cert);
+                }
+            }
+
+            return filteredCollection;
         }
     }
 }

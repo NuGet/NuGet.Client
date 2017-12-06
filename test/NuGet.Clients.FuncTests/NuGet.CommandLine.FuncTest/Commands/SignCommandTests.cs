@@ -14,15 +14,21 @@ using Xunit;
 
 namespace NuGet.CommandLine.FuncTest.Commands
 {
+    /// <summary>
+    /// Tests Sign command
+    /// These tests require admin privilege as the certs need to be added to the root store location
+    /// </summary>
     [Collection("Sign Command Test Collection")]
     public class SignCommandTests
     {
         private const string _packageAlreadySignedError = "Error NU5000: The package already contains a signature. Please remove the existing signature before adding a new signature.";
-        private const string _invalidPasswordError = @"Invalid password was provided for the certificate file '{0}'. Please provide a valid password using the '-CertificatePassword' option";
+        private const string _invalidPasswordErrorCode = "NU3014";
+        private const string _invalidEkuErrorCode = "NU3013";
         private const string _noTimestamperWarningCode = "NU3521";
 
         private SignCommandTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
+        private TrustedTestCert<TestCertificate> _trustedTestCertWithInvalidEku;
         private string _nugetExePath;
         private string _timestamper;
 
@@ -30,11 +36,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedTestCert = _testFixture.TrustedTestCertificate;
+            _trustedTestCertWithInvalidEku = _testFixture.TrustedTestCertificateWithInvalidEku;
             _nugetExePath = _testFixture.NuGetExePath;
             _timestamper = _testFixture.Timestamper;
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void SignCommand_SignPackage()
         {
             // Arrange
@@ -56,13 +63,44 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var result = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName TrustedPeople",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
+                    waitForExit: true);
 
                 // Assert
                 result.Success.Should().BeTrue();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
+            }
+        }
+
+        [CIOnlyFact]
+        public void SignCommand_SignPackageWithInvalidEkuFails()
+        {
+            // Arrange
+            var testLogger = new TestLogger();
+
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
+            {
+                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    zipStream.CopyTo(fileStream);
+                }
+
+                // Act
+                var result = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCertWithInvalidEku.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCertWithInvalidEku.StoreName} -CertificateStoreLocation {_trustedTestCertWithInvalidEku.StoreLocation}",
+                    waitForExit: true);
+
+                // Assert
+                result.Success.Should().BeFalse();
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                result.AllOutput.Should().Contain(_invalidEkuErrorCode);
             }
         }
 
@@ -88,9 +126,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var result = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName TrustedPeople -Timestamper {_timestamper}",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Timestamper {_timestamper}",
+                    waitForExit: true);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -98,7 +135,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void SignCommand_SignPackageWithOutputDirectory()
         {
             // Arrange
@@ -123,9 +160,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var result = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName TrustedPeople -OutputDirectory {outputDir}",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -OutputDirectory {outputDir}",
+                    waitForExit: true);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -134,7 +170,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void SignCommand_ResignPackageWithoutOverwriteFails()
         {
             // Arrange
@@ -155,17 +191,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var firstResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName TrustedPeople",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
+                    waitForExit: true);
 
                 // Act
                 var secondResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName TrustedPeople",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
+                    waitForExit: true);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -175,7 +209,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void SignCommand_ResignPackageWithOverwriteSuccess()
         {
             // Arrange
@@ -197,16 +231,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var firstResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName TrustedPeople",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
+                    waitForExit: true);
 
                 var secondResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName TrustedPeople -Overwrite",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Overwrite",
+                    waitForExit: true);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -216,7 +248,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void SignCommand_SignPackageWithPfxFileSuccess()
         {
             // Arrange
@@ -249,8 +281,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificatePath {pfxPath} -CertificatePassword {password}",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    waitForExit: true);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -259,7 +290,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
 
-        [Fact]
+        [CIOnlyFact]
         public void SignCommand_SignPackageWithPfxFileInteractiveSuccess()
         {
             // Arrange
@@ -296,8 +327,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     inputAction: (w) =>
                     {
                         w.WriteLine(password);
-                    },
-                    timeOutInMilliseconds: 10000);
+                    });
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -305,7 +335,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void SignCommand_SignPackageWithPfxFileInteractiveInvalidPasswordFails()
         {
             // Arrange
@@ -342,16 +372,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     inputAction: (w) =>
                     {
                         w.WriteLine(Guid.NewGuid().ToString());
-                    },
-                    timeOutInMilliseconds: 10000);
+                    });
 
                 // Assert
                 firstResult.Success.Should().BeFalse();
-                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordError, pfxPath));
+                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void SignCommand_SignPackageWithPfxFileWithoutPasswordAndWithNonInteractiveFails()
         {
             // Arrange
@@ -384,16 +413,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificatePath {pfxPath} -NonInteractive",
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
+                    waitForExit: true);
 
                 // Assert
                 firstResult.Success.Should().BeFalse();
-                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordError, pfxPath));
+                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void SignCommand_SignPackageWithPfxFileWithNonInteractiveAndStdInPasswordFails()
         {
             // Arrange
@@ -430,12 +458,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     inputAction: (w) =>
                     {
                         w.WriteLine(Guid.NewGuid().ToString());
-                    },
-                    timeOutInMilliseconds: 10000);
+                    });
 
                 // Assert
                 firstResult.Success.Should().BeFalse();
-                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordError, pfxPath));
+                firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
             }
         }
     }

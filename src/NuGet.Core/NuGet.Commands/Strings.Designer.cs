@@ -1233,7 +1233,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signing package(s) with certificate: {0}.
+        ///   Looks up a localized string similar to Signing package(s) with certificate:.
         /// </summary>
         internal static string SignCommandDisplayCertificate {
             get {
@@ -1242,7 +1242,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Timestamping package(s) with: {0}.
+        ///   Looks up a localized string similar to Timestamping package(s) with:.
         /// </summary>
         internal static string SignCommandDisplayTimestamper {
             get {
@@ -1256,6 +1256,15 @@ namespace NuGet.Commands {
         internal static string SignCommandFileNotFound {
             get {
                 return ResourceManager.GetString("SignCommandFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following certificate cannot be used for signing a package as it does not have Code Signing enhanced key usage:.
+        /// </summary>
+        internal static string SignCommandInvalidCertEku {
+            get {
+                return ResourceManager.GetString("SignCommandInvalidCertEku", resourceCulture);
             }
         }
         
@@ -1296,7 +1305,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signed package(s) output path: {0}.
+        ///   Looks up a localized string similar to Signed package(s) output path:.
         /// </summary>
         internal static string SignCommandOutputPath {
             get {
