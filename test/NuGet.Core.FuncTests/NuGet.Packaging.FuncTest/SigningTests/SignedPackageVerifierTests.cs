@@ -5,11 +5,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,7 +45,7 @@ namespace NuGet.Packaging.FuncTest
         public async Task Signer_VerifyOnSignedPackageAsync()
         {
             // Arrange
-            var nupkg = new SimpleTestPackageContext();            
+            var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
