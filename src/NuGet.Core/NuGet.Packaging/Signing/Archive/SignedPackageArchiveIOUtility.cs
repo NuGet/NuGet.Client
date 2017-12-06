@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -141,7 +143,11 @@ namespace NuGet.Packaging.Signing
         /// <returns>metadata with offsets and positions for entries</returns>
         internal static SignedPackageArchiveMetadata ReadSignedArchiveMetadata(BinaryReader reader)
         {
-            var metadata = new SignedPackageArchiveMetadata();
+            var metadata = new SignedPackageArchiveMetadata()
+            {
+                StartOfFileHeaders = reader.BaseStream.Length,
+            };
+            var centralDirectoryRecords = new List<CentralDirectoryMetadata>();
 
             // Look for EOCD signature, typically is around 22 bytes from the end
             reader.BaseStream.Seek(offset: -22, origin: SeekOrigin.End);
@@ -150,15 +156,18 @@ namespace NuGet.Packaging.Signing
 
             // Jump to offset of start of central directory
             reader.BaseStream.Seek(offset: 16, origin: SeekOrigin.Current);
-            var offsetOfStartOfCD = reader.ReadUInt32();
+            metadata.StartOfCentralDirectory = reader.ReadUInt32();
+            reader.BaseStream.Seek(offset: metadata.StartOfCentralDirectory, origin: SeekOrigin.Begin);
 
-            // Look for signature central directory record
-            reader.BaseStream.Seek(offset: offsetOfStartOfCD, origin: SeekOrigin.Begin);
+            // Read central directory records
             var possibleSignatureCentralDirectoryRecordPosition = reader.BaseStream.Position;
-
-            var hasFoundSignatureEntry = false;
-            while (!hasFoundSignatureEntry)
+            var isReadingCentralDirectoryRecords = true;
+            while (isReadingCentralDirectoryRecords)
             {
+                var centralDirectoryMetadata = new CentralDirectoryMetadata
+                {
+                    Position = possibleSignatureCentralDirectoryRecordPosition
+                };
                 var centralDirectoryHeaderSignature = reader.ReadUInt32();
                 if (centralDirectoryHeaderSignature != CentralDirectoryHeaderSignature)
                 {
@@ -174,43 +183,16 @@ namespace NuGet.Packaging.Signing
                 // Skip to read local header offset
                 reader.BaseStream.Seek(offset: 8, origin: SeekOrigin.Current);
 
-                var localHeaderOffset = reader.ReadUInt32();
+                centralDirectoryMetadata.OffsetToFileHeader = reader.ReadUInt32();
+
+                if (centralDirectoryMetadata.OffsetToFileHeader < metadata.StartOfFileHeaders)
+                {
+                    metadata.StartOfFileHeaders = centralDirectoryMetadata.OffsetToFileHeader;
+                }
 
                 var filename = reader.ReadBytes(filenameLength);
-                var filenameString = Encoding.ASCII.GetString(filename);
-                if (string.Equals(filenameString, _signingSpecification.SignaturePath))
-                {
-                    hasFoundSignatureEntry = true;
-
-                    metadata.SignatureCentralDirectoryHeaderPosition = possibleSignatureCentralDirectoryRecordPosition;
-                    metadata.SignatureCentralDirectoryHeaderSize = 46 + filenameLength + extraFieldLength + fileCommentLength;
-
-                    metadata.SignatureLocalFileHeaderPosition = localHeaderOffset;
-
-                    // Go to local file header
-                    reader.BaseStream.Seek(offset: metadata.SignatureLocalFileHeaderPosition, origin: SeekOrigin.Begin);
-
-                    var fileHeaderSignature = reader.ReadUInt32();
-
-                    if (fileHeaderSignature != LocalFileHeaderSignature)
-                    {
-                        throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
-                    }
-
-                    // The total size of file entry is from the start of the file header until
-                    // the start of the next file header (or the start of the first central directory header)
-                    try
-                    {
-                        SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(LocalFileHeaderSignature));
-                    }
-                    // No local File header found (the signature file must be the last entry), search for the start of the first central directory
-                    catch
-                    {
-                        SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(CentralDirectoryHeaderSignature));
-                    }
-
-                    metadata.SignatureFileEntryTotalSize = reader.BaseStream.Position - metadata.SignatureLocalFileHeaderPosition;
-                }
+                centralDirectoryMetadata.Filename = Encoding.ASCII.GetString(filename);
+                centralDirectoryMetadata.HeaderSize = 46 + filenameLength + extraFieldLength + fileCommentLength;
 
                 try
                 {
@@ -219,28 +201,61 @@ namespace NuGet.Packaging.Signing
                 }
                 catch
                 {
-                    break;
+                    isReadingCentralDirectoryRecords = false;
                 }
+                centralDirectoryRecords.Add(centralDirectoryMetadata);
             }
 
-            if (!hasFoundSignatureEntry)
+            var lastCentralDirectoryRecord = centralDirectoryRecords.Last();
+            metadata.EndOfCentralDirectory = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize;
+
+            // Get missing metadata for central directory records
+            var centralDirectoryRecordsCount = centralDirectoryRecords.Count;
+            for (var i = 0; i < centralDirectoryRecordsCount; i++)
             {
-                throw new SignatureException(Strings.ErrorPackageNotSigned);
+                var record = centralDirectoryRecords[i];
+
+                if (string.Equals(record.Filename, _signingSpecification.SignaturePath))
+                {
+                    metadata.SignatureIndexInRecords = i;
+                }
+
+                // Go to local file header
+                reader.BaseStream.Seek(offset: record.OffsetToFileHeader, origin: SeekOrigin.Begin);
+
+                // Validate file header signature
+                var fileHeaderSignature = reader.ReadUInt32();
+                if (fileHeaderSignature != LocalFileHeaderSignature)
+                {
+                    throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
+                }
+
+                // The total size of file entry is from the start of the file header until
+                // the start of the next file header (or the start of the first central directory header)
+                try
+                {
+                    SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(LocalFileHeaderSignature));
+                }
+                // No local File header found (entry must be the last entry), search for the start of the first central directory
+                catch
+                {
+                    SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(CentralDirectoryHeaderSignature));
+                }
+
+                record.IndexInRecords = i;
+                record.FileEntryTotalSize = reader.BaseStream.Position - record.OffsetToFileHeader;
             }
 
-            var isZip64 = false;
+            metadata.CentralDirectoryRecords = centralDirectoryRecords;
+
+            // Make sure the package is not zip64
             try
             {
                 SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(Zip64EndOfCentralDirectorySignature));
-                isZip64 = true;
+                throw new InvalidDataException(Strings.ErrorZip64NotSupported);
             }
             // Failure means package is not a zip64 archive, then is safe to ignore.
             catch { }
-
-            if (isZip64)
-            {
-                throw new InvalidDataException(Strings.ErrorZip64NotSupported);
-            }
 
             return metadata;
         }
