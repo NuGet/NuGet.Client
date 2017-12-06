@@ -2,11 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
@@ -23,7 +20,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     {
         private const string _packageAlreadySignedError = "Error NU5000: The package already contains a signature. Please remove the existing signature before adding a new signature.";
         private const string _invalidPasswordErrorCode = "NU3014";
-        private const string _invalidEkuErrorCode = "NU3013";
+        private const string _invalidEkuErrorCode = "NU3012";
         private const string _noTimestamperWarningCode = "NU3521";
 
         private SignCommandTestFixture _testFixture;

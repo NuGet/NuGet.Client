@@ -117,7 +117,7 @@ namespace NuGet.Commands
                 exceptionBuilder.AppendLine(Strings.SignCommandInvalidCertEku);
                 exceptionBuilder.AppendLine(CertificateUtility.X509Certificate2ToString(cert));
 
-                throw new SignCommandException(LogMessage.CreateError(NuGetLogCode.NU3013, exceptionBuilder.ToString()));
+                throw new SignCommandException(LogMessage.CreateError(NuGetLogCode.NU3012, exceptionBuilder.ToString()));
             }
         }
 
