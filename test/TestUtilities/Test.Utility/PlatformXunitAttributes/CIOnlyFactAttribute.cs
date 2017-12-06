@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -21,7 +21,7 @@ namespace NuGet.Test.Utility
 
                 if (string.IsNullOrEmpty(skip))
                 {
-                    if (XunitAttributeUtility.IsCI)
+                    if (!XunitAttributeUtility.IsCI)
                     {
                         skip = "This test only runs on the CI. To run it locally set the env var CI=true";
                     }
