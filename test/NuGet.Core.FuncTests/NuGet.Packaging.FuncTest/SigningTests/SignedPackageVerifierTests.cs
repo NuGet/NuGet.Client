@@ -50,9 +50,8 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();            
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2())
+            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
             {
-                testCertificate.Import(_trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, _testCertPassword), _testCertPassword, X509KeyStorageFlags.PersistKeySet);
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
                 var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
 
@@ -74,9 +73,8 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2())
+            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
             {
-                testCertificate.Import(_trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, _testCertPassword), _testCertPassword, X509KeyStorageFlags.PersistKeySet);
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 // tamper with the package
@@ -112,10 +110,10 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
             var newEntryData = "malicious code";
             var newEntryName = "malicious file";
+
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2())
+            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
             {
-                testCertificate.Import(_trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, _testCertPassword), _testCertPassword, X509KeyStorageFlags.PersistKeySet);
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 // tamper with the package
@@ -155,9 +153,8 @@ namespace NuGet.Packaging.FuncTest
             var extraData = "tampering data";
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2())
+            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
             {
-                testCertificate.Import(_trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, _testCertPassword), _testCertPassword, X509KeyStorageFlags.PersistKeySet);
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 // tamper with the package
@@ -196,9 +193,8 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2())
+            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
             {
-                testCertificate.Import(_trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, _testCertPassword), _testCertPassword, X509KeyStorageFlags.PersistKeySet);
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 // tamper with the package
@@ -235,9 +231,8 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2())
+            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
             {
-                testCertificate.Import(_trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, _testCertPassword), _testCertPassword, X509KeyStorageFlags.PersistKeySet);
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 // tamper with the package
@@ -277,9 +272,8 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2())
+            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
             {
-                testCertificate.Import(_trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, _testCertPassword), _testCertPassword, X509KeyStorageFlags.PersistKeySet);
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 // unsign the package
@@ -316,9 +310,8 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2())
+            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
             {
-                testCertificate.Import(_trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, _testCertPassword), _testCertPassword, X509KeyStorageFlags.PersistKeySet);
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 // unsign the package
@@ -353,9 +346,8 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2())
+            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
             {
-                testCertificate.Import(_trustedTestCert.Source.Cert.Export(X509ContentType.Pfx, _testCertPassword), _testCertPassword, X509KeyStorageFlags.PersistKeySet);
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 // tamper with the signature

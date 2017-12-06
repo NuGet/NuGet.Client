@@ -40,9 +40,10 @@ namespace NuGet.Packaging.FuncTest
             var testLogger = new TestLogger();
 
             using (var dir = TestDirectory.Create())
+            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
             {
                 // Act
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(_trustedTestCert.Source.Cert, nupkg, dir);
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 // Assert
                 using (var stream = File.OpenRead(signedPackagePath))
@@ -61,9 +62,10 @@ namespace NuGet.Packaging.FuncTest
             var testLogger = new TestLogger();
 
             using (var dir = TestDirectory.Create())
+            using (var testCertificate = SigningTestUtility.CopyCertificate(_trustedTestCert.Source.Cert))
             {
                 // Act
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(_trustedTestCert.Source.Cert, nupkg, dir);
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 using (var stream = File.OpenRead(signedPackagePath))
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
