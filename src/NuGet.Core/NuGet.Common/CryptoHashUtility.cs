@@ -10,7 +10,6 @@ namespace NuGet.Common
 {
     public static class CryptoHashUtility
     {
-
         private const string SHA256_OID = "2.16.840.1.101.3.4.2.1";
         private const string SHA384_OID = "2.16.840.1.101.3.4.2.2";
         private const string SHA512_OID = "2.16.840.1.101.3.4.2.3";
@@ -140,7 +139,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(hashAlgorithm));
             }
 
-            if(Enum.TryParse<HashAlgorithmName>(hashAlgorithm, ignoreCase: true, result: out var result))
+            if (Enum.TryParse<HashAlgorithmName>(hashAlgorithm, ignoreCase: true, result: out var result))
             {
                 return result;
             }
@@ -183,7 +182,7 @@ namespace NuGet.Common
                 }
             }
 #else
-            switch(hashAlgorithmName)
+            switch (hashAlgorithmName)
             {
                 case HashAlgorithmName.SHA256:
                     return SHA256.Create();
@@ -264,6 +263,17 @@ namespace NuGet.Common
                 default:
                     throw new InvalidDataException();
             }
+        }
+
+        /// <summary>
+        /// Extension method to convert NuGet.Common.HashAlgorithmName to an OID
+        /// </summary>
+        /// <returns>OID equivalent of the NuGet.Common.HashAlgorithmName</returns>
+        public static Oid ConvertToOid(this HashAlgorithmName hashAlgorithm)
+        {
+            var oidString = hashAlgorithm.ConvertToOidString();
+
+            return new Oid(oidString);
         }
 
         /// <summary>

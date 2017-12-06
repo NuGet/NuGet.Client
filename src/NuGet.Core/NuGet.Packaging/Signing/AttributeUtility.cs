@@ -136,19 +136,6 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Create a signing-certificate-v2 from a certificate.
         /// </summary>
-        public static CryptographicAttributeObject GetSigningCertificateV2(X509Certificate2 cert, Common.HashAlgorithmName hashAlgorithm)
-        {
-            using (var chain = new X509Chain())
-            {
-                chain.Build(cert);
-
-                return GetSigningCertificateV2(SigningUtility.GetCertificateChain(chain), hashAlgorithm);
-            }
-        }
-
-        /// <summary>
-        /// Create a signing-certificate-v2 from a certificate.
-        /// </summary>
         public static CryptographicAttributeObject GetSigningCertificateV2(IEnumerable<X509Certificate2> chain, Common.HashAlgorithmName hashAlgorithm)
         {
             // Build the cert chain as-is

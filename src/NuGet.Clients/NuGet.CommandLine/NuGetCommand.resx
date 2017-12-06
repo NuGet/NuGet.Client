@@ -5406,7 +5406,7 @@ nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -Outp
     <value>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</value>
   </data>
   <data name="SignCommandHashAlgorithmDescription" xml:space="preserve">
-    <value>Hash algorithm to be used while generating the package manifest file. Defaults to SHA256.</value>
+    <value>Hash algorithm to be used to sign the package. Defaults to SHA256.</value>
   </data>
   <data name="SignCommandOutputDirectoryDescription" xml:space="preserve">
     <value>Directory where the signed package should be saved. By default the original package is overwritten by the signed package.</value>

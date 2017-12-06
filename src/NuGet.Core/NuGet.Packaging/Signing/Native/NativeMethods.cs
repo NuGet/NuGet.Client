@@ -13,6 +13,8 @@ namespace NuGet.Packaging.Signing
         internal const uint PKCS_ATTRIBUTE = 22;
         internal const int ERROR_MORE_DATA = 234;
         internal const uint CMSG_SIGNED = 2;
+        internal const uint CERT_KEY_IDENTIFIER_PROP_ID = 20;
+        internal const uint CERT_ID_KEY_IDENTIFIER = 2;
 
         [DllImport("crypt32.dll", SetLastError = true)]
         public static extern SafeCryptMsgHandle CryptMsgOpenToEncode(
@@ -76,6 +78,19 @@ namespace NuGet.Packaging.Signing
 
         [DllImport("advapi32.dll", SetLastError = true)]
         internal static extern bool CryptReleaseContext(IntPtr hProv, int dwFlags);
+
+        [DllImport("crypt32.dll", SetLastError = true)]
+        internal static extern IntPtr CertDuplicateCertificateContext(IntPtr pCertContext);
+
+        [DllImport("crypt32.dll", SetLastError = true)]
+        internal static extern bool CertFreeCertificateContext(IntPtr pCertContext);
+
+        [DllImport("crypt32.dll", SetLastError = true)]
+        internal extern static bool CertGetCertificateContextProperty(
+            IntPtr pCertContext,
+            uint dwPropId,
+            IntPtr pvData,
+            ref uint pcbData);
 
         internal static int GetHRForWin32Error(int err)
         {
@@ -287,7 +302,7 @@ namespace NuGet.Packaging.Signing
     internal struct CERT_ID
     {
         internal uint dwIdChoice;
-        internal BLOB IssuerSerialNumberOrKeyIdOrHashId;
+        internal BLOB KeyId;
     }
 
     [StructLayout(LayoutKind.Sequential)]

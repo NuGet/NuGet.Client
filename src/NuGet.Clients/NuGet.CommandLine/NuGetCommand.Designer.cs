@@ -11575,7 +11575,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hash algorithm to be used while generating the package manifest file. Defaults to SHA256..
+        ///   Looks up a localized string similar to Hash algorithm to be used to sign the package. Defaults to SHA256..
         /// </summary>
         internal static string SignCommandHashAlgorithmDescription {
             get {
