@@ -11,10 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Reference Include="NuGet">
+      <HintPath>$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

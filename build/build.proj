@@ -240,7 +240,7 @@
   -->
   <Target Name="BuildVS14NoVSIX" AfterTargets="BuildVS14" Condition=" '$(IsXPlat)' != 'true' ">
     <Message Text="Building for VS14" Importance="high" />
-    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
+    <MSBuild Projects="@(SolutionProjectsWithoutVSIXAndExtension)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=14.0;" />
@@ -254,7 +254,7 @@
   <Target Name="BuildVS15NoVSIX" AfterTargets="BuildVS15" Condition=" '$(IsXPlat)' != 'true' ">
     <Message Text="Building for VS15" Importance="high" />
 
-    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
+    <MSBuild Projects="@(SolutionProjectsWithoutVSIXAndExtension)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=15.0;" />
@@ -305,6 +305,16 @@
              Properties="$(CommonMSBuildProperties);
                          BuildProjectReferences=false;
                          IsVsixBuild=true;
+                         VisualStudioVersion=15.0;" />
+  </Target>
+
+  <Target Name="BuildVS15CommandExtensions" AfterTargets= "BuildVS15NoVSIX" Condition=" '$(IsXPlat)' != 'true'">
+    <Message Text="Building the command extensions for VS15" Importance="high" />
+
+    <MSBuild Projects="@(ExtensionProjects)"
+             Targets="Build"
+             Properties="$(CommonMSBuildProperties);
+                         BuildProjectReferences=false;
                          VisualStudioVersion=15.0;" />
   </Target>
 

@@ -250,6 +250,9 @@
     <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
     <SolutionProjectsWithoutVSIX Include="@(SolutionProjects)"
                                 Exclude="$(VSIXProject)" />
+    <ExtensionProjects Include="$(RepositoryRootDirectory)src\*\*\*.Extensions.csproj" />                            
+    <SolutionProjectsWithoutVSIXAndExtension Include = "@(SolutionProjectsWithoutVSIX)" 
+                                            Exclude = "@(ExtensionProjects)"/>
   </ItemGroup>
 
   <!-- All projects in the repository that support cross platform builds -->

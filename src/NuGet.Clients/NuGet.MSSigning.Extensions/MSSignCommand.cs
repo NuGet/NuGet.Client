@@ -165,7 +165,7 @@ namespace NuGet.MSSigning.Extensions
             }
         }
 
-        private void WarnIfNoTimestamper(ILogger logger)
+        private void WarnIfNoTimestamper(Common.ILogger logger)
         {
             if (string.IsNullOrEmpty(Timestamper))
             {
