@@ -14,8 +14,8 @@ namespace NuGet.ProjectModel
 {
     public class DependencyGraphSpec
     {
-        private readonly SortedSet<string> _restore = new SortedSet<string>(StringComparer.Ordinal);
-        private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(StringComparer.Ordinal);
+        private readonly SortedSet<string> _restore = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
+        private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
 
         private const int _version = 1;
 
@@ -136,7 +136,7 @@ namespace NuGet.ProjectModel
 
             var closure = new List<PackageSpec>();
 
-            var added = new SortedSet<string>(StringComparer.Ordinal);
+            var added = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
             var toWalk = new Stack<PackageSpec>();
 
             // Start with the root
@@ -197,7 +197,7 @@ namespace NuGet.ProjectModel
         {
             var projects =
                 dgSpecs.SelectMany(e => e.Projects)
-                    .GroupBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal)
+                    .GroupBy(e => e.RestoreMetadata.ProjectUniqueName, PathUtility.GetStringComparerBasedOnOS())
                     .Select(e => e.First())
                     .ToList();
 
@@ -330,7 +330,7 @@ namespace NuGet.ProjectModel
         {
             return TopologicalSortUtility.SortPackagesByDependencyOrder(
                 items: packages,
-                comparer: StringComparer.Ordinal,
+                comparer: PathUtility.GetStringComparerBasedOnOS(),
                 getId: GetPackageSpecId,
                 getDependencies: GetPackageSpecDependencyIds);
         }
@@ -400,7 +400,7 @@ namespace NuGet.ProjectModel
                 .TargetFrameworks
                 .SelectMany(r => r.ProjectReferences)
                 .Select(r => r.ProjectUniqueName)
-                .Distinct(StringComparer.Ordinal)
+                .Distinct(PathUtility.GetStringComparerBasedOnOS())
                 .ToArray();
         }
     }

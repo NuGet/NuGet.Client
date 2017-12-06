@@ -66,6 +66,28 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B", zClosure.Single().RestoreMetadata.ProjectUniqueName);
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void DependencyGraphSpec_ReadFileWithProjects_CaseInsensitive_GetClosures()
+        {
+            // Arrange
+            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test3.dg", typeof(DependencyGraphSpecTests)));
+
+            // Act
+            var dg = DependencyGraphSpec.Load(json);
+
+            var xClosure = dg.GetClosure("A55205E7-4D08-4672-8011-0925467CC45F").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.OrdinalIgnoreCase).ToList();
+            var yClosure = dg.GetClosure("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.OrdinalIgnoreCase).ToList();
+
+            // Assert
+            Assert.Equal(3, xClosure.Count);
+            Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B", xClosure[0].RestoreMetadata.ProjectUniqueName);
+            Assert.Equal("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F", xClosure[1].RestoreMetadata.ProjectUniqueName);
+            Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", xClosure[2].RestoreMetadata.ProjectUniqueName);
+
+            Assert.Equal(1, yClosure.Count);
+            Assert.Equal("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F", yClosure.Single().RestoreMetadata.ProjectUniqueName);
+        }
+
         [Fact]
         public void DependencyGraphSpec_ProjectsWithToolReferences_GetClosures()
         {
