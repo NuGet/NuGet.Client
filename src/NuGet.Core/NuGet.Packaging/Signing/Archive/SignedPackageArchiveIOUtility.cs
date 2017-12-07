@@ -33,9 +33,14 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            if (byteSignature == null || byteSignature.Length == 0)
+            if (byteSignature == null)
             {
                 throw new ArgumentNullException(nameof(byteSignature));
+            }
+
+            if (byteSignature.Length == 0)
+            {
+                throw new InvalidDataException(nameof(byteSignature));
             }
 
             var stream = reader.BaseStream;
@@ -72,9 +77,14 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            if (byteSignature == null || byteSignature.Length == 0)
+            if (byteSignature == null)
             {
                 throw new ArgumentNullException(nameof(byteSignature));
+            }
+
+            if (byteSignature.Length == 0)
+            {
+                throw new InvalidDataException(nameof(byteSignature));
             }
 
             var stream = reader.BaseStream;
@@ -144,9 +154,14 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(hashAlgorithm));
             }
 
-            if (bytes == null || bytes.Length == 0)
+            if (bytes == null)
             {
                 throw new ArgumentNullException(nameof(bytes));
+            }
+
+            if (bytes.Length == 0)
+            {
+                throw new InvalidDataException(nameof(bytes));
             }
 #if IS_DESKTOP
             hashAlgorithm.TransformBlock(bytes, 0, bytes.Length, outputBuffer: null, outputOffset: 0);
@@ -309,9 +324,14 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            if (byteSignature == null || byteSignature.Length == 0)
+            if (byteSignature == null)
             {
                 throw new ArgumentNullException(nameof(byteSignature));
+            }
+
+            if (byteSignature.Length == 0)
+            {
+                throw new InvalidDataException(nameof(byteSignature));
             }
 
             var stream = reader.BaseStream;
