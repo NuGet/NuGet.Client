@@ -11,7 +11,7 @@ using System.Text;
 
 namespace NuGet.Packaging.Signing
 {
-    internal static class SignedPackageArchiveIOUtility
+    public static class SignedPackageArchiveIOUtility
     {
         internal const uint CentralDirectoryHeaderSignature = 0x02014b50;
         internal const uint EndOfCentralDirectorySignature = 0x06054b50;
@@ -141,7 +141,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="reader">binary reader to zip archive</param>
         /// <returns>metadata with offsets and positions for entries</returns>
-        internal static SignedPackageArchiveMetadata ReadSignedArchiveMetadata(BinaryReader reader)
+        public static SignedPackageArchiveMetadata ReadSignedArchiveMetadata(BinaryReader reader)
         {
             var metadata = new SignedPackageArchiveMetadata()
             {
