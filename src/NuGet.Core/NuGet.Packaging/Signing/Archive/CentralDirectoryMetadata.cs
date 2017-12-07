@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,17 +13,17 @@ namespace NuGet.Packaging.Signing
     public class CentralDirectoryMetadata
     {
         /// <summary>
-        /// Position of the corresponding central directory header
+        /// Position in bytes of the corresponding central directory header relative to the start of the archive
         /// </summary>
         public long Position { get; set; }
 
         /// <summary>
-        /// Offset to the corresponding file header
+        /// Offset in bytes to the corresponding file header relative to the start of the archive
         /// </summary>
         public long OffsetToFileHeader { get; set; }
 
         /// <summary>
-        /// Total size of corresponding file entry
+        /// Total size of corresponding file entry in bytes
         /// This should include size of local file header + encryption header + file data + data descriptor
         /// </summary>
         public long FileEntryTotalSize { get; set; }
@@ -31,13 +34,13 @@ namespace NuGet.Packaging.Signing
         public string Filename { get; set; }
 
         /// <summary>
-        /// Size of central directory header
+        /// Size of central directory header in bytes
         /// </summary>
         public long HeaderSize { get; set; }
 
         /// <summary>
         /// Value used to identify how much the position of the OffsetToFileHeader property will change by
-        /// the presence of a signature file
+        /// the presence of a signature file in bytes
         /// </summary>
         public long ChangeInOffset { get; set; }
 

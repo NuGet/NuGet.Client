@@ -17,18 +17,18 @@ namespace NuGet.Packaging.Signing
         public List<CentralDirectoryMetadata> CentralDirectoryRecords { get; set; }
 
         /// <summary>
-        /// Position in the archive where the file headers start. Should tipically be 0
+        /// Position in the archive (in bytes) where the file headers start relative to the start of the archive. Should typically be 0
         /// </summary>
         public long StartOfFileHeaders { get; set; }
 
         /// <summary>
-        /// Position in the archive where the central directory starts
+        /// Position in the archive (in bytes) where the central directory starts relative to the start of the archive
         /// </summary>
         public long StartOfCentralDirectory { get; set; }
 
 
         /// <summary>
-        /// Position in the archive where the central directory starts
+        /// Position in the archive (in bytes) where the central directory starts relative to the start of the archive
         /// </summary>
         public long EndOfCentralDirectory { get; set; }
 
@@ -39,7 +39,7 @@ namespace NuGet.Packaging.Signing
         public int SignatureIndexInRecords { get; set; }
 
         /// <summary>
-        /// Position of the EOCD record
+        /// Position of the EOCD record (in bytes) relative to the start of the archive
         /// </summary>
         public long EndOfCentralDirectoryRecordPosition { get; set; }
     }
