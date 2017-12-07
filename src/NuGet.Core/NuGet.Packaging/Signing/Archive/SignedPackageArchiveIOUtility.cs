@@ -215,7 +215,7 @@ namespace NuGet.Packaging.Signing
             {
                 var record = centralDirectoryRecords[i];
 
-                if (string.Equals(record.Filename, _signingSpecification.SignaturePath))
+                if (StringComparer.Ordinal.Equals(record.Filename, _signingSpecification.SignaturePath))
                 {
                     metadata.SignatureIndexInRecords = i;
                 }
@@ -249,13 +249,19 @@ namespace NuGet.Packaging.Signing
             metadata.CentralDirectoryRecords = centralDirectoryRecords;
 
             // Make sure the package is not zip64
+            var isZip64 = false;
             try
             {
                 SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(Zip64EndOfCentralDirectorySignature));
-                throw new InvalidDataException(Strings.ErrorZip64NotSupported);
+                isZip64 = true;
             }
             // Failure means package is not a zip64 archive, then is safe to ignore.
             catch { }
+
+            if (isZip64)
+            {
+                throw new InvalidDataException(Strings.ErrorZip64NotSupported);
+            }
 
             return metadata;
         }
