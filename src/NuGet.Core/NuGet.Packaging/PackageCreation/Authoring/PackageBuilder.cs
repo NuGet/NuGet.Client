@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -735,7 +735,7 @@ namespace NuGet.Packaging
         {
             // Only the segments between the path separators should be escaped
             var segments = path.Split(new[] { '/', '\\', Path.DirectorySeparatorChar }, StringSplitOptions.None)
-                               .Select(Uri.EscapeDataString);
+                .Select(Uri.EscapeDataString);
 
             var escapedPath = String.Join("/", segments);
 
@@ -751,8 +751,7 @@ namespace NuGet.Packaging
             // Get the safe-unescaped form of the URI first. This will unescape all the characters
             Uri safeUnescapedUri = new Uri(partUri.GetComponents(UriComponents.Path, UriFormat.SafeUnescaped), UriKind.Relative);
 
-            //Get the escaped string for the part name as part names should have only ascii characters
-            return safeUnescapedUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            return safeUnescapedUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.Unescaped);
         }
 
         /// <summary>

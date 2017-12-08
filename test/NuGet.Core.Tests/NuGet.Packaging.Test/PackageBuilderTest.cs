@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -2377,7 +2377,8 @@ Enabling license acceptance requires a license url.");
 
                 using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
                 {
-                    var files = archive.GetFiles().OrderBy(s => s).ToArray();
+                    // Get raw filenames without un-escaping.
+                    var files = archive.Entries.Select(e => e.FullName).OrderBy(s => s).ToArray();
 
                     // Linux sorts the first two in different order than Windows
                     Assert.Contains<string>(@"[Content_Types].xml", files);
