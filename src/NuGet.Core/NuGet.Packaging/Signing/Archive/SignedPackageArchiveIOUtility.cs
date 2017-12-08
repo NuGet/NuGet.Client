@@ -33,12 +33,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            if (byteSignature == null)
-            {
-                throw new ArgumentNullException(nameof(byteSignature));
-            }
-
-            if (byteSignature.Length == 0)
+            if (byteSignature == null || byteSignature.Length == 0)
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(byteSignature));
             }
@@ -77,12 +72,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            if (byteSignature == null)
-            {
-                throw new ArgumentNullException(nameof(byteSignature));
-            }
-
-            if (byteSignature.Length == 0)
+            if (byteSignature == null || byteSignature.Length == 0)
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(byteSignature));
             }
@@ -154,12 +144,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(hashAlgorithm));
             }
 
-            if (bytes == null)
-            {
-                throw new ArgumentNullException(nameof(bytes));
-            }
-
-            if (bytes.Length == 0)
+            if (bytes == null || bytes.Length == 0)
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(bytes));
             }
@@ -329,12 +314,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            if (byteSignature == null)
-            {
-                throw new ArgumentNullException(nameof(byteSignature));
-            }
-
-            if (byteSignature.Length == 0)
+            if (byteSignature == null || byteSignature.Length == 0)
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(byteSignature));
             }
