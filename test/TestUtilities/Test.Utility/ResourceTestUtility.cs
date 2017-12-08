@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,7 +24,7 @@ namespace NuGet.Test.Utility
             File.WriteAllBytes(filePath, bytes);
         }
 
-        private static byte[] GetResourceBytes(string name, Type type)
+        public static byte[] GetResourceBytes(string name, Type type)
         {
             using (var reader = new BinaryReader(type.GetTypeInfo().Assembly.GetManifestResourceStream(name)))
             {

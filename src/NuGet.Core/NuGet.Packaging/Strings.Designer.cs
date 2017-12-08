@@ -188,15 +188,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Certificate is not a valid code signing certificate..
-        /// </summary>
-        internal static string ErrorCertificateNotCodeSigning {
-            get {
-                return ResourceManager.GetString("ErrorCertificateNotCodeSigning", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to There are duplicate packages: {0}.
         /// </summary>
         internal static string ErrorDuplicatePackages {
@@ -689,15 +680,6 @@ namespace NuGet.Packaging {
         internal static string TimestampFailureAuthorCertNotValid {
             get {
                 return ResourceManager.GetString("TimestampFailureAuthorCertNotValid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Timestamp service&apos;s certificate does not contain a valid Enhanced Key Usage for timestamping..
-        /// </summary>
-        internal static string TimestampFailureCertInvalidEku {
-            get {
-                return ResourceManager.GetString("TimestampFailureCertInvalidEku", resourceCulture);
             }
         }
         

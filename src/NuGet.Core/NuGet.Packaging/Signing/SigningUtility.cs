@@ -101,24 +101,70 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Checks if an X509Certificate2 contains a Enhanced Key Usage specified in the form of an Oid.
+        /// Checks if an X509Certificate2 contains a particular Extended Key Usage (EKU).
         /// </summary>
         /// <param name="certificate">X509Certificate2 to be checked.</param>
-        /// <param name="oid">String Oid of the Enhanced Key Usage</param>
-        /// <returns>A bool indicating if the X509Certificate2 contains specified Oid string in it's Enhanced Key Usage.</returns>
-        public static bool CertificateContainsEku(X509Certificate2 certificate, string oid)
+        /// <param name="ekuOid">String OID of the Extended Key Usage</param>
+        /// <returns>A bool indicating if the X509Certificate2 contains specified OID in its Extended Key Usage.</returns>
+        public static bool HasExtendedKeyUsage(X509Certificate2 certificate, string ekuOid)
         {
-            var certEkuOidCollection = GetCertificateEKU(certificate);
-
-            foreach (var ekuOid in certEkuOidCollection)
+            foreach (var extension in certificate.Extensions)
             {
-                if (string.Equals(ekuOid.Value, oid))
+                if (string.Equals(extension.Oid.Value, Oids.EnhancedKeyUsageOid))
                 {
-                    return true;
+                    var ekuExtension = (X509EnhancedKeyUsageExtension)extension;
+
+                    foreach (var eku in ekuExtension.EnhancedKeyUsages)
+                    {
+                        if (eku.Value == ekuOid)
+                        {
+                            return true;
+                        }
+                    }
+
+                    break;
                 }
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Checks if an X509Certificate2 is valid for a particular purpose.
+        /// </summary>
+        /// <remarks>
+        /// This must not be used in evaluation of a signed package.
+        /// A more accurate test is building a chain with the specified EKU asserted in the application policy.
+        /// </remarks>
+        /// <param name="certificate">X509Certificate2 to be checked.</param>
+        /// <param name="ekuOid">String OID of the Extended Key Usage</param>
+        /// <returns>A bool indicating if the X509Certificate2 contains specified OID string in its Extended Key Usage.</returns>
+        public static bool IsValidForPurposeFast(X509Certificate2 certificate, string ekuOid)
+        {
+            foreach (var extension in certificate.Extensions)
+            {
+                if (string.Equals(extension.Oid.Value, Oids.EnhancedKeyUsageOid))
+                {
+                    var ekuExtension = (X509EnhancedKeyUsageExtension)extension;
+
+                    if (ekuExtension.EnhancedKeyUsages.Count == 0)
+                    {
+                        return true;
+                    }
+
+                    foreach (var eku in ekuExtension.EnhancedKeyUsages)
+                    {
+                        if (eku.Value == ekuOid)
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+            }
+
+            return true;
         }
 
 #if IS_DESKTOP
@@ -169,31 +215,5 @@ namespace NuGet.Packaging.Signing
             policy.VerificationTime = verificationTime;
         }
 #endif
-
-        /// <summary>
-        /// Returns the Enhanced Key Usage of an X509Certificate2.
-        /// </summary>
-        /// <param name="certificate">X509Certificate2 to be checked.</param>
-        /// <returns>An OidCollection object contained all the Enhanced Key Usage fileds in Oid form.</returns>
-        private static OidCollection GetCertificateEKU(X509Certificate2 certificate)
-        {
-            if (certificate == null)
-            {
-                throw new ArgumentNullException(nameof(certificate));
-            }
-
-            var oidCollection = new OidCollection();
-
-            foreach (var ext in certificate.Extensions)
-            {
-                if (string.Equals(ext.Oid.Value, Oids.EnhancedKeyUsageOid))
-                {
-                    var eku = (X509EnhancedKeyUsageExtension)ext;
-                    oidCollection = eku.EnhancedKeyUsages;
-                }
-            }
-
-            return oidCollection;
-        }
     }
 }

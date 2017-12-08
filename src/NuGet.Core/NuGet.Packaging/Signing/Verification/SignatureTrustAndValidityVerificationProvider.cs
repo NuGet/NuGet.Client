@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Linq;
-using System.Diagnostics;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -86,24 +85,17 @@ namespace NuGet.Packaging.Signing
                 return SignatureVerificationStatus.Untrusted;
             }
 
-            if (!SigningUtility.CertificateContainsEku(certificate, Oids.CodeSigningEkuOid))
-            {
-                issues.Add(SignatureLog.InvalidPackageError(Strings.ErrorCertificateNotCodeSigning));
-                return SignatureVerificationStatus.Invalid;
-            }
-
             if (!SigningUtility.IsCertificatePublicKeyValid(signature.SignerInfo.Certificate))
             {
                 issues.Add(SignatureLog.InvalidPackageError(Strings.ErrorInvalidPublicKey));
                 return SignatureVerificationStatus.Invalid;
             }
 
-            if (SigningUtility.CertificateContainsEku(certificate, Oids.LifetimeSignerEkuOid))
+            if (SigningUtility.HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEkuOid))
             {
                 issues.Add(SignatureLog.InvalidPackageError(Strings.ErrorCertificateHasLifetimeSignerEKU));
                 return SignatureVerificationStatus.Invalid;
             }
-
 
             var commitmentTypeIndication = signature.SignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.CommitmentTypeIndication);
 
@@ -171,14 +163,6 @@ namespace NuGet.Packaging.Signing
             }
 
             var timestamperCertificate = timestampCms.SignerInfos[0].Certificate;
-
-            if (!SigningUtility.CertificateContainsEku(timestamperCertificate, Oids.TimeStampingEkuOid))
-            {
-                issues.Add(SignatureLog.InvalidTimestampInSignatureError(string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampResponseExceptionGeneral,
-                    Strings.TimestampFailureCertInvalidEku)));
-                return SignatureVerificationStatus.Invalid;
-            }
 
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
                 Strings.TimestampValue,
