@@ -8,9 +8,9 @@ using System.Text;
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
-    /// This class is used to hold metatdata about the central directory archive structure
+    /// This class is used to hold metadata about the central directory archive structure
     /// </summary>
-    public class CentralDirectoryMetadata
+    public class CentralDirectoryHeaderMetadata
     {
         /// <summary>
         /// Position in bytes of the corresponding central directory header relative to the start of the archive
@@ -46,8 +46,8 @@ namespace NuGet.Packaging.Signing
 
         /// <summary>
         /// Index in which the central directory record was read from the archive.
-        /// This index represents the order of de central directory record as it is in the file.
+        /// This index represents the order of the central directory record as it is in the file.
         /// </summary>
-        public int IndexInRecords { get; set; }
+        public int IndexInHeaders { get; set; }
     }
 }

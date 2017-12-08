@@ -40,7 +40,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnShiftedSignaturePackage_LastCDLastFEAsync()
+        public async Task VerifyOnShiftedSignaturePackage_WhenCentralDirectoryIsLastAndFileHeaderIsLastAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -74,7 +74,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnShiftedSignaturePackage_FirstCDFirstFEAsync()
+        public async Task VerifyOnShiftedSignaturePackage_WhenCentralDirectoryIsFirstAndFileHeaderIsFirstAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -102,7 +102,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnShiftedSignaturePackage_LastCDFirstFEAsync()
+        public async Task VerifyOnShiftedSignaturePackage_WhenCentralDirectoryIsLastAndFileHeaderIsFirstAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -136,7 +136,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnShiftedSignaturePackage_FirstCDLastFEAsync()
+        public async Task VerifyOnShiftedSignaturePackage_WhenCentralDirectoryIsFirstAndFileHeaderIsLastAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -170,7 +170,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnShiftedSignaturePackage_MiddleCDMiddleFEAsync()
+        public async Task VerifyOnShiftedSignaturePackage_WhenCentralDirectoryIsMiddleAndFileHeaderIsMiddleAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();

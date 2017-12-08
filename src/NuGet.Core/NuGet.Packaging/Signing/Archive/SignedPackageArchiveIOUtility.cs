@@ -40,7 +40,7 @@ namespace NuGet.Packaging.Signing
 
             if (byteSignature.Length == 0)
             {
-                throw new InvalidDataException(nameof(byteSignature));
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(byteSignature));
             }
 
             var stream = reader.BaseStream;
@@ -84,7 +84,7 @@ namespace NuGet.Packaging.Signing
 
             if (byteSignature.Length == 0)
             {
-                throw new InvalidDataException(nameof(byteSignature));
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(byteSignature));
             }
 
             var stream = reader.BaseStream;
@@ -161,7 +161,7 @@ namespace NuGet.Packaging.Signing
 
             if (bytes.Length == 0)
             {
-                throw new InvalidDataException(nameof(bytes));
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(bytes));
             }
 #if IS_DESKTOP
             hashAlgorithm.TransformBlock(bytes, 0, bytes.Length, outputBuffer: null, outputOffset: 0);
@@ -186,14 +186,14 @@ namespace NuGet.Packaging.Signing
             {
                 StartOfFileHeaders = reader.BaseStream.Length,
             };
-            var centralDirectoryRecords = new List<CentralDirectoryMetadata>();
+            var centralDirectoryRecords = new List<CentralDirectoryHeaderMetadata>();
 
             // Look for EOCD signature, typically is around 22 bytes from the end
             reader.BaseStream.Seek(offset: -22, origin: SeekOrigin.End);
             SeekReaderBackwardToMatchByteSignature(reader, BitConverter.GetBytes(EndOfCentralDirectorySignature));
             metadata.EndOfCentralDirectoryRecordPosition = reader.BaseStream.Position;
 
-            // Jump to offset of start of central directory, 16 bytes from the start of EOCD
+            // Jump to offset of start of central directory, 16 bytes from the start of EOCD (including signature length)
             reader.BaseStream.Seek(offset: 16, origin: SeekOrigin.Current);
             metadata.StartOfCentralDirectory = reader.ReadUInt32();
             reader.BaseStream.Seek(offset: metadata.StartOfCentralDirectory, origin: SeekOrigin.Begin);
@@ -203,7 +203,7 @@ namespace NuGet.Packaging.Signing
             var isReadingCentralDirectoryRecords = true;
             while (isReadingCentralDirectoryRecords)
             {
-                var centralDirectoryMetadata = new CentralDirectoryMetadata
+                var centralDirectoryMetadata = new CentralDirectoryHeaderMetadata
                 {
                     Position = possibleSignatureCentralDirectoryRecordPosition
                 };
@@ -213,7 +213,7 @@ namespace NuGet.Packaging.Signing
                     throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
                 }
 
-                // Skip until file name length, 24 bytes after signature of central directory record
+                // Skip until file name length, 24 bytes after signature of central directory record (excluding signature length)
                 reader.BaseStream.Seek(offset: 24, origin: SeekOrigin.Current);
                 var filenameLength = reader.ReadUInt16();
                 var extraFieldLength = reader.ReadUInt16();
@@ -249,6 +249,30 @@ namespace NuGet.Packaging.Signing
             var lastCentralDirectoryRecord = centralDirectoryRecords.Last();
             metadata.EndOfCentralDirectory = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize;
 
+            // Update central directory records with missing information
+            UpdateCentralDirectoryRecordsMetadata(reader, metadata, centralDirectoryRecords);
+            metadata.CentralDirectoryHeaders = centralDirectoryRecords;
+
+            // Make sure the package is not zip64
+            var isZip64 = false;
+            try
+            {
+                SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(Zip64EndOfCentralDirectorySignature));
+                isZip64 = true;
+            }
+            // Failure means package is not a zip64 archive, then is safe to ignore.
+            catch { }
+
+            if (isZip64)
+            {
+                throw new InvalidDataException(Strings.ErrorZip64NotSupported);
+            }
+
+            return metadata;
+        }
+
+        private static void UpdateCentralDirectoryRecordsMetadata(BinaryReader reader, SignedPackageArchiveMetadata metadata, List<CentralDirectoryHeaderMetadata> centralDirectoryRecords)
+        {
             // Get missing metadata for central directory records
             var hasFoundSignature = false;
             var centralDirectoryRecordsCount = centralDirectoryRecords.Count;
@@ -262,7 +286,7 @@ namespace NuGet.Packaging.Signing
                     {
                         throw new SignatureException(Strings.Error_NotOnePrimarySignature);
                     }
-                    metadata.SignatureIndexInRecords = centralDirectoryRecordIndex;
+                    metadata.SignatureCentralDirectoryHeaderIndex = centralDirectoryRecordIndex;
                     hasFoundSignature = true;
                 }
 
@@ -288,7 +312,7 @@ namespace NuGet.Packaging.Signing
                     SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(CentralDirectoryHeaderSignature));
                 }
 
-                record.IndexInRecords = centralDirectoryRecordIndex;
+                record.IndexInHeaders = centralDirectoryRecordIndex;
                 record.FileEntryTotalSize = reader.BaseStream.Position - record.OffsetToFileHeader;
             }
 
@@ -296,25 +320,6 @@ namespace NuGet.Packaging.Signing
             {
                 throw new SignatureException(Strings.Error_NotOnePrimarySignature);
             }
-
-            metadata.CentralDirectoryRecords = centralDirectoryRecords;
-
-            // Make sure the package is not zip64
-            var isZip64 = false;
-            try
-            {
-                SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(Zip64EndOfCentralDirectorySignature));
-                isZip64 = true;
-            }
-            // Failure means package is not a zip64 archive, then is safe to ignore.
-            catch { }
-
-            if (isZip64)
-            {
-                throw new InvalidDataException(Strings.ErrorZip64NotSupported);
-            }
-
-            return metadata;
         }
 
         private static bool CurrentStreamPositionMatchesByteSignature(BinaryReader reader, byte[] byteSignature)
@@ -331,7 +336,7 @@ namespace NuGet.Packaging.Signing
 
             if (byteSignature.Length == 0)
             {
-                throw new InvalidDataException(nameof(byteSignature));
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(byteSignature));
             }
 
             var stream = reader.BaseStream;
