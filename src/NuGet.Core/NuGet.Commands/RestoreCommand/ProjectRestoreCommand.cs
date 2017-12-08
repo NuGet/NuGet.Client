@@ -15,6 +15,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 
@@ -45,6 +46,7 @@ namespace NuGet.Commands
             var frameworkTasks = new List<Task<RestoreTargetGraph>>();
             var graphs = new List<RestoreTargetGraph>();
             var runtimesByFramework = frameworkRuntimePairs.ToLookup(p => p.Framework, p => p.RuntimeIdentifier);
+            var success = true;
 
             foreach (var pair in runtimesByFramework)
             {
@@ -61,7 +63,7 @@ namespace NuGet.Commands
 
             graphs.AddRange(frameworkGraphs);
 
-            await InstallPackagesAsync(graphs,
+            success &= await InstallPackagesAsync(graphs,
                 userPackageFolder,
                 token);
 
@@ -107,7 +109,7 @@ namespace NuGet.Commands
                 graphs.AddRange(runtimeGraphs);
 
                 // Install runtime-specific packages
-                await InstallPackagesAsync(runtimeGraphs,
+                success &= await InstallPackagesAsync(runtimeGraphs,
                     userPackageFolder,
                     token);
             }
@@ -120,7 +122,7 @@ namespace NuGet.Commands
             // versions that have been bumped up unexpectedly.
             await UnexpectedDependencyMessages.LogAsync(graphs, _request.Project, _logger);
 
-            var success = await ResolutionSucceeded(graphs, context, token);
+            success &= (await ResolutionSucceeded(graphs, context, token));
 
             return Tuple.Create(success, graphs, allRuntimes);
         }
@@ -203,14 +205,17 @@ namespace NuGet.Commands
             return success;
         }
 
-        private async Task InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs,
+        private async Task<bool> InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs,
             NuGetv3LocalRepository userPackageFolder,
             CancellationToken token)
         {
             var uniquePackages = new HashSet<LibraryIdentity>();
+
             var packagesToInstall = graphs
                 .SelectMany(g => g.Install.Where(match => uniquePackages.Add(match.Library)))
                 .ToList();
+
+            var success = true;
 
             if (packagesToInstall.Count > 0)
             {
@@ -218,10 +223,11 @@ namespace NuGet.Commands
                 var threadCount = Math.Min(packagesToInstall.Count, _request.MaxDegreeOfConcurrency);
 
                 if (threadCount <= 1)
+
                 {
                     foreach (var match in packagesToInstall)
                     {
-                        await InstallPackageAsync(match, userPackageFolder, token);
+                        success &= (await InstallPackageAsync(match, userPackageFolder, _request.PackageExtractionContext, token));
                     }
                 }
                 else
@@ -231,52 +237,67 @@ namespace NuGet.Commands
                         .Select(async _ =>
                         {
                             RemoteMatch match;
+                            var result = true;
                             while (bag.TryTake(out match))
                             {
-                                await InstallPackageAsync(match, userPackageFolder, token);
+                                result = await InstallPackageAsync(match, userPackageFolder, _request.PackageExtractionContext, token);
                             }
+                            return result;
                         });
-                    await Task.WhenAll(tasks);
+                    success = (await Task.WhenAll(tasks)).All(p => p);
                 }
             }
+
+            return success;
         }
 
-        private async Task InstallPackageAsync(RemoteMatch installItem, NuGetv3LocalRepository userPackageFolder, CancellationToken token)
+        private async Task<bool> InstallPackageAsync(RemoteMatch installItem, NuGetv3LocalRepository userPackageFolder, PackageExtractionContext packageExtractionContext, CancellationToken token)
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
+
+            var signedPackageVerifier = new PackageSignatureVerifier(
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignedPackageVerifierSettings.Default);
 
             // Check if the package has already been installed.
             if (!userPackageFolder.Exists(packageIdentity.Id, packageIdentity.Version))
             {
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    packageIdentity,
-                    _request.PackagesDirectory,
-                    _logger,
-                    _request.PackageSaveMode,
-                    _request.XmlDocFileSaveMode);
+                var versionFolderPathResolver = new VersionFolderPathResolver(_request.PackagesDirectory);
 
-                using (var packageDependency = await installItem.Provider.GetPackageDownloaderAsync(
-                    packageIdentity,
-                    _request.CacheContext,
-                    _logger,
-                    token))
+                try
                 {
-                    // Install, returns true if the package was actually installed.
-                    // Returns false if the package was a noop once the lock
-                    // was acquired.
-                    var installed = await PackageExtractor.InstallFromSourceAsync(
-                        packageDependency,
-                        versionFolderPathContext,
-                        token);
-
-                    if (installed)
+                    using (var packageDependency = await installItem.Provider.GetPackageDownloaderAsync(
+                        packageIdentity,
+                        _request.CacheContext,
+                        _logger,
+                        token))
                     {
-                        // If the package was added, clear the cache so that the next caller can see it.
-                        // Avoid calling this for packages that were not actually installed.
-                        userPackageFolder.ClearCacheForIds(new string[] { packageIdentity.Id });
+                        // Install, returns true if the package was actually installed.
+                        // Returns false if the package was a noop once the lock
+                        // was acquired.
+                        var installed = await PackageExtractor.InstallFromSourceAsync(
+                            packageIdentity,
+                            packageDependency,
+                            versionFolderPathResolver,
+                            packageExtractionContext,
+                            token);
+
+                        if (installed)
+                        {
+                            // If the package was added, clear the cache so that the next caller can see it.
+                            // Avoid calling this for packages that were not actually installed.
+                            userPackageFolder.ClearCacheForIds(new string[] { packageIdentity.Id });
+                        }
                     }
                 }
+                catch (SignatureException e)
+                {
+                    await _logger.LogMessagesAsync(e.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()));
+                    return false;
+                }
             }
+
+            return true;
         }
 
         private Task<RestoreTargetGraph[]> WalkRuntimeDependenciesAsync(LibraryRange projectRange,
@@ -327,26 +348,26 @@ namespace NuGet.Commands
                     return;
                 }
 
-                // Ignore runtime.json from rejected nodes
-                if (node.Disposition == Disposition.Rejected)
+                    // Ignore runtime.json from rejected nodes
+                    if (node.Disposition == Disposition.Rejected)
                 {
                     return;
                 }
 
-                // ignore the same node again
-                if (!visitedNodes.Add(match.Library.Name))
+                    // ignore the same node again
+                    if (!visitedNodes.Add(match.Library.Name))
                 {
                     return;
                 }
 
-                // runtime.json can only exist in packages
-                if (match.Library.Type != LibraryType.Package)
+                    // runtime.json can only exist in packages
+                    if (match.Library.Type != LibraryType.Package)
                 {
                     return;
                 }
 
-                // Locate the package in the local repository
-                var info = NuGetv3LocalRepositoryUtility.GetPackage(localRepositories, match.Library.Name, match.Library.Version);
+                    // Locate the package in the local repository
+                    var info = NuGetv3LocalRepositoryUtility.GetPackage(localRepositories, match.Library.Name, match.Library.Version);
 
                 if (info != null)
                 {

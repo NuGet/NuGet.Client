@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
 using System.Xml.Linq;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
@@ -12,16 +13,17 @@ namespace NuGet.VisualStudio
     internal sealed class VSAPIProjectContext : IMSBuildNuGetProjectContext
     {
         public VSAPIProjectContext()
-            : this(false, false, true)
+            : this(false, false)
         {
         }
 
-        public VSAPIProjectContext(bool skipAssemblyReferences, bool bindingRedirectsDisabled, bool useLegacyInstallPaths = true)
+        public VSAPIProjectContext(bool skipAssemblyReferences, bool bindingRedirectsDisabled)
         {
-            PackageExtractionContext = new PackageExtractionContext(new LoggerAdapter(this));
+            var signedPackageVerifier = new PackageSignatureVerifier(
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignedPackageVerifierSettings.Default);
 
-            // many templates depend on legacy paths, for the VS API and template wizard we unfortunately need to keep them
-            PackageExtractionContext.UseLegacyPackageInstallPath = useLegacyInstallPaths;
+            PackageExtractionContext = new PackageExtractionContext(PackageSaveMode.Defaultv2, PackageExtractionBehavior.XmlDocFileSaveMode, new LoggerAdapter(this), signedPackageVerifier);
 
             SourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
             SkipAssemblyReferences = skipAssemblyReferences;

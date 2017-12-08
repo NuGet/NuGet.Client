@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
@@ -188,6 +189,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     await ExecuteActions(actions, sourceCacheContext);
                 }
             }
+            catch (SignatureException ex)
+            {
+                // set nuget operation status to failed when an exception is thrown
+                _status = NuGetOperationStatus.Failed;
+
+                var logMessages = ex.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()).ToList();
+
+                logMessages.ForEach(p => Log(LogUtility.LogLevelToMessageLevel(p.Level), p.Message));
+            }
             catch (Exception ex)
             {
                 _status = NuGetOperationStatus.Failed;
@@ -220,6 +230,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     _status = NuGetOperationStatus.NoOp;
                     Log(MessageLevel.Error, Resources.Cmdlet_PackageNotInstalledInAnyProject, Id);
                 }
+            }
+            catch (SignatureException ex)
+            {
+                // set nuget operation status to failed when an exception is thrown
+                _status = NuGetOperationStatus.Failed;
+
+                var logMessages = ex.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()).ToList();
+
+                logMessages.ForEach(p => Log(LogUtility.LogLevelToMessageLevel(p.Level), p.Message));
             }
             catch (Exception ex)
             {

@@ -12,6 +12,8 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
@@ -143,9 +145,18 @@ namespace NuGet.ProjectManagement
                 {
                     // 1. Set a default package extraction context, if necessary.
                     var packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
+
                     if (packageExtractionContext == null)
                     {
-                        packageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
+                        var signedPackageVerifier = !downloadResourceResult.SignatureVerified ? new PackageSignatureVerifier(
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignedPackageVerifierSettings.Default) : null;
+
+                        packageExtractionContext = new PackageExtractionContext(
+                            PackageSaveMode.Defaultv2,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
+                            new LoggerAdapter(nuGetProjectContext),
+                            signedPackageVerifier);
                     }
 
                     // 2. Check if the Package already exists at root, if so, return false
@@ -399,7 +410,15 @@ namespace NuGet.ProjectManagement
             var packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
             if (packageExtractionContext == null)
             {
-                packageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
+                var signedPackageVerifier = new PackageSignatureVerifier(
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignedPackageVerifierSettings.Default);
+
+                packageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    new LoggerAdapter(nuGetProjectContext),
+                    signedPackageVerifier);
             }
 
             var copiedSatelliteFiles = await PackageExtractor.CopySatelliteFilesAsync(

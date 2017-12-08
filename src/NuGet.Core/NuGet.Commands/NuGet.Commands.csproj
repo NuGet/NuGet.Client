@@ -35,6 +35,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Security" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">

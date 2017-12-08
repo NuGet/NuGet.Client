@@ -1215,6 +1215,114 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please select a valid certificate.
+        /// </summary>
+        internal static string SignCommandDialogMessage {
+            get {
+                return ResourceManager.GetString("SignCommandDialogMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet Sign Certificate Selection.
+        /// </summary>
+        internal static string SignCommandDialogTitle {
+            get {
+                return ResourceManager.GetString("SignCommandDialogTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Signing package(s) with certificate:.
+        /// </summary>
+        internal static string SignCommandDisplayCertificate {
+            get {
+                return ResourceManager.GetString("SignCommandDisplayCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timestamping package(s) with:.
+        /// </summary>
+        internal static string SignCommandDisplayTimestamper {
+            get {
+                return ResourceManager.GetString("SignCommandDisplayTimestamper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; file &apos;{1}&apos; not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandFileNotFound {
+            get {
+                return ResourceManager.GetString("SignCommandFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following certificate cannot be used for signing a package as it does not have Code Signing enhanced key usage:.
+        /// </summary>
+        internal static string SignCommandInvalidCertEku {
+            get {
+                return ResourceManager.GetString("SignCommandInvalidCertEku", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate file &apos;{0}&apos; is invalid. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandInvalidCertException {
+            get {
+                return ResourceManager.GetString("SignCommandInvalidCertException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid password was provided for the certificate file &apos;{0}&apos;. Please provide a valid password using the &apos;-{1}&apos; option.
+        /// </summary>
+        internal static string SignCommandInvalidPasswordException {
+            get {
+                return ResourceManager.GetString("SignCommandInvalidPasswordException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple certificates were found that meet all the given criteria. Use the &apos;-{0}&apos; option with the hash of the desired certificate..
+        /// </summary>
+        internal static string SignCommandMultipleCertException {
+            get {
+                return ResourceManager.GetString("SignCommandMultipleCertException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandNoCertException {
+            get {
+                return ResourceManager.GetString("SignCommandNoCertException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Signed package(s) output path:.
+        /// </summary>
+        internal static string SignCommandOutputPath {
+            get {
+                return ResourceManager.GetString("SignCommandOutputPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package(s) signed successfully..
+        /// </summary>
+        internal static string SignCommandSuccess {
+            get {
+                return ResourceManager.GetString("SignCommandSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Duplicate frameworks found: &apos;{0}&apos;..
         /// </summary>
         internal static string SpecValidationDuplicateFrameworks {
@@ -1319,6 +1427,60 @@ namespace NuGet.Commands {
         internal static string UsingPackagesConfigForDependencies {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not verify package(s) signature..
+        /// </summary>
+        internal static string VerifyCommand_Failed {
+            get {
+                return ResourceManager.GetString("VerifyCommand_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finished with {0} errors and {1} warnings..
+        /// </summary>
+        internal static string VerifyCommand_FinishedWithErrors {
+            get {
+                return ResourceManager.GetString("VerifyCommand_FinishedWithErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid package file..
+        /// </summary>
+        internal static string VerifyCommand_PackageIsNotValid {
+            get {
+                return ResourceManager.GetString("VerifyCommand_PackageIsNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successfully verified package(s)..
+        /// </summary>
+        internal static string VerifyCommand_Success {
+            get {
+                return ResourceManager.GetString("VerifyCommand_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verification type not supported. Please use only one of the following supported types: -All, -Signatures.
+        /// </summary>
+        internal static string VerifyCommand_VerificationTypeNotSupported {
+            get {
+                return ResourceManager.GetString("VerifyCommand_VerificationTypeNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verifying {0}.
+        /// </summary>
+        internal static string VerifyCommand_VerifyingPackage {
+            get {
+                return ResourceManager.GetString("VerifyCommand_VerifyingPackage", resourceCulture);
             }
         }
         

@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.Packaging
 {
@@ -178,7 +180,7 @@ namespace NuGet.Packaging
 
             var parts = parents.Select(d => d.Name).Concat(new string[] { file.Name });
 
-            return String.Join("/", parts);
+            return string.Join("/", parts);
         }
 
         public override IEnumerable<string> CopyFiles(
@@ -216,6 +218,26 @@ namespace NuGet.Packaging
         protected override void Dispose(bool disposing)
         {
             // do nothing here
+        }
+
+        public override Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
+        {
+            return Task.FromResult<IReadOnlyList<Signature>>(new List<Signature>());
+        }
+
+        public override Task<bool> IsSignedAsync(CancellationToken token)
+        {
+            return Task.FromResult(false);
+        }
+
+        public override Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithm, CancellationToken token)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.Common
@@ -14,20 +14,28 @@ namespace NuGet.Common
     ///     y - 'y' is the second largest digit and should be used for sub sections withing a broad category.
     ///     
     ///         For example 12zw cvould be http related errors.
-    ///         Further 'y' = 0-4 shoudl be used for errors and 'y' = 5-9 should be warnings.
+    ///         Further 'y' = 0-4 should be used for errors and 'y' = 5-9 should be warnings.
     ///         
     ///     zw - 'zw' are the least two digit.
     ///         These could be used for different errors or warnings within the broad categories set by digits 'xy'.
     ///         
     /// Groups:
-    /// 1000 - Restore
+    /// 1000      - Restore
+    /// 3000/3500 - Signing
     /// 
-    /// Sub groups:
-    /// 1000/1500 Input
-    /// 1100/1600 Resolver
-    /// 1200/1700 Compat
-    /// 1300/1800 Feed
-    /// 1400/1900 Package
+    /// Sub groups for Restore:
+    /// error/warning - Reason
+    /// 1000/1500     - Input
+    /// 1100/1600     - Resolver
+    /// 1200/1700     - Compat
+    /// 1300/1800     - Feed
+    /// 1400/1900     - Package
+    ///
+    /// Sub groups for Signing:
+    /// error/warning - Reason
+    /// 3000/3500     - Input
+    /// 3010/3510     - Certificate
+    /// 3020/3520     - Timestamping
     /// </summary>
     public enum NuGetLogCode
     {
@@ -123,6 +131,11 @@ namespace NuGet.Common
         NU1401 = 1401,
 
         /// <summary>
+        /// Package Signature is invalid
+        /// </summary>
+        NU1410 = 1410,
+
+        /// <summary>
         /// Undefined warning
         /// </summary>
         NU1500 = 1500,
@@ -187,6 +200,76 @@ namespace NuGet.Common
         NU1801 = 1801,
 
         /// <summary>
+        /// Undefined signature error
+        /// </summary>
+        NU3000 = 3000,
+
+        /// <summary>
+        /// Invalid Input error
+        /// </summary>
+        NU3001 = 3001,
+
+        /// <summary>
+        /// Invalid package error
+        /// </summary>
+        NU3002 = 3002,
+
+        /// <summary>
+        /// Invalid number of certificates were found while signing package
+        /// </summary>
+        NU3003 = 3003,
+
+        /// <summary>
+        /// Certificate chain does not build
+        /// </summary>
+        NU3011 = 3011,
+
+        /// <summary>
+        /// Certifiate not valid
+        /// </summary>
+        NU3012 = 3012,
+
+        /// <summary>
+        /// SignedCms.ComputeSignature cannot read the certificate private key
+        /// </summary>
+        NU3013 = 3013,
+
+        /// <summary>
+        /// Invalid password provided for a certificate
+        /// </summary>
+        NU3014 = 3014,
+
+        /// <summary>
+        /// Invalid timestamp response
+        /// </summary>
+        NU3021 = 3021,
+
+        /// <summary>
+        /// Invalid timestamp in signature
+        /// </summary>
+        NU3022 = 3022,
+
+        /// <summary>
+        /// Undefined signature warning
+        /// </summary>
+        NU3500 = 3500,
+
+        /// <summary>
+        /// Untrusted root warning
+        /// </summary>
+        NU3501 = 3501,
+
+        /// <summary>
+        /// Signature information unavailable warning
+        /// </summary>
+        NU3502 = 3502,
+
+        /// <summary>
+        /// Timestamp url not passed to sign command
+        /// </summary>
+        NU3521 = 3521,
+
+        /// <summary>
         /// Undefined Package Error.
         /// </summary>
         NU5000 = 5000,
@@ -235,5 +318,6 @@ namespace NuGet.Common
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,
+
     }
 }

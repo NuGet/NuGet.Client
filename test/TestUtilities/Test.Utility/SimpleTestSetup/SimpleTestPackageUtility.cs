@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,9 +11,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.Versioning;
 
 namespace NuGet.Test.Utility
@@ -81,16 +84,32 @@ namespace NuGet.Test.Utility
         {
             var id = packageContext.Id;
             var version = packageContext.Version;
-            var runtimeJson = packageContext.RuntimeJson;
-
-            var pathResolver = new VersionFolderPathResolver(null);
             var packageName = packageContext.IsSymbolPackage ? $"{id}.{version.ToString()}.symbols.nupkg" : $"{id}.{version.ToString()}.nupkg";
+
             var packagePath = Path.Combine(repositoryDir, packageName);
             var file = new FileInfo(packagePath);
 
             file.Directory.Create();
 
-            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
+            using (var stream = file.Open(FileMode.CreateNew, FileAccess.ReadWrite))
+            {
+                CreatePackage(stream, packageContext);
+            }
+
+            return file;
+        }
+
+        /// <summary>
+        /// Write a zip file to a stream.
+        /// </summary>
+        public static void CreatePackage(Stream stream, SimpleTestPackageContext packageContext)
+        {
+            var id = packageContext.Id;
+            var version = packageContext.Version;
+            var runtimeJson = packageContext.RuntimeJson;
+            var pathResolver = new VersionFolderPathResolver(null);
+
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
                 if (packageContext.Files.Any())
                 {
@@ -180,7 +199,7 @@ namespace NuGet.Test.Utility
                     }
                 }
 
-                if (packageContext.PackageTypes.Any())
+                if (packageContext.PackageTypes.Count > 0)
                 {
                     var metadata = xml.Element("package").Element("metadata");
                     var packageTypes = new XElement("packageTypes");
@@ -199,10 +218,16 @@ namespace NuGet.Test.Utility
                     }
                 }
 
+                if (packageContext.Signatures.Count > 0)
+                {
+                    throw new NotImplementedException();
+                }
+
                 zip.AddEntry($"{id}.nuspec", xml.ToString(), Encoding.UTF8);
             }
 
-            return file;
+            // Reset position
+            stream.Position = 0;
         }
 
         /// <summary>
@@ -361,14 +386,14 @@ namespace NuGet.Test.Utility
                 {
                     using (var fileStream = File.OpenRead(file))
                     {
-                        await PackageExtractor.InstallFromSourceAsync((stream) =>
-                            fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
-                            new VersionFolderPathContext(
-                                identity,
-                                root,
-                                NullLogger.Instance,
+                        await PackageExtractor.InstallFromSourceAsync(identity,
+                            (stream) => fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                            new VersionFolderPathResolver(root),
+                            new PackageExtractionContext(
                                 saveMode,
-                                XmlDocFileSaveMode.None),
+                                XmlDocFileSaveMode.None,
+                                NullLogger.Instance,
+                                signedPackageVerifier: null),
                                 CancellationToken.None);
                     }
                 }
@@ -404,7 +429,11 @@ namespace NuGet.Test.Utility
         public static async Task CreateFolderFeedPackagesConfigAsync(string root, params string[] nupkgPaths)
         {
             var resolver = new PackagePathResolver(root);
-            var context = new PackageExtractionContext(NullLogger.Instance);
+            var context = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null);
 
             foreach (var path in nupkgPaths)
             {

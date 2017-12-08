@@ -18,50 +18,60 @@
     <TargetFrameworks />
     <TargetFramework>net46</TargetFramework>
   </PropertyGroup>
-  
+
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Common\NuGet.Common.csproj" />
     <ProjectReference Include="..\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj" />
   </ItemGroup>
-  
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+
+  <ItemGroup Condition=" '$(IsDesktop)' == 'true' ">
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Security" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="compiler\resources\*" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.IO.Compression" Version="4.1.0" />
-  </ItemGroup>
-  
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" />
+  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <PackageReference Include="System.ObjectModel" Version="4.0.12" />
     <PackageReference Include="System.Dynamic.Runtime" Version="4.0.11" />
+    <PackageReference Include="System.IO.Compression" Version="4.1.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
+    <Compile Update="Signing\DerEncoding\SR.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SR.resx</DependentUpon>
+    </Compile>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  
+
   <ItemGroup>
+    <EmbeddedResource Update="Signing\DerEncoding\SR.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>SR.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Update="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-
+  
   <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>

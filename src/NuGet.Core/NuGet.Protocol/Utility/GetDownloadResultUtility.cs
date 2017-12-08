@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -99,6 +100,10 @@ namespace NuGet.Protocol
                 catch (OperationCanceledException)
                 {
                     return new DownloadResourceResult(DownloadResourceResultStatus.Cancelled);
+                }
+                catch (SignatureException)
+                {
+                    throw;
                 }
                 catch (Exception ex) when (retry < 2)
                 {
