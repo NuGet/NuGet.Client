@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.ProjectModel
@@ -21,18 +21,23 @@ namespace NuGet.ProjectModel
         PackageReference = 2,
 
         /// <summary>
-        /// Tool
+        /// ToolReference project
         /// </summary>
-        DotnetCliTool = 3,
+        ToolReference = 3,
+
+        /// <summary>
+        /// DotnetCliToolReference "project"
+        /// </summary>
+        DotnetCliTool = 4,
 
         /// <summary>
         /// Non-MSBuild project with no project dependencies.
         /// </summary>
-        Standalone = 4,
+        Standalone = 5,
 
         /// <summary>
         /// Packages.config project
         /// </summary>
-        PackagesConfig = 5
+        PackagesConfig = 6
     }
 }
