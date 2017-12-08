@@ -15,14 +15,18 @@
     <ItemsToPush Include="$(NupkgOutputDirectory)*.nupkg" />
   </ItemGroup>
 
-  <Target Name="Build" Condition=" '$(BuildRTM)' == 'false' AND Exists($(NupkgOutputDirectory))">
+  <Target Name="Build" Condition=" '$(BuildRTM)' != 'true'">
+    <Error Text="Package output directory '$(NupkgOutputDirectory)' does not exist."
+          Condition="!Exists($(NupkgOutputDirectory))" />
+
     <Error Text="The FeedUrl property must be passed."
           Condition="'$(FeedUrl)' == ''" />
 
     <Error Text="The FeedApiKey property must be passed."
           Condition="'$(FeedApiKey)' == ''" />
 
-    <Error Condition="'@(ItemsToPush)' == ''" Text="No packages to push." />
+    <Error Text="No packages to push."
+          Condition="'@(ItemsToPush)' == ''" />
 
     <PushToBlobFeed ExpectedFeedUrl="$(FeedUrl)"
                     AccountKey="$(FeedApiKey)"
