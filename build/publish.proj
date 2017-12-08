@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+
+  <!--
+    ============================================================
+    This is for orchestrated build scenarios. The NuGet.Client-Orchestrated build definition builds this file directly.
+    ============================================================
+  -->
+
+  <Import Project="$(BlobPublishTargetsPath)" />
+  <Import Project="$(BuildCommonDirectory)common.targets" />
+
+  <ItemGroup>
+    <ItemsToPush Include="$(NupkgOutputDirectory)*.nupkg" />
+  </ItemGroup>
+
+  <Target Name="Build" Condition=" '$(BuildRTM)' != 'true'">
+    <Error Text="Package output directory '$(NupkgOutputDirectory)' does not exist."
+          Condition="!Exists($(NupkgOutputDirectory))" />
+
+    <Error Text="The FeedUrl property must be passed."
+          Condition="'$(FeedUrl)' == ''" />
+
+    <Error Text="The FeedApiKey property must be passed."
+          Condition="'$(FeedApiKey)' == ''" />
+
+    <Error Text="No packages to push."
+          Condition="'@(ItemsToPush)' == ''" />
+
+    <PushToBlobFeed ExpectedFeedUrl="$(FeedUrl)"
+                    AccountKey="$(FeedApiKey)"
+                    ItemsToPush="@(ItemsToPush)"
+                    Overwrite="$(PublishOverwrite)" />
+  </Target>
+
+</Project>
