@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -26,8 +26,6 @@ namespace NuGet.Commands
             LocalFolderUtility.EnsurePackageFileExists(signArgs.PackagePath, packagesToSign);
 
             var cert = await GetCertificateAsync(signArgs);
-
-            ValidateCertificate(cert);
 
             signArgs.Logger.LogInformation(Environment.NewLine);
             signArgs.Logger.LogInformation(Strings.SignCommandDisplayCertificate);
@@ -101,22 +99,6 @@ namespace NuGet.Commands
             }
 
             return success ? 0 : 1;
-        }
-
-        /// <summary>
-        /// Used to validate a user specified certificate.
-        /// </summary>
-        /// <param name="cert">Certificate to be validated</param>
-        private static void ValidateCertificate(X509Certificate2 cert)
-        {
-            if (!SigningUtility.CertificateContainsEku(cert, Oids.CodeSigningEkuOid))
-            {
-                var exceptionBuilder = new StringBuilder();
-                exceptionBuilder.AppendLine(Strings.SignCommandInvalidCertEku);
-                exceptionBuilder.AppendLine(CertificateUtility.X509Certificate2ToString(cert));
-
-                throw new SignCommandException(LogMessage.CreateError(NuGetLogCode.NU3012, exceptionBuilder.ToString()));
-            }
         }
 
         private static ISignatureProvider GetSignatureProvider(string timestamper)
@@ -274,11 +256,11 @@ namespace NuGet.Commands
         {
             var filteredCollection = new X509Certificate2Collection();
 
-            foreach (var cert in matchingCollection)
+            foreach (var certificate in matchingCollection)
             {
-                if (SigningUtility.CertificateContainsEku(cert, Oids.CodeSigningEkuOid))
+                if (SigningUtility.IsValidForPurposeFast(certificate, Oids.CodeSigningEkuOid))
                 {
-                    filteredCollection.Add(cert);
+                    filteredCollection.Add(certificate);
                 }
             }
 

@@ -12,6 +12,11 @@
   <ItemGroup>
     <Compile Include="$(NuGetCoreSrcDirectory)NuGet.Packaging\Signing\DerEncoding\*.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="compiler\resources\*" />
+    <EmbeddedResource Include="compiler\resources\*" />
+  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />

@@ -226,9 +226,6 @@
   <data name="TimestampFailureAuthorCertNotValid" xml:space="preserve">
     <value>Author certificate was not valid when it was timestamped.</value>
   </data>
-  <data name="TimestampFailureCertInvalidEku" xml:space="preserve">
-    <value>Timestamp service's certificate does not contain a valid Enhanced Key Usage for timestamping.</value>
-  </data>
   <data name="TimestampFailureInvalidHash" xml:space="preserve">
     <value>Timestamp response contains invalid signature value hash.</value>
   </data>
@@ -373,9 +370,6 @@ Valid from:</comment>
   </data>
   <data name="ErrorCertificateHasLifetimeSignerEKU" xml:space="preserve">
     <value>Certificates with lifetime signer EKU are not supported.</value>
-  </data>
-  <data name="ErrorCertificateNotCodeSigning" xml:space="preserve">
-    <value>Certificate is not a valid code signing certificate.</value>
   </data>
   <data name="ErrorInvalidPackageArchive" xml:space="preserve">
     <value>Invalid package archive.</value>
