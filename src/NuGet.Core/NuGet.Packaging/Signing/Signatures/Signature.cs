@@ -37,6 +37,11 @@ namespace NuGet.Packaging.Signing
         public DateTimeOffset? Timestamp { get; }
 
         /// <summary>
+        /// SignerInfo for the timestamp
+        /// </summary>
+        public SignerInfo TimestampSignerInfo { get; }
+
+        /// <summary>
         /// SignerInfo for this signature.
         /// </summary>
         public SignerInfo SignerInfo => SignedCms.SignerInfos[0];
@@ -46,7 +51,10 @@ namespace NuGet.Packaging.Signing
             SignedCms = signedCms ?? throw new ArgumentNullException(nameof(signedCms));
             SignatureContent = SignatureContent.Load(SignedCms.ContentInfo.Content, SigningSpecifications.V1);
             Type = GetSignatureType(SignerInfo);
-            Timestamp = GetTimestamp(SignerInfo);
+
+            var ts = GetTimestamp(SignerInfo);
+            Timestamp = ts.Item1;
+            TimestampSignerInfo = ts.Item2;
         }
 
         /// <summary>
@@ -129,7 +137,7 @@ namespace NuGet.Packaging.Signing
             return SignatureType.Author;
         }
 
-        private static DateTimeOffset? GetTimestamp(SignerInfo signer)
+        private static Tuple<DateTimeOffset?, SignerInfo> GetTimestamp(SignerInfo signer)
         {
             var authorUnsignedAttributes = signer.UnsignedAttributes;
             var timestampCms = new SignedCms();
@@ -142,11 +150,11 @@ namespace NuGet.Packaging.Signing
 
                     if (Rfc3161TimestampVerificationUtility.TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
                     {
-                        return tstInfo.Timestamp;
+                        return Tuple.Create<DateTimeOffset?, SignerInfo>(tstInfo.Timestamp, timestampCms.SignerInfos[0]);
                     }
                 }
             }
-            return null;
+            return Tuple.Create<DateTimeOffset?, SignerInfo>(null, null);
         }
 
 #else
