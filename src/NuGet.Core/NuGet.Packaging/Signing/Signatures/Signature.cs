@@ -32,6 +32,11 @@ namespace NuGet.Packaging.Signing
         public SignatureContent SignatureContent { get; }
 
         /// <summary>
+        /// Signature timestamp.
+        /// </summary>
+        public DateTimeOffset? Timestamp { get; }
+
+        /// <summary>
         /// SignerInfo for this signature.
         /// </summary>
         public SignerInfo SignerInfo => SignedCms.SignerInfos[0];
@@ -41,6 +46,7 @@ namespace NuGet.Packaging.Signing
             SignedCms = signedCms ?? throw new ArgumentNullException(nameof(signedCms));
             SignatureContent = SignatureContent.Load(SignedCms.ContentInfo.Content, SigningSpecifications.V1);
             Type = GetSignatureType(SignerInfo);
+            Timestamp = GetTimestamp(SignerInfo);
         }
 
         /// <summary>
@@ -121,6 +127,26 @@ namespace NuGet.Packaging.Signing
         {
             // TODO: Change this to use the new attributes that justin is adding.
             return SignatureType.Author;
+        }
+
+        private static DateTimeOffset? GetTimestamp(SignerInfo signer)
+        {
+            var authorUnsignedAttributes = signer.UnsignedAttributes;
+            var timestampCms = new SignedCms();
+
+            foreach (var attribute in authorUnsignedAttributes)
+            {
+                if (string.Equals(attribute.Oid.Value, Oids.SignatureTimeStampTokenAttributeOid))
+                {
+                    timestampCms.Decode(attribute.Values[0].RawData);
+
+                    if (Rfc3161TimestampVerificationUtility.TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
+                    {
+                        return tstInfo.Timestamp;
+                    }
+                }
+            }
+            return null;
         }
 
 #else
