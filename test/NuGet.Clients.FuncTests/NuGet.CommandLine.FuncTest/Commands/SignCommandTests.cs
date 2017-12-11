@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     {
         private const string _packageAlreadySignedError = "Error NU5000: The package already contains a signature. Please remove the existing signature before adding a new signature.";
         private const string _invalidPasswordErrorCode = "NU3014";
-        private const string _invalidEkuErrorCode = "NU3012";
+        private const string _invalidEkuErrorCode = "NU5000";
         private const string _noTimestamperWarningCode = "NU3521";
 
         private SignCommandTestFixture _testFixture;
@@ -98,6 +98,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_invalidEkuErrorCode);
+                result.AllOutput.Should().Contain("NotValidForUsage");
             }
         }
 
