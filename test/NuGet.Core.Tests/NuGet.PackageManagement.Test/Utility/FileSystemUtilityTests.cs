@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.Test
         {
             var exception = Assert.Throws<ArgumentException>(
                 () => FileSystemUtility.ContentEquals(
-                    path: null,
+                    path: path,
                     streamFactory: () => Stream.Null));
 
             Assert.Equal("path", exception.ParamName);
@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.Test
         {
             var exception = await Assert.ThrowsAsync<ArgumentException>(
                 () => FileSystemUtility.ContentEqualsAsync(
-                    path: null,
+                    path: path,
                     streamTaskFactory: () => Task.FromResult(Stream.Null)));
 
             Assert.Equal("path", exception.ParamName);

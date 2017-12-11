@@ -2,14 +2,13 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Shared test project template -->
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <RuntimeIdentifier Condition=" '$(IsXPlat)' != 'true' ">win7-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <WarningsAsErrors>False</WarningsAsErrors>
-    <NoWarn>$(NoWarn);CS1701</NoWarn>
+    <NoWarn>$(NoWarn);NU1608;CS1701;xUnit2013;xUnit2000;xUnit2017;xUnit2006;xUnit2009;xUnit2013;xUnit2014;xUnit2003;xUnit2010;xUnit2015;xUnit2007;xUnit1013;xUnit1014;xUnit2002;xUnit2012;xUnit2004</NoWarn>
   </PropertyGroup>
   
   <ItemGroup>
@@ -18,10 +17,6 @@
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="Moq" Version="$(MoqVersion)" />
     <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(IsDesktop)' == 'true' ">
-    <PackageReference Include="xunit.runner.msbuild" Version="$(XunitVersion)" />
   </ItemGroup>
 
   <PropertyGroup>

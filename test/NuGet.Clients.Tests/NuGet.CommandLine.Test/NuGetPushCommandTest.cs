@@ -2067,7 +2067,7 @@ namespace NuGet.CommandLine.Test
 
         }
 
-        public static IEnumerable<string[]> ServerWarningData
+        public static IEnumerable<object[]> ServerWarningData
         {
             get
             {

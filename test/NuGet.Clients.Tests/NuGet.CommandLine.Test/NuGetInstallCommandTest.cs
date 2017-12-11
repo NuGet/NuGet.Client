@@ -1126,15 +1126,11 @@ namespace NuGet.CommandLine.Test
 
                 using (var server = new MockServer())
                 {
-                    var getPackageByVersionIsCalled = false;
-                    var packageDownloadIsCalled = false;
-
                     server.Get.Add("/nuget/$metadata", r =>
                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Packages(Id='testPackage1',Version='1.1.0')", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
-                            getPackageByVersionIsCalled = true;
                             response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
                             var p1 = server.ToOData(package);
                             MockServer.SetResponseContent(response, p1);
@@ -1143,7 +1139,6 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/package/testPackage1", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
-                            packageDownloadIsCalled = true;
                             response.ContentType = "application/zip";
                             using (var stream = package.GetStream())
                             {

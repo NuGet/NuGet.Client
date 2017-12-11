@@ -273,7 +273,7 @@
   -->
   <Target Name="RunTestsInner">
     <PropertyGroup>
-      <TestAssemblyPath>$(OutputPath)$(AssemblyName).exe</TestAssemblyPath>
+      <TestAssemblyPath>$(OutputPath)$(AssemblyName).dll</TestAssemblyPath>
     </PropertyGroup>
     <Message Text="Running tests on $(TestAssemblyPath)" Importance="high" />
 
@@ -322,8 +322,7 @@
           Returns="@(TestAssemblyPath)">
 
     <PropertyGroup>
-      <TestAssemblyRelativePath Condition=" '$(IsDesktop)' == 'true' ">$(OutputPath)$(AssemblyName).exe</TestAssemblyRelativePath>
-      <TestAssemblyRelativePath Condition=" '$(IsDesktop)' != 'true' ">$(OutputPath)$(AssemblyName).dll</TestAssemblyRelativePath>
+      <TestAssemblyRelativePath>$(OutputPath)$(AssemblyName).dll</TestAssemblyRelativePath>
     </PropertyGroup>
 
     <ConvertToAbsolutePath Paths="$(TestAssemblyRelativePath)">

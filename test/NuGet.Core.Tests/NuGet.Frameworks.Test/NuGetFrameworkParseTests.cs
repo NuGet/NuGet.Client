@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -201,7 +201,6 @@ namespace NuGet.Test
         [InlineData("net20", ".NETFramework,Version=v2.0")]
         [InlineData("net40", ".NETFramework,Version=v4.0")]
         [InlineData("net35", ".NETFramework,Version=v3.5")]
-        [InlineData("net40", ".NETFramework,Version=v4.0")]
         [InlineData("net40-client", ".NETFramework,Version=v4.0,Profile=Client")]
         [InlineData("net", ".NETFramework,Version=v0.0")]
         [InlineData("net10.1.2.3", ".NETFramework,Version=v10.1.2.3")]
@@ -221,7 +220,6 @@ namespace NuGet.Test
         [InlineData("netstandard1.0", ".NETStandard,Version=v1.0")]
         [InlineData("netstandard1.0", ".NETStandard,Version=v1.0.0")]
         [InlineData("netstandard0.9", ".NETStandard,Version=v0.9")]
-        [InlineData("netstandard1.0", ".NETStandard,Version=v1.0")]
         [InlineData("netstandard1.1", ".NETStandard,Version=v1.1")]
         [InlineData("netstandard1.2", ".NETStandard,Version=v1.2")]
         [InlineData("netstandard1.3", ".NETStandard,Version=v1.3")]
@@ -321,7 +319,6 @@ namespace NuGet.Test
         [InlineData("portable-net45+wp8+win+wpa+netcore+netcore45")]
         [InlineData("portable-net450+net4.5+net45+wp8+wpa+win8+wpa81")]
         [InlineData("portable-win8+net45+wp8+wpa81+win8+win8")]
-        [InlineData("portable-net45+wp8+win+wpa+win8")]
         [InlineData("portable-net45+wp8+win+wpa+win8+net4.5")]
         public void NuGetFramework_ParsePCLNormalizeTest(string framework)
         {

@@ -192,7 +192,6 @@ namespace NuGet.Versioning.Test
         [Theory]
         [InlineData("[1.0.0]")]
         [InlineData("[1.0.0, 2.0.0]")]
-        [InlineData("[1.0.0, 2.0.0]")]
         [InlineData("1.0.0")]
         [InlineData("1.0.0-beta")]
         [InlineData("(1.0.0-beta, 2.0.0-alpha)")]
@@ -531,15 +530,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(range, versionInfo.OriginalString);
-        }
-
-        public void NonParsedVersionRangeHasNullOriginalString(string range)
-        {
-            // Act
-            var versionInfo = new VersionRange(NuGetVersion.Parse("1.0.0"));
-
-            // Assert
-            Assert.Null(versionInfo.OriginalString);
         }
 
         [Fact]

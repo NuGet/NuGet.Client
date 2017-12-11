@@ -1925,16 +1925,16 @@ namespace NuGet.Test
         [Fact]
         public Task TestPacManGetInstalledPackagesByDependencyOrder()
         {
-            return TestPacManGetInstalledPackagesByDependencyOrder(deletePackages: false);
+            return TestPacManGetInstalledPackagesByDependencyOrderInternal(deletePackages: false);
         }
 
         [Fact]
-        public Task TestPacManGetUnrestoredPackagesByDependencyOrder()
+        public Task TestPacManGetUnrestoredPackagesByDependencyOrderDeleteTrue()
         {
-            return TestPacManGetInstalledPackagesByDependencyOrder(deletePackages: true);
+            return TestPacManGetInstalledPackagesByDependencyOrderInternal(deletePackages: true);
         }
 
-        private async Task TestPacManGetInstalledPackagesByDependencyOrder(bool deletePackages)
+        private async Task TestPacManGetInstalledPackagesByDependencyOrderInternal(bool deletePackages)
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
