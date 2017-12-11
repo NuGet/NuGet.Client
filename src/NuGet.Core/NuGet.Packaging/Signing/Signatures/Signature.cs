@@ -37,7 +37,12 @@ namespace NuGet.Packaging.Signing
         public DateTimeOffset? Timestamp { get; }
 
         /// <summary>
-        /// SignerInfo for the timestamp
+        /// Accuracy of the timestamp.
+        /// </summary>
+        public TimeSpan? TimestampAccuracy { get; }
+
+        /// <summary>
+        /// SignerInfo for the timestamp.
         /// </summary>
         public SignerInfo TimestampSignerInfo { get; }
 
@@ -54,7 +59,8 @@ namespace NuGet.Packaging.Signing
 
             var ts = GetTimestamp(SignerInfo);
             Timestamp = ts.Item1;
-            TimestampSignerInfo = ts.Item2;
+            TimestampAccuracy = ts.Item2;
+            TimestampSignerInfo = ts.Item3;
         }
 
         /// <summary>
@@ -137,7 +143,7 @@ namespace NuGet.Packaging.Signing
             return SignatureType.Author;
         }
 
-        private static Tuple<DateTimeOffset?, SignerInfo> GetTimestamp(SignerInfo signer)
+        private static Tuple<DateTimeOffset?, TimeSpan?, SignerInfo> GetTimestamp(SignerInfo signer)
         {
             var authorUnsignedAttributes = signer.UnsignedAttributes;
             var timestampCms = new SignedCms();
@@ -150,11 +156,21 @@ namespace NuGet.Packaging.Signing
 
                     if (Rfc3161TimestampVerificationUtility.TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
                     {
-                        return Tuple.Create<DateTimeOffset?, SignerInfo>(tstInfo.Timestamp, timestampCms.SignerInfos[0]);
+
+                        const long TicksPerMicrosecond = 10;
+
+                        var accuracy = tstInfo.AccuracyInMicroseconds;
+                        TimeSpan? accuracyTimeSpan = null;
+                        if (accuracy != null)
+                        {
+                            accuracyTimeSpan = TimeSpan.FromTicks(accuracy.Value * TicksPerMicrosecond);
+                        }
+                        
+                        return Tuple.Create<DateTimeOffset?, TimeSpan?, SignerInfo>(tstInfo.Timestamp, accuracyTimeSpan, timestampCms.SignerInfos[0]);
                     }
                 }
             }
-            return Tuple.Create<DateTimeOffset?, SignerInfo>(null, null);
+            return Tuple.Create<DateTimeOffset?, TimeSpan?, SignerInfo>(null, null, null);
         }
 
 #else
