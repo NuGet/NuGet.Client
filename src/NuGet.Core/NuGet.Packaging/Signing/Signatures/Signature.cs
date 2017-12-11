@@ -34,17 +34,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Signature timestamp.
         /// </summary>
-        public DateTimeOffset? Timestamp { get; }
-
-        /// <summary>
-        /// Accuracy of the timestamp.
-        /// </summary>
-        public TimeSpan? TimestampAccuracy { get; }
-
-        /// <summary>
-        /// SignerInfo for the timestamp.
-        /// </summary>
-        public SignerInfo TimestampSignerInfo { get; }
+        public Timestamp Timestamp { get; }
 
         /// <summary>
         /// SignerInfo for this signature.
@@ -56,11 +46,7 @@ namespace NuGet.Packaging.Signing
             SignedCms = signedCms ?? throw new ArgumentNullException(nameof(signedCms));
             SignatureContent = SignatureContent.Load(SignedCms.ContentInfo.Content, SigningSpecifications.V1);
             Type = GetSignatureType(SignerInfo);
-
-            var ts = GetTimestamp(SignerInfo);
-            Timestamp = ts.Item1;
-            TimestampAccuracy = ts.Item2;
-            TimestampSignerInfo = ts.Item3;
+            Timestamp = GetTimestamp(SignerInfo);
         }
 
         /// <summary>
@@ -142,8 +128,7 @@ namespace NuGet.Packaging.Signing
             // TODO: Change this to use the new attributes that justin is adding.
             return SignatureType.Author;
         }
-
-        private static Tuple<DateTimeOffset?, TimeSpan?, SignerInfo> GetTimestamp(SignerInfo signer)
+        private static Timestamp GetTimestamp(SignerInfo signer)
         {
             var authorUnsignedAttributes = signer.UnsignedAttributes;
             var timestampCms = new SignedCms();
@@ -156,21 +141,22 @@ namespace NuGet.Packaging.Signing
 
                     if (Rfc3161TimestampVerificationUtility.TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
                     {
-
                         const long TicksPerMicrosecond = 10;
 
                         var accuracy = tstInfo.AccuracyInMicroseconds;
-                        TimeSpan? accuracyTimeSpan = null;
+                        var accuracyTimeSpan = TimeSpan.Zero;
                         if (accuracy != null)
                         {
                             accuracyTimeSpan = TimeSpan.FromTicks(accuracy.Value * TicksPerMicrosecond);
                         }
-                        
-                        return Tuple.Create<DateTimeOffset?, TimeSpan?, SignerInfo>(tstInfo.Timestamp, accuracyTimeSpan, timestampCms.SignerInfos[0]);
+
+                        return new Timestamp(timestampCms.SignerInfos[0],
+                                             upperLimit: tstInfo.Timestamp.Add(accuracyTimeSpan),
+                                             lowerLimit: tstInfo.Timestamp.Subtract(accuracyTimeSpan));
                     }
                 }
             }
-            return Tuple.Create<DateTimeOffset?, TimeSpan?, SignerInfo>(null, null, null);
+            return null;
         }
 
 #else
