@@ -406,4 +406,7 @@ Valid from:</comment>
   <data name="ErrorInvalidCertificateChainUnspecifiedReason" xml:space="preserve">
     <value>Certificate chain validation failed for an unspecified reason.</value>
   </data>
+  <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
+    <value>The argument cannot be null or empty.</value>
+  </data>
 </root>

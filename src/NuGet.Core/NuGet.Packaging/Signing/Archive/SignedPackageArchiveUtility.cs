@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+// Zip Spec here: http://www.pkware.com/documents/casestudies/APPNOTE.TXT
+
 using System;
-using System.Diagnostics;
-using System.Globalization;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -15,7 +17,6 @@ namespace NuGet.Packaging.Signing
         private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
 #if IS_DESKTOP
-
         /// <summary>
         /// Utility method to know if a zip archive is signed.
         /// </summary>
@@ -35,7 +36,7 @@ namespace NuGet.Packaging.Signing
                 SignedPackageArchiveIOUtility.SeekReaderBackwardToMatchByteSignature(reader,
                     BitConverter.GetBytes(SignedPackageArchiveIOUtility.EndOfCentralDirectorySignature));
 
-                // Jump to offset of start of central directory
+                // Jump to offset of start of central directory, 16 bytes from the start of EOCD
                 reader.BaseStream.Seek(offset: 16, origin: SeekOrigin.Current);
                 var offsetOfStartOfCD = reader.ReadUInt32();
 
@@ -51,11 +52,11 @@ namespace NuGet.Packaging.Signing
                         throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
                     }
 
-                    // Skip until file name length
+                    // Skip until file name length, 24 bytes after signature of central directory record
                     reader.BaseStream.Seek(offset: 24, origin: SeekOrigin.Current);
                     var filenameLength = reader.ReadUInt16();
 
-                    // Skip to read filename
+                    // Skip to read local header offset (12 bytes after filename length field)
                     reader.BaseStream.Seek(offset: 12, origin: SeekOrigin.Current);
 
                     var localHeaderOffset = reader.ReadUInt32();
@@ -67,6 +68,7 @@ namespace NuGet.Packaging.Signing
                         // Go to local file header
                         reader.BaseStream.Seek(offset: localHeaderOffset, origin: SeekOrigin.Begin);
 
+                        // Make sure file header exists there
                         var fileHeaderSignature = reader.ReadUInt32();
                         if (fileHeaderSignature != SignedPackageArchiveIOUtility.LocalFileHeaderSignature)
                         {
@@ -102,51 +104,42 @@ namespace NuGet.Packaging.Signing
             }
 
             var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+            var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
+            var centralDirectoryRecordsWithoutSignature = RemoveSignatureAndOrderByOffset(metadata);
 
             try
             {
+                // Read and hash from the start of the archive to the start of the file headers
                 reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
-                SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, metadata.SignatureLocalFileHeaderPosition);
+                SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, metadata.StartOfFileHeaders);
 
-                // Skip hashing of signature file
-                reader.BaseStream.Seek(offset: metadata.SignatureFileEntryTotalSize, origin: SeekOrigin.Current);
-
-                SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, metadata.SignatureCentralDirectoryHeaderPosition);
-
-                // Skip hashing of central directory header for signature file
-                reader.BaseStream.Seek(offset: metadata.SignatureCentralDirectoryHeaderSize, origin: SeekOrigin.Current);
-
-                // Update offset of any central directory that comes after signature
-                var possibleCentralDirectoryHeaderSignature = reader.ReadUInt32();
-                while (possibleCentralDirectoryHeaderSignature == SignedPackageArchiveIOUtility.CentralDirectoryHeaderSignature)
+                // Read and hash file headers
+                foreach (var record in centralDirectoryRecordsWithoutSignature)
                 {
-                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(possibleCentralDirectoryHeaderSignature));
-                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + 24);
-
-                    var filenameLength = reader.ReadUInt16();
-                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(filenameLength));
-
-                    var extraFieldLength = reader.ReadUInt16();
-                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(extraFieldLength));
-
-                    var fileCommentLength = reader.ReadUInt16();
-                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(fileCommentLength));
-
-                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + 8);
-
-                    var relativeOffsetOfLocalFileHeader = (uint)(reader.ReadUInt32() - metadata.SignatureFileEntryTotalSize);
-                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(relativeOffsetOfLocalFileHeader));
-
-                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm,
-                        reader.BaseStream.Position + filenameLength + extraFieldLength + fileCommentLength);
-
-                    possibleCentralDirectoryHeaderSignature = reader.ReadUInt32();
+                    reader.BaseStream.Seek(offset: record.OffsetToFileHeader, origin: SeekOrigin.Begin);
+                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, record.OffsetToFileHeader + record.FileEntryTotalSize);
                 }
 
-                // Seek back the last 4 bytes we read as a possible signature
-                reader.BaseStream.Seek(offset: -4, origin: SeekOrigin.Current);
+                // Order central directory records by their position
+                centralDirectoryRecordsWithoutSignature.Sort((x, y) => x.Position.CompareTo(y.Position));
 
-                // Update EOCD data
+                // Update offset of any central directory record that has a file entry after signature
+                foreach (var record in centralDirectoryRecordsWithoutSignature)
+                {
+                    reader.BaseStream.Seek(offset: record.Position, origin: SeekOrigin.Begin);
+                    // Hash from the start of the central directory record until the relative offset of local file header (42 from the start of central directory record, incluing signature length)
+                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + 42);
+
+                    var relativeOffsetOfLocalFileHeader = (uint)(reader.ReadUInt32() + record.ChangeInOffset);
+                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(relativeOffsetOfLocalFileHeader));
+
+                    // We already read and hash the whole header, skip only filenameLength + extraFieldLength + fileCommentLength (46 is the size of the header without those lengths)
+                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + record.HeaderSize - 46);
+                }
+
+                reader.BaseStream.Seek(offset: metadata.EndOfCentralDirectory, origin: SeekOrigin.Begin);
+
+                // Hash until total entries in end of central directory record (8 bytes from the start of EOCDR)
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, metadata.EndOfCentralDirectoryRecordPosition + 8);
 
                 var eocdrTotalEntries = (ushort)(reader.ReadUInt16() - 1);
@@ -155,12 +148,13 @@ namespace NuGet.Packaging.Signing
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntries));
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntriesOnDisk));
 
-                var eocdrSizeOfCentralDirectory = reader.ReadUInt32() - (uint)metadata.SignatureCentralDirectoryHeaderSize;
+                var eocdrSizeOfCentralDirectory = reader.ReadUInt32() - (uint)signatureCentralDirectoryHeader.HeaderSize;
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrSizeOfCentralDirectory));
 
-                var eocdrOffsetOfCentralDirectory = reader.ReadUInt32() - (uint)metadata.SignatureFileEntryTotalSize;
+                var eocdrOffsetOfCentralDirectory = reader.ReadUInt32() - (uint)signatureCentralDirectoryHeader.FileEntryTotalSize;
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrOffsetOfCentralDirectory));
 
+                // Hash until the end of the reader
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Length);
 
                 hashAlgorithm.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
@@ -171,6 +165,26 @@ namespace NuGet.Packaging.Signing
             catch { }
 
             return false;
+        }
+
+        private static List<CentralDirectoryHeaderMetadata> RemoveSignatureAndOrderByOffset(SignedPackageArchiveMetadata metadata)
+        {
+            // Remove signature cdr
+            var centralDirectoryRecordsList = metadata.CentralDirectoryHeaders.Where((v, i) => i != metadata.SignatureCentralDirectoryHeaderIndex).ToList();
+
+            // Sort by order of file entries
+            centralDirectoryRecordsList.Sort((x, y) => x.OffsetToFileHeader.CompareTo(y.OffsetToFileHeader));
+
+            // Update offsets with removed signature
+            var previousRecordFileEntryEnd = 0L;
+            foreach (var centralDirectoryRecord in centralDirectoryRecordsList)
+            {
+                centralDirectoryRecord.ChangeInOffset = previousRecordFileEntryEnd - centralDirectoryRecord.OffsetToFileHeader;
+
+                previousRecordFileEntryEnd = centralDirectoryRecord.OffsetToFileHeader + centralDirectoryRecord.FileEntryTotalSize + centralDirectoryRecord.ChangeInOffset;
+            }
+
+            return centralDirectoryRecordsList;
         }
 
 #else

@@ -1,37 +1,44 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
-    /// This class is internally used to hold metadata about the signed package archive being verified.
+    /// This class is used to hold metadata about the signed package archive being verified.
     /// </summary>
-    internal sealed class SignedPackageArchiveMetadata
+    public sealed class SignedPackageArchiveMetadata
     {
         /// <summary>
-        /// Position of the signature file header
+        /// List of central directory metadata ordered by the same order the central directory headers are in the archive
         /// </summary>
-        internal long SignatureLocalFileHeaderPosition { get; set; }
+        public List<CentralDirectoryHeaderMetadata> CentralDirectoryHeaders { get; set; }
 
         /// <summary>
-        /// Total size of file entry for signature
-        /// This should include size of local file header + encryption header + file data + data descriptor
+        /// Offset, in bytes, to the first file header relative to the start of the archive. Should typically be 0.
         /// </summary>
-        internal long SignatureFileEntryTotalSize { get; set; }
+        public long StartOfFileHeaders { get; set; }
 
         /// <summary>
-        /// Position of the signature file central directory header
+        /// Offset, in bytes, to the start of central directory relative to the start of the archive.
         /// </summary>
-        internal long SignatureCentralDirectoryHeaderPosition { get; set; }
+        public long StartOfCentralDirectory { get; set; }
 
         /// <summary>
-        /// Size of central directory header for signature file
+        /// Offset, in bytes, to the end of central directory headers relative to the start of the archive.
         /// </summary>
-        internal long SignatureCentralDirectoryHeaderSize { get; set; }
+        public long EndOfCentralDirectory { get; set; }
 
         /// <summary>
-        /// Position of the EOCD record
+        /// Index of the signature central directory header in CentralDirectoryHeaders.
+        /// If the CentralDirectoryHeaders list is ordered by IndexInHeaders this index indicates the position on the list for the signature.
         /// </summary>
-        internal long EndOfCentralDirectoryRecordPosition { get; set; }
+        public int SignatureCentralDirectoryHeaderIndex { get; set; }
+
+        /// <summary>
+        /// Offset, in bytes, to the start of "End of Central Directory Record" relative to the start of the archive.
+        /// </summary>
+        public long EndOfCentralDirectoryRecordPosition { get; set; }
     }
 }

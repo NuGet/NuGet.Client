@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -145,6 +147,170 @@ namespace NuGet.Packaging.FuncTest
             var verifier = new PackageSignatureVerifier(verificationProviders, settings);
             var result = await verifier.VerifySignaturesAsync(signPackage, CancellationToken.None);
             return result;
+        }
+
+        /// <summary>
+        /// unsigns a package for test purposes.
+        /// This does not timestamp a signature and can be used outside corp network.
+        /// </summary>
+        public static async Task ShiftSignatureMetadataAsync(SigningSpecifications spec, string signedPackagePath, string dir, int centralDirectoryIndex, int fileHeaderIndex)
+        {
+            var testLogger = new TestLogger();
+            var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
+
+            // Create a temp path
+            var copiedSignedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+            using (var signedReadStream = File.OpenRead(signedPackagePath))
+            using (var signedPackage = new BinaryReader(signedReadStream))
+            using (var shiftedWriteStream = File.OpenWrite(copiedSignedPackagePath))
+            using (var shiftedPackage = new BinaryWriter(shiftedWriteStream))
+            {
+                await ShiftSignatureMetadata(spec, signedPackage, shiftedPackage, centralDirectoryIndex, fileHeaderIndex);
+            }
+
+            // Overwrite the original package with the shifted one
+            File.Copy(copiedSignedPackagePath, signedPackagePath, overwrite: true);
+        }
+
+        private static Task ShiftSignatureMetadata(SigningSpecifications spec, BinaryReader reader, BinaryWriter writer, int centralDirectoryIndex, int fileHeaderIndex)
+        {
+            // Read metadata
+            var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+
+            // Calculate new central directory record metadata with the the signature record and entry shifted
+            var shiftedCdr = ShiftMetadata(spec, metadata, newSignatureFileEntryIndex: fileHeaderIndex, newSignatureCentralDirectoryRecordIndex: centralDirectoryIndex);
+
+            // Order records by shifted ofset (new offset = old offset + change in offset).
+            // This is the order they will appear in the new shifted package, but not necesarily the same order they were in the old package
+            shiftedCdr.Sort((x, y) => (x.OffsetToFileHeader + x.ChangeInOffset).CompareTo(y.OffsetToFileHeader + y.ChangeInOffset));
+
+            // Write data from start of file to first file entry
+            reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
+            ReadAndWriteUntilPosition(reader, writer, metadata.StartOfFileHeaders);
+
+            // Write all file entries in the new order
+            foreach (var entry in shiftedCdr)
+            {
+                // We need to read each entry from their position in the old package and write them sequencially to the new package
+                // The order in which they will appear in the new shited package is defined by the sorting done before starting to write
+                reader.BaseStream.Seek(offset: entry.OffsetToFileHeader, origin: SeekOrigin.Begin);
+                ReadAndWriteUntilPosition(reader, writer, entry.OffsetToFileHeader + entry.FileEntryTotalSize);
+            }
+
+            // Write all central directory records with updated offsets
+            // We first need to sort them in the order they will appear in the new shifted package
+            shiftedCdr.Sort((x, y) => x.IndexInHeaders.CompareTo(y.IndexInHeaders));
+            foreach (var entry in shiftedCdr)
+            {
+                reader.BaseStream.Seek(offset: entry.Position, origin: SeekOrigin.Begin);
+                // Read and write from the start of the central directory record until the relative offset of local file header (42 from the start of central directory record, incluing signature length)
+                ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + 42);
+
+                var relativeOffsetOfLocalFileHeader = (uint)(reader.ReadUInt32() + entry.ChangeInOffset);
+                writer.Write(relativeOffsetOfLocalFileHeader);
+
+                // We already read and hash the whole header, skip only filenameLength + extraFieldLength + fileCommentLength (46 is the size of the header without those lengths)
+                ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + reader.BaseStream.Position + entry.HeaderSize - 46);
+            }
+
+            // Write everything after central directory records
+            reader.BaseStream.Seek(offset: metadata.EndOfCentralDirectory, origin: SeekOrigin.Begin);
+            ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Length);
+
+            return Task.FromResult(0);
+        }
+
+        private static List<CentralDirectoryHeaderMetadata> ShiftMetadata(
+            SigningSpecifications spec,
+            SignedPackageArchiveMetadata metadata,
+            int newSignatureFileEntryIndex,
+            int newSignatureCentralDirectoryRecordIndex)
+        {
+            var shiftedCdr = new List<CentralDirectoryHeaderMetadata>(metadata.CentralDirectoryHeaders);
+
+            // Sort Central Directory records in the order the file entries appear  in the original archive
+            shiftedCdr.Sort((x, y) => x.OffsetToFileHeader.CompareTo(y.OffsetToFileHeader));
+
+            // Shift Central Directory records to the desired position.
+            // Because we sorted in the file entry order this will shift
+            // the file entries
+            ShiftSignatureToIndex(spec, shiftedCdr, newSignatureFileEntryIndex);
+
+            // Calculate the change in offsets for the shifted file entries
+            var lastEntryEnd = 0L;
+            foreach (var cdr in shiftedCdr)
+            {
+                cdr.ChangeInOffset = lastEntryEnd - cdr.OffsetToFileHeader;
+
+                lastEntryEnd = cdr.OffsetToFileHeader + cdr.FileEntryTotalSize + cdr.ChangeInOffset;
+            }
+
+            // Now we sort the central directory records in the order thecentral directory records appear in the original archive
+            shiftedCdr.Sort((x, y) => x.Position.CompareTo(y.Position));
+
+            // Shift Central Directory records to the desired position.
+            // Because we sorted in the central directory records order this will shift
+            // the central directory records
+            ShiftSignatureToIndex(spec, shiftedCdr, newSignatureCentralDirectoryRecordIndex);
+
+            // Calculate the new indexes for each central directory record
+            var lastIndex = 0;
+            foreach (var cdr in shiftedCdr)
+            {
+                cdr.IndexInHeaders = lastIndex;
+                lastIndex++;
+            }
+
+            return shiftedCdr;
+        }
+
+        private static void ShiftSignatureToIndex(
+            SigningSpecifications spec,
+            List<CentralDirectoryHeaderMetadata> cdr,
+            int index)
+        {
+            // Check for the signature object in the entries.
+            // We have to do a manual check because we have no context
+            // of the order in which the central directory records list is sorted.
+            var recordIndex = 0;
+            for (; recordIndex < cdr.Count; recordIndex++)
+            {
+                if (StringComparer.Ordinal.Equals(cdr[recordIndex].Filename, spec.SignaturePath))
+                {
+                    break;
+                }
+            }
+            // Remove the signature object and add it to the new index
+            var signatureCD = cdr[recordIndex];
+            cdr.RemoveAt(recordIndex);
+            cdr.Insert(index, signatureCD);
+        }
+
+        private static void ReadAndWriteUntilPosition(BinaryReader reader, BinaryWriter writer, long position)
+        {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            var bufferSize = 4;
+            while (reader.BaseStream.Position + bufferSize < position)
+            {
+                var bytes = reader.ReadBytes(bufferSize);
+                writer.Write(bytes);
+            }
+            var remainingBytes = position - reader.BaseStream.Position;
+            if (remainingBytes > 0)
+            {
+                var bytes = reader.ReadBytes((int)remainingBytes);
+                writer.Write(bytes);
+            }
         }
     }
 }
