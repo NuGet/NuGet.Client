@@ -457,7 +457,7 @@ namespace NuGet.ProjectManagement.Test
         {
             using (var test = new FolderNuGetProjectTest())
             {
-                await test.InstallAsync(PackageSaveMode.Defaultv2);
+                await test.InstallAsync(packageSaveMode);
 
                 Assert.True(test.Project.PackageExists(test.PackageIdentity, PackageSaveMode.Defaultv2));
             }

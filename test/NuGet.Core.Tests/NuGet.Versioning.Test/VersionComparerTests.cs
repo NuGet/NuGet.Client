@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -11,7 +11,6 @@ namespace NuGet.Versioning.Test
         [Theory]
         [InlineData("1.0.0", "1.0.0")]
         [InlineData("1.0.0-BETA", "1.0.0-beta")]
-        [InlineData("1.0.0-BETA+AA", "1.0.0-beta+aa")]
         [InlineData("1.0.0-BETA+AA", "1.0.0-beta+aa")]
         [InlineData("1.0.0-BETA.X.y.5.77.0+AA", "1.0.0-beta.x.y.5.77.0+aa")]
         public void VersionComparisonDefaultEqual(string version1, string version2)
@@ -26,7 +25,6 @@ namespace NuGet.Versioning.Test
         [Theory]
         [InlineData("0.0.0", "1.0.0")]
         [InlineData("1.1.0", "1.0.0")]
-        [InlineData("1.0.1", "1.0.0")]
         [InlineData("1.0.1", "1.0.0")]
         [InlineData("1.0.0-BETA", "1.0.0-beta2")]
         [InlineData("1.0.0+AA", "1.0.0-beta+aa")]

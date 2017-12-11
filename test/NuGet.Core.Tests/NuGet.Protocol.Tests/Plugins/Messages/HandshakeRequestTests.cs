@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -84,17 +84,17 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Theory]
-        [InlineData("{\"ProtocolVersion\":\"\",\"MinimumProtocolVersion\":\"1.0.0\"}", "protocolVersion")]
-        [InlineData("{\"ProtocolVersion\":\" \",\"MinimumProtocolVersion\":\"1.0.0\"}", "protocolVersion")]
-        [InlineData("{\"ProtocolVersion\":\"a\",\"MinimumProtocolVersion\":\"1.0.0\"}", "protocolVersion")]
-        [InlineData("{\"ProtocolVersion\":3,\"MinimumProtocolVersion\":\"1.0.0\"}", "protocolVersion")]
-        [InlineData("{\"ProtocolVersion\":false,\"MinimumProtocolVersion\":\"1.0.0\"}", "protocolVersion")]
-        [InlineData("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\"\"}", "minimumProtocolVersion")]
-        [InlineData("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\" \"}", "minimumProtocolVersion")]
-        [InlineData("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\"a\"}", "minimumProtocolVersion")]
-        [InlineData("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":3,}", "minimumProtocolVersion")]
-        [InlineData("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":false}", "minimumProtocolVersion")]
-        public void JsonDeserialization_ThrowsForInvalidVersion(string json, string parameterName)
+        [InlineData("{\"ProtocolVersion\":\"\",\"MinimumProtocolVersion\":\"1.0.0\"}")]
+        [InlineData("{\"ProtocolVersion\":\" \",\"MinimumProtocolVersion\":\"1.0.0\"}")]
+        [InlineData("{\"ProtocolVersion\":\"a\",\"MinimumProtocolVersion\":\"1.0.0\"}")]
+        [InlineData("{\"ProtocolVersion\":3,\"MinimumProtocolVersion\":\"1.0.0\"}")]
+        [InlineData("{\"ProtocolVersion\":false,\"MinimumProtocolVersion\":\"1.0.0\"}")]
+        [InlineData("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\"\"}")]
+        [InlineData("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\" \"}")]
+        [InlineData("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\"a\"}")]
+        [InlineData("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":3,}")]
+        [InlineData("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":false}")]
+        public void JsonDeserialization_ThrowsForInvalidVersion(string json)
         {
             var exception = Assert.Throws<ArgumentException>(
                 () => JsonSerializationUtilities.Deserialize<HandshakeRequest>(json));

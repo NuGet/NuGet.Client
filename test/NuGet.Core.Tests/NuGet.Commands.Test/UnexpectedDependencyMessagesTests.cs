@@ -113,7 +113,7 @@ namespace NuGet.Commands.Test
             messages.Count.Should().Be(1);
             message.LibraryId.Should().Be("y");
             message.TargetGraphs.Single().Should().Be("net46");
-            message.Code.Should().Be(NuGetLogCode.NU1608);
+            message.Code.Should().Be(NuGetLogCode.NU1608, reason);
             message.Level.Should().Be(LogLevel.Warning);
         }
 

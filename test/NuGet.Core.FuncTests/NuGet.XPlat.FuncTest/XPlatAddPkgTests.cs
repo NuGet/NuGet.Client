@@ -254,18 +254,12 @@ namespace NuGet.XPlat.FuncTest
         [Theory]
         [InlineData("net46", "net46; netcoreapp1.0", "1.*")]
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
-        [InlineData("net46", "net46; netcoreapp1.0", "1.*")]
         [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
         [InlineData("net46", "net46; netcoreapp2.0", "1.*")]
         [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "1.*")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "1.*")]
-        [InlineData("net46", "net46; netcoreapp2.0", "1.*")]
         [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "1.*")]
         [InlineData("net46", "net46; netstandard2.0", "1.*")]
         [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "1.*")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "1.*")]
-        [InlineData("net46", "net46; netstandard2.0", "1.*")]
         [InlineData("netstandard2.0", "net46; netstandard2.0", "1.*")]
         public async void AddPkg_UnconditionalAddWithNoRestore_Success(string packageFrameworks,
             string projectFrameworks,
@@ -304,23 +298,10 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
-        [InlineData("net46", "net46; netcoreapp1.0", "1.*")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
-        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
-        [InlineData("net46", "net46; netcoreapp1.0", "1.*")]
-        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
-        [InlineData("net46", "net46; netcoreapp2.0", "1.*")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "1.*")]
-        [InlineData("net46; netcoreapp2.0", "net46; netcoreapp2.0", "1.*")]
-        [InlineData("net46", "net46; netcoreapp2.0", "1.*")]
-        [InlineData("netcoreapp2.0", "net46; netcoreapp2.0", "1.*")]
-        [InlineData("net46", "net46; netstandard2.0", "1.*")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "1.*")]
-        [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "1.*")]
-        [InlineData("net46", "net46; netstandard2.0", "1.*")]
-        [InlineData("netstandard2.0", "net46; netstandard2.0", "1.*")]
-        public async void AddPkg_UnconditionalAddWithDotnetCliToolAndNoRestore_Success(string packageFrameworks,
-            string projectFrameworks,
+        [InlineData("net46; netcoreapp1.0", "1.*")]
+        [InlineData("net46; netcoreapp2.0", "1.*")]
+        [InlineData("net46; netstandard2.0", "1.*")]
+        public async void AddPkg_UnconditionalAddWithDotnetCliToolAndNoRestore_Success(string projectFrameworks,
             string userInputVersion)
         {
             // Arrange

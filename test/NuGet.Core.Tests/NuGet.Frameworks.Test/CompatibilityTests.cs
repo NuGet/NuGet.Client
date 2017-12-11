@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Frameworks;
@@ -411,7 +411,6 @@ namespace NuGet.Test
         [InlineData("tizen3.0", "dotnet5.3", false)]
         [InlineData("tizen3.0", "dotnet5.2", false)]
         [InlineData("tizen3.0", "dotnet5.1", false)]
-        [InlineData("tizen3.0", "dotnet5.1", false)]
         [InlineData("tizen4.0", "netstandard2.1", false)]
         [InlineData("tizen4.0", "netstandard2.0", true)]
         [InlineData("tizen4.0", "netstandard1.7", true)]
@@ -428,7 +427,6 @@ namespace NuGet.Test
         [InlineData("tizen4.0", "dotnet5.3", false)]
         [InlineData("tizen4.0", "dotnet5.2", false)]
         [InlineData("tizen4.0", "dotnet5.1", false)]
-        [InlineData("tizen4.0", "dotnet5.1", false)]
 
         // Older things don't support dotnet, netstandard, netstandardapp, or netcoreapp at all
         [InlineData("sl4", "netcoreapp1.0", false)]
@@ -441,13 +439,11 @@ namespace NuGet.Test
         [InlineData("net40", "netstandard", false)]
         [InlineData("net35", "netstandard", false)]
         [InlineData("net20", "netstandard", false)]
-        [InlineData("net20", "netstandard", false)]
         [InlineData("sl4", "dotnet", false)]
         [InlineData("sl3", "dotnet", false)]
         [InlineData("sl2", "dotnet", false)]
         [InlineData("net40", "dotnet", false)]
         [InlineData("net35", "dotnet", false)]
-        [InlineData("net20", "dotnet", false)]
         [InlineData("net20", "dotnet", false)]
 
         // dotnet and netstandard doesn't support the things that support it
@@ -564,7 +560,6 @@ namespace NuGet.Test
         [InlineData("netcoreapp9.0", "netstandard1.7", true)]
         [InlineData("netcoreapp9.0", "netstandard1.6", true)]
         [InlineData("netcoreapp9.0", "netstandard1.5", true)]
-        [InlineData("netcoreapp9.0", "netstandard1.5", true)]
         [InlineData("netcoreapp2.1", "netstandard2.1", false)]
         [InlineData("netcoreapp2.1", "netstandard2.0", true)]
         [InlineData("netcoreapp2.0", "netstandard2.1", false)]
@@ -572,7 +567,6 @@ namespace NuGet.Test
         [InlineData("netcoreapp1.1", "netstandard1.8", false)]
         [InlineData("netcoreapp1.1", "netstandard1.7", true)]
         [InlineData("netcoreapp1.1", "netstandard1.6", true)]
-        [InlineData("netcoreapp1.1", "netstandard1.5", true)]
         [InlineData("netcoreapp1.1", "netstandard1.5", true)]
         [InlineData("netcoreapp1.0", "netstandard1.7", false)]
         [InlineData("netcoreapp1.0", "netstandard1.6", true)]
@@ -863,11 +857,6 @@ namespace NuGet.Test
         [InlineData("net35")]
         [InlineData("net403")]
         [InlineData("net45-cf")]
-        [InlineData("sl5")]
-        [InlineData("sl")]
-        [InlineData("netmf")]
-        [InlineData("wp7")]
-        [InlineData("net40")]
         public void Compatibility_ProjectCannotInstallGenerationLibraries(string framework)
         {
             // Arrange
@@ -1135,9 +1124,6 @@ namespace NuGet.Test
         [InlineData("wp")]
         [InlineData("wp7")]
         [InlineData("wp70")]
-        [InlineData("wp")]
-        [InlineData("wp7")]
-        [InlineData("wp70")]
         [InlineData("sl3-wp")]
         public void WindowsPhone7IdentifierCompatibleWithAllWPProjects(string wp7Identifier)
         {
@@ -1197,7 +1183,6 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("win9")]
         [InlineData("win9")]
         [InlineData("win10")]
         [InlineData("win81")]

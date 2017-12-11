@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,7 +35,6 @@ namespace NuGet.Test
         [InlineData("uap10.0", "wpa81,dotnet5.3,portable-win81+net45", "wpa81")]
         [InlineData("uap10.0", "dotnet5.2,portable-win81+net45", "dotnet5.2")]
         [InlineData("uap10.0", "wpa81,dotnet5.2,portable-win81+net45", "wpa81")]
-        [InlineData("uap10.0", "dotnet5.2,portable-win81+net45", "dotnet5.2")]
         [InlineData("uap10.0.15064.0", "netcore50,win81,wpa81,dotnet5.4,portable-win81+net45,netstandard2.0", "netcore50")]
         [InlineData("uap10.0.15064.0", "netstandard2.0, netstandard2.1, netstandard1.9, net45, net461", "netstandard2.0")]
         [InlineData("uap10.0.15064.0", "netstandard2.0, netcoreapp1.0, netcore2.0", "netstandard2.0")]
@@ -1033,10 +1032,6 @@ namespace NuGet.Test
         [InlineData("dnx50", "dnx50")]
         [InlineData("dnx50", "dnx5")]
         [InlineData("dnx50", "dnx")]
-        [InlineData("dnx", "net45")]
-        [InlineData("dnx", "portable-net45+win8")]
-        [InlineData("dnx", "portable-win8+net45")]
-        [InlineData("dnx", "portable-win8+net45+sl4")]
         public void FrameworkReducer_GetNearestDnx(string project, string framework)
         {
             FrameworkReducer reducer = new FrameworkReducer();

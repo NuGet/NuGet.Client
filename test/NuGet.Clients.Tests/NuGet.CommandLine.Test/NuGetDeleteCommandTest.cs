@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -420,15 +420,15 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        public static IEnumerable<string[]> ServerWarningData
+        public static IEnumerable<object[]> ServerWarningData
         {
             get
             {
                 return new[]
                 {
-                    new string[] { null, null },
-                    new string[] { "Single server warning message", null},
-                    new string[] { "First of two server warning messages", "Second of two server warning messages"}
+                    new object[] { null, null },
+                    new object[] { "Single server warning message", null},
+                    new object[] { "First of two server warning messages", "Second of two server warning messages"}
                 };
             }
         }

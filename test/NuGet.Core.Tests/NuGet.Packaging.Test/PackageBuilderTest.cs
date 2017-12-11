@@ -2446,7 +2446,6 @@ Enabling license acceptance requires a license url.");
         [InlineData(@".\test1.txt", "test1.txt")]
         [InlineData(@".\test\..\test1.txt", "test1.txt")]
         [InlineData(@"./test/../test1.txt", "test1.txt")]
-        [InlineData("./test/../test1.txt", "test1.txt")]
         [InlineData(@"..\test1.txt", "test1.txt")]
         [InlineData(@"test1\.\.\test2\..\test1.txt", "test1/test1.txt")]
         public void PackageBuilderWorksWithFilesHavingCurrentDirectoryAsTarget(string inputFile, string outputFile)
