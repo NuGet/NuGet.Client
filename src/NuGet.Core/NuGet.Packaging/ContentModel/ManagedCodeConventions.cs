@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -382,6 +382,11 @@ namespace NuGet.Client
             /// </summary>
             public PatternSet ContentFiles { get; }
 
+            /// <summary>
+            /// Pattern used to identify Tools assets for global tools
+            /// </summary>
+            public PatternSet ToolsFiles { get; }
+
             internal ManagedCodePatterns(ManagedCodeConventions conventions)
             {
                 AnyTargettedFile = new PatternSet(
@@ -501,6 +506,20 @@ namespace NuGet.Client
                     pathPatterns: new PatternDefinition[]
                     {
                         new PatternDefinition("contentFiles/{codeLanguage}/{tfm}/{any?}"),
+                    });
+
+                ToolsFiles = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                        {
+                            new PatternDefinition("tools/{tfm}/{rid}/{any?}", table: DotnetAnyTable),
+                            new PatternDefinition("tools/{tfm}/any/{any?}", table: DotnetAnyTable),
+
+                        },
+                    pathPatterns: new PatternDefinition[]
+                        {
+                            new PatternDefinition("tools/{tfm}/{rid}/{assembly}", table: DotnetAnyTable),
+                            new PatternDefinition("tools/{tfm}/any/{assembly}", table: DotnetAnyTable),
                     });
             }
         }
