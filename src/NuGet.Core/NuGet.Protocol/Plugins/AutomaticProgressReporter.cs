@@ -156,6 +156,11 @@ namespace NuGet.Protocol.Plugins
             {
                 return;
             }
+            catch (ArgumentNullException)
+            {
+                // The semaphore may have been disposed already.
+                return;
+            }
 
             if (_isDisposed)
             {
