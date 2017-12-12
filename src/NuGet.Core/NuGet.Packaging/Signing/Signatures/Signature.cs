@@ -151,6 +151,7 @@ namespace NuGet.Packaging.Signing
                         }
 
                         return new Timestamp(timestampCms.SignerInfos[0],
+                                             generalizedTime: tstInfo.Timestamp,
                                              upperLimit: tstInfo.Timestamp.Add(accuracyTimeSpan),
                                              lowerLimit: tstInfo.Timestamp.Subtract(accuracyTimeSpan));
                     }

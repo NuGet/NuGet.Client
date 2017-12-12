@@ -26,6 +26,11 @@ namespace NuGet.Packaging.Signing
         public DateTimeOffset LowerLimit { get; }
 
         /// <summary>
+        /// Time timestamp was created by the Time Stamp Authority.
+        /// </summary>
+        public DateTimeOffset GeneralizedTime { get; }
+
+        /// <summary>
         /// Timestamp SignerInfo.
         /// </summary>
         public SignerInfo SignerInfo { get; }
@@ -34,9 +39,10 @@ namespace NuGet.Packaging.Signing
         /// Timestamp information.
         /// </summary>
         /// <param name="timestampSignerInfo">Timestamp SignerInfo.</param>
+        /// <param name="generalizedTime">Time timestamp was created by the Time Stamp Authority.</param>
         /// <param name="upperLimit">Upper limit of Timestamp.</param>
         /// <param name="lowerLimit">Lower limit of Timestamp.</param>
-        public Timestamp(SignerInfo timestampSignerInfo, DateTimeOffset upperLimit, DateTimeOffset lowerLimit)
+        public Timestamp(SignerInfo timestampSignerInfo, DateTimeOffset generalizedTime,  DateTimeOffset upperLimit, DateTimeOffset lowerLimit)
         {
             SignerInfo = timestampSignerInfo ?? throw new ArgumentNullException(nameof(timestampSignerInfo));
             LowerLimit = lowerLimit;
