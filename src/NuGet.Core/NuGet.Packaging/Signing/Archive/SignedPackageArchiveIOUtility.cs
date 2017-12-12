@@ -233,9 +233,6 @@ namespace NuGet.Packaging.Signing
 
             var lastCentralDirectoryRecord = centralDirectoryRecords.Last();
             metadata.EndOfCentralDirectory = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize;
-
-            // Update central directory records with missing information
-            UpdateCentralDirectoryRecordsMetadata(reader, metadata, centralDirectoryRecords);
             metadata.CentralDirectoryHeaders = centralDirectoryRecords;
 
             // Make sure the package is not zip64
@@ -256,11 +253,21 @@ namespace NuGet.Packaging.Signing
             return metadata;
         }
 
-        private static void UpdateCentralDirectoryRecordsMetadata(BinaryReader reader, SignedPackageArchiveMetadata metadata, List<CentralDirectoryHeaderMetadata> centralDirectoryRecords)
+        /// <summary>
+        /// Updates the SignedPackageArchiveMetadata.CentralDirectoryHeaders to values excluding the signature file, if present.
+        /// Throws is none or more than one signature entries are found.
+        /// </summary>
+        /// <param name="reader">Binary reader to zip archive.</param>
+        /// <param name="metadata">SignedPackageArchiveMetadata extracted from the signed package archive.</param>
+        public static void UpdateCentralDirectoryRecordsExcludingSignature(
+            BinaryReader reader,
+            SignedPackageArchiveMetadata metadata)
         {
             // Get missing metadata for central directory records
             var hasFoundSignature = false;
+            var centralDirectoryRecords = metadata.CentralDirectoryHeaders;
             var centralDirectoryRecordsCount = centralDirectoryRecords.Count;
+
             for (var centralDirectoryRecordIndex = 0; centralDirectoryRecordIndex < centralDirectoryRecordsCount; centralDirectoryRecordIndex++)
             {
                 var record = centralDirectoryRecords[centralDirectoryRecordIndex];
@@ -280,6 +287,7 @@ namespace NuGet.Packaging.Signing
 
                 // Validate file header signature
                 var fileHeaderSignature = reader.ReadUInt32();
+
                 if (fileHeaderSignature != LocalFileHeaderSignature)
                 {
                     throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
@@ -305,6 +313,65 @@ namespace NuGet.Packaging.Signing
             {
                 throw new SignatureException(Strings.Error_NotOnePrimarySignature);
             }
+        }
+
+        public static void WriteFileHeader(BinaryWriter writer, byte[] fileData)
+        {
+            if (fileData == null || fileData.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(fileData));
+            }
+
+            // TODO - make the data UTF8 through bitconverter
+
+            // Write the file header signature
+            writer.Write(LocalFileHeaderSignature);
+
+            // 2.0 - File is compressed using Deflate compression
+            writer.Write((ushort)20);
+
+            // 00 - Normal (-en) compression option was used.
+            writer.Write((ushort)0);
+
+            // 00 - The file is stored (no compression)
+            writer.Write((ushort)0);
+
+            // write date and time
+            writer.Write(ToMsDosDateTime(DateTime.Now));
+
+            // write file CRC32
+            writer.Write(GenerateCRC32(fileData));
+
+            // write uncompressed size
+            writer.Write(fileData.Length);
+
+            // write compressed size - same as uncompressed since file should have no compression
+            writer.Write(fileData.Length);
+
+            // write file name length
+            writer.Write((ushort)_signingSpecification.SignaturePath.Length);
+
+            // write extra field length
+            writer.Write((ushort)0);
+
+            // write file comment length
+            writer.Write((ushort)0);
+
+            // write disk number start
+            writer.Write((ushort)0);
+
+            // write internal file attributes
+            writer.Write((ushort)0);
+
+            // write external file attributes
+            writer.Write((uint)0);
+
+            // write relative offset of local header
+            writer.Write((uint)0);
+
+            // write file name
+            writer.Write(_signingSpecification.Encoding.GetBytes(_signingSpecification.SignaturePath));
+
         }
 
         private static bool CurrentStreamPositionMatchesByteSignature(BinaryReader reader, byte[] byteSignature)
@@ -342,6 +409,58 @@ namespace NuGet.Packaging.Signing
             stream.Seek(offset: startingOffset, origin: SeekOrigin.Begin);
 
             return true;
+        }
+
+        // Reference - http://referencesource.microsoft.com/#WindowsBase/Base/MS/Internal/IO/Zip/ZipIOBlockManager.cs,492
+        private static uint ToMsDosDateTime(DateTime dateTime)
+        {
+
+            uint result = 0;
+
+            result |= (((uint)dateTime.Second) / 2) & 0x1F;   // seconds need to be divided by 2 as they stored in 5 bits
+            result |= (((uint)dateTime.Minute) & 0x3F) << 5;
+            result |= (((uint)dateTime.Hour) & 0x1F) << 11;
+
+            result |= (((uint)dateTime.Day) & 0x1F) << 16;
+            result |= (((uint)dateTime.Month) & 0xF) << 21;
+            result |= (((uint)(dateTime.Year - 1980)) & 0x7F) << 25;
+
+            return result;
+        }
+
+        // Reference - http://referencesource.microsoft.com/#WindowsBase/Base/MS/Internal/IO/Zip/Crc32.cs,73
+        private static uint GenerateCRC32(byte[] data)
+        {
+            var crcTable = GenerateCrc32LookupTable();
+            var crc32 = 0xffffffff;
+
+            foreach (var dataByte in data)
+            {
+                var index = (crc32 ^ dataByte) & 0x000000FF;
+                crc32 = (crc32 >> 8) ^ crcTable[index];
+            }
+
+            return ~crc32;
+        }
+
+        private static uint[] GenerateCrc32LookupTable()
+        {
+            var crcTable = new uint[256];
+
+            for (var i = 0; i < crcTable.Length; i++)
+            {
+                var c = (uint)i;
+                for (var j = 0; j < 8; j++)
+                {
+                    if ((c & 1) != 0)
+                        c = 0xedb88320 ^ (c >> 1);
+                    else
+                        c >>= 1;
+                }
+                crcTable[i] = c;
+            }
+
+            return crcTable;
         }
     }
 }

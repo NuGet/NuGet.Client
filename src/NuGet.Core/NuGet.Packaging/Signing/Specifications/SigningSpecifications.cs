@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Text;
+
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
@@ -9,7 +11,7 @@ namespace NuGet.Packaging.Signing
     public abstract class SigningSpecifications
     {
         /// <summary>
-        /// v1.0.0 signing settings
+        /// v1.0.0 signing settings.
         /// </summary>
         public static readonly SigningSpecificationsV1 V1 = new SigningSpecificationsV1();
 
@@ -34,9 +36,14 @@ namespace NuGet.Packaging.Signing
         public abstract string[] AllowedHashAlgorithmOids { get; }
 
         /// <summary>
-        /// Returns minumum length required for RSA public keys
+        /// Returns minumum length required for RSA public keys.
         /// </summary>
         public abstract int RSAPublicKeyMinLength { get; }
+
+        /// <summary>
+        /// Encoding used to generate the signature.
+        /// </summary>
+        public abstract Encoding Encoding { get; }
 
         /// <summary>
         /// Initialize a signing specification with a root folder.

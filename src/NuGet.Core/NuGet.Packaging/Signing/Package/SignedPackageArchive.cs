@@ -43,10 +43,9 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.SignedPackagePackageAlreadySigned);
             }
 
-            var signatureEntry = Zip.CreateEntry(_signingSpecification.SignaturePath, CompressionLevel.NoCompression);
-            using (var signatureEntryStream = signatureEntry.Open())
+            using (var reader = new BinaryReader(ZipStream, Utf8Encoding, leaveOpen: true))
             {
-                signatureStream.CopyTo(signatureEntryStream);
+                var packageMetadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
             }
         }
 

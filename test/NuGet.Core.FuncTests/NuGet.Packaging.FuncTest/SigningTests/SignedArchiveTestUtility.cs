@@ -177,6 +177,9 @@ namespace NuGet.Packaging.FuncTest
             // Read metadata
             var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
 
+            // Update central directory records by excluding the signature entry
+            SignedPackageArchiveIOUtility.UpdateCentralDirectoryRecordsExcludingSignature(reader, metadata);
+
             // Calculate new central directory record metadata with the the signature record and entry shifted
             var shiftedCdr = ShiftMetadata(spec, metadata, newSignatureFileEntryIndex: fileHeaderIndex, newSignatureCentralDirectoryRecordIndex: centralDirectoryIndex);
 

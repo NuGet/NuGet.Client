@@ -104,6 +104,10 @@ namespace NuGet.Packaging.Signing
             }
 
             var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+
+            // Update central directory records by excluding the signature entry
+            SignedPackageArchiveIOUtility.UpdateCentralDirectoryRecordsExcludingSignature(reader, metadata);
+
             var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
             var centralDirectoryRecordsWithoutSignature = RemoveSignatureAndOrderByOffset(metadata);
 

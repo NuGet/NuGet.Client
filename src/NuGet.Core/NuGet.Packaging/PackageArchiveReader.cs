@@ -37,6 +37,11 @@ namespace NuGet.Packaging
         protected Stream ZipStream { get; set; }
 
         /// <summary>
+        /// Encoding used while reading and writing the signature file.
+        /// </summary>
+        protected Encoding Utf8Encoding => _utf8Encoding;
+
+        /// <summary>
         /// Nupkg package reader
         /// </summary>
         /// <param name="stream">Nupkg data stream.</param>
@@ -292,7 +297,7 @@ namespace NuGet.Packaging
             }
 
 #if IS_DESKTOP
-            using (var reader = new BinaryReader(ZipStream, _utf8Encoding, leaveOpen: true))
+            using (var reader = new BinaryReader(ZipStream, Utf8Encoding, leaveOpen: true))
             {
                 var hashAlgorithm = signatureContent.HashAlgorithm.GetHashProvider();
                 var expectedHash = Convert.FromBase64String(signatureContent.HashValue);

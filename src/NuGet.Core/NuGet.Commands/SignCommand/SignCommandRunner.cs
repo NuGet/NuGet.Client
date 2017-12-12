@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -65,6 +66,8 @@ namespace NuGet.Commands
             bool overwrite,
             CancellationToken token)
         {
+            Debugger.Launch();
+
             var success = true;
 
             var signatureProvider = GetSignatureProvider(timestamper);
