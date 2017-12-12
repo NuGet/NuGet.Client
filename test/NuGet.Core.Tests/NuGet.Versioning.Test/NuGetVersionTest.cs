@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using FluentAssertions;
 using Xunit;
 
 namespace NuGet.Versioning.Test
@@ -199,6 +200,13 @@ namespace NuGet.Versioning.Test
             Assert.False(semVer.Equals(other));
         }
 
+        [Fact]
+        public void EqualsIsTrueForEmptyRevision()
+        {
+            NuGetVersion.Parse("1.0.0.0").Equals(SemanticVersion.Parse("1.0.0")).Should().BeTrue();
+            SemanticVersion.Parse("1.0.0").Equals(NuGetVersion.Parse("1.0.0.0")).Should().BeTrue();
+        }
+
         [Theory]
         [InlineData("1.0", "1.0.0.0")]
         [InlineData("1.23.01", "1.23.1")]
@@ -206,6 +214,8 @@ namespace NuGet.Versioning.Test
         [InlineData("1.45.6-Alpha", "1.45.6-Alpha")]
         [InlineData("1.6.2-BeTa", "1.6.02-beta")]
         [InlineData("22.3.07     ", "22.3.07")]
+        [InlineData("1.0", "1.0.0.0+beta")]
+        [InlineData("1.0.0.0+beta.2", "1.0.0.0+beta.1")]
         public void SemVerEqualsOperatorWorks(string versionA, string versionB)
         {
             // Arrange

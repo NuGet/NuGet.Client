@@ -111,7 +111,7 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual bool Equals(SemanticVersion other)
         {
-            return Equals(other, VersionComparison.Default);
+            return VersionComparer.Default.Equals(this, other);
         }
 
         /// <summary>
@@ -119,7 +119,8 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual bool Equals(SemanticVersion other, VersionComparison versionComparison)
         {
-            return CompareTo(other, versionComparison) == 0;
+            var comparer = new VersionComparer(versionComparison);
+            return comparer.Equals(this, other);
         }
 
         /// <summary>
@@ -136,7 +137,7 @@ namespace NuGet.Versioning
         /// </summary>
         public static bool operator ==(SemanticVersion version1, SemanticVersion version2)
         {
-            return Compare(version1, version2) == 0;
+            return Equals(version1, version2);
         }
 
         /// <summary>
@@ -144,7 +145,7 @@ namespace NuGet.Versioning
         /// </summary>
         public static bool operator !=(SemanticVersion version1, SemanticVersion version2)
         {
-            return Compare(version1, version2) != 0;
+            return !Equals(version1, version2);
         }
 
         /// <summary>
