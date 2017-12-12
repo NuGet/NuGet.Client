@@ -125,17 +125,17 @@ namespace NuGet.Commands
             SignPackageRequest request,
             CancellationToken token)
         {
-            var tempFilePath = CopyPackage(packagePath);
+            var tempFilePath = Path.GetTempFileName();
 
+            using (var packageReadStream = File.Open(packagePath, FileMode.Open))
             using (var packageWriteStream = File.Open(tempFilePath, FileMode.Open))
             {
-
                 if (Overwrite)
                 {
-                    await RemoveSignatureAsync(logger, signatureProvider, packageWriteStream, token);
+                    await RemoveSignatureAsync(logger, signatureProvider, packageWriteStream, packageReadStream, token);
                 }
 
-                await AddSignatureAsync(logger, signatureProvider, request, packageWriteStream, token);
+                await AddSignatureAsync(logger, signatureProvider, request, packageWriteStream, packageReadStream, token);
             }
 
             OverwritePackage(tempFilePath, outputPath);
@@ -150,9 +150,10 @@ namespace NuGet.Commands
             ISignatureProvider signatureProvider,
             SignPackageRequest request,
             FileStream packageWriteStream,
+            FileStream packageReadStream,
             CancellationToken token)
         {
-            using (var package = new SignedPackageArchive(packageWriteStream))
+            using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
             {
                 var signer = new Signer(package, signatureProvider);
                 await signer.SignAsync(request, logger, token);
@@ -163,21 +164,14 @@ namespace NuGet.Commands
             ILogger logger,
             ISignatureProvider signatureProvider,
             FileStream packageWriteStream,
+            FileStream packageReadStream,
             CancellationToken token)
         {
-            using (var package = new SignedPackageArchive(packageWriteStream))
+            using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
             {
                 var signer = new Signer(package, signatureProvider);
                 await signer.RemoveSignaturesAsync(logger, token);
             }
-        }
-
-        private static string CopyPackage(string sourceFilePath)
-        {
-            var destFilePath = Path.GetTempFileName();
-            File.Copy(sourceFilePath, destFilePath, overwrite: true);
-
-            return destFilePath;
         }
 
         private static void OverwritePackage(string sourceFilePath, string destFilePath)

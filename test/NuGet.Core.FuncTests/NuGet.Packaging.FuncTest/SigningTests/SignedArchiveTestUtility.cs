@@ -28,11 +28,12 @@ namespace NuGet.Packaging.FuncTest
         {
             var testLogger = new TestLogger();
 
+            using (var zipReadStream = nupkg.CreateAsStream())
             using (var zipWriteStream = nupkg.CreateAsStream())
             {
                 var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
 
-                using (var signPackage = new SignedPackageArchive(zipWriteStream))
+                using (var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
                 {
                     // Sign the package
                     await SignPackageAsync(testLogger, testCert, signPackage);
@@ -60,11 +61,12 @@ namespace NuGet.Packaging.FuncTest
         {
             var testLogger = new TestLogger();
 
+            using (var zipReadStream = nupkg.CreateAsStream())
             using (var zipWriteStream = nupkg.CreateAsStream())
             {
                 var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
 
-                using (var signPackage = new SignedPackageArchive(zipWriteStream))
+                using (var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
                 {
                     // Sign the package
                     await SignAndTimeStampPackageAsync(testLogger, testCert.Source.Cert, signPackage);
@@ -93,8 +95,9 @@ namespace NuGet.Packaging.FuncTest
             var copiedSignedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
             File.Copy(signedPackagePath, copiedSignedPackagePath, overwrite: true);
 
+            using (var zipReadStream = File.Open(signedPackagePath, FileMode.Open))
             using (var zipWriteStream = File.Open(copiedSignedPackagePath, FileMode.Open))
-            using (var signedPackage = new SignedPackageArchive(zipWriteStream))
+            using (var signedPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
             {
                 var signer = new Signer(signedPackage, testSignatureProvider);
                 await signer.RemoveSignaturesAsync(testLogger, CancellationToken.None);
@@ -189,7 +192,7 @@ namespace NuGet.Packaging.FuncTest
 
             // Write data from start of file to first file entry
             reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
-            ReadAndWriteUntilPosition(reader, writer, metadata.StartOfFileHeaders);
+            SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, metadata.StartOfFileHeaders);
 
             // Write all file entries in the new order
             foreach (var entry in shiftedCdr)
@@ -197,7 +200,7 @@ namespace NuGet.Packaging.FuncTest
                 // We need to read each entry from their position in the old package and write them sequencially to the new package
                 // The order in which they will appear in the new shited package is defined by the sorting done before starting to write
                 reader.BaseStream.Seek(offset: entry.OffsetToFileHeader, origin: SeekOrigin.Begin);
-                ReadAndWriteUntilPosition(reader, writer, entry.OffsetToFileHeader + entry.FileEntryTotalSize);
+                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, entry.OffsetToFileHeader + entry.FileEntryTotalSize);
             }
 
             // Write all central directory records with updated offsets
@@ -207,18 +210,18 @@ namespace NuGet.Packaging.FuncTest
             {
                 reader.BaseStream.Seek(offset: entry.Position, origin: SeekOrigin.Begin);
                 // Read and write from the start of the central directory record until the relative offset of local file header (42 from the start of central directory record, incluing signature length)
-                ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + 42);
+                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + 42);
 
                 var relativeOffsetOfLocalFileHeader = (uint)(reader.ReadUInt32() + entry.ChangeInOffset);
                 writer.Write(relativeOffsetOfLocalFileHeader);
 
                 // We already read and hash the whole header, skip only filenameLength + extraFieldLength + fileCommentLength (46 is the size of the header without those lengths)
-                ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + entry.HeaderSize - 46);
+                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + reader.BaseStream.Position + entry.HeaderSize - 46);
             }
 
             // Write everything after central directory records
             reader.BaseStream.Seek(offset: metadata.EndOfCentralDirectory, origin: SeekOrigin.Begin);
-            ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Length);
+            SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Length);
 
             return Task.FromResult(0);
         }
@@ -287,37 +290,6 @@ namespace NuGet.Packaging.FuncTest
             var signatureCD = cdr[recordIndex];
             cdr.RemoveAt(recordIndex);
             cdr.Insert(index, signatureCD);
-        }
-
-        private static void ReadAndWriteUntilPosition(BinaryReader reader, BinaryWriter writer, long position)
-        {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (position > reader.BaseStream.Length || position < reader.BaseStream.Position)
-            {
-                throw new ArgumentException("Position cannot be before the current position or after the end of the reader", nameof(position));
-            }
-
-            var bufferSize = 4;
-            while (reader.BaseStream.Position + bufferSize < position)
-            {
-                var bytes = reader.ReadBytes(bufferSize);
-                writer.Write(bytes);
-            }
-            var remainingBytes = position - reader.BaseStream.Position;
-            if (remainingBytes > 0)
-            {
-                var bytes = reader.ReadBytes((int)remainingBytes);
-                writer.Write(bytes);
-            }
         }
     }
 }

@@ -100,6 +100,39 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
+        /// Read bytes from a BinaryReader and write them to the BinaryWriter and stop when the provided position
+        /// is the current position of the BinaryReader's base stream. It does not read the byte in the provided position.
+        /// </summary>
+        /// <param name="reader">Read bytes from this stream.</param>
+        /// <param name="writer">Write bytes to this stream.</param>
+        /// <param name="position">Position to stop copying data.</param>
+        public static void ReadAndWriteUntilPosition(BinaryReader reader, BinaryWriter writer, long position)
+        {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            var bufferSize = 4;
+            while (reader.BaseStream.Position + bufferSize < position)
+            {
+                var bytes = reader.ReadBytes(bufferSize);
+                writer.Write(bytes);
+            }
+            var remainingBytes = position - reader.BaseStream.Position;
+            if (remainingBytes > 0)
+            {
+                var bytes = reader.ReadBytes((int)remainingBytes);
+                writer.Write(bytes);
+            }
+        }
+
+        /// <summary>
         /// Read bytes from a BinaryReader and hash them with a given HashAlgorithm and stop when the provided position
         /// is the current position of the BinaryReader's base stream. It does not hash the byte in the provided position.
         /// </summary>
@@ -186,6 +219,8 @@ namespace NuGet.Packaging.Signing
             // Read central directory records
             var possibleSignatureCentralDirectoryRecordPosition = reader.BaseStream.Position;
             var isReadingCentralDirectoryRecords = true;
+            var endOfAllFileHeaders = 0L;
+
             while (isReadingCentralDirectoryRecords)
             {
                 var centralDirectoryMetadata = new CentralDirectoryHeaderMetadata
@@ -214,6 +249,13 @@ namespace NuGet.Packaging.Signing
                     metadata.StartOfFileHeaders = centralDirectoryMetadata.OffsetToFileHeader;
                 }
 
+                var endofFileHeader = centralDirectoryMetadata.FileEntryTotalSize + centralDirectoryMetadata.OffsetToFileHeader;
+
+                if (endofFileHeader > endOfAllFileHeaders)
+                {
+                    endOfAllFileHeaders = endofFileHeader;
+                }
+
                 var filename = reader.ReadBytes(filenameLength);
                 centralDirectoryMetadata.Filename = Encoding.ASCII.GetString(filename);
                 // Save total size of central directory record + variable length fields (46 bytes of fields and variable length fields afterwards)
@@ -234,6 +276,7 @@ namespace NuGet.Packaging.Signing
             var lastCentralDirectoryRecord = centralDirectoryRecords.Last();
             metadata.EndOfCentralDirectory = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize;
             metadata.CentralDirectoryHeaders = centralDirectoryRecords;
+            metadata.EndOfFileHeaders = endOfAllFileHeaders;
 
             // Make sure the package is not zip64
             var isZip64 = false;
@@ -315,11 +358,16 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        public static void WriteFileHeader(BinaryWriter writer, byte[] fileData)
+        public static long WriteFileHeader(BinaryWriter writer, byte[] fileData, DateTime fileTime)
         {
             if (fileData == null || fileData.Length == 0)
             {
                 throw new ArgumentNullException(nameof(fileData));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
             }
 
             // TODO - make the data UTF8 through bitconverter
@@ -327,7 +375,7 @@ namespace NuGet.Packaging.Signing
             // Write the file header signature
             writer.Write(LocalFileHeaderSignature);
 
-            // 2.0 - File is compressed using Deflate compression
+            // 2.0 - File is compressed using Deflate compression - Version needed to extract
             writer.Write((ushort)20);
 
             // 00 - Normal (-en) compression option was used.
@@ -337,7 +385,89 @@ namespace NuGet.Packaging.Signing
             writer.Write((ushort)0);
 
             // write date and time
-            writer.Write(ToMsDosDateTime(DateTime.Now));
+            writer.Write(ToMsDosDateTime(fileTime));
+
+            // write file CRC32
+            writer.Write(GenerateCRC32(fileData));
+
+            // write uncompressed size
+            writer.Write((uint)fileData.Length);
+
+            // write compressed size - same as uncompressed since file should have no compression
+            writer.Write((uint)fileData.Length);
+
+            // write file name length
+            var fileNameBytes = _signingSpecification.Encoding.GetBytes(_signingSpecification.SignaturePath);
+            var fileNameLength = fileNameBytes.Length;
+            writer.Write((ushort)fileNameLength);
+
+            // write extra field length
+            writer.Write((ushort)0);
+
+            // write file name
+            writer.Write(fileNameBytes);
+
+            // calculate the total length of data written
+            // 30 bytes are for the length of the local file header
+            var writtenDataLength = 30L + (ushort)fileNameLength;
+
+            return writtenDataLength;
+        }
+
+        public static long WriteFile(BinaryWriter writer, byte[] fileData)
+        {
+            if (fileData == null || fileData.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(fileData));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            // TODO - make the data UTF8 through bitconverter
+
+            // write file
+            writer.Write(fileData);
+
+            // calculate the total length of data written
+            var writtenDataLength = (long)fileData.Length;
+
+            return writtenDataLength;
+        }
+
+        public static long WriteCentralDirectoryHeader(BinaryWriter writer, byte[] fileData, DateTime fileTime, long fileOffset)
+        {
+            if (fileData == null || fileData.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(fileData));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            // TODO - make the data UTF8 through bitconverter
+
+            // Write the file header signature
+            writer.Write(CentralDirectoryHeaderSignature);
+
+            // 2.0 - File is compressed using Deflate compression - Version made by
+            writer.Write((ushort)20);
+
+            // 2.0 - File is compressed using Deflate compression - Version needed to extract
+            writer.Write((ushort)20);
+
+            // 00 - Normal (-en) compression option was used.
+            writer.Write((ushort)0);
+
+            // 00 - The file is stored (no compression)
+            writer.Write((ushort)0);
+
+            // write date and time
+            writer.Write(ToMsDosDateTime(fileTime));
 
             // write file CRC32
             writer.Write(GenerateCRC32(fileData));
@@ -349,7 +479,9 @@ namespace NuGet.Packaging.Signing
             writer.Write(fileData.Length);
 
             // write file name length
-            writer.Write((ushort)_signingSpecification.SignaturePath.Length);
+            var fileNameBytes = _signingSpecification.Encoding.GetBytes(_signingSpecification.SignaturePath);
+            var fileNameLength = fileNameBytes.Length;
+            writer.Write((ushort)fileNameLength);
 
             // write extra field length
             writer.Write((ushort)0);
@@ -367,11 +499,51 @@ namespace NuGet.Packaging.Signing
             writer.Write((uint)0);
 
             // write relative offset of local header
-            writer.Write((uint)0);
+            writer.Write((uint)fileOffset);
 
             // write file name
-            writer.Write(_signingSpecification.Encoding.GetBytes(_signingSpecification.SignaturePath));
+            writer.Write(fileNameBytes);
 
+            // calculate the total length of data written
+            // 50 bytes are for the length of the central directory header
+            var writtenDataLength = 50L + (ushort)fileNameLength;
+
+            return writtenDataLength;
+        }
+
+        public static void WriteEndOfCentralDirectoryRecord(BinaryReader reader, BinaryWriter writer, long sizeOfSignatureCentralDirectoryRecord, long sizeOfSignatureFileHeaderAndData)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            // TODO - make the data UTF8 through bitconverter
+
+            // 4 bytes for disk numbers. same as before.
+            ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + 8L);
+
+            // Update central directory header counts by adding 1 for the signature entry
+            var centralDirectoryCountOnThisDisk = reader.ReadInt16();
+            writer.Write((ushort)(centralDirectoryCountOnThisDisk + 1));
+
+            var centralDirectoryCountTotal = reader.ReadInt16();
+            writer.Write((ushort)(centralDirectoryCountTotal + 1));
+
+            // Update size of central directory by adding size of signature central directory size
+            var sizeOfCentralDirectory = reader.ReadInt32();
+            writer.Write((uint)(sizeOfCentralDirectory + sizeOfSignatureCentralDirectoryRecord));
+
+            var offsetOfCentralDirectory = reader.ReadInt32();
+            writer.Write((uint)(offsetOfCentralDirectory + sizeOfSignatureFileHeaderAndData));
+
+            // read and write the rest
+            ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Length);
         }
 
         private static bool CurrentStreamPositionMatchesByteSignature(BinaryReader reader, byte[] byteSignature)
