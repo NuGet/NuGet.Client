@@ -385,7 +385,7 @@ namespace NuGet.Client
             /// <summary>
             /// Pattern used to identify Tools assets for global tools
             /// </summary>
-            public PatternSet ToolsFiles { get; }
+            public PatternSet ToolsAssemblies { get; }
 
             internal ManagedCodePatterns(ManagedCodeConventions conventions)
             {
@@ -508,18 +508,18 @@ namespace NuGet.Client
                         new PatternDefinition("contentFiles/{codeLanguage}/{tfm}/{any?}"),
                     });
 
-                ToolsFiles = new PatternSet(
+                ToolsAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                         {
                             new PatternDefinition("tools/{tfm}/{rid}/{any?}", table: DotnetAnyTable),
-                            new PatternDefinition("tools/{tfm}/any/{any?}", table: DotnetAnyTable),
+                            new PatternDefinition("tools/{tfm}/{any}/{any?}", table: DotnetAnyTable),
 
                         },
                     pathPatterns: new PatternDefinition[]
                         {
                             new PatternDefinition("tools/{tfm}/{rid}/{assembly}", table: DotnetAnyTable),
-                            new PatternDefinition("tools/{tfm}/any/{assembly}", table: DotnetAnyTable),
+                            new PatternDefinition("tools/{tfm}/{any}/{assembly}", table: DotnetAnyTable),
                     });
             }
         }

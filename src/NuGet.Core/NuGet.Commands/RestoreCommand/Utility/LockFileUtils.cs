@@ -190,6 +190,14 @@ namespace NuGet.Commands
 
             lockFileLib.BuildMultiTargeting.AddRange(GetBuildItemsForPackageId(buildMultiTargetingGroup, library.Name));
 
+            // Tools
+            var toolsGroup = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
+                targetGraph.Conventions.Patterns.ToolsAssemblies);
+
+            lockFileLib.ToolsAssemblies.AddRange(toolsGroup);
+
             // Add content files
             AddContentFiles(targetGraph, lockFileLib, framework, contentItems, nuspec);
 
