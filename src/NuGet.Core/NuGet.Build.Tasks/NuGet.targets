@@ -573,8 +573,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <PropertyGroup>
       <_RestoreProjectName>$(MSBuildProjectName)</_RestoreProjectName>
-      <_RestoreProjectName Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(AssemblyName)' != '' ">$(AssemblyName)</_RestoreProjectName>
-      <_RestoreProjectName Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(PackageId)' != '' ">$(PackageId)</_RestoreProjectName>
+      <_RestoreProjectName Condition=" ('$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'CommandLineToolReference') AND '$(AssemblyName)' != '' ">$(AssemblyName)</_RestoreProjectName>
+      <_RestoreProjectName Condition=" ('$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'CommandLineToolReference') AND '$(PackageId)' != '' ">$(PackageId)</_RestoreProjectName>
     </PropertyGroup>
 
     <!--
@@ -583,24 +583,24 @@ Copyright (c) .NET Foundation. All rights reserved.
       Use Version if it exists
       Override with PackageVersion if it exists (same as pack)
     -->
-    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
+    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'CommandLineToolReference' ">
       <_RestoreProjectVersion>1.0.0</_RestoreProjectVersion>
       <_RestoreProjectVersion Condition=" '$(Version)' != '' ">$(Version)</_RestoreProjectVersion>
       <_RestoreProjectVersion Condition=" '$(PackageVersion)' != '' ">$(PackageVersion)</_RestoreProjectVersion>
     </PropertyGroup>
 
     <!-- Determine if this will use cross targeting -->
-    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(TargetFrameworks)' != '' ">
+    <PropertyGroup Condition=" ('$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'CommandLineToolReference') AND '$(TargetFrameworks)' != '' ">
       <_RestoreCrossTargeting>true</_RestoreCrossTargeting>
     </PropertyGroup>
 
     <!-- Determine if ContentFiles should be written by NuGet -->
-    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(_RestoreSkipContentFileWrite)' == '' ">
+    <PropertyGroup Condition=" ('$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'CommandLineToolReference') AND '$(_RestoreSkipContentFileWrite)' == '' ">
       <_RestoreSkipContentFileWrite Condition=" '$(TargetFrameworks)' == '' AND '$(TargetFramework)' == '' ">true</_RestoreSkipContentFileWrite>
     </PropertyGroup>
 
     <!-- Write properties for the top level entry point -->
-    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
+    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'CommandLineToolReference' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
         <Type>ProjectSpec</Type>
         <Version>$(_RestoreProjectVersion)</Version>
@@ -746,7 +746,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Write out package references for NETCore -->
     <GetRestorePackageReferencesTask
-      Condition=" '$(RestoreProjectStyle)' == 'PackageReference' "
+      Condition=" ('$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'CommandLineToolReference') "
       ProjectUniqueName="$(MSBuildProjectFullPath)"
       PackageReferences="@(PackageReference)"
       TargetFrameworks="$(TargetFramework)">
@@ -761,7 +761,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <!-- Write out target framework information -->
-    <ItemGroup Condition="  '$(RestoreProjectStyle)' == 'PackageReference' AND '$(_CombinedFallbacks)' != '' ">
+    <ItemGroup Condition="  ('$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'CommandLineToolReference') AND '$(_CombinedFallbacks)' != '' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
         <Type>TargetFrameworkInformation</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
