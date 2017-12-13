@@ -38,6 +38,25 @@ namespace NuGet.Packaging.Signing
             }
         }
 
+
+        /// <summary> 
+        /// Validates the public key requirements for a certificate 
+        /// </summary> 
+        /// <param name="certificate">Certificate to validate</param> 
+        /// <returns>True if the certificate's public key is valid within NuGet signature requirements</returns> 
+        public static bool IsCertificatePublicKeyValid(X509Certificate2 certificate)
+        {
+            // Check if the public key is RSA with a valid keysize 
+            var RSAPublicKey = RSACertificateExtensions.GetRSAPublicKey(certificate);
+
+            if (RSAPublicKey != null)
+            {
+                return RSAPublicKey.KeySize >= SigningSpecifications.V1.RSAPublicKeyMinLength;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Validates if the certificate contains the lifetime signing EKU
         /// </summary>
