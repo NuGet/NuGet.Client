@@ -110,6 +110,10 @@ namespace NuGet.Packaging.Signing
             var certificate = signature.SignerInfo.Certificate;
             if (certificate != null)
             {
+                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
+                    Strings.VerificationAuthorCertDisplay,
+                    $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(certificate)}")));
+
                 try
                 {
                     signature.SignerInfo.CheckSignature(verifySignatureOnly: true);
@@ -131,16 +135,15 @@ namespace NuGet.Packaging.Signing
 
                     var certificateExtraStore = signature.SignedCms.Certificates;
 
-                    X509ChainStatus[] chainStatusList;
                     using (var chain = new X509Chain())
                     {
                         SigningUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestampLimits.Item2.LocalDateTime, NuGetVerificationCertificateType.Signature);
-                        if (SigningUtility.BuildCertificateChain(chain, certificate, out chainStatusList))
+                        var chainBuildingSucceed = SigningUtility.BuildCertificateChain(chain, certificate, out var chainStatusList);
+
+                        issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
+
+                        if (chainBuildingSucceed)
                         {
-                            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
-                                Strings.VerificationAuthorCertDisplay,
-                                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(certificate)}")));
-                            issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
                             return SignatureVerificationStatus.Trusted;
                         }
 
@@ -192,18 +195,14 @@ namespace NuGet.Packaging.Signing
                             }
                             else if (!chainBuildingHasIssues)
                             {
-                                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
-                                    Strings.VerificationAuthorCertDisplay,
-                                    $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(certificate)}")));
-                                issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
                                 return SignatureVerificationStatus.Trusted;
                             }
                             chainBuildingHasIssues = true;
                         }
-                    }
 
-                    // Debug log any errors
-                    issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, string.Join(", ", chainStatusList.Select(x => x.ToString())))));
+                        // Debug log any errors
+                        issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, string.Join(", ", chainStatusList.Select(x => x.ToString())))));
+                    }
                 }
                 else
                 {
@@ -236,6 +235,10 @@ namespace NuGet.Packaging.Signing
                 return null;
             }
 
+            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
+                Strings.VerificationTimestamperCertDisplay,
+                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate)}")));
+
             if (Rfc3161TimestampVerificationUtility.TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
             {
                 if (SigningUtility.IsTimestampValid(data, failuresAreFatal, issues, timestampSignerInfo, tstInfo, _specification))
@@ -251,17 +254,16 @@ namespace NuGet.Packaging.Signing
 
                     var certificateExtraStore = timestampCms.Certificates;
 
-                    X509ChainStatus[] chainStatusList;
                     using (var chain = new X509Chain())
                     {
                         SigningUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, DateTime.Now, NuGetVerificationCertificateType.Timestamp);
-                        if (SigningUtility.BuildCertificateChain(chain, timestamperCertificate, out chainStatusList))
-                        {
-                            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
-                                Strings.VerificationTimestamperCertDisplay,
-                                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate)}")));
-                            issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
 
+                        var chainBuildSucceed = SigningUtility.BuildCertificateChain(chain, timestamperCertificate, out var chainStatusList);
+
+                        issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
+
+                        if (chainBuildSucceed)
+                        {
                             return Rfc3161TimestampVerificationUtility.GetTimeStampLimits(tstInfo);
                         }
 
@@ -308,19 +310,14 @@ namespace NuGet.Packaging.Signing
                             }
                             else if (!chainBuildingHasIssues)
                             {
-                                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
-                                    Strings.VerificationTimestamperCertDisplay,
-                                    $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate)}")));
-                                issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
-
                                 return Rfc3161TimestampVerificationUtility.GetTimeStampLimits(tstInfo);
                             }
                             chainBuildingHasIssues = true;
                         }
-                    }
 
-                    // Debug log any errors
-                    issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, string.Join(", ", chainStatusList.Select(x => x.ToString())))));
+                        // Debug log any errors
+                        issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, string.Join(", ", chainStatusList.Select(x => x.ToString())))));
+                    }
                 }
             }
             else
