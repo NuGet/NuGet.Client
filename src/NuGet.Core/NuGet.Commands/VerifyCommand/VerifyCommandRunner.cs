@@ -82,7 +82,11 @@ namespace NuGet.Commands
                     var warnings = logMessages.Count(m => m.Level == LogLevel.Warning);
 
                     logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_FinishedWithErrors, errors, warnings));
-                    logger.LogError(Environment.NewLine + Strings.VerifyCommand_Failed);
+
+                    if (errors > 0)
+                    {
+                        logger.LogError(Environment.NewLine + Strings.VerifyCommand_Failed);
+                    }
 
                     result = errors;
                 }

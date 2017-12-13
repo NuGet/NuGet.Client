@@ -16,6 +16,10 @@ namespace NuGet.Packaging.Signing
     {
         private readonly ILogMessage _logMessage;
 
+        public TimestampException() : base()
+        {
+        }
+
         public TimestampException(ILogMessage logMessage)
             : base(logMessage?.Message)
         {

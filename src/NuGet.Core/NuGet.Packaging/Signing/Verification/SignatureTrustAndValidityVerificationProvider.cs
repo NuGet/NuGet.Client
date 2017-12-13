@@ -43,8 +43,12 @@ namespace NuGet.Packaging.Signing
                 SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, signature.Type.ToString()))
             };
 
-            var timestampLimits = GetTimestampLimits(signature, !settings.FailWithMultipleTimestamps, !settings.AllowIgnoreTimestamp, !settings.AllowNoTimestamp, issues);
-            if (timestampLimits == null && (!settings.AllowIgnoreTimestamp || !settings.AllowNoTimestamp))
+            Tuple<DateTimeOffset, DateTimeOffset> timestampLimits;
+            try
+            {
+                timestampLimits = GetTimestampLimits(signature, !settings.FailWithMultipleTimestamps, !settings.AllowIgnoreTimestamp, !settings.AllowNoTimestamp, issues);
+            }
+            catch (TimestampException)
             {
                 return new SignedPackageVerificationResult(SignatureVerificationStatus.Invalid, signature, issues);
             }
@@ -67,14 +71,19 @@ namespace NuGet.Packaging.Signing
                     if (hasFoundOneTimestamp && !ignoreMultipleTimestamps)
                     {
                         issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3000, Strings.ErrorMultipleTimestamps));
-                        return null;
+                        throw new TimestampException();
                     }
                     hasFoundOneTimestamp = true;
                     timestampCms.Decode(attribute.Values[0].RawData);
                     using (var authorSignatureNativeCms = NativeCms.Decode(signature.SignedCms.Encode(), detached: false))
                     {
                         var signatureHash = NativeCms.GetSignatureValueHash(signature.SignatureContent.HashAlgorithm, authorSignatureNativeCms);
-                        timestampLimits = GetTimestampIfValid(timestampCms, signatureHash,failIfInvalid, issues);
+                        timestampLimits = GetTimestampIfValid(timestampCms, signatureHash, failIfInvalid, issues);
+
+                        if (timestampLimits == null && failIfInvalid)
+                        {
+                            throw new TimestampException();
+                        }
                     }
 
                     if (ignoreMultipleTimestamps)
@@ -87,6 +96,10 @@ namespace NuGet.Packaging.Signing
             if (!hasFoundOneTimestamp)
             {
                 issues.Add(SignatureLog.Issue(failIfNoTimestamp, NuGetLogCode.NU3550, Strings.ErrorNoTimestamp));
+                if (failIfNoTimestamp)
+                {
+                    throw new TimestampException();
+                }
             }
 
             return timestampLimits;
@@ -124,37 +137,16 @@ namespace NuGet.Packaging.Signing
                         SigningUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestampLimits.Item2.LocalDateTime, NuGetVerificationCertificateType.Signature);
                         if (SigningUtility.BuildCertificateChain(chain, certificate, out chainStatusList))
                         {
+                            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
+                                Strings.VerificationAuthorCertDisplay,
+                                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(certificate)}")));
+                            issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
                             return SignatureVerificationStatus.Trusted;
                         }
-                    }
 
-                    var chainBuildingHasIssues = false;
-                    IReadOnlyList<string> messages;
-                    if(SigningUtility.TryGetStatusMessage(chainStatusList, SigningUtility.InvalidCertificateFlags, out messages))
-                    {
-                        foreach (var message in messages)
-                        {
-                            issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3021, message));
-                        }
-                        chainBuildingHasIssues = true;
-                    }
-
-                    // For all the special cases, chain status list only has unique elements for each chain status flag present
-                    // therefore if we are checking for one specific chain status we can use the first of the returned list
-                    // if we are combining checks for more than one, then we have to use the whole list.
-                    IReadOnlyList<X509ChainStatus> chainStatus = null;
-                    if (SigningUtility.ChainStatusListIncludesStatus(chainStatusList, X509ChainStatusFlags.Revoked, out chainStatus))
-                    {
-                        var status = chainStatus.First();
-                        issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3021, status.StatusInformation));
-                        return SignatureVerificationStatus.Invalid;
-                    }
-
-                    if (failuresAreFatal || SigningUtility.CertificateValidityPeriodIsInTheFuture(certificate))
-                    {
-                        const X509ChainStatusFlags NotTimeValidFlags = X509ChainStatusFlags.NotTimeValid | X509ChainStatusFlags.CtlNotTimeValid;
-
-                        if (SigningUtility.TryGetStatusMessage(chainStatusList, NotTimeValidFlags, out messages))
+                        var chainBuildingHasIssues = false;
+                        IReadOnlyList<string> messages;
+                        if (SigningUtility.TryGetStatusMessage(chainStatusList, SigningUtility.InvalidCertificateFlags, out messages))
                         {
                             foreach (var message in messages)
                             {
@@ -162,23 +154,52 @@ namespace NuGet.Packaging.Signing
                             }
                             chainBuildingHasIssues = true;
                         }
-                    }
 
-                    const X509ChainStatusFlags RevocationStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
-                    if (SigningUtility.TryGetStatusMessage(chainStatusList, RevocationStatusFlags, out messages))
-                    {
-                        if (failuresAreFatal)
+                        // For all the special cases, chain status list only has unique elements for each chain status flag present
+                        // therefore if we are checking for one specific chain status we can use the first of the returned list
+                        // if we are combining checks for more than one, then we have to use the whole list.
+                        IReadOnlyList<X509ChainStatus> chainStatus = null;
+                        if (SigningUtility.ChainStatusListIncludesStatus(chainStatusList, X509ChainStatusFlags.Revoked, out chainStatus))
                         {
-                            foreach (var message in messages)
+                            var status = chainStatus.First();
+                            issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3021, status.StatusInformation));
+                            return SignatureVerificationStatus.Invalid;
+                        }
+
+                        if (failuresAreFatal || SigningUtility.CertificateValidityPeriodIsInTheFuture(certificate))
+                        {
+                            const X509ChainStatusFlags NotTimeValidFlags = X509ChainStatusFlags.NotTimeValid | X509ChainStatusFlags.CtlNotTimeValid;
+
+                            if (SigningUtility.TryGetStatusMessage(chainStatusList, NotTimeValidFlags, out messages))
                             {
-                                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3021, message));
+                                foreach (var message in messages)
+                                {
+                                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3021, message));
+                                }
+                                chainBuildingHasIssues = true;
                             }
                         }
-                        else if (!chainBuildingHasIssues)
+
+                        const X509ChainStatusFlags RevocationStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
+                        if (SigningUtility.TryGetStatusMessage(chainStatusList, RevocationStatusFlags, out messages))
                         {
-                            return SignatureVerificationStatus.Trusted;
+                            if (failuresAreFatal)
+                            {
+                                foreach (var message in messages)
+                                {
+                                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3021, message));
+                                }
+                            }
+                            else if (!chainBuildingHasIssues)
+                            {
+                                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
+                                    Strings.VerificationAuthorCertDisplay,
+                                    $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(certificate)}")));
+                                issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
+                                return SignatureVerificationStatus.Trusted;
+                            }
+                            chainBuildingHasIssues = true;
                         }
-                        chainBuildingHasIssues = true;
                     }
 
                     // Debug log any errors
@@ -236,32 +257,19 @@ namespace NuGet.Packaging.Signing
                         SigningUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, DateTime.Now, NuGetVerificationCertificateType.Timestamp);
                         if (SigningUtility.BuildCertificateChain(chain, timestamperCertificate, out chainStatusList))
                         {
+                            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
+                                Strings.VerificationTimestamperCertDisplay,
+                                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate)}")));
+                            issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
+
                             return Rfc3161TimestampVerificationUtility.GetTimeStampLimits(tstInfo);
                         }
-                    }
 
-                    var chainBuildingHasIssues = false;
-                    IReadOnlyList<string> messages;
+                        var chainBuildingHasIssues = false;
+                        IReadOnlyList<string> messages;
 
-                    var timestampInvalidCertificateFlags = SigningUtility.InvalidCertificateFlags & (~X509ChainStatusFlags.Revoked);
-                    if (SigningUtility.TryGetStatusMessage(chainStatusList, timestampInvalidCertificateFlags, out messages))
-                    {
-                        foreach (var message in messages)
-                        {
-                            issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3041, message));
-                        }
-                        chainBuildingHasIssues = true;
-                    }
-
-                    // For all the special cases, chain status list only has unique elements for each chain status flag present
-                    // therefore if we are checking for one specific chain status we can use the first of the returned list
-                    // if we are combining checks for more than one, then we have to use the whole list.
-
-                    if (failuresAreFatal || SigningUtility.CertificateValidityPeriodIsInTheFuture(timestamperCertificate))
-                    {
-                        const X509ChainStatusFlags NotTimeValidFlags = X509ChainStatusFlags.NotTimeValid | X509ChainStatusFlags.CtlNotTimeValid;
-
-                        if (SigningUtility.TryGetStatusMessage(chainStatusList, NotTimeValidFlags, out messages))
+                        var timestampInvalidCertificateFlags = SigningUtility.InvalidCertificateFlags & (~X509ChainStatusFlags.Revoked);
+                        if (SigningUtility.TryGetStatusMessage(chainStatusList, timestampInvalidCertificateFlags, out messages))
                         {
                             foreach (var message in messages)
                             {
@@ -269,23 +277,46 @@ namespace NuGet.Packaging.Signing
                             }
                             chainBuildingHasIssues = true;
                         }
-                    }
 
-                    const X509ChainStatusFlags RevocationStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
-                    if (SigningUtility.TryGetStatusMessage(chainStatusList, RevocationStatusFlags, out messages))
-                    {
-                        if (failuresAreFatal)
+                        // For all the special cases, chain status list only has unique elements for each chain status flag present
+                        // therefore if we are checking for one specific chain status we can use the first of the returned list
+                        // if we are combining checks for more than one, then we have to use the whole list.
+
+                        if (failuresAreFatal || SigningUtility.CertificateValidityPeriodIsInTheFuture(timestamperCertificate))
                         {
-                            foreach (var message in messages)
+                            const X509ChainStatusFlags NotTimeValidFlags = X509ChainStatusFlags.NotTimeValid | X509ChainStatusFlags.CtlNotTimeValid;
+
+                            if (SigningUtility.TryGetStatusMessage(chainStatusList, NotTimeValidFlags, out messages))
                             {
-                                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3041, message));
+                                foreach (var message in messages)
+                                {
+                                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3041, message));
+                                }
+                                chainBuildingHasIssues = true;
                             }
                         }
-                        else if (!chainBuildingHasIssues)
+
+                        const X509ChainStatusFlags RevocationStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
+                        if (SigningUtility.TryGetStatusMessage(chainStatusList, RevocationStatusFlags, out messages))
                         {
-                            return Rfc3161TimestampVerificationUtility.GetTimeStampLimits(tstInfo);
+                            if (failuresAreFatal)
+                            {
+                                foreach (var message in messages)
+                                {
+                                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3041, message));
+                                }
+                            }
+                            else if (!chainBuildingHasIssues)
+                            {
+                                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
+                                    Strings.VerificationTimestamperCertDisplay,
+                                    $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate)}")));
+                                issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
+
+                                return Rfc3161TimestampVerificationUtility.GetTimeStampLimits(tstInfo);
+                            }
+                            chainBuildingHasIssues = true;
                         }
-                        chainBuildingHasIssues = true;
                     }
 
                     // Debug log any errors
