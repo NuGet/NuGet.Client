@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -28,14 +29,13 @@ namespace NuGet.Packaging.Signing
             _signatureProvider = signatureProvider ?? throw new ArgumentNullException(nameof(signatureProvider));
         }
 
-
 #if IS_DESKTOP
         /// <summary>
         /// Add a signature to a package.
         /// </summary>
         public async Task SignAsync(SignPackageRequest request, ILogger logger, CancellationToken token)
         {
-            if(request == null)
+            if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
@@ -44,6 +44,10 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(logger));
             }
+
+            token.ThrowIfCancellationRequested();
+
+            VerifyCertificate(request.Certificate);
 
             var zipArchiveHash = await _package.GetArchiveHashAsync(request.SignatureHashAlgorithm, token);
 
@@ -74,6 +78,14 @@ namespace NuGet.Packaging.Signing
             var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
 
             return new SignatureContent(hashAlgorithmName, base64ZipArchiveHash);
+        }
+
+        private void VerifyCertificate(X509Certificate2 certificate)
+        {
+            if (!SigningUtility.IsSignatureAlgorithmSupported(certificate))
+            {
+                throw new SignatureException(NuGetLogCode.NU3022, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm);
+            }
         }
 #else
         /// <summary>

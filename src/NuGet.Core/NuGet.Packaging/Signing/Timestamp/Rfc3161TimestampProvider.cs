@@ -27,7 +27,7 @@ namespace NuGet.Packaging.Signing
     {
         // Url to an RFC 3161 timestamp server
         private readonly Uri _timestamperUrl;
-        private const int _rfc3161RequestTimeoutSeconds = 10;        
+        private const int _rfc3161RequestTimeoutSeconds = 10;
 
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
         {
@@ -154,7 +154,7 @@ namespace NuGet.Packaging.Signing
             if (!nonce.SequenceEqual(timestampToken.TokenInfo.GetNonce()))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3021,
+                    NuGetLogCode.NU3051,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureNonceMismatch)));

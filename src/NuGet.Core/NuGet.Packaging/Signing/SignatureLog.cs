@@ -45,7 +45,7 @@ namespace NuGet.Packaging.Signing
 
         public static SignatureLog InvalidTimestampInSignatureError(string message)
         {
-            return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3022, message);
+            return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3050, message);
         }
 
         public static SignatureLog InvalidPackageError(string message)

@@ -647,6 +647,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The signing certificate has an unsupported signature algorithm..
+        /// </summary>
+        internal static string SigningCertificateHasUnsupportedSignatureAlgorithm {
+            get {
+                return ResourceManager.GetString("SigningCertificateHasUnsupportedSignatureAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to signing-certificate-v2 attribute value does not match the current certificate chain..
         /// </summary>
         internal static string SigningCertificateV2Invalid {

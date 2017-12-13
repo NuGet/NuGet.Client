@@ -17,6 +17,15 @@ namespace NuGet.Packaging.Signing
         // RFC 8017 appendix B.1 (https://tools.ietf.org/html/rfc8017#appendix-B.1).
         public const string Sha512Oid = "2.16.840.1.101.3.4.2.3";
 
+        // RFC 4055 "sha256WithRSAEncryption" (https://tools.ietf.org/html/rfc4055#section-5)
+        public const string Sha256WithRSAEncryption = "1.2.840.113549.1.1.11";
+
+        // RFC 4055 "sha384WithRSAEncryption" (https://tools.ietf.org/html/rfc4055#section-5)
+        public const string Sha384WithRSAEncryption = "1.2.840.113549.1.1.12";
+
+        // RFC 4055 "sha512WithRSAEncryption" (https://tools.ietf.org/html/rfc4055#section-5)
+        public const string Sha512WithRSAEncryption = "1.2.840.113549.1.1.13";
+
         // RFC 5280 codeSigning attribute, https://tools.ietf.org/html/rfc5280#section-4.2.1.12
         public const string CodeSigningEkuOid = "1.3.6.1.5.5.7.3.3";
 
@@ -37,7 +46,7 @@ namespace NuGet.Packaging.Signing
 
         // XCN_OID_KP_LIFETIME_SIGNING https://msdn.microsoft.com/en-us/library/windows/desktop/aa378132(v=vs.85).aspx
         public const string LifetimeSignerEkuOid = "1.3.6.1.4.1.311.10.3.13";
-        
+
         // RFC 5126 "commitment-type-indication" https://tools.ietf.org/html/rfc5126.html#section-5.11.1
         public const string CommitmentTypeIndication = "1.2.840.113549.1.9.16.2.16";
 

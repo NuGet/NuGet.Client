@@ -56,7 +56,10 @@ namespace Test.Utility.Signing
         /// <summary>
         /// Create a self signed certificate with bouncy castle.
         /// </summary>
-        public static X509Certificate2 GenerateCertificate(string subjectName, Action<X509V3CertificateGenerator> modifyGenerator)
+        public static X509Certificate2 GenerateCertificate(
+            string subjectName,
+            Action<X509V3CertificateGenerator> modifyGenerator,
+            string signatureAlgorithm = "SHA256WITHRSA")
         {
             if (string.IsNullOrEmpty(subjectName))
             {
@@ -90,7 +93,7 @@ namespace Test.Utility.Signing
             modifyGenerator?.Invoke(certGen);
 
             var issuerPrivateKey = pair.Private;
-            var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", issuerPrivateKey, random);
+            var signatureFactory = new Asn1SignatureFactory(signatureAlgorithm, issuerPrivateKey, random);
             var certificate = certGen.Generate(signatureFactory);
             var certResult = new X509Certificate2(certificate.GetEncoded());
 

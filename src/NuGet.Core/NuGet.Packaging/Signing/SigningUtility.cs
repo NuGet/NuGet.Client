@@ -18,7 +18,26 @@ namespace NuGet.Packaging.Signing
     public static class SigningUtility
     {
         /// <summary>
-        /// Validates the public key requiriements for a certificate
+        /// Determines if a certificate's signature algorithm is supported.
+        /// </summary>
+        /// <param name="certificate">Certificate to validate</param>
+        /// <returns>True if the certificate's signature algorithm is supported.</returns>
+        public static bool IsSignatureAlgorithmSupported(X509Certificate2 certificate)
+        {
+            switch (certificate.SignatureAlgorithm.Value)
+            {
+                case Oids.Sha256WithRSAEncryption:
+                case Oids.Sha384WithRSAEncryption:
+                case Oids.Sha512WithRSAEncryption:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Validates the public key requirements for a certificate
         /// </summary>
         /// <param name="certificate">Certificate to validate</param>
         /// <returns>True if the certificate's public key is valid within NuGet signature requirements</returns>
@@ -36,7 +55,7 @@ namespace NuGet.Packaging.Signing
 
 #if IS_DESKTOP
         /// <summary>
-        /// Create an ordered list of certificates. The leaf node is returned first.
+        /// Create a list of certificates in chain order with the leaf first and root last.
         /// </summary>
         public static IReadOnlyList<X509Certificate2> GetCertificateChain(
             X509Certificate2 certificate,

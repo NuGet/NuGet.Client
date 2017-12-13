@@ -12,6 +12,36 @@ namespace NuGet.Packaging.Test
 {
     public class SigningUtilityTests
     {
+        [Theory]
+        [InlineData("SHA256WITHRSAENCRYPTION", Oids.Sha256WithRSAEncryption)]
+        [InlineData("SHA384WITHRSAENCRYPTION", Oids.Sha384WithRSAEncryption)]
+        [InlineData("SHA512WITHRSAENCRYPTION", Oids.Sha512WithRSAEncryption)]
+        public void IsSignatureAlgorithmSupported_WhenSupported_ReturnsTrue(string signatureAlgorithm, string expectedSignatureAlgorithmOid)
+        {
+            using (var certificate = SigningTestUtility.GenerateCertificate(
+                "test",
+                generator => { },
+                signatureAlgorithm))
+            {
+                Assert.Equal(expectedSignatureAlgorithmOid, certificate.SignatureAlgorithm.Value);
+                Assert.True(SigningUtility.IsSignatureAlgorithmSupported(certificate));
+            }
+        }
+
+        [Fact]
+        public void IsSignatureAlgorithmSupported_WhenUnsupported_ReturnsFalse()
+        {
+            using (var certificate = SigningTestUtility.GenerateCertificate(
+                "test",
+                generator => { },
+                "SHA256WITHRSAANDMGF1"))
+            {
+                // RSASSA-PSS
+                Assert.Equal("1.2.840.113549.1.1.10", certificate.SignatureAlgorithm.Value);
+                Assert.False(SigningUtility.IsSignatureAlgorithmSupported(certificate));
+            }
+        }
+
         [Fact]
         public void GetCertificateChain_ReturnsCertificatesInOrder()
         {
