@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -211,7 +210,7 @@ namespace NuGet.Packaging.FuncTest
                 writer.Write(relativeOffsetOfLocalFileHeader);
 
                 // We already read and hash the whole header, skip only filenameLength + extraFieldLength + fileCommentLength (46 is the size of the header without those lengths)
-                ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + reader.BaseStream.Position + entry.HeaderSize - 46);
+                ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + entry.HeaderSize - 46);
             }
 
             // Write everything after central directory records
@@ -297,6 +296,11 @@ namespace NuGet.Packaging.FuncTest
             if (writer == null)
             {
                 throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (position > reader.BaseStream.Length || position < reader.BaseStream.Position)
+            {
+                throw new ArgumentException("Position cannot be before the current position or after the end of the reader", nameof(position));
             }
 
             var bufferSize = 4;
