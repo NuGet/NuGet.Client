@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,7 +64,6 @@ namespace NuGet.Commands
             bool overwrite,
             CancellationToken token)
         {
-
             var success = true;
 
             var signatureProvider = GetSignatureProvider(timestamper);
@@ -131,10 +128,10 @@ namespace NuGet.Commands
             {
                 if (Overwrite)
                 {
-                    await RemoveSignatureAsync(logger, signatureProvider, packageWriteStream, packageReadStream, token);
+                    await RemoveSignatureAsync(logger, signatureProvider, packageReadStream, packageWriteStream, token);
                 }
 
-                await AddSignatureAsync(logger, signatureProvider, request, packageWriteStream, packageReadStream, token);
+                await AddSignatureAsync(logger, signatureProvider, request, packageReadStream, packageWriteStream, token);
             }
 
             OverwritePackage(tempFilePath, outputPath);
@@ -148,8 +145,8 @@ namespace NuGet.Commands
             ILogger logger,
             ISignatureProvider signatureProvider,
             SignPackageRequest request,
-            FileStream packageWriteStream,
             FileStream packageReadStream,
+            FileStream packageWriteStream,
             CancellationToken token)
         {
             using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
@@ -162,8 +159,8 @@ namespace NuGet.Commands
         private static async Task RemoveSignatureAsync(
             ILogger logger,
             ISignatureProvider signatureProvider,
-            FileStream packageWriteStream,
             FileStream packageReadStream,
+            FileStream packageWriteStream,
             CancellationToken token)
         {
             using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
