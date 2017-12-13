@@ -59,7 +59,8 @@ namespace Test.Utility.Signing
         public static X509Certificate2 GenerateCertificate(
             string subjectName,
             Action<X509V3CertificateGenerator> modifyGenerator,
-            string signatureAlgorithm = "SHA256WITHRSA")
+            string signatureAlgorithm = "SHA256WITHRSA",
+            int publicKeyLength = 2048)
         {
             if (string.IsNullOrEmpty(subjectName))
             {
@@ -68,7 +69,7 @@ namespace Test.Utility.Signing
 
             var random = new SecureRandom();
             var pairGenerator = new RsaKeyPairGenerator();
-            var genParams = new KeyGenerationParameters(random, 2048);
+            var genParams = new KeyGenerationParameters(random, publicKeyLength);
             pairGenerator.Init(genParams);
             var pair = pairGenerator.GenerateKeyPair();
 

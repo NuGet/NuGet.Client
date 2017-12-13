@@ -86,7 +86,13 @@ namespace NuGet.Packaging.Signing
             {
                 throw new SignatureException(NuGetLogCode.NU3022, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm);
             }
+
+            if (!SigningUtility.IsCertificatePublicKeyValid(certificate))
+            {
+                throw new SignatureException(NuGetLogCode.NU3023, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
+            }
         }
+
 #else
         /// <summary>
         /// Add a signature to a package.

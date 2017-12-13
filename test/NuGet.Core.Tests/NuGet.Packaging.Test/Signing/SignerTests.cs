@@ -96,6 +96,25 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [Fact]
+        public async Task SignAsync_WhenCertificatePublicKeyLengthIsUnsupported_Throws()
+        {
+            using (var certificate = SigningTestUtility.GenerateCertificate(
+                "test",
+                generator => { },
+                publicKeyLength: 1024))
+            using (var test = SignTest.Create(certificate, HashAlgorithmName.SHA256))
+            {
+                var exception = await Assert.ThrowsAsync<SignatureException>(
+                    () => test.Signer.SignAsync(
+                        test.Request,
+                        Mock.Of<ILogger>(),
+                        CancellationToken.None));
+
+                Assert.Equal(NuGetLogCode.NU3023, exception.AsLogMessage().Code);
+            }
+        }
+
         private sealed class SignTest : IDisposable
         {
             private bool _isDisposed = false;

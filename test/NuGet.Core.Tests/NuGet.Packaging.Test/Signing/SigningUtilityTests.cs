@@ -43,6 +43,43 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void IsCertificatePublicKeyValid_WhenNotRsaSsaPkcsV1_5_ReturnsTrue()
+        {
+            using (var certificate = SigningTestUtility.GenerateCertificate(
+                "test",
+                generator => { },
+                "SHA256WITHRSAANDMGF1",
+                publicKeyLength: 2048))
+            {
+                Assert.True(SigningUtility.IsCertificatePublicKeyValid(certificate));
+            }
+        }
+
+        [Fact]
+        public void IsCertificatePublicKeyValid_WhenRsaSsaPkcsV1_5_1024Bits_ReturnsFalse()
+        {
+            using (var certificate = SigningTestUtility.GenerateCertificate(
+                "test",
+                generator => { },
+                publicKeyLength: 1024))
+            {
+                Assert.False(SigningUtility.IsCertificatePublicKeyValid(certificate));
+            }
+        }
+
+        [Fact]
+        public void IsCertificatePublicKeyValid_WhenRsaSsaPkcsV1_5_2048Bits_ReturnsTrue()
+        {
+            using (var certificate = SigningTestUtility.GenerateCertificate(
+                "test",
+                generator => { },
+                publicKeyLength: 2048))
+            {
+                Assert.True(SigningUtility.IsCertificatePublicKeyValid(certificate));
+            }
+        }
+
+        [Fact]
         public void GetCertificateChain_ReturnsCertificatesInOrder()
         {
             using (var chain = new X509Chain())
