@@ -93,7 +93,8 @@ namespace NuGet.Commands
                 if (spec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
                     || spec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson
                     || spec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool
-                    || spec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone)
+                    || spec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone
+                    || spec.RestoreMetadata.ProjectStyle == ProjectStyle.CommandLineToolReference)
                 {
                     validForRestore.Add(spec.RestoreMetadata.ProjectUniqueName);
                 }
