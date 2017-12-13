@@ -113,6 +113,10 @@ namespace NuGet.Commands
                         ValidateProjectSpecNetCore(spec, files);
                         break;
 
+                    case ProjectStyle.CommandLineToolReference:
+                        ValidateProjectSpecNetCore(spec, files);
+                        break;
+
                     case ProjectStyle.ProjectJson:
                         ValidateProjectSpecUAP(spec, files);
                         break;

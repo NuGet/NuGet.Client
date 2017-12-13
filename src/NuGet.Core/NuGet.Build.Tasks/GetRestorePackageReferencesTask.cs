@@ -33,7 +33,7 @@ namespace NuGet.Build.Tasks
         public ITaskItem[] RestoreGraphItems { get; set; }
 
         public override bool Execute()
-        {
+        {            
             var log = new MSBuildLogger(Log);
             log.LogDebug($"(in) ProjectUniqueName '{ProjectUniqueName}'");
             log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
@@ -54,7 +54,7 @@ namespace NuGet.Build.Tasks
 
                 var properties = new Dictionary<string, string>();
                 properties.Add("ProjectUniqueName", ProjectUniqueName);
-                properties.Add("Type", "Dependency");
+                properties.Add("Type", "Dependency"); // TODO NK - Type needs changed!
                 properties.Add("Id", packageId);
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version", "VersionRange");
 

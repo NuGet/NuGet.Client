@@ -195,7 +195,8 @@ namespace NuGet.Commands
                 if (restoreType == ProjectStyle.PackageReference
                     || restoreType == ProjectStyle.Standalone
                     || restoreType == ProjectStyle.DotnetCliTool
-                    || restoreType == ProjectStyle.ProjectJson)
+                    || restoreType == ProjectStyle.ProjectJson
+                    || restoreType == ProjectStyle.CommandLineToolReference)
                 {
 
                     foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
@@ -223,7 +224,8 @@ namespace NuGet.Commands
                 // Read package references for netcore, tools, and standalone
                 if (restoreType == ProjectStyle.PackageReference
                     || restoreType == ProjectStyle.Standalone
-                    || restoreType == ProjectStyle.DotnetCliTool)
+                    || restoreType == ProjectStyle.DotnetCliTool
+                    || restoreType == ProjectStyle.CommandLineToolReference)
                 {
                     AddFrameworkAssemblies(result, items);
                     AddPackageReferences(result, items);
@@ -236,7 +238,8 @@ namespace NuGet.Commands
                 }
 
                 if (restoreType == ProjectStyle.PackageReference
-                    || restoreType == ProjectStyle.Standalone)
+                    || restoreType == ProjectStyle.Standalone
+                    || restoreType == ProjectStyle.CommandLineToolReference)
                 {
                     // Set project version
                     result.Version = GetVersion(specItem);
@@ -275,7 +278,8 @@ namespace NuGet.Commands
                 if (restoreType == ProjectStyle.PackageReference
                     || restoreType == ProjectStyle.ProjectJson
                     || restoreType == ProjectStyle.Unknown
-                    || restoreType == ProjectStyle.PackagesConfig)
+                    || restoreType == ProjectStyle.PackagesConfig
+                    || restoreType == ProjectStyle.CommandLineToolReference)
                 {
                     var projectDir = string.Empty;
 
