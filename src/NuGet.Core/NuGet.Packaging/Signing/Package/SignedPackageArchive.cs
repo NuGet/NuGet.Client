@@ -56,7 +56,7 @@ namespace NuGet.Packaging.Signing
             using (var reader = new BinaryReader(ZipReadStream, SigningSpecifications.Encoding, leaveOpen: true))
             using (var writer = new BinaryWriter(ZipWriteStream, SigningSpecifications.Encoding, leaveOpen: true))
             {
-                SignedPackageArchiveIOUtility.WriteSignatureIntoZip((MemoryStream)signatureStream, reader, writer);
+                SignedPackageArchiveUtility.SignZip((MemoryStream)signatureStream, reader, writer);
             }
         }
 

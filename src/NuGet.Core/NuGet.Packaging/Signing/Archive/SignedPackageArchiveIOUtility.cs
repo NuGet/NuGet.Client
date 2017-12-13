@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,9 @@ namespace NuGet.Packaging.Signing
     {
         // Central Directory file header size excluding signature, file name, extra field and file comment
         internal const uint CentralDirectoryFileHeaderSize = 46;
+
+        // Local file header size excluding signature, file name and extra field
+        internal const uint LocalFileHeaderSize = 26;
         internal const uint CentralDirectoryHeaderSignature = 0x02014b50;
         internal const uint EndOfCentralDirectorySignature = 0x06054b50;
         internal const uint Zip64EndOfCentralDirectorySignature = 0x06064b50;
@@ -23,6 +27,10 @@ namespace NuGet.Packaging.Signing
 
         private const uint Crc32Polynomial = 0xedb88320;
         private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
+
+        // used while converting DateTime to MS-DOS date time format
+        private const int ValidZipDate_YearMin = 1980;
+        private const int ValidZipDate_YearMax = 2107;
 
         /// <summary>
         /// Takes a binary reader and moves forwards the current position of it's base stream until it finds the specified signature.
@@ -359,7 +367,7 @@ namespace NuGet.Packaging.Signing
         /// Throws SignatureException if less or more entries are found.
         /// </summary>
         /// <param name="metadata">SignedPackageArchiveMetadata to be checked for signature entry.</param>
-        public static void AssertExactlyOnePrimarySignature(SignedPackageArchiveMetadata metadata)
+        internal static void AssertExactlyOnePrimarySignature(SignedPackageArchiveMetadata metadata)
         {
             // Get missing metadata for central directory records
             var hasFoundSignature = false;
@@ -397,25 +405,11 @@ namespace NuGet.Packaging.Signing
         /// <param name="writer">BinaryWriter to be used to write the signature into the zip.</param>
         internal static void WriteSignatureIntoZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
         {
-            if (signatureStream == null)
-            {
-                throw new ArgumentNullException(nameof(signatureStream));
-            }
-
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
             var packageMetadata = ReadSignedArchiveMetadata(reader);
-            var signatureDateTime = DateTime.Now;
 
             var signatureBytes = signatureStream.ToArray();
+            var signatureCrc32 = (uint)Crc32.CalculateCrc(signatureBytes);
+            var signatureDosTime = DateTimeToDosTime(DateTime.Now);
 
             // ensure both streams are reset
             reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
@@ -425,7 +419,7 @@ namespace NuGet.Packaging.Signing
             ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfFileHeaders);
 
             // write the signature local file header
-            var signatureFileHeaderLength = WriteLocalFileHeaderIntoZip(writer, signatureBytes, signatureDateTime);
+            var signatureFileHeaderLength = WriteLocalFileHeaderIntoZip(writer, signatureBytes, signatureCrc32, signatureDosTime);
 
             // write the signature file
             var signatureFileLength = WriteFileIntoZip(writer, signatureBytes);
@@ -434,7 +428,7 @@ namespace NuGet.Packaging.Signing
             ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfCentralDirectory);
 
             // write the central directory header for signature file
-            var signatureCentralDirectoryHeaderLength = WriteCentralDirectoryHeader(writer, signatureBytes, signatureDateTime, packageMetadata.EndOfFileHeaders);
+            var signatureCentralDirectoryHeaderLength = WriteCentralDirectoryHeader(writer, signatureBytes, signatureCrc32, signatureDosTime, packageMetadata.EndOfFileHeaders);
 
             // copy all data that was after previous end of central directory headers till previous start of end of central directory record
             ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfCentralDirectoryRecordPosition);
@@ -452,7 +446,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="fileData">Byte[] of the corresponding file to be written into the zip.</param>
         /// <param name="fileTime">Last modified DateTime for the file data.</param>
         /// <returns>Number of total bytes written into the zip.</returns>
-        private static long WriteLocalFileHeaderIntoZip(BinaryWriter writer, byte[] fileData, DateTime fileTime)
+        private static long WriteLocalFileHeaderIntoZip(BinaryWriter writer, byte[] fileData, uint crc32, uint dosDateTime)
         {
 
             // Write the file header signature
@@ -468,10 +462,10 @@ namespace NuGet.Packaging.Signing
             writer.Write((ushort)0);
 
             // write date and time
-            writer.Write(ToMsDosDateTime(fileTime));
+            writer.Write(dosDateTime);
 
             // write file CRC32
-            writer.Write(GenerateCRC32(fileData));
+            writer.Write(crc32);
 
             // write uncompressed size
             writer.Write((uint)fileData.Length);
@@ -491,8 +485,7 @@ namespace NuGet.Packaging.Signing
             writer.Write(fileNameBytes);
 
             // calculate the total length of data written
-            // 30 bytes are for the length of the local file header
-            var writtenDataLength = 30L + fileNameLength;
+            var writtenDataLength = LocalFileHeaderSize + BitConverter.GetBytes(LocalFileHeaderSignature).Length + fileNameLength;
 
             return writtenDataLength;
         }
@@ -523,7 +516,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="fileTime">Last modified DateTime for the file data.</param>
         /// <param name="fileOffset">Offset, in bytes, for the local file header of the corresponding file from the start of the archive.</param>
         /// <returns>Number of total bytes written into the zip.</returns>
-        private static long WriteCentralDirectoryHeader(BinaryWriter writer, byte[] fileData, DateTime fileTime, long fileOffset)
+        private static long WriteCentralDirectoryHeader(BinaryWriter writer, byte[] fileData, uint crc32, uint dosDateTime, long fileOffset)
         {
 
             // Write the file header signature
@@ -542,10 +535,10 @@ namespace NuGet.Packaging.Signing
             writer.Write((ushort)0);
 
             // write date and time
-            writer.Write(ToMsDosDateTime(fileTime));
+            writer.Write(dosDateTime);
 
             // write file CRC32
-            writer.Write(GenerateCRC32(fileData));
+            writer.Write(crc32);
 
             // write uncompressed size
             writer.Write(fileData.Length);
@@ -655,53 +648,25 @@ namespace NuGet.Packaging.Signing
             return true;
         }
 
-        // Reference - http://referencesource.microsoft.com/#WindowsBase/Base/MS/Internal/IO/Zip/ZipIOBlockManager.cs,492
-        private static uint ToMsDosDateTime(DateTime dateTime)
+        /// <summary>
+        /// Converts a DateTime value into a unit in the MS-DOS date time format.
+        /// Reference - https://docs.microsoft.com/en-us/cpp/c-runtime-library/32-bit-windows-time-date-formats
+        /// Reference - https://source.dot.net/#System.IO.Compression/System/IO/Compression/ZipHelper.cs,91
+        /// </summary>
+        /// <param name="dateTime">DateTime value to be converted.</param>
+        /// <returns>uint representing the MS-DOS equivalent date time.</returns>
+        private static uint DateTimeToDosTime(DateTime dateTime)
         {
-            uint result = 0;
+            // DateTime must be Convertible to DosTime:
+            Debug.Assert(ValidZipDate_YearMin <= dateTime.Year && dateTime.Year <= ValidZipDate_YearMax);
 
-            result |= (((uint)dateTime.Second) / 2) & 0x1F;   // seconds need to be divided by 2 as they stored in 5 bits
-            result |= (((uint)dateTime.Minute) & 0x3F) << 5;
-            result |= (((uint)dateTime.Hour) & 0x1F) << 11;
-
-            result |= (((uint)dateTime.Day) & 0x1F) << 16;
-            result |= (((uint)dateTime.Month) & 0xF) << 21;
-            result |= (((uint)(dateTime.Year - 1980)) & 0x7F) << 25;
-
-            return result;
-        }
-
-        // Reference - https://en.wikipedia.org/wiki/Cyclic_redundancy_check#CRC-32_algorithm
-        private static uint GenerateCRC32(byte[] data)
-        {
-            var crcTable = GenerateCrc32LookupTable();
-            var crc32 = 0xFFFFFFFF;
-
-            foreach (var dataByte in data)
-            {
-                var index = (crc32 ^ dataByte) & 0x000000FF;
-                crc32 = (crc32 >> 8) ^ crcTable[index];
-            }
-
-            return ~crc32;
-        }
-
-        // Reference - https://www.codeproject.com/Articles/35134/How-to-calculate-a-CRC-in-Csharp
-        private static uint[] GenerateCrc32LookupTable()
-        {
-            var crcTable = new uint[256];
-            for (var i = 0; i < crcTable.Length; i++)
-            {
-                var crc = (uint)i;
-                for (var j = 0; j < 8; j++)
-                {
-                    crc = (crc & 1) != 0 ? Crc32Polynomial ^ (crc >> 1) : (crc >> 1);
-                }
-
-                crcTable[i] = crc;
-            }
-
-            return crcTable;
+            var ret = ((dateTime.Year - ValidZipDate_YearMin) & 0x7F);
+            ret = (ret << 4) + dateTime.Month;
+            ret = (ret << 5) + dateTime.Day;
+            ret = (ret << 5) + dateTime.Hour;
+            ret = (ret << 6) + dateTime.Minute;
+            ret = (ret << 5) + (dateTime.Second / 2); // only 5 bits for second, so we only have a granularity of 2 sec.
+            return (uint)ret;
         }
     }
 }
