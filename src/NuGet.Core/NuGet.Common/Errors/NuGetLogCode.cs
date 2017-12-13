@@ -223,6 +223,16 @@ namespace NuGet.Common
         NU3003 = 3003,
 
         /// <summary>
+        /// Package signature is invalid
+        /// </summary>
+        NU3005 = 3005,
+
+        /// <summary>
+        /// Package is not signed
+        /// </summary>
+        NU3006 = 3006,
+
+        /// <summary>
         /// Certificate chain does not build
         /// </summary>
         NU3011 = 3011,
@@ -233,7 +243,7 @@ namespace NuGet.Common
         NU3012 = 3012,
 
         /// <summary>
-        /// SignedCms.ComputeSignature cannot read the certificate private key
+        /// Primary signature has an unsuported hash algorithm
         /// </summary>
         NU3013 = 3013,
 
@@ -241,6 +251,16 @@ namespace NuGet.Common
         /// Invalid password provided for a certificate
         /// </summary>
         NU3014 = 3014,
+
+        /// <summary>
+        /// Package integrity check failed
+        /// </summary>
+        NU3015 = 3015,
+
+        /// <summary>
+        /// Primary signature does not have certificate
+        /// </summary>
+        NU3020 = 3020,
 
         /// <summary>
         /// Chain building failed for primary signature
@@ -256,6 +276,20 @@ namespace NuGet.Common
         /// Unsupported public key length
         /// </summary>
         NU3023 = 3023,
+        
+        /// Primary signature verification failed
+        /// </summary>
+        NU3030 = 3030,
+
+        /// <summary>
+        /// Timestamp with no certificate
+        /// </summary>
+        NU3040 = 3040,
+
+        /// <summary>
+        /// Chain building failed for timestamp
+        /// </summary>
+        NU3041 = 3041,
 
         /// <summary>
         /// Timestamp certificate chain building failed
@@ -278,6 +312,16 @@ namespace NuGet.Common
         NU3051 = 3051,
 
         /// <summary>
+        /// Timestamp unsupported algorithm
+        /// </summary>
+        NU3052 = 3052,
+
+        /// <summary>
+        /// Timestamp integrity check
+        /// </summary>
+        NU3053 = 3053,
+
+        /// <summary>
         /// Undefined signature warning
         /// </summary>
         NU3500 = 3500,
@@ -293,9 +337,29 @@ namespace NuGet.Common
         NU3502 = 3502,
 
         /// <summary>
+        /// Primary signature has an unsuported hash algorithm
+        /// </summary>
+        NU3513 = 3513,
+
+        /// <summary>
         /// Timestamp url not passed to sign command
         /// </summary>
         NU3521 = 3521,
+
+        /// <summary>
+        /// Primary signature verification failed
+        /// </summary>
+        NU3530 = 3530,
+
+        /// <summary>
+        /// Invalid timestamp in signature
+        /// </summary>
+        NU3550 = 3550,
+
+        /// <summary>
+        /// Timestamp unsupported algorithm
+        /// </summary>
+        NU3552 = 3552,
 
         /// <summary>
         /// Undefined Package Error.

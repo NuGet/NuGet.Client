@@ -130,8 +130,13 @@ namespace NuGet.Packaging.Signing
         /// <param name="signer">SignerInfo containing signature metadata</param>
         private static SignatureType GetSignatureType(SignerInfo signer)
         {
-            // TODO: Change this to use the new attributes that justin is adding.
-            return SignatureType.Author;
+            var commitmentTypeIndication = signer.SignedAttributes.GetAttributeOrDefault(Oids.CommitmentTypeIndication);
+            if (commitmentTypeIndication != null)
+            {
+                return AttributeUtility.GetCommitmentTypeIndication(commitmentTypeIndication);
+            }
+
+            return SignatureType.Unknown;
         }
 
         /// <summary>

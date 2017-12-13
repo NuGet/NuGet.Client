@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Security.Cryptography;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
@@ -37,20 +39,13 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Validates the public key requirements for a certificate
+        /// Validates if the certificate contains the lifetime signing EKU
         /// </summary>
         /// <param name="certificate">Certificate to validate</param>
-        /// <returns>True if the certificate's public key is valid within NuGet signature requirements</returns>
-        public static bool IsCertificatePublicKeyValid(X509Certificate2 certificate)
+        /// <returns>True if the certificate has the lifetime signing EKU</returns>
+        public static bool IsCertificateLifetimeSigning(X509Certificate2 certificate)
         {
-            // Check if the public key is RSA with a valid keysize
-            var RSAPublicKey = RSACertificateExtensions.GetRSAPublicKey(certificate);
-            if (RSAPublicKey != null)
-            {
-                return RSAPublicKey.KeySize >= SigningSpecifications.V1.RSAPublicKeyMinLength;
-            }
-
-            return false;
+            return SigningUtility.HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEkuOid);
         }
 
 #if IS_DESKTOP
@@ -71,30 +66,31 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(extraStore));
             }
 
+            X509ChainStatus[] chainStatusList;
             using (var chain = new X509Chain())
             {
                 SetCertBuildChainPolicy(
-                    chain,
+                    chain.ChainPolicy,
                     extraStore,
                     DateTime.Now,
                     NuGetVerificationCertificateType.Signature);
 
-                if (chain.Build(certificate))
+                if (SigningUtility.BuildCertificateChain(chain, certificate, out chainStatusList))
                 {
                     return GetCertificateChain(chain);
                 }
-
-                foreach (var chainStatus in chain.ChainStatus)
-                {
-                    if (chainStatus.Status != X509ChainStatusFlags.NoError)
-                    {
-                        throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString()));
-                    }
-                }
-
-                // Should be unreachable.
-                throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChainUnspecifiedReason));
             }
+
+            foreach (var chainStatus in chainStatusList)
+            {
+                if (chainStatus.Status != X509ChainStatusFlags.NoError)
+                {
+                    throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString()));
+                }
+            }
+
+            // Should be unreachable.
+            throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChainUnspecifiedReason));
         }
 #endif
 
@@ -209,12 +205,13 @@ namespace NuGet.Packaging.Signing
         }
 
         internal static void SetCertBuildChainPolicy(
-            X509Chain x509Chain,
+            X509ChainPolicy policy,
             X509Certificate2Collection additionalCertificates,
             DateTime verificationTime,
             NuGetVerificationCertificateType certificateType)
         {
-            var policy = x509Chain.ChainPolicy;
+            // This flag should only be set for verification scenarios, not signing
+            policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
 
             if (certificateType == NuGetVerificationCertificateType.Signature)
             {
@@ -223,7 +220,6 @@ namespace NuGet.Packaging.Signing
             else if (certificateType == NuGetVerificationCertificateType.Timestamp)
             {
                 policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEkuOid));
-                policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
             }
 
             policy.ExtraStore.AddRange(additionalCertificates);
@@ -232,6 +228,90 @@ namespace NuGet.Packaging.Signing
             policy.RevocationMode = X509RevocationMode.Online;
 
             policy.VerificationTime = verificationTime;
+        }
+
+        public static bool CertificateValidityPeriodIsInTheFuture(X509Certificate2 certificate)
+        {
+            DateTimeOffset signerCertBegin = DateTime.SpecifyKind(certificate.NotBefore, DateTimeKind.Local);
+
+            return signerCertBegin > DateTimeOffset.Now;
+        }
+
+        internal static bool BuildCertificateChain(X509Chain chain, X509Certificate2 certificate, out X509ChainStatus[] status)
+        {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+
+            var buildSuccess = chain.Build(certificate);
+            status = new X509ChainStatus[chain.ChainStatus.Length];
+            chain.ChainStatus.CopyTo(status, 0);
+
+            // Check if time is not in the future
+            return buildSuccess && !CertificateValidityPeriodIsInTheFuture(certificate);
+        }
+
+        internal static bool IsTimestampValid(byte[] data, bool failIfInvalid, List<SignatureLog> issues, SignerInfo timestampSignerInfo, Rfc3161TimestampTokenInfo tstInfo, SigningSpecifications spec)
+        {
+            var isValid = true;
+            if (!tstInfo.HasMessageHash(data))
+            {
+                issues.Add(SignatureLog.Issue(failIfInvalid, NuGetLogCode.NU3053, Strings.TimestampFailureInvalidHash));
+                isValid = false;
+            }
+
+            if (!spec.AllowedHashAlgorithmOids.Contains(timestampSignerInfo.DigestAlgorithm.Value))
+            {
+                var code = failIfInvalid ? NuGetLogCode.NU3052 : NuGetLogCode.NU3552;
+                issues.Add(SignatureLog.Issue(failIfInvalid, code, Strings.TimestampFailureInvalidHashAlgorithmOid));
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Ignore some chain status flags to special case them
+        public const X509ChainStatusFlags InvalidCertificateFlags =
+            (~(X509ChainStatusFlags)0) &                      // Start with all flags, and exclude known special cases
+            (~X509ChainStatusFlags.NotTimeValid) &
+            (~X509ChainStatusFlags.NotTimeNested) &           // Deprecated and therefore ignored.
+            (~X509ChainStatusFlags.Revoked) &
+            (~X509ChainStatusFlags.RevocationStatusUnknown) &
+            (~X509ChainStatusFlags.CtlNotTimeValid) &
+            (~X509ChainStatusFlags.OfflineRevocation);
+
+        public static bool ChainStatusListIncludesStatus(X509ChainStatus[] chainStatuses, X509ChainStatusFlags status, out IReadOnlyList<X509ChainStatus> chainStatus)
+        {
+            chainStatus = chainStatuses
+                .Where(x => (x.Status & status) != 0)
+                .ToList();
+
+            if (chainStatus.Any())
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool TryGetStatusMessage(X509ChainStatus[] chainStatuses, X509ChainStatusFlags status, out IReadOnlyList<string> messages)
+        {
+            messages = null;
+
+            if (ChainStatusListIncludesStatus(chainStatuses, status, out var chainStatus))
+            {
+                messages = chainStatus
+                    .Select(x => x.StatusInformation?.Trim())
+                    .Where(x => !string.IsNullOrEmpty(x))
+                    .Distinct()
+                    .OrderBy(x => x)
+                    .ToList();
+
+                return true;
+            }
+
+            return false;
         }
 #endif
     }

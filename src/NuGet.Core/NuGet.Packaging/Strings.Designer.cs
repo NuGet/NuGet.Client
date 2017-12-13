@@ -287,11 +287,29 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not validate signature. Signature does not have a certificate..
+        ///   Looks up a localized string similar to Multiple timestamps are not accepted..
+        /// </summary>
+        internal static string ErrorMultipleTimestamps {
+            get {
+                return ResourceManager.GetString("ErrorMultipleTimestamps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The primary signature did not have a signing certificate..
         /// </summary>
         internal static string ErrorNoCertificate {
             get {
                 return ResourceManager.GetString("ErrorNoCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The primary signature should be timestamped to enable long-term signature validity after the certificate has expired..
+        /// </summary>
+        internal static string ErrorNoTimestamp {
+            get {
+                return ResourceManager.GetString("ErrorNoTimestamp", resourceCulture);
             }
         }
         
@@ -341,7 +359,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signature verification failed..
+        ///   Looks up a localized string similar to Primary signature validation failed..
         /// </summary>
         internal static string ErrorSignatureVerificationFailed {
             get {
@@ -368,7 +386,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Zip64 archives are not supported.
+        ///   Looks up a localized string similar to ZIP64 signed packages are not supported..
         /// </summary>
         internal static string ErrorZip64NotSupported {
             get {
@@ -575,7 +593,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signature response does not contain an acceptable hash algorithm..
+        ///   Looks up a localized string similar to The primary signature uses an unsupported hash algorithm..
         /// </summary>
         internal static string SignatureFailureInvalidHashAlgorithmOid {
             get {
@@ -773,7 +791,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Timestamp signature contains invalid content type..
+        ///   Looks up a localized string similar to Timestamp signature validation failed..
         /// </summary>
         internal static string TimestampFailureInvalidContentType {
             get {
@@ -782,7 +800,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Timestamp response contains invalid signature value hash..
+        ///   Looks up a localized string similar to Timestamp integrity check failed..
         /// </summary>
         internal static string TimestampFailureInvalidHash {
             get {
@@ -791,7 +809,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Timestamp response does not contain an acceptable hash algorithm..
+        ///   Looks up a localized string similar to The timestamp uses as unsupported hash algorithm..
         /// </summary>
         internal static string TimestampFailureInvalidHashAlgorithmOid {
             get {
@@ -823,6 +841,15 @@ namespace NuGet.Packaging {
         internal static string TimestampInvalid {
             get {
                 return ResourceManager.GetString("TimestampInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp signature did not have a signing certificate..
+        /// </summary>
+        internal static string TimestampNoCertificate {
+            get {
+                return ResourceManager.GetString("TimestampNoCertificate", resourceCulture);
             }
         }
         

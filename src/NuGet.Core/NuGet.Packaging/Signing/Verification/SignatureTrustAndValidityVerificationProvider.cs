@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Linq;
+using NuGet.Common;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -26,227 +27,281 @@ namespace NuGet.Packaging.Signing
     {
         private SigningSpecifications _specification => SigningSpecifications.V1;
 
-        public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, CancellationToken token)
+        public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
-            var result = VerifyValidityAndTrust(package, signature);
+            token.ThrowIfCancellationRequested();
+
+            var result = VerifyValidityAndTrust(package, signature, settings);
             return Task.FromResult(result);
         }
 
 #if IS_DESKTOP
-        private PackageVerificationResult VerifyValidityAndTrust(ISignedPackageReader package, Signature signature)
+        private PackageVerificationResult VerifyValidityAndTrust(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings)
         {
-            var status = SignatureVerificationStatus.Trusted;
-            var issues = new List<SignatureLog>();
-            var authorUnsignedAttributes = signature.SignerInfo.UnsignedAttributes;
+            var issues = new List<SignatureLog>
+            {
+                SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, signature.Type.ToString()))
+            };
+
+            var timestampLimits = GetTimestampLimits(signature, !settings.FailWithMultipleTimestamps, !settings.AllowIgnoreTimestamp, !settings.AllowNoTimestamp, issues);
+            if (timestampLimits == null && (!settings.AllowIgnoreTimestamp || !settings.AllowNoTimestamp))
+            {
+                return new SignedPackageVerificationResult(SignatureVerificationStatus.Invalid, signature, issues);
+            }
+
+            var status = VerifySignature(signature, timestampLimits, !settings.AllowUntrusted, issues);
+            return new SignedPackageVerificationResult(status, signature, issues);
+        }
+
+        private Tuple<DateTimeOffset, DateTimeOffset> GetTimestampLimits(Signature signature, bool ignoreMultipleTimestamps, bool failIfInvalid, bool failIfNoTimestamp, List<SignatureLog> issues)
+        {
+            Tuple<DateTimeOffset, DateTimeOffset> timestampLimits = null;
             var timestampCms = new SignedCms();
-            var dateTimeToCheckRevocation = DateTime.Now;
+            var hasFoundOneTimestamp = false;
 
-            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, signature.Type.ToString())));
-
+            var authorUnsignedAttributes = signature.SignerInfo.UnsignedAttributes;
             foreach (var attribute in authorUnsignedAttributes)
             {
-                if (string.Equals(attribute.Oid.Value, Oids.SignatureTimeStampTokenAttributeOid))
+                if (StringComparer.Ordinal.Equals(attribute.Oid.Value, Oids.SignatureTimeStampTokenAttributeOid))
                 {
+                    if (hasFoundOneTimestamp && !ignoreMultipleTimestamps)
+                    {
+                        issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3000, Strings.ErrorMultipleTimestamps));
+                        return null;
+                    }
+                    hasFoundOneTimestamp = true;
                     timestampCms.Decode(attribute.Values[0].RawData);
-
                     using (var authorSignatureNativeCms = NativeCms.Decode(signature.SignedCms.Encode(), detached: false))
                     {
                         var signatureHash = NativeCms.GetSignatureValueHash(signature.SignatureContent.HashAlgorithm, authorSignatureNativeCms);
+                        timestampLimits = GetTimestampIfValid(timestampCms, signatureHash,failIfInvalid, issues);
+                    }
 
-                        status = VerifyTimestamp(timestampCms, signature.SignerInfo.Certificate, signatureHash, issues);
-                        if (status == SignatureVerificationStatus.Invalid)
-                        {
-                            return new SignedPackageVerificationResult(status, signature, issues);
-                        }
-
-                        dateTimeToCheckRevocation = Rfc3161TimestampVerificationUtility.GetUpperLimit(timestampCms).ToLocalTime().DateTime;
+                    if (ignoreMultipleTimestamps)
+                    {
+                        break;
                     }
                 }
             }
 
-            status = VerifySignatureValidity(signature, dateTimeToCheckRevocation, issues);
+            if (!hasFoundOneTimestamp)
+            {
+                issues.Add(SignatureLog.Issue(failIfNoTimestamp, NuGetLogCode.NU3550, Strings.ErrorNoTimestamp));
+            }
 
-            return new SignedPackageVerificationResult(status, signature, issues);
+            return timestampLimits;
         }
 
-        private SignatureVerificationStatus VerifySignatureValidity(Signature signature, DateTime verificationTime, List<SignatureLog> issues)
+        private SignatureVerificationStatus VerifySignature(Signature signature, Tuple<DateTimeOffset, DateTimeOffset> timestampLimits, bool failuresAreFatal, List<SignatureLog> issues)
         {
             var certificate = signature.SignerInfo.Certificate;
-            if (certificate == null)
+            if (certificate != null)
             {
-                issues.Add(SignatureLog.InvalidPackageError(Strings.ErrorNoCertificate));
-                issues.Add(SignatureLog.DebugLog(Strings.DebugNoCertificate));
-                return SignatureVerificationStatus.Invalid;
+                try
+                {
+                    signature.SignerInfo.CheckSignature(verifySignatureOnly: true);
+                }
+                catch (Exception e)
+                {
+                    var code = failuresAreFatal ? NuGetLogCode.NU3030 : NuGetLogCode.NU3530;
+                    issues.Add(SignatureLog.Issue(failuresAreFatal, code, Strings.ErrorSignatureVerificationFailed));
+                    issues.Add(SignatureLog.DebugLog(e.ToString()));
+                    return SignatureVerificationStatus.Invalid;
+                }
+
+                timestampLimits = timestampLimits ?? new Tuple<DateTimeOffset, DateTimeOffset>(DateTimeOffset.Now, DateTimeOffset.Now);
+                if (Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(certificate, timestampLimits))
+                {
+                    // Read signed attribute containing the original cert hashes
+                    // var signingCertificateAttribute = signature.SignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningCertificateV2);
+                    // TODO: how are we going to use the signingCertificateAttribute?
+
+                    var certificateExtraStore = signature.SignedCms.Certificates;
+
+                    X509ChainStatus[] chainStatusList;
+                    using (var chain = new X509Chain())
+                    {
+                        SigningUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestampLimits.Item2.LocalDateTime, NuGetVerificationCertificateType.Signature);
+                        if (SigningUtility.BuildCertificateChain(chain, certificate, out chainStatusList))
+                        {
+                            return SignatureVerificationStatus.Trusted;
+                        }
+                    }
+
+                    var chainBuildingHasIssues = false;
+                    IReadOnlyList<string> messages;
+                    if(SigningUtility.TryGetStatusMessage(chainStatusList, SigningUtility.InvalidCertificateFlags, out messages))
+                    {
+                        foreach (var message in messages)
+                        {
+                            issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3021, message));
+                        }
+                        chainBuildingHasIssues = true;
+                    }
+
+                    // For all the special cases, chain status list only has unique elements for each chain status flag present
+                    // therefore if we are checking for one specific chain status we can use the first of the returned list
+                    // if we are combining checks for more than one, then we have to use the whole list.
+                    IReadOnlyList<X509ChainStatus> chainStatus = null;
+                    if (SigningUtility.ChainStatusListIncludesStatus(chainStatusList, X509ChainStatusFlags.Revoked, out chainStatus))
+                    {
+                        var status = chainStatus.First();
+                        issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3021, status.StatusInformation));
+                        return SignatureVerificationStatus.Invalid;
+                    }
+
+                    if (failuresAreFatal || SigningUtility.CertificateValidityPeriodIsInTheFuture(certificate))
+                    {
+                        const X509ChainStatusFlags NotTimeValidFlags = X509ChainStatusFlags.NotTimeValid | X509ChainStatusFlags.CtlNotTimeValid;
+
+                        if (SigningUtility.TryGetStatusMessage(chainStatusList, NotTimeValidFlags, out messages))
+                        {
+                            foreach (var message in messages)
+                            {
+                                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3021, message));
+                            }
+                            chainBuildingHasIssues = true;
+                        }
+                    }
+
+                    const X509ChainStatusFlags RevocationStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
+                    if (SigningUtility.TryGetStatusMessage(chainStatusList, RevocationStatusFlags, out messages))
+                    {
+                        if (failuresAreFatal)
+                        {
+                            foreach (var message in messages)
+                            {
+                                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3021, message));
+                            }
+                        }
+                        else if (!chainBuildingHasIssues)
+                        {
+                            return SignatureVerificationStatus.Trusted;
+                        }
+                        chainBuildingHasIssues = true;
+                    }
+
+                    // Debug log any errors
+                    issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, string.Join(", ", chainStatusList.Select(x => x.ToString())))));
+                }
+                else
+                {
+                    // package is expired or validity is in the future, signature is not trusted
+                    var code = failuresAreFatal ? NuGetLogCode.NU3030 : NuGetLogCode.NU3530;
+                    issues.Add(SignatureLog.Issue(failuresAreFatal, code, Strings.ErrorSignatureVerificationFailed));
+                }
+            }
+            else
+            {
+                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3020, Strings.ErrorNoCertificate));
             }
 
-            if (signature.Type == SignatureType.Unknown)
-            {
-                issues.Add(SignatureLog.TrustOfSignatureCannotBeProvenWarning(Strings.WarningUnknownSignatureType));
-                return SignatureVerificationStatus.Untrusted;
-            }
-
-            if (!SigningUtility.IsCertificatePublicKeyValid(signature.SignerInfo.Certificate))
-            {
-                issues.Add(SignatureLog.InvalidPackageError(Strings.ErrorInvalidPublicKey));
-                return SignatureVerificationStatus.Invalid;
-            }
-
-            if (SigningUtility.HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEkuOid))
-            {
-                issues.Add(SignatureLog.InvalidPackageError(Strings.ErrorCertificateHasLifetimeSignerEKU));
-                return SignatureVerificationStatus.Invalid;
-            }
-
-            var commitmentTypeIndication = signature.SignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.CommitmentTypeIndication);
-
-            if (commitmentTypeIndication != null
-                && !AttributeUtility.IsValidCommitmentTypeIndication(commitmentTypeIndication))
-            {
-                issues.Add(SignatureLog.InvalidPackageError(Strings.CommitmentTypeIndicationInvalid));
-                return SignatureVerificationStatus.Invalid;
-            }
-
-            try
-            {
-                signature.SignerInfo.CheckSignature(verifySignatureOnly: true);
-            }
-            catch (Exception e)
-            {
-                issues.Add(SignatureLog.InvalidPackageError(Strings.ErrorSignatureVerificationFailed));
-                issues.Add(SignatureLog.DebugLog(e.ToString()));
-                return SignatureVerificationStatus.Invalid;
-            }
-
-            // Read signed attribute containing the original cert hashes
-            var signingCertificateV2Attribute = signature.SignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningCertificateV2);
-
-            // Verify chain
-            return VerifyCertificateChain(certificate, signature.SignedCms.Certificates, verificationTime, NuGetVerificationCertificateType.Signature, issues, signingCertificateV2Attribute);
+            return SignatureVerificationStatus.Untrusted;
         }
 
         /// <summary>
         /// Validates a SignedCms object containing a timestamp response.
         /// </summary>
         /// <param name="timestampCms">SignedCms response from the timestamp authority.</param>
-        /// <param name="signerCertificate">X509Certificate2 used to sign the data that was timestamped.</param>
         /// <param name="data">byte[] data that was signed and timestamped.</param>
-        private SignatureVerificationStatus VerifyTimestamp(SignedCms timestampCms, X509Certificate2 signerCertificate, byte[] data, List<SignatureLog> issues)
+        private Tuple<DateTimeOffset, DateTimeOffset> GetTimestampIfValid(SignedCms timestampCms, byte[] data, bool failuresAreFatal, List<SignatureLog> issues)
         {
-            if (!Rfc3161TimestampVerificationUtility.TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
+            var timestampSignerInfo = timestampCms.SignerInfos[0];
+            var timestamperCertificate = timestampSignerInfo.Certificate;
+
+            if (timestamperCertificate == null)
             {
-                issues.Add(SignatureLog.InvalidTimestampInSignatureError(string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampResponseExceptionGeneral,
-                    Strings.TimestampFailureInvalidContentType)));
-                return SignatureVerificationStatus.Invalid;
+                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3040, Strings.TimestampNoCertificate));
+                return null;
             }
 
-            if (!tstInfo.HasMessageHash(data))
+            if (Rfc3161TimestampVerificationUtility.TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
             {
-                issues.Add(SignatureLog.InvalidTimestampInSignatureError(string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampResponseExceptionGeneral,
-                    Strings.TimestampFailureInvalidHash)));
-                return SignatureVerificationStatus.Invalid;
-            }
-
-            if (!Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signerCertificate, tstInfo))
-            {
-                issues.Add(SignatureLog.InvalidTimestampInSignatureError(Strings.TimestampFailureAuthorCertNotValid));
-                return SignatureVerificationStatus.Invalid;
-            }
-
-            if (!_specification.AllowedHashAlgorithmOids.Contains(timestampCms.SignerInfos[0].DigestAlgorithm.Value))
-            {
-                issues.Add(SignatureLog.InvalidTimestampInSignatureError(string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampResponseExceptionGeneral,
-                    Strings.TimestampFailureInvalidHashAlgorithmOid)));
-                return SignatureVerificationStatus.Invalid;
-            }
-
-            var timestamperCertificate = timestampCms.SignerInfos[0].Certificate;
-
-            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
-                Strings.TimestampValue,
-                tstInfo.Timestamp.LocalDateTime.ToString()) + Environment.NewLine));
-
-            return VerifyCertificateChain(timestamperCertificate, timestampCms.Certificates, DateTime.Now, NuGetVerificationCertificateType.Timestamp, issues, signingCertificateV2Attribute: null);
-        }
-
-        private SignatureVerificationStatus VerifyCertificateChain(X509Certificate2 certificate,
-            X509Certificate2Collection additionalCertificates,
-            DateTime verificationTime,
-            NuGetVerificationCertificateType certificateType,
-            List<SignatureLog> issues,
-            CryptographicAttributeObject signingCertificateV2Attribute)
-        {
-            if (certificate == null)
-            {
-                throw new ArgumentNullException(nameof(certificate));
-            }
-
-            var result = SignatureVerificationStatus.Invalid;
-
-            using (var chain = new X509Chain())
-            {
-                var certificateDisplayFormat = certificateType == NuGetVerificationCertificateType.Signature ? Strings.VerificationAuthorCertDisplay : Strings.VerificationTimestamperCertDisplay;
-
-                SigningUtility.SetCertBuildChainPolicy(chain, additionalCertificates, verificationTime, certificateType);
-
-                if (chain.Build(certificate))
+                if (SigningUtility.IsTimestampValid(data, failuresAreFatal, issues, timestampSignerInfo, tstInfo, _specification))
                 {
-                    // Verify signing-certificate-v2 to ensure that the certificates used at signing time are
-                    // the same certificates used during validation.
-                    if (signingCertificateV2Attribute == null
-                            || AttributeUtility.IsValidSigningCertificateV2(certificate, chain, signingCertificateV2Attribute, SigningSpecifications.V1))
+                    issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.TimestampValue, tstInfo.Timestamp.LocalDateTime.ToString()) + Environment.NewLine));
+
+                    //var signingCertificateAttribute = timestampSignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningCertificate);
+                    //if (signingCertificateAttribute == null)
+                    //{
+                    //    signingCertificateAttribute = timestampSignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningCertificateV2);
+                    //}
+                    // TODO: how are we going to use the signingCertificateAttribute?
+
+                    var certificateExtraStore = timestampCms.Certificates;
+
+                    X509ChainStatus[] chainStatusList;
+                    using (var chain = new X509Chain())
                     {
-                        result = SignatureVerificationStatus.Trusted;
-                        issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
-                                    certificateDisplayFormat,
-                                    $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(certificate)}")));
-                        issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
+                        SigningUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, DateTime.Now, NuGetVerificationCertificateType.Timestamp);
+                        if (SigningUtility.BuildCertificateChain(chain, timestamperCertificate, out chainStatusList))
+                        {
+                            return Rfc3161TimestampVerificationUtility.GetTimeStampLimits(tstInfo);
+                        }
                     }
-                    else
+
+                    var chainBuildingHasIssues = false;
+                    IReadOnlyList<string> messages;
+
+                    var timestampInvalidCertificateFlags = SigningUtility.InvalidCertificateFlags & (~X509ChainStatusFlags.Revoked);
+                    if (SigningUtility.TryGetStatusMessage(chainStatusList, timestampInvalidCertificateFlags, out messages))
                     {
-                        // signing-certificate-v2 did match the local cert chain
-                        issues.Add(SignatureLog.InvalidPackageError(Strings.SigningCertificateV2Invalid));
-                        result = SignatureVerificationStatus.Invalid;
+                        foreach (var message in messages)
+                        {
+                            issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3041, message));
+                        }
+                        chainBuildingHasIssues = true;
                     }
+
+                    // For all the special cases, chain status list only has unique elements for each chain status flag present
+                    // therefore if we are checking for one specific chain status we can use the first of the returned list
+                    // if we are combining checks for more than one, then we have to use the whole list.
+
+                    if (failuresAreFatal || SigningUtility.CertificateValidityPeriodIsInTheFuture(timestamperCertificate))
+                    {
+                        const X509ChainStatusFlags NotTimeValidFlags = X509ChainStatusFlags.NotTimeValid | X509ChainStatusFlags.CtlNotTimeValid;
+
+                        if (SigningUtility.TryGetStatusMessage(chainStatusList, NotTimeValidFlags, out messages))
+                        {
+                            foreach (var message in messages)
+                            {
+                                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3041, message));
+                            }
+                            chainBuildingHasIssues = true;
+                        }
+                    }
+
+                    const X509ChainStatusFlags RevocationStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
+                    if (SigningUtility.TryGetStatusMessage(chainStatusList, RevocationStatusFlags, out messages))
+                    {
+                        if (failuresAreFatal)
+                        {
+                            foreach (var message in messages)
+                            {
+                                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3041, message));
+                            }
+                        }
+                        else if (!chainBuildingHasIssues)
+                        {
+                            return Rfc3161TimestampVerificationUtility.GetTimeStampLimits(tstInfo);
+                        }
+                        chainBuildingHasIssues = true;
+                    }
+
+                    // Debug log any errors
+                    issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, string.Join(", ", chainStatusList.Select(x => x.ToString())))));
                 }
-
-                foreach (var chainStatus in chain.ChainStatus)
-                {
-                    switch (chainStatus.Status)
-                    {
-                        case X509ChainStatusFlags.Revoked:
-                            result = SignatureVerificationStatus.Invalid;
-                            issues.Add(SignatureLog.InvalidPackageError(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString())));
-                            break;
-
-                        case X509ChainStatusFlags.PartialChain:
-                        case X509ChainStatusFlags.UntrustedRoot:
-                            result = SignatureVerificationStatus.Untrusted;
-                            issues.Add(SignatureLog.UntrustedRootError(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString())));
-                            break;
-
-                        case X509ChainStatusFlags.OfflineRevocation:
-                        case X509ChainStatusFlags.RevocationStatusUnknown:
-                            result = SignatureVerificationStatus.Untrusted;
-                            issues.Add(SignatureLog.TrustOfSignatureCannotBeProvenWarning(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString())));
-                            break;
-
-                        case X509ChainStatusFlags.NoError:
-                            break;
-
-                        default:
-                            issues.Add(SignatureLog.InvalidPackageError(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString())));
-                            break;
-                    }
-                }
-
-                return result;
             }
+            else
+            {
+                var code = failuresAreFatal ? NuGetLogCode.NU3050 : NuGetLogCode.NU3550;
+                issues.Add(SignatureLog.Issue(failuresAreFatal, code, Strings.TimestampFailureInvalidContentType));
+            }
+
+            return null;
         }
 #else
-        private PackageVerificationResult VerifyValidityAndTrust(ISignedPackageReader package, Signature signature)
+        private PackageVerificationResult VerifyValidityAndTrust(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings)
         {
             throw new NotSupportedException();
         }

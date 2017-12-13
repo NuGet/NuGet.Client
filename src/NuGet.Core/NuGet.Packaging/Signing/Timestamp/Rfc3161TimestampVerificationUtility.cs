@@ -21,15 +21,23 @@ namespace NuGet.Packaging.Signing
 
 #if IS_DESKTOP
 
-        internal static bool ValidateSignerCertificateAgainstTimestamp(
-            X509Certificate2 signerCertificate,
-            Rfc3161TimestampTokenInfo tstInfo)
+        internal static Tuple<DateTimeOffset, DateTimeOffset> GetTimeStampLimits(Rfc3161TimestampTokenInfo tstInfo)
         {
             var tstInfoGenTime = tstInfo.Timestamp;
             var accuracyInMilliseconds = GetAccuracyInMilliseconds(tstInfo);
 
             var timestampUpperGenTime = tstInfoGenTime.AddMilliseconds(accuracyInMilliseconds);
             var timestampLowerGenTime = tstInfoGenTime.Subtract(TimeSpan.FromMilliseconds(accuracyInMilliseconds));
+
+            return new Tuple<DateTimeOffset, DateTimeOffset>(timestampUpperGenTime, timestampLowerGenTime);
+        }
+
+        internal static bool ValidateSignerCertificateAgainstTimestamp(
+            X509Certificate2 signerCertificate,
+            Tuple<DateTimeOffset, DateTimeOffset> limits)
+        {
+            var timestampLowerGenTime = limits.Item1;
+            var timestampUpperGenTime = limits.Item2;
 
             DateTimeOffset signerCertExpiry = DateTime.SpecifyKind(signerCertificate.NotAfter, DateTimeKind.Local);
             DateTimeOffset signerCertBegin = DateTime.SpecifyKind(signerCertificate.NotBefore, DateTimeKind.Local);
@@ -52,24 +60,13 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-        internal static DateTimeOffset GetUpperLimit(SignedCms timestampCms)
-        {
-            var result = DateTimeOffset.Now;
-            if (TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
-            {
-                var accuracyInMilliseconds = GetAccuracyInMilliseconds(tstInfo);
-                return tstInfo.Timestamp.AddMilliseconds(accuracyInMilliseconds);
-            }
-            return result;
-        }
-
         internal static double GetAccuracyInMilliseconds(Rfc3161TimestampTokenInfo tstInfo)
         {
             double accuracyInMilliseconds;
 
             if (!tstInfo.AccuracyInMicroseconds.HasValue)
             {
-                if (string.Equals(tstInfo.PolicyId, Oids.BaselineTimestampPolicyOid))
+                if (StringComparer.Ordinal.Equals(tstInfo.PolicyId, Oids.BaselineTimestampPolicyOid))
                 {
                     accuracyInMilliseconds = 1000;
                 }

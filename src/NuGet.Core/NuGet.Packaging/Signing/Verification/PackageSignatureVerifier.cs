@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Signing
                     // Verify that the signatures are trusted
                     foreach (var signature in signatures)
                     {
-                        var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, token)));
+                        var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, _settings, token)));
                         signaturesAreValid &= IsValid(sigTrustResults, _settings.AllowUntrusted);
                         trustResults.AddRange(sigTrustResults);
                     }
@@ -54,7 +54,7 @@ namespace NuGet.Packaging.Signing
                 {
                     // CryptographicException generated while parsing the SignedCms object
                     var issues = new[] {
-                        SignatureLog.InvalidInputError(Strings.ErrorPackageSignatureInvalid),
+                        SignatureLog.Issue(true, NuGetLogCode.NU3005, Strings.ErrorPackageSignatureInvalid),
                         SignatureLog.DebugLog(e.ToString())
                     };
                     trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
@@ -67,7 +67,7 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                var issues = new[] { SignatureLog.InvalidInputError(Strings.ErrorPackageNotSigned) };
+                var issues = new[] { SignatureLog.Issue(true, NuGetLogCode.NU3006, Strings.ErrorPackageNotSigned) };
                 trustResults.Add(new UnsignedPackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
             }
 

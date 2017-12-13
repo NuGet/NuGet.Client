@@ -18,30 +18,38 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public bool AllowUntrusted { get; }
 
-        private SignedPackageVerifierSettings(bool allowUnsigned, bool allowUntrusted)
+        public bool AllowIgnoreTimestamp { get; }
+
+
+        public bool FailWithMultipleTimestamps { get; }
+
+        public bool AllowNoTimestamp { get; }
+
+        private SignedPackageVerifierSettings(bool allowUnsigned, bool allowUntrusted, bool allowIgnoreTimestamp, bool failWithMultupleTimestamps, bool allowNoTimestamp)
         {
             AllowUnsigned = allowUnsigned;
             AllowUntrusted = allowUntrusted;
+            AllowIgnoreTimestamp = allowIgnoreTimestamp;
+            FailWithMultipleTimestamps = failWithMultupleTimestamps;
+            AllowNoTimestamp = allowNoTimestamp;
         }
 
         /// <summary>
         /// Allow unsigned.
         /// </summary>
-        public static SignedPackageVerifierSettings AllowAll { get; } = new SignedPackageVerifierSettings(allowUnsigned: true, allowUntrusted: true);
+        public static SignedPackageVerifierSettings AllowAll { get; } = new SignedPackageVerifierSettings(allowUnsigned: true, allowUntrusted: true, allowIgnoreTimestamp: true, failWithMultupleTimestamps: false, allowNoTimestamp: true);
 
         /// <summary>
         /// Default settings.
         /// </summary>
         public static SignedPackageVerifierSettings Default { get; } = AllowAll;
 
-        /// <summary>
-        /// Require all packages to be signed and valid.
-        /// </summary>
-        public static SignedPackageVerifierSettings RequireSigned { get; } = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false);
 
-        /// <summary>
-        /// Require all packages to be signed but allow untrusted packages that are valid.
-        /// </summary>
-        public static SignedPackageVerifierSettings RequireSignedAllowUntrusted { get; } = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: true);
+        public static SignedPackageVerifierSettings VSClientDefaultPolicy { get; } = new SignedPackageVerifierSettings(allowUnsigned: true, allowUntrusted: true, allowIgnoreTimestamp: true, failWithMultupleTimestamps: false, allowNoTimestamp: true);
+
+        public static SignedPackageVerifierSettings CommandDefaultPolicy { get; } = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultupleTimestamps: false, allowNoTimestamp: true);
+
+        public static SignedPackageVerifierSettings ServerDefaultPolicy { get; } = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultupleTimestamps: true, allowNoTimestamp: false);
+
     }
 }

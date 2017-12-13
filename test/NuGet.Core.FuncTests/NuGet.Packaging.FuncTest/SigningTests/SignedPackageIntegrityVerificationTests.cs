@@ -58,7 +58,7 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, entryCount - 1, entryCount - 1);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -85,7 +85,7 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, 0, 0);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -119,7 +119,7 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, entryCount - 1, 0);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -153,7 +153,7 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, 0, entryCount - 1);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -188,7 +188,7 @@ namespace NuGet.Packaging.FuncTest
                 var middleEntry = (entryCount - 1) / 2;
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, middleEntry - 1, middleEntry + 1);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
