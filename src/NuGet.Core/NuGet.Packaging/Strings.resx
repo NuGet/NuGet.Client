@@ -412,4 +412,7 @@ Valid from:</comment>
   <data name="SigningCertificateHasUnsupportedSignatureAlgorithm" xml:space="preserve">
     <value>The signing certificate has an unsupported signature algorithm.</value>
   </data>
+  <data name="SigningCertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
+    <value>The signing certificate does not meet a minimum public key length requirement.</value>
+  </data>
 </root>

@@ -253,6 +253,11 @@ namespace NuGet.Common
         NU3022 = 3022,
 
         /// <summary>
+        /// Unsupported public key length
+        /// </summary>
+        NU3023 = 3023,
+
+        /// <summary>
         /// Invalid timestamp in signature
         /// </summary>
         NU3050 = 3050,

@@ -647,6 +647,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The signing certificate does not meet a minimum public key length requirement..
+        /// </summary>
+        internal static string SigningCertificateFailsPublicKeyLengthRequirement {
+            get {
+                return ResourceManager.GetString("SigningCertificateFailsPublicKeyLengthRequirement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The signing certificate has an unsupported signature algorithm..
         /// </summary>
         internal static string SigningCertificateHasUnsupportedSignatureAlgorithm {
