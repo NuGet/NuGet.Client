@@ -15,8 +15,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class SignedPackageArchive : PackageArchiveReader, ISignedPackage
     {
-        private readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
-
         /// <summary>
         /// Stream underlying the ZipArchive. Used to do signature verification on a SignedPackageArchive.
         /// If this is null then we cannot perform signature verification.
@@ -45,6 +43,11 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
 
+            if (ZipWriteStream == null)
+            {
+                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
+            }
+
             if (await IsSignedAsync(token))
             {
                 throw new SignatureException(Strings.SignedPackagePackageAlreadySigned);
@@ -53,38 +56,7 @@ namespace NuGet.Packaging.Signing
             using (var reader = new BinaryReader(ZipReadStream, SigningSpecifications.Encoding, leaveOpen: true))
             using (var writer = new BinaryWriter(ZipWriteStream, SigningSpecifications.Encoding, leaveOpen: true))
             {
-                var packageMetadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                var signatureDateTime = DateTime.Now;
-
-                var memoryStream = signatureStream as MemoryStream;
-                var signatureBytes = memoryStream.ToArray();
-
-                // ensure both streams are reset
-                reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
-                writer.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
-
-                // copy all data till previous end of local file headers
-                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfFileHeaders);
-
-                // write the signature local file header
-                var signatureFileHeaderLength = SignedPackageArchiveIOUtility.WriteFileHeader(writer, signatureBytes, signatureDateTime);
-
-                // write the signature file
-                var signatureFileLength = SignedPackageArchiveIOUtility.WriteFile(writer, signatureBytes);
-
-                // copy all data that was after previous end of local file headers till previous end of central directory headers
-                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfCentralDirectory);
-
-                // write the central directory header for signature file
-                var signatureCentralDirectoryHeaderLength = SignedPackageArchiveIOUtility.WriteCentralDirectoryHeader(writer, signatureBytes, signatureDateTime, packageMetadata.EndOfFileHeaders);
-
-                // copy all data that was after previous end of central directory headers till previous start of end of central directory record
-                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfCentralDirectoryRecordPosition);
-
-                var totalSignatureSize = signatureFileHeaderLength + signatureFileLength;
-
-                // update and write the end of central directory record
-                SignedPackageArchiveIOUtility.WriteEndOfCentralDirectoryRecord(reader, writer, signatureCentralDirectoryHeaderLength, totalSignatureSize);
+                SignedPackageArchiveIOUtility.WriteSignatureIntoZip((MemoryStream)signatureStream, reader, writer);
             }
         }
 
@@ -96,7 +68,7 @@ namespace NuGet.Packaging.Signing
         {
             token.ThrowIfCancellationRequested();
 
-            if (ZipReadStream == null)
+            if (ZipWriteStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
@@ -106,9 +78,9 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.SignedPackageNotSignedOnRemove);
             }
 
-            using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
+            using (var zip = new ZipArchive(ZipWriteStream, ZipArchiveMode.Update, leaveOpen: true))
             {
-                zip.GetEntry(_signingSpecification.SignaturePath).Delete();
+                zip.GetEntry(SigningSpecifications.SignaturePath).Delete();
             }
         }
 

@@ -121,53 +121,68 @@ namespace NuGet.Commands
             SignPackageRequest request,
             CancellationToken token)
         {
-            var tempFilePath = Path.GetTempFileName();
-
-            using (var packageReadStream = File.Open(packagePath, FileMode.Open))
-            using (var packageWriteStream = File.Open(tempFilePath, FileMode.Open))
+            // For overwrite we need to first remove the signature and then sign the unsigned package
+            if (Overwrite)
             {
-                if (Overwrite)
-                {
-                    await RemoveSignatureAsync(logger, signatureProvider, packageReadStream, packageWriteStream, token);
-                }
+                var originalPackageCopyPath = CopyPackage(packagePath);
 
-                await AddSignatureAsync(logger, signatureProvider, request, packageReadStream, packageWriteStream, token);
+                await RemoveSignatureAsync(logger, signatureProvider, packagePath, originalPackageCopyPath, token);
+                await AddSignatureAndUpdatePackageAsync(logger, signatureProvider, request, originalPackageCopyPath, outputPath, token);
+
+                FileUtility.Delete(originalPackageCopyPath);
             }
-
-            OverwritePackage(tempFilePath, outputPath);
-
-            FileUtility.Delete(tempFilePath);
+            else
+            {
+                await AddSignatureAndUpdatePackageAsync(logger, signatureProvider, request, packagePath, outputPath, token);
+            }
 
             return 0;
         }
 
-        private static async Task AddSignatureAsync(
+        private static async Task AddSignatureAndUpdatePackageAsync(
             ILogger logger,
             ISignatureProvider signatureProvider,
             SignPackageRequest request,
-            FileStream packageReadStream,
-            FileStream packageWriteStream,
+            string packagePath,
+            string outputPath,
             CancellationToken token)
         {
+            var originalPackageCopyPath = CopyPackage(packagePath);
+
+            using (var packageReadStream = File.OpenRead(packagePath))
+            using (var packageWriteStream = File.Open(originalPackageCopyPath, FileMode.Open))
             using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
             {
                 var signer = new Signer(package, signatureProvider);
                 await signer.SignAsync(request, logger, token);
             }
+
+            OverwritePackage(originalPackageCopyPath, outputPath);
+            FileUtility.Delete(originalPackageCopyPath);
         }
 
         private static async Task RemoveSignatureAsync(
             ILogger logger,
             ISignatureProvider signatureProvider,
-            FileStream packageReadStream,
-            FileStream packageWriteStream,
+            string packagePath,
+            string originalPackageCopyPath,
             CancellationToken token)
         {
+            using (var packageReadStream = File.OpenRead(packagePath))
+            using (var packageWriteStream = File.Open(originalPackageCopyPath, FileMode.Open))
             using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
             {
                 var signer = new Signer(package, signatureProvider);
                 await signer.RemoveSignaturesAsync(logger, token);
             }
+        }
+
+        private static string CopyPackage(string sourceFilePath)
+        {
+            var destFilePath = Path.GetTempFileName();
+            File.Copy(sourceFilePath, destFilePath, overwrite: true);
+
+            return destFilePath;
         }
 
         private static void OverwritePackage(string sourceFilePath, string destFilePath)
