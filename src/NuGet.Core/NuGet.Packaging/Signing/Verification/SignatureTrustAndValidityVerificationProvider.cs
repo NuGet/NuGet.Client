@@ -126,54 +126,32 @@ namespace NuGet.Packaging.Signing
                     return SignatureVerificationStatus.Invalid;
                 }
 
-                timestampLimits = timestampLimits ?? new Tuple<DateTimeOffset, DateTimeOffset>(DateTimeOffset.Now, DateTimeOffset.Now);
-                if (Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(certificate, timestampLimits))
+                if (!SigningUtility.IsCertificateValidityPeriodInTheFuture(certificate))
                 {
-                    // Read signed attribute containing the original cert hashes
-                    // var signingCertificateAttribute = signature.SignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningCertificateV2);
-                    // TODO: how are we going to use the signingCertificateAttribute?
-
-                    var certificateExtraStore = signature.SignedCms.Certificates;
-
-                    using (var chain = new X509Chain())
+                    timestampLimits = timestampLimits ?? new Tuple<DateTimeOffset, DateTimeOffset>(DateTimeOffset.Now, DateTimeOffset.Now);
+                    if (Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(certificate, timestampLimits))
                     {
-                        SigningUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestampLimits.Item2.LocalDateTime, NuGetVerificationCertificateType.Signature);
-                        var chainBuildingSucceed = SigningUtility.BuildCertificateChain(chain, certificate, out var chainStatusList);
+                        // Read signed attribute containing the original cert hashes
+                        // var signingCertificateAttribute = signature.SignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningCertificateV2);
+                        // TODO: how are we going to use the signingCertificateAttribute?
 
-                        issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
+                        var certificateExtraStore = signature.SignedCms.Certificates;
 
-                        if (chainBuildingSucceed)
+                        using (var chain = new X509Chain())
                         {
-                            return SignatureVerificationStatus.Trusted;
-                        }
+                            SigningUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestampLimits.Item2.LocalDateTime, NuGetVerificationCertificateType.Signature);
+                            var chainBuildingSucceed = SigningUtility.BuildCertificateChain(chain, certificate, out var chainStatusList);
 
-                        var chainBuildingHasIssues = false;
-                        IReadOnlyList<string> messages;
-                        if (SigningUtility.TryGetStatusMessage(chainStatusList, SigningUtility.InvalidCertificateFlags, out messages))
-                        {
-                            foreach (var message in messages)
+                            issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
+
+                            if (chainBuildingSucceed)
                             {
-                                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3021, message));
+                                return SignatureVerificationStatus.Trusted;
                             }
-                            chainBuildingHasIssues = true;
-                        }
 
-                        // For all the special cases, chain status list only has unique elements for each chain status flag present
-                        // therefore if we are checking for one specific chain status we can use the first of the returned list
-                        // if we are combining checks for more than one, then we have to use the whole list.
-                        IReadOnlyList<X509ChainStatus> chainStatus = null;
-                        if (SigningUtility.ChainStatusListIncludesStatus(chainStatusList, X509ChainStatusFlags.Revoked, out chainStatus))
-                        {
-                            var status = chainStatus.First();
-                            issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3021, status.StatusInformation));
-                            return SignatureVerificationStatus.Invalid;
-                        }
-
-                        if (failuresAreFatal || SigningUtility.CertificateValidityPeriodIsInTheFuture(certificate))
-                        {
-                            const X509ChainStatusFlags NotTimeValidFlags = X509ChainStatusFlags.NotTimeValid | X509ChainStatusFlags.CtlNotTimeValid;
-
-                            if (SigningUtility.TryGetStatusMessage(chainStatusList, NotTimeValidFlags, out messages))
+                            var chainBuildingHasIssues = false;
+                            IReadOnlyList<string> messages;
+                            if (SigningUtility.TryGetStatusMessage(chainStatusList, SigningUtility.InvalidCertificateFlags, out messages))
                             {
                                 foreach (var message in messages)
                                 {
@@ -181,34 +159,49 @@ namespace NuGet.Packaging.Signing
                                 }
                                 chainBuildingHasIssues = true;
                             }
-                        }
 
-                        const X509ChainStatusFlags RevocationStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
-                        if (SigningUtility.TryGetStatusMessage(chainStatusList, RevocationStatusFlags, out messages))
-                        {
-                            if (failuresAreFatal)
+                            // For all the special cases, chain status list only has unique elements for each chain status flag present
+                            // therefore if we are checking for one specific chain status we can use the first of the returned list
+                            // if we are combining checks for more than one, then we have to use the whole list.
+                            IReadOnlyList<X509ChainStatus> chainStatus = null;
+                            if (SigningUtility.ChainStatusListIncludesStatus(chainStatusList, X509ChainStatusFlags.Revoked, out chainStatus))
                             {
-                                foreach (var message in messages)
+                                var status = chainStatus.First();
+                                issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3021, status.StatusInformation));
+                                return SignatureVerificationStatus.Invalid;
+                            }
+
+                            const X509ChainStatusFlags RevocationStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
+                            if (SigningUtility.TryGetStatusMessage(chainStatusList, RevocationStatusFlags, out messages))
+                            {
+                                if (failuresAreFatal)
                                 {
-                                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3021, message));
+                                    foreach (var message in messages)
+                                    {
+                                        issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3021, message));
+                                    }
                                 }
+                                else if (!chainBuildingHasIssues)
+                                {
+                                    return SignatureVerificationStatus.Trusted;
+                                }
+                                chainBuildingHasIssues = true;
                             }
-                            else if (!chainBuildingHasIssues)
-                            {
-                                return SignatureVerificationStatus.Trusted;
-                            }
-                            chainBuildingHasIssues = true;
-                        }
 
-                        // Debug log any errors
-                        issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, string.Join(", ", chainStatusList.Select(x => x.ToString())))));
+                            // Debug log any errors
+                            issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, string.Join(", ", chainStatusList.Select(x => x.ToString())))));
+                        }
+                    }
+                    else
+                    {
+                        var code = failuresAreFatal ? NuGetLogCode.NU3030 : NuGetLogCode.NU3530;
+                        issues.Add(SignatureLog.Issue(failuresAreFatal, code, Strings.ErrorSignatureVerificationFailed));
                     }
                 }
                 else
                 {
-                    // package is expired or validity is in the future, signature is not trusted
-                    var code = failuresAreFatal ? NuGetLogCode.NU3030 : NuGetLogCode.NU3530;
-                    issues.Add(SignatureLog.Issue(failuresAreFatal, code, Strings.ErrorSignatureVerificationFailed));
+                    var code = failuresAreFatal ? NuGetLogCode.NU3024 : NuGetLogCode.NU3524;
+                    issues.Add(SignatureLog.Issue(failuresAreFatal, code, Strings.SignatureNotYetValid));
                 }
             }
             else
@@ -270,7 +263,11 @@ namespace NuGet.Packaging.Signing
                         var chainBuildingHasIssues = false;
                         IReadOnlyList<string> messages;
 
-                        var timestampInvalidCertificateFlags = SigningUtility.InvalidCertificateFlags & (~X509ChainStatusFlags.Revoked);
+                        var timestampInvalidCertificateFlags = SigningUtility.InvalidCertificateFlags |
+                            (X509ChainStatusFlags.Revoked) |
+                            (X509ChainStatusFlags.NotTimeValid) |
+                            (X509ChainStatusFlags.CtlNotTimeValid);
+
                         if (SigningUtility.TryGetStatusMessage(chainStatusList, timestampInvalidCertificateFlags, out messages))
                         {
                             foreach (var message in messages)
@@ -283,20 +280,6 @@ namespace NuGet.Packaging.Signing
                         // For all the special cases, chain status list only has unique elements for each chain status flag present
                         // therefore if we are checking for one specific chain status we can use the first of the returned list
                         // if we are combining checks for more than one, then we have to use the whole list.
-
-                        if (failuresAreFatal || SigningUtility.CertificateValidityPeriodIsInTheFuture(timestamperCertificate))
-                        {
-                            const X509ChainStatusFlags NotTimeValidFlags = X509ChainStatusFlags.NotTimeValid | X509ChainStatusFlags.CtlNotTimeValid;
-
-                            if (SigningUtility.TryGetStatusMessage(chainStatusList, NotTimeValidFlags, out messages))
-                            {
-                                foreach (var message in messages)
-                                {
-                                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3041, message));
-                                }
-                                chainBuildingHasIssues = true;
-                            }
-                        }
 
                         const X509ChainStatusFlags RevocationStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
                         if (SigningUtility.TryGetStatusMessage(chainStatusList, RevocationStatusFlags, out messages))

@@ -645,6 +645,15 @@ namespace NuGet.Packaging {
                 return ResourceManager.GetString("SignatureLocalFileHeaderInvalid", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The signing certificate is not yet valid..
+        /// </summary>
+        internal static string SignatureNotYetValid {
+            get {
+                return ResourceManager.GetString("SignatureNotYetValid", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Package integrity check failed..
@@ -850,6 +859,15 @@ namespace NuGet.Packaging {
         internal static string TimestampNoCertificate {
             get {
                 return ResourceManager.GetString("TimestampNoCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp signing certificate is not yet valid..
+        /// </summary>
+        internal static string TimestampNotYetValid {
+            get {
+                return ResourceManager.GetString("TimestampNotYetValid", resourceCulture);
             }
         }
         

@@ -459,4 +459,10 @@ Valid from:</comment>
   <data name="TimestampNoCertificate" xml:space="preserve">
     <value>The timestamp signature did not have a signing certificate.</value>
   </data>
+  <data name="SignatureNotYetValid" xml:space="preserve">
+    <value>The signing certificate is not yet valid.</value>
+  </data>
+  <data name="TimestampNotYetValid" xml:space="preserve">
+    <value>The timestamp signing certificate is not yet valid.</value>
+  </data>
 </root>

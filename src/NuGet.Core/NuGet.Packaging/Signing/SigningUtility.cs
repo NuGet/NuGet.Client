@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="certificate">Certificate to validate</param>
         /// <returns>True if the certificate has the lifetime signing EKU</returns>
-        public static bool IsCertificateLifetimeSigning(X509Certificate2 certificate)
+        public static bool HasLifetimeSigningEku(X509Certificate2 certificate)
         {
             return SigningUtility.HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEkuOid);
         }
@@ -210,8 +210,8 @@ namespace NuGet.Packaging.Signing
             DateTime verificationTime,
             NuGetVerificationCertificateType certificateType)
         {
-            // This flag should only be set for verification scenarios, not signing
-            policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
+            // This flags should only be set for verification scenarios, not signing
+            policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
 
             if (certificateType == NuGetVerificationCertificateType.Signature)
             {
@@ -230,7 +230,7 @@ namespace NuGet.Packaging.Signing
             policy.VerificationTime = verificationTime;
         }
 
-        public static bool CertificateValidityPeriodIsInTheFuture(X509Certificate2 certificate)
+        public static bool IsCertificateValidityPeriodInTheFuture(X509Certificate2 certificate)
         {
             DateTimeOffset signerCertBegin = DateTime.SpecifyKind(certificate.NotBefore, DateTimeKind.Local);
 
@@ -249,7 +249,7 @@ namespace NuGet.Packaging.Signing
             chain.ChainStatus.CopyTo(status, 0);
 
             // Check if time is not in the future
-            return buildSuccess && !CertificateValidityPeriodIsInTheFuture(certificate);
+            return buildSuccess && !IsCertificateValidityPeriodInTheFuture(certificate);
         }
 
         internal static bool IsTimestampValid(byte[] data, bool failIfInvalid, List<SignatureLog> issues, SignerInfo timestampSignerInfo, Rfc3161TimestampTokenInfo tstInfo, SigningSpecifications spec)
@@ -265,6 +265,13 @@ namespace NuGet.Packaging.Signing
             {
                 var code = failIfInvalid ? NuGetLogCode.NU3052 : NuGetLogCode.NU3552;
                 issues.Add(SignatureLog.Issue(failIfInvalid, code, Strings.TimestampFailureInvalidHashAlgorithmOid));
+                isValid = false;
+            }
+
+            if (IsCertificateValidityPeriodInTheFuture(timestampSignerInfo.Certificate))
+            {
+                var code = failIfInvalid ? NuGetLogCode.NU3044 : NuGetLogCode.NU3544;
+                issues.Add(SignatureLog.Issue(failIfInvalid, code, Strings.TimestampNotYetValid));
                 isValid = false;
             }
 

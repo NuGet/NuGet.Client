@@ -277,6 +277,12 @@ namespace NuGet.Common
         /// </summary>
         NU3023 = 3023,
         
+        /// <summary>
+        /// Certificate not yet valid
+        /// </summary>
+        NU3024 = 3024,
+
+        /// <summary>
         /// Primary signature verification failed
         /// </summary>
         NU3030 = 3030,
@@ -289,12 +295,7 @@ namespace NuGet.Common
         /// <summary>
         /// Chain building failed for timestamp
         /// </summary>
-        NU3041 = 3041,
-
-        /// <summary>
-        /// Timestamp certificate chain building failed
-        /// </summary>
-        NU3041 = 3041,
+        NU3041 = 3041
 
         /// <summary>
         /// Timestamp certificate not yet effective
@@ -347,9 +348,19 @@ namespace NuGet.Common
         NU3521 = 3521,
 
         /// <summary>
+        /// Certificate not yet valid
+        /// </summary>
+        NU3524 = 3524,
+
+        /// <summary>
         /// Primary signature verification failed
         /// </summary>
         NU3530 = 3530,
+
+        /// <summary>
+        /// Timestamp not yet valid
+        /// </summary>
+        NU3544 = 3544,
 
         /// <summary>
         /// Invalid timestamp in signature
