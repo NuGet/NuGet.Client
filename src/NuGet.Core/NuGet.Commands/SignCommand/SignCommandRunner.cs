@@ -66,7 +66,6 @@ namespace NuGet.Commands
             bool overwrite,
             CancellationToken token)
         {
-            Debugger.Launch();
 
             var success = true;
 

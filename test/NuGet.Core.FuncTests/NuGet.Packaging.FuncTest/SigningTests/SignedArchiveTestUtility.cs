@@ -14,7 +14,9 @@ using Test.Utility.Signing;
 namespace NuGet.Packaging.FuncTest
 {
     internal static class SignedArchiveTestUtility
-    {
+    {        
+        // Central Directory file header size including the signature but excluding file name, extra field and file comment
+        private const uint CentralDirectoryFileHeaderSize = 46;
         private const string _internalTimestampServer = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
 
         /// <summary>
@@ -181,7 +183,7 @@ namespace NuGet.Packaging.FuncTest
             var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
 
             // Update central directory records by excluding the signature entry
-            SignedPackageArchiveIOUtility.UpdateCentralDirectoryRecordsExcludingSignature(reader, metadata);
+            SignedPackageArchiveIOUtility.UpdateSignedPackageArchiveMetadata(reader, metadata);
 
             // Calculate new central directory record metadata with the the signature record and entry shifted
             var shiftedCdr = ShiftMetadata(spec, metadata, newSignatureFileEntryIndex: fileHeaderIndex, newSignatureCentralDirectoryRecordIndex: centralDirectoryIndex);
@@ -216,7 +218,7 @@ namespace NuGet.Packaging.FuncTest
                 writer.Write(relativeOffsetOfLocalFileHeader);
 
                 // We already read and hash the whole header, skip only filenameLength + extraFieldLength + fileCommentLength (46 is the size of the header without those lengths)
-                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + reader.BaseStream.Position + entry.HeaderSize - 46);
+                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + reader.BaseStream.Position + entry.HeaderSize - CentralDirectoryFileHeaderSize);
             }
 
             // Write everything after central directory records

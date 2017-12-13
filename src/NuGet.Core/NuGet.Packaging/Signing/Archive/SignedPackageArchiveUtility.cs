@@ -105,8 +105,8 @@ namespace NuGet.Packaging.Signing
 
             var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
 
-            // Update central directory records by excluding the signature entry
-            SignedPackageArchiveIOUtility.UpdateCentralDirectoryRecordsExcludingSignature(reader, metadata);
+            // Assert exactly one primary signature
+            SignedPackageArchiveIOUtility.AssertExactlyOnePrimarySignature(metadata);
 
             var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
             var centralDirectoryRecordsWithoutSignature = RemoveSignatureAndOrderByOffset(metadata);
@@ -131,14 +131,14 @@ namespace NuGet.Packaging.Signing
                 foreach (var record in centralDirectoryRecordsWithoutSignature)
                 {
                     reader.BaseStream.Seek(offset: record.Position, origin: SeekOrigin.Begin);
-                    // Hash from the start of the central directory record until the relative offset of local file header (42 from the start of central directory record, incluing signature length)
+                    // Hash from the start of the central directory record until the relative offset of local file header (42 from the start of central directory record, including signature length)
                     SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + 42);
 
                     var relativeOffsetOfLocalFileHeader = (uint)(reader.ReadUInt32() + record.ChangeInOffset);
                     SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(relativeOffsetOfLocalFileHeader));
 
-                    // We already read and hash the whole header, skip only filenameLength + extraFieldLength + fileCommentLength (46 is the size of the header without those lengths)
-                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + record.HeaderSize - 46);
+                    // We already read and hash the whole header, skip only filenameLength + extraFieldLength + fileCommentLength
+                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + record.HeaderSize - SignedPackageArchiveIOUtility.CentralDirectoryFileHeaderSize);
                 }
 
                 reader.BaseStream.Seek(offset: metadata.EndOfCentralDirectory, origin: SeekOrigin.Begin);
@@ -152,7 +152,8 @@ namespace NuGet.Packaging.Signing
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntries));
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntriesOnDisk));
 
-                var eocdrSizeOfCentralDirectory = reader.ReadUInt32() - (uint)signatureCentralDirectoryHeader.HeaderSize;
+                // update the central directory size by substracting the length of the signature header size and the central directory header signature
+                var eocdrSizeOfCentralDirectory = (uint)(reader.ReadUInt32() - signatureCentralDirectoryHeader.HeaderSize - BitConverter.GetBytes(SignedPackageArchiveIOUtility.CentralDirectoryHeaderSignature).Length);
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrSizeOfCentralDirectory));
 
                 var eocdrOffsetOfCentralDirectory = reader.ReadUInt32() - (uint)signatureCentralDirectoryHeader.FileEntryTotalSize;

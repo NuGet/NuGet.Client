@@ -59,22 +59,32 @@ namespace NuGet.Packaging.Signing
                 var memoryStream = signatureStream as MemoryStream;
                 var signatureBytes = memoryStream.ToArray();
 
+                // ensure both streams are reset
                 reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
                 writer.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
 
+                // copy all data till previous end of local file headers
                 SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfFileHeaders);
 
+                // write the signature local file header
                 var signatureFileHeaderLength = SignedPackageArchiveIOUtility.WriteFileHeader(writer, signatureBytes, signatureDateTime);
 
+                // write the signature file
                 var signatureFileLength = SignedPackageArchiveIOUtility.WriteFile(writer, signatureBytes);
 
+                // copy all data that was after previous end of local file headers till previous end of central directory headers
                 SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfCentralDirectory);
 
+                // write the central directory header for signature file
                 var signatureCentralDirectoryHeaderLength = SignedPackageArchiveIOUtility.WriteCentralDirectoryHeader(writer, signatureBytes, signatureDateTime, packageMetadata.EndOfFileHeaders);
 
+                // copy all data that was after previous end of central directory headers till previous start of end of central directory record
                 SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfCentralDirectoryRecordPosition);
 
-                SignedPackageArchiveIOUtility.WriteEndOfCentralDirectoryRecord(reader, writer, signatureCentralDirectoryHeaderLength, signatureFileHeaderLength + signatureFileLength);
+                var totalSignatureSize = signatureFileHeaderLength + signatureFileLength;
+
+                // update and write the end of central directory record
+                SignedPackageArchiveIOUtility.WriteEndOfCentralDirectoryRecord(reader, writer, signatureCentralDirectoryHeaderLength, totalSignatureSize);
             }
         }
 

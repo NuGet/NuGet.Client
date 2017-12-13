@@ -34,7 +34,7 @@ namespace NuGet.Packaging.Signing
         public string Filename { get; set; }
 
         /// <summary>
-        /// Size of central directory header in bytes
+        /// Size of central directory header, in bytes, excluding the central directory header signature.
         /// </summary>
         public long HeaderSize { get; set; }
 

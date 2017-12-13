@@ -19,6 +19,9 @@ namespace NuGet.Packaging.Signing
         internal const uint Zip64EndOfCentralDirectoryLocatorSignature = 0x07064b50;
         internal const uint LocalFileHeaderSignature = 0x04034b50;
 
+        // Central Directory file header size excluding signature, file name, extra field and file comment
+        internal const uint CentralDirectoryFileHeaderSize = 46;
+
         private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
         /// <summary>
@@ -219,7 +222,6 @@ namespace NuGet.Packaging.Signing
             // Read central directory records
             var possibleSignatureCentralDirectoryRecordPosition = reader.BaseStream.Position;
             var isReadingCentralDirectoryRecords = true;
-            var endOfAllFileHeaders = 0L;
 
             while (isReadingCentralDirectoryRecords)
             {
@@ -249,17 +251,10 @@ namespace NuGet.Packaging.Signing
                     metadata.StartOfFileHeaders = centralDirectoryMetadata.OffsetToFileHeader;
                 }
 
-                var endofFileHeader = centralDirectoryMetadata.FileEntryTotalSize + centralDirectoryMetadata.OffsetToFileHeader;
-
-                if (endofFileHeader > endOfAllFileHeaders)
-                {
-                    endOfAllFileHeaders = endofFileHeader;
-                }
-
                 var filename = reader.ReadBytes(filenameLength);
                 centralDirectoryMetadata.Filename = Encoding.ASCII.GetString(filename);
-                // Save total size of central directory record + variable length fields (46 bytes of fields and variable length fields afterwards)
-                centralDirectoryMetadata.HeaderSize = 46 + filenameLength + extraFieldLength + fileCommentLength;
+                // Save total size of central directory record + variable length fields
+                centralDirectoryMetadata.HeaderSize = CentralDirectoryFileHeaderSize + filenameLength + extraFieldLength + fileCommentLength;
 
                 try
                 {
@@ -276,7 +271,9 @@ namespace NuGet.Packaging.Signing
             var lastCentralDirectoryRecord = centralDirectoryRecords.Last();
             metadata.EndOfCentralDirectory = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize;
             metadata.CentralDirectoryHeaders = centralDirectoryRecords;
-            metadata.EndOfFileHeaders = endOfAllFileHeaders;
+
+            // Update central directory records by excluding the signature entry
+            UpdateSignedPackageArchiveMetadata(reader, metadata);
 
             // Make sure the package is not zip64
             var isZip64 = false;
@@ -297,19 +294,19 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Updates the SignedPackageArchiveMetadata.CentralDirectoryHeaders to values excluding the signature file, if present.
-        /// Throws is none or more than one signature entries are found.
+        /// Updates the SignedPackageArchiveMetadata.CentralDirectoryHeaders by updating IndexInHeaders and FileEntryTotalSize.
+        /// Updates the SignedPackageArchiveMetadata.EndOfFileHeaders.
         /// </summary>
         /// <param name="reader">Binary reader to zip archive.</param>
-        /// <param name="metadata">SignedPackageArchiveMetadata extracted from the signed package archive.</param>
-        public static void UpdateCentralDirectoryRecordsExcludingSignature(
+        /// <param name="metadata">SignedPackageArchiveMetadata to be updated.</param>
+        public static void UpdateSignedPackageArchiveMetadata(
             BinaryReader reader,
             SignedPackageArchiveMetadata metadata)
         {
             // Get missing metadata for central directory records
-            var hasFoundSignature = false;
             var centralDirectoryRecords = metadata.CentralDirectoryHeaders;
             var centralDirectoryRecordsCount = centralDirectoryRecords.Count;
+            var endOfAllFileHeaders = 0L;
 
             for (var centralDirectoryRecordIndex = 0; centralDirectoryRecordIndex < centralDirectoryRecordsCount; centralDirectoryRecordIndex++)
             {
@@ -317,12 +314,7 @@ namespace NuGet.Packaging.Signing
 
                 if (StringComparer.Ordinal.Equals(record.Filename, _signingSpecification.SignaturePath))
                 {
-                    if (hasFoundSignature)
-                    {
-                        throw new SignatureException(Strings.Error_NotOnePrimarySignature);
-                    }
                     metadata.SignatureCentralDirectoryHeaderIndex = centralDirectoryRecordIndex;
-                    hasFoundSignature = true;
                 }
 
                 // Go to local file header
@@ -350,6 +342,44 @@ namespace NuGet.Packaging.Signing
 
                 record.IndexInHeaders = centralDirectoryRecordIndex;
                 record.FileEntryTotalSize = reader.BaseStream.Position - record.OffsetToFileHeader;
+
+                var endofFileHeader = record.FileEntryTotalSize + record.OffsetToFileHeader;
+
+                if (endofFileHeader > endOfAllFileHeaders)
+                {
+                    endOfAllFileHeaders = endofFileHeader;
+                }
+            }
+
+            metadata.EndOfFileHeaders = endOfAllFileHeaders;
+        }
+
+        /// <summary>
+        /// Asserts that the SignedPackageArchiveMetadata contains only one Signature file entry.
+        /// Throws SignatureException if less or more entries are found.
+        /// </summary>
+        /// <param name="metadata">SignedPackageArchiveMetadata to be checked for signature entry.</param>
+        public static void AssertExactlyOnePrimarySignature(SignedPackageArchiveMetadata metadata)
+        {
+            // Get missing metadata for central directory records
+            var hasFoundSignature = false;
+            var centralDirectoryRecords = metadata.CentralDirectoryHeaders;
+            var centralDirectoryRecordsCount = centralDirectoryRecords.Count;
+
+            for (var centralDirectoryRecordIndex = 0; centralDirectoryRecordIndex < centralDirectoryRecordsCount; centralDirectoryRecordIndex++)
+            {
+                var record = centralDirectoryRecords[centralDirectoryRecordIndex];
+
+                if (StringComparer.Ordinal.Equals(record.Filename, _signingSpecification.SignaturePath))
+                {
+                    if (hasFoundSignature)
+                    {
+                        throw new SignatureException(Strings.Error_NotOnePrimarySignature);
+                    }
+
+                    metadata.SignatureCentralDirectoryHeaderIndex = centralDirectoryRecordIndex;
+                    hasFoundSignature = true;
+                }
             }
 
             if (!hasFoundSignature)
@@ -369,8 +399,6 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(writer));
             }
-
-            // TODO - make the data UTF8 through bitconverter
 
             // Write the file header signature
             writer.Write(LocalFileHeaderSignature);
@@ -426,8 +454,6 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            // TODO - make the data UTF8 through bitconverter
-
             // write file
             writer.Write(fileData);
 
@@ -448,8 +474,6 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(writer));
             }
-
-            // TODO - make the data UTF8 through bitconverter
 
             // Write the file header signature
             writer.Write(CentralDirectoryHeaderSignature);
@@ -523,23 +547,21 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            // TODO - make the data UTF8 through bitconverter
-
             // 4 bytes for disk numbers. same as before.
             ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + 8L);
 
             // Update central directory header counts by adding 1 for the signature entry
-            var centralDirectoryCountOnThisDisk = reader.ReadInt16();
+            var centralDirectoryCountOnThisDisk = reader.ReadUInt16();
             writer.Write((ushort)(centralDirectoryCountOnThisDisk + 1));
 
-            var centralDirectoryCountTotal = reader.ReadInt16();
+            var centralDirectoryCountTotal = reader.ReadUInt16();
             writer.Write((ushort)(centralDirectoryCountTotal + 1));
 
             // Update size of central directory by adding size of signature central directory size
-            var sizeOfCentralDirectory = reader.ReadInt32();
+            var sizeOfCentralDirectory = reader.ReadUInt32();
             writer.Write((uint)(sizeOfCentralDirectory + sizeOfSignatureCentralDirectoryRecord));
 
-            var offsetOfCentralDirectory = reader.ReadInt32();
+            var offsetOfCentralDirectory = reader.ReadUInt32();
             writer.Write((uint)(offsetOfCentralDirectory + sizeOfSignatureFileHeaderAndData));
 
             // read and write the rest
