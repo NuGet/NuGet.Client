@@ -13,15 +13,15 @@ namespace NuGet.Packaging.Signing
 {
     public static class SignedPackageArchiveIOUtility
     {
+        // Central Directory file header size excluding signature, file name, extra field and file comment
+        internal const uint CentralDirectoryFileHeaderSize = 46;
         internal const uint CentralDirectoryHeaderSignature = 0x02014b50;
         internal const uint EndOfCentralDirectorySignature = 0x06054b50;
         internal const uint Zip64EndOfCentralDirectorySignature = 0x06064b50;
         internal const uint Zip64EndOfCentralDirectoryLocatorSignature = 0x07064b50;
         internal const uint LocalFileHeaderSignature = 0x04034b50;
 
-        // Central Directory file header size excluding signature, file name, extra field and file comment
-        internal const uint CentralDirectoryFileHeaderSize = 46;
-
+        private const uint Crc32Polynomial = 0xedb88320;
         private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
         /// <summary>
@@ -395,7 +395,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="signatureStream">MemoryStream of the signature to be inserted into the zip.</param>
         /// <param name="reader">BinaryReader to be used to read the existing zip data.</param>
         /// <param name="writer">BinaryWriter to be used to write the signature into the zip.</param>
-        public static void WriteSignatureIntoZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
+        internal static void WriteSignatureIntoZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
         {
             if (signatureStream == null)
             {
@@ -444,7 +444,6 @@ namespace NuGet.Packaging.Signing
             // update and write the end of central directory record
             WriteEndOfCentralDirectoryRecord(reader, writer, signatureCentralDirectoryHeaderLength, totalSignatureSize);
         }
-
 
         /// <summary>
         /// Writes a local file header into a zip using the writer starting at the writer.BaseStream.Position.
@@ -659,7 +658,6 @@ namespace NuGet.Packaging.Signing
         // Reference - http://referencesource.microsoft.com/#WindowsBase/Base/MS/Internal/IO/Zip/ZipIOBlockManager.cs,492
         private static uint ToMsDosDateTime(DateTime dateTime)
         {
-
             uint result = 0;
 
             result |= (((uint)dateTime.Second) / 2) & 0x1F;   // seconds need to be divided by 2 as they stored in 5 bits
@@ -673,11 +671,11 @@ namespace NuGet.Packaging.Signing
             return result;
         }
 
-        // Reference - http://referencesource.microsoft.com/#WindowsBase/Base/MS/Internal/IO/Zip/Crc32.cs,73
+        // Reference - https://en.wikipedia.org/wiki/Cyclic_redundancy_check#CRC-32_algorithm
         private static uint GenerateCRC32(byte[] data)
         {
             var crcTable = GenerateCrc32LookupTable();
-            var crc32 = 0xffffffff;
+            var crc32 = 0xFFFFFFFF;
 
             foreach (var dataByte in data)
             {
@@ -688,21 +686,19 @@ namespace NuGet.Packaging.Signing
             return ~crc32;
         }
 
+        // Reference - https://www.codeproject.com/Articles/35134/How-to-calculate-a-CRC-in-Csharp
         private static uint[] GenerateCrc32LookupTable()
         {
             var crcTable = new uint[256];
-
             for (var i = 0; i < crcTable.Length; i++)
             {
-                var c = (uint)i;
+                var crc = (uint)i;
                 for (var j = 0; j < 8; j++)
                 {
-                    if ((c & 1) != 0)
-                        c = 0xedb88320 ^ (c >> 1);
-                    else
-                        c >>= 1;
+                    crc = (crc & 1) != 0 ? Crc32Polynomial ^ (crc >> 1) : (crc >> 1);
                 }
-                crcTable[i] = c;
+
+                crcTable[i] = crc;
             }
 
             return crcTable;

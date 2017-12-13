@@ -89,6 +89,18 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
+        /// Signs a Zip with the contents in the SignatureStream using the writer.
+        /// The reader is used to read the exisiting contents for the Zip.
+        /// </summary>
+        /// <param name="signatureStream">MemoryStream of the signature to be inserted into the zip.</param>
+        /// <param name="reader">BinaryReader to be used to read the existing zip data.</param>
+        /// <param name="writer">BinaryWriter to be used to write the signature into the zip.</param>
+        public static void SignZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
+        {
+            SignedPackageArchiveIOUtility.WriteSignatureIntoZip(signatureStream, reader, writer);
+        }
+
+        /// <summary>
         /// Verifies that a signed package archive's signature is valid and it has not been tampered with.
         /// </summary>
         /// <param name="reader">Signed zip archive to verify</param>
