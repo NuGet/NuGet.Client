@@ -45,6 +45,7 @@ namespace NuGet.Packaging.Signing
         public Timestamp(SignerInfo timestampSignerInfo, DateTimeOffset generalizedTime,  DateTimeOffset upperLimit, DateTimeOffset lowerLimit)
         {
             SignerInfo = timestampSignerInfo ?? throw new ArgumentNullException(nameof(timestampSignerInfo));
+            GeneralizedTime = generalizedTime;
             LowerLimit = lowerLimit;
             UpperLimit = upperLimit;
         }
