@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -297,6 +296,11 @@ namespace NuGet.Packaging.FuncTest
             if (writer == null)
             {
                 throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (position > reader.BaseStream.Length || position < reader.BaseStream.Position)
+            {
+                throw new ArgumentException("Position cannot be before the current position or after the end of the reader", nameof(position));
             }
 
             var bufferSize = 4;
