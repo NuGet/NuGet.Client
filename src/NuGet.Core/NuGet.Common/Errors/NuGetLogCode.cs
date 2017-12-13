@@ -34,8 +34,11 @@ namespace NuGet.Common
     /// Sub groups for Signing:
     /// error/warning - Reason
     /// 3000/3500     - Input
-    /// 3010/3510     - Certificate
-    /// 3020/3520     - Timestamping
+    /// 3010/3510     - Package and package signature file
+    /// 3020/3520     - Primary certificate
+    /// 3030/3530     - Primary signature
+    /// 3040/3540     - Timestamp certificate
+    /// 3050/3550     - Timestamp signature
     /// </summary>
     public enum NuGetLogCode
     {
@@ -68,7 +71,7 @@ namespace NuGet.Common
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
-        
+
         /// <summary>
         /// No versions of the package exist on any of the sources.
         /// </summary>
@@ -225,7 +228,7 @@ namespace NuGet.Common
         NU3011 = 3011,
 
         /// <summary>
-        /// Certifiate not valid
+        /// Certificate not valid
         /// </summary>
         NU3012 = 3012,
 
@@ -240,14 +243,24 @@ namespace NuGet.Common
         NU3014 = 3014,
 
         /// <summary>
-        /// Invalid timestamp response
+        /// Chain building failed for primary signature
         /// </summary>
         NU3021 = 3021,
 
         /// <summary>
-        /// Invalid timestamp in signature
+        /// Unsupported signature algorithm
         /// </summary>
         NU3022 = 3022,
+
+        /// <summary>
+        /// Invalid timestamp in signature
+        /// </summary>
+        NU3050 = 3050,
+
+        /// <summary>
+        /// Timestamp nonce mismatch
+        /// </summary>
+        NU3051 = 3051,
 
         /// <summary>
         /// Undefined signature warning

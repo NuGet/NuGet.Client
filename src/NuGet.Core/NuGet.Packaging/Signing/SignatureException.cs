@@ -9,7 +9,6 @@ namespace NuGet.Packaging.Signing
 {
     public class SignatureException : PackagingException
     {
-
         /// <summary>
         /// Individual trust results.
         /// </summary>
@@ -18,7 +17,7 @@ namespace NuGet.Packaging.Signing
         public PackageIdentity PackageIdentity { get; }
 
         public SignatureException(string message)
-            : base(message)
+            : base(NuGetLogCode.NU3000, message)
         {
         }
 

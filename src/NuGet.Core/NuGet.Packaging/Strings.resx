@@ -409,4 +409,7 @@ Valid from:</comment>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>The argument cannot be null or empty.</value>
   </data>
+  <data name="SigningCertificateHasUnsupportedSignatureAlgorithm" xml:space="preserve">
+    <value>The signing certificate has an unsupported signature algorithm.</value>
+  </data>
 </root>
