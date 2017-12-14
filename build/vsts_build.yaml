@@ -470,7 +470,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
     displayName: "Publish Test Results"
     inputs:
       testRunner: "JUnit"
-      testResultsFiles: ".xml"
+      testResultsFiles: "*.xml"
       searchFolder: "$(System.DefaultWorkingDirectory)\\testresults"
       mergeTestResults: "true"
       testRunTitle: "NuGet.Client End To End Tests "
