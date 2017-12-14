@@ -63,7 +63,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(Revision) /p:BuildRTM=$(BuildRTM) /v:m /p:ReleaseLabe=$(ReleaseLabel)"
+      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(Revision) /p:BuildRTM=$(BuildRTM) /v:m"
 
   - task: MSBuild@1
     displayName: "Build for VS2017"
@@ -71,7 +71,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Revision) /p:ReleaseLabel=$(ReleaseLabel)"
+      msbuildArguments: "/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Revision)"
 
   - task: MSBuild@1
     displayName: "Run unit tests"
