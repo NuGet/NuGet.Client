@@ -34,6 +34,8 @@ namespace NuGet.SolutionRestoreManager
         private const int DelayAutoRestoreRetries = 50;
         private const int DelaySolutionLoadRetry = 100;
 
+        private readonly object _lockPendingRequestsObj = new object();
+
         private readonly IServiceProvider _serviceProvider;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<INuGetLockService> _lockService;
@@ -217,10 +219,6 @@ namespace NuGet.SolutionRestoreManager
 
                 _workerCts = new CancellationTokenSource();
 
-                _backgroundJobRunner = new AsyncLazy<bool>(
-                    () => StartBackgroundJobRunnerAsync(_workerCts.Token),
-                    _joinableFactory);
-
                 _pendingRequests = new Lazy<BlockingCollection<SolutionRestoreRequest>>(
                     () => new BlockingCollection<SolutionRestoreRequest>(RequestQueueLimit));
 
@@ -259,23 +257,45 @@ namespace NuGet.SolutionRestoreManager
             await InitializeAsync();
 
             var pendingRestore = _pendingRestore;
+            var shouldStartNewBGJobRunner = true;
 
-            // on-board request onto pending restore operation
-            _pendingRequests.Value.TryAdd(request);
+            // lock _pendingRequests to figure out if we need to start a new background job for restore
+            // or if there is already one running which will also take care of current request.
+            lock (_lockPendingRequestsObj)
+            {
+                // check if there are already pending restore request or active restore task
+                // then don't initiate a new background job runner.
+                if (_pendingRequests.Value.Count > 0 || IsBusy)
+                {
+                    shouldStartNewBGJobRunner = false;
+                }
+
+                // on-board request onto pending restore operation
+                _pendingRequests.Value.TryAdd(request);
+            }
 
             try
             {
                 using (_joinableCollection.Join())
                 {
+                    // when there is no current background restore job running, then it will start a new one.
+                    // else, current requrest will also await the existing job to be completed.
+                    if (shouldStartNewBGJobRunner)
+                    {
+                        _backgroundJobRunner = new AsyncLazy<bool>(
+                           () => StartBackgroundJobRunnerAsync(_workerCts.Token),
+                           _joinableFactory);
+                    }
+
                     // Await completion of the requested restore operation or
-                    // preliminary termination of the job runner.
+                    // completion of the current job runner.
                     // The caller will be unblocked immediately upon
                     // cancellation request via provided token.
                     return await await Task
-                        .WhenAny(
-                            pendingRestore.Task,
-                            _backgroundJobRunner.GetValueAsync())
-                        .WithCancellation(token);
+                            .WhenAny(
+                                pendingRestore.Task,
+                                _backgroundJobRunner.GetValueAsync())
+                            .WithCancellation(token);
                 }
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
@@ -322,6 +342,8 @@ namespace NuGet.SolutionRestoreManager
             // Hops onto a background pool thread
             await TaskScheduler.Default;
 
+            var status = false;
+
             // Check if the solution is fully loaded
             while (!_solutionLoadedEvent.IsSet)
             {
@@ -341,9 +363,18 @@ namespace NuGet.SolutionRestoreManager
                 }
             }
 
-            // Loops forever until it's get cancelled
+            // Loops until there are pending restore requests or it's get cancelled
             while (!token.IsCancellationRequested)
             {
+                lock (_lockPendingRequestsObj)
+                {
+                    // if no pending restore requests then shut down the restore job runner.
+                    if (_pendingRequests.Value.Count == 0)
+                    {
+                        break;
+                    }
+                }
+
                 // Grabs a local copy of pending restore operation
                 using (var restoreOperation = _pendingRestore)
                 {
@@ -419,7 +450,7 @@ namespace NuGet.SolutionRestoreManager
                         token.ThrowIfCancellationRequested();
 
                         // Runs restore job with scheduled request params
-                        await ProcessRestoreRequestAsync(restoreOperation, request, token);
+                        status = await ProcessRestoreRequestAsync(restoreOperation, request, token);
 
                         // Repeats...
                     }
@@ -436,8 +467,7 @@ namespace NuGet.SolutionRestoreManager
                 }
             }
 
-            // returns false on preliminary exit (cancellation)
-            return false;
+            return status;
         }
 
         private async Task<bool> ProcessRestoreRequestAsync(
