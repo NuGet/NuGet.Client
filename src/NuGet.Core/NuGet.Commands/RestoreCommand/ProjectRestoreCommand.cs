@@ -282,7 +282,10 @@ namespace NuGet.Commands
                             packageExtractionContext,
                             token);
 
-                        if (installed)
+                        // 1) If another project in this process installs the package this will return false but userPackageFolder will contain the package.
+                        // 2) If another process installs the package then this will also return false but we still need to update the cache.
+                        // For #2 double check that the cache has the package now otherwise clear
+                        if (installed || !userPackageFolder.Exists(packageIdentity.Id, packageIdentity.Version))
                         {
                             // If the package was added, clear the cache so that the next caller can see it.
                             // Avoid calling this for packages that were not actually installed.
