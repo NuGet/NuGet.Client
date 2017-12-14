@@ -57,19 +57,17 @@ fi
 # Unit tests
 echo "$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
 $DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
-
 if [ $? -ne 0 ]; then
 	echo "CoreUnitTests failed!!"
-	exit 1
+	RESULTCODE=1
 fi
 
 # Func tests
 echo "$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
 $DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
-
 if [ $? -ne 0 ]; then
+	RESULTCODE='1'
 	echo "CoreFuncTests failed!!"
-	exit 1
 fi
 
 if [ -z "$CI" ]; then
@@ -104,6 +102,11 @@ case "$(uname -s)" in
 			# We are not testing Mono on linux currently, so comment it out.
 			#echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin -xml build/TestResults/monoonlinux.xml"
 			#mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin -xml "build/TestResults/monoonlinux.xml"
+			if [ $RESULTCODE -ne '0' ]; then
+				RESULTCODE=$?
+				echo "Unit Tests or Core Func Tests failed on Linux"				
+				exit 1
+			fi
 			;;
 		Darwin)
 			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux -xml build/TestResults/monoomac.xml"
