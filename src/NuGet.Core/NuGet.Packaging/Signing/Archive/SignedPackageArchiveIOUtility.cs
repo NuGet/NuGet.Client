@@ -564,7 +564,7 @@ namespace NuGet.Packaging.Signing
             ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfCentralDirectory);
 
             // write the central directory header for signature file
-            var signatureCentralDirectoryHeaderLength = WriteCentralDirectoryHeader(writer, signatureBytes, signatureCrc32, signatureDosTime, packageMetadata.EndOfFileHeaders);
+            var signatureCentralDirectoryHeaderLength = WriteCentralDirectoryHeaderIntoZip(writer, signatureBytes, signatureCrc32, signatureDosTime, packageMetadata.EndOfFileHeaders);
 
             // copy all data that was after previous end of central directory headers till previous start of end of central directory record
             ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfCentralDirectoryRecordPosition);
@@ -572,7 +572,7 @@ namespace NuGet.Packaging.Signing
             var totalSignatureSize = signatureFileHeaderLength + signatureFileLength;
 
             // update and write the end of central directory record
-            WriteEndOfCentralDirectoryRecord(reader, writer, signatureCentralDirectoryHeaderLength, totalSignatureSize);
+            WriteEndOfCentralDirectoryRecordIntoZip(reader, writer, signatureCentralDirectoryHeaderLength, totalSignatureSize);
         }
 
         /// <summary>
@@ -650,7 +650,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="fileTime">Last modified DateTime for the file data.</param>
         /// <param name="fileOffset">Offset, in bytes, for the local file header of the corresponding file from the start of the archive.</param>
         /// <returns>Number of total bytes written into the zip.</returns>
-        private static long WriteCentralDirectoryHeader(BinaryWriter writer, byte[] fileData, uint crc32, uint dosDateTime, long fileOffset)
+        private static long WriteCentralDirectoryHeaderIntoZip(BinaryWriter writer, byte[] fileData, uint crc32, uint dosDateTime, long fileOffset)
         {
             // Write the file header signature
             writer.Write(CentralDirectoryHeaderSignature);
@@ -719,7 +719,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="writer">BinaryWriter to be used to write file.</param>
         /// <param name="sizeOfSignatureCentralDirectoryRecord">Size of the central directory header for the signature file.</param>
         /// <param name="sizeOfSignatureFileHeaderAndData">Size of the signature file and the corresponding local file header.</param>
-        private static void WriteEndOfCentralDirectoryRecord(BinaryReader reader, BinaryWriter writer, long sizeOfSignatureCentralDirectoryRecord, long sizeOfSignatureFileHeaderAndData)
+        private static void WriteEndOfCentralDirectoryRecordIntoZip(BinaryReader reader, BinaryWriter writer, long sizeOfSignatureCentralDirectoryRecord, long sizeOfSignatureFileHeaderAndData)
         {
             // 4 bytes for disk numbers. same as before.
             ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + 8L);
