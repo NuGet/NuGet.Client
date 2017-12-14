@@ -450,6 +450,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
       arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
+      failOnStandardError: "false"
 
   - task: PowerShell@1
     displayName: "LaunchVS.ps1"
@@ -532,6 +533,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
       arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
+      failOnStandardError: "false"
 
   - task: MSBuild@1
     displayName: "Restore for VS2017"
