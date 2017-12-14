@@ -1,3 +1,4 @@
+name: $(SourceBranchName)-$(Date:yyyyMMdd)-$(rev:rr)
 phases:
 - phase: Build_and_UnitTest
 
