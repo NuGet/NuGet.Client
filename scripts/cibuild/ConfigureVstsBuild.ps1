@@ -28,13 +28,7 @@ param
     [string]$BuildInfoJsonFile,
 
     [Parameter(Mandatory=$True)]
-    [string]$BuildRTM,
-
-    [Parameter(Mandatory=$True)]
-    [string]$FunctionalTestBuildId,
-
-    [Parameter(Mandatory=$True)]
-    [string]$VstsRestApiRootUrl
+    [string]$BuildRTM
 )
 
 Function Get-Version {
@@ -143,6 +137,7 @@ if ($BuildRTM -eq 'true')
     # Set the $(Revision) build variable in VSTS build
     Write-Host "##vso[task.setvariable variable=Revision;]$currentBuild"
     Write-Host "##vso[build.updatebuildnumber]$currentBuild" 
+    Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$currentBuild"
     $oldBuildOutputDirectory = Split-Path -Path $BuildInfoJsonFile
     $branchDirectory = Split-Path -Path $oldBuildOutputDirectory
     $newBuildOutputFolder =  Join-Path $branchDirectory $currentBuild
@@ -166,6 +161,7 @@ else
     # Set the $(Revision) build variable in VSTS build
     Write-Host "##vso[task.setvariable variable=Revision;]$newBuildCounter"
     Write-Host "##vso[build.updatebuildnumber]$newBuildCounter"
+    Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
         CommitHash = $env:BUILD_SOURCEVERSION
