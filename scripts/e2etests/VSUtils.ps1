@@ -244,8 +244,8 @@ function InstallVSIX
     $VSIXInstallerPath = GetVSIXInstallerPath $VSVersion
 
     Write-Host "Installing VSIX from $vsixpath..."
-    Write-Host "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q $vsixpath"
-    $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q $vsixpath"
+    Write-Host "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a $vsixpath"
+    $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a $vsixpath"
 
     if ($p.ExitCode -ne 0)
     {
