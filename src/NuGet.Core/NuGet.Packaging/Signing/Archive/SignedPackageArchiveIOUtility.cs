@@ -674,10 +674,10 @@ namespace NuGet.Packaging.Signing
             writer.Write(crc32);
 
             // write uncompressed size
-            writer.Write(fileData.Length);
+            writer.Write((uint)fileData.Length);
 
             // write compressed size - same as uncompressed since file should have no compression
-            writer.Write(fileData.Length);
+            writer.Write((uint)fileData.Length);
 
             // write file name length
             var fileNameBytes = _signingSpecification.Encoding.GetBytes(_signingSpecification.SignaturePath);

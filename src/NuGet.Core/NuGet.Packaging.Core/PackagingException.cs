@@ -10,8 +10,6 @@ namespace NuGet.Packaging.Core
     {
         private readonly IPackLogMessage _logMessage;
 
-        protected IPackLogMessage LogMessage => _logMessage;
-
         public PackagingException(string message)
             : base(message)
         {
@@ -32,7 +30,7 @@ namespace NuGet.Packaging.Core
 
         public virtual ILogMessage AsLogMessage()
         {
-            return LogMessage;
+            return _logMessage;
         }
     }
 }
