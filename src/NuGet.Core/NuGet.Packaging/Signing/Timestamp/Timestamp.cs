@@ -35,19 +35,27 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public SignerInfo SignerInfo { get; }
 
+
         /// <summary>
-        /// Timestamp information.
+        /// SignedCms containing a time stamp authority token reponse
         /// </summary>
-        /// <param name="timestampSignerInfo">Timestamp SignerInfo.</param>
-        /// <param name="generalizedTime">Time timestamp was created by the Time Stamp Authority.</param>
-        /// <param name="upperLimit">Upper limit of Timestamp.</param>
-        /// <param name="lowerLimit">Lower limit of Timestamp.</param>
-        public Timestamp(SignerInfo timestampSignerInfo, DateTimeOffset generalizedTime,  DateTimeOffset upperLimit, DateTimeOffset lowerLimit)
+        /// <param name="timestampCms">SignedCms from Time Stamp Authority</param>
+        public Timestamp(SignedCms timestampCms)
         {
-            SignerInfo = timestampSignerInfo ?? throw new ArgumentNullException(nameof(timestampSignerInfo));
-            GeneralizedTime = generalizedTime;
-            LowerLimit = lowerLimit;
-            UpperLimit = upperLimit;
+            SignerInfo = timestampCms?.SignerInfos[0] ?? throw new ArgumentNullException(nameof(timestampCms));
+
+            if (Rfc3161TimestampVerificationUtility.TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
+            {
+                GeneralizedTime = tstInfo.Timestamp;
+
+                var accuracyInMilliseconds = Rfc3161TimestampVerificationUtility.GetAccuracyInMilliseconds(tstInfo);
+                UpperLimit = tstInfo.Timestamp.AddMilliseconds(accuracyInMilliseconds);
+                LowerLimit = tstInfo.Timestamp.AddMilliseconds(-accuracyInMilliseconds);
+            }
+            else
+            {
+                throw new Exception("TODO");
+            }
         }
 #endif
     }

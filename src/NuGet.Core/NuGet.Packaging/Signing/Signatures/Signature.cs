@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 #if IS_DESKTOP
@@ -16,6 +17,9 @@ namespace NuGet.Packaging.Signing
     public class Signature
     {
 #if IS_DESKTOP
+
+        private readonly Lazy<IReadOnlyList<Timestamp>> _timestampsLazy;
+
         /// <summary>
         /// A SignedCms object holding the signature and SignerInfo.
         /// </summary>
@@ -32,9 +36,9 @@ namespace NuGet.Packaging.Signing
         public SignatureContent SignatureContent { get; }
 
         /// <summary>
-        /// Signature timestamp.
+        /// Signature timestamps.
         /// </summary>
-        public Timestamp Timestamp { get; }
+        public IReadOnlyList<Timestamp> Timestamps => _timestampsLazy.Value;
 
         /// <summary>
         /// SignerInfo for this signature.
@@ -46,7 +50,8 @@ namespace NuGet.Packaging.Signing
             SignedCms = signedCms ?? throw new ArgumentNullException(nameof(signedCms));
             SignatureContent = SignatureContent.Load(SignedCms.ContentInfo.Content, SigningSpecifications.V1);
             Type = GetSignatureType(SignerInfo);
-            Timestamp = GetTimestamp(SignerInfo);
+
+            _timestampsLazy = new Lazy<IReadOnlyList<Timestamp>>(() => GetTimestamps(SignerInfo));
         }
 
         /// <summary>
@@ -128,36 +133,26 @@ namespace NuGet.Packaging.Signing
             // TODO: Change this to use the new attributes that justin is adding.
             return SignatureType.Author;
         }
-        private static Timestamp GetTimestamp(SignerInfo signer)
+        private static IReadOnlyList<Timestamp> GetTimestamps(SignerInfo signer)
         {
             var authorUnsignedAttributes = signer.UnsignedAttributes;
-            var timestampCms = new SignedCms();
+            
+            var timestampList = new List<Timestamp>();
 
             foreach (var attribute in authorUnsignedAttributes)
             {
-                if (string.Equals(attribute.Oid.Value, Oids.SignatureTimeStampTokenAttributeOid))
+                if (string.Equals(attribute.Oid.Value, Oids.SignatureTimeStampTokenAttributeOid, StringComparison.Ordinal))
                 {
-                    timestampCms.Decode(attribute.Values[0].RawData);
-
-                    if (Rfc3161TimestampVerificationUtility.TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
+                    foreach (var value in attribute.Values)
                     {
-                        const long TicksPerMicrosecond = 10;
+                        var timestampCms = new SignedCms();
+                        timestampCms.Decode(value.RawData);
 
-                        var accuracy = tstInfo.AccuracyInMicroseconds;
-                        var accuracyTimeSpan = TimeSpan.Zero;
-                        if (accuracy != null)
-                        {
-                            accuracyTimeSpan = TimeSpan.FromTicks(accuracy.Value * TicksPerMicrosecond);
-                        }
-
-                        return new Timestamp(timestampCms.SignerInfos[0],
-                                             generalizedTime: tstInfo.Timestamp,
-                                             upperLimit: tstInfo.Timestamp.Add(accuracyTimeSpan),
-                                             lowerLimit: tstInfo.Timestamp.Subtract(accuracyTimeSpan));
+                        timestampList.Add(new Timestamp(timestampCms)); ;
                     }
                 }
             }
-            return null;
+            return timestampList;
         }
 
 #else

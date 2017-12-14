@@ -55,7 +55,7 @@ namespace NuGet.Packaging.FuncTest
                     signatures.Count.Should().Be(1);
 
                     var signature = signatures[0];
-                    signature.Timestamp.Should().NotBeNull();
+                    signature.Timestamps.Should().NotBeEmpty();
                 }
             }
         }
@@ -82,7 +82,7 @@ namespace NuGet.Packaging.FuncTest
                     signatures.Count.Should().Be(1);
 
                     var signature = signatures[0];
-                    signature.Timestamp.Should().BeNull();
+                    signature.Timestamps.Should().BeEmpty();
                 }
             }
         }
