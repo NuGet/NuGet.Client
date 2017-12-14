@@ -18,9 +18,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
     [Collection("Sign Command Test Collection")]
     public class SignCommandTests
     {
-        private const string _packageAlreadySignedError = "Error NU5000: The package already contains a signature. Please remove the existing signature before adding a new signature.";
+        private const string _packageAlreadySignedError = "NU3000: The package already contains a signature. Please remove the existing signature before adding a new signature.";
         private const string _invalidPasswordErrorCode = "NU3014";
-        private const string _invalidEkuErrorCode = "NU5000";
+        private const string _invalidEkuErrorCode = "NU3000";
         private const string _noTimestamperWarningCode = "NU3521";
 
         private SignCommandTestFixture _testFixture;
