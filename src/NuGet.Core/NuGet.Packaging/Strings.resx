@@ -249,7 +249,12 @@
     <value>Timestamp signature contains invalid content type.</value>
   </data>
   <data name="TimestampCertificateChainBuildFailure" xml:space="preserve">
-    <value>The timestamp service's certificate chain could not be built for the following certificate:</value>
+    <value>The timestamp service's certificate chain could not be built for the following certificate: {0}</value>
+    <comment>0 -  X509Certificate2 details in the following format -
+Subject Name:
+SHA1 hash:
+Issued by:
+Valid from:</comment>
   </data>
   <data name="SignedPackageUnableToAccessSignature" xml:space="preserve">
     <value>The package was not opened correctly to perform Signature operations. Please use a Stream based constructor to have access to Signature attributes of the package.</value>
@@ -381,9 +386,12 @@ Valid from:</comment>
     <value>SignedCms does not have one primary signature.</value>
   </data>
   <data name="TimestampCertificateInvalid" xml:space="preserve">
-    <value>The timestamp service's certificate has a valid time in the future. -
-{0}</value>
-    <comment>0 -  X509Certificate2 friendly name</comment>
+    <value>The timestamp service's certificate has a valid time in the future: {0}</value>
+    <comment>0 -  X509Certificate2 details in the following format -
+Subject Name:
+SHA1 hash:
+Issued by:
+Valid from:</comment>
   </data>
   <data name="SigningCertificateV2Invalid" xml:space="preserve">
     <value>signing-certificate-v2 attribute value does not match the current certificate chain.</value>
@@ -414,5 +422,36 @@ Valid from:</comment>
   </data>
   <data name="SigningCertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
     <value>The signing certificate does not meet a minimum public key length requirement.</value>
+  </data>
+  <data name="SignatureCentralDirectoryHeaderInvalid" xml:space="preserve">
+    <value>Invalid central directory header for signature entry: '{0}'</value>
+    <comment>0 - exact cause of the failure.</comment>
+  </data>
+  <data name="SignatureFileCompressed" xml:space="preserve">
+    <value>File was found to be compressed.</value>
+  </data>
+  <data name="SignatureInvalidCompressionMethod" xml:space="preserve">
+    <value>Invalid compression method. Expected '{0}', actual '{1}'.</value>
+    <comment>0 - expected value in uint
+1 - actual value in uint</comment>
+  </data>
+  <data name="SignatureInvalidExtraFieldLength" xml:space="preserve">
+    <value>Invalid extra field length. Expected '{0}', actual '{1}'.</value>
+    <comment>0 - expected value in uint
+1 - actual value in uint</comment>
+  </data>
+  <data name="SignatureInvalidFileCommentLength" xml:space="preserve">
+    <value>Invalid file comment length. Expected '{0}', actual '{1}'.</value>
+    <comment>0 - expected value in uint
+1 - actual value in uint</comment>
+  </data>
+  <data name="SignatureInvalidGeneralPurposeBits" xml:space="preserve">
+    <value>Invalid general purpose bit flags. Expected '{0}', actual '{1}'.</value>
+    <comment>0 - expected value in uint
+1 - actual value in uint</comment>
+  </data>
+  <data name="SignatureLocalFileHeaderInvalid" xml:space="preserve">
+    <value>Invalid local file header for signature entry: '{0}'</value>
+    <comment>0 - exact cause of the failure.</comment>
   </data>
 </root>

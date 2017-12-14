@@ -121,19 +121,19 @@ namespace NuGet.Packaging.Signing
                     if (DateTime.UtcNow < timestampSignerCertificate.NotBefore)
                     {
                         throw new TimestampException(LogMessage.CreateError(
-                            NuGetLogCode.NU3011,
+                            NuGetLogCode.NU3044,
                             string.Format(CultureInfo.CurrentCulture,
                             Strings.TimestampCertificateInvalid,
-                            timestampSignerCertificate.FriendlyName)));
+                            $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestampSignerCertificate)}")));
                     }
 
                     if (!timestampCertChain.Build(timestampSignerCertificate))
                     {
                         throw new TimestampException(LogMessage.CreateError(
-                            NuGetLogCode.NU3011,
+                            NuGetLogCode.NU3041,
                             string.Format(CultureInfo.CurrentCulture,
                             Strings.TimestampCertificateChainBuildFailure,
-                            timestampSignerCertificate.FriendlyName)));
+                            $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestampSignerCertificate)}")));
                     }
 
                     // Insert all the certificates into timestampCms

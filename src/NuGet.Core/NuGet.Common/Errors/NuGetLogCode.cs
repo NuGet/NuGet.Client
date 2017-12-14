@@ -258,6 +258,16 @@ namespace NuGet.Common
         NU3023 = 3023,
 
         /// <summary>
+        /// Timestamp certificate chain building failed
+        /// </summary>
+        NU3041 = 3041,
+
+        /// <summary>
+        /// Timestamp certificate not yet effective
+        /// </summary>
+        NU3044 = 3044,
+
+        /// <summary>
         /// Invalid timestamp in signature
         /// </summary>
         NU3050 = 3050,

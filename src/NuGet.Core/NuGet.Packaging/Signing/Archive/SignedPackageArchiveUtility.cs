@@ -136,6 +136,10 @@ namespace NuGet.Packaging.Signing
             SignedPackageArchiveIOUtility.AssertExactlyOnePrimarySignature(metadata);
 
             var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
+
+            // Assert signature entry metadata
+            SignedPackageArchiveIOUtility.AssertSignatureEntryMetadata(reader, signatureCentralDirectoryHeader);
+
             var centralDirectoryRecordsWithoutSignature = RemoveSignatureAndOrderByOffset(metadata);
 
             try

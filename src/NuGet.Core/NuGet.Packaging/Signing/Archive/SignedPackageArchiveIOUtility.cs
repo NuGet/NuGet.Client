@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
@@ -396,6 +397,141 @@ namespace NuGet.Packaging.Signing
             }
         }
 
+        internal static void AssertSignatureEntryMetadata(BinaryReader reader, CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader)
+        {
+            // check central directory file header
+            AssertSignatureEntryCentralDirectoryHeader(reader, signatureCentralDirectoryHeader);
+
+            // check local file header
+            AssertSignatureEntryLocalFileHeaderMetadata(reader, signatureCentralDirectoryHeader);
+        }
+
+        private static void AssertSignatureEntryLocalFileHeaderMetadata(BinaryReader reader, CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader)
+        {
+            var signatureEntryErrorCode = NuGetLogCode.NU3011;
+
+            // skip header signature (4 bytes) and version field (2 bytes)
+            reader.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToFileHeader + 6L, origin: SeekOrigin.Begin);
+
+            // Assert general purpose bits to 0
+            AssertUInt16(
+                reader: reader,
+                expectedValue: 0,
+                errorCode: signatureEntryErrorCode,
+                errorMessagePrefix: Strings.SignatureLocalFileHeaderInvalid,
+                errorMessageSuffix: Strings.SignatureInvalidGeneralPurposeBits);
+
+            // Assert compression method to 0
+            AssertUInt16(
+                reader: reader,
+                expectedValue: 0,
+                errorCode: signatureEntryErrorCode,
+                errorMessagePrefix: Strings.SignatureLocalFileHeaderInvalid,
+                errorMessageSuffix: Strings.SignatureInvalidCompressionMethod);
+
+            // skip date (2 bytes), time (2 bytes) and crc32 (4 bytes)
+            reader.BaseStream.Seek(offset: 8L, origin: SeekOrigin.Current);
+
+            // assert that file compressed and uncompressed sizes are the same
+            var compressedSize = reader.ReadUInt32();
+            var unCompressedSize = reader.ReadUInt32();
+            if (compressedSize != unCompressedSize)
+            {
+                throw new SignatureException(
+                    signatureEntryErrorCode,
+                    string.Format(CultureInfo.CurrentCulture, Strings.SignatureLocalFileHeaderInvalid, Strings.SignatureFileCompressed));
+            }
+
+            // skip file name length (2 bytes)
+            reader.BaseStream.Seek(offset: 2L, origin: SeekOrigin.Current);
+
+            // Assert extra field length to 0
+            AssertUInt16(
+                reader: reader,
+                expectedValue: 0,
+                errorCode: signatureEntryErrorCode,
+                errorMessagePrefix: Strings.SignatureLocalFileHeaderInvalid,
+                errorMessageSuffix: Strings.SignatureInvalidExtraFieldLength);
+        }
+
+        private static void AssertSignatureEntryCentralDirectoryHeader(BinaryReader reader, CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader)
+        {
+            var signatureEntryErrorCode = NuGetLogCode.NU3011;
+
+            // skip header signature (4 bytes) and version fields (2 entires of 2 bytes)
+            reader.BaseStream.Seek(offset: signatureCentralDirectoryHeader.Position + 8L, origin: SeekOrigin.Begin);
+
+            // Assert general purpose bits to 0
+            AssertUInt16(
+                reader: reader,
+                expectedValue: 0,
+                errorCode: signatureEntryErrorCode,
+                errorMessagePrefix: Strings.SignatureCentralDirectoryHeaderInvalid,
+                errorMessageSuffix: Strings.SignatureInvalidGeneralPurposeBits);
+
+            // Assert compression method to 0
+            AssertUInt16(
+                reader: reader,
+                expectedValue: 0,
+                errorCode: signatureEntryErrorCode,
+                errorMessagePrefix: Strings.SignatureCentralDirectoryHeaderInvalid,
+                errorMessageSuffix: Strings.SignatureInvalidCompressionMethod);
+
+            // skip date (2 bytes), time (2 bytes) and crc32 (4 bytes)
+            reader.BaseStream.Seek(offset: 8L, origin: SeekOrigin.Current);
+
+            // assert that file compressed and uncompressed sizes are the same
+            var compressedSize = reader.ReadUInt32();
+            var unCompressedSize = reader.ReadUInt32();
+            if (compressedSize != unCompressedSize)
+            {
+                throw new SignatureException(
+                    signatureEntryErrorCode,
+                    string.Format(CultureInfo.CurrentCulture, Strings.SignatureCentralDirectoryHeaderInvalid, Strings.SignatureFileCompressed));
+            }
+
+            // skip file name length (2 bytes)
+            reader.BaseStream.Seek(offset: 2L, origin: SeekOrigin.Current);
+
+            // Assert extra field length to 0
+            AssertUInt16(
+                reader: reader,
+                expectedValue: 0,
+                errorCode: signatureEntryErrorCode,
+                errorMessagePrefix: Strings.SignatureCentralDirectoryHeaderInvalid,
+                errorMessageSuffix: Strings.SignatureInvalidExtraFieldLength);
+
+            // Assert file comment length to 0
+            AssertUInt16(
+                reader: reader,
+                expectedValue: 0,
+                errorCode: signatureEntryErrorCode,
+                errorMessagePrefix: Strings.SignatureCentralDirectoryHeaderInvalid,
+                errorMessageSuffix: Strings.SignatureInvalidFileCommentLength);
+        }
+
+        private static void AssertUInt16(
+            BinaryReader reader,
+            ushort expectedValue,
+            NuGetLogCode errorCode,
+            string errorMessagePrefix,
+            string errorMessageSuffix)
+        {
+            var actualValue = reader.ReadUInt16();
+            if (actualValue != expectedValue)
+            {
+                var failureCause = string.Format(
+                    CultureInfo.CurrentCulture,
+                    errorMessageSuffix,
+                    expectedValue,
+                    actualValue);
+
+                throw new SignatureException(
+                    errorCode,
+                    string.Format(CultureInfo.CurrentCulture, errorMessagePrefix, failureCause));
+            }
+        }
+
         /// <summary>
         /// Writes the signature data into the zip using the writer.
         /// The reader is used to read the exisiting zip. 
@@ -448,7 +584,6 @@ namespace NuGet.Packaging.Signing
         /// <returns>Number of total bytes written into the zip.</returns>
         private static long WriteLocalFileHeaderIntoZip(BinaryWriter writer, byte[] fileData, uint crc32, uint dosDateTime)
         {
-
             // Write the file header signature
             writer.Write(LocalFileHeaderSignature);
 
@@ -498,7 +633,6 @@ namespace NuGet.Packaging.Signing
         /// <returns>Number of total bytes written into the zip.</returns>
         private static long WriteFileIntoZip(BinaryWriter writer, byte[] fileData)
         {
-
             // write file
             writer.Write(fileData);
 
@@ -518,7 +652,6 @@ namespace NuGet.Packaging.Signing
         /// <returns>Number of total bytes written into the zip.</returns>
         private static long WriteCentralDirectoryHeader(BinaryWriter writer, byte[] fileData, uint crc32, uint dosDateTime, long fileOffset)
         {
-
             // Write the file header signature
             writer.Write(CentralDirectoryHeaderSignature);
 
@@ -588,7 +721,6 @@ namespace NuGet.Packaging.Signing
         /// <param name="sizeOfSignatureFileHeaderAndData">Size of the signature file and the corresponding local file header.</param>
         private static void WriteEndOfCentralDirectoryRecord(BinaryReader reader, BinaryWriter writer, long sizeOfSignatureCentralDirectoryRecord, long sizeOfSignatureFileHeaderAndData)
         {
-
             // 4 bytes for disk numbers. same as before.
             ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + 8L);
 
@@ -657,7 +789,7 @@ namespace NuGet.Packaging.Signing
         /// <returns>uint representing the MS-DOS equivalent date time.</returns>
         private static uint DateTimeToDosTime(DateTime dateTime)
         {
-            // DateTime must be Convertible to DosTime:
+            // DateTime must be Convertible to DosTime
             Debug.Assert(ValidZipDate_YearMin <= dateTime.Year && dateTime.Year <= ValidZipDate_YearMax);
 
             var ret = ((dateTime.Year - ValidZipDate_YearMin) & 0x7F);
