@@ -160,7 +160,7 @@ namespace Dotnet.Integration.Test
                                 || fileName.StartsWith("build")
                                 || fileName.StartsWith("buildCrossTargeting"));
 
-                DeleteFiles(pathToPackSdk);
+                DeleteDirectory(pathToPackSdk);
                 CopyNupkgFilesToTarget(nupkg, pathToPackSdk, files);
             }
         }
@@ -175,11 +175,6 @@ namespace Dotnet.Integration.Test
 
         }
 
-        private void DeleteFiles(string destinationDir)
-        {
-            Directory.Delete(destinationDir, true);
-        }
-
         private static string FindMostRecentNupkg(string nupkgDirectory, string id)
         {
             var info = LocalFolderUtility.GetPackagesV2(nupkgDirectory, new TestLogger());
@@ -192,7 +187,33 @@ namespace Dotnet.Integration.Test
 
         public void Dispose()
         {
-            Directory.Delete(Path.GetDirectoryName(TestDotnetCli), true);
+
+            DeleteDirectory(Path.GetDirectoryName(TestDotnetCli));
+        }
+
+        /// <summary>
+        /// Depth-first recursive delete, with handling for descendant 
+        /// directories open in Windows Explorer or used by another process
+        /// </summary>
+        private static void DeleteDirectory(string path)
+        {
+            foreach (string directory in Directory.GetDirectories(path))
+            {
+                DeleteDirectory(directory);
+            }
+
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch (IOException) 
+            {
+                Directory.Delete(path, true);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Directory.Delete(path, true);
+            }
         }
     }
 }

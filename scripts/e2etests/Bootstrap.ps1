@@ -76,6 +76,11 @@ if ($pcs.Count -gt 0)
     Start-Sleep 3
 }
 
+if(-Not (Test-Path $FuncTestRoot))
+{
+    mkdir $FuncTestRoot
+}
+
 $NuGetTestPath = Join-Path $FuncTestRoot "EndToEnd"
 
 Write-Host "NuGet drop path is $NuGetDropPath"
