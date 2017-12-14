@@ -665,6 +665,24 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package stream read position cannot be longer than the length of the stream..
+        /// </summary>
+        internal static string SignedPackageArchiveIOExtraRead {
+            get {
+                return ResourceManager.GetString("SignedPackageArchiveIOExtraRead", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package stream read position cannot be before the current position in the stream..
+        /// </summary>
+        internal static string SignedPackageArchiveIOInvalidRead {
+            get {
+                return ResourceManager.GetString("SignedPackageArchiveIOInvalidRead", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package is not signed. Unable to remove signature from an unsigned package..
         /// </summary>
         internal static string SignedPackageNotSignedOnRemove {

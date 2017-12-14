@@ -130,6 +130,16 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(writer));
             }
 
+            if (position > reader.BaseStream.Length)
+            {
+                throw new ArgumentException(Strings.SignedPackageArchiveIOExtraRead, nameof(position));
+            }
+
+            if (position < reader.BaseStream.Position)
+            {
+                throw new ArgumentException(Strings.SignedPackageArchiveIOInvalidRead, nameof(position));
+            }
+
             var bufferSize = 4;
             while (reader.BaseStream.Position + bufferSize < position)
             {
@@ -158,9 +168,14 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            if (hashAlgorithm == null)
+            if (position > reader.BaseStream.Length)
             {
-                throw new ArgumentNullException(nameof(hashAlgorithm));
+                throw new ArgumentException(Strings.SignedPackageArchiveIOExtraRead, nameof(position));
+            }
+
+            if (position < reader.BaseStream.Position)
+            {
+                throw new ArgumentException(Strings.SignedPackageArchiveIOInvalidRead, nameof(position));
             }
 
             var bufferSize = 4;

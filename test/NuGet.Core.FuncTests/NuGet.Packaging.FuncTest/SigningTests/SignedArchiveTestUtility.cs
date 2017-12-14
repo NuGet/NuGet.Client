@@ -242,7 +242,7 @@ namespace NuGet.Packaging.FuncTest
                 writer.Write(relativeOffsetOfLocalFileHeader);
 
                 // We already read and hash the whole header, skip only filenameLength + extraFieldLength + fileCommentLength (46 is the size of the header without those lengths)
-                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + reader.BaseStream.Position + entry.HeaderSize - CentralDirectoryFileHeaderSize);
+                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + entry.HeaderSize - CentralDirectoryFileHeaderSize);
             }
 
             // Write everything after central directory records

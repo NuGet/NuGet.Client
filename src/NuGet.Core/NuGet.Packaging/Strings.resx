@@ -454,4 +454,10 @@ Valid from:</comment>
     <value>Invalid local file header for signature entry: {0}</value>
     <comment>0 - exact cause of the failure.</comment>
   </data>
+  <data name="SignedPackageArchiveIOExtraRead" xml:space="preserve">
+    <value>Package stream read position cannot be longer than the length of the stream.</value>
+  </data>
+  <data name="SignedPackageArchiveIOInvalidRead" xml:space="preserve">
+    <value>Package stream read position cannot be before the current position in the stream.</value>
+  </data>
 </root>
