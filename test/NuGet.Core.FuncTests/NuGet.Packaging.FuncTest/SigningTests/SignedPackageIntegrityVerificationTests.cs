@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -201,7 +202,160 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
         }
+
+        [CIOnlyFact]
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchive()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var packageStream = nupkg.CreateAsStream())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signarture = await SignedArchiveTestUtility.CreateSignatureForPackageAsync(testCertificate, packageStream);
+                using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
+                {
+                    var signatureEntry = package.CreateEntry(_testFixture.SigningSpecifications.SignaturePath);
+                    using (var signatureStream = new MemoryStream(signarture.GetBytes()))
+                    using (var signatureEntryStream = signatureEntry.Open())
+                    {
+                        signatureStream.CopyTo(signatureEntryStream);
+                    }
+                }
+
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+
+                    // Assert
+                    result.Valid.Should().BeFalse();
+                    resultsWithErrors.Count().Should().Be(1);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchiveAndCompressed()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var packageStream = nupkg.CreateAsStream())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signarture = await SignedArchiveTestUtility.CreateSignatureForPackageAsync(testCertificate, packageStream);
+                using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
+                {
+                    var signatureEntry = package.CreateEntry(_testFixture.SigningSpecifications.SignaturePath, CompressionLevel.Optimal);
+                    using (var signatureStream = new MemoryStream(signarture.GetBytes()))
+                    using (var signatureEntryStream = signatureEntry.Open())
+                    {
+                        signatureStream.CopyTo(signatureEntryStream);
+                    }
+                }
+
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+
+                    // Assert
+                    result.Valid.Should().BeFalse();
+                    resultsWithErrors.Count().Should().Be(1);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidGeneralPurposeFlagBits()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var packageReadStream = nupkg.CreateAsStream())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
+
+                using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
+                using (var reader = new BinaryReader(packageReadStream, encoding: _testFixture.SigningSpecifications.Encoding, leaveOpen: true))
+                using (var writer = new BinaryWriter(packageWriteStream, encoding: _testFixture.SigningSpecifications.Encoding, leaveOpen: true))
+                {
+                    var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+                    var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
+
+                    // skip header signature (4 bytes) and 2 version fileds (2 bytes each)
+                    writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.Position + 8L, origin: SeekOrigin.Begin);
+
+                    // change general purpose bit flag
+                    writer.Write((ushort)1);
+                }
+
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                using (var packageReader = new PackageArchiveReader(packageReadStream))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+
+                    // Assert
+                    result.Valid.Should().BeFalse();
+                    resultsWithErrors.Count().Should().Be(1);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidCompressionMethod()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var packageReadStream = nupkg.CreateAsStream())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
+
+                using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
+                using (var reader = new BinaryReader(packageReadStream, encoding: _testFixture.SigningSpecifications.Encoding, leaveOpen: true))
+                using (var writer = new BinaryWriter(packageWriteStream, encoding: _testFixture.SigningSpecifications.Encoding, leaveOpen: true))
+                {
+                    var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+                    var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
+
+                    // skip header signature (4 bytes) and 2 version fileds (2 bytes each)
+                    writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.Position + 8L, origin: SeekOrigin.Begin);
+
+                    // change general purpose bit flag
+                    writer.Write((ushort)1);
+                }
+
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                using (var packageReader = new PackageArchiveReader(packageReadStream))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+
+                    // Assert
+                    result.Valid.Should().BeFalse();
+                    resultsWithErrors.Count().Should().Be(1);
+                }
+            }
+        }
     }
 }
-
 #endif

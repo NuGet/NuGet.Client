@@ -548,7 +548,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid central directory header for signature entry: &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Invalid central directory header for signature entry: {0}.
         /// </summary>
         internal static string SignatureCentralDirectoryHeaderInvalid {
             get {
@@ -638,7 +638,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid local file header for signature entry: &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Invalid local file header for signature entry: {0}.
         /// </summary>
         internal static string SignatureLocalFileHeaderInvalid {
             get {

@@ -7,6 +7,7 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
@@ -14,7 +15,7 @@ using Test.Utility.Signing;
 namespace NuGet.Packaging.FuncTest
 {
     internal static class SignedArchiveTestUtility
-    {        
+    {
         // Central Directory file header size including the signature but excluding file name, extra field and file comment
         private const uint CentralDirectoryFileHeaderSize = 46;
         private const string _internalTimestampServer = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
@@ -106,6 +107,29 @@ namespace NuGet.Packaging.FuncTest
             }
 
             File.Copy(copiedSignedPackagePath, signedPackagePath, overwrite: true);
+        }
+
+        /// <summary>
+        /// Generates a Signature for a package.
+        /// </summary>
+        /// <param name="testCert">Certificate to be used while generating the signature.</param>
+        /// <param name="nupkg">Package for which the signature has to be generated.</param>
+        /// <returns>Signature for the package.</returns>
+        public static async Task<Signature> CreateSignatureForPackageAsync(X509Certificate2 testCert, Stream packageStream)
+        {
+            var testLogger = new TestLogger();
+            var hashAlgorithm = HashAlgorithmName.SHA256;
+
+            using (var request = new SignPackageRequest() { Certificate = testCert, SignatureHashAlgorithm = hashAlgorithm })
+            using (var package = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
+            {
+                var zipArchiveHash = await package.GetArchiveHashAsync(request.SignatureHashAlgorithm, CancellationToken.None);
+                var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
+                var signatureContent = new SignatureContent(hashAlgorithm, base64ZipArchiveHash);
+                var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
+
+                return await testSignatureProvider.CreateSignatureAsync(request, signatureContent, testLogger, CancellationToken.None);
+            }
         }
 
         /// <summary>
