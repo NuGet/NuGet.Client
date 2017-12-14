@@ -248,6 +248,7 @@ namespace NuGet.CommandLine
 
             // Override the target under ImportsAfter with the current NuGet.targets version.
             AddProperty(args, "NuGetRestoreTargets", entryPointTargetPath);
+            AddProperty(args, "RestoreUseCustomAfterTargets", bool.TrueString);
 
             // Set path to nuget.exe or the build task
             AddProperty(args, "RestoreTaskAssemblyFile", nugetExePath);
@@ -258,6 +259,18 @@ namespace NuGet.CommandLine
             AddPropertyIfHasValue(args, "RestoreConfigFile", restoreConfigFile);
             AddPropertyIfHasValue(args, "RestorePackagesPath", packagesDirectory);
             AddPropertyIfHasValue(args, "SolutionDir", solutionDirectory);
+
+            // Disable parallel and use ContinueOnError since this may run on an older
+            // version of MSBuild that do not support SkipNonexistentTargets.
+            // When BuildInParallel is used with ContinueOnError it does not continue in
+            // some scenarios.
+            // Allow opt in to msbuild 15.5 behavior with NUGET_RESTORE_MSBUILD_USESKIPNONEXISTENT
+            var nonExistFlag = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_USESKIPNONEXISTENT");
+            if (!StringComparer.OrdinalIgnoreCase.Equals(nonExistFlag, bool.TrueString))
+            {
+                AddProperty(args, "RestoreBuildInParallel", bool.FalseString);
+                AddProperty(args, "RestoreUseSkipNonexistentTargets", bool.FalseString);
+            }
 
             // Add additional args to msbuild if needed
             var msbuildAdditionalArgs = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_ARGS");
