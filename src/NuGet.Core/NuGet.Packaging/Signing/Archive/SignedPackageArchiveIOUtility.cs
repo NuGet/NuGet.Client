@@ -16,10 +16,10 @@ namespace NuGet.Packaging.Signing
     public static class SignedPackageArchiveIOUtility
     {
         // Central Directory file header size excluding signature, file name, extra field and file comment
-        internal const uint CentralDirectoryFileHeaderSize = 46;
+        internal const uint CentralDirectoryFileHeaderSizeWithoutSignature = 46;
 
         // Local file header size excluding signature, file name and extra field
-        internal const uint LocalFileHeaderSize = 26;
+        internal const uint LocalFileHeaderSizeWithoutSignature = 26;
         internal const uint CentralDirectoryHeaderSignature = 0x02014b50;
         internal const uint EndOfCentralDirectorySignature = 0x06054b50;
         internal const uint Zip64EndOfCentralDirectorySignature = 0x06064b50;
@@ -278,7 +278,7 @@ namespace NuGet.Packaging.Signing
                 var filename = reader.ReadBytes(filenameLength);
                 centralDirectoryMetadata.Filename = Encoding.ASCII.GetString(filename);
                 // Save total size of central directory record + variable length fields
-                centralDirectoryMetadata.HeaderSize = CentralDirectoryFileHeaderSize + filenameLength + extraFieldLength + fileCommentLength;
+                centralDirectoryMetadata.HeaderSize = CentralDirectoryFileHeaderSizeWithoutSignature + filenameLength + extraFieldLength + fileCommentLength;
 
                 try
                 {
@@ -635,7 +635,7 @@ namespace NuGet.Packaging.Signing
             writer.Write(fileNameBytes);
 
             // calculate the total length of data written
-            var writtenDataLength = LocalFileHeaderSize + BitConverter.GetBytes(LocalFileHeaderSignature).Length + fileNameLength;
+            var writtenDataLength = LocalFileHeaderSizeWithoutSignature + BitConverter.GetBytes(LocalFileHeaderSignature).Length + fileNameLength;
 
             return writtenDataLength;
         }
@@ -721,7 +721,7 @@ namespace NuGet.Packaging.Signing
             writer.Write(fileNameBytes);
 
             // calculate the total length of data written
-            var writtenDataLength = CentralDirectoryFileHeaderSize + BitConverter.GetBytes(CentralDirectoryHeaderSignature).Length + fileNameLength;
+            var writtenDataLength = CentralDirectoryFileHeaderSizeWithoutSignature + BitConverter.GetBytes(CentralDirectoryHeaderSignature).Length + fileNameLength;
 
             return writtenDataLength;
         }

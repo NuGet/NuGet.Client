@@ -169,7 +169,7 @@ namespace NuGet.Packaging.Signing
                     SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(relativeOffsetOfLocalFileHeader));
 
                     // We already read and hash the whole header, skip only filenameLength + extraFieldLength + fileCommentLength
-                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + record.HeaderSize - SignedPackageArchiveIOUtility.CentralDirectoryFileHeaderSize);
+                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + record.HeaderSize - SignedPackageArchiveIOUtility.CentralDirectoryFileHeaderSizeWithoutSignature);
                 }
 
                 reader.BaseStream.Seek(offset: metadata.EndOfCentralDirectory, origin: SeekOrigin.Begin);
