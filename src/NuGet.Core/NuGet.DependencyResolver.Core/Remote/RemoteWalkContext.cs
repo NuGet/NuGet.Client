@@ -33,6 +33,8 @@ namespace NuGet.DependencyResolver
             RemoteLibraryProviders = new List<IRemoteDependencyProvider>();
 
             FindLibraryEntryCache = new ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphItem<RemoteResolveResult>>>();
+
+            FindLibraryGraphNode = new ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphNode<RemoteResolveResult>>>();
         }
 
         public SourceCacheContext CacheContext { get; }
@@ -46,6 +48,8 @@ namespace NuGet.DependencyResolver
         /// Library entry cache.
         /// </summary>
         public ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphItem<RemoteResolveResult>>> FindLibraryEntryCache { get; }
+
+        public ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphNode<RemoteResolveResult>>> FindLibraryGraphNode { get; }
 
         /// <summary>
         /// True if this is a csproj or similar project. Xproj should be false.

@@ -26,7 +26,9 @@ namespace NuGet.DependencyResolver
 
         public Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, bool recursive)
         {
-            return CreateGraphNode(library, framework, runtimeIdentifier, runtimeGraph, _ => recursive ? DependencyResult.Acceptable : DependencyResult.Eclipsed, outerEdge: null);
+            var key = new LibraryRangeCacheKey(library, framework);
+            return _context.FindLibraryGraphNode.GetOrAdd(key, (cacheKey) =>
+                CreateGraphNode(library, framework, runtimeIdentifier, runtimeGraph, _ => recursive ? DependencyResult.Acceptable : DependencyResult.Eclipsed, outerEdge: null));
         }
 
         private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(
@@ -37,6 +39,8 @@ namespace NuGet.DependencyResolver
             Func<LibraryRange, DependencyResult> predicate,
             GraphEdge<RemoteResolveResult> outerEdge)
         {
+            await _context.Logger.LogAsync(Common.LogLevel.Debug, libraryRange.ToString());
+
             List<LibraryDependency> dependencies = null;
             HashSet<string> runtimeDependencies = null;
             List<Task<GraphNode<RemoteResolveResult>>> tasks = null;
@@ -149,13 +153,17 @@ namespace NuGet.DependencyResolver
                             tasks = new List<Task<GraphNode<RemoteResolveResult>>>(1);
                         }
 
-                        tasks.Add(CreateGraphNode(
+                        var key = new LibraryRangeCacheKey(dependency.LibraryRange, framework);
+
+                        tasks.Add(
+                            _context.FindLibraryGraphNode.GetOrAdd(key, (cacheKey) => 
+                            CreateGraphNode(
                             dependency.LibraryRange,
                             framework,
                             runtimeName,
                             runtimeGraph,
                             ChainPredicate(predicate, node, dependency),
-                            innerEdge));
+                            innerEdge)));
                     }
                     else
                     {
