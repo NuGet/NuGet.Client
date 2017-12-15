@@ -50,14 +50,23 @@ namespace NuGet.Packaging.Signing
 
                     valid = signaturesAreValid;
                 }
+                catch(SignatureException e)
+                {
+                    // SignatureException generated while parsing signatures
+                    var issues = new[] {
+                        SignatureLog.Issue(!_settings.AllowUntrusted, e.Code, e.Message),
+                        SignatureLog.DebugLog(e.ToString())
+                    };
+                    trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
+                }
                 catch(CryptographicException e)
                 {
                     // CryptographicException generated while parsing the SignedCms object
                     var issues = new[] {
-                        SignatureLog.Issue(true, NuGetLogCode.NU3005, Strings.ErrorPackageSignatureInvalid),
+                        SignatureLog.Issue(!_settings.AllowUntrusted, NuGetLogCode.NU3005, Strings.ErrorPackageSignatureInvalid),
                         SignatureLog.DebugLog(e.ToString())
                     };
-                    trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
+                    trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
                 }
             }
             else if (_settings.AllowUnsigned)

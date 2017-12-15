@@ -383,7 +383,7 @@ Valid from:</comment>
     <value>ZIP64 signed packages are not supported.</value>
   </data>
   <data name="Error_NotOnePrimarySignature" xml:space="preserve">
-    <value>SignedCms does not have one primary signature.</value>
+    <value>The package signature contains multiple primary signatures.</value>
   </data>
   <data name="TimestampCertificateInvalid" xml:space="preserve">
     <value>The timestamp service's certificate has a valid time in the future: {0}</value>
@@ -406,7 +406,7 @@ Valid from:</comment>
     <value>Package hash information could not be read from the package signature.</value>
   </data>
   <data name="UnsupportedSignatureFormatVersion" xml:space="preserve">
-    <value>The package signature format version is unsupported.  Updating your client may solve this problem.</value>
+    <value>The package signature format version is not supported. Updating your client may solve this problem.</value>
   </data>
   <data name="SignFailureCertificateInvalidProviderType" xml:space="preserve">
     <value>The following certificate cannot be used for package signing as the private key provider is unsupported:</value>

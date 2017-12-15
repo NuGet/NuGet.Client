@@ -44,8 +44,7 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                var code = !settings.AllowUntrusted ? NuGetLogCode.NU3013 : NuGetLogCode.NU3513;
-                issues.Add(SignatureLog.Issue(!settings.AllowUntrusted, code, Strings.SignatureFailureInvalidHashAlgorithmOid));
+                issues.Add(SignatureLog.Issue(!settings.AllowUntrusted, NuGetLogCode.NU3013, Strings.SignatureFailureInvalidHashAlgorithmOid));
                 issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureDebug_HashOidFound, signatureHashOid)));
             }
 

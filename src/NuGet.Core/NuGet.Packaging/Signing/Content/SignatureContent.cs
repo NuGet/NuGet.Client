@@ -160,7 +160,7 @@ namespace NuGet.Packaging.Signing
 
             if (signingSpecifications.Version != signatureFormatVersion)
             {
-                throw new SignatureException(Strings.UnsupportedSignatureFormatVersion);
+                throw new SignatureException(NuGetLogCode.NU3012, Strings.UnsupportedSignatureFormatVersion);
             }
         }
     }

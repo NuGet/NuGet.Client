@@ -120,8 +120,7 @@ namespace NuGet.Packaging.Signing
                 }
                 catch (Exception e)
                 {
-                    var code = failuresAreFatal ? NuGetLogCode.NU3030 : NuGetLogCode.NU3530;
-                    issues.Add(SignatureLog.Issue(failuresAreFatal, code, Strings.ErrorSignatureVerificationFailed));
+                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3030, Strings.ErrorSignatureVerificationFailed));
                     issues.Add(SignatureLog.DebugLog(e.ToString()));
                     return SignatureVerificationStatus.Invalid;
                 }
@@ -194,14 +193,12 @@ namespace NuGet.Packaging.Signing
                     }
                     else
                     {
-                        var code = failuresAreFatal ? NuGetLogCode.NU3030 : NuGetLogCode.NU3530;
-                        issues.Add(SignatureLog.Issue(failuresAreFatal, code, Strings.ErrorSignatureVerificationFailed));
+                        issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3030, Strings.ErrorSignatureVerificationFailed));
                     }
                 }
                 else
                 {
-                    var code = failuresAreFatal ? NuGetLogCode.NU3024 : NuGetLogCode.NU3524;
-                    issues.Add(SignatureLog.Issue(failuresAreFatal, code, Strings.SignatureNotYetValid));
+                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3024, Strings.SignatureNotYetValid));
                 }
             }
             else
@@ -305,8 +302,7 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                var code = failuresAreFatal ? NuGetLogCode.NU3050 : NuGetLogCode.NU3550;
-                issues.Add(SignatureLog.Issue(failuresAreFatal, code, Strings.TimestampFailureInvalidContentType));
+                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3050, Strings.TimestampFailureInvalidContentType));
             }
 
             return null;

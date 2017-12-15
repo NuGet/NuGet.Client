@@ -161,7 +161,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SignedCms does not have one primary signature..
+        ///   Looks up a localized string similar to The package signature contains multiple primary signatures..
         /// </summary>
         internal static string Error_NotOnePrimarySignature {
             get {
@@ -917,7 +917,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature format version is unsupported.  Updating your client may solve this problem..
+        ///   Looks up a localized string similar to The package signature format version is not supported. Updating your client may solve this problem..
         /// </summary>
         internal static string UnsupportedSignatureFormatVersion {
             get {

@@ -238,7 +238,7 @@ namespace NuGet.Common
         NU3011 = 3011,
 
         /// <summary>
-        /// Certificate not valid
+        /// Unsupported signature format version
         /// </summary>
         NU3012 = 3012,
 
@@ -248,7 +248,7 @@ namespace NuGet.Common
         NU3013 = 3013,
 
         /// <summary>
-        /// Invalid password provided for a certificate
+        /// Primary signature count not 1
         /// </summary>
         NU3014 = 3014,
 

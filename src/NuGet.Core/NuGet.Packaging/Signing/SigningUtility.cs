@@ -282,15 +282,13 @@ namespace NuGet.Packaging.Signing
 
             if (!spec.AllowedHashAlgorithmOids.Contains(timestampSignerInfo.DigestAlgorithm.Value))
             {
-                var code = failIfInvalid ? NuGetLogCode.NU3052 : NuGetLogCode.NU3552;
-                issues.Add(SignatureLog.Issue(failIfInvalid, code, Strings.TimestampFailureInvalidHashAlgorithmOid));
+                issues.Add(SignatureLog.Issue(failIfInvalid, NuGetLogCode.NU3052, Strings.TimestampFailureInvalidHashAlgorithmOid));
                 isValid = false;
             }
 
             if (IsCertificateValidityPeriodInTheFuture(timestampSignerInfo.Certificate))
             {
-                var code = failIfInvalid ? NuGetLogCode.NU3044 : NuGetLogCode.NU3544;
-                issues.Add(SignatureLog.Issue(failIfInvalid, code, Strings.TimestampNotYetValid));
+                issues.Add(SignatureLog.Issue(failIfInvalid, NuGetLogCode.NU3044, Strings.TimestampNotYetValid));
                 isValid = false;
             }
 
