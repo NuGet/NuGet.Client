@@ -388,7 +388,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, SkipMono = true)]
+        [PlatformFact(Platform.Windows)]
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesMainlyV2()
         {
             // Arrange
