@@ -133,6 +133,12 @@ namespace NuGet.Packaging.Signing
             // TODO: Change this to use the new attributes that justin is adding.
             return SignatureType.Author;
         }
+
+        /// <summary>
+        /// Get timestamps from the signer info
+        /// </summary>
+        /// <param name="signer"></param>
+        /// <returns></returns>
         private static IReadOnlyList<Timestamp> GetTimestamps(SignerInfo signer)
         {
             var authorUnsignedAttributes = signer.UnsignedAttributes;
@@ -143,13 +149,9 @@ namespace NuGet.Packaging.Signing
             {
                 if (string.Equals(attribute.Oid.Value, Oids.SignatureTimeStampTokenAttributeOid, StringComparison.Ordinal))
                 {
-                    foreach (var value in attribute.Values)
-                    {
-                        var timestampCms = new SignedCms();
-                        timestampCms.Decode(value.RawData);
-
-                        timestampList.Add(new Timestamp(timestampCms)); ;
-                    }
+                    var timestampCms = new SignedCms();
+                    timestampCms.Decode(attribute.Values[0].RawData);
+                    timestampList.Add(new Timestamp(timestampCms)); ;
                 }
             }
             return timestampList;
