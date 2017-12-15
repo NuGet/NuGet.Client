@@ -225,15 +225,15 @@ namespace NuGet.Packaging.Signing
                 return null;
             }
 
-            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
-                Strings.VerificationTimestamperCertDisplay,
-                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate)}")));
-
             if (Rfc3161TimestampVerificationUtility.TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
             {
                 if (SigningUtility.IsTimestampValid(data, failuresAreFatal, issues, timestampSignerInfo, tstInfo, _specification))
                 {
                     issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.TimestampValue, tstInfo.Timestamp.LocalDateTime.ToString()) + Environment.NewLine));
+
+                    issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
+                        Strings.VerificationTimestamperCertDisplay,
+                        $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate)}")));
 
                     //var signingCertificateAttribute = timestampSignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningCertificate);
                     //if (signingCertificateAttribute == null)
