@@ -562,8 +562,22 @@ namespace NuGet.Packaging.Signing
             BinaryReader reader,
             BinaryWriter writer)
         {
-            var packageMetadata = ReadSignedArchiveMetadata(reader);
+            if (signatureStream == null)
+            {
+                throw new ArgumentNullException(nameof(signatureStream));
+            }
 
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            var packageMetadata = ReadSignedArchiveMetadata(reader);
             var signatureBytes = signatureStream.ToArray();
             var signatureCrc32 = (uint)Crc32.CalculateCrc(signatureBytes);
             var signatureDosTime = DateTimeToDosTime(DateTime.Now);

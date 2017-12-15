@@ -97,21 +97,6 @@ namespace NuGet.Packaging.Signing
         /// <param name="writer">BinaryWriter to be used to write the signature into the zip.</param>
         public static void SignZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
         {
-            if (signatureStream == null)
-            {
-                throw new ArgumentNullException(nameof(signatureStream));
-            }
-
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
             SignedPackageArchiveIOUtility.WriteSignatureIntoZip(signatureStream, reader, writer);
         }
 
