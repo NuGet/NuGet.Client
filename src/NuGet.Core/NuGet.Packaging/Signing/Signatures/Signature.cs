@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Signing
     {
 #if IS_DESKTOP
 
-        private readonly Lazy<IReadOnlyList<Timestamp>> _timestampsLazy;
+        private readonly Lazy<IReadOnlyList<Timestamp>> _timestamps;
 
         /// <summary>
         /// A SignedCms object holding the signature and SignerInfo.
@@ -38,7 +38,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Signature timestamps.
         /// </summary>
-        public IReadOnlyList<Timestamp> Timestamps => _timestampsLazy.Value;
+        public IReadOnlyList<Timestamp> Timestamps => _timestamps.Value;
 
         /// <summary>
         /// SignerInfo for this signature.
@@ -51,7 +51,7 @@ namespace NuGet.Packaging.Signing
             SignatureContent = SignatureContent.Load(SignedCms.ContentInfo.Content, SigningSpecifications.V1);
             Type = GetSignatureType(SignerInfo);
 
-            _timestampsLazy = new Lazy<IReadOnlyList<Timestamp>>(() => GetTimestamps(SignerInfo));
+            _timestamps = new Lazy<IReadOnlyList<Timestamp>>(() => GetTimestamps(SignerInfo));
         }
 
         /// <summary>

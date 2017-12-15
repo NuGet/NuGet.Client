@@ -54,7 +54,7 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                throw new Exception("TODO");
+                throw new TimestampException(SignatureLog.InvalidTimestampInSignatureError(Strings.TimestampFailureInvalidContentType).ToLogMessage());
             }
         }
 #endif
