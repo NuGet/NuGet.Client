@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 #if IS_DESKTOP
@@ -16,6 +17,9 @@ namespace NuGet.Packaging.Signing
     public class Signature
     {
 #if IS_DESKTOP
+
+        private readonly Lazy<IReadOnlyList<Timestamp>> _timestamps;
+
         /// <summary>
         /// A SignedCms object holding the signature and SignerInfo.
         /// </summary>
@@ -32,6 +36,11 @@ namespace NuGet.Packaging.Signing
         public SignatureContent SignatureContent { get; }
 
         /// <summary>
+        /// Signature timestamps.
+        /// </summary>
+        public IReadOnlyList<Timestamp> Timestamps => _timestamps.Value;
+
+        /// <summary>
         /// SignerInfo for this signature.
         /// </summary>
         public SignerInfo SignerInfo => SignedCms.SignerInfos[0];
@@ -41,6 +50,8 @@ namespace NuGet.Packaging.Signing
             SignedCms = signedCms ?? throw new ArgumentNullException(nameof(signedCms));
             SignatureContent = SignatureContent.Load(SignedCms.ContentInfo.Content, SigningSpecifications.V1);
             Type = GetSignatureType(SignerInfo);
+
+            _timestamps = new Lazy<IReadOnlyList<Timestamp>>(() => GetTimestamps(SignerInfo));
         }
 
         /// <summary>
@@ -121,6 +132,29 @@ namespace NuGet.Packaging.Signing
         {
             // TODO: Change this to use the new attributes that justin is adding.
             return SignatureType.Author;
+        }
+
+        /// <summary>
+        /// Get timestamps from the signer info
+        /// </summary>
+        /// <param name="signer"></param>
+        /// <returns></returns>
+        private static IReadOnlyList<Timestamp> GetTimestamps(SignerInfo signer)
+        {
+            var authorUnsignedAttributes = signer.UnsignedAttributes;
+            
+            var timestampList = new List<Timestamp>();
+
+            foreach (var attribute in authorUnsignedAttributes)
+            {
+                if (string.Equals(attribute.Oid.Value, Oids.SignatureTimeStampTokenAttributeOid, StringComparison.Ordinal))
+                {
+                    var timestampCms = new SignedCms();
+                    timestampCms.Decode(attribute.Values[0].RawData);
+                    timestampList.Add(new Timestamp(timestampCms)); ;
+                }
+            }
+            return timestampList;
         }
 
 #else
