@@ -611,24 +611,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid extra field length. Expected &apos;{0}&apos;, actual &apos;{1}&apos;..
-        /// </summary>
-        internal static string SignatureInvalidExtraFieldLength {
-            get {
-                return ResourceManager.GetString("SignatureInvalidExtraFieldLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid file comment length. Expected &apos;{0}&apos;, actual &apos;{1}&apos;..
-        /// </summary>
-        internal static string SignatureInvalidFileCommentLength {
-            get {
-                return ResourceManager.GetString("SignatureInvalidFileCommentLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid general purpose bit flags. Expected &apos;{0}&apos;, actual &apos;{1}&apos;..
         /// </summary>
         internal static string SignatureInvalidGeneralPurposeBits {

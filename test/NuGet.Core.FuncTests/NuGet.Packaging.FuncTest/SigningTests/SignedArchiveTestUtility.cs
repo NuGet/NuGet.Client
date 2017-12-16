@@ -201,6 +201,24 @@ namespace NuGet.Packaging.FuncTest
             File.Copy(copiedSignedPackagePath, signedPackagePath, overwrite: true);
         }
 
+        public static int GetSignatureCentralDirectoryIndex(SignedPackageArchiveMetadata metadata, SigningSpecifications signingSpecification)
+        {
+            var centralDirectoryRecords = metadata.CentralDirectoryHeaders;
+            var centralDirectoryRecordsCount = centralDirectoryRecords.Count;
+
+            for (var centralDirectoryRecordIndex = 0; centralDirectoryRecordIndex < centralDirectoryRecordsCount; centralDirectoryRecordIndex++)
+            {
+                var record = centralDirectoryRecords[centralDirectoryRecordIndex];
+
+                if (StringComparer.Ordinal.Equals(record.Filename, signingSpecification.SignaturePath))
+                {
+                    return centralDirectoryRecordIndex;
+                }
+            }
+
+            return -1;
+        }
+
         private static Task ShiftSignatureMetadata(SigningSpecifications spec, BinaryReader reader, BinaryWriter writer, int centralDirectoryIndex, int fileHeaderIndex)
         {
             // Read metadata

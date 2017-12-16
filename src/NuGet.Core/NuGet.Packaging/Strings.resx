@@ -435,16 +435,6 @@ Valid from:</comment>
     <comment>0 - expected value in uint
 1 - actual value in uint</comment>
   </data>
-  <data name="SignatureInvalidExtraFieldLength" xml:space="preserve">
-    <value>Invalid extra field length. Expected '{0}', actual '{1}'.</value>
-    <comment>0 - expected value in uint
-1 - actual value in uint</comment>
-  </data>
-  <data name="SignatureInvalidFileCommentLength" xml:space="preserve">
-    <value>Invalid file comment length. Expected '{0}', actual '{1}'.</value>
-    <comment>0 - expected value in uint
-1 - actual value in uint</comment>
-  </data>
   <data name="SignatureInvalidGeneralPurposeBits" xml:space="preserve">
     <value>Invalid general purpose bit flags. Expected '{0}', actual '{1}'.</value>
     <comment>0 - expected value in uint

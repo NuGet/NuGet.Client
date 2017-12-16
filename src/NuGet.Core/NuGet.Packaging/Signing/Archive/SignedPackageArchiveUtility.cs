@@ -118,7 +118,7 @@ namespace NuGet.Packaging.Signing
             var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
 
             // Assert exactly one primary signature
-            SignedPackageArchiveIOUtility.AssertExactlyOnePrimarySignature(metadata);
+            SignedPackageArchiveIOUtility.AssertExactlyOnePrimarySignatureAndUpdateMetadata(metadata);
 
             var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
