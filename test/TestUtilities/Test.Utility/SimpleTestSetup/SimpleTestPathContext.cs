@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -48,9 +48,6 @@ namespace NuGet.Test.Utility
             Directory.CreateDirectory(FallbackFolder);
 
             CreateNuGetConfig();
-
-            // Record who wrote this out incase a test isn't cleaning up
-            File.WriteAllText(Path.Combine(WorkingDirectory, "testStack.txt"), Environment.StackTrace);
         }
 
         private void CreateNuGetConfig()

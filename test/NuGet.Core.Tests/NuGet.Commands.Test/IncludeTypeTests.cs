@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -2052,14 +2052,17 @@ namespace NuGet.Commands.Test
 
                 if (targets != null)
                 {
-                    var xml = XDocument.Load(targets.OpenRead());
-
-                    foreach (var package in xml.Descendants()
-                        .Where(node => node.Name.LocalName == "Import")
-                        .Select(node => node.Attribute(XName.Get("Project")))
-                        .Select(file => Path.GetFileNameWithoutExtension(file.Value)))
+                    using (var stream = targets.OpenRead())
                     {
-                        result[dir.Name].Add(package);
+                        var xml = XDocument.Load(stream);
+
+                        foreach (var package in xml.Descendants()
+                            .Where(node => node.Name.LocalName == "Import")
+                            .Select(node => node.Attribute(XName.Get("Project")))
+                            .Select(file => Path.GetFileNameWithoutExtension(file.Value)))
+                        {
+                            result[dir.Name].Add(package);
+                        }
                     }
                 }
             }

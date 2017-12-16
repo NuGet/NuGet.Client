@@ -359,8 +359,11 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken token)
         {
             var root = sourceUri.LocalPath;
-            var reader = new PackageArchiveReader(pathToPackage);
-            var packageIdentity = reader.GetIdentity();
+            PackageIdentity packageIdentity = null;
+            using (var reader = new PackageArchiveReader(pathToPackage))
+            {
+                packageIdentity = reader.GetIdentity();
+            }
 
             if (IsV2LocalRepository(root))
             {
