@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (var testDirectory = TestDirectory.Create())
             {
                 var testBaseIntermediateOutputPath = Path.Combine(testDirectory, "obj");
-                TestDirectory.Create(testBaseIntermediateOutputPath);
+                Directory.CreateDirectory(testBaseIntermediateOutputPath);
                 var projectAdapter = Mock.Of<IVsProjectAdapter>();
                 Mock.Get(projectAdapter)
                     .SetupGet(x => x.BaseIntermediateOutputPath)
@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 var testProj = "project.csproj";
                 var testBaseIntermediateOutputPath = Path.Combine(testDirectory, "obj");
-                TestDirectory.Create(testBaseIntermediateOutputPath);
+                Directory.CreateDirectory(testBaseIntermediateOutputPath);
                 var projectAdapter = Mock.Of<IVsProjectAdapter>();
                 Mock.Get(projectAdapter)
                     .SetupGet(x => x.BaseIntermediateOutputPath)
@@ -161,7 +161,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 var testProj = "project.csproj";
                 var testBaseIntermediateOutputPath = Path.Combine(testDirectory, "obj");
-                TestDirectory.Create(testBaseIntermediateOutputPath);
+                Directory.CreateDirectory(testBaseIntermediateOutputPath);
                 var projectAdapter = Mock.Of<IVsProjectAdapter>();
                 Mock.Get(projectAdapter)
                     .SetupGet(x => x.BaseIntermediateOutputPath)
@@ -777,7 +777,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .ReturnsAsync(NuGetFramework.Parse("netstandard13"));
 
             var testBaseIntermediateOutputPath = Path.Combine(fullPath, "obj");
-            TestDirectory.Create(testBaseIntermediateOutputPath);
+            Directory.CreateDirectory(testBaseIntermediateOutputPath);
             projectAdapter
                 .Setup(x => x.BaseIntermediateOutputPath)
                 .Returns(testBaseIntermediateOutputPath);
