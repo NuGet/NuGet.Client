@@ -17,6 +17,9 @@ packages/
 .nuget/nuget.exe
 */.nuget/
 
+# ignore nuget.exe for e2e tests
+test/EndToEnd/nuget.exe
+
 # remove ilmerge log
 mergelog.txt
 
