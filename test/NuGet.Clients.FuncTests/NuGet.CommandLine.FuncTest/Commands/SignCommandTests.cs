@@ -247,6 +247,37 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [CIOnlyFact]
+        public void SignCommand_SignPackageWithOverwriteSuccess()
+        {
+            // Arrange
+            var testLogger = new TestLogger();
+
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
+            {
+                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    zipStream.CopyTo(fileStream);
+                }
+
+                // Act
+                var firstResult = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Overwrite",
+                    waitForExit: true);
+
+                // Assert
+                firstResult.Success.Should().BeTrue();
+                firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
+            }
+        }
+
+        [CIOnlyFact]
         public void SignCommand_SignPackageWithPfxFileSuccess()
         {
             // Arrange

@@ -38,5 +38,10 @@ namespace NuGet.Packaging.Signing
         {
             PackageIdentity = package;
         }
+
+        public override string ToString()
+        {
+            return AsLogMessage().FormatWithCode();
+        }
     }
 }

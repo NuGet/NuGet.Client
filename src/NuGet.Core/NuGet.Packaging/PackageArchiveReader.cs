@@ -26,15 +26,15 @@ namespace NuGet.Packaging
         private readonly SigningSpecifications _signingSpecifications = SigningSpecifications.V1;
 
         /// <summary>
-        /// Underlying zip archive.
+        /// Signature specifications.
         /// </summary>
-        protected ZipArchive Zip => _zipArchive;
+        protected SigningSpecifications SigningSpecifications => _signingSpecifications;
 
         /// <summary>
         /// Stream underlying the ZipArchive. Used to do signature verification on a SignedPackageArchive.
         /// If this is null then we cannot perform signature verification.
         /// </summary>
-        protected Stream ZipStream { get; set; }
+        protected Stream ZipReadStream { get; set; }
 
         /// <summary>
         /// Nupkg package reader
@@ -64,7 +64,7 @@ namespace NuGet.Packaging
         public PackageArchiveReader(Stream stream, bool leaveStreamOpen)
             : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen), DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
-            ZipStream = stream;
+            ZipReadStream = stream;
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace NuGet.Packaging
         public PackageArchiveReader(Stream stream, bool leaveStreamOpen, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
             : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen), frameworkProvider, compatibilityProvider)
         {
-            ZipStream = stream;
+            ZipReadStream = stream;
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace NuGet.Packaging
             {
                 throw new ArgumentNullException(nameof(filePath));
             }
-            
+
             // Since this constructor owns the stream, the responsibility falls here to dispose the stream of an
             // invalid .zip archive. If this constructor succeeds, the disposal of the stream is handled by the
             // disposal of this instance.
@@ -116,7 +116,7 @@ namespace NuGet.Packaging
             try
             {
                 stream = File.OpenRead(filePath);
-                ZipStream = stream;
+                ZipReadStream = stream;
                 _zipArchive = new ZipArchive(stream, ZipArchiveMode.Read);
             }
             catch
@@ -231,7 +231,7 @@ namespace NuGet.Packaging
         {
             token.ThrowIfCancellationRequested();
 
-            if (ZipStream == null)
+            if (ZipReadStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
@@ -240,14 +240,16 @@ namespace NuGet.Packaging
 
             if (await IsSignedAsync(token))
             {
-                var signatureEntry = Zip.GetEntry(_signingSpecifications.SignaturePath);
-                using (var signatureEntryStream = signatureEntry.Open())
+                using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
                 {
+                    var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
+                    using (var signatureEntryStream = signatureEntry.Open())
+                    {
 #if IS_DESKTOP
-
-                    var signature = Signature.Load(signatureEntryStream);
-                    signatures.Add(signature);
+                        var signature = Signature.Load(signatureEntryStream);
+                        signatures.Add(signature);
 #endif
+                    }
                 }
             }
 
@@ -258,7 +260,7 @@ namespace NuGet.Packaging
         {
             token.ThrowIfCancellationRequested();
 
-            if(ZipStream == null)
+            if (ZipReadStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
@@ -266,12 +268,15 @@ namespace NuGet.Packaging
             var isSigned = false;
 
 #if IS_DESKTOP
-            var signatureEntry = Zip.GetEntry(_signingSpecifications.SignaturePath);
-
-            if (signatureEntry != null &&
-                string.Equals(signatureEntry.Name, _signingSpecifications.SignaturePath, StringComparison.Ordinal))
+            using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
             {
-                isSigned = true;
+                var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
+
+                if (signatureEntry != null &&
+                    string.Equals(signatureEntry.Name, SigningSpecifications.SignaturePath, StringComparison.Ordinal))
+                {
+                    isSigned = true;
+                }
             }
 #endif
             return Task.FromResult(isSigned);
@@ -281,7 +286,7 @@ namespace NuGet.Packaging
         {
             token.ThrowIfCancellationRequested();
 
-            if (ZipStream == null)
+            if (ZipReadStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
@@ -292,7 +297,7 @@ namespace NuGet.Packaging
             }
 
 #if IS_DESKTOP
-            using (var reader = new BinaryReader(ZipStream, _utf8Encoding, leaveOpen: true))
+            using (var reader = new BinaryReader(ZipReadStream, SigningSpecifications.Encoding, leaveOpen: true))
             {
                 var hashAlgorithm = signatureContent.HashAlgorithm.GetHashProvider();
                 var expectedHash = Convert.FromBase64String(signatureContent.HashValue);
@@ -308,13 +313,13 @@ namespace NuGet.Packaging
         {
             token.ThrowIfCancellationRequested();
 
-            if (ZipStream == null)
+            if (ZipReadStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
 
-            ZipStream.Seek(offset: 0, origin: SeekOrigin.Begin);
-            var hash = hashAlgorithm.GetHashProvider().ComputeHash(ZipStream, leaveStreamOpen: true);
+            ZipReadStream.Seek(offset: 0, origin: SeekOrigin.Begin);
+            var hash = hashAlgorithm.GetHashProvider().ComputeHash(ZipReadStream, leaveStreamOpen: true);
 
             return Task.FromResult(hash);
         }

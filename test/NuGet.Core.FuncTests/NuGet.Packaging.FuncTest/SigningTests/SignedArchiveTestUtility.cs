@@ -7,6 +7,7 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
@@ -15,6 +16,8 @@ namespace NuGet.Packaging.FuncTest
 {
     internal static class SignedArchiveTestUtility
     {
+        // Central Directory file header size excluding signature, file name, extra field and file comment
+        private const uint CentralDirectoryFileHeaderSizeWithoutSignature = 46;
         private const string _internalTimestampServer = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
 
         /// <summary>
@@ -28,11 +31,12 @@ namespace NuGet.Packaging.FuncTest
         {
             var testLogger = new TestLogger();
 
+            using (var zipReadStream = nupkg.CreateAsStream())
             using (var zipWriteStream = nupkg.CreateAsStream())
             {
                 var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
 
-                using (var signPackage = new SignedPackageArchive(zipWriteStream))
+                using (var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
                 {
                     // Sign the package
                     await SignPackageAsync(testLogger, testCert, signPackage);
@@ -60,11 +64,12 @@ namespace NuGet.Packaging.FuncTest
         {
             var testLogger = new TestLogger();
 
+            using (var zipReadStream = nupkg.CreateAsStream())
             using (var zipWriteStream = nupkg.CreateAsStream())
             {
                 var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
 
-                using (var signPackage = new SignedPackageArchive(zipWriteStream))
+                using (var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
                 {
                     // Sign the package
                     await SignAndTimeStampPackageAsync(testLogger, testCert.Source.Cert, signPackage);
@@ -93,14 +98,38 @@ namespace NuGet.Packaging.FuncTest
             var copiedSignedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
             File.Copy(signedPackagePath, copiedSignedPackagePath, overwrite: true);
 
+            using (var zipReadStream = File.Open(signedPackagePath, FileMode.Open))
             using (var zipWriteStream = File.Open(copiedSignedPackagePath, FileMode.Open))
-            using (var signedPackage = new SignedPackageArchive(zipWriteStream))
+            using (var signedPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
             {
                 var signer = new Signer(signedPackage, testSignatureProvider);
                 await signer.RemoveSignaturesAsync(testLogger, CancellationToken.None);
             }
 
             File.Copy(copiedSignedPackagePath, signedPackagePath, overwrite: true);
+        }
+
+        /// <summary>
+        /// Generates a Signature for a package.
+        /// </summary>
+        /// <param name="testCert">Certificate to be used while generating the signature.</param>
+        /// <param name="nupkg">Package for which the signature has to be generated.</param>
+        /// <returns>Signature for the package.</returns>
+        public static async Task<Signature> CreateSignatureForPackageAsync(X509Certificate2 testCert, Stream packageStream)
+        {
+            var testLogger = new TestLogger();
+            var hashAlgorithm = HashAlgorithmName.SHA256;
+
+            using (var request = new SignPackageRequest() { Certificate = testCert, SignatureHashAlgorithm = hashAlgorithm })
+            using (var package = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
+            {
+                var zipArchiveHash = await package.GetArchiveHashAsync(request.SignatureHashAlgorithm, CancellationToken.None);
+                var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
+                var signatureContent = new SignatureContent(hashAlgorithm, base64ZipArchiveHash);
+                var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
+
+                return await testSignatureProvider.CreateSignatureAsync(request, signatureContent, testLogger, CancellationToken.None);
+            }
         }
 
         /// <summary>
@@ -172,10 +201,31 @@ namespace NuGet.Packaging.FuncTest
             File.Copy(copiedSignedPackagePath, signedPackagePath, overwrite: true);
         }
 
+        public static int GetSignatureCentralDirectoryIndex(SignedPackageArchiveMetadata metadata, SigningSpecifications signingSpecification)
+        {
+            var centralDirectoryRecords = metadata.CentralDirectoryHeaders;
+            var centralDirectoryRecordsCount = centralDirectoryRecords.Count;
+
+            for (var centralDirectoryRecordIndex = 0; centralDirectoryRecordIndex < centralDirectoryRecordsCount; centralDirectoryRecordIndex++)
+            {
+                var record = centralDirectoryRecords[centralDirectoryRecordIndex];
+
+                if (StringComparer.Ordinal.Equals(record.Filename, signingSpecification.SignaturePath))
+                {
+                    return centralDirectoryRecordIndex;
+                }
+            }
+
+            return -1;
+        }
+
         private static Task ShiftSignatureMetadata(SigningSpecifications spec, BinaryReader reader, BinaryWriter writer, int centralDirectoryIndex, int fileHeaderIndex)
         {
             // Read metadata
             var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+
+            // Update central directory records by excluding the signature entry
+            SignedPackageArchiveIOUtility.UpdateSignedPackageArchiveMetadata(reader, metadata);
 
             // Calculate new central directory record metadata with the the signature record and entry shifted
             var shiftedCdr = ShiftMetadata(spec, metadata, newSignatureFileEntryIndex: fileHeaderIndex, newSignatureCentralDirectoryRecordIndex: centralDirectoryIndex);
@@ -186,7 +236,7 @@ namespace NuGet.Packaging.FuncTest
 
             // Write data from start of file to first file entry
             reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
-            ReadAndWriteUntilPosition(reader, writer, metadata.StartOfFileHeaders);
+            SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, metadata.StartOfFileHeaders);
 
             // Write all file entries in the new order
             foreach (var entry in shiftedCdr)
@@ -194,7 +244,7 @@ namespace NuGet.Packaging.FuncTest
                 // We need to read each entry from their position in the old package and write them sequencially to the new package
                 // The order in which they will appear in the new shited package is defined by the sorting done before starting to write
                 reader.BaseStream.Seek(offset: entry.OffsetToFileHeader, origin: SeekOrigin.Begin);
-                ReadAndWriteUntilPosition(reader, writer, entry.OffsetToFileHeader + entry.FileEntryTotalSize);
+                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, entry.OffsetToFileHeader + entry.FileEntryTotalSize);
             }
 
             // Write all central directory records with updated offsets
@@ -204,18 +254,18 @@ namespace NuGet.Packaging.FuncTest
             {
                 reader.BaseStream.Seek(offset: entry.Position, origin: SeekOrigin.Begin);
                 // Read and write from the start of the central directory record until the relative offset of local file header (42 from the start of central directory record, incluing signature length)
-                ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + 42);
+                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + 42);
 
                 var relativeOffsetOfLocalFileHeader = (uint)(reader.ReadUInt32() + entry.ChangeInOffset);
                 writer.Write(relativeOffsetOfLocalFileHeader);
 
                 // We already read and hash the whole header, skip only filenameLength + extraFieldLength + fileCommentLength (46 is the size of the header without those lengths)
-                ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + entry.HeaderSize - 46);
+                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + entry.HeaderSize - CentralDirectoryFileHeaderSizeWithoutSignature);
             }
 
             // Write everything after central directory records
             reader.BaseStream.Seek(offset: metadata.EndOfCentralDirectory, origin: SeekOrigin.Begin);
-            ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Length);
+            SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Length);
 
             return Task.FromResult(0);
         }
@@ -284,37 +334,6 @@ namespace NuGet.Packaging.FuncTest
             var signatureCD = cdr[recordIndex];
             cdr.RemoveAt(recordIndex);
             cdr.Insert(index, signatureCD);
-        }
-
-        private static void ReadAndWriteUntilPosition(BinaryReader reader, BinaryWriter writer, long position)
-        {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (position > reader.BaseStream.Length || position < reader.BaseStream.Position)
-            {
-                throw new ArgumentException("Position cannot be before the current position or after the end of the reader", nameof(position));
-            }
-
-            var bufferSize = 4;
-            while (reader.BaseStream.Position + bufferSize < position)
-            {
-                var bytes = reader.ReadBytes(bufferSize);
-                writer.Write(bytes);
-            }
-            var remainingBytes = position - reader.BaseStream.Position;
-            if (remainingBytes > 0)
-            {
-                var bytes = reader.ReadBytes((int)remainingBytes);
-                writer.Write(bytes);
-            }
         }
     }
 }

@@ -548,6 +548,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid central directory header for signature entry: {0}.
+        /// </summary>
+        internal static string SignatureCentralDirectoryHeaderInvalid {
+            get {
+                return ResourceManager.GetString("SignatureCentralDirectoryHeaderInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package signature contains an invalid attribute: {0}.
         /// </summary>
         internal static string SignatureContainsInvalidAttribute {
@@ -575,11 +584,47 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to File was found to be compressed..
+        /// </summary>
+        internal static string SignatureFileCompressed {
+            get {
+                return ResourceManager.GetString("SignatureFileCompressed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Signature Hash Algorithm: {0}.
         /// </summary>
         internal static string SignatureHashAlgorithm {
             get {
                 return ResourceManager.GetString("SignatureHashAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid compression method. Expected &apos;{0}&apos;, actual &apos;{1}&apos;..
+        /// </summary>
+        internal static string SignatureInvalidCompressionMethod {
+            get {
+                return ResourceManager.GetString("SignatureInvalidCompressionMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid general purpose bit flags. Expected &apos;{0}&apos;, actual &apos;{1}&apos;..
+        /// </summary>
+        internal static string SignatureInvalidGeneralPurposeBits {
+            get {
+                return ResourceManager.GetString("SignatureInvalidGeneralPurposeBits", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid local file header for signature entry: {0}.
+        /// </summary>
+        internal static string SignatureLocalFileHeaderInvalid {
+            get {
+                return ResourceManager.GetString("SignatureLocalFileHeaderInvalid", resourceCulture);
             }
         }
         
@@ -598,6 +643,24 @@ namespace NuGet.Packaging {
         internal static string SignatureType {
             get {
                 return ResourceManager.GetString("SignatureType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package stream read position cannot be longer than the length of the stream..
+        /// </summary>
+        internal static string SignedPackageArchiveIOExtraRead {
+            get {
+                return ResourceManager.GetString("SignedPackageArchiveIOExtraRead", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package stream read position cannot be before the current position in the stream..
+        /// </summary>
+        internal static string SignedPackageArchiveIOInvalidRead {
+            get {
+                return ResourceManager.GetString("SignedPackageArchiveIOInvalidRead", resourceCulture);
             }
         }
         
@@ -683,7 +746,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp service&apos;s certificate chain could not be built for the following certificate:.
+        ///   Looks up a localized string similar to The timestamp service&apos;s certificate chain could not be built for the following certificate: {0}.
         /// </summary>
         internal static string TimestampCertificateChainBuildFailure {
             get {
@@ -692,8 +755,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp service&apos;s certificate has a valid time in the future. -
-        ///{0}.
+        ///   Looks up a localized string similar to The timestamp service&apos;s certificate has a valid time in the future: {0}.
         /// </summary>
         internal static string TimestampCertificateInvalid {
             get {

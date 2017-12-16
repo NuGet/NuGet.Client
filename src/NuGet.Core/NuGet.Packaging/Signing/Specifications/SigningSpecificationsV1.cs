@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Text;
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
@@ -12,6 +13,7 @@ namespace NuGet.Packaging.Signing
         private const string _SHA384String = "SHA384";
         private const string _SHA512String = "SHA512";
         private const int _rsaPublicKeyMinLength = 2048;
+        private static readonly Encoding _encoding = Encoding.UTF8;
 
         /// <summary>
         /// Allowed digest algorithms for signature and timestamp hashing.
@@ -46,7 +48,8 @@ namespace NuGet.Packaging.Signing
 
         public override int RSAPublicKeyMinLength => _rsaPublicKeyMinLength;
 
-
+        public override Encoding Encoding => _encoding;
+        
         public SigningSpecificationsV1()
             : base()
         {

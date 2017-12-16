@@ -303,42 +303,6 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task Signer_VerifyOnTamperedPackage_SignatureMetadataModifiedAsync()
-        {
-            // Arrange
-            var nupkg = new SimpleTestPackageContext();
-
-            using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            {
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
-
-                // unsign the package
-                using (var stream = File.Open(signedPackagePath, FileMode.Open))
-                using (var zip = new ZipArchive(stream, ZipArchiveMode.Update))
-                {
-                    var entry = zip.GetEntry(SigningSpecifications.V1.SignaturePath);
-
-                    // ZipArchiveEntry.LastWriteTime supports a resolution of two seconds.
-                    // https://msdn.microsoft.com/en-us/library/system.io.compression.ziparchiveentry.lastwritetime(v=vs.110).aspx
-                    entry.LastWriteTime = entry.LastWriteTime.AddSeconds(2);
-                }
-
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
-
-                using (var packageReader = new PackageArchiveReader(signedPackagePath))
-                {
-                    // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
-
-                    // Assert
-                    // No failure expected as the signature file or its metadata is not part of the original hash
-                    result.Valid.Should().BeTrue();
-                }
-            }
-        }
-
-        [CIOnlyFact]
         public async Task Signer_VerifyOnTamperedPackage_SignatureTruncatedAsync()
         {
             // Arrange

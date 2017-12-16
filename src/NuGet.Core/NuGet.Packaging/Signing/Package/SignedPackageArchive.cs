@@ -15,12 +15,17 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class SignedPackageArchive : PackageArchiveReader, ISignedPackage
     {
-        private readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
+        /// <summary>
+        /// Stream underlying the ZipArchive. Used to do signature verification on a SignedPackageArchive.
+        /// If this is null then we cannot perform signature verification.
+        /// </summary>
+        private Stream ZipWriteStream { get; set; }
 
-        public SignedPackageArchive(Stream packageStream)
-            : base(new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true), DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
+        public SignedPackageArchive(Stream packageReadStream, Stream packageWriteStream)
+            : base(new ZipArchive(packageReadStream, ZipArchiveMode.Read, leaveOpen: true), DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
-            ZipStream = packageStream ?? throw new ArgumentNullException(nameof(packageStream));
+            ZipReadStream = packageReadStream ?? throw new ArgumentNullException(nameof(packageReadStream));
+            ZipWriteStream = packageWriteStream ?? throw new ArgumentNullException(nameof(packageWriteStream));
         }
 
         /// <summary>
@@ -33,7 +38,12 @@ namespace NuGet.Packaging.Signing
         {
             token.ThrowIfCancellationRequested();
 
-            if (ZipStream == null)
+            if (ZipReadStream == null)
+            {
+                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
+            }
+
+            if (ZipWriteStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
@@ -43,10 +53,10 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.SignedPackagePackageAlreadySigned);
             }
 
-            var signatureEntry = Zip.CreateEntry(_signingSpecification.SignaturePath, CompressionLevel.NoCompression);
-            using (var signatureEntryStream = signatureEntry.Open())
+            using (var reader = new BinaryReader(ZipReadStream, SigningSpecifications.Encoding, leaveOpen: true))
+            using (var writer = new BinaryWriter(ZipWriteStream, SigningSpecifications.Encoding, leaveOpen: true))
             {
-                signatureStream.CopyTo(signatureEntryStream);
+                SignedPackageArchiveUtility.SignZip((MemoryStream)signatureStream, reader, writer);
             }
         }
 
@@ -58,7 +68,7 @@ namespace NuGet.Packaging.Signing
         {
             token.ThrowIfCancellationRequested();
 
-            if (ZipStream == null)
+            if (ZipWriteStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
@@ -68,7 +78,10 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.SignedPackageNotSignedOnRemove);
             }
 
-            Zip.GetEntry(_signingSpecification.SignaturePath).Delete();
+            using (var zip = new ZipArchive(ZipWriteStream, ZipArchiveMode.Update, leaveOpen: true))
+            {
+                zip.GetEntry(SigningSpecifications.SignaturePath).Delete();
+            }
         }
 
         protected override void Dispose(bool disposing)

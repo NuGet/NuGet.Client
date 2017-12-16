@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 
-namespace NuGet.Packaging.Test.SigningTests
+namespace NuGet.Packaging.Test
 {
     public static class SignTestUtility
     {

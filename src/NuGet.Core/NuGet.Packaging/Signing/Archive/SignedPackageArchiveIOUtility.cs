@@ -3,23 +3,38 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
     public static class SignedPackageArchiveIOUtility
     {
+        // Central Directory file header size excluding signature, file name, extra field and file comment
+        internal const uint CentralDirectoryFileHeaderSizeWithoutSignature = 46;
+
+        // Local file header size excluding signature, file name and extra field
+        internal const uint LocalFileHeaderSizeWithoutSignature = 26;
+
+        // All the signatures have a fixed length of 4 bytes
+        internal const uint ZipHeaderSignatureSize = 4;
         internal const uint CentralDirectoryHeaderSignature = 0x02014b50;
         internal const uint EndOfCentralDirectorySignature = 0x06054b50;
         internal const uint Zip64EndOfCentralDirectorySignature = 0x06064b50;
         internal const uint Zip64EndOfCentralDirectoryLocatorSignature = 0x07064b50;
         internal const uint LocalFileHeaderSignature = 0x04034b50;
 
+        private const uint Crc32Polynomial = 0xedb88320;
         private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
+
+        // used while converting DateTime to MS-DOS date time format
+        private const int ValidZipDate_YearMin = 1980;
+        private const int ValidZipDate_YearMax = 2107;
 
         /// <summary>
         /// Takes a binary reader and moves forwards the current position of it's base stream until it finds the specified signature.
@@ -100,6 +115,49 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
+        /// Read bytes from a BinaryReader and write them to the BinaryWriter and stop when the provided position
+        /// is the current position of the BinaryReader's base stream. It does not read the byte in the provided position.
+        /// </summary>
+        /// <param name="reader">Read bytes from this stream.</param>
+        /// <param name="writer">Write bytes to this stream.</param>
+        /// <param name="position">Position to stop copying data.</param>
+        public static void ReadAndWriteUntilPosition(BinaryReader reader, BinaryWriter writer, long position)
+        {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (position > reader.BaseStream.Length)
+            {
+                throw new ArgumentException(Strings.SignedPackageArchiveIOExtraRead, nameof(position));
+            }
+
+            if (position < reader.BaseStream.Position)
+            {
+                throw new ArgumentException(Strings.SignedPackageArchiveIOInvalidRead, nameof(position));
+            }
+
+            var bufferSize = 4;
+            while (reader.BaseStream.Position + bufferSize < position)
+            {
+                var bytes = reader.ReadBytes(bufferSize);
+                writer.Write(bytes);
+            }
+            var remainingBytes = position - reader.BaseStream.Position;
+            if (remainingBytes > 0)
+            {
+                var bytes = reader.ReadBytes((int)remainingBytes);
+                writer.Write(bytes);
+            }
+        }
+
+        /// <summary>
         /// Read bytes from a BinaryReader and hash them with a given HashAlgorithm and stop when the provided position
         /// is the current position of the BinaryReader's base stream. It does not hash the byte in the provided position.
         /// </summary>
@@ -113,9 +171,14 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            if (hashAlgorithm == null)
+            if (position > reader.BaseStream.Length)
             {
-                throw new ArgumentNullException(nameof(hashAlgorithm));
+                throw new ArgumentException(Strings.SignedPackageArchiveIOExtraRead, nameof(position));
+            }
+
+            if (position < reader.BaseStream.Position)
+            {
+                throw new ArgumentException(Strings.SignedPackageArchiveIOInvalidRead, nameof(position));
             }
 
             var bufferSize = 4;
@@ -186,6 +249,7 @@ namespace NuGet.Packaging.Signing
             // Read central directory records
             var possibleSignatureCentralDirectoryRecordPosition = reader.BaseStream.Position;
             var isReadingCentralDirectoryRecords = true;
+
             while (isReadingCentralDirectoryRecords)
             {
                 var centralDirectoryMetadata = new CentralDirectoryHeaderMetadata
@@ -216,8 +280,8 @@ namespace NuGet.Packaging.Signing
 
                 var filename = reader.ReadBytes(filenameLength);
                 centralDirectoryMetadata.Filename = Encoding.ASCII.GetString(filename);
-                // Save total size of central directory record + variable length fields (46 bytes of fields and variable length fields afterwards)
-                centralDirectoryMetadata.HeaderSize = 46 + filenameLength + extraFieldLength + fileCommentLength;
+                // Save total size of central directory record + variable length fields
+                centralDirectoryMetadata.HeaderSize = CentralDirectoryFileHeaderSizeWithoutSignature + filenameLength + extraFieldLength + fileCommentLength;
 
                 try
                 {
@@ -233,10 +297,10 @@ namespace NuGet.Packaging.Signing
 
             var lastCentralDirectoryRecord = centralDirectoryRecords.Last();
             metadata.EndOfCentralDirectory = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize;
-
-            // Update central directory records with missing information
-            UpdateCentralDirectoryRecordsMetadata(reader, metadata, centralDirectoryRecords);
             metadata.CentralDirectoryHeaders = centralDirectoryRecords;
+
+            // Update signed package archive metadata
+            UpdateSignedPackageArchiveMetadata(reader, metadata);
 
             // Make sure the package is not zip64
             var isZip64 = false;
@@ -256,23 +320,28 @@ namespace NuGet.Packaging.Signing
             return metadata;
         }
 
-        private static void UpdateCentralDirectoryRecordsMetadata(BinaryReader reader, SignedPackageArchiveMetadata metadata, List<CentralDirectoryHeaderMetadata> centralDirectoryRecords)
+        /// <summary>
+        /// Updates the SignedPackageArchiveMetadata.CentralDirectoryHeaders by updating IndexInHeaders and FileEntryTotalSize.
+        /// Updates the SignedPackageArchiveMetadata.EndOfFileHeaders.
+        /// </summary>
+        /// <param name="reader">Binary reader to zip archive.</param>
+        /// <param name="metadata">SignedPackageArchiveMetadata to be updated.</param>
+        public static void UpdateSignedPackageArchiveMetadata(
+            BinaryReader reader,
+            SignedPackageArchiveMetadata metadata)
         {
             // Get missing metadata for central directory records
-            var hasFoundSignature = false;
+            var centralDirectoryRecords = metadata.CentralDirectoryHeaders;
             var centralDirectoryRecordsCount = centralDirectoryRecords.Count;
+            var endOfAllFileHeaders = 0L;
+
             for (var centralDirectoryRecordIndex = 0; centralDirectoryRecordIndex < centralDirectoryRecordsCount; centralDirectoryRecordIndex++)
             {
                 var record = centralDirectoryRecords[centralDirectoryRecordIndex];
 
                 if (StringComparer.Ordinal.Equals(record.Filename, _signingSpecification.SignaturePath))
                 {
-                    if (hasFoundSignature)
-                    {
-                        throw new SignatureException(Strings.Error_NotOnePrimarySignature);
-                    }
                     metadata.SignatureCentralDirectoryHeaderIndex = centralDirectoryRecordIndex;
-                    hasFoundSignature = true;
                 }
 
                 // Go to local file header
@@ -280,6 +349,7 @@ namespace NuGet.Packaging.Signing
 
                 // Validate file header signature
                 var fileHeaderSignature = reader.ReadUInt32();
+
                 if (fileHeaderSignature != LocalFileHeaderSignature)
                 {
                     throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
@@ -299,12 +369,369 @@ namespace NuGet.Packaging.Signing
 
                 record.IndexInHeaders = centralDirectoryRecordIndex;
                 record.FileEntryTotalSize = reader.BaseStream.Position - record.OffsetToFileHeader;
+
+                var endofFileHeader = record.FileEntryTotalSize + record.OffsetToFileHeader;
+
+                if (endofFileHeader > endOfAllFileHeaders)
+                {
+                    endOfAllFileHeaders = endofFileHeader;
+                }
+            }
+
+            metadata.EndOfFileHeaders = endOfAllFileHeaders;
+        }
+
+        /// <summary>
+        /// Asserts that the SignedPackageArchiveMetadata contains only one Signature file entry.
+        /// Updates SignedPackageArchiveMetadata.SignatureCentralDirectoryHeaderIndex with the index of the signature central directory header.
+        /// Throws SignatureException if less or more entries are found.
+        /// </summary>
+        /// <param name="metadata">SignedPackageArchiveMetadata to be checked for signature entry.</param>
+        internal static void AssertExactlyOnePrimarySignatureAndUpdateMetadata(SignedPackageArchiveMetadata metadata)
+        {
+            // Get missing metadata for central directory records
+            var hasFoundSignature = false;
+            var centralDirectoryRecords = metadata.CentralDirectoryHeaders;
+            var centralDirectoryRecordsCount = centralDirectoryRecords.Count;
+
+            for (var centralDirectoryRecordIndex = 0; centralDirectoryRecordIndex < centralDirectoryRecordsCount; centralDirectoryRecordIndex++)
+            {
+                var record = centralDirectoryRecords[centralDirectoryRecordIndex];
+
+                if (StringComparer.Ordinal.Equals(record.Filename, _signingSpecification.SignaturePath))
+                {
+                    if (hasFoundSignature)
+                    {
+                        throw new SignatureException(Strings.Error_NotOnePrimarySignature);
+                    }
+
+                    metadata.SignatureCentralDirectoryHeaderIndex = centralDirectoryRecordIndex;
+                    hasFoundSignature = true;
+                }
             }
 
             if (!hasFoundSignature)
             {
                 throw new SignatureException(Strings.Error_NotOnePrimarySignature);
             }
+        }
+
+        /// <summary>
+        /// Asserts the validity of local file header and central directory file header for the signature file in the package.
+        /// Throws Signature Exception if the headers are invalid.
+        /// </summary>
+        /// <param name="reader">BinaryReader on the package.</param>
+        /// <param name="signatureCentralDirectoryHeader">Metadata of the the package.</param>
+        public static void AssertSignatureEntryMetadata(BinaryReader reader, CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader)
+        {
+            // skip header signature (4 bytes) and version fields (2 entires of 2 bytes)
+            reader.BaseStream.Seek(offset: signatureCentralDirectoryHeader.Position + 8L, origin: SeekOrigin.Begin);
+
+            // check central directory file header
+            AssertSignatureEntryHeaderMetadata(reader, signatureCentralDirectoryHeader, Strings.SignatureCentralDirectoryHeaderInvalid);
+
+            // skip header signature (4 bytes) and version field (2 bytes)
+            reader.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToFileHeader + 6L, origin: SeekOrigin.Begin);
+
+            // check local file header
+            AssertSignatureEntryHeaderMetadata(reader, signatureCentralDirectoryHeader, Strings.SignatureLocalFileHeaderInvalid);
+        }
+
+        private static void AssertSignatureEntryHeaderMetadata(BinaryReader reader, CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader, string errorPrefix)
+        {
+            var signatureEntryErrorCode = NuGetLogCode.NU3011;            
+
+            // Assert general purpose bits to 0
+            AssertUInt16(
+                reader: reader,
+                expectedValue: 0,
+                errorCode: signatureEntryErrorCode,
+                errorMessagePrefix: errorPrefix,
+                errorMessageSuffix: Strings.SignatureInvalidGeneralPurposeBits);
+
+            // Assert compression method to 0
+            AssertUInt16(
+                reader: reader,
+                expectedValue: 0,
+                errorCode: signatureEntryErrorCode,
+                errorMessagePrefix: errorPrefix,
+                errorMessageSuffix: Strings.SignatureInvalidCompressionMethod);
+
+            // skip date (2 bytes), time (2 bytes) and crc32 (4 bytes)
+            reader.BaseStream.Seek(offset: 8L, origin: SeekOrigin.Current);
+
+            // assert that file compressed and uncompressed sizes are the same
+            var compressedSize = reader.ReadUInt32();
+            var unCompressedSize = reader.ReadUInt32();
+            if (compressedSize != unCompressedSize)
+            {
+                throw new SignatureException(
+                    signatureEntryErrorCode,
+                    string.Format(CultureInfo.CurrentCulture, errorPrefix, Strings.SignatureFileCompressed));
+            }
+        }
+
+        private static void AssertUInt16(
+            BinaryReader reader,
+            ushort expectedValue,
+            NuGetLogCode errorCode,
+            string errorMessagePrefix,
+            string errorMessageSuffix)
+        {
+            var actualValue = reader.ReadUInt16();
+            if (actualValue != expectedValue)
+            {
+                var failureCause = string.Format(
+                    CultureInfo.CurrentCulture,
+                    errorMessageSuffix,
+                    expectedValue,
+                    actualValue);
+
+                throw new SignatureException(
+                    errorCode,
+                    string.Format(CultureInfo.CurrentCulture, errorMessagePrefix, failureCause));
+            }
+        }
+
+        /// <summary>
+        /// Writes the signature data into the zip using the writer.
+        /// The reader is used to read the exisiting zip. 
+        /// </summary>
+        /// <param name="signatureStream">MemoryStream of the signature to be inserted into the zip.</param>
+        /// <param name="reader">BinaryReader to be used to read the existing zip data.</param>
+        /// <param name="writer">BinaryWriter to be used to write the signature into the zip.</param>
+        internal static void WriteSignatureIntoZip(
+            MemoryStream signatureStream,
+            BinaryReader reader,
+            BinaryWriter writer)
+        {
+            if (signatureStream == null)
+            {
+                throw new ArgumentNullException(nameof(signatureStream));
+            }
+
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            var packageMetadata = ReadSignedArchiveMetadata(reader);
+            var signatureBytes = signatureStream.ToArray();
+            var signatureCrc32 = (uint)Crc32.CalculateCrc(signatureBytes);
+            var signatureDosTime = DateTimeToDosTime(DateTime.Now);
+
+            // ensure both streams are reset
+            reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
+            writer.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
+
+            // copy all data till previous end of local file headers
+            ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfFileHeaders);
+
+            // write the signature local file header
+            var signatureFileHeaderLength = WriteLocalFileHeaderIntoZip(writer, signatureBytes, signatureCrc32, signatureDosTime);
+
+            // write the signature file
+            var signatureFileLength = WriteFileIntoZip(writer, signatureBytes);
+
+            // copy all data that was after previous end of local file headers till previous end of central directory headers
+            ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfCentralDirectory);
+
+            // write the central directory header for signature file
+            var signatureCentralDirectoryHeaderLength = WriteCentralDirectoryHeaderIntoZip(writer, signatureBytes, signatureCrc32, signatureDosTime, packageMetadata.EndOfFileHeaders);
+
+            // copy all data that was after previous end of central directory headers till previous start of end of central directory record
+            ReadAndWriteUntilPosition(reader, writer, packageMetadata.EndOfCentralDirectoryRecordPosition);
+
+            var totalSignatureSize = signatureFileHeaderLength + signatureFileLength;
+
+            // update and write the end of central directory record
+            ReadAndWriteUpdatedEndOfCentralDirectoryRecordIntoZip(reader, writer, signatureCentralDirectoryHeaderLength, totalSignatureSize);
+        }
+
+        /// <summary>
+        /// Writes a local file header into a zip using the writer starting at the writer.BaseStream.Position.
+        /// </summary>
+        /// <param name="writer">BinaryWriter to be used to write file.</param>
+        /// <param name="fileData">Byte[] of the corresponding file to be written into the zip.</param>
+        /// <param name="fileTime">Last modified DateTime for the file data.</param>
+        /// <returns>Number of total bytes written into the zip.</returns>
+        private static long WriteLocalFileHeaderIntoZip(
+            BinaryWriter writer,
+            byte[] fileData,
+            uint crc32,
+            uint dosDateTime)
+        {
+            // Write the file header signature
+            writer.Write(LocalFileHeaderSignature);
+
+            // 2.0 - File is compressed using Deflate compression - Version needed to extract
+            writer.Write((ushort)20);
+
+            // 00 - Normal (-en) compression option was used.
+            writer.Write((ushort)0);
+
+            // 00 - The file is stored (no compression)
+            writer.Write((ushort)0);
+
+            // write date and time
+            writer.Write(dosDateTime);
+
+            // write file CRC32
+            writer.Write(crc32);
+
+            // write uncompressed size
+            writer.Write((uint)fileData.Length);
+
+            // write compressed size - same as uncompressed since file should have no compression
+            writer.Write((uint)fileData.Length);
+
+            // write file name length
+            var fileNameBytes = _signingSpecification.Encoding.GetBytes(_signingSpecification.SignaturePath);
+            var fileNameLength = fileNameBytes.Length;
+            writer.Write((ushort)fileNameLength);
+
+            // write extra field length
+            writer.Write((ushort)0);
+
+            // write file name
+            writer.Write(fileNameBytes);
+
+            // calculate the total length of data written
+            var writtenDataLength = LocalFileHeaderSizeWithoutSignature + ZipHeaderSignatureSize + fileNameLength;
+
+            return writtenDataLength;
+        }
+
+        /// <summary>
+        /// Writes a file into a zip using the writer starting at the writer.BaseStream.Position.
+        /// </summary>
+        /// <param name="writer">BinaryWriter to be used to write file.</param>
+        /// <param name="fileData">Byte[] of the file to be written into the zip.</param>
+        /// <returns>Number of total bytes written into the zip.</returns>
+        private static long WriteFileIntoZip(BinaryWriter writer, byte[] fileData)
+        {
+            // write file
+            writer.Write(fileData);
+
+            // calculate the total length of data written
+            var writtenDataLength = (long)fileData.Length;
+
+            return writtenDataLength;
+        }
+
+        /// <summary>
+        /// Writes a central directory header into a zip using the writer starting at the writer.BaseStream.Position.
+        /// </summary>
+        /// <param name="writer">BinaryWriter to be used to write file.</param>
+        /// <param name="fileData">Byte[] of the file to be written into the zip.</param>
+        /// <param name="fileTime">Last modified DateTime for the file data.</param>
+        /// <param name="fileOffset">Offset, in bytes, for the local file header of the corresponding file from the start of the archive.</param>
+        /// <returns>Number of total bytes written into the zip.</returns>
+        private static long WriteCentralDirectoryHeaderIntoZip(
+            BinaryWriter writer,
+            byte[] fileData,
+            uint crc32,
+            uint dosDateTime,
+            long fileOffset)
+        {
+            // Write the file header signature
+            writer.Write(CentralDirectoryHeaderSignature);
+
+            // 2.0 - File is compressed using Deflate compression - Version made by
+            writer.Write((ushort)20);
+
+            // 2.0 - File is compressed using Deflate compression - Version needed to extract
+            writer.Write((ushort)20);
+
+            // 00 - Normal (-en) compression option was used.
+            writer.Write((ushort)0);
+
+            // 00 - The file is stored (no compression)
+            writer.Write((ushort)0);
+
+            // write date and time
+            writer.Write(dosDateTime);
+
+            // write file CRC32
+            writer.Write(crc32);
+
+            // write uncompressed size
+            writer.Write((uint)fileData.Length);
+
+            // write compressed size - same as uncompressed since file should have no compression
+            writer.Write((uint)fileData.Length);
+
+            // write file name length
+            var fileNameBytes = _signingSpecification.Encoding.GetBytes(_signingSpecification.SignaturePath);
+            var fileNameLength = fileNameBytes.Length;
+            writer.Write((ushort)fileNameLength);
+
+            // write extra field length
+            writer.Write((ushort)0);
+
+            // write file comment length
+            writer.Write((ushort)0);
+
+            // write disk number start
+            writer.Write((ushort)0);
+
+            // write internal file attributes
+            writer.Write((ushort)0);
+
+            // write external file attributes
+            writer.Write((uint)0);
+
+            // write relative offset of local header
+            writer.Write((uint)fileOffset);
+
+            // write file name
+            writer.Write(fileNameBytes);
+
+            // calculate the total length of data written
+            var writtenDataLength = CentralDirectoryFileHeaderSizeWithoutSignature + ZipHeaderSignatureSize + fileNameLength;
+
+            return writtenDataLength;
+        }
+
+        /// <summary>
+        /// Writes the end of central directory header into a zip using the writer starting at the writer.BaseStream.Position.
+        /// The new end of central directory record will be based on the one at reader.BaseStream.Position.
+        /// </summary>
+        /// <param name="reader">BinaryWriter to be used to read exisitng end of central directory record.</param>
+        /// <param name="writer">BinaryWriter to be used to write file.</param>
+        /// <param name="sizeOfSignatureCentralDirectoryRecord">Size of the central directory header for the signature file.</param>
+        /// <param name="sizeOfSignatureFileHeaderAndData">Size of the signature file and the corresponding local file header.</param>
+        private static void ReadAndWriteUpdatedEndOfCentralDirectoryRecordIntoZip(
+            BinaryReader reader,
+            BinaryWriter writer,
+            long sizeOfSignatureCentralDirectoryRecord,
+            long sizeOfSignatureFileHeaderAndData)
+        {
+            // 4 bytes for disk numbers. same as before.
+            ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Position + 8L);
+
+            // Update central directory header counts by adding 1 for the signature entry
+            var centralDirectoryCountOnThisDisk = reader.ReadUInt16();
+            writer.Write((ushort)(centralDirectoryCountOnThisDisk + 1));
+
+            var centralDirectoryCountTotal = reader.ReadUInt16();
+            writer.Write((ushort)(centralDirectoryCountTotal + 1));
+
+            // Update size of central directory by adding size of signature central directory size
+            var sizeOfCentralDirectory = reader.ReadUInt32();
+            writer.Write((uint)(sizeOfCentralDirectory + sizeOfSignatureCentralDirectoryRecord));
+
+            // update the offset of central directory by adding the size of the signature local file header and data
+            var offsetOfCentralDirectory = reader.ReadUInt32();
+            writer.Write((uint)(offsetOfCentralDirectory + sizeOfSignatureFileHeaderAndData));
+
+            // read and write the rest of the data
+            ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Length);
         }
 
         private static bool CurrentStreamPositionMatchesByteSignature(BinaryReader reader, byte[] byteSignature)
@@ -342,6 +769,27 @@ namespace NuGet.Packaging.Signing
             stream.Seek(offset: startingOffset, origin: SeekOrigin.Begin);
 
             return true;
+        }
+
+        /// <summary>
+        /// Converts a DateTime value into a unit in the MS-DOS date time format.
+        /// Reference - https://docs.microsoft.com/en-us/cpp/c-runtime-library/32-bit-windows-time-date-formats
+        /// Reference - https://source.dot.net/#System.IO.Compression/System/IO/Compression/ZipHelper.cs,91
+        /// </summary>
+        /// <param name="dateTime">DateTime value to be converted.</param>
+        /// <returns>uint representing the MS-DOS equivalent date time.</returns>
+        private static uint DateTimeToDosTime(DateTime dateTime)
+        {
+            // DateTime must be Convertible to DosTime
+            Debug.Assert(ValidZipDate_YearMin <= dateTime.Year && dateTime.Year <= ValidZipDate_YearMax);
+
+            var ret = ((dateTime.Year - ValidZipDate_YearMin) & 0x7F);
+            ret = (ret << 4) + dateTime.Month;
+            ret = (ret << 5) + dateTime.Day;
+            ret = (ret << 5) + dateTime.Hour;
+            ret = (ret << 6) + dateTime.Minute;
+            ret = (ret << 5) + (dateTime.Second / 2); // only 5 bits for second, so we only have a granularity of 2 sec.
+            return (uint)ret;
         }
     }
 }
