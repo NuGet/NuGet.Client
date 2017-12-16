@@ -863,8 +863,9 @@ function Test-CreateVsPathContextWithConfiguration {
     <add key="globalPackagesFolder" value="{0}" />
   </config>
   <fallbackPackageFolders>
+    <clear />
     <add key="a" value="{1}" />
-	<add key="b" value="{2}" />
+    <add key="b" value="{2}" />
   </fallbackPackageFolders>
 </configuration>
 "@
