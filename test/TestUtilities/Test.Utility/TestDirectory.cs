@@ -34,10 +34,29 @@ namespace NuGet.Test.Utility
             }
         }
 
+        /// <summary>
+        /// Create a temp folder under .test/work/
+        /// </summary>
         public static TestDirectory Create()
         {
-            string parentPath = null;
             var root = TestFileSystemUtility.NuGetTestFolder;
+            return Create(root);
+        }
+
+        /// <summary>
+        /// Create a temp folder under %TEMP%
+        /// </summary>
+        public static TestDirectory CreateInTemp()
+        {
+            var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "NuGetTestFolder");
+            Directory.CreateDirectory(root);
+
+            return Create(root);
+        }
+
+        private static TestDirectory Create(string root)
+        {
+            string parentPath = null;
 
             // Loop until we find a directory that isn't taken (extremely unlikely this would need multiple guids).
             while (true)
