@@ -138,7 +138,7 @@ namespace NuGet.Packaging.Signing
 
                             var chainBuildingHasIssues = false;
                             IReadOnlyList<string> messages;
-                            if (SigningUtility.TryGetStatusMessage(chainStatusList, SigningUtility.InvalidCertificateFlags, out messages))
+                            if (SigningUtility.TryGetStatusMessage(chainStatusList, SigningUtility.NotIgnoredCertificateFlags, out messages))
                             {
                                 foreach (var message in messages)
                                 {
@@ -245,7 +245,7 @@ namespace NuGet.Packaging.Signing
                     var chainBuildingHasIssues = false;
                     IReadOnlyList<string> messages;
 
-                    var timestampInvalidCertificateFlags = SigningUtility.InvalidCertificateFlags |
+                    var timestampInvalidCertificateFlags = SigningUtility.NotIgnoredCertificateFlags |
                         (X509ChainStatusFlags.Revoked) |
                         (X509ChainStatusFlags.NotTimeValid) |
                         (X509ChainStatusFlags.CtlNotTimeValid);

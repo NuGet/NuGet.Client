@@ -296,8 +296,10 @@ namespace NuGet.Packaging.Signing
         }
 
         // Ignore some chain status flags to special case them
-        public const X509ChainStatusFlags InvalidCertificateFlags =
-            (~(X509ChainStatusFlags)0) &                      // Start with all flags, and exclude known special cases
+        internal const X509ChainStatusFlags NotIgnoredCertificateFlags =
+            // To set the not ignored flags we have to turn on all the flags and then manually turn off ignored flags
+            (~(X509ChainStatusFlags)0) &                      // Start with all flags
+            // These flags are ignored because they are known special cases
             (~X509ChainStatusFlags.NotTimeValid) &
             (~X509ChainStatusFlags.NotTimeNested) &           // Deprecated and therefore ignored.
             (~X509ChainStatusFlags.Revoked) &
@@ -305,7 +307,7 @@ namespace NuGet.Packaging.Signing
             (~X509ChainStatusFlags.CtlNotTimeValid) &
             (~X509ChainStatusFlags.OfflineRevocation);
 
-        public static bool ChainStatusListIncludesStatus(X509ChainStatus[] chainStatuses, X509ChainStatusFlags status, out IReadOnlyList<X509ChainStatus> chainStatus)
+        internal static bool ChainStatusListIncludesStatus(X509ChainStatus[] chainStatuses, X509ChainStatusFlags status, out IReadOnlyList<X509ChainStatus> chainStatus)
         {
             chainStatus = chainStatuses
                 .Where(x => (x.Status & status) != 0)
@@ -319,7 +321,7 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-        public static bool TryGetStatusMessage(X509ChainStatus[] chainStatuses, X509ChainStatusFlags status, out IReadOnlyList<string> messages)
+        internal static bool TryGetStatusMessage(X509ChainStatus[] chainStatuses, X509ChainStatusFlags status, out IReadOnlyList<string> messages)
         {
             messages = null;
 
