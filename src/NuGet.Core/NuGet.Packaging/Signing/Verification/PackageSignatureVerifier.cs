@@ -58,6 +58,7 @@ namespace NuGet.Packaging.Signing
                         SignatureLog.DebugLog(e.ToString())
                     };
                     trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
+                    valid = _settings.AllowUntrusted;
                 }
                 catch(CryptographicException e)
                 {
@@ -67,6 +68,7 @@ namespace NuGet.Packaging.Signing
                         SignatureLog.DebugLog(e.ToString())
                     };
                     trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
+                    valid = _settings.AllowUntrusted;
                 }
             }
             else if (_settings.AllowUnsigned)
@@ -78,6 +80,7 @@ namespace NuGet.Packaging.Signing
             {
                 var issues = new[] { SignatureLog.Issue(true, NuGetLogCode.NU3006, Strings.ErrorPackageNotSigned) };
                 trustResults.Add(new UnsignedPackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
+                valid = false;
             }
 
             return new VerifySignaturesResult(valid, trustResults);

@@ -295,7 +295,7 @@ namespace NuGet.Common
         /// <summary>
         /// Chain building failed for timestamp
         /// </summary>
-        NU3041 = 3041
+        NU3041 = 3041,
 
         /// <summary>
         /// Timestamp certificate not yet effective
