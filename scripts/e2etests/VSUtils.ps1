@@ -120,22 +120,39 @@ function ExecuteCommand
     )
 
     Write-Host $message
-
-    if ($args)
-    {
-        Write-Host 'Executing command ' $command ' with arguments: ' $args
-        $dte2.ExecuteCommand($command, $args)
+    $success = false
+    $numberOfTries = 0
+    do {
+        try
+        {            
+            $numberOfTries++
+            Write-Host "Attempt # $numberOfTries"
+            if ($args)
+            {
+                Write-Host 'Executing command ' $command ' with arguments: ' $args
+                $dte2.ExecuteCommand($command, $args)
+                start-sleep $waitTime
+                $success = $true
+            }
+            else
+            {
+                Write-Host 'Executing command ' $command ' without arguments'
+                $dte2.ExecuteCommand($command)
+                start-sleep $waitTime
+                $success = $true
+            }
+        }
+        catch
+        {
+            Write-Host "$command threw an exception : " $_.Exception.Messsage
+            Write-Host "Will wait for $waitTime seconds and retry"
+            $success = $false
+            # In examples like loading of a tool window, the window is not fully loaded when ExecuteCommand returns
+            # So, the caller can choose to wait if needed. Not passing will result in no wait
+            start-sleep $waitTime
+        }
     }
-    else
-    {
-        Write-Host 'Executing command ' $command ' without arguments'
-        $dte2.ExecuteCommand($command)
-    }
-
-
-    # In examples like loading of a tool window, the window is not fully loaded when ExecuteCommand returns
-    # So, the caller can choose to wait if needed. Not passing will result in no wait
-    start-sleep $waitTime
+    until (($success -eq $true) -or ($numberOfTries -gt 2))
 }
 
 function GetVSIXInstallerPath
