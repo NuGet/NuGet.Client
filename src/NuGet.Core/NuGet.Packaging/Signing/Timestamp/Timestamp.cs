@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using NuGet.Common;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -31,10 +32,29 @@ namespace NuGet.Packaging.Signing
         public DateTimeOffset GeneralizedTime { get; }
 
         /// <summary>
-        /// Timestamp SignerInfo.
+        /// A SignedCms object holding the timestamp and SignerInfo.
         /// </summary>
-        public SignerInfo SignerInfo { get; }
+        public SignedCms SignedCms { get; }
 
+        /// <summary>
+        /// SignerInfo for this timestamp.
+        /// </summary>
+        public SignerInfo SignerInfo => SignedCms.SignerInfos[0];
+
+        /// <summary>
+        /// Timestamp token info for this timestamp.
+        /// </summary>
+        internal Rfc3161TimestampTokenInfo TstInfo { get; }
+
+        /// <summary>
+        /// Default constructor. Limits are set to current time.
+        /// </summary>
+        public Timestamp()
+        {
+            UpperLimit = DateTimeOffset.Now;
+            GeneralizedTime = DateTimeOffset.Now;
+            UpperLimit = DateTimeOffset.Now;
+        }
 
         /// <summary>
         /// SignedCms containing a time stamp authority token reponse
@@ -42,10 +62,11 @@ namespace NuGet.Packaging.Signing
         /// <param name="timestampCms">SignedCms from Time Stamp Authority</param>
         public Timestamp(SignedCms timestampCms)
         {
-            SignerInfo = timestampCms?.SignerInfos[0] ?? throw new ArgumentNullException(nameof(timestampCms));
+            SignedCms = timestampCms ?? throw new ArgumentNullException(nameof(timestampCms));
 
             if (Rfc3161TimestampVerificationUtility.TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
             {
+                TstInfo = tstInfo;
                 GeneralizedTime = tstInfo.Timestamp;
 
                 var accuracyInMilliseconds = Rfc3161TimestampVerificationUtility.GetAccuracyInMilliseconds(tstInfo);
@@ -54,7 +75,7 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                throw new TimestampException(SignatureLog.InvalidTimestampInSignatureError(Strings.TimestampFailureInvalidContentType).ToLogMessage());
+                throw new TimestampException(NuGetLogCode.NU3050, Strings.TimestampFailureInvalidContentType);
             }
         }
 #endif

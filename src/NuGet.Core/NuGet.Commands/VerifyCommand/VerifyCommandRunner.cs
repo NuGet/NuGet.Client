@@ -39,7 +39,7 @@ namespace NuGet.Commands
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
 
                 var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders();
-                var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.CommandDefaultPolicy);
+                var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
 
 
                 foreach (var package in packagesToVerify)

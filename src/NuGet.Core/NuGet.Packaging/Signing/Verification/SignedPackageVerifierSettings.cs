@@ -44,12 +44,8 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public static SignedPackageVerifierSettings Default { get; } = AllowAll;
 
-
         public static SignedPackageVerifierSettings VSClientDefaultPolicy { get; } = new SignedPackageVerifierSettings(allowUnsigned: true, allowUntrusted: true, allowIgnoreTimestamp: true, failWithMultupleTimestamps: false, allowNoTimestamp: true);
 
-        public static SignedPackageVerifierSettings CommandDefaultPolicy { get; } = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultupleTimestamps: false, allowNoTimestamp: true);
-
-        public static SignedPackageVerifierSettings ServerDefaultPolicy { get; } = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultupleTimestamps: true, allowNoTimestamp: false);
-
+        public static SignedPackageVerifierSettings VerifyCommandDefaultPolicy { get; } = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultupleTimestamps: false, allowNoTimestamp: true);
     }
 }

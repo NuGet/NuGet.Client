@@ -21,29 +21,15 @@ namespace NuGet.Packaging.Signing
 
 #if IS_DESKTOP
 
-        internal static Tuple<DateTimeOffset, DateTimeOffset> GetTimeStampLimits(Rfc3161TimestampTokenInfo tstInfo)
-        {
-            var tstInfoGenTime = tstInfo.Timestamp;
-            var accuracyInMilliseconds = GetAccuracyInMilliseconds(tstInfo);
-
-            var timestampUpperGenTime = tstInfoGenTime.AddMilliseconds(accuracyInMilliseconds);
-            var timestampLowerGenTime = tstInfoGenTime.Subtract(TimeSpan.FromMilliseconds(accuracyInMilliseconds));
-
-            return new Tuple<DateTimeOffset, DateTimeOffset>(timestampUpperGenTime, timestampLowerGenTime);
-        }
-
         internal static bool ValidateSignerCertificateAgainstTimestamp(
             X509Certificate2 signerCertificate,
-            Tuple<DateTimeOffset, DateTimeOffset> limits)
+            Timestamp timestamp)
         {
-            var timestampLowerGenTime = limits.Item1;
-            var timestampUpperGenTime = limits.Item2;
-
             DateTimeOffset signerCertExpiry = DateTime.SpecifyKind(signerCertificate.NotAfter, DateTimeKind.Local);
             DateTimeOffset signerCertBegin = DateTime.SpecifyKind(signerCertificate.NotBefore, DateTimeKind.Local);
 
-            return timestampUpperGenTime < signerCertExpiry &&
-                timestampLowerGenTime > signerCertBegin;
+            return timestamp.UpperLimit < signerCertExpiry &&
+                timestamp.LowerLimit > signerCertBegin;
         }
 
         internal static bool TryReadTSTInfoFromSignedCms(

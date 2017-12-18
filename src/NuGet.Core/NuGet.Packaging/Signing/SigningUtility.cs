@@ -271,22 +271,22 @@ namespace NuGet.Packaging.Signing
             return buildSuccess && !IsCertificateValidityPeriodInTheFuture(certificate);
         }
 
-        internal static bool IsTimestampValid(byte[] data, bool failIfInvalid, List<SignatureLog> issues, SignerInfo timestampSignerInfo, Rfc3161TimestampTokenInfo tstInfo, SigningSpecifications spec)
+        internal static bool IsTimestampValid(Timestamp timestamp, byte[] data, bool failIfInvalid, List<SignatureLog> issues, SigningSpecifications spec)
         {
             var isValid = true;
-            if (!tstInfo.HasMessageHash(data))
+            if (!timestamp.TstInfo.HasMessageHash(data))
             {
                 issues.Add(SignatureLog.Issue(failIfInvalid, NuGetLogCode.NU3053, Strings.TimestampFailureInvalidHash));
                 isValid = false;
             }
 
-            if (!spec.AllowedHashAlgorithmOids.Contains(timestampSignerInfo.DigestAlgorithm.Value))
+            if (!spec.AllowedHashAlgorithmOids.Contains(timestamp.SignerInfo.DigestAlgorithm.Value))
             {
                 issues.Add(SignatureLog.Issue(failIfInvalid, NuGetLogCode.NU3052, Strings.TimestampFailureInvalidHashAlgorithmOid));
                 isValid = false;
             }
 
-            if (IsCertificateValidityPeriodInTheFuture(timestampSignerInfo.Certificate))
+            if (IsCertificateValidityPeriodInTheFuture(timestamp.SignerInfo.Certificate))
             {
                 issues.Add(SignatureLog.Issue(failIfInvalid, NuGetLogCode.NU3044, Strings.TimestampNotYetValid));
                 isValid = false;

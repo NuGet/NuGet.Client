@@ -12,11 +12,22 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// Exceptions that are generated while creating a package timestamp.
     /// </summary>
-    public class TimestampException : Exception, ILogMessageException
+    public class TimestampException : SignatureException
     {
         private readonly ILogMessage _logMessage;
 
-        public TimestampException() : base()
+        public TimestampException()
+            : base(string.Empty)
+        {
+        }
+
+        public TimestampException(NuGetLogCode code, string message)
+            : base(code, message)
+        {
+        }
+
+        public TimestampException(string message)
+            : this(NuGetLogCode.NU3000, message)
         {
         }
 
@@ -26,7 +37,7 @@ namespace NuGet.Packaging.Signing
             _logMessage = logMessage ?? throw new ArgumentNullException(nameof(logMessage));
         }
 
-        public ILogMessage AsLogMessage()
+        public override ILogMessage AsLogMessage()
         {
             return _logMessage;
         }
