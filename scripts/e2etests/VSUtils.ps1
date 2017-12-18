@@ -57,7 +57,7 @@ function KillRunningInstancesOfVS
 {
     $processName = 'devenv'
     Write-Host "Kill any running instances of $processName..."
-    (Get-Process "$processName" -ErrorAction SilentlyContinue) | Kill -ErrorAction SilentlyContinue
+    (Get-Process "$processName" -ErrorAction SilentlyContinue) | Stop-Process -ErrorAction SilentlyContinue -Force
 
     WaitForProcessExit -ProcessName "$processName" -TimeoutInSeconds 30
 }

@@ -23,8 +23,6 @@ if ($success -eq $false) {
     exit 1
 }
 
-KillRunningInstancesOfVS
-
 $VSIXSrcPath = Join-Path $NuGetDropPath 'NuGet.Tools.vsix'
 $VSIXPath = Join-Path $FuncTestRoot 'NuGet.Tools.vsix'
 
@@ -42,6 +40,7 @@ else {
     $numberOfTries = 0
     $success = $false
     do {
+        KillRunningInstancesOfVS
         $numberOfTries++
         Write-Host "Attempt # $numberOfTries to downgrade VSIX..."
         $success = DowngradeVSIX $NuGetVSIXID $VSVersion $ProcessExitTimeoutInSeconds
@@ -55,6 +54,7 @@ else {
 $numberOfTries = 0
 $success = $false
 do {
+    KillRunningInstancesOfVS
     $numberOfTries++
     Write-Host "Attempt # $numberOfTries to install VSIX..."
     $success = InstallVSIX $VSIXPath $VSVersion $ProcessExitTimeoutInSeconds
