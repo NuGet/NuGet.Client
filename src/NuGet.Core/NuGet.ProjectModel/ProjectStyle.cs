@@ -21,9 +21,9 @@ namespace NuGet.ProjectModel
         PackageReference = 2,
 
         /// <summary>
-        /// CommandLineToolReference project
+        /// DotnetToolReference project
         /// </summary>
-        CommandLineToolReference = 3,
+        DotnetToolReference = 3,
 
         /// <summary>
         /// DotnetCliToolReference "project"

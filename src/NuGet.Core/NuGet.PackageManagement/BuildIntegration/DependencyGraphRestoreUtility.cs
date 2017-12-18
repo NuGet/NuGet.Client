@@ -185,7 +185,7 @@ namespace NuGet.PackageManagement
             // Restore
             var specs = await project.GetPackageSpecsAsync(context);
             var spec = specs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
-                || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson);
+                || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson); // Don't handle global tools in VS. 
 
             var result = await PreviewRestoreAsync(
                 solutionManager,
@@ -251,7 +251,7 @@ namespace NuGet.PackageManagement
                     if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
                         packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
                         packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
-                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone)
+                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone) // Don't add global tools to global restore specs, double check how this would work with solutions
                     {
                         dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
                     }

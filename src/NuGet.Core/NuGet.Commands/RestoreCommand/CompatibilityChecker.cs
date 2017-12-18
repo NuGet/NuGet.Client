@@ -60,7 +60,7 @@ namespace NuGet.Commands
             // * The Targets (TxMs) defined in the project.json, with no Runtimes
             // * All combinations of TxMs and Runtimes defined in the project.json
             // * Additional (TxMs, Runtime) pairs defined by the "supports" mechanism in project.json
-
+            System.Diagnostics.Debugger.Launch();
             var runtimeAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var compileAssemblies = new Dictionary<string, LibraryIdentity>(StringComparer.OrdinalIgnoreCase);
             var issues = new List<CompatibilityIssue>();
@@ -324,7 +324,9 @@ namespace NuGet.Commands
                 targetLibrary.ContentFiles.Count > 0 ||                               // Shared content
                 targetLibrary.ResourceAssemblies.Count > 0 ||                         // Resources (satellite package)
                 targetLibrary.Build.Count > 0 ||                                      // Build
-                targetLibrary.BuildMultiTargeting.Count > 0;                          // Cross targeting build
+                targetLibrary.BuildMultiTargeting.Count > 0 ||                        // Cross targeting build
+                targetLibrary.ToolsAssemblies.Count > 0;                              // Tools assemblies
+                // TODO NK - Continue here
         }
 
         private CompatibilityData GetCompatibilityData(RestoreTargetGraph graph, LibraryIdentity libraryId)

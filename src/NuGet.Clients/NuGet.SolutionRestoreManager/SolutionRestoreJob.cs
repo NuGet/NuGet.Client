@@ -345,13 +345,6 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private bool IsProjectBuildIntegrated(PackageSpec packageSpec)
-        {
-            return packageSpec.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference ||
-                packageSpec.RestoreMetadata?.ProjectStyle == ProjectStyle.ProjectJson ||
-                packageSpec.RestoreMetadata?.ProjectStyle == ProjectStyle.DotnetCliTool;
-        }
-
         // This event could be raised from multiple threads. Only perform thread-safe operations
         private void PackageRestoreManager_PackageRestored(
             object sender,

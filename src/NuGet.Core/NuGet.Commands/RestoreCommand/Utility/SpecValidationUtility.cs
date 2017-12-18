@@ -113,8 +113,8 @@ namespace NuGet.Commands
                         ValidateProjectSpecNetCore(spec, files);
                         break;
 
-                    case ProjectStyle.CommandLineToolReference:
-                        ValidateProjectSpecNetCore(spec, files);
+                    case ProjectStyle.DotnetToolReference:
+                        ValidateProjectSpecNetCore(spec, files); // TODO NK - Should the name really be net core?
                         break;
 
                     case ProjectStyle.ProjectJson:

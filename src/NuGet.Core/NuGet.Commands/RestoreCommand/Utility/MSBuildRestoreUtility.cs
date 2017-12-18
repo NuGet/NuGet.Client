@@ -94,7 +94,7 @@ namespace NuGet.Commands
                     || spec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson
                     || spec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool
                     || spec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone
-                    || spec.RestoreMetadata.ProjectStyle == ProjectStyle.CommandLineToolReference)
+                    || spec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetToolReference)
                 {
                     validForRestore.Add(spec.RestoreMetadata.ProjectUniqueName);
                 }
@@ -196,7 +196,7 @@ namespace NuGet.Commands
                     || restoreType == ProjectStyle.Standalone
                     || restoreType == ProjectStyle.DotnetCliTool
                     || restoreType == ProjectStyle.ProjectJson
-                    || restoreType == ProjectStyle.CommandLineToolReference)
+                    || restoreType == ProjectStyle.DotnetToolReference)
                 {
 
                     foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
@@ -225,7 +225,7 @@ namespace NuGet.Commands
                 if (restoreType == ProjectStyle.PackageReference
                     || restoreType == ProjectStyle.Standalone
                     || restoreType == ProjectStyle.DotnetCliTool
-                    || restoreType == ProjectStyle.CommandLineToolReference)
+                    || restoreType == ProjectStyle.DotnetToolReference)
                 {
                     AddFrameworkAssemblies(result, items);
                     AddPackageReferences(result, items);
@@ -239,7 +239,7 @@ namespace NuGet.Commands
 
                 if (restoreType == ProjectStyle.PackageReference
                     || restoreType == ProjectStyle.Standalone
-                    || restoreType == ProjectStyle.CommandLineToolReference)
+                    || restoreType == ProjectStyle.DotnetToolReference)
                 {
                     // Set project version
                     result.Version = GetVersion(specItem);
@@ -279,7 +279,7 @@ namespace NuGet.Commands
                     || restoreType == ProjectStyle.ProjectJson
                     || restoreType == ProjectStyle.Unknown
                     || restoreType == ProjectStyle.PackagesConfig
-                    || restoreType == ProjectStyle.CommandLineToolReference)
+                    || restoreType == ProjectStyle.DotnetToolReference)
                 {
                     var projectDir = string.Empty;
 

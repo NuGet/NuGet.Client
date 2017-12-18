@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Core
         public static readonly PackageType Legacy = new PackageType("Legacy", version: EmptyVersion);
         public static readonly PackageType DotnetCliTool = new PackageType("DotnetCliTool", version: EmptyVersion);
         public static readonly PackageType Dependency = new PackageType("Dependency", version: EmptyVersion);
-        public static readonly PackageType CommandLineTool = new PackageType("CommandLineTool", version: EmptyVersion);
+        public static readonly PackageType DotnetTool = new PackageType("DotnetTool", version: EmptyVersion);
 
         public PackageType(string name, Version version)
         {

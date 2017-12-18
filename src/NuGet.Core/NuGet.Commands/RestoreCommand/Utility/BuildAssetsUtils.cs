@@ -79,7 +79,7 @@ namespace NuGet.Commands
             // Create an error file for MSBuild to stop the build.
             targetsXML = GenerateMultiTargetFrameworkWarning();
 
-            if (restoreType == ProjectStyle.PackageReference)
+            if (restoreType == ProjectStyle.PackageReference) // TODO NK - The global tools don't need to generate targets/props files
             {
                 propsXML = GenerateEmptyImportsFile();
             }
@@ -365,7 +365,7 @@ namespace NuGet.Commands
         {
             string path;
 
-            if (request.ProjectStyle == ProjectStyle.PackageReference)
+            if (request.ProjectStyle == ProjectStyle.PackageReference) // TODO NK - Should this return a null for the tools project style?
             {
                 // PackageReference style projects
                 var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);

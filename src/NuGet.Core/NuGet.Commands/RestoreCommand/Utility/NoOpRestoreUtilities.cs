@@ -120,7 +120,7 @@ namespace NuGet.Commands
                 return false;
             }
 
-            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.Standalone)
+            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.Standalone) // TODO NK - Verify targets for global tools? No
             {
                 var targetsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, "targets");
                 if (!File.Exists(targetsFilePath))
@@ -198,7 +198,7 @@ namespace NuGet.Commands
         /// </summary>
         public static string GetHash(RestoreRequest request)
         {
-            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool || request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool || request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference) // Don't be concerned with no-op for tools
             {
 
                 var uniqueName = request.DependencyGraphSpec.Restore.First();

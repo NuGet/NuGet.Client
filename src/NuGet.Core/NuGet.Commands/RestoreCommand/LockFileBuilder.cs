@@ -49,9 +49,10 @@ namespace NuGet.Commands
 
             var previousLibraries = previousLockFile?.Libraries.ToDictionary(l => Tuple.Create(l.Name, l.Version));
 
-            if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference)
+            if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference ||
+                project.RestoreMetadata?.ProjectStyle == ProjectStyle.DotnetToolReference)
             {
-                AddProjectFileDependenciesForNETCore(project, lockFile, targetGraphs);
+                AddProjectFileDependenciesForNETCore(project, lockFile, targetGraphs); // Change the name to non-net core
             }
             else
             {
