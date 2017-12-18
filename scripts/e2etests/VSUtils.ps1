@@ -105,7 +105,7 @@ function ExecuteCommand {
     )
 
     Write-Host $message
-    $success = false
+    $success = $false
     $numberOfTries = 0
     do {
         try {            
