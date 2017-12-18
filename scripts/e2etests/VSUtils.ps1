@@ -2,47 +2,40 @@ $VSInstallerProcessName = "VSIXInstaller"
 
 . "$PSScriptRoot\Utils.ps1"
 
-function GetVSFolderPath
-{
+function GetVSFolderPath {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion
     )
 
     $ProgramFilesPath = ${env:ProgramFiles}
-    if (Test-Path ${env:ProgramFiles(x86)})
-    {
+    if (Test-Path ${env:ProgramFiles(x86)}) {
         $ProgramFilesPath = ${env:ProgramFiles(x86)}
     }
 
     $VS15PreviewRelativePath = "Microsoft Visual Studio\Preview\Enterprise"
     $VS15StableRelativePath = "Microsoft Visual Studio\2017\Enterprise"
 
-    if ($VSVersion -eq "15.0")
-    {
+    if ($VSVersion -eq "15.0") {
         # Give preference to preview installation of VS2017
-        if (Test-Path (Join-Path $ProgramFilesPath $VS15PreviewRelativePath))
-        {
+        if (Test-Path (Join-Path $ProgramFilesPath $VS15PreviewRelativePath)) {
             $VSFolderPath = Join-Path $ProgramFilesPath $VS15PreviewRelativePath
         }
-        elseif (Test-Path (Join-Path $ProgramFilesPath $VS15StableRelativePath))
-        {
+        elseif (Test-Path (Join-Path $ProgramFilesPath $VS15StableRelativePath)) {
             $VSFolderPath = Join-Path $ProgramFilesPath $VS15StableRelativePath
         }
     }
-    else
-    {
+    else {
         $VSFolderPath = Join-Path $ProgramFilesPath ("Microsoft Visual Studio " + $VSVersion)
     }
     
     return $VSFolderPath
 }
 
-function GetVSIDEFolderPath
-{
+function GetVSIDEFolderPath {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion
     )
@@ -53,28 +46,24 @@ function GetVSIDEFolderPath
     return $VSIDEFolderPath
 }
 
-function KillRunningInstancesOfVS
-{
+function KillRunningInstancesOfVS {
     Get-Process | ForEach-Object {
-        if(-not [string]::IsNullOrEmpty($_.Path)) {
+        if (-not [string]::IsNullOrEmpty($_.Path)) {
             $processPath = $_.Path | Out-String
-            if($processPath.StartsWith("C:\Program Files (x86)\Microsoft Visual Studio", [System.StringComparison]::OrdinalIgnoreCase))
-            {
+            if ($processPath.StartsWith("C:\Program Files (x86)\Microsoft Visual Studio", [System.StringComparison]::OrdinalIgnoreCase)) {
                 Write-Host $processPath
                 Stop-Process $_ -ErrorAction SilentlyContinue -Force
-                if($_.HasExited) {
-                Write-Host "Killed process:" $_.Name
-                }
-        
+                if ($_.HasExited) {
+                    Write-Host "Killed process:" $_.Name
+                }        
             }        
         }
     }    
 }
 
-function LaunchVS
-{
+function LaunchVS {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion
     )
@@ -85,36 +74,32 @@ function LaunchVS
     start-process $VSPath
 }
 
-function GetDTE2
-{
+function GetDTE2 {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion
     )
 
-    Try
-    {
+    Try {
         $dte2 = [System.Runtime.InteropServices.Marshal]::GetActiveObject("VisualStudio.DTE." + $VSVersion)
         return $dte2
     }
-    Catch
-    {
+    Catch {
         return $null
     }
 }
 
-function ExecuteCommand
-{
+function ExecuteCommand {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         $dte2,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$command,
         [AllowEmptyString()]
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$args,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$message,
         $waitTime = 0
     )
@@ -123,42 +108,37 @@ function ExecuteCommand
     $success = false
     $numberOfTries = 0
     do {
-        try
-        {            
+        try {            
             $numberOfTries++
             Write-Host "Attempt # $numberOfTries"
-            if ($args)
-            {
+            if ($args) {
                 Write-Host 'Executing command ' $command ' with arguments: ' $args
                 $dte2.ExecuteCommand($command, $args)
+                # In examples like loading of a tool window, the window is not fully loaded when ExecuteCommand returns
+                # So, the caller can choose to wait if needed. Not passing will result in no wait
                 start-sleep $waitTime
                 $success = $true
             }
-            else
-            {
+            else {
                 Write-Host 'Executing command ' $command ' without arguments'
                 $dte2.ExecuteCommand($command)
                 start-sleep $waitTime
                 $success = $true
             }
         }
-        catch
-        {
+        catch {
             Write-Host "$command threw an exception : " $_.Exception.Messsage
             Write-Host "Will wait for $waitTime seconds and retry"
             $success = $false
-            # In examples like loading of a tool window, the window is not fully loaded when ExecuteCommand returns
-            # So, the caller can choose to wait if needed. Not passing will result in no wait
             start-sleep $waitTime
         }
     }
     until (($success -eq $true) -or ($numberOfTries -gt 2))
 }
 
-function GetVSIXInstallerPath
-{
+function GetVSIXInstallerPath {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion
     )
@@ -169,24 +149,22 @@ function GetVSIXInstallerPath
     return $VSIXInstallerPath
 }
 
-function GetDev15MEFCachePath
-{
+function GetDev15MEFCachePath {
     $cachePath = $env:localappdata
-    @( "Microsoft", "VisualStudio", "15.*", "ComponentModelCache" ) | %{ $cachePath = Join-Path $cachePath $_ }
+    @( "Microsoft", "VisualStudio", "15.*", "ComponentModelCache" ) | % { $cachePath = Join-Path $cachePath $_ }
 
     return $cachePath
 }
 
 
-function UninstallVSIX
-{
+function UninstallVSIX {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$vsixID,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds
     )
 
@@ -196,15 +174,12 @@ function UninstallVSIX
     Write-Host "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a /u:$vsixID"
     $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a /u:$vsixID"
 
-    if ($p.ExitCode -ne 0)
-    {
-        if ($p.ExitCode -eq 1002)
-        {
+    if ($p.ExitCode -ne 0) {
+        if ($p.ExitCode -eq 1002) {
             Write-Host "VSIX already uninstalled. Moving on to installing the VSIX! Exit code: $($p.ExitCode)"
             return $true
         }
-        else
-        {
+        else {
             Write-Error "Error uninstalling the VSIX! Exit code: $($p.ExitCode)"
             return $false
         }
@@ -216,15 +191,14 @@ function UninstallVSIX
     return $true
 }
 
-function DowngradeVSIX
-{
+function DowngradeVSIX {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$vsixID,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet("15.0")]
         [string]$VSVersion,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds
     )
 
@@ -234,15 +208,12 @@ function DowngradeVSIX
     Write-Host "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a /d:$vsixID"
     $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a /d:$vsixID"
 
-    if ($p.ExitCode -ne 0)
-    {
-        if ($p.ExitCode -eq 2001)
-        {
+    if ($p.ExitCode -ne 0) {
+        if ($p.ExitCode -eq 2001) {
             Write-Host "This VS2017 version does not support downgrade. Moving on to installing the VSIX! Exit code: $($p.ExitCode)" 
             return $true
         }
-        else 
-        {
+        else {
             Write-Error "Error downgrading the VSIX! Exit code: $($p.ExitCode)"
             return $false
         }
@@ -255,15 +226,14 @@ function DowngradeVSIX
 }
 
 
-function InstallVSIX
-{
+function InstallVSIX {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$vsixpath,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds
     )
 
@@ -273,8 +243,7 @@ function InstallVSIX
     Write-Host "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a $vsixpath"
     $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a $vsixpath"
 
-    if ($p.ExitCode -ne 0)
-    {
+    if ($p.ExitCode -ne 0) {
         Write-Error "Error installing the VSIX! Exit code:  $($p.ExitCode)"
         return $false
     }
@@ -286,8 +255,7 @@ function InstallVSIX
 }
 
 
-function ClearDev15MEFCache
-{
+function ClearDev15MEFCache {
     $dev15MEFCachePath = GetDev15MEFCachePath
 
     Write-Host "rm -r $dev15MEFCachePath..."
