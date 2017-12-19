@@ -53,7 +53,7 @@ namespace NuGet.Packaging.Signing
         {
             UpperLimit = DateTimeOffset.Now;
             GeneralizedTime = DateTimeOffset.Now;
-            UpperLimit = DateTimeOffset.Now;
+            LowerLimit = DateTimeOffset.Now;
         }
 
         /// <summary>
