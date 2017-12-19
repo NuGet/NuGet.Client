@@ -45,6 +45,8 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void CalculateCrc_WithZeroBytes_CrcXorsToMagicNumber()
         {
+            // From section 4.4.7 ("CRC-32") of the ZIP format specification
+            // https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
             const uint zipCrc32MagicNumber = 0xdebb20e3;
 
             var bytes = BitConverter.GetBytes(0U);
