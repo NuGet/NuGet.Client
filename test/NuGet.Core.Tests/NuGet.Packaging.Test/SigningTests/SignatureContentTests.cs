@@ -56,7 +56,7 @@ namespace NuGet.Packaging.Test
                 () => SignatureContent.Load(bytes, SigningSpecifications.V1));
 
             Assert.Equal(
-                "The package signature format version is unsupported.  Updating your client may solve this problem.",
+                "The package signature format version is not supported. Updating your client may solve this problem.",
                 exception.Message);
         }
 
