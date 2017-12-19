@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,11 +6,17 @@ using System.IO;
 
 namespace NuGet.Test.Utility
 {
+    /// <summary>
+    /// Temporary new folder under .test/work/
+    /// </summary>
     public class TestDirectory : IDisposable
     {
-        private TestDirectory(string path)
+        private readonly string _parentPath;
+
+        private TestDirectory(string path, string parentPath)
         {
             Path = path;
+            _parentPath = parentPath;
             Info = new DirectoryInfo(path);
         }
 
@@ -19,23 +25,73 @@ namespace NuGet.Test.Utility
 
         public void Dispose()
         {
-            TestFileSystemUtility.DeleteRandomTestFolder(Path);
+            // Try to delete the sub folder first, avoid removing
+            // the parent folder containing extra test info
+            // if the sub folder cannot be removed.
+            if (TestFileSystemUtility.DeleteRandomTestFolder(Path))
+            {
+                TestFileSystemUtility.DeleteRandomTestFolder(_parentPath);
+            }
         }
 
-        public static TestDirectory Create(string path = null)
+        /// <summary>
+        /// Create a temp folder under .test/work/
+        /// </summary>
+        public static TestDirectory Create()
         {
-            var randomFolderName = Guid.NewGuid().ToString();
+            var root = TestFileSystemUtility.NuGetTestFolder;
+            return Create(root);
+        }
 
-            path = string.IsNullOrWhiteSpace(path) ? System.IO.Path.Combine(TestFileSystemUtility.NuGetTestFolder, randomFolderName) : path;
+        /// <summary>
+        /// Create a temp folder under %TEMP%
+        /// </summary>
+        public static TestDirectory CreateInTemp()
+        {
+            var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "NuGetTestFolder");
+            Directory.CreateDirectory(root);
 
-            if (Directory.Exists(path))
+            return Create(root);
+        }
+
+        private static TestDirectory Create(string root)
+        {
+            string parentPath = null;
+
+            // Loop until we find a directory that isn't taken (extremely unlikely this would need multiple guids).
+            while (true)
             {
-                throw new InvalidOperationException("Guid collision");
+                var guid = Guid.NewGuid().ToString();
+
+                // Use a shorter path to this easier when debugging
+                parentPath = System.IO.Path.Combine(root, guid.Split('-')[0]);
+
+                if (Directory.Exists(parentPath))
+                {
+                    // If a collision happens use the full guid
+                    parentPath = System.IO.Path.Combine(root, guid);
+
+                    if (!Directory.Exists(parentPath))
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
             }
 
+            Directory.CreateDirectory(parentPath);
+
+            // Record what created this folder in case there is a problem with clean up.
+            File.WriteAllText(System.IO.Path.Combine(parentPath, "testStack.txt"), Environment.StackTrace);
+
+            // Create a random sub folder to use, this keeps tests from relying on the folder name.
+            var path = System.IO.Path.Combine(parentPath, Guid.NewGuid().ToString().Split('-')[0]);
             Directory.CreateDirectory(path);
 
-            return new TestDirectory(path);
+            return new TestDirectory(path, parentPath);
         }
 
         public static implicit operator string(TestDirectory directory)

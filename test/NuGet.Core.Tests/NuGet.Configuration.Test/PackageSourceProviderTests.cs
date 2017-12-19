@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,7 +21,7 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            using (var nugetConfigFileFolder = TestDirectory.Create())
+            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
 
@@ -45,7 +45,7 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            using (var nugetConfigFileFolder = TestDirectory.Create())
+            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
 
@@ -67,7 +67,7 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            using (var nugetConfigFileFolder = TestDirectory.Create())
+            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
 
@@ -92,7 +92,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             //Create nuget.config that has active package source defined
-            using (var nugetConfigFileFolder = TestDirectory.Create())
+            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
 
@@ -296,7 +296,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithRelativePath()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -340,7 +340,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithRelativePathAndAddNewSource()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -386,7 +386,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithOneClear()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -436,9 +436,9 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SavePackageSourcesWithMoreCLear()
+        public void SavePackageSourcesWithMoreClear()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -492,7 +492,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithOnlyClear()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -542,7 +542,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithHierarchyClear()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // assert
                 var nugetConfigPath = "NuGet.Config";
@@ -606,7 +606,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_RetainUnavailableDisabledSources()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -659,7 +659,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_EnablesDisabledSources()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -1550,7 +1550,7 @@ namespace NuGet.Configuration.Test
         public void HighPrioritySourceDisabled()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 var configContent1 = @"<configuration>
     <disabledPackageSources>
@@ -1590,7 +1590,7 @@ namespace NuGet.Configuration.Test
         public void LowPrioritySourceDisabled()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 var configContent1 = @"<configuration>
     <disabledPackageSources>
@@ -1629,7 +1629,7 @@ namespace NuGet.Configuration.Test
         public void V2NotDisabled()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 var configContent = @"<configuration>
     <packageSources>
@@ -1659,7 +1659,7 @@ namespace NuGet.Configuration.Test
         public void AddPackageSourcesWithConfigFile()
         {
 
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -1701,7 +1701,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_AddDisabledSourceToTheConfigContainingSource()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var config1Contents =
@@ -1760,7 +1760,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_WritesToTheSettingsFileWithTheNearestPriority()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var config1Contents =
@@ -1835,7 +1835,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_UpdatesSourceInAllConfigs()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var config1Contents =
@@ -1913,7 +1913,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_AddsNewSourcesToTheSettingWithLowestPriority()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var config1Contents =
@@ -1992,7 +1992,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_AddsOrderingForCollapsedFeeds()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2069,7 +2069,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void DisabledMachineWideSourceByDefault()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2122,7 +2122,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_DisabledOneMachineWideSource()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2168,7 +2168,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void DisabledMachineWideSourceByDefaultWithNull()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
@@ -2189,7 +2189,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSourceEmptyConfigFileOnUserMachine()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2219,7 +2219,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSourceLocalConfigFileOnUserMachine()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2253,7 +2253,7 @@ namespace NuGet.Configuration.Test
 
         public void SavePackageSource_IgnoreSettingBeforeClear()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2293,7 +2293,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_ThrowWhenConfigReadOnly()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2332,7 +2332,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void DefaultPushSourceInNuGetConfig()
         {
-            using (TestDirectory mockBaseDirectory = TestDirectory.Create())
+            using (TestDirectory mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 string configContentsWithDefault =
@@ -2378,7 +2378,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSources_DoesNotDecryptPassword()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -2417,7 +2417,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSources_DoesNotLoadClearedSource()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>

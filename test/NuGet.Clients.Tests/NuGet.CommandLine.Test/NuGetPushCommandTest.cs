@@ -128,9 +128,13 @@ namespace NuGet.CommandLine.Test
         {
             string nugetexe = Util.GetNuGetExePath();
 
-            using (TestDirectory packageDirectory = TestDirectory.Create())
-            using (TestDirectory source = TestDirectory.Create())
+            using (var root = TestDirectory.Create())
             {
+                var packageDirectory = Path.Combine(root, "packages");
+                var source = Path.Combine(root, "source");
+                Directory.CreateDirectory(packageDirectory);
+                Directory.CreateDirectory(source);
+
                 // Arrange
                 string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string config = $@"<?xml version='1.0' encoding='utf-8'?>
