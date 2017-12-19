@@ -120,6 +120,11 @@ namespace NuGet.Common
         NU1203 = 1203,
 
         /// <summary>
+        /// incompatible project type-package type combination
+        /// </summary>
+        NU1210 = 1210,
+
+        /// <summary>
         /// Package MinClientVersion did not match.
         /// </summary>
         NU1401 = 1401,

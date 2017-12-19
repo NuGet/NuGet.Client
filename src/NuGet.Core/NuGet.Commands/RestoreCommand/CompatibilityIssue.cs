@@ -77,6 +77,21 @@ namespace NuGet.Commands
                 projectFrameworks);
         }
 
+        public static CompatibilityIssue IncompatibleProjectPackageCombination(
+            PackageIdentity project,
+            NuGetFramework framework,
+            string runtimeIdentifier,
+            IEnumerable<NuGetFramework> projectFrameworks)
+        {
+            return new CompatibilityIssue(
+                CompatibilityIssueType.ProjectWithTooManyReferences,
+                project,
+                string.Empty,
+                framework,
+                runtimeIdentifier,
+                projectFrameworks);
+        }
+
         public override string ToString()
         {
             // NOTE(anurse): Why not just use Format's implementation as ToString? I feel like ToString should be
@@ -133,6 +148,14 @@ namespace NuGet.Commands
                             Package.Id);
 
                 return FormatMessage(message, supports, noSupports);
+            } else if(Type == CompatibilityIssueType.ProjectWithTooManyReferences)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture,
+                       Strings.Error_ProjectWithTooManyDependencies,
+                       Package.Id,
+                       1);
+
+                return FormatMessage(message, string.Empty, string.Empty);
             }
 
             return null;
@@ -218,6 +241,7 @@ namespace NuGet.Commands
     {
         ReferenceAssemblyNotImplemented,
         PackageIncompatible,
-        ProjectIncompatible
+        ProjectIncompatible,
+        ProjectWithTooManyReferences
     }
 }

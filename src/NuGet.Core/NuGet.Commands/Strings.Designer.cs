@@ -260,6 +260,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Project {0} cannot contain more than {1} package references..
+        /// </summary>
+        internal static string Error_ProjectWithTooManyDependencies {
+            get {
+                return ResourceManager.GetString("Error_ProjectWithTooManyDependencies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to find project information for &apos;{0}&apos;. The project file may be invalid or missing targets required for restore..
         /// </summary>
         internal static string Error_UnableToFindProjectInfo {

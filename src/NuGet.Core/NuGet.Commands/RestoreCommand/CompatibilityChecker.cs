@@ -75,7 +75,7 @@ namespace NuGet.Commands
                 {
                     // Get the full library
                     var localMatch = node.Data?.Match as LocalMatch;
-                    if (localMatch == null || !IsProjectCompatible(localMatch.LocalLibrary) || !IsProjectPackageCompatible(localMatch.LocalLibrary))
+                    if (localMatch == null || !IsProjectCompatible(localMatch.LocalLibrary))
                     {
                         var available = new List<NuGetFramework>();
 
@@ -94,6 +94,27 @@ namespace NuGet.Commands
 
                         issues.Add(issue);
                         await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1201, issue, graph));
+                    }
+                    if (localMatch == null || !IsProjectPackageCompatible(localMatch.LocalLibrary))
+                    {
+
+                        var available = new List<NuGetFramework>();
+
+                        // If the project info is available find all available frameworks
+                        if (localMatch?.LocalLibrary != null)
+                        {
+                            available = GetProjectFrameworks(localMatch.LocalLibrary);
+                        }
+
+                        // Create issue
+                        var issue = CompatibilityIssue.IncompatibleProjectPackageCombination(
+                            new PackageIdentity(node.Key.Name, node.Key.Version),
+                            graph.Framework,
+                            graph.RuntimeIdentifier,
+                            available);
+
+                        issues.Add(issue);
+                        await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1210, issue, graph));
                     }
 
                     // Skip further checks on projects
@@ -123,7 +144,7 @@ namespace NuGet.Commands
                     continue;
                 }
 
-                if (!IsCompatible(compatibilityData))
+                if (!IsPackageCompatible(compatibilityData))
                 {
                     var available = GetPackageFrameworks(compatibilityData, graph);
 
@@ -315,7 +336,7 @@ namespace NuGet.Commands
             return true;
         }
 
-        private bool IsCompatible(CompatibilityData compatibilityData)
+        private bool IsPackageCompatible(CompatibilityData compatibilityData)
         {
             // A package is compatible if it has...
             return
