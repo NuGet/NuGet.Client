@@ -38,34 +38,14 @@ namespace NuGet.Packaging.Signing
             return new SignatureLog(LogLevel.Debug, NuGetLogCode.Undefined, message);
         }
 
-        public static SignatureLog InvalidInputError(string message)
+        public static SignatureLog Issue(bool fatal, NuGetLogCode code, string message)
         {
-            return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3001, message);
-        }
+            // Warning codes are 500 higher than error codes
+            code = fatal ? code : code + 500;
+            // A fatal issue should be an error, otherwise just a warning
+            var level = fatal ? LogLevel.Error : LogLevel.Warning;
 
-        public static SignatureLog InvalidTimestampInSignatureError(string message)
-        {
-            return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3050, message);
-        }
-
-        public static SignatureLog InvalidPackageError(string message)
-        {
-            return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3002, message);
-        }
-
-        public static SignatureLog UntrustedRootError(string message)
-        {
-            return new SignatureLog(LogLevel.Error, NuGetLogCode.NU3002, message);
-        }
-
-        public static SignatureLog SignatureInformationUnavailableWarning(string message)
-        {
-            return new SignatureLog(LogLevel.Warning, NuGetLogCode.NU3502, message);
-        }
-
-        public static SignatureLog TrustOfSignatureCannotBeProvenWarning(string message)
-        {
-            return new SignatureLog(LogLevel.Warning, NuGetLogCode.NU3502, message);
+            return new SignatureLog(level, code, message);
         }
 
         public ILogMessage ToLogMessage()

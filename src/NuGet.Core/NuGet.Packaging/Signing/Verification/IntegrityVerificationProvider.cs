@@ -13,43 +13,45 @@ namespace NuGet.Packaging.Signing
 {
     public class IntegrityVerificationProvider : ISignatureVerificationProvider
     {
-        public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, CancellationToken token)
+        public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
-            return VerifyPackageIntegrityAsync(package, signature);
+            return VerifyPackageIntegrityAsync(package, signature, settings);
         }
 
 #if IS_DESKTOP
-        private async Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, Signature signature)
+        private async Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings)
         {
-            var status = SignatureVerificationStatus.Invalid;
+            var status = SignatureVerificationStatus.Untrusted;
             var issues = new List<SignatureLog>();
 
             var validHashOids = SigningSpecifications.V1.AllowedHashAlgorithmOids;
             var signatureHashOid = signature.SignatureContent.HashAlgorithm.ConvertToOidString();
-            if (!validHashOids.Contains(signatureHashOid, StringComparer.InvariantCultureIgnoreCase))
+            if (validHashOids.Contains(signatureHashOid, StringComparer.InvariantCultureIgnoreCase))
             {
-                issues.Add(SignatureLog.InvalidPackageError(Strings.SignatureFailureInvalidHashAlgorithmOid));
+                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureHashAlgorithm, signature.SignatureContent.HashAlgorithm)));
+
+                try
+                {
+                    await package.ValidateIntegrityAsync(signature.SignatureContent, CancellationToken.None);
+                    status = SignatureVerificationStatus.Trusted;
+                }
+                catch (Exception e)
+                {
+                    status = SignatureVerificationStatus.Invalid;
+                    issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3015, Strings.SignaturePackageIntegrityFailure));
+                    issues.Add(SignatureLog.DebugLog(e.ToString()));
+                }
+            }
+            else
+            {
+                issues.Add(SignatureLog.Issue(!settings.AllowUntrusted, NuGetLogCode.NU3013, Strings.SignatureFailureInvalidHashAlgorithmOid));
                 issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureDebug_HashOidFound, signatureHashOid)));
-                return new SignedPackageVerificationResult(status, signature, issues);
-            }
-
-            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureHashAlgorithm, signature.SignatureContent.HashAlgorithm)));
-
-            try
-            {
-                await package.ValidateIntegrityAsync(signature.SignatureContent, CancellationToken.None);
-                status = SignatureVerificationStatus.Trusted;
-            }
-            catch (Exception e)
-            {
-                issues.Add(SignatureLog.InvalidPackageError(Strings.SignaturePackageIntegrityFailure));
-                issues.Add(SignatureLog.DebugLog(e.ToString()));
             }
 
             return new SignedPackageVerificationResult(status, signature, issues);
         }
 #else
-        private Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, Signature signature)
+        private Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings)
         {
             throw new NotSupportedException();
         }

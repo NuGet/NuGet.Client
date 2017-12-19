@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using NuGet.Common;
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
 #endif
+
 
 namespace NuGet.Packaging.Signing
 {
@@ -82,7 +84,7 @@ namespace NuGet.Packaging.Signing
         {
             if (cms.SignerInfos.Count != 1)
             {
-                throw new InvalidOperationException(Strings.Error_NotOnePrimarySignature);
+                throw new SignatureException(NuGetLogCode.NU3014, Strings.Error_NotOnePrimarySignature);
             }
 
             return new Signature(cms);
@@ -130,8 +132,13 @@ namespace NuGet.Packaging.Signing
         /// <param name="signer">SignerInfo containing signature metadata</param>
         private static SignatureType GetSignatureType(SignerInfo signer)
         {
-            // TODO: Change this to use the new attributes that justin is adding.
-            return SignatureType.Author;
+            var commitmentTypeIndication = signer.SignedAttributes.GetAttributeOrDefault(Oids.CommitmentTypeIndication);
+            if (commitmentTypeIndication != null)
+            {
+                return AttributeUtility.GetCommitmentTypeIndication(commitmentTypeIndication);
+            }
+
+            return SignatureType.Unknown;
         }
 
         /// <summary>

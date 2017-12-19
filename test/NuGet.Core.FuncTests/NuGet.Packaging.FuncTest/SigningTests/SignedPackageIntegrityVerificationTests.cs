@@ -58,7 +58,7 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, entryCount - 1, entryCount - 1);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -85,7 +85,7 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, 0, 0);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -119,7 +119,7 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, entryCount - 1, 0);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -153,7 +153,7 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, 0, entryCount - 1);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -188,7 +188,7 @@ namespace NuGet.Packaging.FuncTest
                 var middleEntry = (entryCount - 1) / 2;
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, middleEntry - 1, middleEntry + 1);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -224,7 +224,7 @@ namespace NuGet.Packaging.FuncTest
                     }
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
                 using (var packageReader = new PackageArchiveReader(packageStream))
                 {
                     // Act
@@ -236,7 +236,7 @@ namespace NuGet.Packaging.FuncTest
                     result.Valid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                 }
             }
         }
@@ -288,7 +288,7 @@ namespace NuGet.Packaging.FuncTest
                     }
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
                 using (var packageReader = new PackageArchiveReader(packageStream))
                 {
                     // Act
@@ -300,7 +300,7 @@ namespace NuGet.Packaging.FuncTest
                     result.Valid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                 }
             }
         }
@@ -358,7 +358,7 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((ushort)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
@@ -370,7 +370,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                     }
                 }
             }
@@ -462,14 +462,14 @@ namespace NuGet.Packaging.FuncTest
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
-                        // skip till compressed size (20 bytes total)
-                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.Position + 20L, origin: SeekOrigin.Begin);
+                        // skip till uncompressed size (20 bytes total)
+                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.Position + 24L, origin: SeekOrigin.Begin);
 
-                        // change compressed size
+                        // change uncompressed size
                         writer.Write((uint)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
@@ -481,7 +481,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3001);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                     }
                 }
             }
@@ -547,7 +547,7 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((uint)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
@@ -559,7 +559,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                     }
                 }
             }
@@ -625,7 +625,7 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((ushort)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
@@ -637,7 +637,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                     }
                 }
             }
@@ -703,7 +703,7 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((ushort)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
@@ -715,7 +715,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                     }
                 }
             }
@@ -781,7 +781,7 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((uint)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
@@ -793,7 +793,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                     }
                 }
             }
@@ -862,7 +862,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
                     using (var packageReader = new PackageArchiveReader(packageStream))
                     {
                         // Act
@@ -874,7 +874,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                     }
                 }
             }

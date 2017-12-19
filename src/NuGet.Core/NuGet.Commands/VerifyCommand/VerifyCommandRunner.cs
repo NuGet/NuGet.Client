@@ -39,7 +39,7 @@ namespace NuGet.Commands
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
 
                 var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders();
-                var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
 
 
                 foreach (var package in packagesToVerify)
@@ -82,7 +82,11 @@ namespace NuGet.Commands
                     var warnings = logMessages.Count(m => m.Level == LogLevel.Warning);
 
                     logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_FinishedWithErrors, errors, warnings));
-                    logger.LogError(Environment.NewLine + Strings.VerifyCommand_Failed);
+
+                    if (errors > 0)
+                    {
+                        logger.LogError(Environment.NewLine + Strings.VerifyCommand_Failed);
+                    }
 
                     result = errors;
                 }

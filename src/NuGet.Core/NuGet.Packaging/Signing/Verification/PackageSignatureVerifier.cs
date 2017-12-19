@@ -43,21 +43,32 @@ namespace NuGet.Packaging.Signing
                     // Verify that the signatures are trusted
                     foreach (var signature in signatures)
                     {
-                        var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, token)));
+                        var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, _settings, token)));
                         signaturesAreValid &= IsValid(sigTrustResults, _settings.AllowUntrusted);
                         trustResults.AddRange(sigTrustResults);
                     }
 
                     valid = signaturesAreValid;
                 }
+                catch(SignatureException e)
+                {
+                    // SignatureException generated while parsing signatures
+                    var issues = new[] {
+                        SignatureLog.Issue(!_settings.AllowUntrusted, e.Code, e.Message),
+                        SignatureLog.DebugLog(e.ToString())
+                    };
+                    trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
+                    valid = _settings.AllowUntrusted;
+                }
                 catch(CryptographicException e)
                 {
                     // CryptographicException generated while parsing the SignedCms object
                     var issues = new[] {
-                        SignatureLog.InvalidInputError(Strings.ErrorPackageSignatureInvalid),
+                        SignatureLog.Issue(!_settings.AllowUntrusted, NuGetLogCode.NU3005, Strings.ErrorPackageSignatureInvalid),
                         SignatureLog.DebugLog(e.ToString())
                     };
-                    trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
+                    trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
+                    valid = _settings.AllowUntrusted;
                 }
             }
             else if (_settings.AllowUnsigned)
@@ -67,8 +78,9 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                var issues = new[] { SignatureLog.InvalidInputError(Strings.ErrorPackageNotSigned) };
+                var issues = new[] { SignatureLog.Issue(true, NuGetLogCode.NU3006, Strings.ErrorPackageNotSigned) };
                 trustResults.Add(new UnsignedPackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
+                valid = false;
             }
 
             return new VerifySignaturesResult(valid, trustResults);

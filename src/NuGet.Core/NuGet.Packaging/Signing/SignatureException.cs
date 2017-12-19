@@ -16,25 +16,28 @@ namespace NuGet.Packaging.Signing
 
         public PackageIdentity PackageIdentity { get; }
 
-        public SignatureException(string message)
-            : base(NuGetLogCode.NU3000, message)
-        {
-        }
+        public NuGetLogCode Code { get; }
 
         public SignatureException(NuGetLogCode code, string message)
             : base(code, message)
         {
+            Code = code;
+        }
+
+        public SignatureException(string message)
+            : this(NuGetLogCode.NU3000, message)
+        {
         }
 
         public SignatureException(IReadOnlyList<PackageVerificationResult> results, PackageIdentity package)
-            : base(string.Empty)
+            : this(string.Empty)
         {
             Results = results;
             PackageIdentity = package;
         }
 
         public SignatureException(string message, PackageIdentity package)
-            : base(message)
+            : this(message)
         {
             PackageIdentity = package;
         }

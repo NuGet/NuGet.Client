@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -22,37 +23,55 @@ using Xunit;
 namespace NuGet.Packaging.FuncTest
 {
     [Collection("Signing Funtional Test Collection")]
-    public class SignedPackageVerifierTests
+    public class IntegrityVerificationProviderTests
     {
         private const string _packageTamperedError = "Package integrity check failed.";
         private const string _packageUnsignedError = "Package is not signed.";
         private const string _packageInvalidSignatureError = "Package signature is invalid.";
-        private static readonly string _testCertPassword = Guid.NewGuid().ToString();
-
-        private SigningSpecifications _specification => SigningSpecifications.V1;
 
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private IList<ISignatureVerificationProvider> _trustProviders;
 
-        public SignedPackageVerifierTests(SigningTestFixture fixture)
+        public IntegrityVerificationProviderTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedTestCert = _testFixture.TrustedTestCertificate;
-            _trustProviders = _testFixture.TrustProviders;
+            _trustProviders = new List<ISignatureVerificationProvider>()
+            {
+                new IntegrityVerificationProvider()
+            };
         }
 
-        [CIOnlyFact]
-        public async Task Signer_VerifyOnSignedPackageAsync()
+        private static SignedPackageVerifierSettings GetSettingsPolicy(string policyString)
+        {
+            if (StringComparer.Ordinal.Equals(policyString, "command"))
+            {
+                return SignedPackageVerifierSettings.VerifyCommandDefaultPolicy;
+            }
+
+            if (StringComparer.Ordinal.Equals(policyString, "vs"))
+            {
+                return SignedPackageVerifierSettings.VSClientDefaultPolicy;
+            }
+
+            return SignedPackageVerifierSettings.Default;
+        }
+
+        [CIOnlyTheory]
+        [InlineData("command")]
+        [InlineData("vs")]
+        public async Task Signer_VerifyOnSignedPackageAsync(string policyString)
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
+            var policy = GetSettingsPolicy(policyString);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, policy);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -65,11 +84,14 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
-        public async Task Signer_VerifyOnTamperedPackage_FileDeletedAsync()
+        [CIOnlyTheory]
+        [InlineData("command")]
+        [InlineData("vs")]
+        public async Task Signer_VerifyOnTamperedPackage_FileDeletedAsync(string policyString)
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
+            var policy = GetSettingsPolicy(policyString);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -83,7 +105,7 @@ namespace NuGet.Packaging.FuncTest
                     zip.Entries.First().Delete();
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, policy);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -96,17 +118,20 @@ namespace NuGet.Packaging.FuncTest
                     result.Valid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                     totalErrorIssues.First().Message.Should().Be(_packageTamperedError);
                 }
             }
         }
 
-        [CIOnlyFact]
-        public async Task Signer_VerifyOnTamperedPackage_FileAddedAsync()
+        [CIOnlyTheory]
+        [InlineData("command")]
+        [InlineData("vs")]
+        public async Task Signer_VerifyOnTamperedPackage_FileAddedAsync(string policyString)
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
+            var policy = GetSettingsPolicy(policyString);
             var newEntryData = "malicious code";
             var newEntryName = "malicious file";
 
@@ -125,7 +150,7 @@ namespace NuGet.Packaging.FuncTest
                     newEntryDataStream.CopyTo(newEntryStream);
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, policy);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -138,17 +163,20 @@ namespace NuGet.Packaging.FuncTest
                     result.Valid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                     totalErrorIssues.First().Message.Should().Be(_packageTamperedError);
                 }
             }
         }
 
-        [CIOnlyFact]
-        public async Task Signer_VerifyOnTamperedPackage_FileAppendedAsync()
+        [CIOnlyTheory]
+        [InlineData("command")]
+        [InlineData("vs")]
+        public async Task Signer_VerifyOnTamperedPackage_FileAppendedAsync(string policyString)
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
+            var policy = GetSettingsPolicy(policyString);
             var extraData = "tampering data";
 
             using (var dir = TestDirectory.Create())
@@ -166,7 +194,7 @@ namespace NuGet.Packaging.FuncTest
                     extraStream.CopyTo(entryStream);
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, policy);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -179,17 +207,20 @@ namespace NuGet.Packaging.FuncTest
                     result.Valid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                     totalErrorIssues.First().Message.Should().Be(_packageTamperedError);
                 }
             }
         }
 
-        [CIOnlyFact]
-        public async Task Signer_VerifyOnTamperedPackage_FileTruncatedAsync()
+        [CIOnlyTheory]
+        [InlineData("command")]
+        [InlineData("vs")]
+        public async Task Signer_VerifyOnTamperedPackage_FileTruncatedAsync(string policyString)
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
+            var policy = GetSettingsPolicy(policyString);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -204,7 +235,7 @@ namespace NuGet.Packaging.FuncTest
                     entryStream.SetLength(entryStream.Length - 1);
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, policy);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -217,17 +248,20 @@ namespace NuGet.Packaging.FuncTest
                     result.Valid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                     totalErrorIssues.First().Message.Should().Be(_packageTamperedError);
                 }
             }
         }
 
-        [CIOnlyFact]
-        public async Task Signer_VerifyOnTamperedPackage_FileMetadataModifiedAsync()
+        [CIOnlyTheory]
+        [InlineData("command")]
+        [InlineData("vs")]
+        public async Task Signer_VerifyOnTamperedPackage_FileMetadataModifiedAsync(string policyString)
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
+            var policy = GetSettingsPolicy(policyString);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -245,7 +279,7 @@ namespace NuGet.Packaging.FuncTest
                     entry.LastWriteTime = entry.LastWriteTime.AddSeconds(2);
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, policy);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -258,17 +292,20 @@ namespace NuGet.Packaging.FuncTest
                     result.Valid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3002);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
                     totalErrorIssues.First().Message.Should().Be(_packageTamperedError);
                 }           
             }
         }
 
-        [CIOnlyFact]
-        public async Task Signer_VerifyOnTamperedPackage_SignatureRemovedAsync()
+        [CIOnlyTheory]
+        [InlineData("command", false)]
+        [InlineData("vs", true)]
+        public async Task Signer_VerifyOnTamperedPackage_SignatureRemovedAsync(string policyString, bool expectedValidity)
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
+            var policy = GetSettingsPolicy(policyString);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -283,7 +320,7 @@ namespace NuGet.Packaging.FuncTest
                     entry.Delete();
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, policy);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -293,20 +330,26 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
-                    resultsWithErrors.Count().Should().Be(1);
-                    totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3001);
-                    totalErrorIssues.First().Message.Should().Be(_packageUnsignedError);
+                    result.Valid.Should().Be(expectedValidity);
+                    if (!expectedValidity)
+                    {
+                        resultsWithErrors.Count().Should().Be(1);
+                        totalErrorIssues.Count().Should().Be(1);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3006);
+                        totalErrorIssues.First().Message.Should().Be(_packageUnsignedError);
+                    }
                 }
             }
         }
 
-        [CIOnlyFact]
-        public async Task Signer_VerifyOnTamperedPackage_SignatureTruncatedAsync()
+        [CIOnlyTheory]
+        [InlineData("command", false)]
+        [InlineData("vs", true)]
+        public async Task Signer_VerifyOnTamperedPackage_SignatureTruncatedAsync(string policyString, bool expectedValidity)
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
+            var policy = GetSettingsPolicy(policyString);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -321,7 +364,7 @@ namespace NuGet.Packaging.FuncTest
                     entryStream.SetLength(entryStream.Length - 1);
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.RequireSigned);
+                var verifier = new PackageSignatureVerifier(_trustProviders, policy);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -331,11 +374,14 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
-                    resultsWithErrors.Count().Should().Be(1);
-                    totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3001);
-                    totalErrorIssues.First().Message.Should().Be(_packageInvalidSignatureError);
+                    result.Valid.Should().Be(expectedValidity);
+                    if (!expectedValidity)
+                    {
+                        resultsWithErrors.Count().Should().Be(1);
+                        totalErrorIssues.Count().Should().Be(1);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
+                        totalErrorIssues.First().Message.Should().Be(_packageInvalidSignatureError);
+                    }
                 }
             }
         }

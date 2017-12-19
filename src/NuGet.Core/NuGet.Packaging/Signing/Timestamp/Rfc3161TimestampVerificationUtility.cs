@@ -23,19 +23,13 @@ namespace NuGet.Packaging.Signing
 
         internal static bool ValidateSignerCertificateAgainstTimestamp(
             X509Certificate2 signerCertificate,
-            Rfc3161TimestampTokenInfo tstInfo)
+            Timestamp timestamp)
         {
-            var tstInfoGenTime = tstInfo.Timestamp;
-            var accuracyInMilliseconds = GetAccuracyInMilliseconds(tstInfo);
-
-            var timestampUpperGenTime = tstInfoGenTime.AddMilliseconds(accuracyInMilliseconds);
-            var timestampLowerGenTime = tstInfoGenTime.Subtract(TimeSpan.FromMilliseconds(accuracyInMilliseconds));
-
             DateTimeOffset signerCertExpiry = DateTime.SpecifyKind(signerCertificate.NotAfter, DateTimeKind.Local);
             DateTimeOffset signerCertBegin = DateTime.SpecifyKind(signerCertificate.NotBefore, DateTimeKind.Local);
 
-            return timestampUpperGenTime < signerCertExpiry &&
-                timestampLowerGenTime > signerCertBegin;
+            return timestamp.UpperLimit < signerCertExpiry &&
+                timestamp.LowerLimit > signerCertBegin;
         }
 
         internal static bool TryReadTSTInfoFromSignedCms(
@@ -52,24 +46,13 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-        internal static DateTimeOffset GetUpperLimit(SignedCms timestampCms)
-        {
-            var result = DateTimeOffset.Now;
-            if (TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
-            {
-                var accuracyInMilliseconds = GetAccuracyInMilliseconds(tstInfo);
-                return tstInfo.Timestamp.AddMilliseconds(accuracyInMilliseconds);
-            }
-            return result;
-        }
-
         internal static double GetAccuracyInMilliseconds(Rfc3161TimestampTokenInfo tstInfo)
         {
             double accuracyInMilliseconds;
 
             if (!tstInfo.AccuracyInMicroseconds.HasValue)
             {
-                if (string.Equals(tstInfo.PolicyId, Oids.BaselineTimestampPolicyOid))
+                if (StringComparer.Ordinal.Equals(tstInfo.PolicyId, Oids.BaselineTimestampPolicyOid))
                 {
                     accuracyInMilliseconds = 1000;
                 }

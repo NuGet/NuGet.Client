@@ -56,6 +56,9 @@ namespace NuGet.Packaging.Signing
         // RFC 5126 "id-cti-ets-proofOfReceipt" https://tools.ietf.org/html/rfc5126.html#section-5.11.1
         public const string CommitmentTypeIdentifierProofOfReceipt = "1.2.840.113549.1.9.16.6.2";
 
+        // RFC 2634 "signing-certificate" http://tools.ietf.org/html/rfc2634#section-5.4
+        public const string SigningCertificate = "1.2.840.113549.1.9.16.2.12";
+
         // RFC 5126 "signing-certificate-v2" https://tools.ietf.org/html/rfc5126.html#page-34
         public const string SigningCertificateV2 = "1.2.840.113549.1.9.16.2.47";
 
