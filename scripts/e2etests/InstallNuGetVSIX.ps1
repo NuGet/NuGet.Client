@@ -23,8 +23,6 @@ if ($success -eq $false) {
     exit 1
 }
 
-KillRunningInstancesOfVS
-
 $VSIXSrcPath = Join-Path $NuGetDropPath 'NuGet.Tools.vsix'
 $VSIXPath = Join-Path $FuncTestRoot 'NuGet.Tools.vsix'
 
@@ -33,6 +31,7 @@ Copy-Item $VSIXSrcPath $VSIXPath
 # Since dev14 vsix is not uild with vssdk 3.0, we can uninstall and re installing
 # For dev 15, we upgrade an installed system component vsix
 if ($VSVersion -eq '14.0') {
+    KillRunningInstancesOfVS
     $success = UninstallVSIX $NuGetVSIXID $VSVersion $ProcessExitTimeoutInSeconds
     if ($success -eq $false) {
         exit 1
@@ -42,6 +41,7 @@ else {
     $numberOfTries = 0
     $success = $false
     do {
+        KillRunningInstancesOfVS
         $numberOfTries++
         Write-Host "Attempt # $numberOfTries to downgrade VSIX..."
         $success = DowngradeVSIX $NuGetVSIXID $VSVersion $ProcessExitTimeoutInSeconds
@@ -55,6 +55,7 @@ else {
 $numberOfTries = 0
 $success = $false
 do {
+    KillRunningInstancesOfVS
     $numberOfTries++
     Write-Host "Attempt # $numberOfTries to install VSIX..."
     $success = InstallVSIX $VSIXPath $VSVersion $ProcessExitTimeoutInSeconds
