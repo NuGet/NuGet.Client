@@ -59,6 +59,7 @@ namespace NuGet.Packaging.FuncTest
         /// </summary>
         /// <param name="testCert">Certificate to be used while signing the package</param>
         /// <param name="nupkg">Package to be signed</param>
+        /// <param name="dir">Directory for placing the signed package</param>
         /// <returns>Path to the signed copy of the package</returns>
         public static async Task<string> CreateSignedAndTimeStampedPackageAsync(X509Certificate2 testCert, SimpleTestPackageContext nupkg, string dir)
         {

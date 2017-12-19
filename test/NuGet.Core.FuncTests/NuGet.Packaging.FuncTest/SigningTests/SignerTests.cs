@@ -17,7 +17,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection("Signing Funtional Test Collection")]
+    [Collection("Signing Functional Test Collection")]
     public class SignerTests
     {
         private SigningTestFixture _testFixture;

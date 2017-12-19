@@ -17,7 +17,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection("Signing Funtional Test Collection")]
+    [Collection("Signing Functional Test Collection")]
     public class TimestampProviderTests
     {
         private const string _internalTimestamper = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
