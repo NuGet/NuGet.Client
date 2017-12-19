@@ -439,7 +439,7 @@ namespace NuGet.Packaging.Signing
 
         private static void AssertSignatureEntryHeaderMetadata(BinaryReader reader, CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader, string errorPrefix)
         {
-            var signatureEntryErrorCode = NuGetLogCode.NU3011;            
+            var signatureEntryErrorCode = NuGetLogCode.NU3011;
 
             // Assert general purpose bits to 0
             AssertUInt16(
@@ -522,7 +522,7 @@ namespace NuGet.Packaging.Signing
 
             var packageMetadata = ReadSignedArchiveMetadata(reader);
             var signatureBytes = signatureStream.ToArray();
-            var signatureCrc32 = (uint)Crc32.CalculateCrc(signatureBytes);
+            var signatureCrc32 = Crc32.CalculateCrc(signatureBytes);
             var signatureDosTime = DateTimeToDosTime(DateTime.Now);
 
             // ensure both streams are reset
