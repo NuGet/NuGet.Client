@@ -110,7 +110,7 @@ function ExecuteCommand {
     do {
         try {            
             $numberOfTries++
-            Write-Host "Attempt # $numberOfTries"
+            Write-Host "Attempt # $numberOfTries "
             if ($args) {
                 Write-Host 'Executing command ' $command ' with arguments: ' $args
                 $dte2.ExecuteCommand($command, $args)
@@ -127,7 +127,7 @@ function ExecuteCommand {
             }
         }
         catch {
-            Write-Host "$command threw an exception : " $_.Exception.Messsage
+            Write-Host "$command threw an exception: $PSItem" 
             Write-Host "Will wait for $waitTime seconds and retry"
             $success = $false
             start-sleep $waitTime
