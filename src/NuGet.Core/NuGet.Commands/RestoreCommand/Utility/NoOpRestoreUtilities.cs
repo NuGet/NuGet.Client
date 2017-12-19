@@ -95,7 +95,7 @@ namespace NuGet.Commands
             {
                 if (request.ProjectStyle == ProjectStyle.PackageReference
                     || request.ProjectStyle == ProjectStyle.Standalone
-                    || request.ProjectStyle == ProjectStyle.ProjectJson)
+                    || request.ProjectStyle == ProjectStyle.ProjectJson) // We don't need a cache for global tools restore, no no-op for tools restore
                 {
                     projectCacheFilePath = GetBuildIntegratedProjectCacheFilePath(request);
                 }

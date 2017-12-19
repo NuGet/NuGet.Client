@@ -75,7 +75,7 @@ namespace NuGet.Commands
                 {
                     // Get the full library
                     var localMatch = node.Data?.Match as LocalMatch;
-                    if (localMatch == null || !IsProjectCompatible(localMatch.LocalLibrary))
+                    if (localMatch == null || !IsProjectCompatible(localMatch.LocalLibrary) || !IsProjectPackageCompatible(localMatch.LocalLibrary))
                     {
                         var available = new List<NuGetFramework>();
 
@@ -236,7 +236,8 @@ namespace NuGet.Commands
                 graph.Conventions.Patterns.ResourceAssemblies,
                 graph.Conventions.Patterns.CompileRefAssemblies,
                 graph.Conventions.Patterns.RuntimeAssemblies,
-                graph.Conventions.Patterns.ContentFiles
+                graph.Conventions.Patterns.ContentFiles,
+                graph.Conventions.Patterns.ToolsAssemblies
             };
 
             foreach (var pattern in patterns)
@@ -301,11 +302,24 @@ namespace NuGet.Commands
             }
         }
 
+        private static bool IsProjectPackageCompatible(Library library)
+        {
+            var projectRestoreStyle = library.Items["NuGet.ProjectModel.RestoreMetadata.ProjectStyle"];
+
+            if (projectRestoreStyle.Equals(ProjectStyle.DotnetToolReference)) {
+                if (library.Dependencies.Count() > 1)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         private bool IsCompatible(CompatibilityData compatibilityData)
         {
             // A package is compatible if it has...
             return
-                HasCompatibleAssets(compatibilityData.TargetLibrary) ||
+                HasCompatibleAssets(compatibilityData.TargetLibrary) ||           
                 !compatibilityData.Files.Any(p =>
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
                     || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase));                       // No assemblies at all (for any TxM)

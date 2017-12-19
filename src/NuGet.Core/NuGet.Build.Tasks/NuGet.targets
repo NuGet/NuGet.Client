@@ -457,7 +457,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreSettings"
-          Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' "
+          Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' OR '$(RestoreProjectStyle)' == 'DotnetToolReference' "
           DependsOnTargets="_GetRestoreSettingsOverrides;_GetRestoreSettingsCurrentProject;_GetRestoreSettingsAllFrameworks"
           Returns="$(_OutputSources);$(_OutputPackagesPath);$(_OutputFallbackFolders);$(_OutputConfigFilePaths)">
 
@@ -496,7 +496,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreSettingsCurrentProject"
-    Condition=" '$(TargetFrameworks)' == '' AND '$(RestoreProjectStyle)' == 'PackageReference' "
+    Condition=" '$(TargetFrameworks)' == '' AND ( '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'DotnetToolReference' ) "
     DependsOnTargets="_GetRestoreSettingsPerFramework"
     Returns="@(_RestoreSettingsPerFramework)">
   </Target>
@@ -508,7 +508,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreSettingsAllFrameworks"
-    Condition=" '$(TargetFrameworks)' != '' AND '$(RestoreProjectStyle)' == 'PackageReference' "
+    Condition=" '$(TargetFrameworks)' != '' AND ( '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'DotnetToolReference' ) "
     DependsOnTargets="_GetRestoreTargetFrameworksAsItems;_GetRestoreProjectStyle"
     Returns="@(_RestoreSettingsPerFramework)">
 
