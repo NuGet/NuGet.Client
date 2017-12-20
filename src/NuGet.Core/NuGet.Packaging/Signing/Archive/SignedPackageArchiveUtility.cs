@@ -24,11 +24,6 @@ namespace NuGet.Packaging.Signing
         /// <returns>true if the given archive is signed</returns>
         private static bool IsSigned(BinaryReader reader)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
             try
             {
                 // Look for EOCD signature, typically is around 22 bytes from the end
@@ -42,31 +37,17 @@ namespace NuGet.Packaging.Signing
 
                 // Look for signature central directory record
                 reader.BaseStream.Seek(offset: offsetOfStartOfCD, origin: SeekOrigin.Begin);
+                CentralDirectoryHeader header;
 
-                var ReadingCentralDirectoryHeaders = true;
-                while (ReadingCentralDirectoryHeaders)
+                while (CentralDirectoryHeader.TryRead(reader, out header))
                 {
-                    var centralDirectoryHeaderSignature = reader.ReadUInt32();
-                    if (centralDirectoryHeaderSignature != SignedPackageArchiveIOUtility.CentralDirectoryHeaderSignature)
-                    {
-                        throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
-                    }
+                    var isUtf8 = IsUtf8(header.GeneralPurposeBitFlag);
+                    var fileName = GetString(header.FileName, isUtf8);
 
-                    // Skip until file name length, 24 bytes after signature of central directory record
-                    reader.BaseStream.Seek(offset: 24, origin: SeekOrigin.Current);
-                    var filenameLength = reader.ReadUInt16();
-
-                    // Skip to read local header offset (12 bytes after filename length field)
-                    reader.BaseStream.Seek(offset: 12, origin: SeekOrigin.Current);
-
-                    var localHeaderOffset = reader.ReadUInt32();
-
-                    var filename = reader.ReadBytes(filenameLength);
-                    var filenameString = Encoding.ASCII.GetString(filename);
-                    if (string.Equals(filenameString, _signingSpecification.SignaturePath, StringComparison.Ordinal))
+                    if (string.Equals(fileName, _signingSpecification.SignaturePath, StringComparison.Ordinal))
                     {
                         // Go to local file header
-                        reader.BaseStream.Seek(offset: localHeaderOffset, origin: SeekOrigin.Begin);
+                        reader.BaseStream.Seek(header.RelativeOffsetOfLocalHeader, SeekOrigin.Begin);
 
                         // Make sure file header exists there
                         var fileHeaderSignature = reader.ReadUInt32();
@@ -77,9 +58,6 @@ namespace NuGet.Packaging.Signing
 
                         return true;
                     }
-
-                    SignedPackageArchiveIOUtility.SeekReaderForwardToMatchByteSignature(reader,
-                        BitConverter.GetBytes(SignedPackageArchiveIOUtility.CentralDirectoryHeaderSignature));
                 }
             }
             // Ignore any exception. If something is thrown it means the archive is either not valid or not signed
@@ -103,12 +81,27 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Verifies that a signed package archive's signature is valid and it has not been tampered with.
         /// </summary>
-        /// <param name="reader">Signed zip archive to verify</param>
+        /// <param name="reader">Signed package to verify</param>
         /// <param name="hashAlgorithm">Hash algorithm to be used to hash data.</param>
         /// <param name="expectedHash">Hash value of the original data.</param>
         /// <returns>True if package archive's hash matches the expected hash</returns>
-        public static bool VerifySignedZipIntegrity(BinaryReader reader, HashAlgorithm hashAlgorithm, byte[] expectedHash)
+        public static bool VerifySignedPackageIntegrity(BinaryReader reader, HashAlgorithm hashAlgorithm, byte[] expectedHash)
         {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            if (hashAlgorithm == null)
+            {
+                throw new ArgumentNullException(nameof(hashAlgorithm));
+            }
+
+            if (expectedHash == null || expectedHash.Length == 0)
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(reader));
+            }
+
             // Make sure it is signed with a valid signature file
             if (!IsSigned(reader))
             {
@@ -226,6 +219,20 @@ namespace NuGet.Packaging.Signing
         }
 
 #endif
+        internal static bool IsUtf8(uint generalPurposeBitFlags)
+        {
+            return (generalPurposeBitFlags & (1 << 11)) == 1;
+        }
+
+        internal static string GetString(byte[] bytes, bool isUtf8)
+        {
+            if (isUtf8)
+            {
+                return Encoding.UTF8.GetString(bytes);
+            }
+
+            return Encoding.ASCII.GetString(bytes);
+        }
 
         private static bool CompareHash(byte[] expectedHash, byte[] actualHash)
         {

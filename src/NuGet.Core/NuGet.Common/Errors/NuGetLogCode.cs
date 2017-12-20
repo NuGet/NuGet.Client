@@ -233,7 +233,7 @@ namespace NuGet.Common
         NU3006 = 3006,
 
         /// <summary>
-        /// Certificate chain does not build
+        /// ZIP entry is either not a regular file or is not stored (no compression)
         /// </summary>
         NU3011 = 3011,
 

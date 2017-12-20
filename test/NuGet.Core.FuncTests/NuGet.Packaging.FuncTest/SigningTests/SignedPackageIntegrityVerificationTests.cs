@@ -263,7 +263,7 @@ namespace NuGet.Packaging.FuncTest
                 }
 
                 // Assert
-                AssertSignatureEntryMetadaThrowsException(packageStream);
+                AssertSignatureEntryMetadataThrowsException(packageStream);
             }
         }
 
@@ -327,7 +327,37 @@ namespace NuGet.Packaging.FuncTest
                 }
 
                 // Assert
-                AssertSignatureEntryMetadaThrowsException(packageStream);
+                AssertSignatureEntryMetadataThrowsException(packageStream);
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidExternalFileAttributes()
+        {
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
+
+                using (var packageStream = new FileStream(signedPackagePath, FileMode.Open))
+                {
+                    using (var reader = new BinaryReader(packageStream, _specification.Encoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageStream, _specification.Encoding, leaveOpen: true))
+                    {
+                        var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
+                        var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
+
+                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.Position + 38L, origin: SeekOrigin.Begin);
+
+                        // change external file attributes
+                        writer.Write(0x20U);
+                    }
+
+                    AssertSignatureEntryMetadataThrowsException(packageStream);
+                }
             }
         }
 
@@ -404,7 +434,7 @@ namespace NuGet.Packaging.FuncTest
                     }
 
                     // Assert
-                    AssertSignatureEntryMetadaThrowsException(packageWriteStream);
+                    AssertSignatureEntryMetadataThrowsException(packageWriteStream);
                 }
             }
         }
@@ -436,7 +466,7 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((ushort)8);
 
                         // Assert
-                        AssertSignatureEntryMetadaThrowsException(packageWriteStream);
+                        AssertSignatureEntryMetadataThrowsException(packageWriteStream);
                     }                    
                 }
             }
@@ -515,7 +545,7 @@ namespace NuGet.Packaging.FuncTest
                     }
 
                     // Assert
-                    AssertSignatureEntryMetadaThrowsException(packageWriteStream);
+                    AssertSignatureEntryMetadataThrowsException(packageWriteStream);
                 }
             }
         }
@@ -593,7 +623,7 @@ namespace NuGet.Packaging.FuncTest
                     }
 
                     // Assert
-                    AssertSignatureEntryMetadaThrowsException(packageWriteStream);
+                    AssertSignatureEntryMetadataThrowsException(packageWriteStream);
                 }
             }
         }
@@ -671,7 +701,7 @@ namespace NuGet.Packaging.FuncTest
                     }
 
                     // Assert
-                    AssertSignatureEntryMetadaThrowsException(packageWriteStream);
+                    AssertSignatureEntryMetadataThrowsException(packageWriteStream);
                 }
             }
         }
@@ -749,7 +779,7 @@ namespace NuGet.Packaging.FuncTest
                     }
 
                     // Assert
-                    AssertSignatureEntryMetadaThrowsException(packageWriteStream);
+                    AssertSignatureEntryMetadataThrowsException(packageWriteStream);
                 }
             }
         }
@@ -827,7 +857,7 @@ namespace NuGet.Packaging.FuncTest
                     }
 
                     // Assert
-                    AssertSignatureEntryMetadaThrowsException(packageWriteStream);
+                    AssertSignatureEntryMetadataThrowsException(packageWriteStream);
                 }
             }
         }
@@ -907,12 +937,12 @@ namespace NuGet.Packaging.FuncTest
                     }
 
                     // Assert
-                    AssertSignatureEntryMetadaThrowsException(packageWriteStream);
+                    AssertSignatureEntryMetadataThrowsException(packageWriteStream);
                 }
             }
         }
 
-        private void AssertSignatureEntryMetadaThrowsException(Stream packageStream)
+        private void AssertSignatureEntryMetadataThrowsException(Stream packageStream)
         {
             using (var reader = new BinaryReader(packageStream, encoding: _specification.Encoding, leaveOpen: true))
             {

@@ -629,6 +629,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package signature file entry is invalid..
+        /// </summary>
+        internal static string SignatureInvalidExternalFileAttributes {
+            get {
+                return ResourceManager.GetString("SignatureInvalidExternalFileAttributes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid general purpose bit flags. Expected &apos;{0}&apos;, actual &apos;{1}&apos;..
         /// </summary>
         internal static string SignatureInvalidGeneralPurposeBits {
@@ -645,7 +654,7 @@ namespace NuGet.Packaging {
                 return ResourceManager.GetString("SignatureLocalFileHeaderInvalid", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to The signing certificate is not yet valid..
         /// </summary>
