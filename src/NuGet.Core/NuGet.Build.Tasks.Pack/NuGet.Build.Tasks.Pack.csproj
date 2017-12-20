@@ -130,15 +130,10 @@
     </ItemGroup>
   </Target>
 
-  <PropertyGroup Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">
-    <NuspecFile>NuGet.Build.Tasks.Pack.nuspec</NuspecFile>		
-    <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>		
-    <NuspecBasePath>$(OutputPath)</NuspecBasePath>		
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">
-    <NuspecFile>NuGet.Build.Tasks.Pack.XPlat.nuspec</NuspecFile>		
-    <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>		
-    <NuspecBasePath>$(OutputPath)</NuspecBasePath>		
+  <PropertyGroup>
+    <NuspecFile Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">NuGet.Build.Tasks.Pack.XPlat.nuspec</NuspecFile>
+    <NuspecFile Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">NuGet.Build.Tasks.Pack.nuspec</NuspecFile>
+    <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
+    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
   </PropertyGroup>
 </Project>

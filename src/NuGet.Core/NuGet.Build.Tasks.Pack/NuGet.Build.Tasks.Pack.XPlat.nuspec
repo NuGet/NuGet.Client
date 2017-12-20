@@ -9,6 +9,8 @@
   </metadata>
   <files>
     <file src="netstandard1.3\*.dll" target="CoreCLR\" />
+    <file src="netstandard1.3\**\NuGet.Build.Tasks.Pack.resources.dll" target="CoreCLR\" />
     <file src="netstandard1.3\NuGet.Build.Tasks.Pack.targets" target="buildCrossTargeting\NuGet.Build.Tasks.Pack.targets" />
+    <file src="netstandard1.3\NuGet.Build.Tasks.Pack.targets" target="build\NuGet.Build.Tasks.Pack.targets" />
   </files>
 </package>
