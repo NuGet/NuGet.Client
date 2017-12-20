@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,14 @@ namespace NuGet.RuntimeModel
 {
     public class RuntimeDependencySet : IEquatable<RuntimeDependencySet>
     {
+        /// <summary>
+        /// Package Id
+        /// </summary>
         public string Id { get; }
+
+        /// <summary>
+        /// Package dependencies
+        /// </summary>
         public IReadOnlyDictionary<string, RuntimePackageDependency> Dependencies { get; }
 
         public RuntimeDependencySet(string id)
@@ -22,20 +29,23 @@ namespace NuGet.RuntimeModel
         public RuntimeDependencySet(string id, IEnumerable<RuntimePackageDependency> dependencies)
         {
             Id = id;
-            Dependencies = new ReadOnlyDictionary<string, RuntimePackageDependency>(dependencies.ToDictionary(d => d.Id));
+            Dependencies = new ReadOnlyDictionary<string, RuntimePackageDependency>(dependencies.ToDictionary(d => d.Id, StringComparer.OrdinalIgnoreCase));
         }
 
         public bool Equals(RuntimeDependencySet other)
         {
-            // Breaking this up to ease debugging. The optimizer should be able to handle this, so don't refactor unless you have data :).
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
             if (other == null)
             {
                 return false;
             }
 
-
-            return string.Equals(other.Id, Id, StringComparison.Ordinal)
-                && Dependencies.OrderedEquals(other.Dependencies, p => p.Key, StringComparer.Ordinal);
+            return string.Equals(other.Id, Id, StringComparison.OrdinalIgnoreCase)
+                && Dependencies.OrderedEquals(other.Dependencies, p => p.Key, StringComparer.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)
@@ -46,7 +56,7 @@ namespace NuGet.RuntimeModel
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();
-            combiner.AddObject(Id);
+            combiner.AddObject(Id, StringComparer.OrdinalIgnoreCase);
             combiner.AddDictionary(Dependencies);
             return combiner.CombinedHash;
         }
