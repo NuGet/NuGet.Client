@@ -67,10 +67,6 @@ namespace NuGet.Commands
                 userPackageFolder,
                 token);
 
-            var localRepositories = new List<NuGetv3LocalRepository>();
-            localRepositories.Add(userPackageFolder);
-            localRepositories.AddRange(fallbackPackageFolders);
-
             // Check if any non-empty RIDs exist before reading the runtime graph (runtime.json).
             // Searching all packages for runtime.json and building the graph can be expensive.
             var hasNonEmptyRIDs = frameworkRuntimePairs.Any(
@@ -80,9 +76,13 @@ namespace NuGet.Commands
             // Resolve runtime dependencies
             if (hasNonEmptyRIDs || forceRuntimeGraphCreation)
             {
-                var runtimeGraphs = new List<RestoreTargetGraph>();
+                var localRepositories = new List<NuGetv3LocalRepository>();
+                localRepositories.Add(userPackageFolder);
+                localRepositories.AddRange(fallbackPackageFolders);
 
+                var runtimeGraphs = new List<RestoreTargetGraph>();
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
+
                 foreach (var graph in graphs)
                 {
                     // Get the runtime graph for this specific tfm graph
@@ -328,82 +328,41 @@ namespace NuGet.Commands
             return Task.WhenAll(resultGraphs);
         }
 
+        /// <summary>
+        /// Merge all runtime.json found in the flattened graph.
+        /// </summary>
         private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, IReadOnlyList<NuGetv3LocalRepository> localRepositories)
         {
-            // TODO: Caching!
-            RuntimeGraph runtimeGraph;
-            if (_request.RuntimeGraphCache.TryGetValue(graph.Framework, out runtimeGraph))
-            {
-                return runtimeGraph;
-            }
-
             _logger.LogVerbose(Strings.Log_ScanningForRuntimeJson);
-            runtimeGraph = RuntimeGraph.Empty;
+            var runtimeGraph = RuntimeGraph.Empty;
 
-            // maintain visited nodes to avoid duplicate runtime graph for the same node
-            var visitedNodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            graph.Graphs.ForEach(node =>
+            // Find runtime.json files using the flattened graph which is unique per id.
+            // Using the flattened graph ensures that only accepted packages will be used.
+            foreach (var node in graph.Flattened)
             {
-                var match = node?.Item?.Data?.Match;
-                if (match == null)
+                var match = node.Data?.Match;
+                if (match == null || match.Library.Type != LibraryType.Package)
                 {
-                    return;
-                }
-
-                    // Ignore runtime.json from rejected nodes
-                    if (node.Disposition == Disposition.Rejected)
-                {
-                    return;
-                }
-
-                    // ignore the same node again
-                    if (!visitedNodes.Add(match.Library.Name))
-                {
-                    return;
-                }
-
                     // runtime.json can only exist in packages
-                    if (match.Library.Type != LibraryType.Package)
-                {
-                    return;
+                    continue;
                 }
 
-                    // Locate the package in the local repository
-                    var info = NuGetv3LocalRepositoryUtility.GetPackage(localRepositories, match.Library.Name, match.Library.Version);
+                // Locate the package in the local repository
+                var info = NuGetv3LocalRepositoryUtility.GetPackage(localRepositories, match.Library.Name, match.Library.Version);
 
+                // Unresolved packages may not exist.
                 if (info != null)
                 {
-                    var package = info.Package;
-                    var nextGraph = LoadRuntimeGraph(package);
+                    var nextGraph = info.Package.RuntimeGraph;
                     if (nextGraph != null)
                     {
                         _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MergingRuntimes, match.Library));
                         runtimeGraph = RuntimeGraph.Merge(runtimeGraph, nextGraph);
                     }
                 }
-            });
-            _request.RuntimeGraphCache[graph.Framework] = runtimeGraph;
-            return runtimeGraph;
-        }
-
-        private RuntimeGraph LoadRuntimeGraph(LocalPackageInfo package)
-        {
-            var id = new PackageIdentity(package.Id, package.Version);
-            return _request.RuntimeGraphCacheByPackage.GetOrAdd(id, (x) => LoadRuntimeGraphCore(package));
-        }
-
-        private static RuntimeGraph LoadRuntimeGraphCore(LocalPackageInfo package)
-        {
-            var runtimeGraphFile = Path.Combine(package.ExpandedPath, RuntimeGraph.RuntimeGraphFileName);
-            if (File.Exists(runtimeGraphFile))
-            {
-                using (var stream = File.OpenRead(runtimeGraphFile))
-                {
-                    return JsonRuntimeFormat.ReadRuntimeGraph(stream);
-                }
             }
-            return null;
+
+            return runtimeGraph;
         }
     }
 }

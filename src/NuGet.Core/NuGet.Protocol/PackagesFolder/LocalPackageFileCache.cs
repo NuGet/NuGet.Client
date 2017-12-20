@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.RuntimeModel;
 
 namespace NuGet.Protocol
 {
@@ -33,6 +34,10 @@ namespace NuGet.Protocol
         // File exists cache, values are only added if they exist, missing files are not cached.
         private readonly ConcurrentDictionary<string, bool> _fileExistsCache
             = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
+
+        // Cache runtime.json files
+        private readonly ConcurrentDictionary<string, Lazy<RuntimeGraph>> _runtimeCache
+            = new ConcurrentDictionary<string, Lazy<RuntimeGraph>>(PathUtility.GetStringComparerBasedOnOS());
 
         public LocalPackageFileCache()
         {
@@ -84,6 +89,15 @@ namespace NuGet.Protocol
             }
 
             return exists;
+        }
+
+        /// <summary>
+        /// Read runtime.json from a package.
+        /// Returns null if runtime.json does not exist.
+        /// </summary>
+        public Lazy<RuntimeGraph> GetOrAddRuntimeGraph(string expandedPath)
+        {
+            return _runtimeCache.GetOrAdd(expandedPath, p => new Lazy<RuntimeGraph>(() => GetRuntimeGraph(p)));
         }
 
         /// <summary>
@@ -149,6 +163,23 @@ namespace NuGet.Protocol
             }
 
             return nuspec;
+        }
+
+        /// <summary>
+        /// Return runtime.json from a package.
+        /// </summary>
+        private RuntimeGraph GetRuntimeGraph(string expandedPath)
+        {
+            var runtimeGraphFile = Path.Combine(expandedPath, RuntimeGraph.RuntimeGraphFileName);
+            if (File.Exists(runtimeGraphFile))
+            {
+                using (var stream = File.OpenRead(runtimeGraphFile))
+                {
+                    return JsonRuntimeFormat.ReadRuntimeGraph(stream);
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -14,11 +13,9 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
-using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -30,11 +27,6 @@ namespace NuGet.Commands
         private readonly RestoreRequest _request;
 
         private bool _success = true;
-
-        private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
-
-        private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
-            = new ConcurrentDictionary<PackageIdentity, RuntimeGraph>(PackageIdentity.Comparer);
 
         private readonly Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> _includeFlagGraphs
             = new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>();
@@ -211,7 +203,8 @@ namespace NuGet.Commands
 
             var newDgSpecHash = NoOpRestoreUtilities.GetHash(_request);
 
-            if(_request.ProjectStyle == ProjectStyle.DotnetCliTool && _request.AllowNoOp) { // No need to attempt to resolve the tool if no-op is not allowed.
+            if (_request.ProjectStyle == ProjectStyle.DotnetCliTool && _request.AllowNoOp)
+            { // No need to attempt to resolve the tool if no-op is not allowed.
                 NoOpRestoreUtilities.UpdateRequestBestMatchingToolPathsIfAvailable(_request);
             }
 
@@ -240,7 +233,7 @@ namespace NuGet.Commands
             if (_request.ProjectStyle == ProjectStyle.DotnetCliTool)
             {
                 if (noOp) // Only if the hash matches, then load the lock file. This is a performance hit, so we need to delay it as much as possible.
-                { 
+                {
                     _request.ExistingLockFile = LockFileUtilities.GetLockFile(_request.LockFilePath, _logger);
                 }
                 else
@@ -559,8 +552,6 @@ namespace NuGet.Commands
                 _request,
                 _request.Project,
                 _request.ExistingLockFile,
-                _runtimeGraphCache,
-                _runtimeGraphCacheByPackage,
                 _logger);
 
             var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);

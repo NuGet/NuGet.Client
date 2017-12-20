@@ -320,5 +320,71 @@ namespace NuGet.Repositories.Test
                 Assert.False(ReferenceEquals(package1, package2));
             }
         }
+
+        [Fact]
+        public async Task NuGetv3LocalRepository_FindPackage_VerifyRuntimeGraphCached()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var id = "packageX";
+
+                var runtimeJsonX1 = @"{
+                  ""runtimes"": {
+                    ""unix"": {
+                            ""packageX"": {
+                                ""runtime.packageX"": ""1.0.0""
+                            }
+                          }
+                        },
+                ""supports"": {
+                    ""x1.app"": {
+                            ""uap10.0"": [
+                                ""win10-x86""
+                        ]
+                    }
+                   }
+                  }";
+
+                var package = new SimpleTestPackageContext(id, "1.0.0");
+                package.RuntimeJson = runtimeJsonX1;
+
+                var target = new NuGetv3LocalRepository(workingDir);
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    workingDir,
+                    PackageSaveMode.Defaultv3,
+                    package);
+
+                // Act
+                var packageResultA = target.FindPackage(id, NuGetVersion.Parse("1.0.0"));
+                var packageResultB = target.FindPackage(id, NuGetVersion.Parse("1.0.0"));
+
+                // Assert
+                Assert.True(ReferenceEquals(packageResultA.RuntimeGraph, packageResultB.RuntimeGraph));
+            }
+        }
+
+        [Fact]
+        public async Task NuGetv3LocalRepository_FindPackage_VerifyRuntimeGraphIsNullForNonExistantFile()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var id = "packageX";
+                var package = new SimpleTestPackageContext(id, "1.0.0");
+
+                var target = new NuGetv3LocalRepository(workingDir);
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    workingDir,
+                    PackageSaveMode.Defaultv3,
+                    package);
+
+                // Act
+                var packageResultA = target.FindPackage(id, NuGetVersion.Parse("1.0.0"));
+
+                // Assert
+                packageResultA.RuntimeGraph.Should().BeNull();
+            }
+        }
     }
 }

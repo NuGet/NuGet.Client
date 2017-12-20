@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Packaging;
+using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 namespace NuGet.Repositories
@@ -17,6 +18,7 @@ namespace NuGet.Repositories
         private readonly Lazy<NuspecReader> _nuspec;
         private readonly Lazy<IReadOnlyList<string>> _files;
         private readonly Lazy<string> _sha512;
+        private readonly Lazy<RuntimeGraph> _runtimeGraph;
 
         public LocalPackageInfo(
             string packageId,
@@ -27,7 +29,8 @@ namespace NuGet.Repositories
             string sha512Path,
             Lazy<NuspecReader> nuspec,
             Lazy<IReadOnlyList<string>> files,
-            Lazy<string> sha512)
+            Lazy<string> sha512,
+            Lazy<RuntimeGraph> runtimeGraph)
         {
             Id = packageId;
             Version = version;
@@ -38,6 +41,7 @@ namespace NuGet.Repositories
             _nuspec = nuspec;
             _files = files;
             _sha512 = sha512;
+            _runtimeGraph = runtimeGraph;
         }
 
         public string Id { get; }
@@ -68,6 +72,12 @@ namespace NuGet.Repositories
         /// SHA512 of the package.
         /// </summary>
         public string Sha512 => _sha512.Value;
+
+        /// <summary>
+        /// runtime.json
+        /// </summary>
+        /// <remarks>Returns null if runtime.json does not exist in the package.</remarks>
+        public RuntimeGraph RuntimeGraph => _runtimeGraph.Value;
 
         public override string ToString()
         {
