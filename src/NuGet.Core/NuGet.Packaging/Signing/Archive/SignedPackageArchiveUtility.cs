@@ -146,8 +146,8 @@ namespace NuGet.Packaging.Signing
                     var relativeOffsetOfLocalFileHeader = (uint)(reader.ReadUInt32() + record.ChangeInOffset);
                     SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(relativeOffsetOfLocalFileHeader));
 
-                    // We already read and hash the whole header, skip only filenameLength + extraFieldLength + fileCommentLength
-                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + record.HeaderSize - SignedPackageArchiveIOUtility.CentralDirectoryFileHeaderSizeWithoutSignature);
+                    // Continue hashing file name, extra field, and file comment fields.
+                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + record.HeaderSize - CentralDirectoryHeader.SizeInBytesOfFixedLengthFields);
                 }
 
                 reader.BaseStream.Seek(offset: metadata.EndOfCentralDirectory, origin: SeekOrigin.Begin);

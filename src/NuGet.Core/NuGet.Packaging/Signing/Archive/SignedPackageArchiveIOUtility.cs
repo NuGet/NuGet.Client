@@ -15,9 +15,6 @@ namespace NuGet.Packaging.Signing
 {
     public static class SignedPackageArchiveIOUtility
     {
-        // Central Directory file header size excluding signature, file name, extra field and file comment
-        internal const uint CentralDirectoryFileHeaderSizeWithoutSignature = 46;
-
         // Local file header size excluding signature, file name and extra field
         internal const uint LocalFileHeaderSizeWithoutSignature = 26;
 
@@ -260,7 +257,7 @@ namespace NuGet.Packaging.Signing
                 var centralDirectoryMetadata = new CentralDirectoryHeaderMetadata()
                 {
                     Filename = SignedPackageArchiveUtility.GetString(header.FileName, isUtf8),
-                    HeaderSize = header.GetSize(),
+                    HeaderSize = header.GetSizeInBytes(),
                     OffsetToFileHeader = header.RelativeOffsetOfLocalHeader,
                     Position = possibleSignatureCentralDirectoryRecordPosition
                 };
@@ -410,6 +407,18 @@ namespace NuGet.Packaging.Signing
             // check central directory file header
             AssertSignatureEntryHeaderMetadata(reader, signatureCentralDirectoryHeader, Strings.SignatureCentralDirectoryHeaderInvalid);
 
+            // Skip file name length (2 bytes), extra field length (2 bytes), file comment length (2 bytes),
+            // disk number start (2 bytes), and internal file attributes (2 bytes)
+            reader.BaseStream.Seek(offset: 10, origin: SeekOrigin.Current);
+
+            var externalFileAttributes = reader.ReadUInt32();
+            AssertValue(
+                expectedValue: 0U,
+                actualValue: externalFileAttributes,
+                errorCode: NuGetLogCode.NU3011,
+                errorMessagePrefix: Strings.SignatureCentralDirectoryHeaderInvalid,
+                errorMessageSuffix: Strings.SignatureInvalidExternalFileAttributes);
+
             // skip header signature (4 bytes) and version field (2 bytes)
             reader.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToFileHeader + 6L, origin: SeekOrigin.Begin);
 
@@ -451,18 +460,6 @@ namespace NuGet.Packaging.Signing
                     signatureEntryErrorCode,
                     string.Format(CultureInfo.CurrentCulture, errorPrefix, Strings.SignatureFileCompressed));
             }
-
-            // Skip file name length (2 bytes), extra field length (2 bytes), file comment length (2 bytes),
-            // disk number start (2 bytes), and internal file attributes (2 bytes)
-            reader.BaseStream.Seek(offset: 10, origin: SeekOrigin.Current);
-
-            actualValue = reader.ReadUInt32();
-            AssertValue(
-                expectedValue: 0U,
-                actualValue: actualValue,
-                errorCode: signatureEntryErrorCode,
-                errorMessagePrefix: errorPrefix,
-                errorMessageSuffix: Strings.SignatureInvalidExternalFileAttributes);
         }
 
         private static void AssertValue(
@@ -688,7 +685,7 @@ namespace NuGet.Packaging.Signing
             writer.Write(fileNameBytes);
 
             // calculate the total length of data written
-            var writtenDataLength = CentralDirectoryFileHeaderSizeWithoutSignature + ZipHeaderSignatureSize + fileNameLength;
+            var writtenDataLength = CentralDirectoryHeader.SizeInBytesOfFixedLengthFields + ZipHeaderSignatureSize + fileNameLength;
 
             return writtenDataLength;
         }

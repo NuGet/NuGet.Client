@@ -7,6 +7,8 @@ namespace NuGet.Packaging.Signing
 {
     internal sealed class CentralDirectoryHeader
     {
+        internal const uint SizeInBytesOfFixedLengthFields = 46;
+
         internal const uint Signature = 0x02014b50;
 
         internal ushort VersionMadeBy { get; private set; }
@@ -29,12 +31,12 @@ namespace NuGet.Packaging.Signing
         internal byte[] ExtraField { get; private set; }
         internal byte[] FileComment { get; private set; }
 
-        internal uint GetSize()
+        internal uint GetSizeInBytes()
         {
-            return SignedPackageArchiveIOUtility.CentralDirectoryFileHeaderSizeWithoutSignature
-                + FileNameLength
-                + ExtraFieldLength
-                + FileCommentLength;
+            return SizeInBytesOfFixedLengthFields +
+                FileNameLength +
+                ExtraFieldLength +
+                FileCommentLength;
         }
 
         internal static bool TryRead(BinaryReader reader, out CentralDirectoryHeader header)
