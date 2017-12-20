@@ -465,4 +465,7 @@ Valid from:</comment>
   <data name="TimestampNotYetValid" xml:space="preserve">
     <value>The timestamp signing certificate is not yet valid.</value>
   </data>
+  <data name="SignatureInvalidExternalFileAttributes" xml:space="preserve">
+    <value>The package signature file entry is invalid.</value>
+  </data>
 </root>

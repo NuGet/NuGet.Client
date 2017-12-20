@@ -1,16 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
     /// This class is used to hold metadata about the central directory archive structure
     /// </summary>
-    public class CentralDirectoryHeaderMetadata
+    public sealed class CentralDirectoryHeaderMetadata
     {
         /// <summary>
         /// Position in bytes of the corresponding central directory header relative to the start of the archive
@@ -34,7 +30,7 @@ namespace NuGet.Packaging.Signing
         public string Filename { get; set; }
 
         /// <summary>
-        /// Size of central directory header, in bytes, excluding the central directory header signature.
+        /// Size of central directory header, in bytes.
         /// </summary>
         public long HeaderSize { get; set; }
 

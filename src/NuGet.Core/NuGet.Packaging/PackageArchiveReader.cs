@@ -301,7 +301,7 @@ namespace NuGet.Packaging
             {
                 var hashAlgorithm = signatureContent.HashAlgorithm.GetHashProvider();
                 var expectedHash = Convert.FromBase64String(signatureContent.HashValue);
-                if (!SignedPackageArchiveUtility.VerifySignedZipIntegrity(reader, hashAlgorithm, expectedHash))
+                if (!SignedPackageArchiveUtility.VerifySignedPackageIntegrity(reader, hashAlgorithm, expectedHash))
                 {
                     throw new SignatureException(Strings.SignaturePackageIntegrityFailure, GetIdentity());
                 }
