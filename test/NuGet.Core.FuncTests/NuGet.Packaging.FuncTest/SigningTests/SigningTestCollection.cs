@@ -5,7 +5,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [CollectionDefinition("Signing Funtional Test Collection")]
+    [CollectionDefinition("Signing Functional Test Collection")]
     public class SigningTestCollection : ICollectionFixture<SigningTestFixture>
     {
         // This class has no code, and is never created. Its purpose is simply

@@ -51,9 +51,9 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public Timestamp()
         {
-            UpperLimit = DateTimeOffset.Now;
             GeneralizedTime = DateTimeOffset.Now;
-            UpperLimit = DateTimeOffset.Now;
+            UpperLimit = GeneralizedTime;
+            LowerLimit = GeneralizedTime;
         }
 
         /// <summary>

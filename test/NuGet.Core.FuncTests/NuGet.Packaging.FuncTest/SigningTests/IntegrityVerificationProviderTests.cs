@@ -22,7 +22,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection("Signing Funtional Test Collection")]
+    [Collection("Signing Functional Test Collection")]
     public class IntegrityVerificationProviderTests
     {
         private const string _packageTamperedError = "Package integrity check failed.";

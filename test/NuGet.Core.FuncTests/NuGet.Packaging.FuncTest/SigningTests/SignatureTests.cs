@@ -18,7 +18,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection("Signing Funtional Test Collection")]
+    [Collection("Signing Functional Test Collection")]
     public class SignatureTests
     {
         private SigningTestFixture _testFixture;
@@ -44,7 +44,7 @@ namespace NuGet.Packaging.FuncTest
             using (var dir = TestDirectory.Create())
             {
                 // Act
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(_trustedTestCert, nupkg, dir);
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(_trustedTestCert.Source.Cert, nupkg, dir);
 
                 // Assert
                 using (var stream = File.OpenRead(signedPackagePath))
