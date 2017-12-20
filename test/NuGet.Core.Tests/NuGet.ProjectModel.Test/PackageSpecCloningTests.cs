@@ -594,6 +594,7 @@ namespace NuGet.ProjectModel.Test
             dependency.Type = LibraryDependencyType.Default;
             dependency.IncludeType = LibraryIncludeFlags.None;
             dependency.SuppressParent = LibraryIncludeFlags.ContentFiles;
+            dependency.NoWarn = new List<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1001 };
             var imports = NuGetFramework.Parse("net45"); // This makes no sense in the context of fallback, just for testing :)
 
             var originalTargetFrameworkInformation = new TargetFrameworkInformation();
