@@ -12,8 +12,16 @@ namespace NuGet.RuntimeModel
 {
     public class RuntimeGraph : IEquatable<RuntimeGraph>
     {
-        private ConcurrentDictionary<Tuple<string, string>, bool> _areCompatible 
-            = new ConcurrentDictionary<Tuple<string, string>, bool>();
+        private readonly ConcurrentDictionary<RuntimeCompatKey, bool> _areCompatible
+            = new ConcurrentDictionary<RuntimeCompatKey, bool>();
+
+        private readonly ConcurrentDictionary<string, HashSet<string>> _expandCache
+            = new ConcurrentDictionary<string, HashSet<string>>(StringComparer.Ordinal);
+
+        private readonly ConcurrentDictionary<RuntimeDependencyKey, List<RuntimePackageDependency>> _dependencyCache
+            = new ConcurrentDictionary<RuntimeDependencyKey, List<RuntimePackageDependency>>();
+
+        private HashSet<string> _packagesWithDependencies;
 
         public static readonly string RuntimeGraphFileName = "runtime.json";
 
@@ -50,7 +58,7 @@ namespace NuGet.RuntimeModel
 
         public RuntimeGraph Clone()
         {
-            return new RuntimeGraph(Runtimes.Values.Select(r => r.Clone()), Supports.Values.Select( s => s.Clone()));
+            return new RuntimeGraph(Runtimes.Values.Select(r => r.Clone()), Supports.Values.Select(s => s.Clone()));
         }
 
         /// <summary>
@@ -89,7 +97,7 @@ namespace NuGet.RuntimeModel
             }
 
             // Overwrite with non-empty profiles from left
-            foreach (var compatProfile in left.Supports.Where(p => p.Value.RestoreContexts.Any()))
+            foreach (var compatProfile in left.Supports.Where(p => p.Value.RestoreContexts.Count > 0))
             {
                 supports[compatProfile.Key] = compatProfile.Value;
             }
@@ -97,9 +105,25 @@ namespace NuGet.RuntimeModel
             return new RuntimeGraph(runtimes, supports);
         }
 
+        /// <summary>
+        /// Find all compatible RIDs including the current RID.
+        /// </summary>
         public IEnumerable<string> ExpandRuntime(string runtime)
         {
-            // Could this be faster? Sure! But we can refactor once it works and has tests
+            return ExpandRuntimeCached(runtime);
+        }
+
+        private HashSet<string> ExpandRuntimeCached(string runtime)
+        {
+            return _expandCache.GetOrAdd(runtime, r => new HashSet<string>(ExpandRuntimeInternal(r), StringComparer.Ordinal));
+        }
+
+        /// <summary>
+        /// Expand runtimes in a BFS walk. This ensures that nearest RIDs are returned first.
+        /// Ordering is important for finding the nearest runtime dependency.
+        /// </summary>
+        private IEnumerable<string> ExpandRuntimeInternal(string runtime)
+        {
             yield return runtime;
 
             // Try to expand the runtime based on the graph
@@ -143,27 +167,60 @@ namespace NuGet.RuntimeModel
         /// </returns>
         public bool AreCompatible(string criteria, string provided)
         {
-            var key = new Tuple<string, string>(criteria, provided);
+            // Identical runtimes are compatible
+            if (StringComparer.Ordinal.Equals(criteria, provided))
+            {
+                return true;
+            }
 
-            return _areCompatible.GetOrAdd(key, (tuple) => ExpandRuntime(tuple.Item1).Contains(tuple.Item2));
+            var key = new RuntimeCompatKey(criteria, provided);
+
+            return _areCompatible.GetOrAdd(key, k => AreCompatibleInternal(k));
+        }
+
+        private bool AreCompatibleInternal(RuntimeCompatKey key)
+        {
+            return ExpandRuntimeCached(key.RuntimeName).Contains(key.Other);
         }
 
         public IEnumerable<RuntimePackageDependency> FindRuntimeDependencies(string runtimeName, string packageId)
         {
-            // PERF: We could cache this for a particular (runtimeName,packageId) pair.
-            foreach (var expandedRuntime in ExpandRuntime(runtimeName))
+            if (_packagesWithDependencies == null)
+            {
+                // Find all packages that have runtime dependencies and cache this index.
+                _packagesWithDependencies = new HashSet<string>(
+                    Runtimes.SelectMany(e => e.Value.RuntimeDependencySets.Select(f => f.Key)),
+                    StringComparer.OrdinalIgnoreCase);
+            }
+
+            if (_packagesWithDependencies.Contains(packageId))
+            {
+                var key = new RuntimeDependencyKey(runtimeName, packageId);
+
+                return _dependencyCache.GetOrAdd(key, k => FindRuntimeDependenciesInternal(k));
+            }
+
+            return Enumerable.Empty<RuntimePackageDependency>();
+        }
+
+        /// <summary>
+        /// Find all possible dependencies for package id.
+        /// </summary>
+        private List<RuntimePackageDependency> FindRuntimeDependenciesInternal(RuntimeDependencyKey key)
+        {
+            // Find all compatible RIDs
+            foreach (var expandedRuntime in ExpandRuntimeCached(key.RuntimeName))
             {
                 RuntimeDescription runtimeDescription;
                 if (Runtimes.TryGetValue(expandedRuntime, out runtimeDescription))
                 {
-                    RuntimeDependencySet dependencySet;
-                    if (runtimeDescription.RuntimeDependencySets.TryGetValue(packageId, out dependencySet))
+                    if (runtimeDescription.RuntimeDependencySets.TryGetValue(key.PackageId, out var dependencySet))
                     {
-                        return dependencySet.Dependencies.Values;
+                        return dependencySet.Dependencies.Values.AsList();
                     }
                 }
             }
-            return Enumerable.Empty<RuntimePackageDependency>();
+            return new List<RuntimePackageDependency>();
         }
 
         public bool Equals(RuntimeGraph other)
@@ -198,6 +255,9 @@ namespace NuGet.RuntimeModel
             return hashCode.CombinedHash;
         }
 
+        /// <summary>
+        /// Helper for renting hashsets and lists.
+        /// </summary>
         private static class Cache<T>
         {
             [ThreadStatic] private static HashSet<T> _hashSet;
@@ -243,6 +303,70 @@ namespace NuGet.RuntimeModel
                     list.Clear();
                     _list = list;
                 }
+            }
+        }
+
+        /// <summary>
+        /// RID + package id
+        /// </summary>
+        private sealed class RuntimeDependencyKey : IEquatable<RuntimeDependencyKey>
+        {
+            public string RuntimeName { get; }
+
+            public string PackageId { get; }
+
+            public RuntimeDependencyKey(string runtimeName, string packageId)
+            {
+                RuntimeName = runtimeName ?? throw new ArgumentNullException(nameof(runtimeName));
+                PackageId = packageId ?? throw new ArgumentNullException(nameof(packageId));
+            }
+
+            public bool Equals(RuntimeDependencyKey other)
+            {
+                return StringComparer.Ordinal.Equals(RuntimeName, other.RuntimeName)
+                    && StringComparer.OrdinalIgnoreCase.Equals(PackageId, other.PackageId);
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = new HashCodeCombiner();
+
+                hashCode.AddObject(RuntimeName, StringComparer.Ordinal);
+                hashCode.AddObject(PackageId, StringComparer.OrdinalIgnoreCase);
+
+                return hashCode.CombinedHash;
+            }
+        }
+
+        /// <summary>
+        /// RID -> RID compatibility key
+        /// </summary>
+        private sealed class RuntimeCompatKey : IEquatable<RuntimeCompatKey>
+        {
+            public string RuntimeName { get; }
+
+            public string Other { get; }
+
+            public RuntimeCompatKey(string runtimeName, string other)
+            {
+                RuntimeName = runtimeName ?? throw new ArgumentNullException(nameof(runtimeName));
+                Other = other ?? throw new ArgumentNullException(nameof(other));
+            }
+
+            public bool Equals(RuntimeCompatKey other)
+            {
+                return StringComparer.Ordinal.Equals(RuntimeName, other.RuntimeName)
+                    && StringComparer.Ordinal.Equals(Other, other.Other);
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = new HashCodeCombiner();
+
+                hashCode.AddObject(RuntimeName, StringComparer.Ordinal);
+                hashCode.AddObject(Other, StringComparer.Ordinal);
+
+                return hashCode.CombinedHash;
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,10 @@ namespace NuGet.RuntimeModel
     {
         public string RuntimeIdentifier { get; }
         public IReadOnlyList<string> InheritedRuntimes { get; }
+
+        /// <summary>
+        /// RID specific package dependencies.
+        /// </summary>
         public IReadOnlyDictionary<string, RuntimeDependencySet> RuntimeDependencySets { get; }
 
         public RuntimeDescription(string runtimeIdentifier)
@@ -38,7 +42,11 @@ namespace NuGet.RuntimeModel
 
         public bool Equals(RuntimeDescription other)
         {
-            // Breaking this up to ease debugging. The optimizer should be able to handle this, so don't refactor unless you have data :).
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
             if (other == null)
             {
                 return false;
@@ -46,7 +54,7 @@ namespace NuGet.RuntimeModel
 
             return string.Equals(other.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal)
                 && InheritedRuntimes.OrderedEquals(other.InheritedRuntimes, s => s, StringComparer.Ordinal, StringComparer.Ordinal)
-                && RuntimeDependencySets.OrderedEquals(other.RuntimeDependencySets, p => p.Key, StringComparer.Ordinal);
+                && RuntimeDependencySets.OrderedEquals(other.RuntimeDependencySets, p => p.Key, StringComparer.OrdinalIgnoreCase);
         }
 
         public RuntimeDescription Clone()

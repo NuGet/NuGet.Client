@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,9 +7,19 @@ using NuGet.Versioning;
 
 namespace NuGet.RuntimeModel
 {
+    /// <summary>
+    /// A package dependency for a specific RID.
+    /// </summary>
     public class RuntimePackageDependency : IEquatable<RuntimePackageDependency>
     {
+        /// <summary>
+        /// Dependency package id.
+        /// </summary>
         public string Id { get; }
+
+        /// <summary>
+        /// Dependency version constraint.
+        /// </summary>
         public VersionRange VersionRange { get; }
 
         public RuntimePackageDependency(string id, VersionRange versionRange)
@@ -35,11 +45,26 @@ namespace NuGet.RuntimeModel
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.GetHashCode(Id, VersionRange);
+            var combiner = new HashCodeCombiner();
+
+            combiner.AddStringIgnoreCase(Id);
+            combiner.AddObject(VersionRange);
+
+            return combiner.CombinedHash;
         }
 
         public bool Equals(RuntimePackageDependency other)
         {
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (other == null)
+            {
+                return false;
+            }
+
             return other != null &&
                 string.Equals(Id, other.Id, StringComparison.OrdinalIgnoreCase) &&
                 VersionRange.Equals(other.VersionRange);
