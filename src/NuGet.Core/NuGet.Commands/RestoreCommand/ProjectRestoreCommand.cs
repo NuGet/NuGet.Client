@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,73 +40,25 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             CancellationToken token)
         {
-            var frameworkTasks = new List<Task<RestoreTargetGraph>>();
-            var graphs = new List<RestoreTargetGraph>();
             var runtimesByFramework = frameworkRuntimePairs.ToLookup(p => p.Framework, p => p.RuntimeIdentifier);
-            var success = true;
 
-            foreach (var pair in runtimesByFramework)
-            {
-                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, pair.Key.DotNetFrameworkName));
-
-                frameworkTasks.Add(WalkDependenciesAsync(projectRange,
+            // restore framework/rid combinations
+            var restoreResults = await Task.WhenAll(
+                runtimesByFramework.Select(pair => RestoreAsync(projectRange,
                     pair.Key,
                     remoteWalker,
                     context,
-                    token: token));
-            }
-
-            var frameworkGraphs = await Task.WhenAll(frameworkTasks);
-
-            graphs.AddRange(frameworkGraphs);
-
-            success &= await InstallPackagesAsync(graphs,
-                userPackageFolder,
-                token);
-
-            // Check if any non-empty RIDs exist before reading the runtime graph (runtime.json).
-            // Searching all packages for runtime.json and building the graph can be expensive.
-            var hasNonEmptyRIDs = frameworkRuntimePairs.Any(
-                tfmRidPair => !string.IsNullOrEmpty(tfmRidPair.RuntimeIdentifier));
-
-            // The runtime graph needs to be created for scenarios with supports, forceRuntimeGraphCreation allows this.
-            // Resolve runtime dependencies
-            if (hasNonEmptyRIDs)
-            {
-                var localRepositories = new List<NuGetv3LocalRepository>();
-                localRepositories.Add(userPackageFolder);
-                localRepositories.AddRange(fallbackPackageFolders);
-
-                var runtimeGraphs = new List<RestoreTargetGraph>();
-                var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
-
-                foreach (var graph in graphs)
-                {
-                    // Get the runtime graph for this specific tfm graph
-                    var runtimeGraph = GetRuntimeGraph(graph, localRepositories);
-                    var runtimeIds = runtimesByFramework[graph.Framework];
-
-                    runtimeTasks.Add(WalkRuntimeDependenciesAsync(projectRange,
-                        graph,
-                        runtimeIds.Where(rid => !string.IsNullOrEmpty(rid)),
-                        remoteWalker,
-                        context,
-                        runtimeGraph,
-                        token: token));
-                }
-
-                foreach (var runtimeSpecificGraph in (await Task.WhenAll(runtimeTasks)).SelectMany(g => g))
-                {
-                    runtimeGraphs.Add(runtimeSpecificGraph);
-                }
-
-                graphs.AddRange(runtimeGraphs);
-
-                // Install runtime-specific packages
-                success &= await InstallPackagesAsync(runtimeGraphs,
                     userPackageFolder,
-                    token);
-            }
+                    fallbackPackageFolders,
+                    pair.Where(e => !string.IsNullOrEmpty(e)).ToList(),
+                    token: token)));
+
+            // combine all graphs
+            var graphPairs = restoreResults.SelectMany(e => e);
+            var graphs = graphPairs.Select(e => e.Item1).ToList();
+
+            // check install success
+            var success = graphPairs.All(e => e.Item2);
 
             // Update the logger with the restore target graphs
             // This allows lazy initialization for the Transitive Warning Properties
@@ -117,50 +68,103 @@ namespace NuGet.Commands
             // versions that have been bumped up unexpectedly.
             await UnexpectedDependencyMessages.LogAsync(graphs, _request.Project, _logger);
 
+            // check analysis success
             success &= (await ResolutionSucceeded(graphs, context, token));
 
             return Tuple.Create(success, graphs);
         }
 
-        private Task<RestoreTargetGraph> WalkDependenciesAsync(LibraryRange projectRange,
+        /// <summary>
+        /// Restore a framework, restore all RIDs, and install all packages.
+        /// </summary>
+        private async Task<List<Tuple<RestoreTargetGraph, bool>>> RestoreAsync(LibraryRange projectRange,
             NuGetFramework framework,
             RemoteDependencyWalker walker,
             RemoteWalkContext context,
+            NuGetv3LocalRepository userPackageFolder,
+            IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
+            List<string> runtimeIds,
             CancellationToken token)
         {
-            return WalkDependenciesAsync(projectRange,
+            var results = new List<Tuple<RestoreTargetGraph, bool>>(1 + runtimeIds.Count);
+
+            // Framework only restore
+            var ridlessGraph = await RestoreAsync(projectRange,
                 framework,
                 runtimeIdentifier: null,
                 runtimeGraph: RuntimeGraph.Empty,
                 walker: walker,
                 context: context,
+                userPackageFolder: userPackageFolder,
                 token: token);
+
+            results.Add(ridlessGraph);
+
+            // RID specific restore
+            if (runtimeIds.Count > 0)
+            {
+                var localRepositories = new List<NuGetv3LocalRepository>();
+                localRepositories.Add(userPackageFolder);
+                localRepositories.AddRange(fallbackPackageFolders);
+
+                var runtimeGraphs = new List<RestoreTargetGraph>();
+                var runtimeTasks = new List<Task<Tuple<RestoreTargetGraph, bool>>>();
+
+                // Build a runtime graph for the ridless graph packages.
+                var graph = ridlessGraph.Item1;
+                var runtimeGraph = GetRuntimeGraph(graph, localRepositories);
+
+                // Restore for each RID
+                results.AddRange(await Task.WhenAll(
+                    runtimeIds.Select(runtimeId =>
+                        RestoreAsync(projectRange,
+                            framework,
+                            runtimeId,
+                            runtimeGraph,
+                            walker,
+                            context,
+                            userPackageFolder,
+                            token: token))));
+            }
+
+            return results;
         }
 
-        private async Task<RestoreTargetGraph> WalkDependenciesAsync(LibraryRange projectRange,
+        /// <summary>
+        /// Restore a graph and install all packages.
+        /// </summary>
+        private async Task<Tuple<RestoreTargetGraph, bool>> RestoreAsync(LibraryRange projectRange,
             NuGetFramework framework,
             string runtimeIdentifier,
             RuntimeGraph runtimeGraph,
             RemoteDependencyWalker walker,
             RemoteWalkContext context,
+            NuGetv3LocalRepository userPackageFolder,
             CancellationToken token)
         {
-            var name = FrameworkRuntimePair.GetTargetGraphName(framework, runtimeIdentifier);
+            var name = string.IsNullOrEmpty(runtimeIdentifier) ? framework.DotNetFrameworkName : FrameworkRuntimePair.GetTargetGraphName(framework, runtimeIdentifier);
+            _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, name));
+
             var graphs = new List<GraphNode<RemoteResolveResult>>
             {
                 await walker.WalkAsync(
-                projectRange,
-                framework,
-                runtimeIdentifier,
-                runtimeGraph,
-                recursive: true)
+                    projectRange,
+                    framework,
+                    runtimeIdentifier,
+                    runtimeGraph,
+                    recursive: true)
             };
 
             // Resolve conflicts
             await _logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolvingConflicts, name));
 
             // Flatten and create the RestoreTargetGraph to hold the packages
-            return RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
+            var graph = RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
+
+            // Install packages
+            var success = await InstallPackagesAsync(graph, userPackageFolder, token);
+
+            return Tuple.Create(graph, success);
         }
 
         private async Task<bool> ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs, RemoteWalkContext context, CancellationToken token)
@@ -200,15 +204,13 @@ namespace NuGet.Commands
             return success;
         }
 
-        private async Task<bool> InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs,
+        private async Task<bool> InstallPackagesAsync(RestoreTargetGraph graph,
             NuGetv3LocalRepository userPackageFolder,
             CancellationToken token)
         {
             var uniquePackages = new HashSet<LibraryIdentity>();
 
-            var packagesToInstall = graphs
-                .SelectMany(g => g.Install.Where(match => uniquePackages.Add(match.Library)))
-                .ToList();
+            var packagesToInstall = graph.Install.Where(match => uniquePackages.Add(match.Library)).ToList();
 
             var success = true;
 
@@ -296,31 +298,6 @@ namespace NuGet.Commands
             }
 
             return true;
-        }
-
-        private Task<RestoreTargetGraph[]> WalkRuntimeDependenciesAsync(LibraryRange projectRange,
-            RestoreTargetGraph graph,
-            IEnumerable<string> runtimeIds,
-            RemoteDependencyWalker walker,
-            RemoteWalkContext context,
-            RuntimeGraph runtimes,
-            CancellationToken token)
-        {
-            var resultGraphs = new List<Task<RestoreTargetGraph>>();
-            foreach (var runtimeName in runtimeIds)
-            {
-                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, FrameworkRuntimePair.GetTargetGraphName(graph.Framework, runtimeName)));
-
-                resultGraphs.Add(WalkDependenciesAsync(projectRange,
-                    graph.Framework,
-                    runtimeName,
-                    runtimes,
-                    walker,
-                    context,
-                    token));
-            }
-
-            return Task.WhenAll(resultGraphs);
         }
 
         /// <summary>
