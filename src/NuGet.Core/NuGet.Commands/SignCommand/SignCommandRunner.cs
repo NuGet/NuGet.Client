@@ -26,6 +26,8 @@ namespace NuGet.Commands
 
             var cert = await GetCertificateAsync(signArgs);
 
+            SigningUtility.VerifyCertificate(cert);
+
             signArgs.Logger.LogInformation(Environment.NewLine);
             signArgs.Logger.LogInformation(Strings.SignCommandDisplayCertificate);
             signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2ToString(cert));
@@ -274,7 +276,7 @@ namespace NuGet.Commands
 
             foreach (var certificate in matchingCollection)
             {
-                if (SigningUtility.IsValidForPurposeFast(certificate, Oids.CodeSigningEkuOid))
+                if (CertificateUtility.IsValidForPurposeFast(certificate, Oids.CodeSigningEkuOid))
                 {
                     filteredCollection.Add(certificate);
                 }

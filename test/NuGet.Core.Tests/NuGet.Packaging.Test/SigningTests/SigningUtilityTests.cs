@@ -132,7 +132,7 @@ namespace NuGet.Packaging.Test
 
                 chain.Build(leafCertificate);
 
-                var certificateChain = SigningUtility.GetCertificateChain(chain);
+                var certificateChain = SigningUtility.CertificateChainToList(chain);
 
                 Assert.Equal(3, certificateChain.Count);
                 Assert.Equal(leafCertificate.Thumbprint, certificateChain[0].Thumbprint);
