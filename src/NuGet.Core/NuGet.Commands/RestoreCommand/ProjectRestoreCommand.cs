@@ -33,16 +33,14 @@ namespace NuGet.Commands
             _request = request;
         }
 
-        public async Task<Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> TryRestoreAsync(LibraryRange projectRange,
+        public async Task<Tuple<bool, List<RestoreTargetGraph>>> TryRestoreAsync(LibraryRange projectRange,
             IEnumerable<FrameworkRuntimePair> frameworkRuntimePairs,
             NuGetv3LocalRepository userPackageFolder,
             IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             RemoteDependencyWalker remoteWalker,
             RemoteWalkContext context,
-            bool forceRuntimeGraphCreation,
             CancellationToken token)
         {
-            var allRuntimes = RuntimeGraph.Empty;
             var frameworkTasks = new List<Task<RestoreTargetGraph>>();
             var graphs = new List<RestoreTargetGraph>();
             var runtimesByFramework = frameworkRuntimePairs.ToLookup(p => p.Framework, p => p.RuntimeIdentifier);
@@ -74,7 +72,7 @@ namespace NuGet.Commands
 
             // The runtime graph needs to be created for scenarios with supports, forceRuntimeGraphCreation allows this.
             // Resolve runtime dependencies
-            if (hasNonEmptyRIDs || forceRuntimeGraphCreation)
+            if (hasNonEmptyRIDs)
             {
                 var localRepositories = new List<NuGetv3LocalRepository>();
                 localRepositories.Add(userPackageFolder);
@@ -88,9 +86,6 @@ namespace NuGet.Commands
                     // Get the runtime graph for this specific tfm graph
                     var runtimeGraph = GetRuntimeGraph(graph, localRepositories);
                     var runtimeIds = runtimesByFramework[graph.Framework];
-
-                    // Merge all runtimes for the output
-                    allRuntimes = RuntimeGraph.Merge(allRuntimes, runtimeGraph);
 
                     runtimeTasks.Add(WalkRuntimeDependenciesAsync(projectRange,
                         graph,
@@ -124,7 +119,7 @@ namespace NuGet.Commands
 
             success &= (await ResolutionSucceeded(graphs, context, token));
 
-            return Tuple.Create(success, graphs, allRuntimes);
+            return Tuple.Create(success, graphs);
         }
 
         private Task<RestoreTargetGraph> WalkDependenciesAsync(LibraryRange projectRange,

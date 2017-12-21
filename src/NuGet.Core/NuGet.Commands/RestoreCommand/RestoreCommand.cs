@@ -546,7 +546,6 @@ namespace NuGet.Commands
             var allGraphs = new List<RestoreTargetGraph>();
             var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
             var projectFrameworkRuntimePairs = CreateFrameworkRuntimePairs(_request.Project, runtimeIds);
-            var hasSupports = _request.Project.RuntimeGraph.Supports.Count > 0;
 
             var projectRestoreRequest = new ProjectRestoreRequest(
                 _request,
@@ -563,7 +562,6 @@ namespace NuGet.Commands
                 fallbackPackageFolders,
                 remoteWalker,
                 context,
-                forceRuntimeGraphCreation: hasSupports,
                 token: token);
 
             var success = result.Item1;
@@ -572,24 +570,28 @@ namespace NuGet.Commands
 
             _success = success;
 
+            // Merge graphs only if needed.
+            var runtimes = new Lazy<RuntimeGraph>(() => GetAllRuntimeGraphs(allGraphs));
+
             // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
             foreach (var profile in _request.Project.RuntimeGraph.Supports)
             {
-                var runtimes = result.Item3;
-
                 CompatibilityProfile compatProfile;
-                if (profile.Value.RestoreContexts.Any())
+                if (profile.Value.RestoreContexts.Count > 0)
                 {
                     // Just use the contexts from the project definition
                     compatProfile = profile.Value;
                 }
-                else if (!runtimes.Supports.TryGetValue(profile.Value.Name, out compatProfile))
+                else
                 {
-                    // No definition of this profile found, so just continue to the next one
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_UnknownCompatibilityProfile, profile.Key);
+                    if (!runtimes.Value.Supports.TryGetValue(profile.Value.Name, out compatProfile))
+                    {
+                        // No definition of this profile found, so just continue to the next one
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_UnknownCompatibilityProfile, profile.Key);
 
-                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1502, message));
-                    continue;
+                        await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1502, message));
+                        continue;
+                    }
                 }
 
                 foreach (var pair in compatProfile.RestoreContexts)
@@ -600,7 +602,7 @@ namespace NuGet.Commands
             }
 
             // Walk additional runtime graphs for supports checks
-            if (_success && _request.CompatibilityProfiles.Any())
+            if (_success && _request.CompatibilityProfiles.Count > 0)
             {
                 var compatibilityResult = await projectRestoreCommand.TryRestoreAsync(
                     projectRange,
@@ -609,7 +611,6 @@ namespace NuGet.Commands
                     fallbackPackageFolders,
                     remoteWalker,
                     context,
-                    forceRuntimeGraphCreation: true,
                     token: token);
 
                 _success = compatibilityResult.Item1;
@@ -637,6 +638,35 @@ namespace NuGet.Commands
 
 
             return allGraphs;
+        }
+
+        /// <summary>
+        /// Merge all runtime graphs into a single graph.
+        /// </summary>
+        private static RuntimeGraph GetAllRuntimeGraphs(List<RestoreTargetGraph> allGraphs)
+        {
+            RuntimeGraph runtimes = null;
+
+            // Merge all unique graphs
+            foreach (var toMerge in allGraphs.Select(e => e.RuntimeGraph).Where(e => e != null).Distinct())
+            {
+                // Skip merging empty graphs
+                if (!ReferenceEquals(toMerge, RuntimeGraph.Empty))
+                {
+                    if (runtimes == null)
+                    {
+                        // Use the current graph without merging
+                        runtimes = toMerge;
+                    }
+                    else
+                    {
+                        // Merging existing graphs
+                        runtimes = RuntimeGraph.Merge(runtimes, toMerge);
+                    }
+                }
+            }
+
+            return runtimes ?? RuntimeGraph.Empty;
         }
 
         private List<ExternalProjectReference> GetProjectReferences(RemoteWalkContext context)
