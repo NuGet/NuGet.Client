@@ -94,7 +94,7 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
 
-            using (var reader = new BinaryReader(ZipReadStream, Encoding.UTF8, leaveOpen: true))
+            using (var reader = new BinaryReader(ZipReadStream, new UTF8Encoding(), leaveOpen: true))
             {
                 return Task.FromResult(SignedPackageArchiveUtility.IsZip64(reader));
             }
