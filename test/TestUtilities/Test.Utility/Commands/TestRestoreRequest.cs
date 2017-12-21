@@ -106,6 +106,7 @@ namespace NuGet.Commands.Test
                     sources: sources,
                     cacheContext: cacheContext,
                     packageFileCache: new LocalPackageFileCache(),
+                    restoreCommandCache: new RestoreCommandCache(),
                     log: log),
                 cacheContext,
                 log)

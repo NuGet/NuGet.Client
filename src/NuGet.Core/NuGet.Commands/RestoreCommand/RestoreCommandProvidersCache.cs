@@ -28,6 +28,8 @@ namespace NuGet.Commands
 
         private readonly LocalPackageFileCache _fileCache = new LocalPackageFileCache();
 
+        private readonly RestoreCommandCache _graphCache = new RestoreCommandCache();
+
         public RestoreCommandProviders GetOrCreate(
             string globalPackagesPath,
             IReadOnlyList<string> fallbackPackagesPaths,
@@ -93,7 +95,7 @@ namespace NuGet.Commands
                 remoteProviders.Add(remoteProvider);
             }
 
-            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, _fileCache);
+            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, _fileCache, _graphCache);
         }
     }
 }

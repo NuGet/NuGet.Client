@@ -465,7 +465,7 @@ namespace NuGet.Commands
         {
             // Scan every graph for compatibility, as long as there were no unresolved packages
             var checkResults = new List<CompatibilityCheckResult>();
-            if (graphs.All(g => !g.Unresolved.Any()))
+            if (graphs.All(g => g.Unresolved.Count == 0))
             {
                 var checker = new CompatibilityChecker(localRepositories, lockFile, validateRuntimeAssets, logger);
                 foreach (var graph in graphs)
@@ -571,7 +571,7 @@ namespace NuGet.Commands
             _success = success;
 
             // Merge graphs only if needed.
-            var runtimes = new Lazy<RuntimeGraph>(() => GetAllRuntimeGraphs(allGraphs));
+            var runtimes = new Lazy<RuntimeGraph>(() => RuntimeGraph.Merge(allGraphs.Select(e => e.RuntimeGraph).Where(e => e != null)));
 
             // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
             foreach (var profile in _request.Project.RuntimeGraph.Supports)
@@ -638,35 +638,6 @@ namespace NuGet.Commands
 
 
             return allGraphs;
-        }
-
-        /// <summary>
-        /// Merge all runtime graphs into a single graph.
-        /// </summary>
-        private static RuntimeGraph GetAllRuntimeGraphs(List<RestoreTargetGraph> allGraphs)
-        {
-            RuntimeGraph runtimes = null;
-
-            // Merge all unique graphs
-            foreach (var toMerge in allGraphs.Select(e => e.RuntimeGraph).Where(e => e != null).Distinct())
-            {
-                // Skip merging empty graphs
-                if (!ReferenceEquals(toMerge, RuntimeGraph.Empty))
-                {
-                    if (runtimes == null)
-                    {
-                        // Use the current graph without merging
-                        runtimes = toMerge;
-                    }
-                    else
-                    {
-                        // Merging existing graphs
-                        runtimes = RuntimeGraph.Merge(runtimes, toMerge);
-                    }
-                }
-            }
-
-            return runtimes ?? RuntimeGraph.Empty;
         }
 
         private List<ExternalProjectReference> GetProjectReferences(RemoteWalkContext context)

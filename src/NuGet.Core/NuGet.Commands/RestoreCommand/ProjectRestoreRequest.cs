@@ -15,6 +15,7 @@ namespace NuGet.Commands
             LockFile existingLockFile,
             RestoreCollectorLogger log)
         {
+            RestoreRequest = request;
             CacheContext = request.CacheContext;
             Log = log;
             PackagesDirectory = request.PackagesDirectory;
@@ -26,6 +27,7 @@ namespace NuGet.Commands
             PackageExtractionContext = new PackageExtractionContext(request.PackageSaveMode, request.XmlDocFileSaveMode, log, request.PackageSignatureVerifier);
         }
 
+        public RestoreRequest RestoreRequest { get; }
         public SourceCacheContext CacheContext { get; }
         public RestoreCollectorLogger Log { get; }
         public string PackagesDirectory { get; }

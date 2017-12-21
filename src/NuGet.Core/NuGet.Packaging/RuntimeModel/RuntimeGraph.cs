@@ -62,6 +62,40 @@ namespace NuGet.RuntimeModel
         }
 
         /// <summary>
+        /// Merge all runtime graphs.
+        /// </summary>
+        public static RuntimeGraph Merge(IEnumerable<RuntimeGraph> graphs)
+        {
+            if (graphs == null)
+            {
+                throw new ArgumentNullException(nameof(graphs));
+            }
+
+            RuntimeGraph runtimes = null;
+
+            // Merge all unique graphs
+            foreach (var toMerge in graphs.Where(e => e != null).Distinct())
+            {
+                // Skip merging empty graphs
+                if (!ReferenceEquals(toMerge, RuntimeGraph.Empty))
+                {
+                    if (runtimes == null)
+                    {
+                        // Use the current graph without merging
+                        runtimes = toMerge;
+                    }
+                    else
+                    {
+                        // Merging existing graphs
+                        runtimes = RuntimeGraph.Merge(runtimes, toMerge);
+                    }
+                }
+            }
+
+            return runtimes ?? Empty;
+        }
+
+        /// <summary>
         /// Merges the content of the other runtime graph in to this runtime graph
         /// </summary>
         /// <param name="other">The other graph to merge in to this graph</param>

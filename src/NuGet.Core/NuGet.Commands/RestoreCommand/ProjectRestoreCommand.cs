@@ -23,13 +23,14 @@ namespace NuGet.Commands
     internal class ProjectRestoreCommand
     {
         private readonly RestoreCollectorLogger _logger;
-
         private readonly ProjectRestoreRequest _request;
+        private readonly RestoreCommandCache _restoreCache;
 
         public ProjectRestoreCommand(ProjectRestoreRequest request)
         {
             _logger = request.Log;
             _request = request;
+            _restoreCache = request.RestoreRequest.DependencyProviders.RestoreCommandCache;
         }
 
         public async Task<Tuple<bool, List<RestoreTargetGraph>>> TryRestoreAsync(LibraryRange projectRange,
@@ -339,7 +340,7 @@ namespace NuGet.Commands
         private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, IReadOnlyList<NuGetv3LocalRepository> localRepositories)
         {
             _logger.LogVerbose(Strings.Log_ScanningForRuntimeJson);
-            var runtimeGraph = RuntimeGraph.Empty;
+            var resolvedPackages = new List<LocalPackageInfo>();
 
             // Find runtime.json files using the flattened graph which is unique per id.
             // Using the flattened graph ensures that only accepted packages will be used.
@@ -358,16 +359,11 @@ namespace NuGet.Commands
                 // Unresolved packages may not exist.
                 if (info != null)
                 {
-                    var nextGraph = info.Package.RuntimeGraph;
-                    if (nextGraph != null)
-                    {
-                        _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MergingRuntimes, match.Library));
-                        runtimeGraph = RuntimeGraph.Merge(runtimeGraph, nextGraph);
-                    }
+                    resolvedPackages.Add(info.Package);
                 }
             }
 
-            return runtimeGraph;
+            return _restoreCache.GetRuntimeGraph(resolvedPackages);
         }
     }
 }

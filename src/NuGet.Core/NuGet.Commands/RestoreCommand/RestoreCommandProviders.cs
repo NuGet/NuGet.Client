@@ -24,18 +24,21 @@ namespace NuGet.Commands
         /// <param name="localProviders">This is typically just a provider for the global packages folder.</param>
         /// <param name="remoteProviders">All dependency providers.</param>
         /// <param name="packageFileCache">Nuspec and package file cache.</param>
+        /// <param name="restoreCommandCache">Graph cache shared between restores.</param>
         public RestoreCommandProviders(
             NuGetv3LocalRepository globalPackages,
             IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             IReadOnlyList<IRemoteDependencyProvider> localProviders,
             IReadOnlyList<IRemoteDependencyProvider> remoteProviders,
-            LocalPackageFileCache packageFileCache)
+            LocalPackageFileCache packageFileCache,
+            RestoreCommandCache restoreCommandCache)
         {
             GlobalPackages = globalPackages ?? throw new ArgumentNullException(nameof(globalPackages));
             LocalProviders = localProviders ?? throw new ArgumentNullException(nameof(localProviders));
             RemoteProviders = remoteProviders ?? throw new ArgumentNullException(nameof(remoteProviders));
             FallbackPackageFolders = fallbackPackageFolders ?? throw new ArgumentNullException(nameof(fallbackPackageFolders));
             PackageFileCache = packageFileCache ?? throw new ArgumentNullException(nameof(packageFileCache));
+            RestoreCommandCache = restoreCommandCache ?? throw new ArgumentNullException(nameof(restoreCommandCache));
         }
 
         /// <summary>
@@ -53,12 +56,15 @@ namespace NuGet.Commands
 
         public LocalPackageFileCache PackageFileCache { get; }
 
+        public RestoreCommandCache RestoreCommandCache { get; }
+
         public static RestoreCommandProviders Create(
             string globalFolderPath,
             IEnumerable<string> fallbackPackageFolderPaths,
             IEnumerable<SourceRepository> sources,
             SourceCacheContext cacheContext,
             LocalPackageFileCache packageFileCache,
+            RestoreCommandCache restoreCommandCache,
             ILogger log)
         {
             var globalPackages = new NuGetv3LocalRepository(globalFolderPath, packageFileCache);
@@ -116,7 +122,8 @@ namespace NuGet.Commands
                 fallbackPackageFolders,
                 localProviders,
                 remoteProviders,
-                packageFileCache);
+                packageFileCache,
+                restoreCommandCache);
         }
     }
 }
