@@ -28,6 +28,24 @@ namespace NuGet.LibraryModel
         /// </summary>
         public bool AutoReferenced { get; set; }
 
+        public LibraryDependency() { }
+
+        public LibraryDependency(
+            LibraryRange libraryRange,
+            LibraryDependencyType type,
+            LibraryIncludeFlags includeType,
+            LibraryIncludeFlags suppressParent,
+            IList<NuGetLogCode> noWarn,
+            bool autoReferenced)
+        {
+            LibraryRange = libraryRange;
+            Type = type;
+            IncludeType = includeType;
+            SuppressParent = suppressParent;
+            NoWarn = noWarn;
+            AutoReferenced = autoReferenced;
+        }
+
         public override string ToString()
         {
             var sb = new StringBuilder();
@@ -88,20 +106,10 @@ namespace NuGet.LibraryModel
 
         public LibraryDependency Clone()
         {
-            return new LibraryDependency
-            {
-                IncludeType = IncludeType,
-                LibraryRange = new LibraryRange
-                {
-                    Name = LibraryRange.Name,
-                    TypeConstraint = LibraryRange.TypeConstraint,
-                    VersionRange = LibraryRange.VersionRange
-                },
-                SuppressParent = SuppressParent,
-                Type = Type,
-                AutoReferenced = AutoReferenced,
-                NoWarn = NoWarn
-            };
+            var clonedLibraryRange = new LibraryRange(LibraryRange.Name, LibraryRange.VersionRange, LibraryRange.TypeConstraint);
+            var clonedNoWarn = new List<NuGetLogCode>(NoWarn);
+
+            return new LibraryDependency(clonedLibraryRange, Type, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced);
         }
     }
 }
