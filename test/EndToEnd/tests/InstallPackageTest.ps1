@@ -712,9 +712,18 @@ function Test-InstallPackageWithNonExistentFrameworkReferences {
 
     # Arrange
     $p = New-ClassLibrary
+    $expectedExceptionMessage = "Failed to add reference. The package 'PackageWithNonExistentGacReferences' tried to add a framework reference to 'System.Awesome' which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance."
+    $actualExceptionMessage = [string]::Empty
 
     # Arrange
-    Assert-Throws { $p | Install-Package PackageWithNonExistentGacReferences -Source $context.RepositoryRoot } "Failed to add reference. The package 'PackageWithNonExistentGacReferences' tried to add a framework reference to 'System.Awesome' which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance.`r`n  Reference unavailable."
+    try {
+        $p | Install-Package PackageWithNonExistentGacReferences -Source $context.RepositoryRoot
+    }
+    catch {
+        $actualExceptionMessage = $_.Exception.Message
+    }
+
+    Assert-Contains $expectedExceptionMessage $actualExceptionMessage
 }
 
 function Test-InstallPackageWithFrameworkFacadeReference {
