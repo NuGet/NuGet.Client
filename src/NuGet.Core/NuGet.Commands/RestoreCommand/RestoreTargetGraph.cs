@@ -66,6 +66,8 @@ namespace NuGet.Commands
 
         public ISet<ResolvedDependencyKey> ResolvedDependencies { get; }
 
+        public ISet<string> AllIds { get; }
+
         private RestoreTargetGraph(IEnumerable<ResolverConflict> conflicts,
                                    NuGetFramework framework,
                                    string runtimeIdentifier,
@@ -75,7 +77,8 @@ namespace NuGet.Commands
                                    ISet<GraphItem<RemoteResolveResult>> flattened,
                                    ISet<LibraryRange> unresolved,
                                    AnalyzeResult<RemoteResolveResult> analyzeResult,
-                                   ISet<ResolvedDependencyKey> resolvedDependencies)
+                                   ISet<ResolvedDependencyKey> resolvedDependencies,
+                                   ISet<string> allIds)
         {
             Conflicts = conflicts.ToArray();
             RuntimeIdentifier = runtimeIdentifier;
@@ -93,6 +96,7 @@ namespace NuGet.Commands
             AnalyzeResult = analyzeResult;
             Unresolved = unresolved;
             ResolvedDependencies = resolvedDependencies;
+            AllIds = allIds;
         }
 
         public static RestoreTargetGraph Create(IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, ILogger logger, NuGetFramework framework)
@@ -115,6 +119,7 @@ namespace NuGet.Commands
             var conflicts = new Dictionary<string, HashSet<ResolverRequest>>();
             var analyzeResult = new AnalyzeResult<RemoteResolveResult>();
             var resolvedDependencies = new HashSet<ResolvedDependencyKey>();
+            var allIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var graph in graphs)
             {
@@ -129,6 +134,8 @@ namespace NuGet.Commands
                     {
                         return;
                     }
+
+                    allIds.Add(node.Key.Name);
 
                     if (node.Disposition != Disposition.Rejected)
                     {
@@ -193,7 +200,8 @@ namespace NuGet.Commands
                 flattened,
                 unresolved,
                 analyzeResult,
-                resolvedDependencies);
+                resolvedDependencies,
+                allIds);
         }
 
         /// <summary>
@@ -213,7 +221,7 @@ namespace NuGet.Commands
             }
 
             // Pass the same properties except for runtime and runtimeGraph.
-            return new RestoreTargetGraph(Conflicts, Framework, runtime, runtimeGraph, Graphs, Install, Flattened, Unresolved, AnalyzeResult, ResolvedDependencies);
+            return new RestoreTargetGraph(Conflicts, Framework, runtime, runtimeGraph, Graphs, Install, Flattened, Unresolved, AnalyzeResult, ResolvedDependencies, AllIds);
         }
     }
 }

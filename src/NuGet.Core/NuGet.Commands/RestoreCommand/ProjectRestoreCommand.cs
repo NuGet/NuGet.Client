@@ -96,6 +96,7 @@ namespace NuGet.Commands
                 walker: walker,
                 context: context,
                 userPackageFolder: userPackageFolder,
+                parentGraph: null,
                 token: token);
 
             results.Add(ridlessGraph);
@@ -124,6 +125,7 @@ namespace NuGet.Commands
                             walker,
                             context,
                             userPackageFolder,
+                            parentGraph: graph,
                             token: token))));
             }
 
@@ -140,31 +142,62 @@ namespace NuGet.Commands
             RemoteDependencyWalker walker,
             RemoteWalkContext context,
             NuGetv3LocalRepository userPackageFolder,
+            RestoreTargetGraph parentGraph,
             CancellationToken token)
         {
-            var name = string.IsNullOrEmpty(runtimeIdentifier) ? framework.DotNetFrameworkName : FrameworkRuntimePair.GetTargetGraphName(framework, runtimeIdentifier);
+            var hasRid = !string.IsNullOrEmpty(runtimeIdentifier);
+            var name = hasRid ? framework.DotNetFrameworkName : FrameworkRuntimePair.GetTargetGraphName(framework, runtimeIdentifier);
             _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, name));
+            RestoreTargetGraph graph = null;
+            var success = true;
 
-            var graphs = new List<GraphNode<RemoteResolveResult>>
+            if (hasRid && parentGraph != null && !HasRuntimeDependencies(runtimeIdentifier, runtimeGraph, parentGraph))
             {
-                await walker.WalkAsync(
-                    projectRange,
-                    framework,
-                    runtimeIdentifier,
-                    runtimeGraph,
-                    recursive: true)
-            };
+                // Re-use the parent graph
+                graph = parentGraph.WithRuntime(runtimeIdentifier, runtimeGraph);
+            }
+            else
+            {
+                // Re-walk the graph
+                var graphs = new List<GraphNode<RemoteResolveResult>>()
+                {
+                    await walker.WalkAsync(
+                        projectRange,
+                        framework,
+                        runtimeIdentifier,
+                        runtimeGraph,
+                        recursive: true)
+                };
 
-            // Resolve conflicts
-            await _logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolvingConflicts, name));
+                // Resolve conflicts
+                await _logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolvingConflicts, name));
 
-            // Flatten and create the RestoreTargetGraph to hold the packages
-            var graph = RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
+                // Flatten and create the RestoreTargetGraph to hold the packages
+                graph = RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
 
-            // Install packages
-            var success = await InstallPackagesAsync(graph, userPackageFolder, token);
+                // Install packages
+                success &= await InstallPackagesAsync(graph, userPackageFolder, token);
+            }
 
             return Tuple.Create(graph, success);
+        }
+
+        private static HashSet<string> GetAllPackageIds(RestoreTargetGraph graph)
+        {
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            graph.Graphs.ForEach(node =>
+            {
+                var id = node.Key.Name;
+                seen.Add(id);
+            });
+
+            return seen;
+        }
+
+        private static bool HasRuntimeDependencies(string runtimeIdentifier, RuntimeGraph runtimeGraph, RestoreTargetGraph graph)
+        {
+            return graph.AllIds.Any(e => runtimeGraph.FindRuntimeDependencies(runtimeIdentifier, e).Any());
         }
 
         private async Task<bool> ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs, RemoteWalkContext context, CancellationToken token)
