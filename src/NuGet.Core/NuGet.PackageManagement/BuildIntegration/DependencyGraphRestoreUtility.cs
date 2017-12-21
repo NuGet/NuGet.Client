@@ -10,15 +10,11 @@ using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.LibraryModel;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Shared;
 
 namespace NuGet.PackageManagement
 {
@@ -62,6 +58,8 @@ namespace NuGet.PackageManagement
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
 
                     RestoreSummary.Log(log, restoreSummaries);
+
+                    await PersistDGSpec(dgSpec);
 
                     return restoreSummaries;
                 }
@@ -108,6 +106,28 @@ namespace NuGet.PackageManagement
             }
 
             return new List<RestoreSummary>();
+        }
+
+        private static async Task PersistDGSpec(DependencyGraphSpec dgSpec)
+        {
+            try
+            {
+                var filePath = Path.Combine(
+                        NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
+                        "nuget-dg",
+                        "nugetSpec.dg");
+
+                // create nuget temp folder if not exists
+                DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(filePath));
+
+                // delete existing dg spec file (if exists) then replace it with new file.
+                await FileUtility.ReplaceWithLock(
+                    (tempFile) => dgSpec.Save(tempFile), filePath);
+            }
+            catch (Exception)
+            {
+                //ignore any failure if it fails to write or replace dg spec file.
+            }
         }
 
         /// <summary>
