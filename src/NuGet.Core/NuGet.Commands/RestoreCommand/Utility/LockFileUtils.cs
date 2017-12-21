@@ -90,6 +90,7 @@ namespace NuGet.Commands
 
             // Exclude items
             ExcludeItems(lockFileLib, dependencyType);
+            lockFileLib.PackageType = nuspec.GetPackageTypes().AsList();
 
             return lockFileLib;
         }
@@ -519,7 +520,7 @@ namespace NuGet.Commands
 
             // Exclude items
             ExcludeItems(projectLib, dependencyType);
-
+            
             return projectLib;
         }
 

@@ -60,7 +60,6 @@ namespace NuGet.Commands
             // * The Targets (TxMs) defined in the project.json, with no Runtimes
             // * All combinations of TxMs and Runtimes defined in the project.json
             // * Additional (TxMs, Runtime) pairs defined by the "supports" mechanism in project.json
-            System.Diagnostics.Debugger.Launch();
             var runtimeAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var compileAssemblies = new Dictionary<string, LibraryIdentity>(StringComparer.OrdinalIgnoreCase);
             var issues = new List<CompatibilityIssue>();
@@ -95,6 +94,7 @@ namespace NuGet.Commands
                         issues.Add(issue);
                         await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1201, issue, graph));
                     }
+                    // quick test. 
                     if (localMatch == null || !IsProjectPackageCompatible(localMatch.LocalLibrary))
                     {
 
@@ -328,8 +328,9 @@ namespace NuGet.Commands
             var projectRestoreStyle = library.Items["NuGet.ProjectModel.RestoreMetadata.ProjectStyle"];
 
             if (projectRestoreStyle.Equals(ProjectStyle.DotnetToolReference)) {
-                if (library.Dependencies.Count() > 1)
+                if (library.Dependencies.Count() != 1)
                 {
+                    //
                     return false;
                 }
             }
@@ -340,10 +341,23 @@ namespace NuGet.Commands
         {
             // A package is compatible if it has...
             return
-                HasCompatibleAssets(compatibilityData.TargetLibrary) ||           
+                (HasCompatibleAssets(compatibilityData.TargetLibrary) ||           
                 !compatibilityData.Files.Any(p =>
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
-                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase));                       // No assemblies at all (for any TxM)
+                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase))) && NoToolsDependencies(compatibilityData); // No assemblies at all (for any TxM)
+        }
+
+        private static bool NoToolsDependencies(CompatibilityData compatibilityData)
+        {
+            // Here it's a package target library...I can tell if it's a dotnet tool...but I can't tell what it's parent is...whether it's in a tools project or not. 
+            foreach(var packageType in compatibilityData.TargetLibrary.PackageType)
+            {
+                if (packageType.Equals(PackageType.DotnetTool)){
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>

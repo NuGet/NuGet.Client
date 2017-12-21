@@ -42,6 +42,8 @@ namespace NuGet.ProjectModel
 
         public IList<LockFileItem> ToolsAssemblies { get; set; } = new List<LockFileItem>();
 
+        public IList<PackageType> PackageType { get; set; } = new List<PackageType>();
+
 
         public bool Equals(LockFileTargetLibrary other)
         {
