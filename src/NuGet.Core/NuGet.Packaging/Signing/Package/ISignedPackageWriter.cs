@@ -14,14 +14,12 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public interface ISignedPackageWriter
     {
-
 #if IS_DESKTOP
         /// <summary>
         /// Removes a signature if it exists.
         /// </summary>
         /// <param name="token">CancellationToken</param>
         Task RemoveSignatureAsync(CancellationToken token);
-
 
         /// <summary>
         /// Adds a signature in the package.
@@ -30,6 +28,17 @@ namespace NuGet.Packaging.Signing
         /// <param name="packageSignatureProvider">A stream of the signature to be added to the package.</param>
         /// <param name="token">Cancellation token.</param>
         Task AddSignatureAsync(Stream signatureStream, CancellationToken token);
+
+        /// <summary>
+        /// Check if a package is Zip64.
+        /// </summary>
+        /// <param name="token">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="bool" />
+        /// indicating whether the package is signed.</returns>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="token" />
+        /// is cancelled.</exception>
+        Task<bool> IsZip64Async(CancellationToken token);
 #endif
     }
 }

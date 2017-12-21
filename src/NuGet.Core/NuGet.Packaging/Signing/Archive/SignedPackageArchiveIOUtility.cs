@@ -15,15 +15,8 @@ namespace NuGet.Packaging.Signing
 {
     public static class SignedPackageArchiveIOUtility
     {
-        // Local file header size excluding signature, file name and extra field
-        internal const uint LocalFileHeaderSizeWithoutSignature = 26;
-
         // All the signatures have a fixed length of 4 bytes
         internal const uint ZipHeaderSignatureSize = 4;
-        internal const uint EndOfCentralDirectorySignature = 0x06054b50;
-        internal const uint Zip64EndOfCentralDirectorySignature = 0x06064b50;
-        internal const uint Zip64EndOfCentralDirectoryLocatorSignature = 0x07064b50;
-        internal const uint LocalFileHeaderSignature = 0x04034b50;
 
         private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
@@ -32,7 +25,7 @@ namespace NuGet.Packaging.Signing
         private const int ValidZipDate_YearMax = 2107;
 
         /// <summary>
-        /// Takes a binary reader and moves forwards the current position of it's base stream until it finds the specified signature.
+        /// Takes a binary reader and moves forwards the current position of its base stream until it finds the specified signature.
         /// </summary>
         /// <param name="reader">Binary reader to update current position</param>
         /// <param name="byteSignature">byte signature to be matched</param>
@@ -229,20 +222,15 @@ namespace NuGet.Packaging.Signing
             {
                 StartOfFileHeaders = reader.BaseStream.Length,
             };
-            var centralDirectoryRecords = new List<CentralDirectoryHeaderMetadata>();
 
-            // Look for EOCD signature, typically is around 22 bytes from the end
-            reader.BaseStream.Seek(offset: -22, origin: SeekOrigin.End);
-            SeekReaderBackwardToMatchByteSignature(reader, BitConverter.GetBytes(EndOfCentralDirectorySignature));
-            metadata.EndOfCentralDirectoryRecordPosition = reader.BaseStream.Position;
+            var endOfCentralDirectoryRecord = EndOfCentralDirectoryRecord.Read(reader);
 
-            // Jump to offset of start of central directory, 16 bytes from the start of EOCD (including signature length)
-            reader.BaseStream.Seek(offset: 16, origin: SeekOrigin.Current);
-            metadata.StartOfCentralDirectory = reader.ReadUInt32();
-            reader.BaseStream.Seek(offset: metadata.StartOfCentralDirectory, origin: SeekOrigin.Begin);
+            metadata.EndOfCentralDirectoryRecordPosition = endOfCentralDirectoryRecord.OffsetFromStart;
+
+            reader.BaseStream.Seek(endOfCentralDirectoryRecord.OffsetOfStartOfCentralDirectory, SeekOrigin.Begin);
 
             // Read central directory records
-            var possibleSignatureCentralDirectoryRecordPosition = reader.BaseStream.Position;
+            var centralDirectoryRecords = new List<CentralDirectoryHeaderMetadata>();
             CentralDirectoryHeader header;
 
             while (CentralDirectoryHeader.TryRead(reader, out header))
@@ -259,12 +247,10 @@ namespace NuGet.Packaging.Signing
                     Filename = SignedPackageArchiveUtility.GetString(header.FileName, isUtf8),
                     HeaderSize = header.GetSizeInBytes(),
                     OffsetToFileHeader = header.RelativeOffsetOfLocalHeader,
-                    Position = possibleSignatureCentralDirectoryRecordPosition
+                    Position = header.OffsetFromStart
                 };
 
                 centralDirectoryRecords.Add(centralDirectoryMetadata);
-
-                possibleSignatureCentralDirectoryRecordPosition = reader.BaseStream.Position;
             }
 
             if (centralDirectoryRecords.Count == 0)
@@ -276,23 +262,7 @@ namespace NuGet.Packaging.Signing
             metadata.EndOfCentralDirectory = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize;
             metadata.CentralDirectoryHeaders = centralDirectoryRecords;
 
-            // Update signed package archive metadata
             UpdateSignedPackageArchiveMetadata(reader, metadata);
-
-            // Make sure the package is not zip64
-            var isZip64 = false;
-            try
-            {
-                SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(Zip64EndOfCentralDirectorySignature));
-                isZip64 = true;
-            }
-            // Failure means package is not a zip64 archive, then is safe to ignore.
-            catch { }
-
-            if (isZip64)
-            {
-                throw new InvalidDataException(Strings.ErrorZip64NotSupported);
-            }
 
             return metadata;
         }
@@ -327,7 +297,7 @@ namespace NuGet.Packaging.Signing
                 // Validate file header signature
                 var fileHeaderSignature = reader.ReadUInt32();
 
-                if (fileHeaderSignature != LocalFileHeaderSignature)
+                if (fileHeaderSignature != LocalFileHeader.Signature)
                 {
                     throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
                 }
@@ -336,7 +306,7 @@ namespace NuGet.Packaging.Signing
                 // the start of the next file header (or the start of the first central directory header)
                 try
                 {
-                    SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(LocalFileHeaderSignature));
+                    SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(LocalFileHeader.Signature));
                 }
                 // No local File header found (entry must be the last entry), search for the start of the first central directory
                 catch
@@ -558,7 +528,7 @@ namespace NuGet.Packaging.Signing
             uint dosDateTime)
         {
             // Write the file header signature
-            writer.Write(LocalFileHeaderSignature);
+            writer.Write(LocalFileHeader.Signature);
 
             // Version needed to extract:  2.0
             writer.Write((ushort)20);
@@ -593,7 +563,7 @@ namespace NuGet.Packaging.Signing
             writer.Write(fileNameBytes);
 
             // calculate the total length of data written
-            var writtenDataLength = LocalFileHeaderSizeWithoutSignature + ZipHeaderSignatureSize + fileNameLength;
+            var writtenDataLength = LocalFileHeader.SizeInBytesOfFixedLengthFields + fileNameLength;
 
             return writtenDataLength;
         }
@@ -685,7 +655,7 @@ namespace NuGet.Packaging.Signing
             writer.Write(fileNameBytes);
 
             // calculate the total length of data written
-            var writtenDataLength = CentralDirectoryHeader.SizeInBytesOfFixedLengthFields + ZipHeaderSignatureSize + fileNameLength;
+            var writtenDataLength = CentralDirectoryHeader.SizeInBytesOfFixedLengthFields + fileNameLength;
 
             return writtenDataLength;
         }

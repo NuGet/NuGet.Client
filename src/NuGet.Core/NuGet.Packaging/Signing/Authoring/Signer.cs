@@ -49,6 +49,11 @@ namespace NuGet.Packaging.Signing
 
             VerifyCertificate(request.Certificate);
 
+            if (await _package.IsZip64Async(token))
+            {
+                throw new InvalidDataException(Strings.ErrorZip64NotSupported);
+            }
+
             var zipArchiveHash = await _package.GetArchiveHashAsync(request.SignatureHashAlgorithm, token);
 
             var signatureContent = GenerateSignatureContent(request.SignatureHashAlgorithm, zipArchiveHash);

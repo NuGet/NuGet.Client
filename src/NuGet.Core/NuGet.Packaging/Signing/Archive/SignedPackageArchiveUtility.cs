@@ -12,7 +12,8 @@ using System.Text;
 
 namespace NuGet.Packaging.Signing
 {
-    internal static class SignedPackageArchiveUtility
+    /// <remarks>This is public only to facilitate testing.</remarks>
+    public static class SignedPackageArchiveUtility
     {
         private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
@@ -26,17 +27,10 @@ namespace NuGet.Packaging.Signing
         {
             try
             {
-                // Look for EOCD signature, typically is around 22 bytes from the end
-                reader.BaseStream.Seek(offset: -22, origin: SeekOrigin.End);
-                SignedPackageArchiveIOUtility.SeekReaderBackwardToMatchByteSignature(reader,
-                    BitConverter.GetBytes(SignedPackageArchiveIOUtility.EndOfCentralDirectorySignature));
-
-                // Jump to offset of start of central directory, 16 bytes from the start of EOCD
-                reader.BaseStream.Seek(offset: 16, origin: SeekOrigin.Current);
-                var offsetOfStartOfCD = reader.ReadUInt32();
+                var endOfCentralDirectoryRecord = EndOfCentralDirectoryRecord.Read(reader);
 
                 // Look for signature central directory record
-                reader.BaseStream.Seek(offset: offsetOfStartOfCD, origin: SeekOrigin.Begin);
+                reader.BaseStream.Seek(endOfCentralDirectoryRecord.OffsetOfStartOfCentralDirectory, SeekOrigin.Begin);
                 CentralDirectoryHeader header;
 
                 while (CentralDirectoryHeader.TryRead(reader, out header))
@@ -51,7 +45,7 @@ namespace NuGet.Packaging.Signing
 
                         // Make sure file header exists there
                         var fileHeaderSignature = reader.ReadUInt32();
-                        if (fileHeaderSignature != SignedPackageArchiveIOUtility.LocalFileHeaderSignature)
+                        if (fileHeaderSignature != LocalFileHeader.Signature)
                         {
                             throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
                         }
@@ -65,7 +59,90 @@ namespace NuGet.Packaging.Signing
 
             return false;
         }
+#endif
 
+        public static bool IsZip64(BinaryReader reader)
+        {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            var endOfCentralDirectoryRecord = EndOfCentralDirectoryRecord.Read(reader);
+
+            if (endOfCentralDirectoryRecord.NumberOfThisDisk != endOfCentralDirectoryRecord.NumberOfTheDiskWithTheStartOfTheCentralDirectory)
+            {
+                return false;
+            }
+
+            reader.BaseStream.Seek(
+                endOfCentralDirectoryRecord.OffsetFromStart - Zip64EndOfCentralDirectoryLocator.SizeInBytes,
+                SeekOrigin.Begin);
+
+            if (Zip64EndOfCentralDirectoryLocator.Exists(reader))
+            {
+                return true;
+            }
+
+            reader.BaseStream.Seek(endOfCentralDirectoryRecord.OffsetOfStartOfCentralDirectory, SeekOrigin.Begin);
+
+            CentralDirectoryHeader centralDirectoryHeader;
+
+            while (CentralDirectoryHeader.TryRead(reader, out centralDirectoryHeader))
+            {
+                if (HasZip64ExtendedInformationExtraField(centralDirectoryHeader))
+                {
+                    return true;
+                }
+
+                if (centralDirectoryHeader.DiskNumberStart != endOfCentralDirectoryRecord.NumberOfThisDisk)
+                {
+                    continue;
+                }
+
+                var savedPosition = reader.BaseStream.Position;
+
+                reader.BaseStream.Position = centralDirectoryHeader.RelativeOffsetOfLocalHeader;
+
+                LocalFileHeader localFileHeader;
+
+                if (LocalFileHeader.TryRead(reader, out localFileHeader) &&
+                    HasZip64ExtendedInformationExtraField(localFileHeader))
+                {
+                    return true;
+                }
+
+                reader.BaseStream.Position = savedPosition;
+            }
+
+            return false;
+        }
+
+        private static bool HasZip64ExtendedInformationExtraField(CentralDirectoryHeader header)
+        {
+            IReadOnlyList<ExtraField> extraFields;
+
+            if (ExtraField.TryRead(header, out extraFields))
+            {
+                return extraFields.Any(extraField => extraField is Zip64ExtendedInformationExtraField);
+            }
+
+            return false;
+        }
+
+        private static bool HasZip64ExtendedInformationExtraField(LocalFileHeader header)
+        {
+            IReadOnlyList<ExtraField> extraFields;
+
+            if (ExtraField.TryRead(header, out extraFields))
+            {
+                return extraFields.Any(extraField => extraField is Zip64ExtendedInformationExtraField);
+            }
+
+            return false;
+        }
+
+#if IS_DESKTOP
         /// <summary>
         /// Signs a Zip with the contents in the SignatureStream using the writer.
         /// The reader is used to read the exisiting contents for the Zip.
@@ -73,7 +150,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="signatureStream">MemoryStream of the signature to be inserted into the zip.</param>
         /// <param name="reader">BinaryReader to be used to read the existing zip data.</param>
         /// <param name="writer">BinaryWriter to be used to write the signature into the zip.</param>
-        public static void SignZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
+        internal static void SignZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
         {
             SignedPackageArchiveIOUtility.WriteSignatureIntoZip(signatureStream, reader, writer);
         }
@@ -85,7 +162,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="hashAlgorithm">Hash algorithm to be used to hash data.</param>
         /// <param name="expectedHash">Hash value of the original data.</param>
         /// <returns>True if package archive's hash matches the expected hash</returns>
-        public static bool VerifySignedPackageIntegrity(BinaryReader reader, HashAlgorithm hashAlgorithm, byte[] expectedHash)
+        internal static bool VerifySignedPackageIntegrity(BinaryReader reader, HashAlgorithm hashAlgorithm, byte[] expectedHash)
         {
             if (reader == null)
             {
@@ -161,8 +238,8 @@ namespace NuGet.Packaging.Signing
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntries));
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntriesOnDisk));
 
-                // update the central directory size by substracting the length of the signature header size and the central directory header signature
-                var eocdrSizeOfCentralDirectory = (uint)(reader.ReadUInt32() - signatureCentralDirectoryHeader.HeaderSize - SignedPackageArchiveIOUtility.ZipHeaderSignatureSize);
+                // update the central directory size by substracting the size of the package signature file's central directory header
+                var eocdrSizeOfCentralDirectory = (uint)(reader.ReadUInt32() - signatureCentralDirectoryHeader.HeaderSize);
                 SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrSizeOfCentralDirectory));
 
                 var eocdrOffsetOfCentralDirectory = reader.ReadUInt32() - (uint)signatureCentralDirectoryHeader.FileEntryTotalSize;
@@ -203,17 +280,17 @@ namespace NuGet.Packaging.Signing
 
 #else
 
-        public static bool IsSigned(BinaryReader reader)
+        internal static bool IsSigned(BinaryReader reader)
         {
             throw new NotImplementedException();
         }
 
-        public static void SignZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
+        internal static void SignZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
         {
             throw new NotImplementedException();
         }
 
-        public static void VerifySignedZipIntegrity(BinaryReader reader, HashAlgorithm hashAlgorithm, byte[] expectedHash)
+        internal static void VerifySignedZipIntegrity(BinaryReader reader, HashAlgorithm hashAlgorithm, byte[] expectedHash)
         {
             throw new NotImplementedException();
         }

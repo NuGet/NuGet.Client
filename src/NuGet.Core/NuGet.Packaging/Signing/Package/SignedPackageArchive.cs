@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
@@ -81,6 +82,21 @@ namespace NuGet.Packaging.Signing
             using (var zip = new ZipArchive(ZipWriteStream, ZipArchiveMode.Update, leaveOpen: true))
             {
                 zip.GetEntry(SigningSpecifications.SignaturePath).Delete();
+            }
+        }
+
+        public Task<bool> IsZip64Async(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            if (ZipReadStream == null)
+            {
+                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
+            }
+
+            using (var reader = new BinaryReader(ZipReadStream, new UTF8Encoding(), leaveOpen: true))
+            {
+                return Task.FromResult(SignedPackageArchiveUtility.IsZip64(reader));
             }
         }
 
