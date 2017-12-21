@@ -100,7 +100,7 @@ namespace NuGet.Commands
         /// <returns>A set of libraries that were installed by this operation</returns>
         public virtual ISet<LibraryIdentity> GetAllInstalled()
         {
-            return new HashSet<LibraryIdentity>(RestoreGraphs.Where(g => !g.InConflict).SelectMany(g => g.Install).Distinct().Select(m => m.Library));
+            return new HashSet<LibraryIdentity>(RestoreGraphs.SelectMany(g => g.Install).Select(m => m.Library));
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace NuGet.Commands
         /// <returns>A set of dependencies that were unable to be resolved by this operation</returns>
         public ISet<LibraryRange> GetAllUnresolved()
         {
-            return new HashSet<LibraryRange>(RestoreGraphs.SelectMany(g => g.Unresolved).Distinct());
+            return new HashSet<LibraryRange>(RestoreGraphs.SelectMany(g => g.Unresolved));
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -40,16 +40,26 @@ namespace NuGet.Commands
         /// </summary>
         public IEnumerable<GraphNode<RemoteResolveResult>> Graphs { get; }
 
+        /// <summary>
+        /// Packages that were not present in the user packages folder
+        /// or a fallback folder before the resolver walk.
+        /// </summary>
         public ISet<RemoteMatch> Install { get; }
+
+        /// <summary>
+        /// Libraries that will be added to the assets file.
+        /// </summary>
         public ISet<GraphItem<RemoteResolveResult>> Flattened { get; }
+
+        /// <summary>
+        /// Libraries that could not be found.
+        /// </summary>
         public ISet<LibraryRange> Unresolved { get; }
-        public bool InConflict { get; }
 
         public string Name { get; }
 
         public string TargetGraphName { get; }
 
-        // TODO: Move conflicts to AnalyzeResult
         public IEnumerable<ResolverConflict> Conflicts { get; internal set; }
 
         public AnalyzeResult<RemoteResolveResult> AnalyzeResult { get; private set; }
@@ -91,12 +101,12 @@ namespace NuGet.Commands
         }
 
         public static RestoreTargetGraph Create(
-            RuntimeGraph runtimeGraph,
-            IEnumerable<GraphNode<RemoteResolveResult>> graphs,
-            RemoteWalkContext context,
-            ILogger log,
-            NuGetFramework framework,
-            string runtimeIdentifier)
+                RuntimeGraph runtimeGraph,
+                IEnumerable<GraphNode<RemoteResolveResult>> graphs,
+                RemoteWalkContext context,
+                ILogger log,
+                NuGetFramework framework,
+                string runtimeIdentifier)
         {
             var install = new HashSet<RemoteMatch>();
             var flattened = new HashSet<GraphItem<RemoteResolveResult>>();
@@ -184,6 +194,26 @@ namespace NuGet.Commands
                 unresolved,
                 analyzeResult,
                 resolvedDependencies);
+        }
+
+        /// <summary>
+        /// Clone the graph and add a RuntimeGraph and RID.
+        /// This should be used for cases where the RIDless and RID graphs are the same.
+        /// </summary>
+        public RestoreTargetGraph WithRuntime(string runtime, RuntimeGraph runtimeGraph)
+        {
+            if (runtime == null)
+            {
+                throw new ArgumentNullException(nameof(runtime));
+            }
+
+            if (runtimeGraph == null)
+            {
+                throw new ArgumentNullException(nameof(runtimeGraph));
+            }
+
+            // Pass the same properties except for runtime and runtimeGraph.
+            return new RestoreTargetGraph(Conflicts, Framework, runtime, runtimeGraph, Graphs, Install, Flattened, Unresolved, AnalyzeResult, ResolvedDependencies);
         }
     }
 }
