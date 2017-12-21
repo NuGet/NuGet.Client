@@ -125,11 +125,14 @@ namespace NuGet.ProjectModel.Test
 
         internal static LibraryDependency CreateLibraryDependency()
         {
-            var dependency = new LibraryDependency();
-            dependency.LibraryRange = new LibraryRange(Guid.NewGuid().ToString(), LibraryDependencyTarget.Package);
-            dependency.Type = LibraryDependencyType.Default;
-            dependency.IncludeType = LibraryIncludeFlags.None;
-            dependency.SuppressParent = LibraryIncludeFlags.ContentFiles;
+            var dependency = new LibraryDependency(
+                libraryRange: new LibraryRange(Guid.NewGuid().ToString(), LibraryDependencyTarget.Package),
+                type: LibraryDependencyType.Default,
+                includeType: LibraryIncludeFlags.None,
+                suppressParent: LibraryIncludeFlags.ContentFiles,
+                noWarn: new List<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1001, NuGetLogCode.NU1002 },
+                autoReferenced: false);
+
             return dependency;
         }
 
@@ -232,7 +235,7 @@ namespace NuGet.ProjectModel.Test
             methodInfo.Invoke(null, new object[] { PackageSpec });
 
             // Assert
-            
+
             Assert.NotEqual(PackageSpec, clonedPackageSpec);
             if (validateJson)
             {
@@ -245,7 +248,8 @@ namespace NuGet.ProjectModel.Test
             Assert.False(object.ReferenceEquals(PackageSpec, clonedPackageSpec));
         }
 
-        public class PackageSpecModify { 
+        public class PackageSpecModify
+        {
 
             public static void ModifyAuthors(PackageSpec packageSpec)
             {
@@ -322,7 +326,7 @@ namespace NuGet.ProjectModel.Test
 
             public static void ModifyRuntimeGraph(PackageSpec packageSpec)
             {
-                packageSpec.RuntimeGraph.Supports["CompatibilityProfile"].RestoreContexts.Add(CreateFrameworkRuntimePair(rid : "win10-x64"));
+                packageSpec.RuntimeGraph.Supports["CompatibilityProfile"].RestoreContexts.Add(CreateFrameworkRuntimePair(rid: "win10-x64"));
             }
 
             public static void ModifyRestoreSettings(PackageSpec packageSpec)
@@ -541,7 +545,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             projectReference.ProjectPath = "NewPath";
-            
+
             // Assert
             Assert.NotEqual(clone, originalPRMFI);
         }
@@ -567,7 +571,7 @@ namespace NuGet.ProjectModel.Test
 
         private ProjectRestoreSettings CreateProjectRestoreSettings()
         {
-            var prs =  new ProjectRestoreSettings();
+            var prs = new ProjectRestoreSettings();
             prs.HideWarningsAndErrors = true;
             return prs;
         }
@@ -589,12 +593,13 @@ namespace NuGet.ProjectModel.Test
         internal static TargetFrameworkInformation CreateTargetFrameworkInformation(string tfm = "net461")
         {
             var framework = NuGetFramework.Parse(tfm);
-            var dependency = new LibraryDependency();
-            dependency.LibraryRange = new LibraryRange("Dependency", LibraryDependencyTarget.Package);
-            dependency.Type = LibraryDependencyType.Default;
-            dependency.IncludeType = LibraryIncludeFlags.None;
-            dependency.SuppressParent = LibraryIncludeFlags.ContentFiles;
-            dependency.NoWarn = new List<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1001 };
+            var dependency = new LibraryDependency(
+                libraryRange: new LibraryRange("Dependency", LibraryDependencyTarget.Package),
+                type: LibraryDependencyType.Default,
+                includeType: LibraryIncludeFlags.None,
+                suppressParent: LibraryIncludeFlags.ContentFiles,
+                noWarn: new List<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1001 },
+                autoReferenced: false);
             var imports = NuGetFramework.Parse("net45"); // This makes no sense in the context of fallback, just for testing :)
 
             var originalTargetFrameworkInformation = new TargetFrameworkInformation();
