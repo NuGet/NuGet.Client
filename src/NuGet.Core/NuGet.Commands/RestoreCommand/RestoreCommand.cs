@@ -510,7 +510,6 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             CancellationToken token)
         {
-
             if (_request.Project.TargetFrameworks.Count == 0)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectDoesNotSpecifyTargetFrameworks, _request.Project.Name, _request.Project.FilePath);

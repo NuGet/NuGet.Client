@@ -170,7 +170,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Restore a build integrated project and update the lock file
+        /// Restore a build integrated project(PackageReference & Project.Json only) and update the lock file
         /// </summary>
         public static async Task<RestoreResult> RestoreProjectAsync(
             ISolutionManager solutionManager,
@@ -185,7 +185,7 @@ namespace NuGet.PackageManagement
             // Restore
             var specs = await project.GetPackageSpecsAsync(context);
             var spec = specs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
-                || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson); // Don't handle global tools in VS. 
+                || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson); // Do not restore global tools Project Style in VS. 
 
             var result = await PreviewRestoreAsync(
                 solutionManager,

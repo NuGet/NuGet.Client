@@ -260,11 +260,11 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project {0} cannot contain more than {1} package references..
+        ///   Looks up a localized string similar to Project {0} must have exactly {1} package reference(s)..
         /// </summary>
-        internal static string Error_ProjectWithTooManyDependencies {
+        internal static string Error_ProjectWithIncorrectDependenciesCount {
             get {
-                return ResourceManager.GetString("Error_ProjectWithTooManyDependencies", resourceCulture);
+                return ResourceManager.GetString("Error_ProjectWithIncorrectDependenciesCount", resourceCulture);
             }
         }
         

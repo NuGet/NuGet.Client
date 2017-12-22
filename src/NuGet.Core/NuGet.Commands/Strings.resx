@@ -682,7 +682,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Certificate store '{0}' not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
     <comment>{0} is the certificate store name</comment>
   </data>
-    <data name="Error_ProjectWithTooManyDependencies" xml:space="preserve">
-    <value>Project {0} cannot contain more than {1} package references.</value>
+  <data name="Error_ProjectWithIncorrectDependenciesCount" xml:space="preserve">
+    <value>Project {0} must have exactly {1} package reference(s).</value>
   </data>
 </root>

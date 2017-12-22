@@ -103,10 +103,10 @@ namespace NuGet.ProjectModel
             var projectStyle = packageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
             // Read references from external project
-            if (projectStyle == ProjectStyle.PackageReference) // does tool belong here?
+            if (projectStyle == ProjectStyle.PackageReference)
             {
                 // NETCore
-                dependencies.AddRange(GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework));
+                dependencies.AddRange(GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework)); // TODO NK - double check how this works in dotnet tool case
             }
             else
             {

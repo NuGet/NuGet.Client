@@ -182,10 +182,6 @@ namespace NuGet.PackageManagement
                     // call into INuGetPackageManager, which is not implemented by NuGet. This code
                     // will make the decision of how to install the .NET CLI tool package.
                 }
-                else if (nuGetProject is BuildIntegratedNuGetProject && packageType == PackageType.DotnetTool)
-                {
-                    // CommandLineTool projects can only be installed to a project with a CommandLineToolReference restore style.
-                }
                 else
                 {
                     throw new PackagingException(string.Format(
