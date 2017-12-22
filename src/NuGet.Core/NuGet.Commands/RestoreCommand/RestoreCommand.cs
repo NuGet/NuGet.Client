@@ -475,7 +475,7 @@ namespace NuGet.Commands
 
                     var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
 
-                    var res = await checker.CheckAsync(graph, includeFlags);
+                    var res = await checker.CheckAsync(graph, includeFlags, project);
                     checkResults.Add(res);
                     if (res.Success)
                     {
@@ -510,7 +510,6 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             CancellationToken token)
         {
-            System.Diagnostics.Debugger.Launch();
 
             if (_request.Project.TargetFrameworks.Count == 0)
             {

@@ -37,7 +37,8 @@ namespace NuGet.Commands
 
         internal async Task<CompatibilityCheckResult> CheckAsync(
             RestoreTargetGraph graph,
-            Dictionary<string, LibraryIncludeFlags> includeFlags)
+            Dictionary<string, LibraryIncludeFlags> includeFlags,
+            PackageSpec packageSpec)
         {
             // The Compatibility Check is designed to alert the user to cases where packages are not behaving as they would
             // expect, due to compatibility issues.
@@ -68,7 +69,6 @@ namespace NuGet.Commands
             foreach (var node in graph.Flattened)
             {
                 await _log.LogAsync(LogLevel.Debug, string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingPackageCompatibility, node.Key.Name, node.Key.Version, graph.Name));
-
                 // Check project compatibility
                 if (node.Key.Type == LibraryType.Project)
                 {
@@ -95,7 +95,7 @@ namespace NuGet.Commands
                         await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1201, issue, graph));
                     }
                     // quick test. 
-                    if (localMatch == null || !IsProjectPackageCompatible(localMatch.LocalLibrary))
+                    if (localMatch == null || !IsProjectTypeCompatible(localMatch.LocalLibrary))
                     {
 
                         var available = new List<NuGetFramework>();
@@ -107,7 +107,7 @@ namespace NuGet.Commands
                         }
 
                         // Create issue
-                        var issue = CompatibilityIssue.IncompatibleProjectPackageCombination(
+                        var issue = CompatibilityIssue.IncompatibleProjectType(
                             new PackageIdentity(node.Key.Name, node.Key.Version),
                             graph.Framework,
                             graph.RuntimeIdentifier,
@@ -144,7 +144,7 @@ namespace NuGet.Commands
                     continue;
                 }
 
-                if (!IsPackageCompatible(compatibilityData))
+                if (!IsPackageCompatible(compatibilityData, packageSpec))
                 {
                     var available = GetPackageFrameworks(compatibilityData, graph);
 
@@ -323,37 +323,48 @@ namespace NuGet.Commands
             }
         }
 
-        private static bool IsProjectPackageCompatible(Library library)
+        private static bool IsProjectTypeCompatible(Library library)
         {
             var projectRestoreStyle = library.Items["NuGet.ProjectModel.RestoreMetadata.ProjectStyle"];
 
             if (projectRestoreStyle.Equals(ProjectStyle.DotnetToolReference)) {
                 if (library.Dependencies.Count() != 1)
                 {
-                    //
                     return false;
                 }
             }
             return true;
         }
 
-        private bool IsPackageCompatible(CompatibilityData compatibilityData)
+        private bool IsPackageCompatible(CompatibilityData compatibilityData, PackageSpec packageSpec)
         {
             // A package is compatible if it has...
             return
                 (HasCompatibleAssets(compatibilityData.TargetLibrary) ||           
                 !compatibilityData.Files.Any(p =>
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
-                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase))) && NoToolsDependencies(compatibilityData); // No assemblies at all (for any TxM)
+                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase))) && NoToolsDependencies(compatibilityData, packageSpec); // No assemblies at all (for any TxM)
         }
 
-        private static bool NoToolsDependencies(CompatibilityData compatibilityData)
+        private static bool NoToolsDependencies(CompatibilityData compatibilityData, PackageSpec packageSpec)
         {
-            // Here it's a package target library...I can tell if it's a dotnet tool...but I can't tell what it's parent is...whether it's in a tools project or not. 
-            foreach(var packageType in compatibilityData.TargetLibrary.PackageType)
+            if (packageSpec.RestoreMetadata.ProjectStyle.Equals(ProjectStyle.DotnetToolReference))
             {
-                if (packageType.Equals(PackageType.DotnetTool)){
+                if(compatibilityData.TargetLibrary.PackageType.Count != 1)
+                {
                     return false;
+                }
+                if (!compatibilityData.TargetLibrary.PackageType.First().Equals(PackageType.DotnetTool))
+                {
+                    return false;
+                }
+            } else { 
+                foreach(var packageType in compatibilityData.TargetLibrary.PackageType)
+                {
+                    if (packageType.Equals(PackageType.DotnetTool))
+                    {
+                        return false;
+                    }
                 }
             }
 
