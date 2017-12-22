@@ -113,7 +113,7 @@ namespace NuGet.VisualStudio
             var context = new DependencyGraphCacheContext();
             var packageSpecs = await project.GetPackageSpecsAsync(context);
             var packageSpec = packageSpecs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
-                || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson); // NO need to support these for global tools even though it's very package reference like
+                || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson);
 
             var packagesPath = VSRestoreSettingsUtilities.GetPackagesPath(_settings, packageSpec);
 
