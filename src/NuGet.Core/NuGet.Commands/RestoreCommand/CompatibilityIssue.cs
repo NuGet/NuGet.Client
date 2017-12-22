@@ -62,6 +62,19 @@ namespace NuGet.Commands
                 packageFrameworks);
         }
 
+        public static CompatibilityIssue IncompatibleToolsPackage(
+            PackageIdentity referenceAssemblyPackage
+)
+        {
+            return new CompatibilityIssue(
+                CompatibilityIssueType.IncompatiblePackageWithDotnetTool,
+                referenceAssemblyPackage,
+                string.Empty,
+                null,
+                null,
+                new List<NuGetFramework>());
+        }
+
         public static CompatibilityIssue IncompatibleProject(
             PackageIdentity project,
             NuGetFramework framework,
@@ -78,18 +91,15 @@ namespace NuGet.Commands
         }
 
         public static CompatibilityIssue IncompatibleProjectType(
-            PackageIdentity project,
-            NuGetFramework framework,
-            string runtimeIdentifier,
-            IEnumerable<NuGetFramework> projectFrameworks)
+            PackageIdentity project)
         {
             return new CompatibilityIssue(
                 CompatibilityIssueType.ProjectWithTooManyReferences,
                 project,
                 string.Empty,
-                framework,
-                runtimeIdentifier,
-                projectFrameworks);
+                null,
+                null,
+                new List<NuGetFramework>());
         }
 
         public override string ToString()
@@ -148,10 +158,20 @@ namespace NuGet.Commands
                             Package.Id);
 
                 return FormatMessage(message, supports, noSupports);
-            } else if(Type == CompatibilityIssueType.ProjectWithTooManyReferences)
+            }
+            else if(Type == CompatibilityIssueType.ProjectWithTooManyReferences)
             {
                 var message = string.Format(CultureInfo.CurrentCulture,
                        Strings.Error_ProjectWithTooManyDependencies,
+                       Package.Id,
+                       1);
+
+                return FormatMessage(message, string.Empty, string.Empty);
+            }
+            else if(Type == CompatibilityIssueType.IncompatiblePackageWithDotnetTool)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture,
+                       "Invalid project <-> package combination for '{0}'. DotnetToolReference project style can only contain references of the DotnetTool type",
                        Package.Id,
                        1);
 
@@ -242,6 +262,7 @@ namespace NuGet.Commands
         ReferenceAssemblyNotImplemented,
         PackageIncompatible,
         ProjectIncompatible,
-        ProjectWithTooManyReferences
+        ProjectWithTooManyReferences,
+        IncompatiblePackageWithDotnetTool
     }
 }

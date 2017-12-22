@@ -74,7 +74,7 @@ namespace NuGet.Commands
                 {
                     // Get the full library
                     var localMatch = node.Data?.Match as LocalMatch;
-                    if (localMatch == null || !IsProjectCompatible(localMatch.LocalLibrary))
+                    if (localMatch == null || !IsProjectFrameworkCompatible(localMatch.LocalLibrary))
                     {
                         var available = new List<NuGetFramework>();
 
@@ -94,27 +94,15 @@ namespace NuGet.Commands
                         issues.Add(issue);
                         await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1201, issue, graph));
                     }
-                    // quick test. 
-                    if (localMatch == null || !IsProjectTypeCompatible(localMatch.LocalLibrary))
+
+                    if (!IsProjectTypeCompatible(localMatch.LocalLibrary))
                     {
-
-                        var available = new List<NuGetFramework>();
-
-                        // If the project info is available find all available frameworks
-                        if (localMatch?.LocalLibrary != null)
-                        {
-                            available = GetProjectFrameworks(localMatch.LocalLibrary);
-                        }
-
                         // Create issue
                         var issue = CompatibilityIssue.IncompatibleProjectType(
-                            new PackageIdentity(node.Key.Name, node.Key.Version),
-                            graph.Framework,
-                            graph.RuntimeIdentifier,
-                            available);
+                            new PackageIdentity(node.Key.Name, node.Key.Version));
 
                         issues.Add(issue);
-                        await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1210, issue, graph));
+                        await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1211, issue, graph));
                     }
 
                     // Skip further checks on projects
@@ -138,13 +126,13 @@ namespace NuGet.Commands
                     continue;
                 }
 
-                var compatibilityData = GetCompatibilityData(graph, node.Key);
+                var compatibilityData = GetCompatibilityData(graph, node.Key, packageSpec);
                 if (compatibilityData == null)
                 {
                     continue;
                 }
 
-                if (!IsPackageCompatible(compatibilityData, packageSpec))
+                if (!IsPackageCompatible(compatibilityData))
                 {
                     var available = GetPackageFrameworks(compatibilityData, graph);
 
@@ -156,6 +144,15 @@ namespace NuGet.Commands
 
                     issues.Add(issue);
                     await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1202, issue, graph));
+                }
+
+                if (!HasCompatibleToolsDependencies(compatibilityData))
+                {
+                    var issue = CompatibilityIssue.IncompatibleToolsPackage(
+                      new PackageIdentity(node.Key.Name, node.Key.Version));
+
+                    issues.Add(issue);
+                    await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1203, issue, graph));
                 }
 
                 // Check for matching ref/libs if we're checking a runtime-specific graph
@@ -302,7 +299,7 @@ namespace NuGet.Commands
             return available;
         }
 
-        private static bool IsProjectCompatible(Library library)
+        private static bool IsProjectFrameworkCompatible(Library library)
         {
             object frameworkInfoObject;
             if (library.Items.TryGetValue(
@@ -336,19 +333,19 @@ namespace NuGet.Commands
             return true;
         }
 
-        private bool IsPackageCompatible(CompatibilityData compatibilityData, PackageSpec packageSpec)
+        private bool IsPackageCompatible(CompatibilityData compatibilityData)
         {
             // A package is compatible if it has...
             return
-                (HasCompatibleAssets(compatibilityData.TargetLibrary) ||           
+                HasCompatibleAssets(compatibilityData.TargetLibrary) ||
                 !compatibilityData.Files.Any(p =>
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
-                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase))) && NoToolsDependencies(compatibilityData, packageSpec); // No assemblies at all (for any TxM)
+                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase)); // No assemblies at all (for any TxM)
         }
 
-        private static bool NoToolsDependencies(CompatibilityData compatibilityData, PackageSpec packageSpec)
+        private static bool HasCompatibleToolsDependencies(CompatibilityData compatibilityData)
         {
-            if (packageSpec.RestoreMetadata.ProjectStyle.Equals(ProjectStyle.DotnetToolReference))
+            if (compatibilityData.PackageSpec.RestoreMetadata.ProjectStyle.Equals(ProjectStyle.DotnetToolReference))
             {
                 if(compatibilityData.TargetLibrary.PackageType.Count != 1)
                 {
@@ -386,10 +383,9 @@ namespace NuGet.Commands
                 targetLibrary.Build.Count > 0 ||                                      // Build
                 targetLibrary.BuildMultiTargeting.Count > 0 ||                        // Cross targeting build
                 targetLibrary.ToolsAssemblies.Count > 0;                              // Tools assemblies
-                // TODO NK - Continue here
         }
 
-        private CompatibilityData GetCompatibilityData(RestoreTargetGraph graph, LibraryIdentity libraryId)
+        private CompatibilityData GetCompatibilityData(RestoreTargetGraph graph, LibraryIdentity libraryId, PackageSpec packageSpec)
         {
             // Use data from the current lock file if it exists.
             LockFileTargetLibrary targetLibrary = null;
@@ -439,7 +435,7 @@ namespace NuGet.Commands
                 }
             }
 
-            return new CompatibilityData(files, targetLibrary);
+            return new CompatibilityData(files, targetLibrary, packageSpec);
         }
 
         private class CompatibilityData
@@ -447,10 +443,13 @@ namespace NuGet.Commands
             public IEnumerable<string> Files { get; }
             public LockFileTargetLibrary TargetLibrary { get; }
 
-            public CompatibilityData(IEnumerable<string> files, LockFileTargetLibrary targetLibrary)
+            public PackageSpec PackageSpec { get; }
+
+            public CompatibilityData(IEnumerable<string> files, LockFileTargetLibrary targetLibrary, PackageSpec packageSpec)
             {
                 Files = files;
                 TargetLibrary = targetLibrary;
+                PackageSpec = packageSpec;
             }
         }
     }
