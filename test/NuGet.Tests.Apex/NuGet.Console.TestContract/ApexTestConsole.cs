@@ -24,7 +24,6 @@ namespace NuGet.Console.TestContract
 
         private bool EnsureInitilizeConsole()
         {
-            _wpfConsole.Dispatcher.Start();
             var stopwatch = Stopwatch.StartNew();
             var timeout = TimeSpan.FromMinutes(5);
             do
