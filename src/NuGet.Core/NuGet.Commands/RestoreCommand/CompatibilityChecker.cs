@@ -322,9 +322,9 @@ namespace NuGet.Commands
 
         private static bool IsProjectTypeCompatible(Library library)
         {
-            var projectRestoreStyle = library.Items["NuGet.ProjectModel.RestoreMetadata.ProjectStyle"];
+            library.Items.TryGetValue("NuGet.ProjectModel.RestoreMetadata.ProjectStyle",  out var projectStyle);
 
-            if (projectRestoreStyle.Equals(ProjectStyle.DotnetToolReference)) {
+            if (ProjectStyle.DotnetToolReference.Equals(projectStyle)) {
                 if (library.Dependencies.Count() != 1)
                 {
                     return false;
