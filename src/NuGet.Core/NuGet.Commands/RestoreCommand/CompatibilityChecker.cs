@@ -345,7 +345,7 @@ namespace NuGet.Commands
 
         private static bool HasCompatibleToolsDependencies(CompatibilityData compatibilityData)
         {
-            if (compatibilityData.PackageSpec.RestoreMetadata.ProjectStyle.Equals(ProjectStyle.DotnetToolReference))
+            if (ProjectStyle.DotnetToolReference.Equals(compatibilityData.PackageSpec.RestoreMetadata?.ProjectStyle))
             {
                 if(compatibilityData.TargetLibrary.PackageType.Count != 1)
                 {
