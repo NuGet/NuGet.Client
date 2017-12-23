@@ -87,7 +87,7 @@ phases:
     inputs:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
-      testRunTitle: "NuGet.Client Unit Tests On Windows"
+      testRunTitle: "NuGet.Client Desktop Unit Tests On Windows"
       searchFolder: "$(Build.Repository.LocalPath)\\artifacts\\TestResults"
       mergeTestResults: "true"
       publishRunAttachments: "false"
@@ -98,7 +98,7 @@ phases:
     inputs:
       testRunner: "VSTest"
       testResultsFiles: "*.trx"
-      testRunTitle: "NuGet.Client Unit Tests On Windows"
+      testRunTitle: "NuGet.Client .NET Core Unit Tests On Windows"
       searchFolder: "$(Build.Repository.LocalPath)\\artifacts\\TestResults"
       mergeTestResults: "true"
       publishRunAttachments: "false"
@@ -184,8 +184,9 @@ phases:
       SourceFolder: "artifacts"
       Contents: |
         $(VsixPublishDir)\\NuGet.exe
+        $(VsixPublishDir)\\NuGet.pdb
         $(VsixPublishDir)\\NuGet.Mssign.exe
-        $(VsixPublishDir)\\NuGet.pdb 
+        $(VsixPublishDir)\\NuGet.Mssign.pdb
         $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.Core.json 
         $(VsixPublishDir)\\NuGet.Tools.vsix
         $(VsixPublishDir)\\EndToEnd.zip 
@@ -214,7 +215,7 @@ phases:
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\PublishArtifactsFromVsts.ps1"
       arguments: "-NuGetBuildFeedUrl $(NuGetBuildFeed) -NuGetBuildSymbolsFeedUrl $(NuGetBuildSymbolsFeed) -DotnetCoreFeedUrl $(DotnetCoreBuildFeed) -DotnetCoreSymbolsFeedUrl $(DotnetCoreSymbolsFeed) -NuGetBuildFeedApiKey $(NuGetBuildApiKey) -DotnetCoreFeedApiKey $(DotnetCoreFeedApiKey)"
-      failOnStandardError: "false"
+      failOnStandardError: "true"
     condition: " and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'), eq(variables['BuildRTM'], 'false')) "
 
   - task: MSBuild@1
@@ -272,10 +273,10 @@ phases:
     inputs:
       scriptType: "inlineScript"
       arguments: "-BuildOutputTargetPath $(BuildOutputTargetPath)"
-      inlineScript: "param(
-[string]$BuildOutputTargetPath
-)
-Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
+      inlineScript: |
+        param([string]$BuildOutputTargetPath)
+        Get-ChildItem $(BuildOutputTargetPath) -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+        Remove-Item -Path $(BuildOutputTargetPath) -Force -Recurse -ErrorAction SilentlyContinue
     condition: "eq(variables['Agent.JobStatus'], 'Failed')"
 
 
@@ -328,7 +329,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
       testResultsFiles: "*.xml"
       searchFolder: "$(Build.Repository.LocalPath)\\artifacts\\TestResults"
       mergeTestResults: "true"
-      testRunTitle: "NuGet.Client Functional Tests On Windows"
+      testRunTitle: "NuGet.Client Desktop Functional Tests On Windows"
     condition: "succeededOrFailed()"
 
   - task: PublishTestResults@2
@@ -338,7 +339,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
       testResultsFiles: "*.trx"
       searchFolder: "$(Build.Repository.LocalPath)\\artifacts\\TestResults"
       mergeTestResults: "true"
-      testRunTitle: "NuGet.Client Funtional Tests On Windows"
+      testRunTitle: "NuGet.Client .NET Core Funtional Tests On Windows"
     condition: "succeededOrFailed()"
 
 - phase: Tests_On_Linux
