@@ -22,12 +22,13 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void IsZip64_WithEmptyZip_Throws()
+        public void IsZip64_WithEmptyZip_ReturnsFalse()
         {
             using (var test = new SignedPackageArchiveUtilityTest(GetEmptyZip()))
             {
-                Assert.Throws<InvalidDataException>(
-                    () => SignedPackageArchiveUtility.IsZip64(test.Reader));
+                var isZip64 = SignedPackageArchiveUtility.IsZip64(test.Reader);
+
+                Assert.False(isZip64);
             }
         }
 
@@ -108,7 +109,9 @@ namespace NuGet.Packaging.Test
 
         private static byte[] GetResource(string name)
         {
-            return ResourceTestUtility.GetResourceBytes($"NuGet.Packaging.Test.compiler.resources.{name}", typeof(SignedPackageArchiveUtilityTests));
+            return ResourceTestUtility.GetResourceBytes(
+                $"NuGet.Packaging.Test.compiler.resources.{name}",
+                typeof(SignedPackageArchiveUtilityTests));
         }
 
         private sealed class SignedPackageArchiveUtilityTest : IDisposable
@@ -130,6 +133,8 @@ namespace NuGet.Packaging.Test
                 {
                     Reader.Dispose();
                     _stream.Dispose();
+
+                    GC.SuppressFinalize(this);
 
                     _isDisposed = true;
                 }

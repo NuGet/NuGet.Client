@@ -15,9 +15,6 @@ namespace NuGet.Packaging.Signing
 {
     public static class SignedPackageArchiveIOUtility
     {
-        // All the signatures have a fixed length of 4 bytes
-        internal const uint ZipHeaderSignatureSize = 4;
-
         private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
         // used while converting DateTime to MS-DOS date time format
@@ -46,10 +43,10 @@ namespace NuGet.Packaging.Signing
 
             if (originalPosition + byteSignature.Length > stream.Length)
             {
-                throw new ArgumentOutOfRangeException(Strings.ErrorByteSignatureTooBig);
+                throw new ArgumentOutOfRangeException(nameof(byteSignature), Strings.ErrorByteSignatureTooBig);
             }
 
-            while (stream.Position != (stream.Length - byteSignature.Length))
+            while (stream.Position <= (stream.Length - byteSignature.Length))
             {
                 if (CurrentStreamPositionMatchesByteSignature(reader, byteSignature))
                 {
@@ -60,7 +57,12 @@ namespace NuGet.Packaging.Signing
             }
 
             stream.Seek(offset: originalPosition, origin: SeekOrigin.Begin);
-            throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorByteSignatureNotFound, BitConverter.ToString(byteSignature)));
+
+            throw new InvalidDataException(
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ErrorByteSignatureNotFound,
+                    BitConverter.ToString(byteSignature).Replace("-", "")));
         }
 
         /// <summary>
@@ -85,21 +87,30 @@ namespace NuGet.Packaging.Signing
 
             if (originalPosition + byteSignature.Length > stream.Length)
             {
-                throw new ArgumentOutOfRangeException(Strings.ErrorByteSignatureTooBig);
+                throw new ArgumentOutOfRangeException(nameof(byteSignature), Strings.ErrorByteSignatureTooBig);
             }
 
-            while (stream.Position != 0)
+            while (stream.Position >= 0)
             {
                 if (CurrentStreamPositionMatchesByteSignature(reader, byteSignature))
                 {
                     return;
                 }
 
+                if (stream.Position == 0)
+                {
+                    break;
+                }
+
                 stream.Position -= 1;
             }
 
             stream.Seek(offset: originalPosition, origin: SeekOrigin.Begin);
-            throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorByteSignatureNotFound, BitConverter.ToString(byteSignature)));
+
+            throw new InvalidDataException(
+                string.Format(CultureInfo.CurrentCulture,
+                Strings.ErrorByteSignatureNotFound,
+                BitConverter.ToString(byteSignature).Replace("-", "")));
         }
 
         /// <summary>
@@ -123,12 +134,12 @@ namespace NuGet.Packaging.Signing
 
             if (position > reader.BaseStream.Length)
             {
-                throw new ArgumentException(Strings.SignedPackageArchiveIOExtraRead, nameof(position));
+                throw new ArgumentOutOfRangeException(nameof(position), Strings.SignedPackageArchiveIOExtraRead);
             }
 
             if (position < reader.BaseStream.Position)
             {
-                throw new ArgumentException(Strings.SignedPackageArchiveIOInvalidRead, nameof(position));
+                throw new ArgumentOutOfRangeException(nameof(position), Strings.SignedPackageArchiveIOInvalidRead);
             }
 
             var bufferSize = 4;
@@ -161,12 +172,12 @@ namespace NuGet.Packaging.Signing
 
             if (position > reader.BaseStream.Length)
             {
-                throw new ArgumentException(Strings.SignedPackageArchiveIOExtraRead, nameof(position));
+                throw new ArgumentOutOfRangeException(nameof(position), Strings.SignedPackageArchiveIOExtraRead);
             }
 
             if (position < reader.BaseStream.Position)
             {
-                throw new ArgumentException(Strings.SignedPackageArchiveIOInvalidRead, nameof(position));
+                throw new ArgumentOutOfRangeException(nameof(position), Strings.SignedPackageArchiveIOInvalidRead);
             }
 
             var bufferSize = 4;
@@ -220,7 +231,7 @@ namespace NuGet.Packaging.Signing
 
             var metadata = new SignedPackageArchiveMetadata()
             {
-                StartOfFileHeaders = reader.BaseStream.Length,
+                StartOfFileHeaders = reader.BaseStream.Length
             };
 
             var endOfCentralDirectoryRecord = EndOfCentralDirectoryRecord.Read(reader);
@@ -317,11 +328,11 @@ namespace NuGet.Packaging.Signing
                 record.IndexInHeaders = centralDirectoryRecordIndex;
                 record.FileEntryTotalSize = reader.BaseStream.Position - record.OffsetToFileHeader;
 
-                var endofFileHeader = record.FileEntryTotalSize + record.OffsetToFileHeader;
+                var endOfFileHeader = record.FileEntryTotalSize + record.OffsetToFileHeader;
 
-                if (endofFileHeader > endOfAllFileHeaders)
+                if (endOfFileHeader > endOfAllFileHeaders)
                 {
-                    endOfAllFileHeaders = endofFileHeader;
+                    endOfAllFileHeaders = endOfFileHeader;
                 }
             }
 

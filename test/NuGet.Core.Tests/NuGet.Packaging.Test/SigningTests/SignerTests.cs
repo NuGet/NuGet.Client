@@ -141,6 +141,8 @@ namespace NuGet.Packaging.Test
                 {
                     Request.Dispose();
 
+                    GC.SuppressFinalize(this);
+
                     _isDisposed = true;
                 }
             }
