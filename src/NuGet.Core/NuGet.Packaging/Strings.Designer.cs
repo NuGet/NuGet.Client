@@ -170,7 +170,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Byte signature not found in package archive:.
+        ///   Looks up a localized string similar to Byte signature not found in package archive:  0x{0}.
         /// </summary>
         internal static string ErrorByteSignatureNotFound {
             get {

@@ -320,7 +320,8 @@ Valid from:</comment>
     <value>commitment-type-indication attribute contains an invalid value.</value>
   </data>
   <data name="ErrorByteSignatureNotFound" xml:space="preserve">
-    <value>Byte signature not found in package archive:</value>
+    <value>Byte signature not found in package archive:  0x{0}</value>
+    <comment>{0} is the byte signature in hexadecimal</comment>
   </data>
   <data name="SignatureContainsInvalidAttribute" xml:space="preserve">
     <value>Package signature contains an invalid attribute: {0}</value>

@@ -75,13 +75,16 @@ namespace NuGet.Packaging.Signing
                 return false;
             }
 
-            reader.BaseStream.Seek(
-                endOfCentralDirectoryRecord.OffsetFromStart - Zip64EndOfCentralDirectoryLocator.SizeInBytes,
-                SeekOrigin.Begin);
+            var offset = endOfCentralDirectoryRecord.OffsetFromStart - Zip64EndOfCentralDirectoryLocator.SizeInBytes;
 
-            if (Zip64EndOfCentralDirectoryLocator.Exists(reader))
+            if (offset >= 0)
             {
-                return true;
+                reader.BaseStream.Seek(offset, SeekOrigin.Begin);
+
+                if (Zip64EndOfCentralDirectoryLocator.Exists(reader))
+                {
+                    return true;
+                }
             }
 
             reader.BaseStream.Seek(endOfCentralDirectoryRecord.OffsetOfStartOfCentralDirectory, SeekOrigin.Begin);
