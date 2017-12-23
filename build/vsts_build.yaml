@@ -75,6 +75,7 @@ phases:
 
   - task: MSBuild@1
     displayName: "Run unit tests"
+    continueOnError: "true"
     inputs:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
@@ -315,6 +316,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
 
   - task: MSBuild@1
     displayName: "Run Functional Tests"
+    continueOnError: "true"
     inputs:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
@@ -323,6 +325,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
 
   - task: PublishTestResults@2
     displayName: "Publish Desktop Test Results"
+    continueOnError: "true"
     inputs:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
@@ -351,6 +354,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
   steps:
   - task: ShellScript@2
     displayName: "Run Tests"
+    continueOnError: "true"
     inputs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
@@ -384,6 +388,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
 
   - task: ShellScript@2
     displayName: "Run Tests"
+    continueOnError: "true"
     inputs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
@@ -462,6 +467,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
 
 #   - task: PowerShell@1
 #     displayName: "RunFunctionalTests.ps1"
+#     continueOnError: "true"
 #     inputs:
 #       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
 #       arguments: "-PMCCommand $(EndToEndTestCommandToRun) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 15.0"
@@ -560,6 +566,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
 
 #   - task: MSBuild@1
 #     displayName: "Run Apex Tests"
+#     continueOnError: "true"
 #     inputs:
 #       solution: "build\\build.proj"
 #       msbuildVersion: "15.0"
