@@ -15,6 +15,8 @@ namespace NuGet.Packaging.Signing
 {
     public static class SignedPackageArchiveIOUtility
     {
+        private const int _bufferSize = 4096;
+
         private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
         // used while converting DateTime to MS-DOS date time format
@@ -142,12 +144,12 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentOutOfRangeException(nameof(position), Strings.SignedPackageArchiveIOInvalidRead);
             }
 
-            var bufferSize = 4;
-            while (reader.BaseStream.Position + bufferSize < position)
+            while (reader.BaseStream.Position + _bufferSize < position)
             {
-                var bytes = reader.ReadBytes(bufferSize);
+                var bytes = reader.ReadBytes(_bufferSize);
                 writer.Write(bytes);
             }
+
             var remainingBytes = position - reader.BaseStream.Position;
             if (remainingBytes > 0)
             {
@@ -180,13 +182,14 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentOutOfRangeException(nameof(position), Strings.SignedPackageArchiveIOInvalidRead);
             }
 
-            var bufferSize = 4;
-            while (reader.BaseStream.Position + bufferSize < position)
+            while (reader.BaseStream.Position + _bufferSize < position)
             {
-                var bytes = reader.ReadBytes(bufferSize);
+                var bytes = reader.ReadBytes(_bufferSize);
                 HashBytes(hashAlgorithm, bytes);
             }
+
             var remainingBytes = position - reader.BaseStream.Position;
+
             if (remainingBytes > 0)
             {
                 var bytes = reader.ReadBytes((int)remainingBytes);
