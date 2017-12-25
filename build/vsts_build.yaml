@@ -396,6 +396,22 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
+  
+  - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
+    inputs:
+      type: "InlineScript"
+      cwd: "$(Build.Repository.LocalPath)"
+      script: |
+        export JOBSTATUS=`env | grep agent\\.jobstatus | awk -F'=' '{print $2}'`;echo $JOBSTATUS
+        if [ "$JOBSTATUS" == "Succeeded" ]; then
+            STATE="success"
+            DESCRIPTION="succeeded"
+        else
+          STATE="failure"
+          DESCRIPTION="failed"
+        fi
+        curl -H "Authorization: token $NUGETLURKERPERSONALACCESSTOKEN" https://api.github.com/repos/nuget/nuget.client/statuses/$BUILD_SOURCEVERSION --data '{"state":"$STATE","context":"Tests On Linux", "description":"$DESCRIPTION", "target_url":"$BUILDURL"}'
+    condition: "always()"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -430,6 +446,22 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
+
+  - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
+    inputs:
+      type: "InlineScript"
+      cwd: "$(Build.Repository.LocalPath)"
+      script: |
+        export JOBSTATUS=`env | grep agent\\.jobstatus | awk -F'=' '{print $2}'`;echo $JOBSTATUS
+        if [ "$JOBSTATUS" == "Succeeded" ]; then
+            STATE="success"
+            DESCRIPTION="succeeded"
+        else
+          STATE="failure"
+          DESCRIPTION="failed"
+        fi
+        curl -H "Authorization: token $NUGETLURKERPERSONALACCESSTOKEN" https://api.github.com/repos/nuget/nuget.client/statuses/$BUILD_SOURCEVERSION --data '{"state":"$STATE","context":"Tests On Mac", "description":"$DESCRIPTION", "target_url":"$BUILDURL"}'
+    condition: "always()"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
