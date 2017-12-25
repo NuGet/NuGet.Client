@@ -1,7 +1,25 @@
 name: $(SourceBranchName)-$(Date:yyyyMMdd)-$(rev:rr)
 phases:
-- phase: Build_and_UnitTest
 
+- phase: Initialize_GitHub_Status
+  queue:
+    name: VSEng-MicroBuildVS2017
+    timeoutInMinutes: 60
+    demands: 
+      - DotNetFramework
+      - msbuild
+  
+  steps:
+  - task: PowerShell@1
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\utils\\PostGitCommitStatus.ps1
+        InitializeAllTestsToPending -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion)
+
+- phase: Build_and_UnitTest
+  dependsOn: Initialize_GitHub_Status
   queue:
     name: VSEng-MicroBuildVS2017
     timeoutInMinutes: 90
@@ -14,7 +32,6 @@ phases:
     demands: 
       - DotNetFramework
       - msbuild
-
 
   steps:
   - task: PowerShell@1
@@ -34,7 +51,7 @@ phases:
     displayName: "Print Environment Variables"
     inputs:
       scriptType: "inlineScript"
-      inlineScript: "gci env:* | sort-object name"    
+      inlineScript: "gci env:* | sort-object name"
 
   - task: MicroBuildLocalizationPlugin@1
     displayName: "Install Localization Plugin"
@@ -281,6 +298,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
 
 
 - phase: Functional_Tests_On_Windows
+  dependsOn: Initialize_GitHub_Status
   queue:
     name: VSEng-MicroBuildSxS
     timeoutInMinutes: 120
@@ -345,6 +363,7 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
     condition: "succeededOrFailed()"
 
 - phase: Tests_On_Linux
+  dependsOn: Initialize_GitHub_Status
   queue:
     name: DDNuGet-Linux
     timeoutInMinutes: 45
