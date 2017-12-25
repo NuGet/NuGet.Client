@@ -4,7 +4,7 @@
 echo "$1"
 echo "$2"
 echo "$3"
-if [ "$3" = "Succeeded" ]; then
+if [ "$3" == "Succeeded" ]; then
     echo "Tests succeeded"
     STATE="success"
     DESCRIPTION="succeeded"
@@ -14,4 +14,4 @@ else
     DESCRIPTION="failed"
 fi
 
-curl -H "Authorization: token '$1'" https://api.github.com/repos/rohit21agrawal/nuget.client/statuses/$BUILD_SOURCEVERSION --data '{"state":"$STATE","context":"$2", "description":"$DESCRIPTION", "target_url":"$BUILDURL"}'
+curl -u nugetlurker:$1 https://api.github.com/repos/nuget/nuget.client/statuses/$BUILD_SOURCEVERSION --data "{\"state\":\"$STATE\",\"context\":\"$2\", \"description\":\"$DESCRIPTION\", \"target_url\":\"$BUILDURL\"}"

@@ -388,6 +388,15 @@ phases:
 
 
   steps:
+  - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      type: "FilePath"
+      scriptPath: "scripts/utils/PostGitCommitStatus.sh"
+      args: "$(NuGetLurkerPersonalAccessToken) \"Tests On Linux\" $(Agent.JobStatus)"
+      cwd: "$(Build.Repository.LocalPath)"
+    condition: "always()"
+
   - task: ShellScript@2
     displayName: "Run Tests"
     continueOnError: "true"
@@ -395,15 +404,6 @@ phases:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
-
-  - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
-    displayName: "Initialize Git Commit Status on GitHub"
-    inputs:
-      type: "FilePath"
-      scriptPath: "scripts/utils/PostGitCommitStatus.sh"
-      args: "'$(NuGetLurkerPersonalAccessToken)' 'Tests On Linux' '$(Agent.JobStatus)'"
-      cwd: "$(Build.Repository.LocalPath)"
-    condition: "always()"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
