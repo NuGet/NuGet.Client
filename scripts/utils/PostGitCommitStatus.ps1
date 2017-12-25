@@ -12,7 +12,7 @@ Function Update-GitCommitStatus {
         [Parameter(Mandatory = $True)]
         [string]$TestName,
         [Parameter(Mandatory = $True)]
-        [ValidateSet( "Pending", "Success", "Error", "Failure")]
+        [ValidateSet( "pending", "success", "error", "failure")]
         [string]$Status,
         [Parameter(Mandatory = $True)]
         [string]$CommitSha,
@@ -48,13 +48,13 @@ Function InitializeAllTestsToPending {
         [string]$CommitSha
     )
 
-    $TargetUrl = $BuildUrl -f $(Build.BuildId)
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Unit Tests On Windows" - Status "Pending" -CommitSha $CommitSha -TargetUrl $TargetUrl
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional Tests On Windows" - Status "Pending" -CommitSha $CommitSha -TargetUrl $TargetUrl
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" - Status "Pending" -CommitSha $CommitSha -TargetUrl $TargetUrl
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests on Linux" - Status "Pending" -CommitSha $CommitSha -TargetUrl $TargetUrl
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" - Status "Pending" -CommitSha $CommitSha -TargetUrl $TargetUrl
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" - Status "Pending" -CommitSha $CommitSha -TargetUrl $TargetUrl
+    $TargetUrl = $env:BUILDURL -f $env:BUILD_BUILDID
+    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Unit Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $TargetUrl
+    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $TargetUrl
+    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "pending" -CommitSha $CommitSha -TargetUrl $TargetUrl
+    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests on Linux" -Status "pending" -CommitSha $CommitSha -TargetUrl $TargetUrl
+    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $TargetUrl
+    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $TargetUrl
 }
 
 function SetCommitStatusForTestResult {
@@ -67,11 +67,11 @@ function SetCommitStatusForTestResult {
         [string]$CommitSha
     )
 
-    $TargetUrl = $BuildUrl -f $(Build.BuildId)
-    if ($(Agent.JobStatus) -eq "Succeeded") {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName - Status "Success" -CommitSha $CommitSha -TargetUrl $TargetUrl
+    $TargetUrl = $env:BUILDURL -f $env:BUILD_BUILDID
+    if ($env:AGENT_JOBSTATUS -eq "Succeeded") {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "success" -CommitSha $CommitSha -TargetUrl $TargetUrl
     }
     else {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName - Status "Failed" -CommitSha $CommitSha -TargetUrl $TargetUrl
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $TargetUrl
     }
 }
