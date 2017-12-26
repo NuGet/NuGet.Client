@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -188,15 +188,6 @@
   </data>
   <data name="MisplacedTransformFileTitle" xml:space="preserve">
     <value>Transform file outside content folder.</value>
-  </data>
-  <data name="MissingSummaryDescription" xml:space="preserve">
-    <value>The Description text is long but the Summary text is empty. This means the Description text will be truncated in the 'Manage NuGet Packages' dialog.</value>
-  </data>
-  <data name="MissingSummarySolution" xml:space="preserve">
-    <value>Provide a brief summary of the package in the Summary field.</value>
-  </data>
-  <data name="MissingSummaryTitle" xml:space="preserve">
-    <value>Consider providing Summary text.</value>
   </data>
   <data name="PlaceholderFileInPackageDescription" xml:space="preserve">
     <value>An empty folder placeholder file '{0}' is in a non-empty folder and should be removed.</value>
