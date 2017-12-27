@@ -1,6 +1,7 @@
 ﻿<#
 .SYNOPSIS
 Script to post status of tests for the commit to GitHub
+https://developer.github.com/v3/repos/statuses/ 
 
 .DESCRIPTION
 Uses the Personal Access Token of NuGetLurker to automate the tagging process.
