@@ -65,6 +65,19 @@ namespace NuGet.Commands
             var compileAssemblies = new Dictionary<string, LibraryIdentity>(StringComparer.OrdinalIgnoreCase);
             var issues = new List<CompatibilityIssue>();
 
+            if (packageSpec.RestoreMetadata?.ProjectStyle == ProjectStyle.DotnetToolReference)
+            {
+                if (packageSpec.GetAllPackageDependencies().Count() != 1)
+                {
+                    // Create issue
+                    var issue = CompatibilityIssue.IncompatibleProjectType(
+                        new PackageIdentity(packageSpec.Name, packageSpec.Version));
+
+                    issues.Add(issue);
+                    await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1211, issue, graph));
+                }
+            }
+
             // Verify framework assets also as part of runtime assets validation.
             foreach (var node in graph.Flattened)
             {
@@ -93,16 +106,6 @@ namespace NuGet.Commands
 
                         issues.Add(issue);
                         await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1201, issue, graph));
-                    }
-
-                    if (!IsProjectTypeCompatible(localMatch.LocalLibrary))
-                    {
-                        // Create issue
-                        var issue = CompatibilityIssue.IncompatibleProjectType(
-                            new PackageIdentity(node.Key.Name, node.Key.Version));
-
-                        issues.Add(issue);
-                        await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1211, issue, graph));
                     }
 
                     // Skip further checks on projects
@@ -320,19 +323,6 @@ namespace NuGet.Commands
             }
         }
 
-        private static bool IsProjectTypeCompatible(Library library)
-        {
-            library.Items.TryGetValue("NuGet.ProjectModel.RestoreMetadata.ProjectStyle",  out var projectStyle);
-
-            if (ProjectStyle.DotnetToolReference.Equals(projectStyle)) {
-                if (library.Dependencies.Count() != 1)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
         private bool IsPackageCompatible(CompatibilityData compatibilityData)
         {
             // A package is compatible if it has...
@@ -345,7 +335,7 @@ namespace NuGet.Commands
 
         private static bool HasCompatibleToolsDependencies(CompatibilityData compatibilityData)
         {
-            if (ProjectStyle.DotnetToolReference.Equals(compatibilityData.PackageSpec.RestoreMetadata?.ProjectStyle))
+            if (ProjectStyle.DotnetToolReference == compatibilityData.PackageSpec.RestoreMetadata?.ProjectStyle)
             {
                 if(compatibilityData.TargetLibrary.PackageType.Count != 1)
                 {
@@ -355,7 +345,9 @@ namespace NuGet.Commands
                 {
                     return false;
                 }
-            } else { 
+            }
+            else
+            { 
                 foreach(var packageType in compatibilityData.TargetLibrary.PackageType)
                 {
                     if (packageType.Equals(PackageType.DotnetTool))

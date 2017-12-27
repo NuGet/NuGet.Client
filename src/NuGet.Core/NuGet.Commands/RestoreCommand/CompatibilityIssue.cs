@@ -159,7 +159,7 @@ namespace NuGet.Commands
 
                 return FormatMessage(message, supports, noSupports);
             }
-            else if(Type == CompatibilityIssueType.ProjectWithTooManyReferences)
+            else if (Type == CompatibilityIssueType.ProjectWithTooManyReferences)
             {
                 var message = string.Format(CultureInfo.CurrentCulture,
                        Strings.Error_ProjectWithIncorrectDependenciesCount,
@@ -168,7 +168,7 @@ namespace NuGet.Commands
 
                 return FormatMessage(message, string.Empty, string.Empty);
             }
-            else if(Type == CompatibilityIssueType.IncompatiblePackageWithDotnetTool)
+            else if (Type == CompatibilityIssueType.IncompatiblePackageWithDotnetTool)
             {
                 var message = string.Format(CultureInfo.CurrentCulture,
                        "Invalid project <-> package combination for '{0}'. DotnetToolReference project style can only contain references of the DotnetTool type",
