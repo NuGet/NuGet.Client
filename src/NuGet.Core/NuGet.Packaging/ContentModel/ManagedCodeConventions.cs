@@ -513,13 +513,10 @@ namespace NuGet.Client
                     groupPatterns: new PatternDefinition[]
                         {
                             new PatternDefinition("tools/{tfm}/{rid}/{any?}", table: DotnetAnyTable),
-                            new PatternDefinition("tools/{tfm}/{any}/{any?}", table: DotnetAnyTable),
-
                         },
                     pathPatterns: new PatternDefinition[]
                         {
                             new PatternDefinition("tools/{tfm}/{rid}/{assembly}", table: DotnetAnyTable),
-                            new PatternDefinition("tools/{tfm}/{any}/{assembly}", table: DotnetAnyTable),
                     });
             }
         }
