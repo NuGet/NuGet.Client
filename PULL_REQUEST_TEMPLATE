@@ -1,0 +1,9 @@
+Fixes: <Insert link to issue here>
+
+1)	What bug does this fix? Give a brief overview and impact of the bug and link to bug.
+
+2)	Describe the fix and how it fixes the bug.
+
+3)	Was this bug a regression – if so, what had regressed, when was the regression introduced, and what steps are you taking to make sure this won’t happen again.
+
+4)	What testing/validation was done on the fix?
