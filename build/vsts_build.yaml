@@ -471,6 +471,7 @@ phases:
 
 - phase: End_To_End_Tests_On_Windows
   dependsOn: Build_and_UnitTest
+  condition: "succeeded()"
   variables:
     BuildNumber: $[dependencies.Build_and_UnitTest.outputs['RTM.configuration.BuildNumber']]
   condition: "succeeded()"
@@ -561,6 +562,7 @@ phases:
 
 - phase: Apex_Tests_On_Windows
   dependsOn: Build_and_UnitTest
+  condition: "succeeded()"
   variables:
     BuildNumber: $[dependencies.Build_and_UnitTest.outputs['RTM.configuration.BuildNumber']]
   condition: "succeeded()"

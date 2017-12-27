@@ -11,6 +11,7 @@ Function Update-GitCommitStatus {
         [Parameter(Mandatory = $True)]
         [string]$PersonalAccessToken,
         [Parameter(Mandatory = $True)]
+        [ValidateSet( "Unit Tests On Windows", "Tests On Mac", "Tests On Linux", "Functional Tests On Windows", "EndToEnd Tests On Windows", "Apex Tests On Windows")]
         [string]$TestName,
         [Parameter(Mandatory = $True)]
         [ValidateSet( "pending", "success", "error", "failure")]
@@ -55,7 +56,7 @@ Function InitializeAllTestsToPending {
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Unit Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests on Linux" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Linux" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
 }
@@ -75,5 +76,15 @@ function SetCommitStatusForTestResult {
     }
     else {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "failed"
+    }
+
+    # If the build gets cancelled or fails when the unit tests are running , we also need to call the github api to update status
+    # for mac, apex and e2e tests as they only run when the unit tests phase succeeds (or partially succeeds). If we don't do this,
+    # the status for those tests will forever be in pending state.
+    if(($env:AGENT_JOBSTATUS -eq "Failed" -or $env:AGENT_JOBSTATUS -eq "Canceled") -and $TestName -eq "Unit Tests On Windows")
+    {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "failed"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "failed"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "failed"
     }
 }
