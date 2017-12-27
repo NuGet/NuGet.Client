@@ -162,7 +162,7 @@ namespace NuGet.Commands
             else if(Type == CompatibilityIssueType.ProjectWithTooManyReferences)
             {
                 var message = string.Format(CultureInfo.CurrentCulture,
-                       Strings.Error_ProjectWithTooManyDependencies,
+                       Strings.Error_ProjectWithIncorrectDependenciesCount,
                        Package.Id,
                        1);
 
