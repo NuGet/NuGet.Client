@@ -16,17 +16,29 @@ namespace NuGet.Tests.Apex
             SimpleTestPackageUtility.CreatePackages(packageSource, package);
         }
 
-        public static bool PackageExistsInLockFile(string projectPath, string packageName, string packageVersion)
+        public static bool IsPackageInstalled(NuGetConsoleTestExtension nuGetConsole, string projectPath, string packageName, string packageVersion)
         {
-            var assetsFilePath = GetAssetsFilePath(projectPath);
-            if(File.Exists(assetsFilePath))
+            var assetsFile = GetAssetsFilePath(projectPath);
+            var packagesConfig = GetPackagesConfigPath(projectPath);
+            if (File.Exists(assetsFile))
             {
-                var lockFile = new LockFileFormat().Read(assetsFilePath);
-                var lockFileLibrary = lockFile.Libraries.SingleOrDefault(p => (String.Compare(p.Name, packageName, StringComparison.OrdinalIgnoreCase) == 0));
-                return lockFileLibrary !=null && lockFileLibrary.Version.ToNormalizedString() == packageVersion;
+                return PackageExistsInLockFile(assetsFile, packageName, packageVersion);
             }
+            else if (File.Exists(packagesConfig))
+            {
+                return nuGetConsole.IsPackageInstalled(packageName, packageVersion);
+            }
+            else
+            {
+                return false;
+            }
+        }
 
-            return false;
+        private static bool PackageExistsInLockFile(string pathToAssetsFile, string packageName, string packageVersion)
+        {
+            var lockFile = new LockFileFormat().Read(pathToAssetsFile);
+            var lockFileLibrary = lockFile.Libraries.SingleOrDefault(p => (String.Compare(p.Name, packageName, StringComparison.OrdinalIgnoreCase) == 0));
+            return lockFileLibrary !=null && lockFileLibrary.Version.ToNormalizedString() == packageVersion;
         }
 
         private static string GetAssetsFilePath(string projectPath)
@@ -40,6 +52,12 @@ namespace NuGet.Tests.Apex
                 var projectDirectory = Path.GetDirectoryName(projectPath);
                 return Path.Combine(projectDirectory, "obj", "project.assets.json");
             }
+        }
+
+        private static string GetPackagesConfigPath(string projectPath)
+        {
+            var projectDirectory = Path.GetDirectoryName(projectPath);
+            return Path.Combine(projectDirectory, "packages.config");
         }
     }
 }
