@@ -342,11 +342,11 @@ namespace NuGet.Commands
             // A package is compatible if it has...
             return
                 HasCompatibleAssets(compatibilityData.TargetLibrary) ||
-                (!compatibilityData.Files.Any(p =>
+                compatibilityData.TargetLibrary.PackageType.Any(e => e.Equals(PackageType.DotnetTool)) ?
+                !compatibilityData.Files.Any(p => p.StartsWith("tools/", StringComparison.OrdinalIgnoreCase)) : // If it's a tools package with incompatible tools assets
+                !compatibilityData.Files.Any(p =>
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
-                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase)) // No assemblies at all (for any TxM)
-                && (compatibilityData.TargetLibrary.PackageType.Any(e => e.Equals(PackageType.DotnetTool))
-                    && !compatibilityData.Files.Any(p => p.StartsWith("tools/", StringComparison.OrdinalIgnoreCase)))); // If it's a tools package with incompatible tools assets
+                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase)); // No assemblies at all (for any TxM)
         }
 
         private static bool HasCompatibleToolsDependencies(CompatibilityData compatibilityData)
