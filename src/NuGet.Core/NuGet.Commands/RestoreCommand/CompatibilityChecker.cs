@@ -258,7 +258,6 @@ namespace NuGet.Commands
                 graph.Conventions.Patterns.CompileRefAssemblies,
                 graph.Conventions.Patterns.RuntimeAssemblies,
                 graph.Conventions.Patterns.ContentFiles,
-                graph.Conventions.Patterns.ToolsAssemblies
             };
 
             foreach (var pattern in patterns)
@@ -280,6 +279,21 @@ namespace NuGet.Commands
                         {
                             available.Add(tfm);
                         }
+                    }
+                }
+            }
+            if(compatibilityData.TargetLibrary.PackageType.Any(e => e.Equals(PackageType.DotnetTool))) { // Test the error message with an incompatible package
+                foreach(var group in contentItems.FindItemGroups(graph.Conventions.Patterns.ToolsAssemblies))
+                {
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out var ridObj);
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out var tfmObj);
+
+                    var tfm = tfmObj as NuGetFramework;
+                    // TODO NK - why are these ignored? Add E2E tests and see how this works
+                    // group.Items.Any(e => e.Path.StartsWith("tools/"));
+                    if (tfm?.IsSpecificFramework == true)
+                    {
+                        available.Add(tfm);
                     }
                 }
             }
@@ -328,9 +342,11 @@ namespace NuGet.Commands
             // A package is compatible if it has...
             return
                 HasCompatibleAssets(compatibilityData.TargetLibrary) ||
-                !compatibilityData.Files.Any(p =>
+                (!compatibilityData.Files.Any(p =>
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
-                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase)); // No assemblies at all (for any TxM)
+                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase)) // No assemblies at all (for any TxM)
+                && (compatibilityData.TargetLibrary.PackageType.Any(e => e.Equals(PackageType.DotnetTool))
+                    && !compatibilityData.Files.Any(p => p.StartsWith("tools/", StringComparison.OrdinalIgnoreCase)))); // If it's a tools package with incompatible tools assets
         }
 
         private static bool HasCompatibleToolsDependencies(CompatibilityData compatibilityData)
@@ -374,7 +390,7 @@ namespace NuGet.Commands
                 targetLibrary.ResourceAssemblies.Count > 0 ||                         // Resources (satellite package)
                 targetLibrary.Build.Count > 0 ||                                      // Build
                 targetLibrary.BuildMultiTargeting.Count > 0 ||                        // Cross targeting build
-                targetLibrary.ToolsAssemblies.Count > 0;                              // Tools assemblies
+                targetLibrary.ToolsAssemblies.Count > 0;                              // Tools assemblies - This makes a package not backwards compatible potentially, but do tools assets matter
         }
 
         private CompatibilityData GetCompatibilityData(RestoreTargetGraph graph, LibraryIdentity libraryId, PackageSpec packageSpec)
