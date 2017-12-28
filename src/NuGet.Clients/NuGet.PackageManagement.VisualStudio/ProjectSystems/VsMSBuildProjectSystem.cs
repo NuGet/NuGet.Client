@@ -982,6 +982,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             catch (Exception ex)
             {
+                NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, ex.Message);
                 ExceptionHelper.WriteErrorToActivityLog(ex);
             }
         }
