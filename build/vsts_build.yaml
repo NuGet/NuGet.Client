@@ -1,7 +1,25 @@
 name: $(SourceBranchName)-$(Date:yyyyMMdd)-$(rev:rr)
 phases:
-- phase: Build_and_UnitTest
 
+- phase: Initialize_GitHub_Status
+  queue:
+    name: VSEng-MicroBuildVS2017
+    timeoutInMinutes: 60
+    demands: 
+      - DotNetFramework
+      - msbuild
+  
+  steps:
+  - task: PowerShell@1
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+        InitializeAllTestsToPending -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion)
+
+- phase: Build_and_UnitTest
+  dependsOn: Initialize_GitHub_Status
   queue:
     name: VSEng-MicroBuildVS2017
     timeoutInMinutes: 90
@@ -14,7 +32,6 @@ phases:
     demands: 
       - DotNetFramework
       - msbuild
-
 
   steps:
   - task: PowerShell@1
@@ -34,7 +51,7 @@ phases:
     displayName: "Print Environment Variables"
     inputs:
       scriptType: "inlineScript"
-      inlineScript: "gci env:* | sort-object name"    
+      inlineScript: "gci env:* | sort-object name"
 
   - task: MicroBuildLocalizationPlugin@1
     displayName: "Install Localization Plugin"
@@ -75,6 +92,7 @@ phases:
 
   - task: MSBuild@1
     displayName: "Run unit tests"
+    continueOnError: "true"
     inputs:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
@@ -82,12 +100,21 @@ phases:
       msbuildArguments: "/t:CoreUnitTests;UnitTestsVS15 /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Revision) /p:TestResultOutputFormat=xml"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
+  - task: PowerShell@1
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Unit Tests On Windows"
+    condition: "and(always(),eq(variables['BuildRTM'], 'true'))"
+
   - task: PublishTestResults@2
     displayName: "Publish Desktop Test Results"
     inputs:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
-      testRunTitle: "NuGet.Client Unit Tests On Windows"
+      testRunTitle: "NuGet.Client Desktop Unit Tests On Windows"
       searchFolder: "$(Build.Repository.LocalPath)\\artifacts\\TestResults"
       mergeTestResults: "true"
       publishRunAttachments: "false"
@@ -98,7 +125,7 @@ phases:
     inputs:
       testRunner: "VSTest"
       testResultsFiles: "*.trx"
-      testRunTitle: "NuGet.Client Unit Tests On Windows"
+      testRunTitle: "NuGet.Client .NET Core Unit Tests On Windows"
       searchFolder: "$(Build.Repository.LocalPath)\\artifacts\\TestResults"
       mergeTestResults: "true"
       publishRunAttachments: "false"
@@ -184,8 +211,9 @@ phases:
       SourceFolder: "artifacts"
       Contents: |
         $(VsixPublishDir)\\NuGet.exe
+        $(VsixPublishDir)\\NuGet.pdb
         $(VsixPublishDir)\\NuGet.Mssign.exe
-        $(VsixPublishDir)\\NuGet.pdb 
+        $(VsixPublishDir)\\NuGet.Mssign.pdb
         $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.Core.json 
         $(VsixPublishDir)\\NuGet.Tools.vsix
         $(VsixPublishDir)\\EndToEnd.zip 
@@ -214,7 +242,7 @@ phases:
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\PublishArtifactsFromVsts.ps1"
       arguments: "-NuGetBuildFeedUrl $(NuGetBuildFeed) -NuGetBuildSymbolsFeedUrl $(NuGetBuildSymbolsFeed) -DotnetCoreFeedUrl $(DotnetCoreBuildFeed) -DotnetCoreSymbolsFeedUrl $(DotnetCoreSymbolsFeed) -NuGetBuildFeedApiKey $(NuGetBuildApiKey) -DotnetCoreFeedApiKey $(DotnetCoreFeedApiKey)"
-      failOnStandardError: "false"
+      failOnStandardError: "true"
     condition: " and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'), eq(variables['BuildRTM'], 'false')) "
 
   - task: MSBuild@1
@@ -272,14 +300,15 @@ phases:
     inputs:
       scriptType: "inlineScript"
       arguments: "-BuildOutputTargetPath $(BuildOutputTargetPath)"
-      inlineScript: "param(
-[string]$BuildOutputTargetPath
-)
-Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
+      inlineScript: |
+        param([string]$BuildOutputTargetPath)
+        Get-ChildItem $(BuildOutputTargetPath) -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+        Remove-Item -Path $(BuildOutputTargetPath) -Force -Recurse -ErrorAction SilentlyContinue
     condition: "eq(variables['Agent.JobStatus'], 'Failed')"
 
 
 - phase: Functional_Tests_On_Windows
+  dependsOn: Initialize_GitHub_Status
   queue:
     name: VSEng-MicroBuildSxS
     timeoutInMinutes: 120
@@ -315,20 +344,31 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
 
   - task: MSBuild@1
     displayName: "Run Functional Tests"
+    continueOnError: "true"
     inputs:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CoreFuncTests  /p:BuildRTM=false  /p:BuildNumber=$(Revision) /p:TestResultOutputFormat=xml"
 
+  - task: PowerShell@1
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Functional Tests On Windows"
+    condition: "always()"
+
   - task: PublishTestResults@2
     displayName: "Publish Desktop Test Results"
+    continueOnError: "true"
     inputs:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
       searchFolder: "$(Build.Repository.LocalPath)\\artifacts\\TestResults"
       mergeTestResults: "true"
-      testRunTitle: "NuGet.Client Functional Tests On Windows"
+      testRunTitle: "NuGet.Client Desktop Functional Tests On Windows"
     condition: "succeededOrFailed()"
 
   - task: PublishTestResults@2
@@ -338,10 +378,11 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
       testResultsFiles: "*.trx"
       searchFolder: "$(Build.Repository.LocalPath)\\artifacts\\TestResults"
       mergeTestResults: "true"
-      testRunTitle: "NuGet.Client Funtional Tests On Windows"
+      testRunTitle: "NuGet.Client .NET Core Funtional Tests On Windows"
     condition: "succeededOrFailed()"
 
 - phase: Tests_On_Linux
+  dependsOn: Initialize_GitHub_Status
   queue:
     name: DDNuGet-Linux
     timeoutInMinutes: 45
@@ -351,10 +392,20 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
   steps:
   - task: ShellScript@2
     displayName: "Run Tests"
+    continueOnError: "true"
     inputs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
+  
+  - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      type: "FilePath"
+      scriptPath: "scripts/utils/PostGitCommitStatus.sh"
+      args: "$(NuGetLurkerPersonalAccessToken) \"Tests On Linux\" $(Agent.JobStatus)"
+      cwd: "$(Build.Repository.LocalPath)"
+    condition: "always()"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -384,10 +435,20 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
 
   - task: ShellScript@2
     displayName: "Run Tests"
+    continueOnError: "true"
     inputs:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
+
+  - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      type: "FilePath"
+      scriptPath: "scripts/utils/PostGitCommitStatus.sh"
+      args: "$(NuGetLurkerPersonalAccessToken) \"Tests On Mac\" $(Agent.JobStatus)"
+      cwd: "$(Build.Repository.LocalPath)"
+    condition: "always()"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -410,170 +471,218 @@ Remove-Item -Path $BuildOutputTargetPath -Force -Recurse"
     condition: "succeededOrFailed()"
 
 
-# - phase: End_To_End_Tests_On_Windows
-#   dependsOn: Build_and_UnitTest
-#   variables:
-#     BuildNumber: $[dependencies.Build_and_UnitTest.outputs['RTM.configuration.BuildNumber']]
-#   condition: "succeeded()"
-#   queue:
-#     name: DDNuGet-Windows
-#     timeoutInMinutes: 75
-#     demands: DotNetFramework
+- phase: End_To_End_Tests_On_Windows
+  dependsOn: Build_and_UnitTest
+  condition: "succeeded()"
+  variables:
+    BuildNumber: $[dependencies.Build_and_UnitTest.outputs['RTM.configuration.BuildNumber']]
+  condition: "succeeded()"
+  queue:
+    name: DDNuGet-Windows
+    timeoutInMinutes: 75
+    demands: DotNetFramework
 
 
-#   steps:
-#   - task: PowerShell@1
-#     displayName: "Print Environment Variables"
-#     inputs:
-#       scriptType: "inlineScript"
-#       inlineScript: "gci env:* | sort-object name;
-#       Write-Host \"##vso[build.updatebuildnumber]$env:BuildNumber\""    
+  steps:
+  - task: PowerShell@1
+    displayName: "Print Environment Variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: "gci env:* | sort-object name;
+      Write-Host \"##vso[build.updatebuildnumber]$env:BuildNumber\""    
 
-#   - task: PowerShell@1
-#     displayName: "Bootstrap.ps1"
-#     inputs:
-#       scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/Bootstrap.ps1"
-#       arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
+  - task: PowerShell@1
+    displayName: "Bootstrap.ps1"
+    inputs:
+      scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/Bootstrap.ps1"
+      arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
 
-#   - task: PowerShell@1
-#     displayName: "SetupFunctionalTests.ps1"
-#     inputs:
-#       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
-#       arguments: "-VSVersion 15.0"
+  - task: PowerShell@1
+    displayName: "SetupFunctionalTests.ps1"
+    inputs:
+      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
+      arguments: "-VSVersion 15.0"
 
-#   - task: PowerShell@1
-#     displayName: "CopyToolsAndSetupMachine.ps1"
-#     inputs:
-#       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\CopyToolsAndSetupMachine.ps1"
-#       arguments: " -NuGetCIToolsFolder $(NuGetCIToolsFolder) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts"
+  - task: PowerShell@1
+    displayName: "CopyToolsAndSetupMachine.ps1"
+    inputs:
+      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\CopyToolsAndSetupMachine.ps1"
+      arguments: " -NuGetCIToolsFolder $(NuGetCIToolsFolder) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts"
 
-#   - task: PowerShell@1
-#     displayName: "InstallNuGetVSIX.ps1"
-#     inputs:
-#       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
-#       arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
-#       failOnStandardError: "false"
+  - task: PowerShell@1
+    displayName: "InstallNuGetVSIX.ps1"
+    inputs:
+      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
+      arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
+      failOnStandardError: "false"
 
-#   - task: PowerShell@1
-#     displayName: "LaunchVS.ps1"
-#     inputs:
-#       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\LaunchVS.ps1"
-#       arguments: "-VSVersion 15.0 -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50"
+  - task: PowerShell@1
+    displayName: "Collect VS Logs"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\NuGet.Client\\VSCollect.exe
+        if(-not (Test-Path $(EndToEndResultsDropPath)))
+          {
+            New-Item -Path $(EndToEndResultsDropPath) -ItemType Directory -Force
+          }
+        $(System.DefaultWorkingDirectory)\\NuGet.Client\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\e2e-collectlogs.zip
+    condition: "failed()"
 
-#   - task: PowerShell@1
-#     displayName: "RunFunctionalTests.ps1"
-#     inputs:
-#       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
-#       arguments: "-PMCCommand $(EndToEndTestCommandToRun) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 15.0"
+  - task: PowerShell@1
+    displayName: "LaunchVS.ps1"
+    inputs:
+      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\LaunchVS.ps1"
+      arguments: "-VSVersion 15.0 -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50"
 
-#   - task: PublishTestResults@2
-#     displayName: "Publish Test Results"
-#     inputs:
-#       testRunner: "JUnit"
-#       testResultsFiles: "*.xml"
-#       searchFolder: "$(System.DefaultWorkingDirectory)\\testresults"
-#       mergeTestResults: "true"
-#       testRunTitle: "NuGet.Client End To End Tests "
-#     condition: "succeededOrFailed()"
+  - task: PowerShell@1
+    displayName: "RunFunctionalTests.ps1"
+    continueOnError: "true"
+    inputs:
+      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
+      arguments: "-PMCCommand $(EndToEndTestCommandToRun) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 15.0"
+
+  - task: PowerShell@1
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "EndToEnd Tests On Windows"
+    condition: "always()"
+
+  - task: PublishTestResults@2
+    displayName: "Publish Test Results"
+    inputs:
+      testRunner: "JUnit"
+      testResultsFiles: "*.xml"
+      searchFolder: "$(System.DefaultWorkingDirectory)\\testresults"
+      mergeTestResults: "true"
+      testRunTitle: "NuGet.Client End To End Tests "
+    condition: "succeededOrFailed()"
 
 
-# - phase: Apex_Tests_On_Windows
-#   dependsOn: Build_and_UnitTest
-#   variables:
-#     BuildNumber: $[dependencies.Build_and_UnitTest.outputs['RTM.configuration.BuildNumber']]
-#   condition: "succeeded()"
-#   queue:
-#     name: DDNuGet-Windows
-#     timeoutInMinutes: 45
-#     demands: DotNetFramework
+- phase: Apex_Tests_On_Windows
+  dependsOn: Build_and_UnitTest
+  condition: "succeeded()"
+  variables:
+    BuildNumber: $[dependencies.Build_and_UnitTest.outputs['RTM.configuration.BuildNumber']]
+  condition: "succeeded()"
+  queue:
+    name: DDNuGet-Windows
+    timeoutInMinutes: 45
+    demands: DotNetFramework
 
-#   steps:
-#   - task: PowerShell@1
-#     displayName: "Print Environment Variables"
-#     inputs:
-#       scriptType: "inlineScript"
-#       inlineScript: "gci env:* | sort-object name;
-#       Write-Host \"##vso[build.updatebuildnumber]$env:BuildNumber\""
+  steps:
+  - task: PowerShell@1
+    displayName: "Print Environment Variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: "gci env:* | sort-object name;
+      Write-Host \"##vso[build.updatebuildnumber]$env:BuildNumber\""
 
-#   - task: PowerShell@1
-#     displayName: "Configre.ps1"
-#     inputs:
-#       scriptName: "$(System.DefaultWorkingDirectory)/configure.ps1"
-#       arguments: "-Force -CI"
+  - task: PowerShell@1
+    displayName: "Configure.ps1"
+    inputs:
+      scriptName: "$(System.DefaultWorkingDirectory)/configure.ps1"
+      arguments: "-Force -CI"
 
-#   - task: CopyFiles@2
-#     displayName: "Copy Public Key Files"
-#     inputs:
-#       SourceFolder: "$(NuGetSharePublicKeys)"
-#       Contents: "*.snk"
-#       TargetFolder: "$(Build.Repository.LocalPath)\\keys"
-#       CleanTargetFolder: "true"
-#       OverWrite: "true"
-#       flattenFolders: "true"
+  - task: CopyFiles@2
+    displayName: "Copy Public Key Files"
+    inputs:
+      SourceFolder: "$(NuGetSharePublicKeys)"
+      Contents: "*.snk"
+      TargetFolder: "$(Build.Repository.LocalPath)\\keys"
+      CleanTargetFolder: "true"
+      OverWrite: "true"
+      flattenFolders: "true"
 
-#   - task: PowerShell@1
-#     displayName: "Bootstrap.ps1"
-#     inputs:
-#       scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/Bootstrap.ps1"
-#       arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
+  - task: PowerShell@1
+    displayName: "Bootstrap.ps1"
+    inputs:
+      scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/Bootstrap.ps1"
+      arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
 
-#   - task: PowerShell@1
-#     displayName: "SetupFunctionalTests.ps1"
-#     inputs:
-#       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
-#       arguments: "-VSVersion 15.0"
+  - task: PowerShell@1
+    displayName: "SetupFunctionalTests.ps1"
+    inputs:
+      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
+      arguments: "-VSVersion 15.0"
 
-#   - task: PowerShell@1
-#     displayName: "CopyToolsAndSetupMachine.ps1"
-#     inputs:
-#       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\CopyToolsAndSetupMachine.ps1"
-#       arguments: " -NuGetCIToolsFolder $(NuGetCIToolsFolder) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts"
+  - task: PowerShell@1
+    displayName: "CopyToolsAndSetupMachine.ps1"
+    inputs:
+      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\CopyToolsAndSetupMachine.ps1"
+      arguments: " -NuGetCIToolsFolder $(NuGetCIToolsFolder) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts"
 
-#   - task: PowerShell@1
-#     displayName: "InstallNuGetVSIX.ps1"
-#     inputs:
-#       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
-#       arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
-#       failOnStandardError: "false"
+  - task: PowerShell@1
+    displayName: "InstallNuGetVSIX.ps1"
+    inputs:
+      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
+      arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
+      failOnStandardError: "false"
 
-#   - task: MSBuild@1
-#     displayName: "Restore for VS2017"
-#     inputs:
-#       solution: "build\\build.proj"
-#       msbuildVersion: "15.0"
-#       configuration: "$(BuildConfiguration)"
-#       msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(Build.BuildNumber)"
+  - task: PowerShell@1
+    displayName: "Collect VS Logs"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\NuGet.Client\\VSCollect.exe
+        if(-not (Test-Path $(EndToEndResultsDropPath)))
+          {
+            New-Item -Path $(EndToEndResultsDropPath) -ItemType Directory -Force
+          }
+        $(System.DefaultWorkingDirectory)\\NuGet.Client\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\apex-collectlogs.zip
+    condition: "failed()"
+
+  - task: MSBuild@1
+    displayName: "Restore for VS2017"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildVersion: "15.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(Build.BuildNumber)"
       
-#   - task: NuGetCommand@2
-#     displayName: "Add Apex Feed Source"
-#     inputs:
-#       command: "custom"
-#       arguments: "sources add -Name ApexFeed -Source $(ApexPackageFeedUrl) -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
+  - task: NuGetCommand@2
+    displayName: "Add Apex Feed Source"
+    inputs:
+      command: "custom"
+      arguments: "sources add -Name ApexFeed -Source $(ApexPackageFeedUrl) -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
 
-#   - task: MSBuild@1
-#     displayName: "Restore Apex Tests"
-#     inputs:
-#       solution: "build\\build.proj"
-#       msbuildVersion: "15.0"
-#       configuration: "$(BuildConfiguration)"
-#       msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(Build.BuildNumber)"
+  - task: MSBuild@1
+    displayName: "Restore Apex Tests"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildVersion: "15.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(Build.BuildNumber)"
 
-#   - task: MSBuild@1
-#     displayName: "Run Apex Tests"
-#     inputs:
-#       solution: "build\\build.proj"
-#       msbuildVersion: "15.0"
-#       configuration: "$(BuildConfiguration)"
-#       msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml  /p:NUGET_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\35MSSharedLib1024.snk /p:BuildNumber=$(Build.BuildNumber)"
+  - task: MSBuild@1
+    displayName: "Run Apex Tests"
+    continueOnError: "true"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildVersion: "15.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml  /p:NUGET_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\35MSSharedLib1024.snk /p:BuildNumber=$(Build.BuildNumber)"
 
-#   - task: PublishTestResults@2
-#     displayName: "Publish Test Results"
-#     inputs:
-#       testRunner: "XUnit"
-#       testResultsFiles: "*.xml"
-#       searchFolder: "$(System.DefaultWorkingDirectory)\\artifacts\\testresults"
-#       mergeTestResults: "true"
-#       testRunTitle: "NuGet.Client Apex Tests"
-#     condition: "succeededOrFailed()"
+  - task: PowerShell@1
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Apex Tests On Windows"
+    condition: "always()"
+
+  - task: PublishTestResults@2
+    displayName: "Publish Test Results"
+    inputs:
+      testRunner: "XUnit"
+      testResultsFiles: "*.xml"
+      searchFolder: "$(System.DefaultWorkingDirectory)\\artifacts\\testresults"
+      mergeTestResults: "true"
+      testRunTitle: "NuGet.Client Apex Tests"
+    condition: "succeededOrFailed()"
     
     
