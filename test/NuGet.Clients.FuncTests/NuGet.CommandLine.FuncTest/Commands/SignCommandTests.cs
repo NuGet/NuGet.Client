@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
@@ -18,11 +19,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
     [Collection("Sign Command Test Collection")]
     public class SignCommandTests
     {
-        private const string _packageAlreadySignedError = "NU3000: The package already contains a signature. Please remove the existing signature before adding a new signature.";
-        private const string _invalidPasswordErrorCode = "NU3014";
-        private const string _invalidEkuErrorCode = "NU3000";
-        private const string _noCertFoundErrorCode = "NU3003";
-        private const string _noTimestamperWarningCode = "NU3521";
+        private const string _packageAlreadySignedError = "NU3001: The package already contains a signature. Please remove the existing signature before adding a new signature.";
+        private readonly string _invalidPasswordErrorCode = NuGetLogCode.NU3001.ToString();
+        private readonly string _invalidEkuErrorCode = NuGetLogCode.NU3018.ToString();
+        private readonly string _noCertFoundErrorCode = NuGetLogCode.NU3001.ToString();
+        private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3002.ToString();
 
         private SignCommandTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;

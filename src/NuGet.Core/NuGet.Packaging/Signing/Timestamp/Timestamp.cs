@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using NuGet.Common;
 
 #if IS_DESKTOP
@@ -66,6 +64,15 @@ namespace NuGet.Packaging.Signing
 
             if (Rfc3161TimestampVerificationUtility.TryReadTSTInfoFromSignedCms(timestampCms, out var tstInfo))
             {
+                try
+                {
+                    SignedCms.CheckSignature(verifySignatureOnly: true);
+                }
+                catch (Exception ex)
+                {
+                    throw new TimestampException(NuGetLogCode.NU3021, Strings.TimestampSignatureValidationFailed, ex);
+                }
+
                 TstInfo = tstInfo;
                 GeneralizedTime = tstInfo.Timestamp;
 
@@ -75,7 +82,7 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                throw new TimestampException(NuGetLogCode.NU3050, Strings.TimestampFailureInvalidContentType);
+                throw new TimestampException(NuGetLogCode.NU3021, Strings.TimestampSignatureValidationFailed);
             }
         }
 #endif

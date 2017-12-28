@@ -6,7 +6,7 @@ namespace NuGet.Common
     /// <summary>
     /// This enum is used to quantify NuGet error and wanring codes. 
     /// Format - NUxyzw where NU is the profix indicating NuGet and xyzw is a 4 digit code
-    /// 
+    ///
     /// Numbers - xyzw
     ///     x - 'x' is the largest digit and should be used to quantify a set of errors.
     ///         For example 1yzw are set of restore related errors and no other code path should use the range 1000 to 1999 for errors or warnings.
@@ -18,11 +18,11 @@ namespace NuGet.Common
     ///         
     ///     zw - 'zw' are the least two digit.
     ///         These could be used for different errors or warnings within the broad categories set by digits 'xy'.
-    ///         
+    ///
     /// Groups:
-    /// 1000      - Restore
-    /// 3000/3500 - Signing
-    /// 
+    /// 1000-1999 - Restore
+    /// 3000-3999 - Signing
+    ///
     /// Sub groups for Restore:
     /// error/warning - Reason
     /// 1000/1500     - Input
@@ -30,15 +30,6 @@ namespace NuGet.Common
     /// 1200/1700     - Compat
     /// 1300/1800     - Feed
     /// 1400/1900     - Package
-    ///
-    /// Sub groups for Signing:
-    /// error/warning - Reason
-    /// 3000/3500     - Input
-    /// 3010/3510     - Package and package signature file
-    /// 3020/3520     - Primary certificate
-    /// 3030/3530     - Primary signature
-    /// 3040/3540     - Timestamp certificate
-    /// 3050/3550     - Timestamp signature
     /// </summary>
     public enum NuGetLogCode
     {
@@ -208,169 +199,150 @@ namespace NuGet.Common
         NU3000 = 3000,
 
         /// <summary>
-        /// Invalid Input error
+        /// Invalid input error
         /// </summary>
         NU3001 = 3001,
 
         /// <summary>
-        /// Invalid package error
+        /// Timestamper option not provided during sign operation.
         /// </summary>
         NU3002 = 3002,
 
         /// <summary>
-        /// Invalid number of certificates were found while signing package
+        /// Package signature is invalid
         /// </summary>
         NU3003 = 3003,
 
         /// <summary>
-        /// Package signature is invalid
+        /// Package is not signed
         /// </summary>
+        NU3004 = 3004,
+
+        /// <summary>
+        /// The package signature file entry is incorrect.
+        /// </summary>
+        /// <remarks>
+        /// Examples which would trigger this include:
+        ///     * the entry has incorrect external file attributes
+        ///     * the entry is compressed not stored
+        ///     * the entry's compressed and uncompressed sizes differ
+        /// </remarks>
         NU3005 = 3005,
 
         /// <summary>
-        /// Package is not signed
+        /// Signed Zip64 packages are not supported.
         /// </summary>
         NU3006 = 3006,
 
         /// <summary>
-        /// ZIP entry is either not a regular file or is not stored (no compression)
-        /// </summary>
-        NU3011 = 3011,
-
-        /// <summary>
         /// Unsupported signature format version
         /// </summary>
-        NU3012 = 3012,
-
-        /// <summary>
-        /// Primary signature has an unsuported hash algorithm
-        /// </summary>
-        NU3013 = 3013,
-
-        /// <summary>
-        /// Primary signature count not 1
-        /// </summary>
-        NU3014 = 3014,
+        NU3007 = 3007,
 
         /// <summary>
         /// Package integrity check failed
         /// </summary>
+        NU3008 = 3008,
+
+        /// <summary>
+        /// The package signature contains multiple primary signatures.
+        /// </summary>
+        NU3009 = 3009,
+
+        /// <summary>
+        /// The primary signature does not have a signing certificate.
+        /// </summary>
+        NU3010 = 3010,
+
+        /// <summary>
+        /// The author signature is invalid.
+        /// </summary>
+        NU3011 = 3011,
+
+        /// <summary>
+        /// Primary signature validation failed.
+        /// </summary>
+        NU3012 = 3012,
+
+        /// <summary>
+        /// The signing certificate has an unsupported signature algorithm.
+        /// </summary>
+        NU3013 = 3013,
+
+        /// <summary>
+        /// The signing certificate does not meet a minimum public key length requirement.
+        /// </summary>
+        NU3014 = 3014,
+
+        /// <summary>
+        /// Certificate has lifetime signer EKU
+        /// </summary>
         NU3015 = 3015,
-
-        /// <summary>
-        /// Primary signature does not have certificate
-        /// </summary>
-        NU3020 = 3020,
-
-        /// <summary>
-        /// Chain building failed for primary signature
-        /// </summary>
-        NU3021 = 3021,
-
-        /// <summary>
-        /// Unsupported signature algorithm
-        /// </summary>
-        NU3022 = 3022,
-
-        /// <summary>
-        /// Unsupported public key length
-        /// </summary>
-        NU3023 = 3023,
-        
-        /// <summary>
-        /// Certificate not yet valid
-        /// </summary>
-        NU3024 = 3024,
-
-        /// <summary>
-        /// Primary signature verification failed
-        /// </summary>
-        NU3030 = 3030,
-
-        /// <summary>
-        /// Timestamp with no certificate
-        /// </summary>
-        NU3040 = 3040,
-
-        /// <summary>
-        /// Chain building failed for timestamp
-        /// </summary>
-        NU3041 = 3041,
-
-        /// <summary>
-        /// Timestamp certificate not yet effective
-        /// </summary>
-        NU3044 = 3044,
-
-        /// <summary>
-        /// Invalid timestamp in signature
-        /// </summary>
-        NU3050 = 3050,
-
-        /// <summary>
-        /// Timestamp nonce mismatch
-        /// </summary>
-        NU3051 = 3051,
-
-        /// <summary>
-        /// Timestamp unsupported algorithm
-        /// </summary>
-        NU3052 = 3052,
-
-        /// <summary>
-        /// Timestamp integrity check
-        /// </summary>
-        NU3053 = 3053,
-
-        /// <summary>
-        /// Undefined signature warning
-        /// </summary>
-        NU3500 = 3500,
-
-        /// <summary>
-        /// Untrusted root warning
-        /// </summary>
-        NU3501 = 3501,
-
-        /// <summary>
-        /// Signature information unavailable warning
-        /// </summary>
-        NU3502 = 3502,
 
         /// <summary>
         /// Primary signature has an unsuported hash algorithm
         /// </summary>
-        NU3513 = 3513,
+        NU3016 = 3016,
 
         /// <summary>
-        /// Timestamp url not passed to sign command
+        /// The signing certificate is not yet valid.
         /// </summary>
-        NU3521 = 3521,
+        NU3017 = 3017,
 
         /// <summary>
-        /// Certificate not yet valid
+        /// Chain building failed for primary signature
         /// </summary>
-        NU3524 = 3524,
+        NU3018 = 3018,
 
         /// <summary>
-        /// Primary signature verification failed
+        /// Timestamp integrity check failed.
         /// </summary>
-        NU3530 = 3530,
+        NU3019 = 3019,
 
         /// <summary>
-        /// Timestamp not yet valid
+        /// The timestamp signature did not have a signing certificate.
         /// </summary>
-        NU3544 = 3544,
+        NU3020 = 3020,
 
         /// <summary>
-        /// Invalid timestamp in signature
+        /// Timestamp signature validation failed.
         /// </summary>
-        NU3550 = 3550,
+        NU3021 = 3021,
 
         /// <summary>
-        /// Timestamp unsupported algorithm
+        /// The timestamp has an unsupported signature algorithm.
         /// </summary>
-        NU3552 = 3552,
+        NU3022 = 3022,
+
+        /// <summary>
+        /// The timestamp's certificate does not meet a minimum public key length requirement.
+        /// </summary>
+        NU3023 = 3023,
+
+        /// <summary>
+        /// The timestamp uses as unsupported hash algorithm.
+        /// </summary>
+        NU3024 = 3024,
+
+        /// <summary>
+        /// The timestamp signing certificate is not yet valid.
+        /// </summary>
+        NU3025 = 3025,
+
+        /// <summary>
+        /// The timestamp response is invalid.  Nonces did not match.
+        /// </summary>
+        NU3026 = 3026,
+
+        /// <summary>
+        /// The primary signature should be timestamped to enable long-term signature validity after the certificate has expired.
+        /// </summary>
+        NU3027 = 3027,
+
+        /// <summary>
+        /// Chain building failed for timestamp
+        /// </summary>
+        NU3028 = 3028,
 
         /// <summary>
         /// Undefined Package Error.
@@ -421,6 +393,5 @@ namespace NuGet.Common
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,
-
     }
 }

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -87,7 +86,7 @@ namespace NuGet.Packaging.Signing
                 exceptionBuilder.AppendLine(Strings.SignFailureCertificateInvalidProviderType);
                 exceptionBuilder.AppendLine(CertificateUtility.X509Certificate2ToString(request.Certificate));
 
-                throw new SignatureException(NuGetLogCode.NU3013, exceptionBuilder.ToString());
+                throw new SignatureException(NuGetLogCode.NU3016, exceptionBuilder.ToString());
             }
 
             return Signature.Load(cms);
@@ -116,7 +115,7 @@ namespace NuGet.Packaging.Signing
                 signer.Certificates.Add(certificate);
             }
 
-            var attributes = SigningUtility.GetSignAttributes(request, chain);
+            var attributes = SigningUtility.GetSignedAttributes(request, chain);
 
             foreach (var attribute in attributes)
             {

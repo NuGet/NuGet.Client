@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
@@ -50,7 +49,7 @@ namespace NuGet.Packaging.Signing
 
                     valid = signaturesAreValid;
                 }
-                catch(SignatureException e)
+                catch (SignatureException e)
                 {
                     // SignatureException generated while parsing signatures
                     var issues = new[] {
@@ -60,11 +59,11 @@ namespace NuGet.Packaging.Signing
                     trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
                     valid = _settings.AllowUntrusted;
                 }
-                catch(CryptographicException e)
+                catch (CryptographicException e)
                 {
                     // CryptographicException generated while parsing the SignedCms object
                     var issues = new[] {
-                        SignatureLog.Issue(!_settings.AllowUntrusted, NuGetLogCode.NU3005, Strings.ErrorPackageSignatureInvalid),
+                        SignatureLog.Issue(!_settings.AllowUntrusted, NuGetLogCode.NU3003, Strings.ErrorPackageSignatureInvalid),
                         SignatureLog.DebugLog(e.ToString())
                     };
                     trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
@@ -78,7 +77,7 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                var issues = new[] { SignatureLog.Issue(true, NuGetLogCode.NU3006, Strings.ErrorPackageNotSigned) };
+                var issues = new[] { SignatureLog.Issue(fatal: true, code: NuGetLogCode.NU3004, message: Strings.ErrorPackageNotSigned) };
                 trustResults.Add(new UnsignedPackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
                 valid = false;
             }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Text;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using Xunit;
 
@@ -11,18 +12,44 @@ namespace NuGet.Packaging.Test
     public class SignatureContentTests
     {
         [Fact]
+        public void Constructor_WhenSigningSpecificationsNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SignatureContent(
+                    signingSpecifications: null,
+                    hashAlgorithm: HashAlgorithmName.SHA384,
+                    hashValue: "a"));
+
+            Assert.Equal("signingSpecifications", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Constructor_WhenHashValueNullOrEmpty_Throws(string hashValue)
+        {
+            var exception = Assert.Throws<ArgumentException>(
+                () => new SignatureContent(
+                    SigningSpecifications.V1,
+                    HashAlgorithmName.SHA384,
+                    hashValue));
+
+            Assert.Equal("hashValue", exception.ParamName);
+        }
+
+        [Fact]
         public void Constructor_InitializesProperties()
         {
-            var content = new SignatureContent(Common.HashAlgorithmName.SHA384, "a");
+            var content = new SignatureContent(SigningSpecifications.V1, HashAlgorithmName.SHA384, "a");
 
-            Assert.Equal(Common.HashAlgorithmName.SHA384, content.HashAlgorithm);
+            Assert.Equal(HashAlgorithmName.SHA384, content.HashAlgorithm);
             Assert.Equal("a", content.HashValue);
         }
 
         [Fact]
         public void GetBytes_ReturnsValidContent()
         {
-            var content = new SignatureContent(Common.HashAlgorithmName.SHA256, "a");
+            var content = new SignatureContent(SigningSpecifications.V1, HashAlgorithmName.SHA256, "a");
 
             var bytes = content.GetBytes();
 
@@ -55,6 +82,7 @@ namespace NuGet.Packaging.Test
             var exception = Assert.Throws<SignatureException>(
                 () => SignatureContent.Load(bytes, SigningSpecifications.V1));
 
+            Assert.Equal(NuGetLogCode.NU3007, exception.Code);
             Assert.Equal(
                 "The package signature format version is not supported. Updating your client may solve this problem.",
                 exception.Message);
@@ -95,7 +123,7 @@ namespace NuGet.Packaging.Test
                 Encoding.UTF8.GetBytes("Version:1\r\n\r\n2.16.840.1.101.3.4.2.1-Hash:a\r\n\r\n"),
                 SigningSpecifications.V1);
 
-            Assert.Equal(Common.HashAlgorithmName.SHA256, content.HashAlgorithm);
+            Assert.Equal(HashAlgorithmName.SHA256, content.HashAlgorithm);
             Assert.Equal("a", content.HashValue);
         }
     }

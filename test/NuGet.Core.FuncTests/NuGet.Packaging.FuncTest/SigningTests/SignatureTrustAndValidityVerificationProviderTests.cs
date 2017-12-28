@@ -5,13 +5,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Org.BouncyCastle.Cms;
+using Org.BouncyCastle.X509.Store;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -81,7 +86,133 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
         }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithInvalidSignature_Throws()
+        {
+            var package = new SimpleTestPackageContext();
+
+            using (var directory = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var packageFilePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(testCertificate, package, directory);
+
+                using (var packageReader = new PackageArchiveReader(packageFilePath))
+                {
+                    var signature = (await packageReader.GetSignaturesAsync(CancellationToken.None)).Single();
+                    var invalidSignature = GenerateInvalidSignature(signature);
+                    var provider = new SignatureTrustAndValidityVerificationProvider();
+
+                    var result = await provider.GetTrustResultAsync(
+                        packageReader,
+                        invalidSignature,
+                        SignedPackageVerifierSettings.Default,
+                        CancellationToken.None);
+
+                    Assert.True(result.Issues.Any(log => log.Code == NuGetLogCode.NU3012 && log.Message == "Primary signature validation failed."));
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithNoSigningCertificate_Throws()
+        {
+            var package = new SimpleTestPackageContext();
+
+            using (var directory = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var packageFilePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(testCertificate, package, directory);
+
+                using (var packageReader = new PackageArchiveReader(packageFilePath))
+                {
+                    var signature = (await packageReader.GetSignaturesAsync(CancellationToken.None)).Single();
+                    var signatureWithNoCertificates = GenerateSignatureWithNoCertificates(signature);
+                    var provider = new SignatureTrustAndValidityVerificationProvider();
+
+                    var result = await provider.GetTrustResultAsync(
+                        packageReader,
+                        signatureWithNoCertificates,
+                        SignedPackageVerifierSettings.Default,
+                        CancellationToken.None);
+
+                    Assert.True(
+                        result.Issues.Any(
+                            log => log.Code == NuGetLogCode.NU3010 &&
+                            log.Message == "The primary signature did not have a signing certificate."));
+                }
+            }
+        }
+
+        private static Signature GenerateSignatureWithNoCertificates(Signature signature)
+        {
+            var certificateStore = X509StoreFactory.Create(
+                "Certificate/Collection",
+                new X509CollectionStoreParameters(Array.Empty<Org.BouncyCastle.X509.X509Certificate>()));
+            var crlStore = X509StoreFactory.Create(
+                "CRL/Collection",
+                new X509CollectionStoreParameters(Array.Empty<Org.BouncyCastle.X509.X509Crl>()));
+            var bytes = signature.SignedCms.Encode();
+
+            using (var readStream = new MemoryStream(bytes))
+            using (var writeStream = new MemoryStream())
+            {
+                CmsSignedDataParser.ReplaceCertificatesAndCrls(
+                    readStream,
+                    certificateStore,
+                    crlStore,
+                    certificateStore,
+                    writeStream);
+
+                return Signature.Load(writeStream.ToArray());
+            }
+        }
+
+        private static Signature GenerateInvalidSignature(Signature signature)
+        {
+            var hash = Encoding.UTF8.GetBytes(signature.SignatureContent.HashValue);
+            var newHash = Encoding.UTF8.GetBytes(new string('0', hash.Length));
+
+            var bytes = signature.SignedCms.Encode();
+            var newBytes = FindAndReplaceSequence(bytes, hash, newHash);
+
+            return Signature.Load(newBytes);
+        }
+
+        private static byte[] FindAndReplaceSequence(byte[] bytes, byte[] find, byte[] replace)
+        {
+            var found = false;
+            var from = -1;
+
+            for (var i = 0; !found && i < bytes.Length - find.Length; ++i)
+            {
+                for (var j = 0; j < find.Length; ++j)
+                {
+                    if (bytes[i + j] != find[j])
+                    {
+                        break;
+                    }
+
+                    if (j == find.Length - 1)
+                    {
+                        from = i;
+                        found = true;
+                    }
+                }
+            }
+
+            if (!found)
+            {
+                throw new Exception("Byte sequence not found.");
+            }
+
+            var byteList = new List<byte>(bytes);
+
+            byteList.RemoveRange(from, find.Length);
+            byteList.InsertRange(from, replace);
+
+            return byteList.ToArray();
+        }
     }
 }
-
 #endif

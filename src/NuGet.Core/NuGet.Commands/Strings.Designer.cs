@@ -1215,6 +1215,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Certificate file &apos;{0}&apos; not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandCertificateFileNotFound {
+            get {
+                return ResourceManager.GetString("SignCommandCertificateFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate store &apos;{0}&apos; not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string SignCommandCertificateStoreNotFound {
+            get {
+                return ResourceManager.GetString("SignCommandCertificateStoreNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please select a valid certificate.
         /// </summary>
         internal static string SignCommandDialogMessage {
@@ -1247,15 +1265,6 @@ namespace NuGet.Commands {
         internal static string SignCommandDisplayTimestamper {
             get {
                 return ResourceManager.GetString("SignCommandDisplayTimestamper", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; file &apos;{1}&apos; not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
-        /// </summary>
-        internal static string SignCommandFileNotFound {
-            get {
-                return ResourceManager.GetString("SignCommandFileNotFound", resourceCulture);
             }
         }
         

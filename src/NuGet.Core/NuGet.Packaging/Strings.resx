@@ -226,11 +226,11 @@
   <data name="TimestampFailureAuthorCertNotValid" xml:space="preserve">
     <value>Author certificate was not valid when it was timestamped.</value>
   </data>
-  <data name="TimestampFailureInvalidHash" xml:space="preserve">
+  <data name="TimestampIntegrityCheckFailed" xml:space="preserve">
     <value>Timestamp integrity check failed.</value>
   </data>
-  <data name="TimestampFailureInvalidHashAlgorithmOid" xml:space="preserve">
-    <value>The timestamp uses as unsupported hash algorithm.</value>
+  <data name="TimestampUnsupportedSignatureAlgorithm" xml:space="preserve">
+    <value>The timestamp has an unsupported signature algorithm.</value>
   </data>
   <data name="TimestampFailureInvalidHttpScheme" xml:space="preserve">
     <value>The timestamper url '{0}' has an invalid uri scheme. The supported schemes are '{1}' and '{2}'.</value>
@@ -245,7 +245,7 @@
     <value>Timestamp service's response does not meet the NuGet package signature specification: '{0}'.</value>
     <comment>0 - Reason for failure</comment>
   </data>
-  <data name="TimestampFailureInvalidContentType" xml:space="preserve">
+  <data name="TimestampSignatureValidationFailed" xml:space="preserve">
     <value>Timestamp signature validation failed.</value>
   </data>
   <data name="TimestampCertificateChainBuildFailure" xml:space="preserve">
@@ -381,7 +381,7 @@ Valid from:</comment>
     <value>Invalid package archive.</value>
   </data>
   <data name="ErrorZip64NotSupported" xml:space="preserve">
-    <value>ZIP64 signed packages are not supported.</value>
+    <value>Signed Zip64 packages are not supported.</value>
   </data>
   <data name="Error_NotOnePrimarySignature" xml:space="preserve">
     <value>The package signature contains multiple primary signatures.</value>
@@ -424,26 +424,20 @@ Valid from:</comment>
   <data name="SigningCertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
     <value>The signing certificate does not meet a minimum public key length requirement.</value>
   </data>
-  <data name="SignatureCentralDirectoryHeaderInvalid" xml:space="preserve">
-    <value>Invalid central directory header for signature entry: {0}</value>
-    <comment>0 - exact cause of the failure.</comment>
-  </data>
-  <data name="SignatureFileCompressed" xml:space="preserve">
-    <value>File was found to be compressed.</value>
-  </data>
-  <data name="SignatureInvalidCompressionMethod" xml:space="preserve">
-    <value>Invalid compression method. Expected '{0}', actual '{1}'.</value>
-    <comment>0 - expected value in uint
-1 - actual value in uint</comment>
+  <data name="InvalidPackageSignatureFileEntryCentralDirectoryHeader" xml:space="preserve">
+    <value>The central directory header field '{0}' has an invalid value ({1}).</value>
+    <comment>{0} is the name of field with the invalid value
+{1} is the field value</comment>
   </data>
   <data name="SignatureInvalidGeneralPurposeBits" xml:space="preserve">
     <value>Invalid general purpose bit flags. Expected '{0}', actual '{1}'.</value>
     <comment>0 - expected value in uint
 1 - actual value in uint</comment>
   </data>
-  <data name="SignatureLocalFileHeaderInvalid" xml:space="preserve">
-    <value>Invalid local file header for signature entry: {0}</value>
-    <comment>0 - exact cause of the failure.</comment>
+  <data name="InvalidPackageSignatureFileEntryLocalFileHeader" xml:space="preserve">
+    <value>The local file header field '{0}' has an invalid value ({1}).</value>
+    <comment>{0} is the name of field with the invalid value
+{1} is the field value</comment>
   </data>
   <data name="SignedPackageArchiveIOExtraRead" xml:space="preserve">
     <value>Package stream read position cannot be longer than the length of the stream.</value>
@@ -466,7 +460,10 @@ Valid from:</comment>
   <data name="TimestampNotYetValid" xml:space="preserve">
     <value>The timestamp signing certificate is not yet valid.</value>
   </data>
-  <data name="SignatureInvalidExternalFileAttributes" xml:space="preserve">
+  <data name="InvalidPackageSignatureFileEntry" xml:space="preserve">
     <value>The package signature file entry is invalid.</value>
+  </data>
+  <data name="InvalidAuthorSignature" xml:space="preserve">
+    <value>The author signature is invalid.</value>
   </data>
 </root>

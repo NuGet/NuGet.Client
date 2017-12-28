@@ -126,7 +126,7 @@ namespace Test.Utility.Signing
             {
                 var zipArchiveHash = await package.GetArchiveHashAsync(request.SignatureHashAlgorithm, CancellationToken.None);
                 var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
-                var signatureContent = new SignatureContent(hashAlgorithm, base64ZipArchiveHash);
+                var signatureContent = new SignatureContent(SigningSpecifications.V1, hashAlgorithm, base64ZipArchiveHash);
                 var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
 
                 return await testSignatureProvider.CreateSignatureAsync(request, signatureContent, testLogger, CancellationToken.None);

@@ -386,7 +386,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ZIP64 signed packages are not supported..
+        ///   Looks up a localized string similar to Signed Zip64 packages are not supported..
         /// </summary>
         internal static string ErrorZip64NotSupported {
             get {
@@ -431,6 +431,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The author signature is invalid..
+        /// </summary>
+        internal static string InvalidAuthorSignature {
+            get {
+                return ResourceManager.GetString("InvalidAuthorSignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} This validation error occurred in a &apos;{1}&apos; element..
         /// </summary>
         internal static string InvalidNuspecElement {
@@ -463,6 +472,33 @@ namespace NuGet.Packaging {
         internal static string InvalidPackageSignature {
             get {
                 return ResourceManager.GetString("InvalidPackageSignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package signature file entry is invalid..
+        /// </summary>
+        internal static string InvalidPackageSignatureFileEntry {
+            get {
+                return ResourceManager.GetString("InvalidPackageSignatureFileEntry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The central directory header field &apos;{0}&apos; has an invalid value ({1})..
+        /// </summary>
+        internal static string InvalidPackageSignatureFileEntryCentralDirectoryHeader {
+            get {
+                return ResourceManager.GetString("InvalidPackageSignatureFileEntryCentralDirectoryHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The local file header field &apos;{0}&apos; has an invalid value ({1})..
+        /// </summary>
+        internal static string InvalidPackageSignatureFileEntryLocalFileHeader {
+            get {
+                return ResourceManager.GetString("InvalidPackageSignatureFileEntryLocalFileHeader", resourceCulture);
             }
         }
         
@@ -566,15 +602,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid central directory header for signature entry: {0}.
-        /// </summary>
-        internal static string SignatureCentralDirectoryHeaderInvalid {
-            get {
-                return ResourceManager.GetString("SignatureCentralDirectoryHeaderInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package signature contains an invalid attribute: {0}.
         /// </summary>
         internal static string SignatureContainsInvalidAttribute {
@@ -602,15 +629,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to File was found to be compressed..
-        /// </summary>
-        internal static string SignatureFileCompressed {
-            get {
-                return ResourceManager.GetString("SignatureFileCompressed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Signature Hash Algorithm: {0}.
         /// </summary>
         internal static string SignatureHashAlgorithm {
@@ -620,38 +638,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid compression method. Expected &apos;{0}&apos;, actual &apos;{1}&apos;..
-        /// </summary>
-        internal static string SignatureInvalidCompressionMethod {
-            get {
-                return ResourceManager.GetString("SignatureInvalidCompressionMethod", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The package signature file entry is invalid..
-        /// </summary>
-        internal static string SignatureInvalidExternalFileAttributes {
-            get {
-                return ResourceManager.GetString("SignatureInvalidExternalFileAttributes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid general purpose bit flags. Expected &apos;{0}&apos;, actual &apos;{1}&apos;..
         /// </summary>
         internal static string SignatureInvalidGeneralPurposeBits {
             get {
                 return ResourceManager.GetString("SignatureInvalidGeneralPurposeBits", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid local file header for signature entry: {0}.
-        /// </summary>
-        internal static string SignatureLocalFileHeaderInvalid {
-            get {
-                return ResourceManager.GetString("SignatureLocalFileHeaderInvalid", resourceCulture);
             }
         }
         
@@ -809,33 +800,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Timestamp signature validation failed..
-        /// </summary>
-        internal static string TimestampFailureInvalidContentType {
-            get {
-                return ResourceManager.GetString("TimestampFailureInvalidContentType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Timestamp integrity check failed..
-        /// </summary>
-        internal static string TimestampFailureInvalidHash {
-            get {
-                return ResourceManager.GetString("TimestampFailureInvalidHash", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The timestamp uses as unsupported hash algorithm..
-        /// </summary>
-        internal static string TimestampFailureInvalidHashAlgorithmOid {
-            get {
-                return ResourceManager.GetString("TimestampFailureInvalidHashAlgorithmOid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The timestamper url &apos;{0}&apos; has an invalid uri scheme. The supported schemes are &apos;{1}&apos; and &apos;{2}&apos;..
         /// </summary>
         internal static string TimestampFailureInvalidHttpScheme {
@@ -850,6 +814,15 @@ namespace NuGet.Packaging {
         internal static string TimestampFailureNonceMismatch {
             get {
                 return ResourceManager.GetString("TimestampFailureNonceMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timestamp integrity check failed..
+        /// </summary>
+        internal static string TimestampIntegrityCheckFailed {
+            get {
+                return ResourceManager.GetString("TimestampIntegrityCheckFailed", resourceCulture);
             }
         }
         
@@ -886,6 +859,24 @@ namespace NuGet.Packaging {
         internal static string TimestampResponseExceptionGeneral {
             get {
                 return ResourceManager.GetString("TimestampResponseExceptionGeneral", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timestamp signature validation failed..
+        /// </summary>
+        internal static string TimestampSignatureValidationFailed {
+            get {
+                return ResourceManager.GetString("TimestampSignatureValidationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp has an unsupported signature algorithm..
+        /// </summary>
+        internal static string TimestampUnsupportedSignatureAlgorithm {
+            get {
+                return ResourceManager.GetString("TimestampUnsupportedSignatureAlgorithm", resourceCulture);
             }
         }
         
