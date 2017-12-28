@@ -570,7 +570,7 @@ phases:
   condition: "succeeded()"
   queue:
     name: DDNuGet-Windows
-    timeoutInMinutes: 45
+    timeoutInMinutes: 75
     demands: DotNetFramework
 
   steps:
