@@ -20,6 +20,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TrustedTestCert<TestCertificate> _trustedTestCertWithInvalidEku;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
+        private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
         private string _nugetExePath;
@@ -74,6 +75,24 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 }
 
                 return _trustedTestCertExpired;
+            }
+        }
+
+        public TrustedTestCert<TestCertificate> TrustedTestCertificateNotYetValid
+        {
+            get
+            {
+                if (_trustedTestCertNotYetValid == null)
+                {
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorNotYetValidCert;
+
+                    // Code Sign EKU needs trust to a root authority
+                    // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
+                    // This makes all the associated tests to require admin privilege
+                    _trustedTestCertNotYetValid = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                }
+
+                return _trustedTestCertNotYetValid;
             }
         }
 

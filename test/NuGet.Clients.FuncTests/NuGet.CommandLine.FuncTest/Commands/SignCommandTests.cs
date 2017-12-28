@@ -136,6 +136,39 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [CIOnlyFact]
+        public void SignCommand_SignPackageWithNotYetValidCertificateFails()
+        {
+            // Arrange
+            var testLogger = new TestLogger();
+            var cert = _testFixture.TrustedTestCertificateNotYetValid;
+
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
+            {
+                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    zipStream.CopyTo(fileStream);
+                }
+
+                // Act
+                var result = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"sign {packagePath} -CertificateFingerprint {cert.Source.Cert.Thumbprint} -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
+                    waitForExit: true);
+
+                // Assert
+                result.Success.Should().BeFalse();
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                result.AllOutput.Should().Contain(_noCertFoundErrorCode);
+            }
+        }
+
+        [CIOnlyFact]
         public void SignCommand_SignPackageWithTimestamping()
         {
             // Arrange

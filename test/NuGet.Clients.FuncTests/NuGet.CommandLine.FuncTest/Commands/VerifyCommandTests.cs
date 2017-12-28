@@ -177,7 +177,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var verifyResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"verify {signedPackagePath} -Signatures -verbosity Detailed",
+                    $"verify {signedPackagePath} -Signatures",
                     waitForExit: true);
 
                 // Assert

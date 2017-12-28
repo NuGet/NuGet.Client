@@ -32,8 +32,9 @@ namespace Test.Utility.Signing
 
 #if IS_DESKTOP
             var expiration = DateTimeOffset.Parse(TrustedCert.GetExpirationDateString());
+            var begin = DateTimeOffset.Parse(TrustedCert.GetEffectiveDateString());
 
-            if (expiration > DateTimeOffset.UtcNow.AddHours(2))
+            if (TrustedCert.NotAfter - TrustedCert.NotBefore > TimeSpan.FromHours(2))
             {
                 throw new InvalidOperationException("The cert used is valid for more than two hours.");
             }

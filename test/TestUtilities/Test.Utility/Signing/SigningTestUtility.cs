@@ -72,6 +72,27 @@ namespace Test.Utility.Signing
         };
 
         /// <summary>
+        /// Modification generator that can be passed to TestCertificate.Generate().
+        /// The generator will create a certificate that is not yet valid.
+        /// </summary>
+        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorNotYetValidCert = delegate (X509V3CertificateGenerator gen)
+        {
+            // CodeSigning EKU
+            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
+
+            gen.AddExtension(
+                X509Extensions.ExtendedKeyUsage.Id,
+                critical: true,
+                extensionValue: new ExtendedKeyUsage(usages));
+
+            var notBefore = DateTime.Now.AddDays(1);
+            var notAfter = notBefore.AddHours(1);
+
+            gen.SetNotBefore(notBefore);
+            gen.SetNotAfter(notAfter);
+        };
+
+        /// <summary>
         /// Create a self signed certificate with bouncy castle.
         /// </summary>
         public static X509Certificate2 GenerateCertificate(
