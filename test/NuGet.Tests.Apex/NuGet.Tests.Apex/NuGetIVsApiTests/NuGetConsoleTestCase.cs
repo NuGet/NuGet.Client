@@ -179,7 +179,10 @@ namespace NuGet.Tests.Apex
                 Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion1));
 
                 Assert.True(nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2));
-                Assert.True(Utils.PackageExistsInLockFile(project.FullPath, packageName, packageVersion2));
+                if (projectTemplate != ProjectTemplate.ClassLibrary)
+                {
+                    Assert.True(Utils.PackageExistsInLockFile(project.FullPath, packageName, packageVersion2));
+                }
                 project.Build();
 
                 Assert.False(nugetConsole.IsPackageInstalled(packageName, packageVersion1));
