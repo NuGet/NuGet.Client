@@ -32,7 +32,9 @@
     <Compile Include="Fixtures\VisualStudioOperationsFixture.cs" />
     <Compile Include="NuGetIVsApiTests\IVsPackageInstallerTestCase.cs" />
     <Compile Include="NuGetIVsApiTests\NuGetConsoleTestCase.cs" />
+    <Compile Include="NuGetIVsApiTests\NetCoreProjectTestCase.cs" />
     <Compile Include="NuGetIVsApiTests\NuGetUITestCase.cs" />
+    <Compile Include="NuGetIVsApiTests\Utils.cs" />
     <Compile Include="Apex\NuGetTypeConstraint.cs" />
     <Compile Include="Apex\NuGetUIProjectTestExtensionVerifier.cs" />
     <Compile Include="Apex\NuGetUIProjectTestExtension.cs" />
@@ -44,11 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Test.Apex-d15rel">
-      <Version>15.0.26131.55</Version>
+      <Version>15.0.27006.00</Version>
     </PackageReference>
-    <PackageReference Include="Xunit.StaFact">
-      <Version>0.2.3-beta</Version>
-    </PackageReference>
+    <PackageReference Include="Xunit.StaFact" Version="0.2.9" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
@@ -60,6 +60,7 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </ProjectReference>
     <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="..\..\TestExtensions\NuGet.StaFact\NuGet.StaFact.csproj" />
     <ProjectReference Include="..\NuGet.Console.TestContract\NuGet.Console.TestContract.csproj" />
     <ProjectReference Include="..\NuGet.PackageManagement.UI.TestContract\NuGet.PackageManagement.UI.TestContract.csproj" />
   </ItemGroup>
