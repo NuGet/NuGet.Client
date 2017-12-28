@@ -42,15 +42,10 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
                 
                 Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion));
-                if(projectTemplate != ProjectTemplate.ClassLibrary)
-                {
-                    Assert.True(Utils.PackageExistsInLockFile(project.FullPath, packageName, packageVersion));
-                }
-                
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion));
                 project.Build();
                 Assert.True(VisualStudio.HasNoErrorsInErrorList());
                 Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
-                Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion));
 
                 nugetConsole.Clear();
                 solutionService.Save();
@@ -82,14 +77,10 @@ namespace NuGet.Tests.Apex
                 var packageVersion = "9.0.1";
 
                 Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion, "https://api.nuget.org/v3/index.json"));
-                if (projectTemplate != ProjectTemplate.ClassLibrary)
-                {
-                    Assert.True(Utils.PackageExistsInLockFile(project.FullPath, packageName, packageVersion));
-                }
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion));
                 project.Build();
                 Assert.True(VisualStudio.HasNoErrorsInErrorList());
                 Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
-                Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion));
                 nugetConsole.Clear();
 
                 solutionService.Save();
@@ -122,22 +113,16 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
 
                 Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion));
-                if (projectTemplate != ProjectTemplate.ClassLibrary)
-                {
-                    Assert.True(Utils.PackageExistsInLockFile(project.FullPath, packageName, packageVersion));
-                }
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion));
                 project.Build();
 
                 Assert.True(nugetConsole.UninstallPackageFromPMC(packageName));
-                if (projectTemplate != ProjectTemplate.ClassLibrary)
-                {
-                    Assert.False(Utils.PackageExistsInLockFile(project.FullPath, packageName, packageVersion));
-                }
+                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion));
 
                 solutionService.Save();
                 project.Build();
-
-                Assert.False(nugetConsole.IsPackageInstalled(packageName, packageVersion));
+                Assert.True(VisualStudio.HasNoErrorsInErrorList());
+                Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
 
                 nugetConsole.Clear();
             }
@@ -171,22 +156,16 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = nugetTestService.GetPackageManagerConsole(project.UniqueName);
 
                 Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion1));
-                if (projectTemplate != ProjectTemplate.ClassLibrary)
-                {
-                    Assert.True(Utils.PackageExistsInLockFile(project.FullPath, packageName, packageVersion1));
-                }
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion1));
                 project.Build();
-                Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion1));
-
+                
                 Assert.True(nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2));
-                if (projectTemplate != ProjectTemplate.ClassLibrary)
-                {
-                    Assert.True(Utils.PackageExistsInLockFile(project.FullPath, packageName, packageVersion2));
-                }
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion2));
+                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion1));
                 project.Build();
 
-                Assert.False(nugetConsole.IsPackageInstalled(packageName, packageVersion1));
-                Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion2));
+                Assert.True(VisualStudio.HasNoErrorsInErrorList());
+                Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
 
                 nugetConsole.Clear();
                 solutionService.Save();
@@ -227,8 +206,8 @@ namespace NuGet.Tests.Apex
                 project.Build();
                 Assert.True(VisualStudio.HasNoErrorsInErrorList());
                 Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
-                Assert.True(nugetConsole.IsPackageInstalled(packageName1, packageVersion1));
-                Assert.True(nugetConsole.IsPackageInstalled(packageName2, packageVersion2));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName1, packageVersion1));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName2, packageVersion2));
 
                 nugetConsole.Clear();
                 solutionService.Save();
@@ -269,16 +248,16 @@ namespace NuGet.Tests.Apex
                 project.Build();
                 Assert.True(VisualStudio.HasNoErrorsInErrorList());
                 Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
-                Assert.True(nugetConsole.IsPackageInstalled(packageName1, packageVersion1));
-                Assert.True(nugetConsole.IsPackageInstalled(packageName2, packageVersion2));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName1, packageVersion1));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName2, packageVersion2));
 
                 Assert.True(nugetConsole.UninstallPackageFromPMC(packageName1));
                 Assert.True(nugetConsole.UninstallPackageFromPMC(packageName2));
                 project.Build();
                 solutionService.SaveAll();
 
-                Assert.False(nugetConsole.IsPackageInstalled(packageName1, packageVersion1));
-                Assert.False(nugetConsole.IsPackageInstalled(packageName2, packageVersion2));
+                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName1, packageVersion1));
+                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName2, packageVersion2));
 
                 nugetConsole.Clear();
                 solutionService.Save();
@@ -314,13 +293,13 @@ namespace NuGet.Tests.Apex
 
                 Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion2));
                 project.Build();
-                Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion2));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion2));
 
                 Assert.True(nugetConsole.UpdatePackageFromPMC(packageName, packageVersion1));
                 project.Build();
 
-                Assert.False(nugetConsole.IsPackageInstalled(packageName, packageVersion2));
-                Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion1));
+                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion2));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion1));
 
                 nugetConsole.Clear();
                 solutionService.Save();
@@ -366,7 +345,7 @@ namespace NuGet.Tests.Apex
                 project2.Build();
                 project3.Build();
 
-                Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project3.FullPath, packageName, packageVersion));
 
                 Assert.True(project1.References.TryFindReferenceByName("newtonsoft.json", out var result));
                 Assert.NotNull(result);
@@ -422,7 +401,7 @@ namespace NuGet.Tests.Apex
                 projectX.Build();
                 solutionService.Build();
 
-                Assert.True(nugetConsole.IsPackageInstalled(packageName, packageVersion));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project3.FullPath, packageName, packageVersion));
 
                 Assert.True(project1.References.TryFindReferenceByName("newtonsoft.json", out var result));
                 Assert.NotNull(result);
