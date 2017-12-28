@@ -27,7 +27,7 @@ namespace Test.Utility.Signing
         /// Modification generator that can be passed to TestCertificate.Generate().
         /// The generator will change the certificate EKU to ClientAuth.
         /// </summary>
-        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorForInvalidEku = delegate (X509V3CertificateGenerator gen)
+        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorForInvalidEkuCert = delegate (X509V3CertificateGenerator gen)
         {
             // any EKU besides CodeSigning
             var usages = new[] { KeyPurposeID.IdKPClientAuth };
@@ -42,7 +42,7 @@ namespace Test.Utility.Signing
         /// Modification generator that can be passed to TestCertificate.Generate().
         /// The generator will change the certificate EKU to CodeSigning.
         /// </summary>
-        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorForCodeSigningEku = delegate (X509V3CertificateGenerator gen)
+        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorForCodeSigningEkuCert = delegate (X509V3CertificateGenerator gen)
         {
             // CodeSigning EKU
             var usages = new[] { KeyPurposeID.IdKPCodeSigning };
@@ -51,6 +51,45 @@ namespace Test.Utility.Signing
                 X509Extensions.ExtendedKeyUsage.Id,
                 critical: true,
                 extensionValue: new ExtendedKeyUsage(usages));
+        };
+
+        /// <summary>
+        /// Modification generator that can be passed to TestCertificate.Generate().
+        /// The generator will create an expired certificate.
+        /// </summary>
+        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorExpiredCert = delegate (X509V3CertificateGenerator gen)
+        {
+            // CodeSigning EKU
+            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
+
+            gen.AddExtension(
+                X509Extensions.ExtendedKeyUsage.Id,
+                critical: true,
+                extensionValue: new ExtendedKeyUsage(usages));
+
+            gen.SetNotBefore(DateTime.Now.AddHours(-1));
+            gen.SetNotAfter(DateTime.Now.AddMinutes(-1));
+        };
+
+        /// <summary>
+        /// Modification generator that can be passed to TestCertificate.Generate().
+        /// The generator will create a certificate that is not yet valid.
+        /// </summary>
+        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorNotYetValidCert = delegate (X509V3CertificateGenerator gen)
+        {
+            // CodeSigning EKU
+            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
+
+            gen.AddExtension(
+                X509Extensions.ExtendedKeyUsage.Id,
+                critical: true,
+                extensionValue: new ExtendedKeyUsage(usages));
+
+            var notBefore = DateTime.Now.AddDays(1);
+            var notAfter = notBefore.AddHours(1);
+
+            gen.SetNotBefore(notBefore);
+            gen.SetNotAfter(notAfter);
         };
 
         /// <summary>

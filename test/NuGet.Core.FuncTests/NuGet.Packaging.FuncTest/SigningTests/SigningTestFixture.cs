@@ -24,7 +24,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_trustedTestCert == null)
                 {
-                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCodeSigningEku;
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCodeSigningEkuCert;
 
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog

@@ -21,11 +21,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private const string _packageAlreadySignedError = "NU3000: The package already contains a signature. Please remove the existing signature before adding a new signature.";
         private const string _invalidPasswordErrorCode = "NU3014";
         private const string _invalidEkuErrorCode = "NU3000";
+        private const string _noCertFoundErrorCode = "NU3003";
         private const string _noTimestamperWarningCode = "NU3521";
 
         private SignCommandTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
-        private TrustedTestCert<TestCertificate> _trustedTestCertWithInvalidEku;
         private string _nugetExePath;
         private string _timestamper;
 
@@ -33,7 +33,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedTestCert = _testFixture.TrustedTestCertificate;
-            _trustedTestCertWithInvalidEku = _testFixture.TrustedTestCertificateWithInvalidEku;
             _nugetExePath = _testFixture.NuGetExePath;
             _timestamper = _testFixture.Timestamper;
         }
@@ -74,6 +73,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         {
             // Arrange
             var testLogger = new TestLogger();
+            var invalidEkuCert = _testFixture.TrustedTestCertificateWithInvalidEku;
 
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
@@ -91,7 +91,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var result = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCertWithInvalidEku.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCertWithInvalidEku.StoreName} -CertificateStoreLocation {_trustedTestCertWithInvalidEku.StoreLocation}",
+                    $"sign {packagePath} -CertificateFingerprint {invalidEkuCert.Source.Cert.Thumbprint} -CertificateStoreName {invalidEkuCert.StoreName} -CertificateStoreLocation {invalidEkuCert.StoreLocation}",
                     waitForExit: true);
 
                 // Assert
@@ -99,6 +99,72 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_invalidEkuErrorCode);
                 result.AllOutput.Should().Contain("NotValidForUsage");
+            }
+        }
+
+        [CIOnlyFact]
+        public void SignCommand_SignPackageWithExpiredCertificateFails()
+        {
+            // Arrange
+            var testLogger = new TestLogger();
+            var expiredCert = _testFixture.TrustedTestCertificateExpired;
+
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
+            {
+                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    zipStream.CopyTo(fileStream);
+                }
+
+                // Act
+                var result = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"sign {packagePath} -CertificateFingerprint {expiredCert.Source.Cert.Thumbprint} -CertificateStoreName {expiredCert.StoreName} -CertificateStoreLocation {expiredCert.StoreLocation}",
+                    waitForExit: true);
+
+                // Assert
+                result.Success.Should().BeFalse();
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                result.AllOutput.Should().Contain(_noCertFoundErrorCode);
+            }
+        }
+
+        [CIOnlyFact]
+        public void SignCommand_SignPackageWithNotYetValidCertificateFails()
+        {
+            // Arrange
+            var testLogger = new TestLogger();
+            var cert = _testFixture.TrustedTestCertificateNotYetValid;
+
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
+            {
+                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    zipStream.CopyTo(fileStream);
+                }
+
+                // Act
+                var result = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"sign {packagePath} -CertificateFingerprint {cert.Source.Cert.Thumbprint} -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
+                    waitForExit: true);
+
+                // Assert
+                result.Success.Should().BeFalse();
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                result.AllOutput.Should().Contain(_noCertFoundErrorCode);
             }
         }
 
@@ -317,7 +383,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
-
 
         [CIOnlyFact]
         public void SignCommand_SignPackageWithPfxFileInteractiveSuccess()

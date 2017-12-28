@@ -8,13 +8,13 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
-using Test.Utility.Signing;
 
-namespace NuGet.Packaging.FuncTest
+namespace Test.Utility.Signing
 {
-    internal static class SignedArchiveTestUtility
+    public static class SignedArchiveTestUtility
     {
         // Central Directory file header size excluding signature, file name, extra field and file comment
         private const uint CentralDirectoryFileHeaderSizeWithoutSignature = 46;
@@ -145,7 +145,7 @@ namespace NuGet.Packaging.FuncTest
             var request = new SignPackageRequest()
             {
                 Certificate = cert,
-                SignatureHashAlgorithm = Common.HashAlgorithmName.SHA256
+                SignatureHashAlgorithm = HashAlgorithmName.SHA256
             };
 
             await signer.SignAsync(request, testLogger, CancellationToken.None);
@@ -163,7 +163,7 @@ namespace NuGet.Packaging.FuncTest
             var request = new SignPackageRequest()
             {
                 Certificate = cert,
-                SignatureHashAlgorithm = Common.HashAlgorithmName.SHA256
+                SignatureHashAlgorithm = HashAlgorithmName.SHA256
             };
 
             await signer.SignAsync(request, testLogger, CancellationToken.None);

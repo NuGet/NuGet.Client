@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet.Core.UnitTests", "NuGet.Core.UnitTests", "{7323F93B-D141-4001-BB9E-7AF14031143E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget.Core.FuncTests", "Nuget.Core.FuncTests", "{BB63CACA-866F-454F-BA4C-78B788D032BB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet.Core.FuncTests", "NuGet.Core.FuncTests", "{BB63CACA-866F-454F-BA4C-78B788D032BB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{DE23D071-162F-47A3-BC68-42E4A354835C}"
 	ProjectSection(SolutionItems) = preProject
