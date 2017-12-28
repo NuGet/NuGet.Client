@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.CommandLine.Test;
 using NuGet.Packaging.Signing;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.X509;
 using Test.Utility.Signing;
 
 namespace NuGet.CommandLine.FuncTest.Commands
@@ -21,6 +19,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TrustedTestCert<TestCertificate> _trustedTestCertWithInvalidEku;
+        private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
         private string _nugetExePath;
@@ -31,7 +30,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_trustedTestCert == null)
                 {
-                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCodeSigningEku;
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCodeSigningEkuCert;
 
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
@@ -49,7 +48,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_trustedTestCertWithInvalidEku == null)
                 {
-                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForInvalidEku;
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForInvalidEkuCert;
 
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
@@ -57,6 +56,24 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 }
 
                 return _trustedTestCertWithInvalidEku;
+            }
+        }
+
+        public TrustedTestCert<TestCertificate> TrustedTestCertificateExpired
+        {
+            get
+            {
+                if (_trustedTestCertExpired == null)
+                {
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorExpiredCert;
+
+                    // Code Sign EKU needs trust to a root authority
+                    // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
+                    // This makes all the associated tests to require admin privilege
+                    _trustedTestCertExpired = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                }
+
+                return _trustedTestCertExpired;
             }
         }
 
