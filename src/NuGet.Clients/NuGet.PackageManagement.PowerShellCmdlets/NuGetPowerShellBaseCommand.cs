@@ -271,6 +271,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        protected void RefreshUI(IEnumerable<NuGetProjectAction> actions)
+        {
+            var resolvedActions = actions.Select(action => new ResolvedAction(action.Project, action));
+
+            VsSolutionManager.OnActionsExecuted(resolvedActions);
+        }
+
         #region Cmdlets base APIs
 
         protected SourceValidationResult ValidateSource(string source)

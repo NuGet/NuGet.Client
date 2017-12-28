@@ -356,6 +356,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 // Execute project actions by Package Manager
                 await PackageManager.ExecuteNuGetProjectActionsAsync(Projects, actions, this, sourceCacheContext, Token);
+
+                // Refresh Manager UI if needed
+                RefreshUI(actions);
             }
         }
 

@@ -8,6 +8,7 @@ using System.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -145,14 +146,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected async Task UninstallPackageByIdAsync(NuGetProject project, string packageId, UninstallationContext uninstallContext, INuGetProjectContext projectContext, bool isPreview)
         {
+            var actions = await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
+
             if (isPreview)
             {
-                var actions = await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
                 PreviewNuGetPackageActions(actions);
             }
             else
             {
-                await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
+                await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, projectContext, NullSourceCacheContext.Instance, CancellationToken.None);
+
+                // Refresh Manager UI if needed
+                RefreshUI(actions);
             }
         }
 

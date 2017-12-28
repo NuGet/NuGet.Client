@@ -964,7 +964,7 @@ namespace NuGet.PackageManagement.UI
             var solutionManager = Model.Context.SolutionManager;
             solutionManager.NuGetProjectAdded -= SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRemoved -= SolutionManager_ProjectsChanged;
-            solutionManager.NuGetProjectUpdated -= SolutionManager_ProjectsChanged;
+            solutionManager.NuGetProjectUpdated -= SolutionManager_ProjectsUpdated;
             solutionManager.NuGetProjectRenamed -= SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted -= SolutionManager_ActionsExecuted;
             solutionManager.AfterNuGetCacheUpdated -= SolutionManager_CacheUpdated;

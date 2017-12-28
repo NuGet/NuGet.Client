@@ -148,6 +148,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     NuGetPackageManager.SetDirectInstall(identity, projectContext);
                     await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, resolutionContext.SourceCacheContext, CancellationToken.None);
                     NuGetPackageManager.ClearDirectInstall(projectContext);
+
+                    // Refresh Manager UI if needed
+                    RefreshUI(actions);
                 }
             }
             catch (InvalidOperationException ex)
@@ -219,6 +222,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     NuGetPackageManager.SetDirectInstall(identity, projectContext);
                     await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, resolutionContext.SourceCacheContext, CancellationToken.None);
                     NuGetPackageManager.ClearDirectInstall(projectContext);
+
+                    // Refresh Manager UI if needed
+                    RefreshUI(actions);
                 }
             }
             catch (InvalidOperationException ex)
