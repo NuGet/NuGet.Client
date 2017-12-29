@@ -21,8 +21,7 @@ function LaunchVSAndWaitForDTE {
 
     KillRunningInstancesOfVS
 
-    if($ActivityLogFullPath)
-    {
+    if ($ActivityLogFullPath) {
         LaunchVS -VSVersion $VSVersion -ActivityLogFullPath $ActivityLogFullPath
     }
     else {
