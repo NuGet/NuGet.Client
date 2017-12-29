@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -71,15 +70,6 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            Console.WriteLine("Waiting for debugger to attach.");
-            Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
-
-            while (!Debugger.IsAttached)
-            {
-                System.Threading.Thread.Sleep(100);
-            }
-            Debugger.Break();
-
             var log = new MSBuildLogger(Log);
 
             // Log inputs
