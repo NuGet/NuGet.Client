@@ -65,13 +65,19 @@ function LaunchVS {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
-        [string]$VSVersion
+        [string]$VSVersion,
+        [string]$ActivityLogFullPath
     )
 
     $VSIDEFolderPath = GetVSIDEFolderPath $VSVersion
     $VSPath = Join-Path $VSIDEFolderPath "devenv.exe"
     Write-Host 'Starting ' $VSPath
-    start-process $VSPath
+    if ($ActivityLogFullPath) {
+        start-process $VSPath -ArgumentList "/log $ActivityLogFullPath"
+    }
+    else {
+        start-process $VSPath
+    }
 }
 
 function GetDTE2 {

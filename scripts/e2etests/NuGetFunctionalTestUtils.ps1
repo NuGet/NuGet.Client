@@ -152,6 +152,7 @@ function RealTimeLogResults
                 else
                 {
                     Write-Error $logContentLastLine
+                    CopyActivityLogToCI
                 }
 
                 $resultsFile = Join-Path $currentBinFolder.FullName results.html
@@ -177,6 +178,7 @@ function RealTimeLogResults
         $errorMessage = 'Run Failed - Results.html did not get created. ' `
         + 'This indicates that the tests did not finish running. It could be that the VS crashed or a test timed out. Please investigate.'
         CopyResultsToCI $NuGetDropPath $RunCounter $testResults
+        CopyActivityLogToCI
         # if($env:CI)
         # {
         ## Running into some hangs, so comment it out for now.
@@ -222,11 +224,21 @@ function CopyResultsToCI
             New-Item -Path $env:EndToEndResultsDropPath -ItemType Directory -Force
         }
         Copy-Item $FullLogFilePath -Destination $env:EndToEndResultsDropPath -Force  -ErrorAction SilentlyContinue
+
         Write-Host "Copying test results file from $resultsFile to $env:EndToEndResultsDropPath"
         Copy-Item $resultsFile -Destination $env:EndToEndResultsDropPath -Force -ErrorAction SilentlyContinue
     }
 
     OutputResultsForCI -NuGetDropPath $NuGetDropPath -RunCounter $RunCounter -RealTimeResultsFilePath $RealTimeResultsFilePath
+}
+
+function CopyActivityLogToCI
+{    
+    if($env:ActivityLogFullPath) 
+    {
+        Write-Host "Copying activity log file from $env:ActivityLogFullPath to $env:EndToEndResultsDropPath"
+        Copy-Item $env:ActivityLogFullPath -Destination $env:EndToEndResultsDropPath -Force  -ErrorAction SilentlyContinue
+    }
 }
 
 function OutputResultsForCI
