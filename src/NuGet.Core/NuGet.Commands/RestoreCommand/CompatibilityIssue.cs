@@ -94,7 +94,7 @@ namespace NuGet.Commands
             PackageIdentity project)
         {
             return new CompatibilityIssue(
-                CompatibilityIssueType.ProjectWithTooManyReferences,
+                CompatibilityIssueType.ProjectWithIncorrectDependencyCount,
                 project,
                 string.Empty,
                 null,
@@ -159,7 +159,7 @@ namespace NuGet.Commands
 
                 return FormatMessage(message, supports, noSupports);
             }
-            else if (Type == CompatibilityIssueType.ProjectWithTooManyReferences)
+            else if (Type == CompatibilityIssueType.ProjectWithIncorrectDependencyCount)
             {
                 var message = string.Format(CultureInfo.CurrentCulture,
                        Strings.Error_ProjectWithIncorrectDependenciesCount,
@@ -262,7 +262,7 @@ namespace NuGet.Commands
         ReferenceAssemblyNotImplemented,
         PackageIncompatible,
         ProjectIncompatible,
-        ProjectWithTooManyReferences,
+        ProjectWithIncorrectDependencyCount,
         IncompatiblePackageWithDotnetTool
     }
 }

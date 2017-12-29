@@ -520,6 +520,7 @@ namespace NuGet.Commands
 
             // Exclude items
             ExcludeItems(projectLib, dependencyType);
+
             return projectLib;
         }
 

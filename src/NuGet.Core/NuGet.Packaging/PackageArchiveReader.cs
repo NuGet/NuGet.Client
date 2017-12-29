@@ -212,7 +212,7 @@ namespace NuGet.Packaging
             return copiedFile;
         }
 
-        private ZipArchiveEntry GetEntry(string packageFile)
+        public ZipArchiveEntry GetEntry(string packageFile)
         {
             return _zipArchive.LookupEntry(packageFile);
         }

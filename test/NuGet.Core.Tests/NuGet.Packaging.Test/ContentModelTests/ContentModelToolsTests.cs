@@ -143,5 +143,30 @@ namespace NuGet.Client.Test
             Assert.Equal(rid, group.Properties["rid"]);
             Assert.Equal($"tools/net46/{rid}/a.dll", group.Items.Single().Path);
         }
+
+        [Fact]
+        public void ContentModel_Net46TFMAndAnyRIDisAnyRID()
+        {
+            // Arrange
+            var conventions = new ManagedCodeConventions(
+                new RuntimeGraph(
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("net46.app") }));
+
+            var collection = new ContentItemCollection();
+            var rid = "any";
+            collection.Load(new string[]
+            {
+                $"tools/net46/{rid}/a.dll",
+            });
+
+            // Act
+            var groups = collection.FindItemGroups(conventions.Patterns.ToolsAssemblies)
+                .ToList();
+
+            // Assert
+            Assert.Equal(1, groups.Count);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.Net46, (NuGetFramework)groups.First().Properties["tfm"]);
+            Assert.Equal(rid, groups.First().Properties["rid"]);
+        }
     }
 }
