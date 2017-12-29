@@ -23,7 +23,7 @@ function LaunchVSAndWaitForDTE {
 
     if($ActivityLogFullPath)
     {
-        LaunchVS -VSVersion $VSVersion -ActivitiyLogFullPath $ActivityLogFullPath
+        LaunchVS -VSVersion $VSVersion -ActivityLogFullPath $ActivityLogFullPath
     }
     else {
         LaunchVS -VSVersion $VSVersion
