@@ -222,6 +222,13 @@ function CopyResultsToCI
             New-Item -Path $env:EndToEndResultsDropPath -ItemType Directory -Force
         }
         Copy-Item $FullLogFilePath -Destination $env:EndToEndResultsDropPath -Force  -ErrorAction SilentlyContinue
+        
+        if($env:ActivityLogFullPath) 
+        {
+            Write-Host "Copying activity log file from $env:ActivityLogFullPath to $env:EndToEndResultsDropPath"
+            Copy-Item $env:ActivityLogFullPath -Destination $env:EndToEndResultsDropPath -Force  -ErrorAction SilentlyContinue
+        }
+
         Write-Host "Copying test results file from $resultsFile to $env:EndToEndResultsDropPath"
         Copy-Item $resultsFile -Destination $env:EndToEndResultsDropPath -Force -ErrorAction SilentlyContinue
     }
