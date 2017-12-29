@@ -140,6 +140,7 @@ function RealTimeLogResults
 
             $logContent = Get-Content $log
             $logContentLastLine = $logContent[-1]
+            $isError = $false
             if (($logContentLastLine -is [string]) -and $logContentLastLine.Contains("Tests and/or Test cases, ")`
                     -and $content.Count -eq $currentTestId)
             {
@@ -152,7 +153,7 @@ function RealTimeLogResults
                 else
                 {
                     Write-Error $logContentLastLine
-                    CopyActivityLogToCI
+                    $isError = $true
                 }
 
                 $resultsFile = Join-Path $currentBinFolder.FullName results.html
@@ -163,6 +164,10 @@ function RealTimeLogResults
                 else
                 {
                     CopyResultsToCI $NuGetDropPath $RunCounter $testResults
+                }
+                if($isError -eq $true)
+                {
+                    CopyActivityLogToCI
                 }
                 break
             }
