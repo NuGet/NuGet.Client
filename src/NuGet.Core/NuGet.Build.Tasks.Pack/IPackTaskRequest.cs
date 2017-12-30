@@ -53,6 +53,7 @@ namespace NuGet.Build.Tasks.Pack
         string RepositoryType { get; }
         string RepositoryUrl { get; }
         bool RequireLicenseAcceptance { get; }
+        bool ResolveProjectReferenceVersionDuringPack { get; }
         string RestoreOutputPath { get; }
         bool Serviceable { get; }
         TItem[] SourceFiles { get; }

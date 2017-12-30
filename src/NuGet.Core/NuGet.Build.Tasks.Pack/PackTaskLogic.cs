@@ -183,7 +183,20 @@ namespace NuGet.Build.Tasks.Pack
                     assetsFilePath));
             }
 
-            PopulateProjectAndPackageReferences(builder, assetsFile);
+            var projectRefToVersionMap = new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
+
+            if (request.ResolveProjectReferenceVersionDuringPack && request.ProjectReferencesWithVersions.Any())
+            {
+                projectRefToVersionMap = request
+                    .ProjectReferencesWithVersions
+                    .ToDictionary(msbuildItem => msbuildItem.Identity,
+                    msbuildItem => msbuildItem.GetProperty("Version"), PathUtility.GetStringComparerBasedOnOS());
+            }
+
+            PopulateProjectAndPackageReferences(builder,
+                assetsFile,
+                projectRefToVersionMap,
+                readProjectRefVersionFromAssetsFile: !request.ResolveProjectReferenceVersionDuringPack);
             PopulateFrameworkAssemblyReferences(builder, request);
             return builder;
         }
@@ -572,11 +585,12 @@ namespace NuGet.Build.Tasks.Pack
             return sourceFiles;
         }
 
-        private void PopulateProjectAndPackageReferences(PackageBuilder packageBuilder, LockFile assetsFile)
+        private void PopulateProjectAndPackageReferences(PackageBuilder packageBuilder, LockFile assetsFile,
+            IDictionary<string,string> projectRefToVersionMap, bool readProjectRefVersionFromAssetsFile)
         {
             var dependenciesByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
 
-            InitializeProjectDependencies(assetsFile, dependenciesByFramework);
+            InitializeProjectDependencies(assetsFile, dependenciesByFramework, projectRefToVersionMap, readProjectRefVersionFromAssetsFile);
             InitializePackageDependencies(assetsFile, dependenciesByFramework);
 
             foreach (var pair in dependenciesByFramework)
@@ -587,7 +601,9 @@ namespace NuGet.Build.Tasks.Pack
 
         private static void InitializeProjectDependencies(
             LockFile assetsFile,
-            Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework)
+            IDictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework,
+            IDictionary<string, string> projectRefToVersionMap,
+            bool readProjectRefVersionFromAssetsFile)
         {
             // From the package spec, all we know is each absolute path to the project reference the the target
             // framework that project reference applies to.
@@ -642,6 +658,11 @@ namespace NuGet.Build.Tasks.Pack
                         continue;
                     }
 
+                    var versionToUse = targetLibrary.Version;
+                    if(!readProjectRefVersionFromAssetsFile)
+                    {
+                        versionToUse = NuGetVersion.Parse(projectRefToVersionMap[projectReference.ProjectPath]);
+                    }
                     // TODO: Implement <TreatAsPackageReference>false</TreatAsPackageReference>
                     //   https://github.com/NuGet/Home/issues/3891
                     //
@@ -650,7 +671,7 @@ namespace NuGet.Build.Tasks.Pack
                     {
                         LibraryRange = new LibraryRange(
                             targetLibrary.Name,
-                            new VersionRange(targetLibrary.Version),
+                            new VersionRange(versionToUse),
                             LibraryDependencyTarget.All),
                         IncludeType = projectReference.IncludeAssets & ~projectReference.ExcludeAssets,
                         SuppressParent = projectReference.PrivateAssets

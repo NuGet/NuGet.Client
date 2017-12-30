@@ -47,6 +47,7 @@ namespace NuGet.Build.Tasks.Pack
         public string RepositoryType { get; set; }
         public string RepositoryUrl { get; set; }
         public bool RequireLicenseAcceptance { get; set; }
+        public bool ResolveProjectReferenceVersionDuringPack { get; set; }
         public string RestoreOutputPath { get; set; }
         public bool Serviceable { get; set; }
         public IMSBuildItem[] SourceFiles { get; set; }

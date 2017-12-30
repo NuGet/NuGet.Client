@@ -28,6 +28,7 @@ namespace NuGet.Build.Tasks.Pack
         public string Description { get; set; }
         public bool DevelopmentDependency { get; set; }
         public string Copyright { get; set; }
+        public bool ResolveProjectReferenceVersionDuringPack { get; set; }
         public bool RequireLicenseAcceptance { get; set; }
         public string RestoreOutputPath { get; set; }
         public string LicenseUrl { get; set; }
@@ -160,6 +161,7 @@ namespace NuGet.Build.Tasks.Pack
                 RepositoryType = MSBuildStringUtility.TrimAndGetNullForEmpty(RepositoryType),
                 RepositoryUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(RepositoryUrl),
                 RequireLicenseAcceptance = RequireLicenseAcceptance,
+                ResolveProjectReferenceVersionDuringPack = ResolveProjectReferenceVersionDuringPack,
                 RestoreOutputPath = MSBuildStringUtility.TrimAndGetNullForEmpty(RestoreOutputPath),
                 Serviceable = Serviceable,
                 SourceFiles = MSBuildUtility.WrapMSBuildItem(SourceFiles),
