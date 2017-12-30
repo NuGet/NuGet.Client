@@ -136,15 +136,23 @@ namespace Dotnet.Integration.Test
 
         internal CommandRunnerResult RestoreToolProject(string workingDirectory, string projectName, string args)
         {
+
+            var envVar = new Dictionary<string, string>();
+            envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
+
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"restore {projectName}.csproj {args}",
-                waitForExit: true);
+                waitForExit: true,
+                environmentVariables: envVar);
             return result;
         }
 
         internal void RestoreProject(string workingDirectory, string projectName, string args)
         {
+            var envVar = new Dictionary<string, string>();
+            envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
+
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"restore {projectName}.csproj {args}",
