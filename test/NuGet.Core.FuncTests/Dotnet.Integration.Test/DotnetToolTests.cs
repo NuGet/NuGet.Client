@@ -19,7 +19,7 @@ namespace Dotnet.Integration.Test
             _msbuildFixture = fixture;
         }
 
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp1.0")]
         public void DotnetToolTests_NoPackageReferenceToolRestore_ThrowsError(string tfm)
@@ -44,7 +44,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp1.0")]
         public void DotnetToolTests_RegularDependencyPackageWithDependenciesToolRestore_ThrowsError(string tfm)
@@ -71,7 +71,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp1.0")]
         [InlineData("netcoreapp2.0")]
@@ -108,7 +108,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp1.0")]
         [InlineData("netcoreapp2.0")]
