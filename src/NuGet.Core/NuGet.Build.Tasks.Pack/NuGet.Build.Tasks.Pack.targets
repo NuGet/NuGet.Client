@@ -259,12 +259,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
 
-    <GetProjectReferencesFromLockFile
+    <GetProjectReferencesFromAssetsFileTask
         RestoreOutputAbsolutePath="$(RestoreOutputAbsolutePath)">
       <Output
         TaskParameter="ProjectReferences"
         ItemName="_ProjectReferencesFromLockFile" />
-    </GetProjectReferencesFromLockFile>
+    </GetProjectReferencesFromAssetsFileTask>
 
     <Msbuild
       Projects="@(_ProjectReferencesFromLockFile)"
