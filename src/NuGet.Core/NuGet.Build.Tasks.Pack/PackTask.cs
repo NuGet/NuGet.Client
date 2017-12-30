@@ -20,6 +20,7 @@ namespace NuGet.Build.Tasks.Pack
         public string[] TargetFrameworks { get; set; }
         public string[] PackageTypes { get; set; }
         public ITaskItem[] BuildOutputInPackage { get; set; }
+        public ITaskItem[] ProjectReferencesWithVersions { get; set; }
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
         public string Title { get; set; }
@@ -153,6 +154,7 @@ namespace NuGet.Build.Tasks.Pack
                 PackageTypes = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(PackageTypes),
                 PackageVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageVersion),
                 PackItem = MSBuildUtility.WrapMSBuildItem(PackItem),
+                ProjectReferencesWithVersions = MSBuildUtility.WrapMSBuildItem(ProjectReferencesWithVersions),
                 ProjectUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(ProjectUrl),
                 ReleaseNotes = MSBuildStringUtility.TrimAndGetNullForEmpty(ReleaseNotes),
                 RepositoryType = MSBuildStringUtility.TrimAndGetNullForEmpty(RepositoryType),
