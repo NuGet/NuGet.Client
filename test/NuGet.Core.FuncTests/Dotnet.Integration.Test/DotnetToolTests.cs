@@ -29,7 +29,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var source = workingDirectory;
-                var rid = "win7-x86";
+                var rid = "win-x86";
                 var packages = new List<PackageIdentity>();
 
                 _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
@@ -54,7 +54,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var source = "https://api.nuget.org/v3/index.json";
-                var rid = "win7-x86";
+                var rid = "win-x86";
                 var packages = new List<PackageIdentity>() { new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("10.0.3")) };
 
                 _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
@@ -82,7 +82,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var source = Path.Combine(testDirectory, "packageSource");
-                var rid = "win7-x86";
+                var rid = "win-x86";
                 var packageName = string.Join("ToolPackage-", tfm, rid);
                 var packageVersion = NuGetVersion.Parse("1.0.0");
                 var packages = new List<PackageIdentity>() { new PackageIdentity(packageName, packageVersion) };
@@ -119,8 +119,8 @@ namespace Dotnet.Integration.Test
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var source = Path.Combine(testDirectory, "packageSource");
-                var projectRID = "win7-x64";
-                var packageRID = "win7-x86";
+                var projectRID = "win-x64";
+                var packageRID = "win-x86";
 
                 var packageName = string.Join("ToolPackage-", tfm, packageRID);
                 var packageVersion = NuGetVersion.Parse("1.0.0");
