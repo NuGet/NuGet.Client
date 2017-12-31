@@ -25,7 +25,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
     <IncludeContentInPack Condition="'$(IncludeContentInPack)'==''">true</IncludeContentInPack>
-    <GenerateNuspecDependsOn>_LoadPackInputItems; _GetTargetFrameworksOutput; _WalkEachTargetPerFramework; _GetProjectReferenceVersions; _GetPackageFiles; $(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn>_LoadPackInputItems; _GetTargetFrameworksOutput; _WalkEachTargetPerFramework; _GetPackageFiles; $(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
     <PackageDescription Condition="'$(PackageDescription)'==''">$(Description)</PackageDescription>
     <PackageDescription Condition="'$(PackageDescription)'==''">Package Description</PackageDescription>
     <IsPackable Condition="'$(IsPackable)'=='' AND '$(IsTestProject)'=='true'">false</IsPackable>
@@ -189,7 +189,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
-  <Target Name="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn);_CalculateInputsOutputsForPack" Condition="$(IsPackable) == 'true'"
+  <Target Name="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn);_CalculateInputsOutputsForPack;_GetProjectReferenceVersions" Condition="$(IsPackable) == 'true'"
           Inputs="@(NuGetPackInput)" Outputs="@(NuGetPackOutput)">
     <!-- Call Pack -->
     <PackTask PackItem="$(PackProjectInputFile)"
@@ -252,7 +252,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
   
-  <Target Name="_GetProjectReferenceVersions" 
+  <Target Name="_GetProjectReferenceVersions"
           Condition="'$(ResolveProjectReferenceVersionDuringPack)' == 'true'">
     
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
