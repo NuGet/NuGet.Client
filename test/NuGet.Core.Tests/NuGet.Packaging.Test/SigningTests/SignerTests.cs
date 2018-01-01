@@ -16,8 +16,15 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class SignerTests
+    public class SignerTests : IClassFixture<CertificatesFixture>
     {
+        private readonly CertificatesFixture _fixture;
+
+        public SignerTests(CertificatesFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [Fact]
         public void Constructor_WhenPackageIsNull_Throws()
         {
@@ -122,9 +129,8 @@ namespace NuGet.Packaging.Test
         [Fact]
         public async Task SignAsync_WhenPackageIsZip64_Throws()
         {
-            using (var certificate = SigningTestUtility.GenerateCertificate("test", generator => { }))
             using (var test = SignTest.Create(
-                certificate,
+                _fixture.GetDefaultCertificate(),
                 HashAlgorithmName.SHA256,
                 GetResource("CentralDirectoryHeaderWithZip64ExtraField.zip")))
             {
@@ -142,10 +148,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public async Task SignAsync_WhenChainBuildingFails_Throws()
         {
-            using (var certificate = SigningTestUtility.GenerateCertificate("test", generator => { }))
             using (var packageStream = new SimpleTestPackageContext().CreateAsStream())
             using (var test = SignTest.Create(
-                certificate,
+                 _fixture.GetDefaultCertificate(),
                 HashAlgorithmName.SHA256,
                 packageStream.ToArray(),
                 signatureProvider: new X509SignatureProvider(timestampProvider: null)))

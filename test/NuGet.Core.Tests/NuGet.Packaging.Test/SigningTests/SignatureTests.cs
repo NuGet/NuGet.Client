@@ -8,13 +8,19 @@ using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
-using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class SignatureTests
+    public class SignatureTests : IClassFixture<CertificatesFixture>
     {
+        private readonly CertificatesFixture _fixture;
+
+        public SignatureTests(CertificatesFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [Fact]
         public void Load_WhenDataNull_Throws()
         {
@@ -27,7 +33,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Load_WithMultiplePrimarySignatures_Throws()
         {
-            using (var certificate = SigningTestUtility.GenerateCertificate("test", generator => { }))
+            using (var certificate = _fixture.GetDefaultCertificate())
             {
                 var content = new SignatureContent(
                     SigningSpecifications.V1,
@@ -53,7 +59,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Load_WithAuthorSignatureWithoutSigningCertificateV2Attribute_Throws()
         {
-            using (var test = new LoadTest())
+            using (var test = new LoadTest(_fixture))
             {
                 test.CmsSigner.SignedAttributes.Add(
                     AttributeUtility.GetCommitmentTypeIndication(SignatureType.Author));
@@ -72,7 +78,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Load_WithAuthorSignatureWithoutPkcs9SigningTimeAttribute_Throws()
         {
-            using (var test = new LoadTest())
+            using (var test = new LoadTest(_fixture))
             {
                 var chain = new List<X509Certificate2>() { test.Certificate };
 
@@ -94,7 +100,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Load_WithAuthorSignature_ReturnSignature()
         {
-            using (var test = new LoadTest())
+            using (var test = new LoadTest(_fixture))
             {
                 var chain = new List<X509Certificate2>() { test.Certificate };
 
@@ -120,9 +126,9 @@ namespace NuGet.Packaging.Test
             internal CmsSigner CmsSigner { get; }
             internal SignedCms SignedCms { get; }
 
-            internal LoadTest()
+            internal LoadTest(CertificatesFixture fixture)
             {
-                Certificate = SigningTestUtility.GenerateCertificate("test", generator => { });
+                Certificate = fixture.GetDefaultCertificate();
 
                 var content = new SignatureContent(
                     SigningSpecifications.V1,

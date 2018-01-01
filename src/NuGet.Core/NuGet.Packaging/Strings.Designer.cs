@@ -134,24 +134,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to commitment-type-indication attribute is invalid..
-        /// </summary>
-        internal static string CommitmentTypeIndicationInvalid {
-            get {
-                return ResourceManager.GetString("CommitmentTypeIndicationInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Certificate inside main SignerInfo is null..
-        /// </summary>
-        internal static string DebugNoCertificate {
-            get {
-                return ResourceManager.GetString("DebugNoCertificate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unsupported targetFramework value &apos;{0}&apos;..
         /// </summary>
         internal static string Error_InvalidTargetFramework {
@@ -269,15 +251,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not validate signature. Certificate does not meet the public key requirements..
-        /// </summary>
-        internal static string ErrorInvalidPublicKey {
-            get {
-                return ResourceManager.GetString("ErrorInvalidPublicKey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Manifest file not found at &apos;{0}&apos;.
         /// </summary>
         internal static string ErrorManifestFileNotFound {
@@ -296,7 +269,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The primary signature did not have a signing certificate..
+        ///   Looks up a localized string similar to The primary signature does not have a signing certificate..
         /// </summary>
         internal static string ErrorNoCertificate {
             get {
@@ -323,7 +296,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package is not signed..
+        ///   Looks up a localized string similar to The package is not signed..
         /// </summary>
         internal static string ErrorPackageNotSigned {
             get {
@@ -332,29 +305,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package signature is invalid..
+        ///   Looks up a localized string similar to The package signature is invalid..
         /// </summary>
         internal static string ErrorPackageSignatureInvalid {
             get {
                 return ResourceManager.GetString("ErrorPackageSignatureInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package contents might have been tampered..
-        /// </summary>
-        internal static string ErrorPackageTampered {
-            get {
-                return ResourceManager.GetString("ErrorPackageTampered", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Signature file is not of a reasonable size. Package contents might have been tampered..
-        /// </summary>
-        internal static string ErrorSignatureFileTooBig {
-            get {
-                return ResourceManager.GetString("ErrorSignatureFileTooBig", resourceCulture);
             }
         }
         
@@ -364,15 +319,6 @@ namespace NuGet.Packaging {
         internal static string ErrorSignatureVerificationFailed {
             get {
                 return ResourceManager.GetString("ErrorSignatureVerificationFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Signing certificate chains to an untrusted root..
-        /// </summary>
-        internal static string ErrorSigningCertUntrustedRoot {
-            get {
-                return ResourceManager.GetString("ErrorSigningCertUntrustedRoot", resourceCulture);
             }
         }
         
@@ -611,7 +557,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signature hash oid found: {0}.
+        ///   Looks up a localized string similar to Signature hash OID found: {0}.
         /// </summary>
         internal static string SignatureDebug_HashOidFound {
             get {
@@ -620,7 +566,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The primary signature uses an unsupported hash algorithm..
+        ///   Looks up a localized string similar to The package hash uses an unsupported hash algorithm..
         /// </summary>
         internal static string SignatureFailureInvalidHashAlgorithmOid {
             get {
@@ -656,7 +602,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package integrity check failed..
+        ///   Looks up a localized string similar to The package integrity check failed..
         /// </summary>
         internal static string SignaturePackageIntegrityFailure {
             get {
@@ -719,7 +665,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package was not opened correctly to perform Signature operations. Please use a Stream based constructor to have access to Signature attributes of the package..
+        ///   Looks up a localized string similar to The package was not opened correctly to perform signature operations. Please use a Stream-based constructor to have access to signature attributes of the package..
         /// </summary>
         internal static string SignedPackageUnableToAccessSignature {
             get {
@@ -755,15 +701,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to signing-certificate-v2 attribute value does not match the current certificate chain..
-        /// </summary>
-        internal static string SigningCertificateV2Invalid {
-            get {
-                return ResourceManager.GetString("SigningCertificateV2Invalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to String argument &apos;{0}&apos; cannot be null or empty.
         /// </summary>
         internal static string StringCannotBeNullOrEmpty {
@@ -791,16 +728,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Author certificate was not valid when it was timestamped..
-        /// </summary>
-        internal static string TimestampFailureAuthorCertNotValid {
-            get {
-                return ResourceManager.GetString("TimestampFailureAuthorCertNotValid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The timestamper url &apos;{0}&apos; has an invalid uri scheme. The supported schemes are &apos;{1}&apos; and &apos;{2}&apos;..
+        ///   Looks up a localized string similar to The timestamper URL &apos;{0}&apos; has an invalid URI scheme. The supported schemes are &apos;{1}&apos; and &apos;{2}&apos;..
         /// </summary>
         internal static string TimestampFailureInvalidHttpScheme {
             get {
@@ -809,7 +737,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Timestamp response does not contain a matching response..
+        ///   Looks up a localized string similar to The timestamp response is invalid.  Nonces did not match..
         /// </summary>
         internal static string TimestampFailureNonceMismatch {
             get {
@@ -818,7 +746,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Timestamp integrity check failed..
+        ///   Looks up a localized string similar to The timestamp integrity check failed..
         /// </summary>
         internal static string TimestampIntegrityCheckFailed {
             get {
@@ -836,7 +764,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp signature did not have a signing certificate..
+        ///   Looks up a localized string similar to The timestamp signature does not have a signing certificate..
         /// </summary>
         internal static string TimestampNoCertificate {
             get {
@@ -872,7 +800,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp has an unsupported signature algorithm..
+        ///   Looks up a localized string similar to The timestamp certificate has an unsupported signature algorithm..
         /// </summary>
         internal static string TimestampUnsupportedSignatureAlgorithm {
             get {
@@ -935,47 +863,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Verifying signature with certificate: {0}.
-        /// </summary>
-        internal static string VerificationDefaultCertDisplay {
-            get {
-                return ResourceManager.GetString("VerificationDefaultCertDisplay", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Verifying timestamp with timestamping service certificate: {0}.
         /// </summary>
         internal static string VerificationTimestamperCertDisplay {
             get {
                 return ResourceManager.GetString("VerificationTimestamperCertDisplay", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Could not check revocation status of signing certificate online..
-        /// </summary>
-        internal static string WarningOfflineRevocationCheck {
-            get {
-                return ResourceManager.GetString("WarningOfflineRevocationCheck", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Could not validate signature. Unknown signature type..
-        /// </summary>
-        internal static string WarningUnknownSignatureType {
-            get {
-                return ResourceManager.GetString("WarningUnknownSignatureType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Signing certificate does not chain to a trusted root..
-        /// </summary>
-        internal static string WarningUntrustedRoot {
-            get {
-                return ResourceManager.GetString("WarningUntrustedRoot", resourceCulture);
             }
         }
     }

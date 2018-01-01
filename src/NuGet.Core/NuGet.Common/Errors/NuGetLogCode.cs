@@ -204,22 +204,22 @@ namespace NuGet.Common
         NU3001 = 3001,
 
         /// <summary>
-        /// Timestamper option not provided during sign operation.
+        /// The '-Timestamper' option was not provided. The signed package will not be timestamped.
         /// </summary>
         NU3002 = 3002,
 
         /// <summary>
-        /// Package signature is invalid
+        /// The package signature is invalid.
         /// </summary>
         NU3003 = 3003,
 
         /// <summary>
-        /// Package is not signed
+        /// The package is not signed.
         /// </summary>
         NU3004 = 3004,
 
         /// <summary>
-        /// The package signature file entry is incorrect.
+        /// The package signature file entry is invalid.
         /// </summary>
         /// <remarks>
         /// Examples which would trigger this include:
@@ -235,12 +235,12 @@ namespace NuGet.Common
         NU3006 = 3006,
 
         /// <summary>
-        /// Unsupported signature format version
+        /// The package signature format version is not supported.
         /// </summary>
         NU3007 = 3007,
 
         /// <summary>
-        /// Package integrity check failed
+        /// The package integrity check failed.
         /// </summary>
         NU3008 = 3008,
 
@@ -275,12 +275,12 @@ namespace NuGet.Common
         NU3014 = 3014,
 
         /// <summary>
-        /// Certificate has lifetime signer EKU
+        /// Certificates with lifetime signer EKU are not supported.
         /// </summary>
         NU3015 = 3015,
 
         /// <summary>
-        /// Primary signature has an unsuported hash algorithm
+        /// The package hash uses an unsupported hash algorithm.
         /// </summary>
         NU3016 = 3016,
 
@@ -295,12 +295,12 @@ namespace NuGet.Common
         NU3018 = 3018,
 
         /// <summary>
-        /// Timestamp integrity check failed.
+        /// The timestamp integrity check failed.
         /// </summary>
         NU3019 = 3019,
 
         /// <summary>
-        /// The timestamp signature did not have a signing certificate.
+        /// The timestamp signature does not have a signing certificate.
         /// </summary>
         NU3020 = 3020,
 
@@ -310,7 +310,7 @@ namespace NuGet.Common
         NU3021 = 3021,
 
         /// <summary>
-        /// The timestamp has an unsupported signature algorithm.
+        /// The timestamp certificate has an unsupported signature algorithm.
         /// </summary>
         NU3022 = 3022,
 

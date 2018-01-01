@@ -8,17 +8,23 @@ using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
 using NuGet.Test.Utility;
-using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    public class SignCommandRunnerTests
+    public class SignCommandRunnerTests : IClassFixture<CertificatesFixture>
     {
+        private readonly CertificatesFixture _fixture;
+
+        public SignCommandRunnerTests(CertificatesFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [Fact]
         public async Task ExecuteCommandAsync_WithCertificateFileNotFound_Throws()
         {
-            using (var test = Test.Create())
+            using (var test = Test.Create(_fixture.GetDefaultCertificate()))
             {
                 var certificateFilePath = Path.Combine(test.Directory.Path, "certificate.pfx");
 
@@ -35,7 +41,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task ExecuteCommandAsync_WithEmptyPkcs7File_Throws()
         {
-            using (var test = Test.Create())
+            using (var test = Test.Create(_fixture.GetDefaultCertificate()))
             {
                 const string fileName = "EmptyCertificateStore.p7b";
                 var certificateFilePath = Path.Combine(test.Directory.Path, fileName);
@@ -60,7 +66,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task ExecuteCommandAsync_WithNoCertificateFound_Throws()
         {
-            using (var test = Test.Create())
+            using (var test = Test.Create(_fixture.GetDefaultCertificate()))
             {
                 test.Args.CertificateFingerprint = "invalid fingerprint";
                 test.Args.CertificateStoreLocation = StoreLocation.CurrentUser;
@@ -77,11 +83,13 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task ExecuteCommandAsync_WithIncorrectPassword_Throws()
         {
-            using (var test = Test.Create())
+            const string password = "password";
+
+            using (var test = Test.Create(_fixture.GetCertificateWithPassword(password)))
             {
                 var certificateFilePath = Path.Combine(test.Directory.Path, "certificate.pfx");
 
-                File.WriteAllBytes(certificateFilePath, test.Certificate.Export(X509ContentType.Pkcs12, "password"));
+                File.WriteAllBytes(certificateFilePath, test.Certificate.Export(X509ContentType.Pkcs12, password));
 
                 test.Args.CertificatePath = certificateFilePath;
                 test.Args.CertificatePassword = "incorrect password";
@@ -97,7 +105,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task ExecuteCommandAsync_WithAmbiguousMatch_Throws()
         {
-            using (var test = Test.Create())
+            using (var test = Test.Create(_fixture.GetDefaultCertificate()))
             {
                 test.Args.CertificateSubjectName = "Root";
                 test.Args.CertificateStoreLocation = StoreLocation.LocalMachine;
@@ -147,11 +155,9 @@ namespace NuGet.Commands.Test
                 }
             }
 
-            internal static Test Create()
+            internal static Test Create(X509Certificate2 certificate)
             {
                 var directory = TestDirectory.Create();
-                var certificate = SigningTestUtility.GenerateCertificate("test", generator => { });
-
                 var packageFilePath = Path.Combine(directory.Path, "package.nupkg");
 
                 using (var readStream = new SimpleTestPackageContext().CreateAsStream())
