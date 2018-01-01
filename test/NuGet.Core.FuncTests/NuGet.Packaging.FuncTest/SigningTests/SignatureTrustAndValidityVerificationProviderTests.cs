@@ -109,7 +109,10 @@ namespace NuGet.Packaging.FuncTest
                         SignedPackageVerifierSettings.Default,
                         CancellationToken.None);
 
-                    Assert.True(result.Issues.Any(log => log.Code == NuGetLogCode.NU3012 && log.Message == "Primary signature validation failed."));
+                    var issue = result.Issues.FirstOrDefault(log => log.Code == NuGetLogCode.NU3012);
+
+                    Assert.NotNull(issue);
+                    Assert.Equal("Primary signature validation failed.", issue.Message);
                 }
             }
         }
@@ -136,10 +139,10 @@ namespace NuGet.Packaging.FuncTest
                         SignedPackageVerifierSettings.Default,
                         CancellationToken.None);
 
-                    Assert.True(
-                        result.Issues.Any(
-                            log => log.Code == NuGetLogCode.NU3010 &&
-                            log.Message == "The primary signature did not have a signing certificate."));
+                    var issue = result.Issues.FirstOrDefault(log => log.Code == NuGetLogCode.NU3010);
+
+                    Assert.NotNull(issue);
+                    Assert.Equal("The primary signature does not have a signing certificate.", issue.Message);
                 }
             }
         }
