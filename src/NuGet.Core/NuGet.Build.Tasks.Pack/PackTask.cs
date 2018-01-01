@@ -89,6 +89,14 @@ namespace NuGet.Build.Tasks.Pack
         {
             try
             {
+                // Console.WriteLine("Waiting for debugger to attach.");
+                // Console.WriteLine($"Process ID: {System.Diagnostics.Process.GetCurrentProcess().Id}");
+                // while (!System.Diagnostics.Debugger.IsAttached)
+                // {
+                //     System.Threading.Thread.Sleep(100);
+                // }
+                // System.Diagnostics.Debugger.Break();
+                
                 var request = GetRequest();
                 var logic = PackTaskLogic;
                 PackageBuilder packageBuilder = null;

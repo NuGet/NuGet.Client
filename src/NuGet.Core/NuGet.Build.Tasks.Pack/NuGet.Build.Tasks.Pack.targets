@@ -263,11 +263,11 @@ Copyright (c) .NET Foundation. All rights reserved.
         RestoreOutputAbsolutePath="$(RestoreOutputAbsolutePath)">
       <Output
         TaskParameter="ProjectReferences"
-        ItemName="_ProjectReferencesFromLockFile" />
+        ItemName="_ProjectReferencesFromAssetsFile" />
     </GetProjectReferencesFromAssetsFileTask>
 
     <Msbuild
-      Projects="@(_ProjectReferencesFromLockFile)"
+      Projects="@(_ProjectReferencesFromAssetsFile)"
       Targets="_GetProjectVersion"
       Properties="BuildProjectReferences=false;">
       <Output
@@ -280,8 +280,8 @@ Copyright (c) .NET Foundation. All rights reserved.
           Returns="@(_ProjectPathWithVersion)">
     <ItemGroup>
       <_ProjectPathWithVersion Include="$(MSBuildProjectFullPath)">
-        <Version Condition="'$(PackageVersion)' != ''">$(PackageVersion)</Version>
-        <Version Condition="'$(PackageVersion)' == ''">1.0.0</Version>
+        <ProjectVersion Condition="'$(PackageVersion)' != ''">$(PackageVersion)</ProjectVersion>
+        <ProjectVersion Condition="'$(PackageVersion)' == ''">1.0.0</ProjectVersion>
       </_ProjectPathWithVersion>
     </ItemGroup>
   </Target>

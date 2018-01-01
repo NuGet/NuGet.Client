@@ -190,7 +190,7 @@ namespace NuGet.Build.Tasks.Pack
                 projectRefToVersionMap = request
                     .ProjectReferencesWithVersions
                     .ToDictionary(msbuildItem => msbuildItem.Identity,
-                    msbuildItem => msbuildItem.GetProperty("Version"), PathUtility.GetStringComparerBasedOnOS());
+                    msbuildItem => msbuildItem.GetProperty("ProjectVersion"), PathUtility.GetStringComparerBasedOnOS());
             }
 
             PopulateProjectAndPackageReferences(builder,
