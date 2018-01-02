@@ -64,7 +64,7 @@ namespace NuGet.Packaging.Signing
         /// <returns>True if the certificate has the lifetime signing EKU</returns>
         public static bool HasLifetimeSigningEku(X509Certificate2 certificate)
         {
-            return SigningUtility.HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEkuOid);
+            return HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEkuOid);
         }
 
 #if IS_DESKTOP
@@ -104,12 +104,12 @@ namespace NuGet.Packaging.Signing
             {
                 if (chainStatus.Status != X509ChainStatusFlags.NoError)
                 {
-                    throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString()));
+                    throw new SignatureException(NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, chainStatus.Status.ToString()));
                 }
             }
 
             // Should be unreachable.
-            throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChainUnspecifiedReason));
+            throw new SignatureException(NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChainUnspecifiedReason));
         }
 #endif
 
@@ -202,7 +202,7 @@ namespace NuGet.Packaging.Signing
         }
 
 #if IS_DESKTOP
-        public static CryptographicAttributeObjectCollection GetSignAttributes(
+        public static CryptographicAttributeObjectCollection GetSignedAttributes(
             SignPackageRequest request,
             IReadOnlyList<X509Certificate2> chain)
         {
@@ -251,9 +251,7 @@ namespace NuGet.Packaging.Signing
 
         public static bool IsCertificateValidityPeriodInTheFuture(X509Certificate2 certificate)
         {
-            DateTimeOffset signerCertBegin = DateTime.SpecifyKind(certificate.NotBefore, DateTimeKind.Local);
-
-            return signerCertBegin > DateTimeOffset.Now;
+            return DateTime.Now < certificate.NotBefore;
         }
 
         internal static bool BuildCertificateChain(X509Chain chain, X509Certificate2 certificate, out X509ChainStatus[] status)
@@ -271,24 +269,24 @@ namespace NuGet.Packaging.Signing
             return buildSuccess && !IsCertificateValidityPeriodInTheFuture(certificate);
         }
 
-        internal static bool IsTimestampValid(Timestamp timestamp, byte[] data, bool failIfInvalid, List<SignatureLog> issues, SigningSpecifications spec)
+        internal static bool IsTimestampValid(Timestamp timestamp, byte[] messageHash, bool failIfInvalid, List<SignatureLog> issues, SigningSpecifications spec)
         {
             var isValid = true;
-            if (!timestamp.TstInfo.HasMessageHash(data))
+            if (!timestamp.TstInfo.HasMessageHash(messageHash))
             {
-                issues.Add(SignatureLog.Issue(failIfInvalid, NuGetLogCode.NU3053, Strings.TimestampFailureInvalidHash));
+                issues.Add(SignatureLog.Issue(failIfInvalid, NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed));
                 isValid = false;
             }
 
             if (!spec.AllowedHashAlgorithmOids.Contains(timestamp.SignerInfo.DigestAlgorithm.Value))
             {
-                issues.Add(SignatureLog.Issue(failIfInvalid, NuGetLogCode.NU3052, Strings.TimestampFailureInvalidHashAlgorithmOid));
+                issues.Add(SignatureLog.Issue(failIfInvalid, NuGetLogCode.NU3022, Strings.TimestampUnsupportedSignatureAlgorithm));
                 isValid = false;
             }
 
             if (IsCertificateValidityPeriodInTheFuture(timestamp.SignerInfo.Certificate))
             {
-                issues.Add(SignatureLog.Issue(failIfInvalid, NuGetLogCode.NU3044, Strings.TimestampNotYetValid));
+                issues.Add(SignatureLog.Issue(failIfInvalid, NuGetLogCode.NU3025, Strings.TimestampNotYetValid));
                 isValid = false;
             }
 

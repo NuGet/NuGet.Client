@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 
@@ -12,7 +11,6 @@ using System.Security.Cryptography.Pkcs;
 #endif
 
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -118,10 +116,10 @@ namespace NuGet.Packaging.Signing
                     policy.RevocationMode = X509RevocationMode.Online;
 
                     var timestampSignerCertificate = GetTimestampSignerCertificate(timestampCms);
-                    if (DateTime.UtcNow < timestampSignerCertificate.NotBefore)
+                    if (DateTime.Now < timestampSignerCertificate.NotBefore)
                     {
                         throw new TimestampException(LogMessage.CreateError(
-                            NuGetLogCode.NU3044,
+                            NuGetLogCode.NU3025,
                             string.Format(CultureInfo.CurrentCulture,
                             Strings.TimestampCertificateInvalid,
                             $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestampSignerCertificate)}")));
@@ -130,7 +128,7 @@ namespace NuGet.Packaging.Signing
                     if (!timestampCertChain.Build(timestampSignerCertificate))
                     {
                         throw new TimestampException(LogMessage.CreateError(
-                            NuGetLogCode.NU3041,
+                            NuGetLogCode.NU3028,
                             string.Format(CultureInfo.CurrentCulture,
                             Strings.TimestampCertificateChainBuildFailure,
                             $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestampSignerCertificate)}")));
@@ -154,7 +152,7 @@ namespace NuGet.Packaging.Signing
             if (!nonce.SequenceEqual(timestampToken.TokenInfo.GetNonce()))
             {
                 throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3051,
+                    NuGetLogCode.NU3026,
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.TimestampResponseExceptionGeneral,
                     Strings.TimestampFailureNonceMismatch)));

@@ -628,10 +628,9 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="SignCommandSuccess" xml:space="preserve">
     <value>Package(s) signed successfully.</value>
   </data>
-  <data name="SignCommandFileNotFound" xml:space="preserve">
-    <value>'{0}' file '{1}' not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
-    <comment>0 - file type
-1- certificate file path</comment>
+  <data name="SignCommandCertificateFileNotFound" xml:space="preserve">
+    <value>Certificate file '{0}' not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <comment>{0} is the certificate file path</comment>
   </data>
   <data name="SignCommandInvalidCertException" xml:space="preserve">
     <value>Certificate file '{0}' is invalid. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
@@ -677,5 +676,9 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="VerifyCommand_Failed" xml:space="preserve">
     <value>Could not verify package(s) signature.</value>
+  </data>
+  <data name="SignCommandCertificateStoreNotFound" xml:space="preserve">
+    <value>Certificate store '{0}' not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <comment>{0} is the certificate store name</comment>
   </data>
 </root>

@@ -226,7 +226,7 @@ namespace NuGet.Commands
                     // if on non-windows os or in non interactive mode - display the certs and error out
                     signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2CollectionToString(matchingCertCollection));
                     throw new SignCommandException(
-                        LogMessage.CreateError(NuGetLogCode.NU3003,
+                        LogMessage.CreateError(NuGetLogCode.NU3001,
                         string.Format(Strings.SignCommandMultipleCertException,
                         nameof(SignArgs.CertificateFingerprint))));
                 }
@@ -244,7 +244,7 @@ namespace NuGet.Commands
                 signArgs.Logger.LogError(CertificateUtility.X509Certificate2CollectionToString(matchingCertCollection));
 
                 throw new SignCommandException(
-                    LogMessage.CreateError(NuGetLogCode.NU3003,
+                    LogMessage.CreateError(NuGetLogCode.NU3001,
                     string.Format(Strings.SignCommandMultipleCertException,
                     nameof(SignArgs.CertificateFingerprint))));
 #endif
@@ -253,7 +253,7 @@ namespace NuGet.Commands
             if (matchingCertCollection.Count == 0)
             {
                 throw new SignCommandException(
-                    LogMessage.CreateError(NuGetLogCode.NU3003,
+                    LogMessage.CreateError(NuGetLogCode.NU3001,
                     Strings.SignCommandNoCertException));
             }
 

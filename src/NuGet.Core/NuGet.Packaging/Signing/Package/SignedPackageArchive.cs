@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
 
 namespace NuGet.Packaging.Signing
@@ -51,7 +52,7 @@ namespace NuGet.Packaging.Signing
 
             if (await IsSignedAsync(token))
             {
-                throw new SignatureException(Strings.SignedPackagePackageAlreadySigned);
+                throw new SignatureException(NuGetLogCode.NU3001, Strings.SignedPackagePackageAlreadySigned);
             }
 
             using (var reader = new BinaryReader(ZipReadStream, SigningSpecifications.Encoding, leaveOpen: true))

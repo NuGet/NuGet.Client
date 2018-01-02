@@ -3,17 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Globalization;
-using System.Security.Cryptography;
-using System.Linq;
 using NuGet.Common;
-
-#if IS_DESKTOP
-using System.Security.Cryptography.Pkcs;
-#endif
 
 namespace NuGet.Packaging.Signing
 {
@@ -63,7 +58,7 @@ namespace NuGet.Packaging.Signing
 
             if (timestamps.Count == 0)
             {
-                issues.Add(SignatureLog.Issue(failIfNoTimestamp, NuGetLogCode.NU3050, Strings.ErrorNoTimestamp));
+                issues.Add(SignatureLog.Issue(failIfNoTimestamp, NuGetLogCode.NU3027, Strings.ErrorNoTimestamp));
                 if (failIfNoTimestamp)
                 {
                     throw new TimestampException();
@@ -108,7 +103,7 @@ namespace NuGet.Packaging.Signing
                 }
                 catch (Exception e)
                 {
-                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3030, Strings.ErrorSignatureVerificationFailed));
+                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3012, Strings.ErrorSignatureVerificationFailed));
                     issues.Add(SignatureLog.DebugLog(e.ToString()));
                     return SignatureVerificationStatus.Invalid;
                 }
@@ -142,7 +137,7 @@ namespace NuGet.Packaging.Signing
                             {
                                 foreach (var message in messages)
                                 {
-                                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3021, message));
+                                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3018, message));
                                 }
                                 chainBuildingHasIssues = true;
                             }
@@ -154,7 +149,7 @@ namespace NuGet.Packaging.Signing
                             if (SigningUtility.ChainStatusListIncludesStatus(chainStatusList, X509ChainStatusFlags.Revoked, out chainStatus))
                             {
                                 var status = chainStatus.First();
-                                issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3021, status.StatusInformation));
+                                issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3018, status.StatusInformation));
                                 return SignatureVerificationStatus.Invalid;
                             }
 
@@ -165,7 +160,7 @@ namespace NuGet.Packaging.Signing
                                 {
                                     foreach (var message in messages)
                                     {
-                                        issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3021, message));
+                                        issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3018, message));
                                     }
                                 }
                                 else if (!chainBuildingHasIssues)
@@ -181,17 +176,17 @@ namespace NuGet.Packaging.Signing
                     }
                     else
                     {
-                        issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3030, Strings.ErrorSignatureVerificationFailed));
+                        issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3012, Strings.ErrorSignatureVerificationFailed));
                     }
                 }
                 else
                 {
-                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3024, Strings.SignatureNotYetValid));
+                    issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3017, Strings.SignatureNotYetValid));
                 }
             }
             else
             {
-                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3020, Strings.ErrorNoCertificate));
+                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3010, Strings.ErrorNoCertificate));
             }
 
             return SignatureVerificationStatus.Untrusted;
@@ -201,18 +196,18 @@ namespace NuGet.Packaging.Signing
         /// Validates a SignedCms object containing a timestamp response.
         /// </summary>
         /// <param name="timestampCms">SignedCms response from the timestamp authority.</param>
-        /// <param name="data">byte[] data that was signed and timestamped.</param>
-        private bool IsTimestampValid(Timestamp timestamp, byte[] data, bool failuresAreFatal, List<SignatureLog> issues)
+        /// <param name="messageHash">Message hash that was signed and timestamped.</param>
+        private bool IsTimestampValid(Timestamp timestamp, byte[] messageHash, bool failuresAreFatal, List<SignatureLog> issues)
         {
             var timestamperCertificate = timestamp.SignerInfo.Certificate;
 
             if (timestamperCertificate == null)
             {
-                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3040, Strings.TimestampNoCertificate));
+                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3020, Strings.TimestampNoCertificate));
                 return false;
             }
 
-            if (SigningUtility.IsTimestampValid(timestamp, data, failuresAreFatal, issues, _specification))
+            if (SigningUtility.IsTimestampValid(timestamp, messageHash, failuresAreFatal, issues, _specification))
             {
                 issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.TimestampValue, timestamp.GeneralizedTime.LocalDateTime.ToString()) + Environment.NewLine));
 
@@ -254,7 +249,7 @@ namespace NuGet.Packaging.Signing
                     {
                         foreach (var message in messages)
                         {
-                            issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3041, message));
+                            issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3028, message));
                         }
                         chainBuildingHasIssues = true;
                     }
@@ -270,7 +265,7 @@ namespace NuGet.Packaging.Signing
                         {
                             foreach (var message in messages)
                             {
-                                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3041, message));
+                                issues.Add(SignatureLog.Issue(failuresAreFatal, NuGetLogCode.NU3028, message));
                             }
                         }
                         else if (!chainBuildingHasIssues)

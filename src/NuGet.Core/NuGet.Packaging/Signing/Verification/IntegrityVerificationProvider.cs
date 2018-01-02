@@ -38,13 +38,13 @@ namespace NuGet.Packaging.Signing
                 catch (Exception e)
                 {
                     status = SignatureVerificationStatus.Invalid;
-                    issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3015, Strings.SignaturePackageIntegrityFailure));
+                    issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3008, Strings.SignaturePackageIntegrityFailure));
                     issues.Add(SignatureLog.DebugLog(e.ToString()));
                 }
             }
             else
             {
-                issues.Add(SignatureLog.Issue(!settings.AllowUntrusted, NuGetLogCode.NU3013, Strings.SignatureFailureInvalidHashAlgorithmOid));
+                issues.Add(SignatureLog.Issue(!settings.AllowUntrusted, NuGetLogCode.NU3016, Strings.SignatureFailureInvalidHashAlgorithmOid));
                 issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureDebug_HashOidFound, signatureHashOid)));
             }
 

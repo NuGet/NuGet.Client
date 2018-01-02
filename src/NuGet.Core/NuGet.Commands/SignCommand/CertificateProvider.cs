@@ -3,10 +3,8 @@
 
 using System;
 using System.Globalization;
-using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using NuGet.Common;
 
@@ -17,17 +15,20 @@ namespace NuGet.Commands
         // "The system cannot find the file specified." (ERROR_FILE_NOT_FOUND)
         private const int ERROR_FILE_NOT_FOUND_HRESULT = unchecked((int)0x80070002);
 
+        // OpenSSL:  error:2006D080:BIO routines:BIO_new_file:no such file
+        private const int OPENSSL_BIO_R_NO_SUCH_FILE = 0x2006D080;
+
         // "The specified password is not correct." (ERROR_INVALID_PASSWORD)
         private const int ERROR_INVALID_PASSWORD_HRESULT = unchecked((int)0x80070056);
+
+        // OpenSSL:  error:23076071:PKCS12 routines:PKCS12_parse:mac verify failure
+        private const int OPENSSL_PKCS12_R_MAC_VERIFY_FAILURE = 0x23076071;
 
         // "The specified certificate file is not correct." (CRYPT_E_NO_MATCH)
         private const int CRYPT_E_NO_MATCH_HRESULT = unchecked((int)0x80092009);
 
-        // Used to throw "Certificate file not found"
-        private const string CERTIFICATE = "Certificate";
-
-        // Used to throw "Certificate store file not found"
-        private const string CERTIFICATE_STORE = "Certificate store";
+        // OpenSSL:  error:0D07803A:asn1 encoding routines:ASN1_ITEM_EX_D2I:nested asn1 error
+        private const int OPENSSL_ERR_R_NESTED_ASN1_ERROR = 0x0D07803A;
 
         /// <summary>
         /// Looks for X509Certificates using the CertificateSourceOptions.
@@ -50,26 +51,27 @@ namespace NuGet.Commands
                 }
                 catch (CryptographicException ex)
                 {
-
                     switch (ex.HResult)
                     {
                         case ERROR_INVALID_PASSWORD_HRESULT:
+                        case OPENSSL_PKCS12_R_MAC_VERIFY_FAILURE:
                             throw new SignCommandException(
-                                LogMessage.CreateError(NuGetLogCode.NU3014,
+                                LogMessage.CreateError(NuGetLogCode.NU3001,
                                 string.Format(CultureInfo.CurrentCulture,
                                 Strings.SignCommandInvalidPasswordException,
                                 options.CertificatePath,
                                 nameof(options.CertificatePassword))));
 
                         case ERROR_FILE_NOT_FOUND_HRESULT:
+                        case OPENSSL_BIO_R_NO_SUCH_FILE:
                             throw new SignCommandException(
                                 LogMessage.CreateError(NuGetLogCode.NU3001,
                                 string.Format(CultureInfo.CurrentCulture,
-                                    Strings.SignCommandFileNotFound,
-                                    CERTIFICATE,
+                                    Strings.SignCommandCertificateFileNotFound,
                                     options.CertificatePath)));
 
                         case CRYPT_E_NO_MATCH_HRESULT:
+                        case OPENSSL_ERR_R_NESTED_ASN1_ERROR:
                             throw new SignCommandException(
                                 LogMessage.CreateError(NuGetLogCode.NU3001,
                                 string.Format(CultureInfo.CurrentCulture,
@@ -77,7 +79,7 @@ namespace NuGet.Commands
                                     options.CertificatePath)));
 
                         default:
-                            throw ex;
+                            throw;
                     }
                 }
             }
@@ -117,7 +119,7 @@ namespace NuGet.Commands
                     }
                     else
                     {
-                        throw ex;
+                        throw;
                     }
                 }
 #else
@@ -166,9 +168,8 @@ namespace NuGet.Commands
                 if (ex.HResult == ERROR_FILE_NOT_FOUND_HRESULT)
                 {
                     throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
-                            Strings.SignCommandFileNotFound,
-                            CERTIFICATE_STORE,
-                            store));
+                        Strings.SignCommandCertificateStoreNotFound,
+                        store));
                 }
             }
         }

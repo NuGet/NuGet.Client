@@ -13,6 +13,8 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public sealed class SignatureContent
     {
+        private readonly SigningSpecifications _signingSpecifications;
+
         /// <summary>
         /// Hashing algorithm used.
         /// </summary>
@@ -23,8 +25,22 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public string HashValue { get; }
 
-        public SignatureContent(HashAlgorithmName hashAlgorithm, string hashValue)
+        public SignatureContent(
+            SigningSpecifications signingSpecifications,
+            HashAlgorithmName hashAlgorithm,
+            string hashValue)
         {
+            if (signingSpecifications == null)
+            {
+                throw new ArgumentNullException(nameof(signingSpecifications));
+            }
+
+            if (string.IsNullOrEmpty(hashValue))
+            {
+                throw new ArgumentException(Strings.StringCannotBeNullOrEmpty, nameof(hashValue));
+            }
+
+            _signingSpecifications = signingSpecifications;
             HashAlgorithm = hashAlgorithm;
             HashValue = hashValue;
         }
@@ -36,7 +52,7 @@ namespace NuGet.Packaging.Signing
         {
             using (var writer = new KeyPairFileWriter(stream, leaveOpen: true))
             {
-                writer.WritePair("Version", new SigningSpecificationsV1().Version);
+                writer.WritePair("Version", _signingSpecifications.Version);
                 writer.WriteSectionBreak();
                 writer.WritePair(CryptoHashUtility.ConvertToOidString(HashAlgorithm) + "-Hash", HashValue);
                 writer.WriteSectionBreak();
@@ -114,7 +130,7 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            return new SignatureContent(hashAlgorithm, hash);
+            return new SignatureContent(signingSpecifications, hashAlgorithm, hash);
         }
 
         private static void ThrowIfEmpty(Dictionary<string, string> properties)
@@ -160,7 +176,7 @@ namespace NuGet.Packaging.Signing
 
             if (signingSpecifications.Version != signatureFormatVersion)
             {
-                throw new SignatureException(NuGetLogCode.NU3012, Strings.UnsupportedSignatureFormatVersion);
+                throw new SignatureException(NuGetLogCode.NU3007, Strings.UnsupportedSignatureFormatVersion);
             }
         }
     }
