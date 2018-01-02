@@ -190,8 +190,8 @@ namespace NuGet.Commands
                 targetGraph.Conventions.Patterns.MSBuildMultiTargetingFiles);
 
             lockFileLib.BuildMultiTargeting.AddRange(GetBuildItemsForPackageId(buildMultiTargetingGroup, library.Name));
-
-            // Tools
+            
+            // Tools - TODO NK - Consider only adding the tools group for tools packages only. Normally it'll be empty though - Actually check what it is normally and add round-trip tests
             var toolsGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,

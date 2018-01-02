@@ -22,8 +22,12 @@ namespace Dotnet.Integration.Test
         private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli();
         internal readonly string TestDotnetCli;
         internal readonly string MsBuildSdksPath;
+<<<<<<< HEAD
         private readonly Dictionary<string, string> _processEnvVars = new Dictionary<string, string>();
 
+=======
+        
+>>>>>>> collect all files in the tools group
         public MsbuildIntegrationTestFixture()
         {
             var cliDirectory = CopyLatestCliForPack();

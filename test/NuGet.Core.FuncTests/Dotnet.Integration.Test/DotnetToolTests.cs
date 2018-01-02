@@ -62,7 +62,7 @@ namespace Dotnet.Integration.Test
                     source: source, packages: packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, "/v:d");
 
                 // Assert
                 Assert.True(result.Item1 == 1, result.AllOutput);
@@ -100,7 +100,7 @@ namespace Dotnet.Integration.Test
                     source: source, packages: packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, "/v:d");
 
                 // Assert
                 Assert.True(result.Item1 == 0, result.AllOutput);
