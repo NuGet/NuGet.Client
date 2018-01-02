@@ -90,7 +90,7 @@ namespace NuGet.Client.Test
             // Arrange
             var conventions = new ManagedCodeConventions(
                 new RuntimeGraph(
-                    new List<CompatibilityProfile>() { new CompatibilityProfile("net46.app") }));
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("net46.app") })); // TODO NK - Testing on a compat profile with no framework runtime pair does not test jack shit does it?
 
             var collection = new ContentItemCollection();
             var rid = "any";

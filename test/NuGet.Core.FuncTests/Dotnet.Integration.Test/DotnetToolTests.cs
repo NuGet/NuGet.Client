@@ -73,6 +73,7 @@ namespace Dotnet.Integration.Test
 
         [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
+        [InlineData("net45")]
         [InlineData("netcoreapp1.0")]
         [InlineData("netcoreapp2.0")]
         public void DotnetToolTests_BasicDotnetToolRestore_Succeeds(string tfm)
@@ -82,7 +83,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var source = Path.Combine(testDirectory, "packageSource");
-                var rid = "win-x86";
+                var rid = "win-x64"; // Does x64 make a difference here?
                 var packageName = string.Join("ToolPackage-", tfm, rid);
                 var packageVersion = NuGetVersion.Parse("1.0.0");
                 var packages = new List<PackageIdentity>() { new PackageIdentity(packageName, packageVersion) };
