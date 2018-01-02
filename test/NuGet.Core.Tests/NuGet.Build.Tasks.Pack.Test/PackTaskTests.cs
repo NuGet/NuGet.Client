@@ -363,6 +363,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 "BuildEngine2",
                 "BuildEngine3",
                 "BuildEngine4",
+                "DebugPackTask",
                 "HostObject",
                 "Log",
                 "PackTaskLogic",

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using NuGet.Commands;
 using NuGet.Common;
@@ -27,6 +28,7 @@ namespace NuGet.Build.Tasks.Pack
         public string[] Authors { get; set; }
         public string Description { get; set; }
         public bool DevelopmentDependency { get; set; }
+        public bool DebugPackTask { get; set; }
         public string Copyright { get; set; }
         public bool ResolveProjectReferenceVersionDuringPack { get; set; }
         public bool RequireLicenseAcceptance { get; set; }
@@ -89,14 +91,22 @@ namespace NuGet.Build.Tasks.Pack
         {
             try
             {
-                // Console.WriteLine("Waiting for debugger to attach.");
-                // Console.WriteLine($"Process ID: {System.Diagnostics.Process.GetCurrentProcess().Id}");
-                // while (!System.Diagnostics.Debugger.IsAttached)
-                // {
-                //     System.Threading.Thread.Sleep(100);
-                // }
-                // System.Diagnostics.Debugger.Break();
-                
+                if(DebugPackTask)
+                {
+#if IS_CORECLR
+                    Console.WriteLine("Waiting for debugger to attach.");
+                    Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+
+                    while (!Debugger.IsAttached)
+                    {
+                        System.Threading.Thread.Sleep(100);
+                    }
+                    Debugger.Break();
+#else
+            Debugger.Launch();
+#endif
+                }
+
                 var request = GetRequest();
                 var logic = PackTaskLogic;
                 PackageBuilder packageBuilder = null;

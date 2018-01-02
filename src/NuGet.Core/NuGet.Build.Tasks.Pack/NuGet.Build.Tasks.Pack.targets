@@ -236,7 +236,8 @@ Copyright (c) .NET Foundation. All rights reserved.
               NuspecProperties="$(NuspecProperties)"
               AllowedOutputExtensionsInPackageBuildOutputFolder="$(AllowedOutputExtensionsInPackageBuildOutputFolder)"
               AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder="$(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder)"
-              ResolveProjectReferenceVersionDuringPack="$(ResolveProjectReferenceVersionDuringPack)"/>
+              ResolveProjectReferenceVersionDuringPack="$(ResolveProjectReferenceVersionDuringPack)"
+              DebugPackTask="$(DebugPackTask)"/>
   </Target>
 
   <!--
