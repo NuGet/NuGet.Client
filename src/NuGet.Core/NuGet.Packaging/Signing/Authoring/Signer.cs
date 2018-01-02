@@ -51,7 +51,7 @@ namespace NuGet.Packaging.Signing
 
             if (await _package.IsZip64Async(token))
             {
-                throw new InvalidDataException(Strings.ErrorZip64NotSupported);
+                throw new SignatureException(NuGetLogCode.NU3006, Strings.ErrorZip64NotSupported);
             }
 
             var zipArchiveHash = await _package.GetArchiveHashAsync(request.SignatureHashAlgorithm, token);
@@ -82,19 +82,19 @@ namespace NuGet.Packaging.Signing
         {
             var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
 
-            return new SignatureContent(hashAlgorithmName, base64ZipArchiveHash);
+            return new SignatureContent(_specifications, hashAlgorithmName, base64ZipArchiveHash);
         }
 
         private void VerifyCertificate(X509Certificate2 certificate)
         {
             if (!SigningUtility.IsSignatureAlgorithmSupported(certificate))
             {
-                throw new SignatureException(NuGetLogCode.NU3022, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm);
+                throw new SignatureException(NuGetLogCode.NU3013, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm);
             }
 
             if (!SigningUtility.IsCertificatePublicKeyValid(certificate))
             {
-                throw new SignatureException(NuGetLogCode.NU3023, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
+                throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
             }
         }
 

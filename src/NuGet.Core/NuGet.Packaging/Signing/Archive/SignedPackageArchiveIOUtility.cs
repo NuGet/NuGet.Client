@@ -378,18 +378,22 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Asserts the validity of local file header and central directory file header for the signature file in the package.
-        /// Throws Signature Exception if the headers are invalid.
+        /// Asserts the validity of central directory header and local file header for the package signature file entry.
         /// </summary>
         /// <param name="reader">BinaryReader on the package.</param>
-        /// <param name="signatureCentralDirectoryHeader">Metadata of the the package.</param>
+        /// <param name="signatureCentralDirectoryHeader">Metadata for the package signature file's central directory header.</param>
+        /// <exception cref="SignatureException">Thrown if either header is invalid.</exception>
         public static void AssertSignatureEntryMetadata(BinaryReader reader, CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader)
         {
-            // skip header signature (4 bytes) and version fields (2 entires of 2 bytes)
+            // Move to central directory header and skip header signature (4 bytes) and version fields (2 entries of 2 bytes each)
             reader.BaseStream.Seek(offset: signatureCentralDirectoryHeader.Position + 8L, origin: SeekOrigin.Begin);
 
             // check central directory file header
-            AssertSignatureEntryHeaderMetadata(reader, signatureCentralDirectoryHeader, Strings.SignatureCentralDirectoryHeaderInvalid);
+            AssertSignatureEntryCommonHeaderFields(
+                reader,
+                signatureCentralDirectoryHeader,
+                Strings.InvalidPackageSignatureFileEntry,
+                Strings.InvalidPackageSignatureFileEntryCentralDirectoryHeader);
 
             // Skip file name length (2 bytes), extra field length (2 bytes), file comment length (2 bytes),
             // disk number start (2 bytes), and internal file attributes (2 bytes)
@@ -399,20 +403,29 @@ namespace NuGet.Packaging.Signing
             AssertValue(
                 expectedValue: 0U,
                 actualValue: externalFileAttributes,
-                errorCode: NuGetLogCode.NU3011,
-                errorMessagePrefix: Strings.SignatureCentralDirectoryHeaderInvalid,
-                errorMessageSuffix: Strings.SignatureInvalidExternalFileAttributes);
+                errorCode: NuGetLogCode.NU3005,
+                errorMessagePrefix: Strings.InvalidPackageSignatureFileEntry,
+                errorMessageSuffix: Strings.InvalidPackageSignatureFileEntryCentralDirectoryHeader,
+                fieldName: "external file attributes");
 
-            // skip header signature (4 bytes) and version field (2 bytes)
+            // Move to local file header and skip header signature (4 bytes) and version field (2 bytes)
             reader.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToFileHeader + 6L, origin: SeekOrigin.Begin);
 
             // check local file header
-            AssertSignatureEntryHeaderMetadata(reader, signatureCentralDirectoryHeader, Strings.SignatureLocalFileHeaderInvalid);
+            AssertSignatureEntryCommonHeaderFields(
+                reader,
+                signatureCentralDirectoryHeader,
+                Strings.InvalidPackageSignatureFileEntry,
+                Strings.InvalidPackageSignatureFileEntryLocalFileHeader);
         }
 
-        private static void AssertSignatureEntryHeaderMetadata(BinaryReader reader, CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader, string errorPrefix)
+        private static void AssertSignatureEntryCommonHeaderFields(
+            BinaryReader reader,
+            CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader,
+            string errorPrefix,
+            string errorSuffix)
         {
-            var signatureEntryErrorCode = NuGetLogCode.NU3011;
+            var signatureEntryErrorCode = NuGetLogCode.NU3005;
 
             // Assert general purpose bits to 0
             uint actualValue = reader.ReadUInt16();
@@ -421,7 +434,8 @@ namespace NuGet.Packaging.Signing
                 actualValue: actualValue,
                 errorCode: signatureEntryErrorCode,
                 errorMessagePrefix: errorPrefix,
-                errorMessageSuffix: Strings.SignatureInvalidGeneralPurposeBits);
+                errorMessageSuffix: errorSuffix,
+                fieldName: "general purpose bit");
 
             // Assert compression method to 0
             actualValue = reader.ReadUInt16();
@@ -430,19 +444,26 @@ namespace NuGet.Packaging.Signing
                 actualValue: actualValue,
                 errorCode: signatureEntryErrorCode,
                 errorMessagePrefix: errorPrefix,
-                errorMessageSuffix: Strings.SignatureInvalidCompressionMethod);
+                errorMessageSuffix: errorSuffix,
+                fieldName: "compression method");
 
             // skip date (2 bytes), time (2 bytes) and crc32 (4 bytes)
             reader.BaseStream.Seek(offset: 8L, origin: SeekOrigin.Current);
 
             // assert that file compressed and uncompressed sizes are the same
             var compressedSize = reader.ReadUInt32();
-            var unCompressedSize = reader.ReadUInt32();
-            if (compressedSize != unCompressedSize)
+            var uncompressedSize = reader.ReadUInt32();
+            if (compressedSize != uncompressedSize)
             {
+                var failureCause = string.Format(
+                    CultureInfo.CurrentCulture,
+                    errorSuffix,
+                    "compressed size",
+                    compressedSize);
+
                 throw new SignatureException(
                     signatureEntryErrorCode,
-                    string.Format(CultureInfo.CurrentCulture, errorPrefix, Strings.SignatureFileCompressed));
+                    string.Format(CultureInfo.CurrentCulture, errorPrefix, failureCause));
             }
         }
 
@@ -451,14 +472,15 @@ namespace NuGet.Packaging.Signing
             uint actualValue,
             NuGetLogCode errorCode,
             string errorMessagePrefix,
-            string errorMessageSuffix)
+            string errorMessageSuffix,
+            string fieldName)
         {
             if (!actualValue.Equals(expectedValue))
             {
                 var failureCause = string.Format(
                     CultureInfo.CurrentCulture,
                     errorMessageSuffix,
-                    expectedValue,
+                    fieldName,
                     actualValue);
 
                 throw new SignatureException(

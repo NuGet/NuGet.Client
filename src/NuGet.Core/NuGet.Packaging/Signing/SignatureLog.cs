@@ -40,8 +40,6 @@ namespace NuGet.Packaging.Signing
 
         public static SignatureLog Issue(bool fatal, NuGetLogCode code, string message)
         {
-            // Warning codes are 500 higher than error codes
-            code = fatal ? code : code + 500;
             // A fatal issue should be an error, otherwise just a warning
             var level = fatal ? LogLevel.Error : LogLevel.Warning;
 

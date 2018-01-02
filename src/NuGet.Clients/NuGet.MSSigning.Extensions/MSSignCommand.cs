@@ -169,7 +169,7 @@ namespace NuGet.MSSigning.Extensions
         {
             if (string.IsNullOrEmpty(Timestamper))
             {
-                logger.Log(LogMessage.CreateWarning(NuGetLogCode.NU3521, NuGetMSSignCommand.MSSignCommandNoTimestamperWarning));
+                logger.Log(LogMessage.CreateWarning(NuGetLogCode.NU3002, NuGetMSSignCommand.MSSignCommandNoTimestamperWarning));
             }
         }
 

@@ -212,40 +212,31 @@
     <value>Manifest file not found at '{0}'</value>
   </data>
   <data name="ErrorPackageNotSigned" xml:space="preserve">
-    <value>Package is not signed.</value>
-  </data>
-  <data name="ErrorPackageTampered" xml:space="preserve">
-    <value>Package contents might have been tampered.</value>
-  </data>
-  <data name="ErrorSigningCertUntrustedRoot" xml:space="preserve">
-    <value>Signing certificate chains to an untrusted root.</value>
+    <value>The package is not signed.</value>
   </data>
   <data name="InvalidPackageSignature" xml:space="preserve">
     <value>Package {0} signature is invalid.</value>
   </data>
-  <data name="TimestampFailureAuthorCertNotValid" xml:space="preserve">
-    <value>Author certificate was not valid when it was timestamped.</value>
+  <data name="TimestampIntegrityCheckFailed" xml:space="preserve">
+    <value>The timestamp integrity check failed.</value>
   </data>
-  <data name="TimestampFailureInvalidHash" xml:space="preserve">
-    <value>Timestamp integrity check failed.</value>
-  </data>
-  <data name="TimestampFailureInvalidHashAlgorithmOid" xml:space="preserve">
-    <value>The timestamp uses as unsupported hash algorithm.</value>
+  <data name="TimestampUnsupportedSignatureAlgorithm" xml:space="preserve">
+    <value>The timestamp certificate has an unsupported signature algorithm.</value>
   </data>
   <data name="TimestampFailureInvalidHttpScheme" xml:space="preserve">
-    <value>The timestamper url '{0}' has an invalid uri scheme. The supported schemes are '{1}' and '{2}'.</value>
+    <value>The timestamper URL '{0}' has an invalid URI scheme. The supported schemes are '{1}' and '{2}'.</value>
     <comment>0 - url value
 1 - Uri.Http scheme
 2 - Uri.Https scheme</comment>
   </data>
   <data name="TimestampFailureNonceMismatch" xml:space="preserve">
-    <value>Timestamp response does not contain a matching response.</value>
+    <value>The timestamp response is invalid.  Nonces did not match.</value>
   </data>
   <data name="TimestampResponseExceptionGeneral" xml:space="preserve">
     <value>Timestamp service's response does not meet the NuGet package signature specification: '{0}'.</value>
     <comment>0 - Reason for failure</comment>
   </data>
-  <data name="TimestampFailureInvalidContentType" xml:space="preserve">
+  <data name="TimestampSignatureValidationFailed" xml:space="preserve">
     <value>Timestamp signature validation failed.</value>
   </data>
   <data name="TimestampCertificateChainBuildFailure" xml:space="preserve">
@@ -257,16 +248,13 @@ Issued by:
 Valid from:</comment>
   </data>
   <data name="SignedPackageUnableToAccessSignature" xml:space="preserve">
-    <value>The package was not opened correctly to perform Signature operations. Please use a Stream based constructor to have access to Signature attributes of the package.</value>
+    <value>The package was not opened correctly to perform signature operations. Please use a Stream-based constructor to have access to signature attributes of the package.</value>
   </data>
   <data name="SignedPackagePackageAlreadySigned" xml:space="preserve">
     <value>The package already contains a signature. Please remove the existing signature before adding a new signature.</value>
   </data>
   <data name="SignedPackageNotSignedOnRemove" xml:space="preserve">
     <value>The package is not signed. Unable to remove signature from an unsigned package.</value>
-  </data>
-  <data name="ErrorSignatureFileTooBig" xml:space="preserve">
-    <value>Signature file is not of a reasonable size. Package contents might have been tampered.</value>
   </data>
   <data name="CertUtilityCertificateHash" xml:space="preserve">
     <value>SHA1 hash: {0}</value>
@@ -311,10 +299,7 @@ Valid from:</comment>
     <value>The package is not signed. Unable to verify signature from an unsigned package.</value>
   </data>
   <data name="ErrorPackageSignatureInvalid" xml:space="preserve">
-    <value>Package signature is invalid.</value>
-  </data>
-  <data name="DebugNoCertificate" xml:space="preserve">
-    <value>Certificate inside main SignerInfo is null.</value>
+    <value>The package signature is invalid.</value>
   </data>
   <data name="CommitmentTypeIndicationAttributeInvalid" xml:space="preserve">
     <value>commitment-type-indication attribute contains an invalid value.</value>
@@ -332,23 +317,20 @@ Valid from:</comment>
   <data name="ErrorInvalidCertificateChain" xml:space="preserve">
     <value>Certificate chain validation failed with error: {0}</value>
   </data>
-  <data name="ErrorInvalidPublicKey" xml:space="preserve">
-    <value>Could not validate signature. Certificate does not meet the public key requirements.</value>
-  </data>
   <data name="ErrorNoCertificate" xml:space="preserve">
-    <value>The primary signature did not have a signing certificate.</value>
+    <value>The primary signature does not have a signing certificate.</value>
   </data>
   <data name="ErrorSignatureVerificationFailed" xml:space="preserve">
     <value>Primary signature validation failed.</value>
   </data>
   <data name="SignatureDebug_HashOidFound" xml:space="preserve">
-    <value>Signature hash oid found: {0}</value>
+    <value>Signature hash OID found: {0}</value>
   </data>
   <data name="SignatureFailureInvalidHashAlgorithmOid" xml:space="preserve">
-    <value>The primary signature uses an unsupported hash algorithm.</value>
+    <value>The package hash uses an unsupported hash algorithm.</value>
   </data>
   <data name="SignaturePackageIntegrityFailure" xml:space="preserve">
-    <value>Package integrity check failed.</value>
+    <value>The package integrity check failed.</value>
   </data>
   <data name="SignatureHashAlgorithm" xml:space="preserve">
     <value>Signature Hash Algorithm: {0}</value>
@@ -362,18 +344,6 @@ Valid from:</comment>
   <data name="TimestampValue" xml:space="preserve">
     <value>Timestamp: {0}</value>
   </data>
-  <data name="WarningOfflineRevocationCheck" xml:space="preserve">
-    <value>Could not check revocation status of signing certificate online.</value>
-  </data>
-  <data name="WarningUnknownSignatureType" xml:space="preserve">
-    <value>Could not validate signature. Unknown signature type.</value>
-  </data>
-  <data name="WarningUntrustedRoot" xml:space="preserve">
-    <value>Signing certificate does not chain to a trusted root.</value>
-  </data>
-  <data name="VerificationDefaultCertDisplay" xml:space="preserve">
-    <value>Verifying signature with certificate: {0}</value>
-  </data>
   <data name="ErrorCertificateHasLifetimeSignerEKU" xml:space="preserve">
     <value>Certificates with lifetime signer EKU are not supported.</value>
   </data>
@@ -381,7 +351,7 @@ Valid from:</comment>
     <value>Invalid package archive.</value>
   </data>
   <data name="ErrorZip64NotSupported" xml:space="preserve">
-    <value>ZIP64 signed packages are not supported.</value>
+    <value>Signed Zip64 packages are not supported.</value>
   </data>
   <data name="Error_NotOnePrimarySignature" xml:space="preserve">
     <value>The package signature contains multiple primary signatures.</value>
@@ -393,12 +363,6 @@ Subject Name:
 SHA1 hash:
 Issued by:
 Valid from:</comment>
-  </data>
-  <data name="SigningCertificateV2Invalid" xml:space="preserve">
-    <value>signing-certificate-v2 attribute value does not match the current certificate chain.</value>
-  </data>
-  <data name="CommitmentTypeIndicationInvalid" xml:space="preserve">
-    <value>commitment-type-indication attribute is invalid.</value>
   </data>
   <data name="InvalidSignatureContent" xml:space="preserve">
     <value>The package signature content is invalid.</value>
@@ -424,26 +388,20 @@ Valid from:</comment>
   <data name="SigningCertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
     <value>The signing certificate does not meet a minimum public key length requirement.</value>
   </data>
-  <data name="SignatureCentralDirectoryHeaderInvalid" xml:space="preserve">
-    <value>Invalid central directory header for signature entry: {0}</value>
-    <comment>0 - exact cause of the failure.</comment>
-  </data>
-  <data name="SignatureFileCompressed" xml:space="preserve">
-    <value>File was found to be compressed.</value>
-  </data>
-  <data name="SignatureInvalidCompressionMethod" xml:space="preserve">
-    <value>Invalid compression method. Expected '{0}', actual '{1}'.</value>
-    <comment>0 - expected value in uint
-1 - actual value in uint</comment>
+  <data name="InvalidPackageSignatureFileEntryCentralDirectoryHeader" xml:space="preserve">
+    <value>The central directory header field '{0}' has an invalid value ({1}).</value>
+    <comment>{0} is the name of field with the invalid value
+{1} is the field value</comment>
   </data>
   <data name="SignatureInvalidGeneralPurposeBits" xml:space="preserve">
     <value>Invalid general purpose bit flags. Expected '{0}', actual '{1}'.</value>
     <comment>0 - expected value in uint
 1 - actual value in uint</comment>
   </data>
-  <data name="SignatureLocalFileHeaderInvalid" xml:space="preserve">
-    <value>Invalid local file header for signature entry: {0}</value>
-    <comment>0 - exact cause of the failure.</comment>
+  <data name="InvalidPackageSignatureFileEntryLocalFileHeader" xml:space="preserve">
+    <value>The local file header field '{0}' has an invalid value ({1}).</value>
+    <comment>{0} is the name of field with the invalid value
+{1} is the field value</comment>
   </data>
   <data name="SignedPackageArchiveIOExtraRead" xml:space="preserve">
     <value>Package stream read position cannot be longer than the length of the stream.</value>
@@ -458,7 +416,7 @@ Valid from:</comment>
     <value>The primary signature should be timestamped to enable long-term signature validity after the certificate has expired.</value>
   </data>
   <data name="TimestampNoCertificate" xml:space="preserve">
-    <value>The timestamp signature did not have a signing certificate.</value>
+    <value>The timestamp signature does not have a signing certificate.</value>
   </data>
   <data name="SignatureNotYetValid" xml:space="preserve">
     <value>The signing certificate is not yet valid.</value>
@@ -466,7 +424,10 @@ Valid from:</comment>
   <data name="TimestampNotYetValid" xml:space="preserve">
     <value>The timestamp signing certificate is not yet valid.</value>
   </data>
-  <data name="SignatureInvalidExternalFileAttributes" xml:space="preserve">
+  <data name="InvalidPackageSignatureFileEntry" xml:space="preserve">
     <value>The package signature file entry is invalid.</value>
+  </data>
+  <data name="InvalidAuthorSignature" xml:space="preserve">
+    <value>The author signature is invalid.</value>
   </data>
 </root>

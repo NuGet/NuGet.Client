@@ -3,19 +3,28 @@
 
 #if NET46
 using System;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
+using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class SignerTests
+    public class SignerTests : IClassFixture<CertificatesFixture>
     {
+        private readonly CertificatesFixture _fixture;
+
+        public SignerTests(CertificatesFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [Fact]
         public void Constructor_WhenPackageIsNull_Throws()
         {
@@ -92,7 +101,8 @@ namespace NuGet.Packaging.Test
                         Mock.Of<ILogger>(),
                         CancellationToken.None));
 
-                Assert.Equal(NuGetLogCode.NU3022, exception.AsLogMessage().Code);
+                Assert.Equal(NuGetLogCode.NU3013, exception.AsLogMessage().Code);
+                Assert.Equal("The signing certificate has an unsupported signature algorithm.", exception.Message);
             }
         }
 
@@ -111,28 +121,82 @@ namespace NuGet.Packaging.Test
                         Mock.Of<ILogger>(),
                         CancellationToken.None));
 
-                Assert.Equal(NuGetLogCode.NU3023, exception.AsLogMessage().Code);
+                Assert.Equal(NuGetLogCode.NU3014, exception.AsLogMessage().Code);
+                Assert.Equal("The signing certificate does not meet a minimum public key length requirement.", exception.Message);
             }
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenPackageIsZip64_Throws()
+        {
+            using (var test = SignTest.Create(
+                _fixture.GetDefaultCertificate(),
+                HashAlgorithmName.SHA256,
+                GetResource("CentralDirectoryHeaderWithZip64ExtraField.zip")))
+            {
+                var exception = await Assert.ThrowsAsync<SignatureException>(
+                    () => test.Signer.SignAsync(
+                        test.Request,
+                        Mock.Of<ILogger>(),
+                        CancellationToken.None));
+
+                Assert.Equal(NuGetLogCode.NU3006, exception.AsLogMessage().Code);
+                Assert.Equal("Signed Zip64 packages are not supported.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenChainBuildingFails_Throws()
+        {
+            using (var packageStream = new SimpleTestPackageContext().CreateAsStream())
+            using (var test = SignTest.Create(
+                 _fixture.GetDefaultCertificate(),
+                HashAlgorithmName.SHA256,
+                packageStream.ToArray(),
+                signatureProvider: new X509SignatureProvider(timestampProvider: null)))
+            {
+                var exception = await Assert.ThrowsAsync<SignatureException>(
+                    () => test.Signer.SignAsync(
+                        test.Request,
+                        Mock.Of<ILogger>(),
+                        CancellationToken.None));
+
+                Assert.Equal(NuGetLogCode.NU3018, exception.AsLogMessage().Code);
+                Assert.Equal("Certificate chain validation failed with error: UntrustedRoot", exception.Message);
+            }
+        }
+
+        private static byte[] GetResource(string name)
+        {
+            return ResourceTestUtility.GetResourceBytes(
+                $"NuGet.Packaging.Test.compiler.resources.{name}",
+                typeof(SignerTests));
         }
 
         private sealed class SignTest : IDisposable
         {
+            private readonly MemoryStream _readStream;
+            private readonly MemoryStream _writeStream;
             private bool _isDisposed = false;
 
-            internal Mock<ISignatureProvider> SignatureProvider { get; }
-            internal Mock<ISignedPackage> Package { get; }
+            internal ISignatureProvider SignatureProvider { get; }
+            internal ISignedPackage Package { get; }
             internal SignPackageRequest Request { get; }
             internal Signer Signer { get; }
 
             private SignTest(Signer signer,
-                Mock<ISignedPackage> package,
-                Mock<ISignatureProvider> signatureProvider,
-                SignPackageRequest request)
+                ISignedPackage package,
+                ISignatureProvider signatureProvider,
+                SignPackageRequest request,
+                MemoryStream readStream,
+                MemoryStream writeStream)
             {
                 Signer = signer;
                 Package = package;
                 SignatureProvider = signatureProvider;
                 Request = request;
+                _readStream = readStream;
+                _writeStream = writeStream;
             }
 
             public void Dispose()
@@ -141,17 +205,43 @@ namespace NuGet.Packaging.Test
                 {
                     Request.Dispose();
 
+                    if (Package is SignedPackageArchive)
+                    {
+                        Package.Dispose();
+                    }
+
+                    _readStream?.Dispose();
+                    _writeStream?.Dispose();
+
                     GC.SuppressFinalize(this);
 
                     _isDisposed = true;
                 }
             }
 
-            internal static SignTest Create(X509Certificate2 certificate, HashAlgorithmName hashAlgorithm)
+            internal static SignTest Create(
+                X509Certificate2 certificate,
+                HashAlgorithmName hashAlgorithm,
+                byte[] package = null,
+                ISignatureProvider signatureProvider = null)
             {
-                var signedPackage = new Mock<ISignedPackage>(MockBehavior.Strict);
-                var signatureProvider = new Mock<ISignatureProvider>(MockBehavior.Strict);
-                var signer = new Signer(signedPackage.Object, signatureProvider.Object);
+                ISignedPackage signedPackage;
+                MemoryStream readStream = null;
+                MemoryStream writeStream = null;
+
+                if (package == null)
+                {
+                    signedPackage = Mock.Of<ISignedPackage>();
+                }
+                else
+                {
+                    readStream = new MemoryStream(package);
+                    writeStream = new MemoryStream();
+                    signedPackage = new SignedPackageArchive(readStream, writeStream);
+                }
+
+                signatureProvider = signatureProvider ?? Mock.Of<ISignatureProvider>();
+                var signer = new Signer(signedPackage, signatureProvider);
 
                 var request = new SignPackageRequest()
                 {
@@ -159,7 +249,13 @@ namespace NuGet.Packaging.Test
                     SignatureHashAlgorithm = hashAlgorithm
                 };
 
-                return new SignTest(signer, signedPackage, signatureProvider, request);
+                return new SignTest(
+                    signer,
+                    signedPackage,
+                    signatureProvider,
+                    request,
+                    readStream,
+                    writeStream);
             }
         }
     }

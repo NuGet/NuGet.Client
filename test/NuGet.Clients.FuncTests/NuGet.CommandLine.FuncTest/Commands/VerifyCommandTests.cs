@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
@@ -19,9 +19,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
     [Collection("Sign Command Test Collection")]
     public class VerifyCommandTests
     {
-        private const string _noTimestamperWarningCode = "NU3550";
-        private const string _primarySignatureInvalidErrorCode = "NU3030";
-        private const string _signingDefaultErrorCode = "NU3000";
+        private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3027.ToString();
+        private readonly string _primarySignatureInvalidErrorCode = NuGetLogCode.NU3012.ToString();
+        private readonly string _signingDefaultErrorCode = NuGetLogCode.NU3000.ToString();
 
         private SignCommandTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
@@ -93,7 +93,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     zipStream.CopyTo(fileStream);
                 }
 
-                
+
                 var signResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
@@ -144,7 +144,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Overwrite",
                     waitForExit: true);
-                
+
                 firstResult.Success.Should().BeTrue();
                 secondResult.Success.Should().BeTrue();
 

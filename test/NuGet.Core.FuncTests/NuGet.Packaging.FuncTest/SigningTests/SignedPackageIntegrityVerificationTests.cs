@@ -236,7 +236,7 @@ namespace NuGet.Packaging.FuncTest
                     result.Valid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
                 }
             }
         }
@@ -300,7 +300,7 @@ namespace NuGet.Packaging.FuncTest
                     result.Valid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
                 }
             }
         }
@@ -400,7 +400,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
                     }
                 }
             }
@@ -467,7 +467,7 @@ namespace NuGet.Packaging.FuncTest
 
                         // Assert
                         AssertSignatureEntryMetadataThrowsException(packageWriteStream);
-                    }                    
+                    }
                 }
             }
         }
@@ -511,7 +511,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
                     }
                 }
             }
@@ -589,7 +589,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
                     }
                 }
             }
@@ -667,7 +667,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
                     }
                 }
             }
@@ -745,7 +745,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
                     }
                 }
             }
@@ -823,7 +823,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
                     }
                 }
             }
@@ -904,7 +904,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3015);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
                     }
                 }
             }
@@ -952,7 +952,7 @@ namespace NuGet.Packaging.FuncTest
 
                 // Assert
                 var exception = Assert.Throws<SignatureException>(() => SignedPackageArchiveIOUtility.AssertSignatureEntryMetadata(reader, signatureCentralDirectoryHeader));
-                exception.AsLogMessage().Code.Should().Be(NuGetLogCode.NU3011);
+                exception.AsLogMessage().Code.Should().Be(NuGetLogCode.NU3005);
             }
         }
     }

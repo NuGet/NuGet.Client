@@ -4,22 +4,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using NuGet.Common;
-
+using System.Linq;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
 #endif
-
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
     /// Package signature information.
     /// </summary>
-    public class Signature
+    public sealed class Signature
     {
 #if IS_DESKTOP
-
         private readonly Lazy<IReadOnlyList<Timestamp>> _timestamps;
 
         /// <summary>
@@ -47,11 +45,11 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public SignerInfo SignerInfo => SignedCms.SignerInfos[0];
 
-        private Signature(SignedCms signedCms)
+        private Signature(SignedCms signedCms, SignatureType signatureType)
         {
             SignedCms = signedCms ?? throw new ArgumentNullException(nameof(signedCms));
             SignatureContent = SignatureContent.Load(SignedCms.ContentInfo.Content, SigningSpecifications.V1);
-            Type = GetSignatureType(SignerInfo);
+            Type = signatureType;
 
             _timestamps = new Lazy<IReadOnlyList<Timestamp>>(() => GetTimestamps(SignerInfo));
         }
@@ -84,10 +82,19 @@ namespace NuGet.Packaging.Signing
         {
             if (cms.SignerInfos.Count != 1)
             {
-                throw new SignatureException(NuGetLogCode.NU3014, Strings.Error_NotOnePrimarySignature);
+                throw new SignatureException(NuGetLogCode.NU3009, Strings.Error_NotOnePrimarySignature);
             }
 
-            return new Signature(cms);
+            var signingSpecifications = SigningSpecifications.V1;
+            var signerInfo = cms.SignerInfos[0];
+            var signatureType = GetSignatureType(signerInfo);
+
+            if (signatureType == SignatureType.Author)
+            {
+                VerifyAuthorSignatureRequirements(signerInfo, signingSpecifications);
+            }
+
+            return new Signature(cms, signatureType);
         }
 
         /// <summary>
@@ -141,6 +148,52 @@ namespace NuGet.Packaging.Signing
             return SignatureType.Unknown;
         }
 
+        private static void VerifyAuthorSignatureRequirements(
+            SignerInfo signerInfo,
+            SigningSpecifications signingSpecifications)
+        {
+            VerifySigningCertificateV2Attribute(signerInfo, signingSpecifications);
+            VerifySigningTimeAttribute(signerInfo);
+        }
+
+        private static void VerifySigningTimeAttribute(SignerInfo signerInfo)
+        {
+            var attribute = signerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningTimeOid);
+
+            if (attribute == null)
+            {
+                ThrowForInvalidAuthorSignature();
+            }
+        }
+
+        private static void VerifySigningCertificateV2Attribute(
+            SignerInfo signerInfo,
+            SigningSpecifications signingSpecifications)
+        {
+            var attribute = signerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningCertificateV2);
+
+            if (attribute != null)
+            {
+                var entries = AttributeUtility.GetESSCertIDv2Entries(attribute);
+
+                if (entries != null && entries.Count > 0)
+                {
+                    if (entries.All(
+                        kvp => signingSpecifications.AllowedHashAlgorithmOids.Contains(kvp.Key.ConvertToOidString())))
+                    {
+                        return;
+                    }
+                }
+            }
+
+            ThrowForInvalidAuthorSignature();
+        }
+
+        private static void ThrowForInvalidAuthorSignature()
+        {
+            throw new SignatureException(NuGetLogCode.NU3011, Strings.InvalidAuthorSignature);
+        }
+
         /// <summary>
         /// Get timestamps from the signer info
         /// </summary>
@@ -149,7 +202,7 @@ namespace NuGet.Packaging.Signing
         private static IReadOnlyList<Timestamp> GetTimestamps(SignerInfo signer)
         {
             var authorUnsignedAttributes = signer.UnsignedAttributes;
-            
+
             var timestampList = new List<Timestamp>();
 
             foreach (var attribute in authorUnsignedAttributes)
