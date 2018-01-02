@@ -18,7 +18,7 @@ namespace Test.Utility.Signing
     {
         // Central Directory file header size excluding signature, file name, extra field and file comment
         private const uint CentralDirectoryFileHeaderSizeWithoutSignature = 46;
-        private const string _internalTimestampServer = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
+        private static readonly string _testTimestampServer = Environment.GetEnvironmentVariable("TIMESTAMP_SERVER_URL");
 
         /// <summary>
         /// Generates a signed copy of a package and returns the path to that package
@@ -88,29 +88,6 @@ namespace Test.Utility.Signing
         }
 
         /// <summary>
-        /// unsigns a package for test purposes.
-        /// This does not timestamp a signature and can be used outside corp network.
-        /// </summary>
-        public static async Task UnsignPackageAsync(string signedPackagePath, string dir)
-        {
-            var testLogger = new TestLogger();
-            var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
-
-            var copiedSignedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
-            File.Copy(signedPackagePath, copiedSignedPackagePath, overwrite: true);
-
-            using (var zipReadStream = File.Open(signedPackagePath, FileMode.Open))
-            using (var zipWriteStream = File.Open(copiedSignedPackagePath, FileMode.Open))
-            using (var signedPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
-            {
-                var signer = new Signer(signedPackage, testSignatureProvider);
-                await signer.RemoveSignaturesAsync(testLogger, CancellationToken.None);
-            }
-
-            File.Copy(copiedSignedPackagePath, signedPackagePath, overwrite: true);
-        }
-
-        /// <summary>
         /// Generates a Signature for a package.
         /// </summary>
         /// <param name="testCert">Certificate to be used while generating the signature.</param>
@@ -121,7 +98,7 @@ namespace Test.Utility.Signing
             var testLogger = new TestLogger();
             var hashAlgorithm = HashAlgorithmName.SHA256;
 
-            using (var request = new SignPackageRequest() { Certificate = testCert, SignatureHashAlgorithm = hashAlgorithm })
+            using (var request = new SignPackageRequest(testCert, hashAlgorithm))
             using (var package = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
             {
                 var zipArchiveHash = await package.GetArchiveHashAsync(request.SignatureHashAlgorithm, CancellationToken.None);
@@ -137,16 +114,11 @@ namespace Test.Utility.Signing
         /// Sign a package for test purposes.
         /// This does not timestamp a signature and can be used outside corp network.
         /// </summary>
-        private static async Task SignPackageAsync(TestLogger testLogger, X509Certificate2 cert, SignedPackageArchive signPackage)
+        private static async Task SignPackageAsync(TestLogger testLogger, X509Certificate2 certificate, SignedPackageArchive signPackage)
         {
             var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
             var signer = new Signer(signPackage, testSignatureProvider);
-
-            var request = new SignPackageRequest()
-            {
-                Certificate = cert,
-                SignatureHashAlgorithm = HashAlgorithmName.SHA256
-            };
+            var request = new SignPackageRequest(certificate, signatureHashAlgorithm: HashAlgorithmName.SHA256);
 
             await signer.SignAsync(request, testLogger, CancellationToken.None);
         }
@@ -155,20 +127,14 @@ namespace Test.Utility.Signing
         /// Sign and timestamp a package for test purposes.
         /// This method timestamps a package and should only be used with tests marked with [CIOnlyFact]
         /// </summary>
-        private static async Task SignAndTimeStampPackageAsync(TestLogger testLogger, X509Certificate2 cert, SignedPackageArchive signPackage)
+        private static async Task SignAndTimeStampPackageAsync(TestLogger testLogger, X509Certificate2 certificate, SignedPackageArchive signPackage)
         {
-            var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(new Uri(_internalTimestampServer)));
+            var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(new Uri(_testTimestampServer)));
             var signer = new Signer(signPackage, testSignatureProvider);
-
-            var request = new SignPackageRequest()
-            {
-                Certificate = cert,
-                SignatureHashAlgorithm = HashAlgorithmName.SHA256
-            };
+            var request = new SignPackageRequest(certificate, signatureHashAlgorithm: HashAlgorithmName.SHA256);
 
             await signer.SignAsync(request, testLogger, CancellationToken.None);
         }
-
 
         public static async Task<VerifySignaturesResult> VerifySignatureAsync(SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)
         {

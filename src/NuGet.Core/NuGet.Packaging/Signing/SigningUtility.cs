@@ -38,7 +38,6 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-
         /// <summary> 
         /// Validates the public key requirements for a certificate 
         /// </summary> 
@@ -94,7 +93,7 @@ namespace NuGet.Packaging.Signing
                     DateTime.Now,
                     NuGetVerificationCertificateType.Signature);
 
-                if (SigningUtility.BuildCertificateChain(chain, certificate, out chainStatusList))
+                if (BuildCertificateChain(chain, certificate, out chainStatusList))
                 {
                     return GetCertificateChain(chain);
                 }
@@ -201,6 +200,26 @@ namespace NuGet.Packaging.Signing
             return true;
         }
 
+        public static void Verify(SignPackageRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (!IsSignatureAlgorithmSupported(request.Certificate))
+            {
+                throw new SignatureException(NuGetLogCode.NU3013, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm);
+            }
+
+            if (!IsCertificatePublicKeyValid(request.Certificate))
+            {
+                throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
+            }
+
+            request.BuildCertificateChainOnce();
+        }
+
 #if IS_DESKTOP
         public static CryptographicAttributeObjectCollection GetSignedAttributes(
             SignPackageRequest request,
@@ -229,9 +248,6 @@ namespace NuGet.Packaging.Signing
             DateTime verificationTime,
             NuGetVerificationCertificateType certificateType)
         {
-            // This flags should only be set for verification scenarios, not signing
-            policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
-
             if (certificateType == NuGetVerificationCertificateType.Signature)
             {
                 policy.ApplicationPolicy.Add(new Oid(Oids.CodeSigningEkuOid));

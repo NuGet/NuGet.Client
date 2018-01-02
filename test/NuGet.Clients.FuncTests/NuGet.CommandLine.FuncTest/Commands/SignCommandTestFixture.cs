@@ -15,7 +15,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     /// </summary>
     public class SignCommandTestFixture : IDisposable
     {
-        private const string _timestamper = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
+        private static readonly string _testTimestampServer = Environment.GetEnvironmentVariable("TIMESTAMP_SERVER_URL");
 
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TrustedTestCert<TestCertificate> _trustedTestCertWithInvalidEku;
@@ -139,7 +139,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        public string Timestamper => _timestamper;
+        public string Timestamper => _testTimestampServer;
 
         public void Dispose()
         {

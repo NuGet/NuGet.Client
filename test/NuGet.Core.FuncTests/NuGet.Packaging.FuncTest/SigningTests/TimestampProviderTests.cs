@@ -20,7 +20,7 @@ namespace NuGet.Packaging.FuncTest
     [Collection("Signing Functional Test Collection")]
     public class TimestampProviderTests
     {
-        private const string _internalTimestamper = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
+        private static readonly string _testTimestampServer = Environment.GetEnvironmentVariable("TIMESTAMP_SERVER_URL");
         private const string _authorCertExpiredExceptionMessage = "Author certificate was not valid when it was timestamped.";
         private const string _argumentNullExceptionMessage = "Value cannot be null.\r\nParameter name: {0}";
         private const string _operationCancelledExceptionMessage = "The operation was canceled.";
@@ -41,7 +41,7 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var logger = new TestLogger();
-            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_internalTimestamper));
+            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
             var data = "Test data to be signed and timestamped";
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -80,14 +80,14 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var logger = new TestLogger();
-            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_internalTimestamper));
+            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
             var authorCertName = "author@nuget.func.test";
             var data = "Test data to be signed and timestamped";
 
             Action<X509V3CertificateGenerator> modifyGenerator = delegate (X509V3CertificateGenerator gen)
             {
                 gen.SetNotBefore(DateTime.MinValue);
-                gen.SetNotBefore(DateTime.Now.Subtract(TimeSpan.FromDays(1))); // cert has expired
+                gen.SetNotBefore(DateTime.UtcNow.Subtract(TimeSpan.FromDays(1))); // cert has expired
             };
 
             using (var authorCert = SigningTestUtility.GenerateCertificate(authorCertName, modifyGenerator: modifyGenerator))
@@ -117,7 +117,7 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var logger = new TestLogger();
-            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_internalTimestamper));
+            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
             var data = "Test data to be signed and timestamped";
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -147,7 +147,7 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var logger = new TestLogger();
-            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_internalTimestamper));
+            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
             var data = "Test data to be signed and timestamped";
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))

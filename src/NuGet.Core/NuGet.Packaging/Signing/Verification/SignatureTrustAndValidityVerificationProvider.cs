@@ -121,6 +121,9 @@ namespace NuGet.Packaging.Signing
 
                         using (var chain = new X509Chain())
                         {
+                            // This flags should only be set for verification scenarios, not signing
+                            chain.ChainPolicy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
+
                             SigningUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestamp.UpperLimit.LocalDateTime, NuGetVerificationCertificateType.Signature);
                             var chainBuildingSucceed = SigningUtility.BuildCertificateChain(chain, certificate, out var chainStatusList);
 
@@ -226,6 +229,9 @@ namespace NuGet.Packaging.Signing
 
                 using (var chain = new X509Chain())
                 {
+                    // This flags should only be set for verification scenarios, not signing
+                    chain.ChainPolicy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
+
                     SigningUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, DateTime.Now, NuGetVerificationCertificateType.Timestamp);
 
                     var chainBuildSucceed = SigningUtility.BuildCertificateChain(chain, timestamperCertificate, out var chainStatusList);

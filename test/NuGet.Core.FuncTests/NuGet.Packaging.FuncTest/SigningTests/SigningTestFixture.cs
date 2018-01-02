@@ -15,6 +15,8 @@ namespace NuGet.Packaging.FuncTest
     public class SigningTestFixture : IDisposable
     {
         private TrustedTestCert<TestCertificate> _trustedTestCert;
+        private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
+        private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
 
@@ -33,6 +35,42 @@ namespace NuGet.Packaging.FuncTest
                 }
 
                 return _trustedTestCert;
+            }
+        }
+
+        public TrustedTestCert<TestCertificate> TrustedTestCertificateExpired
+        {
+            get
+            {
+                if (_trustedTestCertExpired == null)
+                {
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorExpiredCert;
+
+                    // Code Sign EKU needs trust to a root authority
+                    // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
+                    // This makes all the associated tests to require admin privilege
+                    _trustedTestCertExpired = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                }
+
+                return _trustedTestCertExpired;
+            }
+        }
+
+        public TrustedTestCert<TestCertificate> TrustedTestCertificateNotYetValid
+        {
+            get
+            {
+                if (_trustedTestCertNotYetValid == null)
+                {
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorNotYetValidCert;
+
+                    // Code Sign EKU needs trust to a root authority
+                    // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
+                    // This makes all the associated tests to require admin privilege
+                    _trustedTestCertNotYetValid = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                }
+
+                return _trustedTestCertNotYetValid;
             }
         }
 
