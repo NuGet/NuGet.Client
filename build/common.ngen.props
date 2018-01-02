@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0">
+  <ItemGroup Condition=" '$(SkipAssemblyAttributes)' != 'true'">
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Tools</AssemblyName>
+      <Version>$(SemanticVersion).$(PreReleaseVersion)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Tools.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Console</AssemblyName>
+      <Version>$(SemanticVersion).$(PreReleaseVersion)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Console.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.PackageManagement.VisualStudio</AssemblyName>
+      <Version>$(SemanticVersion).$(PreReleaseVersion)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.PackageManagement.VisualStudio.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.PackageManagement.UI</AssemblyName>
+      <Version>$(SemanticVersion).$(PreReleaseVersion)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.PackageManagement.UI.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Common</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Common.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Configuration</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Configuration.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.PackageManagement</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.PackageManagement.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Packaging</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Packaging.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Protocol</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Protocol.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Credentials</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Credentials.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.VisualStudio.Common</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.VisualStudio.Common.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.VisualStudio</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.VisualStudio.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Commands</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Commands.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Frameworks</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Frameworks.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.LibraryModel</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.LibraryModel.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Packaging.Core</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Packaging.Core.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.ProjectModel</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.ProjectModel.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Resolver</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Resolver.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Versioning</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Versioning.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.Indexing</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.Indexing.dll</CodeBase>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="Microsoft.VisualStudio.Shell.ProvideCodeBase">
+      <AssemblyName>NuGet.DependencyResolver.Core</AssemblyName>
+      <Version>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</Version>
+      <CodeBase>$PackageFolder$\\NuGet.DependencyResolver.Core.dll</CodeBase>
+    </AssemblyAttributes>
+  </ItemGroup>
+</Project>
