@@ -97,6 +97,7 @@ namespace Dotnet.Integration.Test
                 package.Files.Clear();
                 package.AddFile($"tools/{tfm}/{rid}/a.dll");
                 package.PackageType = PackageType.DotnetTool;
+                package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 SimpleTestPackageUtility.CreatePackages(source, package);
 
@@ -138,10 +139,11 @@ namespace Dotnet.Integration.Test
                 var packageName = string.Join("ToolPackage-", tfm, packageRID);
                 var packageVersion = NuGetVersion.Parse("1.0.0");
                 var packages = new List<PackageIdentity>() { new PackageIdentity(packageName, packageVersion)};
-
                 var package = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
                 package.Files.Clear();
                 package.AddFile($"tools/{tfm}/{packageRID}/a.dll");
+                package.PackageType = PackageType.DotnetTool;
+                package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 SimpleTestPackageUtility.CreatePackages(source, package);
 
@@ -179,6 +181,7 @@ namespace Dotnet.Integration.Test
                 package.AddFile($"tools/{tfm}/{rid}/Settings.json");
 
                 package.PackageType = PackageType.DotnetTool;
+                package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 SimpleTestPackageUtility.CreatePackages(source, package);
 
@@ -226,6 +229,7 @@ namespace Dotnet.Integration.Test
                 package.AddFile($"tools/{tfm}/{packageRID}/Settings.json");
                 package.RuntimeJson = GetResource("Dotnet.Integration.Test.compiler.resources.runtime.json", GetType());
                 package.PackageType = PackageType.DotnetTool;
+                package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 SimpleTestPackageUtility.CreatePackages(source, package);
 
@@ -271,9 +275,8 @@ namespace Dotnet.Integration.Test
                 package.Files.Clear();
                 package.AddFile($"tools/{tfm}/{packageRID}/a.dll");
                 package.AddFile($"tools/{tfm}/{packageRID}/Settings.json");
-
-
                 package.PackageType = PackageType.DotnetTool;
+                package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 SimpleTestPackageUtility.CreatePackages(source, package);
 
