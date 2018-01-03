@@ -62,7 +62,7 @@ namespace Dotnet.Integration.Test
                     source: source, packages: packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, "/v:d");
+                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
 
                 // Assert
                 Assert.True(result.Item1 == 1, result.AllOutput);
@@ -83,7 +83,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var source = Path.Combine(testDirectory, "packageSource");
-                var rid = "win-x64"; // Does x64 make a difference here?
+                var rid = "win-x64";
                 var packageName = string.Join("ToolPackage-", tfm, rid);
                 var packageVersion = NuGetVersion.Parse("1.0.0");
                 var packages = new List<PackageIdentity>() { new PackageIdentity(packageName, packageVersion) };
@@ -100,7 +100,7 @@ namespace Dotnet.Integration.Test
                     source: source, packages: packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, "/v:d");
+                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
 
                 // Assert
                 Assert.True(result.Item1 == 0, result.AllOutput);

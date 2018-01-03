@@ -99,7 +99,7 @@ namespace Dotnet.Integration.Test
             var projectFileName = Path.Combine(workingDirectory, projectName + ".csproj");
 
             var restorePackagesPath = Path.Combine(workingDirectory, "tools", "packages");
-            var baseIntermediatepath = Path.Combine(workingDirectory, "tools");
+            var baseIntermediatepath = Path.Combine(workingDirectory);
             var restoreSolutionDirectory = workingDirectory;
             var packageReference = string.Empty;
             foreach (var package in packages) {
@@ -109,14 +109,14 @@ namespace Dotnet.Integration.Test
             var projectFile = $@"<Project Sdk=""Microsoft.NET.Sdk"">
                 <PropertyGroup><RestoreProjectStyle>DotnetToolReference</RestoreProjectStyle>
                 <OutputType>Exe</OutputType>
-                <TargetFramework> { targetFramework } </TargetFramework>
-                <RuntimeIdentifier>{ rid } </RuntimeIdentifier> 
+                <TargetFramework> {targetFramework} </TargetFramework>
+                <RuntimeIdentifier>{rid} </RuntimeIdentifier> 
                 <!-- Things that do change-->
-                <RestorePackagesPath>{ restorePackagesPath }</RestorePackagesPath>
-                <BaseIntermediateOutputPath>{ baseIntermediatepath }</BaseIntermediateOutputPath>
-                <RestoreSolutionDirectory>{ restoreSolutionDirectory }</RestoreSolutionDirectory>
+                <RestorePackagesPath>{restorePackagesPath}</RestorePackagesPath>
+                <BaseIntermediateOutputPath>{baseIntermediatepath}</BaseIntermediateOutputPath>
+                <RestoreSolutionDirectory>{restoreSolutionDirectory}</RestoreSolutionDirectory>
     
-                <RestoreSources>{ source }</RestoreSources>
+                <RestoreSources>{source}</RestoreSources>
                 <!--Things that don't change -->
                 <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
                 <RestoreFallbackFolders>clear</RestoreFallbackFolders>
@@ -125,23 +125,25 @@ namespace Dotnet.Integration.Test
                 <RestoreAdditionalProjectFallbackFoldersExcludes></RestoreAdditionalProjectFallbackFoldersExcludes>
               </PropertyGroup>
                 <ItemGroup>
-                {packageReference}
+                    {packageReference}
                 </ItemGroup>
             </Project>";
+
             try {
                 File.WriteAllText(projectFileName, projectFile);
             }
-            catch (Exception e)
+            catch
             {
                 // ignore
             }
             Assert.True(File.Exists(projectFileName));
         }
 
-        internal CommandRunnerResult RestoreToolProject(string workingDirectory, string projectName, string args)
+        internal CommandRunnerResult RestoreToolProject(string workingDirectory, string projectName, string args = "")
         {
 
             var envVar = new Dictionary<string, string>();
+            envVar.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
             envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
 
             var result = CommandRunner.Run(TestDotnetCli,
