@@ -1,8 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using NuGet.Common;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -104,8 +108,15 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 Assert.True(result.Item1 == 0, result.AllOutput);
-
                 // Verify the assets file
+                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
+                Assert.NotNull(lockFile);
+                Assert.Equal(2, lockFile.Targets.Count);
+                var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(rid, StringComparison.CurrentCultureIgnoreCase) : false);
+                Assert.Equal(1, ridTargets.Count());
+                var toolsAssemblies = ridTargets.First().Libraries.First().ToolsAssemblies;
+                Assert.Equal(1, toolsAssemblies.Count);
+                Assert.Equal($"tools/{tfm}/{rid}/a.dll", toolsAssemblies.First().Path);
             }
         }
 
