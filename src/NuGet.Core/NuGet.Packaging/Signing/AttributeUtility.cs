@@ -343,8 +343,21 @@ namespace NuGet.Packaging.Signing
         }
 
         // Attribute -> Hashes
-        internal static List<KeyValuePair<Common.HashAlgorithmName, byte[]>> GetESSCertIDv2Entries(CryptographicAttributeObject attribute)
+        public static List<KeyValuePair<Common.HashAlgorithmName, byte[]>> GetESSCertIDv2Entries(CryptographicAttributeObject attribute)
         {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
+            if (!StringComparer.Ordinal.Equals(Oids.SigningCertificateV2, attribute.Oid.Value))
+            {
+                throw new ArgumentException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.SigningCertificateV2AttributeRequired,
+                    Oids.SigningCertificateV2), nameof(attribute));
+            }
+
             var entries = new List<KeyValuePair<Common.HashAlgorithmName, byte[]>>();
             var reader = attribute.ToDerSequenceReader();
 
