@@ -119,7 +119,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public async Task ExecuteCommandAsync_WithMultiplePackagesAndInvalidCertificate_RaisesErrorsOnce()
         {
             const string password = "password";

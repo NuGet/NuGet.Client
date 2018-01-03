@@ -111,11 +111,7 @@ namespace NuGet.Packaging.Signing
         {
             if (Chain == null)
             {
-#if IS_DESKTOP
                 Chain = SigningUtility.GetCertificateChain(Certificate, AdditionalCertificates);
-#else
-                throw new NotImplementedException();
-#endif
             }
         }
     }

@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1.X509;
@@ -76,6 +78,44 @@ namespace NuGet.Packaging.Test
                 publicKeyLength: 2048))
             {
                 Assert.True(SigningUtility.IsCertificatePublicKeyValid(certificate));
+            }
+        }
+
+        [Fact]
+        public void GetCertificateChain_WhenCertificateNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => SigningUtility.GetCertificateChain(certificate: null, extraStore: new X509Certificate2Collection()));
+
+            Assert.Equal("certificate", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetCertificateChain_WhenExtraStoreNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => SigningUtility.GetCertificateChain(new X509Certificate2(), extraStore: null));
+
+            Assert.Equal("extraStore", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetCertificateChain_WithUntrustedRoot_Throws()
+        {
+            using (var chain = new X509Chain())
+            using (var rootCertificate = GetCertificate("root.crt"))
+            using (var intermediateCertificate = GetCertificate("intermediate.crt"))
+            using (var leafCertificate = GetCertificate("leaf.crt"))
+            {
+                var extraStore = new X509Certificate2Collection();
+
+                extraStore.Add(rootCertificate);
+                extraStore.Add(intermediateCertificate);
+
+                var exception = Assert.Throws<SignatureException>(
+                    () => SigningUtility.GetCertificateChain(leafCertificate, extraStore));
+
+                Assert.Equal(NuGetLogCode.NU3018, exception.Code);
             }
         }
 
