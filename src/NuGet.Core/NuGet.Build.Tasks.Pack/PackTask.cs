@@ -28,9 +28,7 @@ namespace NuGet.Build.Tasks.Pack
         public string[] Authors { get; set; }
         public string Description { get; set; }
         public bool DevelopmentDependency { get; set; }
-        public bool DebugPackTask { get; set; }
         public string Copyright { get; set; }
-        public bool ResolveProjectReferenceVersionDuringPack { get; set; }
         public bool RequireLicenseAcceptance { get; set; }
         public string RestoreOutputPath { get; set; }
         public string LicenseUrl { get; set; }
@@ -91,7 +89,9 @@ namespace NuGet.Build.Tasks.Pack
         {
             try
             {
-                if(DebugPackTask)
+#if DEBUG
+                var debugPackTask = Environment.GetEnvironmentVariable("DEBUG_PACK_TASK");
+                if(!string.IsNullOrEmpty(debugPackTask) && debugPackTask.Equals("true", StringComparison.OrdinalIgnoreCase))
                 {
 #if IS_CORECLR
                     Console.WriteLine("Waiting for debugger to attach.");
@@ -106,6 +106,7 @@ namespace NuGet.Build.Tasks.Pack
             Debugger.Launch();
 #endif
                 }
+#endif
 
                 var request = GetRequest();
                 var logic = PackTaskLogic;
@@ -179,7 +180,6 @@ namespace NuGet.Build.Tasks.Pack
                 RepositoryType = MSBuildStringUtility.TrimAndGetNullForEmpty(RepositoryType),
                 RepositoryUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(RepositoryUrl),
                 RequireLicenseAcceptance = RequireLicenseAcceptance,
-                ResolveProjectReferenceVersionDuringPack = ResolveProjectReferenceVersionDuringPack,
                 RestoreOutputPath = MSBuildStringUtility.TrimAndGetNullForEmpty(RestoreOutputPath),
                 Serviceable = Serviceable,
                 SourceFiles = MSBuildUtility.WrapMSBuildItem(SourceFiles),

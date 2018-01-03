@@ -16,7 +16,6 @@ namespace NuGet.Build.Tasks.Pack
 {
     public class GetProjectReferencesFromAssetsFileTask : Task
     {
-        [Required]
         public string RestoreOutputAbsolutePath { get; set; }
 
         public string ProjectAssetsFileAbsolutePath { get; set; }
@@ -59,14 +58,22 @@ namespace NuGet.Build.Tasks.Pack
                     assetsFilePath));
             }
 
+            var projectDirectory = Path.GetDirectoryName(assetsFile.PackageSpec.RestoreMetadata.ProjectPath);
             // Using the libraries section of the assets file, the library name and version for the project path.
             var projectPathToLibraryIdentities = assetsFile
                 .Libraries
                 .Where(library => library.MSBuildProject != null)
                 .Select(library => new TaskItem(Path.GetFullPath(Path.Combine(
-                        Path.GetDirectoryName(assetsFile.PackageSpec.RestoreMetadata.ProjectPath),
+                        projectDirectory,
                         PathUtility.GetPathWithDirectorySeparator(library.MSBuildProject)))));
-            ProjectReferences = projectPathToLibraryIdentities.ToArray();
+            if(projectPathToLibraryIdentities != null)
+            {
+                ProjectReferences = projectPathToLibraryIdentities.ToArray();
+            }
+            else
+            {
+                ProjectReferences = new ITaskItem[0];
+            }
             return true;
         }
     }
