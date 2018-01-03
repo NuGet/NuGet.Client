@@ -561,6 +561,15 @@ phases:
       testRunTitle: "NuGet.Client End To End Tests "
     condition: "succeededOrFailed()"
 
+  - task: PowerShell@1
+    displayName: "Kill running instances of DevEnv"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\e2etests\\VSUtils.ps1
+        KillRunningInstancesOfVS
+    condition: "always()"
+
 
 - phase: Apex_Tests_On_Windows
   dependsOn: Build_and_UnitTest
@@ -684,5 +693,14 @@ phases:
       mergeTestResults: "true"
       testRunTitle: "NuGet.Client Apex Tests"
     condition: "succeededOrFailed()"
+
+  - task: PowerShell@1
+    displayName: "Kill running instances of DevEnv"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\e2etests\\VSUtils.ps1
+        KillRunningInstancesOfVS
+    condition: "always()"
     
     
