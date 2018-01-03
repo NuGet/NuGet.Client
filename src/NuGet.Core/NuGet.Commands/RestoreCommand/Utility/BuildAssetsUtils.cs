@@ -79,7 +79,7 @@ namespace NuGet.Commands
             // Create an error file for MSBuild to stop the build.
             targetsXML = GenerateMultiTargetFrameworkWarning();
 
-            if (restoreType == ProjectStyle.PackageReference) // TODO NK - Double check the success case.
+            if (restoreType == ProjectStyle.PackageReference)
             {
                 propsXML = GenerateEmptyImportsFile();
             }

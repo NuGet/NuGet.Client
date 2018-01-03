@@ -134,33 +134,27 @@ namespace NuGet.Test.Utility
                     zip.AddEntry("runtime.json", runtimeJson, Encoding.UTF8);
                 }
 
+                var frameworkAssembliesAndContentFiles = packageContext.UseDefaultRuntimeAssemblies ?
+                             $@"< frameworkAssemblies >
+                                < frameworkAssembly assemblyName = ""System.Runtime"" />
+                            </frameworkAssemblies>
+                           <contentFiles>
+                               <files include=""cs/net45/config/config.xml"" buildAction=""none"" />
+                               <files include=""cs/net45/config/config.xml"" copyToOutput=""true"" flatten=""false"" />
+                                <files include=""cs/net45/images/image.jpg"" buildAction=""embeddedresource"" />
+                           </contentFiles>" :
+                           string.Empty;
+
                 var nuspecXml = packageContext.Nuspec?.ToString() ??
-                    (packageContext.UseDefaultRuntimeAssemblies ?
                     $@"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package>
                         <metadata>
                             <id>{id}</id>
                             <version>{version.ToString()}</version>
                             <title />
-                          <frameworkAssemblies>
-                                <frameworkAssembly assemblyName=""System.Runtime"" />
-                            </frameworkAssemblies>
-                           <contentFiles>
-                               <files include=""cs/net45/config/config.xml"" buildAction=""none"" />
-                               <files include=""cs/net45/config/config.xml"" copyToOutput=""true"" flatten=""false"" />
-                                <files include=""cs/net45/images/image.jpg"" buildAction=""embeddedresource"" />
-                           </contentFiles>
+                            {frameworkAssembliesAndContentFiles}
                         </metadata>
-                        </package>"
-                        :
-                         $@"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <package>
-                        <metadata>
-                            <id>{id}</id>
-                            <version>{version.ToString()}</version>
-                            <title />
-                        </metadata>
-                        </package>");
+                        </package>";
 
                 var xml = XDocument.Parse(nuspecXml);
 
