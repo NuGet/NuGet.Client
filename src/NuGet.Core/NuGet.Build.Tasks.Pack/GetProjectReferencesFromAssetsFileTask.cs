@@ -19,6 +19,8 @@ namespace NuGet.Build.Tasks.Pack
         [Required]
         public string RestoreOutputAbsolutePath { get; set; }
 
+        public string ProjectAssetsFileAbsolutePath { get; set; }
+
         /// <summary>
         /// Output items
         /// </summary>
@@ -27,8 +29,16 @@ namespace NuGet.Build.Tasks.Pack
 
         public override bool Execute()
         {
-            // Load the assets JSON file produced by restore.
-            var assetsFilePath = Path.Combine(RestoreOutputAbsolutePath, LockFileFormat.AssetsFileName);
+            var assetsFilePath = string.Empty;
+            if(!string.IsNullOrEmpty(ProjectAssetsFileAbsolutePath) && File.Exists(ProjectAssetsFileAbsolutePath))
+            {
+                assetsFilePath = ProjectAssetsFileAbsolutePath;
+            }
+            else
+            {
+                assetsFilePath = Path.Combine(RestoreOutputAbsolutePath, LockFileFormat.AssetsFileName);
+            }
+
             if (!File.Exists(assetsFilePath))
             {
                 throw new InvalidOperationException(string.Format(

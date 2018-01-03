@@ -260,8 +260,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
 
+    <ConvertToAbsolutePath Condition="'$(ProjectAssetsFile)' != ''" Paths="$(ProjectAssetsFile)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="ProjectAssetsFileAbsolutePath" />
+    </ConvertToAbsolutePath>
+
     <GetProjectReferencesFromAssetsFileTask
-        RestoreOutputAbsolutePath="$(RestoreOutputAbsolutePath)">
+        RestoreOutputAbsolutePath="$(RestoreOutputAbsolutePath)"
+        ProjectAssetsFileAbsolutePath="$(ProjectAssetsFileAbsolutePath)">
       <Output
         TaskParameter="ProjectReferences"
         ItemName="_ProjectReferencesFromAssetsFile" />
