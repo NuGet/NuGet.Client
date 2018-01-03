@@ -185,7 +185,7 @@ namespace NuGet.Build.Tasks.Pack
 
             var projectRefToVersionMap = new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
 
-            if (request.ProjectReferencesWithVersions.Any())
+            if (request.ProjectReferencesWithVersions !=null && request.ProjectReferencesWithVersions.Any())
             {
                 projectRefToVersionMap = request
                     .ProjectReferencesWithVersions
