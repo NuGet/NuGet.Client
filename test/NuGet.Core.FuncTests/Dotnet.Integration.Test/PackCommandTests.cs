@@ -71,7 +71,7 @@ namespace Dotnet.Integration.Test
 
         [PlatformTheory(Platform.Windows)]
         [InlineData(true)]
-        [InlineData(false)]
+        [InlineData(false)] // TODO NK - update test to create a new project with a specific tfm
         public void PackCommand_PackConsoleAppWithRID_NupkgValid(bool includeSymbols)
         {
             using (var testDirectory = TestDirectory.Create())
@@ -322,7 +322,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows)] // TODO NK - Update test to create a project with a specific tfm
         public void PackCommand_PackProject_AddsProjectRefsAsPackageRefs()
         {
             // Arrange
