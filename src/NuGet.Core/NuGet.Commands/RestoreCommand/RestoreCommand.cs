@@ -502,6 +502,9 @@ namespace NuGet.Commands
                                 await logger.LogAsync(LogLevel.Debug, $"Incompatible packages: {packageCount}");
                             }
                         }
+                    } else
+                    {
+                        await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_SkippingCompatibiilityCheckOnRidlessGraphForDotnetToolReferenceProject, graph.Name));
                     }
                 }
             }

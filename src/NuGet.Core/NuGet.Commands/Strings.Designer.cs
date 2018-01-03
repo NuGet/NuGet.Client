@@ -999,6 +999,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Skipping compatibility checks of the ridless graph for DotnetToolReference project type. This graph is not used. .
+        /// </summary>
+        internal static string Log_SkippingCompatibiilityCheckOnRidlessGraphForDotnetToolReferenceProject {
+            get {
+                return ResourceManager.GetString("Log_SkippingCompatibiilityCheckOnRidlessGraphForDotnetToolReferenceProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Skipping runtime dependency walk, no runtimes defined in project.json..
         /// </summary>
         internal static string Log_SkippingRuntimeWalk {

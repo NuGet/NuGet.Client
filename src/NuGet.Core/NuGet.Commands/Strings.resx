@@ -685,4 +685,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Error_ProjectWithIncorrectDependenciesCount" xml:space="preserve">
     <value>Project {0} must have exactly {1} package reference(s).</value>
   </data>
+  <data name="Log_SkippingCompatibiilityCheckOnRidlessGraphForDotnetToolReferenceProject" xml:space="preserve">
+    <value>Skipping compatibility checks of the ridless graph for DotnetToolReference project type. This graph is not used. </value>
+  </data>
 </root>
