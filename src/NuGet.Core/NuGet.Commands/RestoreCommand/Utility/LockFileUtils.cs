@@ -60,6 +60,8 @@ namespace NuGet.Commands
             // This will throw an appropriate error if the nuspec is missing
             var nuspec = package.Nuspec;
 
+            lockFileLib.PackageType = nuspec.GetPackageTypes().AsList();
+
             for (var i = 0; i < orderedCriteriaSets.Count; i++)
             {
                 // Create a new library each time to avoid 
@@ -90,7 +92,6 @@ namespace NuGet.Commands
 
             // Exclude items
             ExcludeItems(lockFileLib, dependencyType);
-            lockFileLib.PackageType = nuspec.GetPackageTypes().AsList();
 
             return lockFileLib;
         }
@@ -190,14 +191,16 @@ namespace NuGet.Commands
                 targetGraph.Conventions.Patterns.MSBuildMultiTargetingFiles);
 
             lockFileLib.BuildMultiTargeting.AddRange(GetBuildItemsForPackageId(buildMultiTargetingGroup, library.Name));
-            
-            // Tools - TODO NK - Consider only adding the tools group for tools packages only. Normally it'll be empty though - Actually check what it is normally and add round-trip tests
-            var toolsGroup = GetLockFileItems(
-                orderedCriteria,
-                contentItems,
-                targetGraph.Conventions.Patterns.ToolsAssemblies);
 
-            lockFileLib.ToolsAssemblies.AddRange(toolsGroup);
+            // Tools
+            if (lockFileLib.PackageType.Contains(PackageType.DotnetTool)) { 
+                var toolsGroup = GetLockFileItems(
+                    orderedCriteria,
+                    contentItems,
+                    targetGraph.Conventions.Patterns.ToolsAssemblies);
+
+                lockFileLib.ToolsAssemblies.AddRange(toolsGroup);
+            }
 
             // Add content files
             AddContentFiles(targetGraph, lockFileLib, framework, contentItems, nuspec);

@@ -711,9 +711,7 @@ namespace NuGet.Commands
             foreach (var framework in packageSpec.TargetFrameworks)
             {
                 // We care about TFM only and null RID for compilation purposes
-//                if (packageSpec.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetToolReference || runtimeIds.Count == 0) { // TODO NK - Does this make any sense?
-                    projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, null));
-  //              }
+                projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, null));
 
                 foreach (var runtimeId in runtimeIds)
                 {

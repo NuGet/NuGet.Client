@@ -69,22 +69,6 @@ namespace Dotnet.Integration.Test
                 timeOutInMilliseconds: timeOut,
                 environmentVariables: _processEnvVars);
 
-            //// TODO : remove this workaround when https://github.com/dotnet/templating/issues/294 is fixed
-            //if (result.Item1 != 0)
-            //{
-            //    result = CommandRunner.Run(TestDotnetCli,
-            //    workingDirectory,
-            //    $"new {args} --debug:reinit",
-            //    waitForExit: true,
-            //    timeOutInMilliseconds: 300000);
-
-            //    result = CommandRunner.Run(TestDotnetCli,
-            //    workingDirectory,
-            //    $"new {args} ",
-            //    waitForExit: true,
-            //    timeOutInMilliseconds: 300000);
-            //}
-
             Assert.True(result.Item1 == 0, $"Creating project failed with following log information :\n {result.AllOutput}");
             Assert.True(string.IsNullOrWhiteSpace(result.Item3), $"Creating project failed with following message in error stream :\n {result.AllOutput}");
         }
