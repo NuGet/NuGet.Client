@@ -6,9 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Moq;
 using NuGet.Common;
-using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -143,8 +141,8 @@ namespace NuGet.Commands.Test
 
                 await test.Runner.ExecuteCommandAsync(test.Args);
 
-                Assert.Equal(1, test.Logger.ErrorMessages.Count(
-                    message => message == "Certificate chain validation failed with error: UntrustedRoot"));
+                Assert.Equal(1, test.Logger.LogMessages.Count(
+                    message => message.Level == LogLevel.Error && message.Code == NuGetLogCode.NU3018));
             }
         }
 
