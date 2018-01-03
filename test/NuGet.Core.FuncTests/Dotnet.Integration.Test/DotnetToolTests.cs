@@ -204,35 +204,33 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        //[PlatformTheory(Platform.Windows)]
-        //[InlineData("net461")]
-        //[InlineData("netcoreapp2.0")]
-        public void DotnetToolTests_PackageWithRuntimeJson_RuntimeIdentifierAny_Succeeds(string tfm)
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("net461", "any", "win-x64")]
+        [InlineData("netcoreapp2.0", "any", "win-x64")]
+        [InlineData("net461", "any", "win-x86")]
+        [InlineData("netcoreapp2.0", "any", "win-x86")]
+        public void DotnetToolTests_PackageWithRuntimeJson_RuntimeIdentifierAny_Succeeds(string tfm, string packageRID, string projectRID)
         {
             using (var testDirectory = TestDirectory.Create())
             {
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var source = Path.Combine(testDirectory, "packageSource");
-                var rid = "win-x64";
-                var packageName = string.Join("ToolPackage-", tfm, rid);
+                var packageName = string.Join("ToolPackage-", tfm, packageRID);
                 var packageVersion = NuGetVersion.Parse("1.0.0");
                 var packages = new List<PackageIdentity>() { new PackageIdentity(packageName, packageVersion) };
 
                 var package = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
                 package.Files.Clear();
-                package.AddFile($"tools/{tfm}/{rid}/a.dll");
-                package.AddFile($"tools/{tfm}/{rid}/Settings.json");
-
+                package.AddFile($"tools/{tfm}/{packageRID}/a.dll");
+                package.AddFile($"tools/{tfm}/{packageRID}/Settings.json");
                 package.RuntimeJson = GetResource("Dotnet.Integration.Test.compiler.resources.runtime.json", GetType());
-
-
                 package.PackageType = PackageType.DotnetTool;
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 SimpleTestPackageUtility.CreatePackages(source, package);
 
                 _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
-                    projectName: projectName, targetFramework: tfm, rid: rid,
+                    projectName: projectName, targetFramework: tfm, rid: projectRID,
                     source: source, packages: packages);
 
                 // Act
@@ -244,12 +242,51 @@ namespace Dotnet.Integration.Test
                 var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);
                 Assert.Equal(2, lockFile.Targets.Count);
-                var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(rid, StringComparison.CurrentCultureIgnoreCase) : false);
+                var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(projectRID, StringComparison.CurrentCultureIgnoreCase) : false);
                 Assert.Equal(1, ridTargets.Count());
                 var toolsAssemblies = ridTargets.First().Libraries.First().ToolsAssemblies;
                 Assert.Equal(2, toolsAssemblies.Count);
-                Assert.True(toolsAssemblies.Contains($"tools/{tfm}/{rid}/a.dll"));
-                Assert.True(toolsAssemblies.Contains($"tools/{tfm}/{rid}/Settings.json"));
+                Assert.True(toolsAssemblies.Contains($"tools/{tfm}/{packageRID}/a.dll"));
+                Assert.True(toolsAssemblies.Contains($"tools/{tfm}/{packageRID}/Settings.json"));
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("net461", "any", "win-x64")]
+        [InlineData("netcoreapp2.0", "any", "win-x64")]
+        [InlineData("net461", "any", "win-x86")]
+        [InlineData("netcoreapp2.0", "any", "win-x86")]
+        public void DotnetToolTests_PackageWithoutRuntimeJson_RuntimeIdentifierAny_Fails(string tfm, string packageRID, string projectRID)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ToolRestoreProject";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var source = Path.Combine(testDirectory, "packageSource");
+                var packageName = string.Join("ToolPackage-", tfm, packageRID);
+                var packageVersion = NuGetVersion.Parse("1.0.0");
+                var packages = new List<PackageIdentity>() { new PackageIdentity(packageName, packageVersion) };
+
+                var package = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
+                package.Files.Clear();
+                package.AddFile($"tools/{tfm}/{packageRID}/a.dll");
+                package.AddFile($"tools/{tfm}/{packageRID}/Settings.json");
+
+
+                package.PackageType = PackageType.DotnetTool;
+                package.PackageTypes.Add(PackageType.DotnetTool);
+                SimpleTestPackageUtility.CreatePackages(source, package);
+
+                _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
+                    projectName: projectName, targetFramework: tfm, rid: projectRID,
+                    source: source, packages: packages);
+
+                // Act
+                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+
+                // Assert
+                Assert.True(result.Item1 == 1, result.AllOutput);
+                Assert.Contains("NU1202", result.AllOutput);
             }
         }
 
