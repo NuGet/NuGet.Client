@@ -252,6 +252,52 @@ namespace NuGet.Packaging.Test
                 .BeTrue();
         }
 
+        [Fact]
+        public void GetESSCertIDv2Entries_RejectsNull()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => AttributeUtility.GetESSCertIDv2Entries(attribute: null));
+        }
+
+        [Fact]
+        public void GetESSCertIDv2Entries_RejectsUnexpectedOid()
+        {
+            var attribute = new CryptographicAttributeObject(new Oid(Oids.TimeStampingEkuOid));
+
+            var ex = Assert.Throws<ArgumentException>(
+                () => AttributeUtility.GetESSCertIDv2Entries(attribute));
+
+            Assert.Contains(
+                "An attribute with \"signing-certificate-v2\" OID (1.2.840.113549.1.9.16.2.47) is required.",
+                ex.Message);
+        }
+
+        [Theory]
+        [InlineData(Common.HashAlgorithmName.SHA256)]
+        [InlineData(Common.HashAlgorithmName.SHA384)]
+        [InlineData(Common.HashAlgorithmName.SHA512)]
+        public void GetESSCertIDv2Entries_ReturnsDecodedHashes(Common.HashAlgorithmName hashAlgorithm)
+        {
+            // Arrange
+            var cert = TestCertificate.Generate().PublicCert;
+            var cert2 = TestCertificate.Generate().PublicCert;
+            var attribute = AttributeUtility.GetSigningCertificateV2(
+                new[] { cert, cert2 },
+                hashAlgorithm);
+            var certHash = CryptoHashUtility.ComputeHash(hashAlgorithm, cert.RawData);
+            var cert2Hash = CryptoHashUtility.ComputeHash(hashAlgorithm, cert2.RawData);
+
+            // Act
+            var actual = AttributeUtility.GetESSCertIDv2Entries(attribute);
+
+            // Assert
+            actual.ShouldBeEquivalentTo(new[]
+            {
+                new KeyValuePair<Common.HashAlgorithmName, byte[]>(hashAlgorithm, certHash),
+                new KeyValuePair<Common.HashAlgorithmName, byte[]>(hashAlgorithm, cert2Hash),
+            });
+        }
+
         /// <summary>
         /// Allows encoding bad data that the production helper does not.
         /// </summary>

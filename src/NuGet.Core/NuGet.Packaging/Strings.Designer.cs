@@ -701,6 +701,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An attribute with &quot;signing-certificate-v2&quot; OID ({0}) is required..
+        /// </summary>
+        internal static string SigningCertificateV2AttributeRequired {
+            get {
+                return ResourceManager.GetString("SigningCertificateV2AttributeRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to String argument &apos;{0}&apos; cannot be null or empty.
         /// </summary>
         internal static string StringCannotBeNullOrEmpty {
