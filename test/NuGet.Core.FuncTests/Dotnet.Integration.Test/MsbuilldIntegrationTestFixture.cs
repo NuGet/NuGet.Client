@@ -187,8 +187,27 @@ namespace Dotnet.Integration.Test
 
         public void Dispose()
         {
-
+            KillDotnetExe(TestDotnetCli);
             DeleteDirectory(Path.GetDirectoryName(TestDotnetCli));
+        }
+
+        private static void KillDotnetExe(string pathToDotnetExe)
+        {
+            var processes = Process.GetProcessesByName("dotnet");
+            if(processes != null && processes.Length >=1)
+            {
+                try
+                {
+                    foreach(var process in processes)
+                    {
+                        if(string.Compare(process.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), true) == 0)
+                        {
+                            process.Kill();
+                        }
+                    }
+                }
+                catch { }
+            }
         }
 
         /// <summary>
