@@ -250,7 +250,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
   
-  <Target Name="_GetProjectReferenceVersions">    
+  <Target Name="_GetProjectReferenceVersions" DependsOnTargets="_CalculateInputsOutputsForPacks">
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
@@ -271,6 +271,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Projects="@(_ProjectReferencesFromAssetsFile)"
       Targets="_GetProjectVersion"
       SkipNonexistentTargets="true"
+      SkipNonexistentProjects="true"
       Properties="BuildProjectReferences=false;">
       <Output
         TaskParameter="TargetOutputs"
@@ -278,7 +279,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Msbuild>
   </Target>
 
-  <Target Name="_GetProjectVersion"
+  <Target Name="_GetProjectVersion" DependsOnTarget="$(GetPackageVersionDependsOn)"
           Returns="@(_ProjectPathWithVersion)">
     <ItemGroup>
       <_ProjectPathWithVersion Include="$(MSBuildProjectFullPath)">
