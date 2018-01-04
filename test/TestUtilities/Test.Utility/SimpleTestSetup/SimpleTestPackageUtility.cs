@@ -135,13 +135,13 @@ namespace NuGet.Test.Utility
                 }
 
                 var frameworkAssembliesAndContentFiles = packageContext.UseDefaultRuntimeAssemblies ?
-                             $@"< frameworkAssemblies >
-                                < frameworkAssembly assemblyName = ""System.Runtime"" />
+                          $@"<frameworkAssemblies>
+                                <frameworkAssembly assemblyName=""System.Runtime""/>
                             </frameworkAssemblies>
                            <contentFiles>
                                <files include=""cs/net45/config/config.xml"" buildAction=""none"" />
                                <files include=""cs/net45/config/config.xml"" copyToOutput=""true"" flatten=""false"" />
-                                <files include=""cs/net45/images/image.jpg"" buildAction=""embeddedresource"" />
+                               <files include=""cs/net45/images/image.jpg"" buildAction=""embeddedresource"" />
                            </contentFiles>" :
                            string.Empty;
 
