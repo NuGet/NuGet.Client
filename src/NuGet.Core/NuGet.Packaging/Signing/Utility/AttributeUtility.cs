@@ -154,7 +154,7 @@ namespace NuGet.Packaging.Signing
         {
             return IsValidSigningCertificateV2(
                 signatureCertificate: signatureCertificate,
-                chain: SigningUtility.CertificateChainToList(chain),
+                chain: CertificateChainUtility.CertificateChainToList(chain),
                 signingCertV2Attribute: signingCertV2Attribute,
                 signingSpecifications: signingSpecifications);
         }

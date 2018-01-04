@@ -60,7 +60,7 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
             }
 
-            request.BuildCertificateChainOnce();
+            request.BuildSigningCertificateChainOnce();
         }
 
 #if IS_DESKTOP

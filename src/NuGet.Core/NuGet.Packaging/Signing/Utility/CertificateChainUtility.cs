@@ -37,8 +37,7 @@ namespace NuGet.Packaging.Signing
                     chain.ChainPolicy,
                     extraStore,
                     DateTime.Now,
-                    certificateType,
-                    NuGetChainBuildingRequestType.Signing);
+                    certificateType);
 
                 if (BuildCertificateChain(chain, certificate, out var chainStatuses))
                 {
@@ -78,8 +77,7 @@ namespace NuGet.Packaging.Signing
             X509ChainPolicy policy,
             X509Certificate2Collection additionalCertificates,
             DateTime verificationTime,
-            NuGetVerificationCertificateType certificateType,
-            NuGetChainBuildingRequestType chainBuildingRequestType)
+            NuGetVerificationCertificateType certificateType)
         {
             if (certificateType == NuGetVerificationCertificateType.Signature)
             {

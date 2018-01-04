@@ -110,7 +110,7 @@ namespace NuGet.Packaging.Signing
                 signer = new CmsSigner(SubjectIdentifierType.SubjectKeyIdentifier, request.Certificate);
             }
 
-            request.BuildCertificateChainOnce();
+            request.BuildSigningCertificateChainOnce();
 
             var chain = request.Chain;
 

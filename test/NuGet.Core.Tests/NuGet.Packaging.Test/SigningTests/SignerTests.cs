@@ -162,7 +162,7 @@ namespace NuGet.Packaging.Test
                         CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3018, exception.AsLogMessage().Code);
-                Assert.Equal("Certificate chain validation failed with error: UntrustedRoot", exception.Message);
+                Assert.Equal("Certificate chain validation failed with error(s): A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.", exception.Message);
             }
         }
 
