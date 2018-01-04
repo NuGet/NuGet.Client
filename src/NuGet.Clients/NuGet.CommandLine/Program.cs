@@ -310,21 +310,18 @@ namespace NuGet.CommandLine
 
         private static void SetConsoleInteractivity(IConsole console, Command command)
         {
+            // Apply command setting
+            console.IsNonInteractive = command.NonInteractive;
+
             // Global environment variable to prevent the exe for prompting for credentials
-            string globalSwitch = Environment.GetEnvironmentVariable("NUGET_EXE_NO_PROMPT");
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_EXE_NO_PROMPT")))
+            {
+                console.IsNonInteractive = true;
+            }
 
-            // When running from inside VS, no input is available to our executable locking up VS.
-            // VS sets up a couple of environment variables one of which is named VisualStudioVersion.
-            // Every time this is setup, we will just fail.
-            // TODO: Remove this in next iteration. This is meant for short-term backwards compat.
-            string vsSwitch = Environment.GetEnvironmentVariable("VisualStudioVersion");
-
-            console.IsNonInteractive = !String.IsNullOrEmpty(globalSwitch) ||
-                                       !String.IsNullOrEmpty(vsSwitch) ||
-                                       (command != null && command.NonInteractive);
-
-            string forceInteractive = Environment.GetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE");
-            if (!String.IsNullOrEmpty(forceInteractive))
+            // Disable non-interactive if force is set.
+            var forceInteractive = Environment.GetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE");
+            if (!string.IsNullOrEmpty(forceInteractive))
             {
                 console.IsNonInteractive = false;
             }
