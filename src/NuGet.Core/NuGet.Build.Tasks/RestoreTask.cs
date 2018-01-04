@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
@@ -67,6 +68,12 @@ namespace NuGet.Build.Tasks
         /// The Warnings and Errors are written into the assets file and will be read by an sdk target.
         /// </summary>
         public bool HideWarningsAndErrors { get; set; }
+
+        /// <summary>
+        /// Semicolon delimited list of projects that have had updates in their targets/props. This is used to avoid throwaway msbuild evaluation during build /restore calls
+        /// </summary>
+        [Output]
+        public string OutputRestoreChangedImportsProjectList { get; set; }
 
         public override bool Execute()
         {
@@ -167,6 +174,10 @@ namespace NuGet.Build.Tasks
 
                 // Summary
                 RestoreSummary.Log(log, restoreSummaries);
+                // Success does not matter here, as long as the files are not changed
+                OutputRestoreChangedImportsProjectList = string.Join(";", restoreSummaries.Where(e => e.BuildFilesChanged).Select(e => e.InputPath));
+                 
+                BuildTasksUtility.LogOutputParam(log, nameof(OutputRestoreChangedImportsProjectList), OutputRestoreChangedImportsProjectList);
 
                 return restoreSummaries.All(x => x.Success);
             }

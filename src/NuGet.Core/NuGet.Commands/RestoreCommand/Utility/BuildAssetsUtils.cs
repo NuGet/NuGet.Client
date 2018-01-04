@@ -42,7 +42,7 @@ namespace NuGet.Commands
         /// Write XML to disk.
         /// Delete files which do not have new XML.
         /// </summary>
-        public static void WriteFiles(IEnumerable<MSBuildOutputFile> files, ILogger log)
+        public static void WriteFiles(List<MSBuildOutputFile> files, ILogger log)
         {
             foreach (var file in files)
             {
