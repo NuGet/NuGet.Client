@@ -388,6 +388,68 @@ namespace NuGet.Build.Tasks.Test
             }
         }
 
+        [Fact]
+        public void TestConfigFileProbingDirectory()
+        {
+            // Arrange
+            var parentConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            <configuration>
+                <fallbackPackageFolders>
+                    <add key=""a"" value=""C:\Temp\a"" />
+                </fallbackPackageFolders>
+            </configuration>";
+
+            var unreachableConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            <configuration>
+                <fallbackPackageFolders>
+                    <add key=""b"" value=""C:\Temp\b"" />
+                </fallbackPackageFolders>
+            </configuration>";
+
+            var baseConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            <configuration>
+                <packageSources>
+                    <add key=""c"" value=""C:\Temp\c"" />
+                </packageSources>
+            </configuration>";
+
+            var configName = "NuGet.Config";
+
+            using (var machineWide = TestDirectory.CreateInTemp())
+            using (var mockParentDirectory = TestDirectory.CreateInTemp())
+            {
+                // Parent
+                //       Base
+                //            Probe Path
+                //       Unreachable
+                var basePath = Path.Combine(mockParentDirectory, "base");
+                var unreachablePath = Path.Combine(mockParentDirectory, "unreachable");
+                var probePath = Path.Combine(basePath, "probe");
+                Directory.CreateDirectory(basePath);
+                Directory.CreateDirectory(unreachablePath);
+                Directory.CreateDirectory(probePath);
+
+                ConfigurationFileTestUtility.CreateConfigurationFile(configName, mockParentDirectory, parentConfig);
+                ConfigurationFileTestUtility.CreateConfigurationFile(configName, basePath, baseConfig);
+                ConfigurationFileTestUtility.CreateConfigurationFile(configName, unreachablePath, unreachableConfig);
+
+                ConfigurationFileTestUtility.CreateConfigurationFile(configName, machineWide, machineWideSettingsConfig);
+
+                var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide, configName, true)));
+
+                // Test
+
+                var settings = RestoreSettingsUtils.ReadSettings(null, probePath, null, machineWideSettings);
+                var filePaths = SettingsUtility.GetConfigFilePaths(settings);
+
+                Assert.Equal(4, filePaths.Count()); // base, parent, app data + machine wide
+                Assert.Contains(Path.Combine(basePath, configName), filePaths);
+                Assert.Contains(Path.Combine(mockParentDirectory, configName), filePaths);
+                Assert.DoesNotContain(Path.Combine(unreachablePath, configName), filePaths);
+            }
+        }
+
+
         private static string machineWideSettingsConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <configuration>
                 </configuration>";

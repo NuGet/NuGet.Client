@@ -468,6 +468,7 @@ Copyright (c) .NET Foundation. All rights reserved.
      RestorePackagesPath="$(RestorePackagesPath)"
      RestoreFallbackFolders="$(RestoreFallbackFolders)"
      RestoreConfigFile="$(RestoreConfigFile)"
+     RestoreRootConfigDirectory="$(RestoreRootConfigDirectory)"
      RestoreSolutionDirectory="$(RestoreSolutionDirectory)"
      RestoreSettingsPerFramework="@(_RestoreSettingsPerFramework)"
      RestorePackagesPathOverride="$(_RestorePackagesPathOverride)"
