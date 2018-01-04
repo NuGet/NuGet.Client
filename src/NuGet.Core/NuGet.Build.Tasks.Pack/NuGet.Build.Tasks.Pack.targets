@@ -250,7 +250,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
   
-  <Target Name="_GetProjectReferenceVersions" DependsOnTargets="_CalculateInputsOutputsForPacks">
+  <Target Name="_GetProjectReferenceVersions" DependsOnTargets="_CalculateInputsOutputsForPacks;$(GetPackageVersionDependsOn)">
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
