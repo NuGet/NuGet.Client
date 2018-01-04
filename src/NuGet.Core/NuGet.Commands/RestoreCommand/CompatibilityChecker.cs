@@ -282,6 +282,7 @@ namespace NuGet.Commands
                     }
                 }
             }
+
             if(compatibilityData.TargetLibrary.PackageType.Any(e => e.Equals(PackageType.DotnetTool))) { // Test the error message with an incompatible package
                 foreach(var group in contentItems.FindItemGroups(graph.Conventions.Patterns.ToolsAssemblies))
                 {
@@ -353,13 +354,16 @@ namespace NuGet.Commands
         {
             if (ProjectStyle.DotnetToolReference == compatibilityData.PackageSpec.RestoreMetadata?.ProjectStyle)
             {
-                if(compatibilityData.TargetLibrary.PackageType.Count != 1)
+                if (compatibilityData.PackageSpec.GetAllPackageDependencies().Any(e => e.Name.Equals(compatibilityData.TargetLibrary.Name)))
                 {
-                    return false;
-                }
-                if (!compatibilityData.TargetLibrary.PackageType.First().Equals(PackageType.DotnetTool))
-                {
-                    return false;
+                    if (compatibilityData.TargetLibrary.PackageType.Count != 1)
+                    {
+                        return false;
+                    }
+                    if (!compatibilityData.TargetLibrary.PackageType.First().Equals(PackageType.DotnetTool))
+                    {
+                        return false;
+                    }
                 }
             }
             else
