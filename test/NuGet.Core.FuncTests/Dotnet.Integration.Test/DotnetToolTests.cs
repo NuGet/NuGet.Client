@@ -339,6 +339,61 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("netcoreapp1.0", "any", "win7-x64")]
+        public void DotnetToolTests_ToolWithPlatformPackage_Succeeds(string tfm, string packageRid, string projectRid)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ToolRestoreProject";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var localSource = Path.Combine(testDirectory, "packageSource");
+                var packageName = string.Join("ToolPackage-", tfm, packageRid);
+                var platformsPackageName = "PlatformsPackage";
+                var packageVersion = NuGetVersion.Parse("1.0.0");
+
+                var platformsPackage = new SimpleTestPackageContext(platformsPackageName, packageVersion.OriginalVersion);
+                platformsPackage.Files.Clear();
+                platformsPackage.AddFile($"lib/{tfm}/a.dll");
+                platformsPackage.PackageType = PackageType.Dependency;
+                platformsPackage.UseDefaultRuntimeAssemblies = true;
+                platformsPackage.PackageTypes.Add(PackageType.Dependency);
+                platformsPackage.RuntimeJson = GetResource("Dotnet.Integration.Test.compiler.resources.runtime.json", GetType());
+
+                var toolPackage = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
+                toolPackage.Files.Clear();
+                toolPackage.AddFile($"tools/{tfm}/{packageRid}/a.dll");
+                toolPackage.AddFile($"tools/{tfm}/{packageRid}/Settings.json");
+                toolPackage.PackageType = PackageType.DotnetTool;
+                toolPackage.UseDefaultRuntimeAssemblies = false;
+                toolPackage.PackageTypes.Add(PackageType.DotnetTool);
+                toolPackage.Dependencies.Add(platformsPackage);
+
+                SimpleTestPackageUtility.CreatePackages(localSource, toolPackage, platformsPackage);
+
+                var packages = new List<PackageIdentity>() {
+                    new PackageIdentity(packageName, packageVersion),
+                };
+                _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
+                    projectName: projectName, targetFramework: tfm, rid: projectRid,
+                    source: localSource, packages: packages);
+
+                // Act
+                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+
+                // Assert
+                Assert.True(result.Item1 == 0, result.AllOutput);
+                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
+                Assert.NotNull(lockFile);
+                Assert.Equal(2, lockFile.Targets.Count);
+                var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(projectRid, StringComparison.CurrentCultureIgnoreCase) : false);
+                Assert.Equal(1, ridTargets.Count());
+                var toolsAssemblies = ridTargets.First().Libraries.First().ToolsAssemblies;
+                Assert.Equal(2, toolsAssemblies.Count);
+                Assert.Contains($"tools/{tfm}/{packageRid}", toolsAssemblies.First().Path);
+            }
+        }
+
         public static string GetResource(string name, Type type)
         {
             using (var reader = new StreamReader(type.GetTypeInfo().Assembly.GetManifestResourceStream(name)))
