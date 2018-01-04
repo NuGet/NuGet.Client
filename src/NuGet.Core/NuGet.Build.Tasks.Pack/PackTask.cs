@@ -91,7 +91,7 @@ namespace NuGet.Build.Tasks.Pack
             {
 #if DEBUG
                 var debugPackTask = Environment.GetEnvironmentVariable("DEBUG_PACK_TASK");
-                if(!string.IsNullOrEmpty(debugPackTask) && debugPackTask.Equals("true", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(debugPackTask) && debugPackTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {
 #if IS_CORECLR
                     Console.WriteLine("Waiting for debugger to attach.");
@@ -130,7 +130,7 @@ namespace NuGet.Build.Tasks.Pack
                 ExceptionUtilities.LogException(ex, Logger);
                 return false;
             }
-            
+
         }
 
         /// <summary>

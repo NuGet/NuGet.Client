@@ -14,6 +14,11 @@ using NuGet.ProjectModel;
 
 namespace NuGet.Build.Tasks.Pack
 {
+    /// <summary>
+    /// Gets a list of project references from the assets file
+    /// This list is then later traversed to determine the version
+    /// of the project reference during pack.
+    /// </summary>
     public class GetProjectReferencesFromAssetsFileTask : Task
     {
         public string RestoreOutputAbsolutePath { get; set; }

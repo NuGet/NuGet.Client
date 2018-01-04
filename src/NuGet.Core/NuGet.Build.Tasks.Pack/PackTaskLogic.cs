@@ -185,7 +185,7 @@ namespace NuGet.Build.Tasks.Pack
 
             var projectRefToVersionMap = new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
 
-            if (request.ProjectReferencesWithVersions !=null && request.ProjectReferencesWithVersions.Any())
+            if (request.ProjectReferencesWithVersions != null && request.ProjectReferencesWithVersions.Any())
             {
                 projectRefToVersionMap = request
                     .ProjectReferencesWithVersions
@@ -205,7 +205,7 @@ namespace NuGet.Build.Tasks.Pack
             // First add all the assembly references which are not specific to a certain TFM.
             var tfmSpecificRefs = new Dictionary<string, IList<string>>(StringComparer.OrdinalIgnoreCase);
             // Then add the TFM specific framework assembly references, and ignore any which have already been added above.
-            foreach(var tfmRef in request.FrameworkAssemblyReferences)
+            foreach (var tfmRef in request.FrameworkAssemblyReferences)
             {
                 var targetFramework = tfmRef.GetProperty("TargetFramework");
 
@@ -216,7 +216,7 @@ namespace NuGet.Build.Tasks.Pack
                 else
                 {
                     tfmSpecificRefs.Add(tfmRef.Identity, new List<string>() { targetFramework });
-                }                
+                }
             }
 
             builder.FrameworkReferences.AddRange(
@@ -585,7 +585,7 @@ namespace NuGet.Build.Tasks.Pack
         }
 
         private void PopulateProjectAndPackageReferences(PackageBuilder packageBuilder, LockFile assetsFile,
-            IDictionary<string,string> projectRefToVersionMap)
+            IDictionary<string, string> projectRefToVersionMap)
         {
             var dependenciesByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
 
@@ -659,7 +659,7 @@ namespace NuGet.Build.Tasks.Pack
                     var versionToUse = targetLibrary.Version;
 
                     // Use the project reference version obtained at build time if it exists, otherwise fallback to the one in assets file. 
-                    if(projectRefToVersionMap.TryGetValue(projectReference.ProjectPath, out var projectRefVersion))
+                    if (projectRefToVersionMap.TryGetValue(projectReference.ProjectPath, out var projectRefVersion))
                     {
                         versionToUse = NuGetVersion.Parse(projectRefVersion);
                     }
