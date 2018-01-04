@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -47,18 +46,15 @@ namespace NuGet.Packaging.Signing
 
             token.ThrowIfCancellationRequested();
 
-            VerifyCertificate(request.Certificate);
-
             if (await _package.IsZip64Async(token))
             {
                 throw new SignatureException(NuGetLogCode.NU3006, Strings.ErrorZip64NotSupported);
             }
 
+            SigningUtility.Verify(request);
+
             var zipArchiveHash = await _package.GetArchiveHashAsync(request.SignatureHashAlgorithm, token);
-
             var signatureContent = GenerateSignatureContent(request.SignatureHashAlgorithm, zipArchiveHash);
-
-            // Create signature
             var signature = await _signatureProvider.CreateSignatureAsync(request, signatureContent, logger, token);
 
             using (var stream = new MemoryStream(signature.GetBytes()))
@@ -83,19 +79,6 @@ namespace NuGet.Packaging.Signing
             var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
 
             return new SignatureContent(_specifications, hashAlgorithmName, base64ZipArchiveHash);
-        }
-
-        private void VerifyCertificate(X509Certificate2 certificate)
-        {
-            if (!SigningUtility.IsSignatureAlgorithmSupported(certificate))
-            {
-                throw new SignatureException(NuGetLogCode.NU3013, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm);
-            }
-
-            if (!SigningUtility.IsCertificatePublicKeyValid(certificate))
-            {
-                throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
-            }
         }
 
 #else

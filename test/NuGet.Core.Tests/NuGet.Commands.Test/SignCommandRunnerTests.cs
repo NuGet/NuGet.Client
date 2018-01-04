@@ -3,9 +3,9 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Moq;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
@@ -119,6 +119,33 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Fact]
+        public async Task ExecuteCommandAsync_WithMultiplePackagesAndInvalidCertificate_RaisesErrorsOnce()
+        {
+            const string password = "password";
+
+            using (var test = Test.Create(_fixture.GetCertificateWithPassword(password)))
+            {
+                var certificateFilePath = Path.Combine(test.Directory.Path, "certificate.pfx");
+
+                File.WriteAllBytes(certificateFilePath, test.Certificate.Export(X509ContentType.Pkcs12, password));
+
+                test.Args.CertificatePath = certificateFilePath;
+                test.Args.CertificatePassword = password;
+
+                Test.CreatePackage(test.Directory, "package2.nupkg");
+
+                var packagesFilePath = Path.Combine(test.Directory, "*.nupkg");
+
+                test.Args.PackagePath = packagesFilePath;
+
+                await test.Runner.ExecuteCommandAsync(test.Args);
+
+                Assert.Equal(1, test.Logger.LogMessages.Count(
+                    message => message.Level == LogLevel.Error && message.Code == NuGetLogCode.NU3018));
+            }
+        }
+
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
@@ -133,14 +160,16 @@ namespace NuGet.Commands.Test
             internal SignArgs Args { get; }
             internal X509Certificate2 Certificate { get; }
             internal TestDirectory Directory { get; }
+            internal TestLogger Logger { get; }
             internal SignCommandRunner Runner { get; }
 
-            internal Test(SignArgs args, TestDirectory directory, X509Certificate2 certificate)
+            internal Test(SignArgs args, TestDirectory directory, X509Certificate2 certificate, TestLogger logger)
             {
                 Args = args;
                 Directory = directory;
                 Certificate = certificate;
                 Runner = new SignCommandRunner();
+                Logger = logger;
             }
 
             public void Dispose()
@@ -158,7 +187,22 @@ namespace NuGet.Commands.Test
             internal static Test Create(X509Certificate2 certificate)
             {
                 var directory = TestDirectory.Create();
-                var packageFilePath = Path.Combine(directory.Path, "package.nupkg");
+                var packageFilePath = CreatePackage(directory, "package.nupkg");
+                var logger = new TestLogger();
+
+                var args = new SignArgs()
+                {
+                    Logger = logger,
+                    NonInteractive = true,
+                    PackagePath = packageFilePath
+                };
+
+                return new Test(args, directory, certificate, logger);
+            }
+
+            internal static string CreatePackage(TestDirectory directory, string packageFileName)
+            {
+                var packageFilePath = Path.Combine(directory.Path, packageFileName);
 
                 using (var readStream = new SimpleTestPackageContext().CreateAsStream())
                 using (var writeStream = File.OpenWrite(packageFilePath))
@@ -166,14 +210,7 @@ namespace NuGet.Commands.Test
                     readStream.CopyTo(writeStream);
                 }
 
-                var args = new SignArgs()
-                {
-                    Logger = Mock.Of<ILogger>(),
-                    NonInteractive = true,
-                    PackagePath = packageFilePath
-                };
-
-                return new Test(args, directory, certificate);
+                return packageFilePath;
             }
         }
     }

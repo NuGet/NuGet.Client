@@ -108,7 +108,9 @@ namespace NuGet.Packaging.Signing
                 signer = new CmsSigner(SubjectIdentifierType.SubjectKeyIdentifier, request.Certificate);
             }
 
-            var chain = SigningUtility.GetCertificateChain(request.Certificate, request.AdditionalCertificates);
+            request.BuildCertificateChainOnce();
+
+            var chain = request.Chain;
 
             foreach (var certificate in chain)
             {

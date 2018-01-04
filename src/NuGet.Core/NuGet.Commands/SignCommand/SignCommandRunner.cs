@@ -66,29 +66,42 @@ namespace NuGet.Commands
         {
             var success = true;
 
-            var signatureProvider = GetSignatureProvider(timestamper);
-
-            foreach (var packagePath in packagesToSign)
+            try
             {
-                try
-                {
-                    string outputPath;
+                SigningUtility.Verify(signPackageRequest);
+            }
+            catch (Exception e)
+            {
+                success = false;
+                ExceptionUtilities.LogException(e, logger);
+            }
 
-                    if (string.IsNullOrEmpty(outputDirectory))
-                    {
-                        outputPath = packagePath;
-                    }
-                    else
-                    {
-                        outputPath = Path.Combine(outputDirectory, Path.GetFileName(packagePath));
-                    }
+            if (success)
+            {
+                var signatureProvider = GetSignatureProvider(timestamper);
 
-                    await SignPackageAsync(packagePath, outputPath, logger, overwrite, signatureProvider, signPackageRequest, token);
-                }
-                catch (Exception e)
+                foreach (var packagePath in packagesToSign)
                 {
-                    success = false;
-                    ExceptionUtilities.LogException(e, logger);
+                    try
+                    {
+                        string outputPath;
+
+                        if (string.IsNullOrEmpty(outputDirectory))
+                        {
+                            outputPath = packagePath;
+                        }
+                        else
+                        {
+                            outputPath = Path.Combine(outputDirectory, Path.GetFileName(packagePath));
+                        }
+
+                        await SignPackageAsync(packagePath, outputPath, logger, overwrite, signatureProvider, signPackageRequest, token);
+                    }
+                    catch (Exception e)
+                    {
+                        success = false;
+                        ExceptionUtilities.LogException(e, logger);
+                    }
                 }
             }
 
@@ -192,12 +205,7 @@ namespace NuGet.Commands
 
         private SignPackageRequest GenerateSignPackageRequest(SignArgs signArgs, X509Certificate2 certificate)
         {
-            return new SignPackageRequest
-            {
-                Certificate = certificate,
-                SignatureHashAlgorithm = signArgs.SignatureHashAlgorithm,
-                TimestampHashAlgorithm = signArgs.TimestampHashAlgorithm
-            };
+            return new SignPackageRequest(certificate, signArgs.SignatureHashAlgorithm, signArgs.TimestampHashAlgorithm);
         }
 
         private static async Task<X509Certificate2> GetCertificateAsync(SignArgs signArgs)
