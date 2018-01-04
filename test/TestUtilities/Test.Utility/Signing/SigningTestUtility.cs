@@ -67,8 +67,8 @@ namespace Test.Utility.Signing
                 critical: true,
                 extensionValue: new ExtendedKeyUsage(usages));
 
-            gen.SetNotBefore(DateTime.Now.AddHours(-1));
-            gen.SetNotAfter(DateTime.Now.AddMinutes(-1));
+            gen.SetNotBefore(DateTime.UtcNow.AddHours(-1));
+            gen.SetNotAfter(DateTime.UtcNow.AddMinutes(-1));
         };
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Test.Utility.Signing
                 critical: true,
                 extensionValue: new ExtendedKeyUsage(usages));
 
-            var notBefore = DateTime.Now.AddDays(1);
+            var notBefore = DateTime.UtcNow.AddDays(1);
             var notAfter = notBefore.AddHours(1);
 
             gen.SetNotBefore(notBefore);
@@ -174,7 +174,6 @@ namespace Test.Utility.Signing
 
             return cms;
         }
-
 #endif
 
         /// <summary>

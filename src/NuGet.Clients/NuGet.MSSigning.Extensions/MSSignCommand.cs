@@ -58,7 +58,6 @@ namespace NuGet.MSSigning.Extensions
         [Option(typeof(NuGetMSSignCommand), "MSSignCommandOverwriteDescription")]
         public bool Overwrite { get; set; }
 
-
         public override async Task ExecuteCommandAsync()
         {
             var signRequest = GetSignRequest();
@@ -82,20 +81,18 @@ namespace NuGet.MSSigning.Extensions
             EnsureOutputDirectory();
 
             var signingSpec = SigningSpecifications.V1;
-            var hashAlgorithm = ValidateAndParseHashAlgorithm(HashAlgorithm, nameof(HashAlgorithm), signingSpec);
+            var signatureHashAlgorithm = ValidateAndParseHashAlgorithm(HashAlgorithm, nameof(HashAlgorithm), signingSpec);
             var timestampHashAlgorithm = ValidateAndParseHashAlgorithm(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm), signingSpec);
             var certCollection = GetCertificateCollection();
-            var cert = GetCertificate(certCollection);
-            var privateKey = GetPrivateKey(cert);
+            var certificate = GetCertificate(certCollection);
+            var privateKey = GetPrivateKey(certificate);
 
-            var request = new SignPackageRequest()
-            {
-                SignatureHashAlgorithm = hashAlgorithm,
-                TimestampHashAlgorithm = timestampHashAlgorithm,
-                Certificate = cert,
-                PrivateKey = privateKey
-            };
+            var request = new SignPackageRequest(
+                certificate,
+                signatureHashAlgorithm,
+                timestampHashAlgorithm);
 
+            request.PrivateKey = privateKey;
             request.AdditionalCertificates.AddRange(certCollection);
 
             return request;

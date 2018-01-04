@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Test.Utility;
@@ -20,7 +19,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     public class VerifyCommandTests
     {
         private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3027.ToString();
-        private readonly string _primarySignatureInvalidErrorCode = NuGetLogCode.NU3012.ToString();
+        private readonly string _primarySignatureInvalidErrorCode = NuGetLogCode.NU3018.ToString();
         private readonly string _signingDefaultErrorCode = NuGetLogCode.NU3000.ToString();
 
         private SignCommandTestFixture _testFixture;
@@ -93,7 +92,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     zipStream.CopyTo(fileStream);
                 }
 
-
                 var signResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
@@ -158,32 +156,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Assert
                 verifyResult.Success.Should().BeTrue();
                 verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
-            }
-        }
-
-        [CIOnlyFact]
-        public async Task VerifyCommand_VerifyPackageWithExpiredCertificateFails()
-        {
-            // Arrange
-            var testLogger = new TestLogger();
-            var nupkg = new SimpleTestPackageContext();
-            var expiredCert = _testFixture.TrustedTestCertificateExpired;
-
-            using (var dir = TestDirectory.Create())
-            {
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(expiredCert.Source.Cert, nupkg, dir);
-
-                // Act
-                var verifyResult = CommandRunner.Run(
-                    _nugetExePath,
-                    dir,
-                    $"verify {signedPackagePath} -Signatures",
-                    waitForExit: true);
-
-                // Assert
-                verifyResult.Success.Should().BeFalse();
-                verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
-                verifyResult.AllOutput.Should().Contain(_primarySignatureInvalidErrorCode);
             }
         }
     }

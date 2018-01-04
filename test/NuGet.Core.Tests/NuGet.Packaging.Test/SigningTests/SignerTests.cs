@@ -153,7 +153,7 @@ namespace NuGet.Packaging.Test
                  _fixture.GetDefaultCertificate(),
                 HashAlgorithmName.SHA256,
                 packageStream.ToArray(),
-                signatureProvider: new X509SignatureProvider(timestampProvider: null)))
+                new X509SignatureProvider(timestampProvider: null)))
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
                     () => test.Signer.SignAsync(
@@ -242,12 +242,7 @@ namespace NuGet.Packaging.Test
 
                 signatureProvider = signatureProvider ?? Mock.Of<ISignatureProvider>();
                 var signer = new Signer(signedPackage, signatureProvider);
-
-                var request = new SignPackageRequest()
-                {
-                    Certificate = certificate,
-                    SignatureHashAlgorithm = hashAlgorithm
-                };
+                var request = new SignPackageRequest(certificate, signatureHashAlgorithm: hashAlgorithm);
 
                 return new SignTest(
                     signer,

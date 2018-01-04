@@ -38,7 +38,6 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-
         /// <summary> 
         /// Validates the public key requirements for a certificate 
         /// </summary> 
@@ -67,7 +66,6 @@ namespace NuGet.Packaging.Signing
             return HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEkuOid);
         }
 
-#if IS_DESKTOP
         /// <summary>
         /// Create a list of certificates in chain order with the leaf first and root last.
         /// </summary>
@@ -94,7 +92,7 @@ namespace NuGet.Packaging.Signing
                     DateTime.Now,
                     NuGetVerificationCertificateType.Signature);
 
-                if (SigningUtility.BuildCertificateChain(chain, certificate, out chainStatusList))
+                if (BuildCertificateChain(chain, certificate, out chainStatusList))
                 {
                     return GetCertificateChain(chain);
                 }
@@ -111,7 +109,6 @@ namespace NuGet.Packaging.Signing
             // Should be unreachable.
             throw new SignatureException(NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChainUnspecifiedReason));
         }
-#endif
 
         /// <summary>
         /// Create an ordered list of certificates. The leaf node is returned first.
@@ -201,6 +198,26 @@ namespace NuGet.Packaging.Signing
             return true;
         }
 
+        public static void Verify(SignPackageRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (!IsSignatureAlgorithmSupported(request.Certificate))
+            {
+                throw new SignatureException(NuGetLogCode.NU3013, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm);
+            }
+
+            if (!IsCertificatePublicKeyValid(request.Certificate))
+            {
+                throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
+            }
+
+            request.BuildCertificateChainOnce();
+        }
+
 #if IS_DESKTOP
         public static CryptographicAttributeObjectCollection GetSignedAttributes(
             SignPackageRequest request,
@@ -222,6 +239,7 @@ namespace NuGet.Packaging.Signing
 
             return attributes;
         }
+#endif
 
         internal static void SetCertBuildChainPolicy(
             X509ChainPolicy policy,
@@ -229,9 +247,6 @@ namespace NuGet.Packaging.Signing
             DateTime verificationTime,
             NuGetVerificationCertificateType certificateType)
         {
-            // This flags should only be set for verification scenarios, not signing
-            policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
-
             if (certificateType == NuGetVerificationCertificateType.Signature)
             {
                 policy.ApplicationPolicy.Add(new Oid(Oids.CodeSigningEkuOid));
@@ -249,7 +264,7 @@ namespace NuGet.Packaging.Signing
             policy.VerificationTime = verificationTime;
         }
 
-        public static bool IsCertificateValidityPeriodInTheFuture(X509Certificate2 certificate)
+        internal static bool IsCertificateValidityPeriodInTheFuture(X509Certificate2 certificate)
         {
             return DateTime.Now < certificate.NotBefore;
         }
@@ -269,6 +284,7 @@ namespace NuGet.Packaging.Signing
             return buildSuccess && !IsCertificateValidityPeriodInTheFuture(certificate);
         }
 
+#if IS_DESKTOP
         internal static bool IsTimestampValid(Timestamp timestamp, byte[] messageHash, bool failIfInvalid, List<SignatureLog> issues, SigningSpecifications spec)
         {
             var isValid = true;
@@ -292,6 +308,7 @@ namespace NuGet.Packaging.Signing
 
             return isValid;
         }
+#endif
 
         // Ignore some chain status flags to special case them
         internal const X509ChainStatusFlags NotIgnoredCertificateFlags =
@@ -337,6 +354,5 @@ namespace NuGet.Packaging.Signing
 
             return false;
         }
-#endif
     }
 }
