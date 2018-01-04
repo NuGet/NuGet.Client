@@ -119,7 +119,7 @@ namespace NuGet.Build.Tasks
                 // Find the absolute path of nuget.config, this should only be set on the command line. Setting the path in project files
                 // is something that could happen, but it is not supported.
                 var absoluteConfigFilePath = GetGlobalAbsolutePath(RestoreConfigFile);
-                var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, string.IsNullOrEmpty(RestoreRootConfigDirectory) ? RestoreRootConfigDirectory : Path.GetDirectoryName(ProjectUniqueName), absoluteConfigFilePath, _machineWideSettings);
+                var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, string.IsNullOrEmpty(RestoreRootConfigDirectory) ? Path.GetDirectoryName(ProjectUniqueName) : RestoreRootConfigDirectory, absoluteConfigFilePath, _machineWideSettings);
                 OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
 
                 // PackagesPath
