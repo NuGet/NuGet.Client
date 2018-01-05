@@ -83,7 +83,6 @@ namespace NuGet.Build.Tasks
 
             try
             {
-//                System.Diagnostics.Debugger.Launch();
                 return ExecuteAsync(log).Result;
             }
             catch (AggregateException ex) when (_cts.Token.IsCancellationRequested && ex.InnerException is TaskCanceledException)
