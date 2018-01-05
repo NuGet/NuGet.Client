@@ -398,7 +398,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp2.0")]
-        public void DotnetToolTests_ToolPackageWithoutToolsAssets_Fails(string tfm)
+        public void DotnetToolTests_ToolPackageWithIncompatibleToolsAssets_Fails(string tfm)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -432,6 +432,41 @@ namespace Dotnet.Integration.Test
                 // Assert
                 Assert.True(result.Item1 == 1, result.AllOutput);
                 Assert.Contains("NU1202", result.AllOutput);
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("netcoreapp2.0")]
+        public void DotnetToolTests_ToolsPackageWithExtraPackageTypes_Fails(string tfm)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ToolRestoreProject";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var source = Path.Combine(testDirectory, "packageSource");
+                var rid = "win-x64";
+                var packageName = string.Join("ToolPackage-", tfm, rid);
+                var packageVersion = NuGetVersion.Parse("1.0.0");
+                var packages = new List<PackageIdentity>() { new PackageIdentity(packageName, packageVersion) };
+
+                var package = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
+                package.Files.Clear();
+                package.AddFile($"tools/{tfm}/{rid}/a.dll");
+                package.UseDefaultRuntimeAssemblies = false;
+                package.PackageTypes.Add(PackageType.DotnetTool);
+                package.PackageTypes.Add(PackageType.Dependency);
+                SimpleTestPackageUtility.CreatePackages(source, package);
+
+                _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
+                    projectName: projectName, targetFramework: tfm, rid: rid,
+                    source: source, packages: packages);
+
+                // Act
+                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+
+                // Assert
+                Assert.True(result.Item1 == 1, result.AllOutput);
+                Assert.Contains("NU1204", result.AllOutput);
             }
         }
 
