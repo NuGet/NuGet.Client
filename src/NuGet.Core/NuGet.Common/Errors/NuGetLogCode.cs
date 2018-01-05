@@ -120,6 +120,11 @@ namespace NuGet.Common
         NU1203 = 1203,
 
         /// <summary>
+        /// Invalid package types
+        /// </summary>
+        NU1204 = 1204, 
+
+        /// <summary>
         /// project has an invalid dependency count
         /// </summary>
         NU1211 = 1211,

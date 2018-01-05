@@ -71,14 +71,13 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 Assert.True(result.Item1 == 1, result.AllOutput);
-                Assert.Contains("NU1203", result.Item2);
+                Assert.Contains("NU1212", result.Item2);
                 Assert.DoesNotContain("NU1211", result.Item2); // It's the correct dependency count!
             }
         }
 
         [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
-        [InlineData("net45")]
         [InlineData("netcoreapp1.0")]
         [InlineData("netcoreapp2.0")]
         public void DotnetToolTests_BasicDotnetToolRestore_Succeeds(string tfm)
@@ -290,6 +289,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 Assert.True(result.Item1 == 1, result.AllOutput);
                 Assert.Contains("NU1202", result.AllOutput);
+                Assert.Contains($"supports {tfm} (.NETCoreApp,Version=v2.0) / {packageRID}", result.AllOutput);
             }
         }
 
@@ -332,10 +332,9 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 Assert.True(result.Item1 == 1, result.AllOutput);
-                Assert.Contains("NU1203", result.Item2); // should be once for newtonsoft.json
-                Assert.Contains("error NU1203: Invalid project <-> package combination for 'Newtonsoft.Json'", result.Item2);
-                Assert.DoesNotContain("error NU1203: Invalid project <-> package combination for 'ToolPackage", result.Item2);
-                Assert.Contains("NU1211", result.Item2);
+                Assert.Contains("Invalid project-package combination for Newtonsoft.Json 10.0.3", result.Item2);
+                Assert.DoesNotContain("Invalid project-package combination for ToolPackage", result.Item2);
+                Assert.Contains("NU1211", result.Item2); //count is wrong
             }
         }
 
@@ -391,6 +390,46 @@ namespace Dotnet.Integration.Test
                 var toolsAssemblies = ridTargets.First().Libraries.First().ToolsAssemblies;
                 Assert.Equal(2, toolsAssemblies.Count);
                 Assert.Contains($"tools/{tfm}/{packageRid}", toolsAssemblies.First().Path);
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("net461")]
+        [InlineData("netcoreapp2.0")]
+        public void DotnetToolTests_ToolPackageWithoutToolsAssets_Fails(string tfm)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ToolRestoreProject";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var source = Path.Combine(testDirectory, "packageSource");
+                var rid = "win-x64";
+                var packageName = string.Join("ToolPackage-", tfm, rid);
+                var packageVersion = NuGetVersion.Parse("1.0.0");
+                var packages = new List<PackageIdentity>() { new PackageIdentity(packageName, packageVersion) };
+
+                var package = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
+                package.Files.Clear();
+                package.AddFile($"tools/{tfm}/a.dll");
+                package.AddFile($"tools/runtimes/{rid}/ar.dll");
+                package.AddFile($"lib/{tfm}/b.dll");
+                package.AddFile($"lib/{tfm}/c.dll");
+                package.AddFile($"lib/{tfm}/d.dll");
+                package.PackageType = PackageType.DotnetTool;
+                package.UseDefaultRuntimeAssemblies = false;
+                package.PackageTypes.Add(PackageType.DotnetTool);
+                SimpleTestPackageUtility.CreatePackages(source, package);
+
+                _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
+                    projectName: projectName, targetFramework: tfm, rid: rid,
+                    source: source, packages: packages);
+
+                // Act
+                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+
+                // Assert
+                Assert.True(result.Item1 == 1, result.AllOutput);
+                Assert.Contains("NU1202", result.AllOutput);
             }
         }
 

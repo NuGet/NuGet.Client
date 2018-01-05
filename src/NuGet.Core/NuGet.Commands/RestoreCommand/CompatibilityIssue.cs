@@ -19,6 +19,7 @@ namespace NuGet.Commands
         public string AssemblyName { get; }
         public PackageIdentity Package { get; }
         public List<NuGetFramework> AvailableFrameworks { get; }
+        public List<FrameworkRuntimePair> AvailableFrameworkRuntimePairs { get; }
 
         private CompatibilityIssue(
             CompatibilityIssueType type,
@@ -26,7 +27,8 @@ namespace NuGet.Commands
             string assemblyName,
             NuGetFramework framework,
             string runtimeIdentifier,
-            IEnumerable<NuGetFramework> availableFrameworks)
+            IEnumerable<NuGetFramework> availableFrameworks,
+            IEnumerable<FrameworkRuntimePair> availableFrameworkRuntimePairs)
         {
             Type = type;
             AssemblyName = assemblyName;
@@ -34,6 +36,7 @@ namespace NuGet.Commands
             Framework = framework;
             RuntimeIdentifier = runtimeIdentifier;
             AvailableFrameworks = availableFrameworks.ToList();
+            AvailableFrameworkRuntimePairs = availableFrameworkRuntimePairs.ToList();
         }
 
         public static CompatibilityIssue ReferenceAssemblyNotImplemented(string assemblyName, PackageIdentity referenceAssemblyPackage, NuGetFramework framework, string runtimeIdentifier)
@@ -44,7 +47,8 @@ namespace NuGet.Commands
                 assemblyName,
                 framework,
                 runtimeIdentifier,
-                Enumerable.Empty<NuGetFramework>());
+                Enumerable.Empty<NuGetFramework>(),
+                Enumerable.Empty<FrameworkRuntimePair>());
         }
 
         public static CompatibilityIssue IncompatiblePackage(
@@ -59,12 +63,11 @@ namespace NuGet.Commands
                 string.Empty,
                 framework,
                 runtimeIdentifier,
-                packageFrameworks);
+                packageFrameworks,
+                Enumerable.Empty<FrameworkRuntimePair>());
         }
 
-        public static CompatibilityIssue IncompatibleToolsPackage(
-            PackageIdentity referenceAssemblyPackage
-)
+        public static CompatibilityIssue IncompatiblePackageWithDotnetTool(PackageIdentity referenceAssemblyPackage)
         {
             return new CompatibilityIssue(
                 CompatibilityIssueType.IncompatiblePackageWithDotnetTool,
@@ -72,7 +75,32 @@ namespace NuGet.Commands
                 string.Empty,
                 null,
                 null,
-                new List<NuGetFramework>());
+                new List<NuGetFramework>(),
+                Enumerable.Empty<FrameworkRuntimePair>());
+        }
+
+        public static CompatibilityIssue ToolsPackageWithExtraPackageTypes(PackageIdentity referenceAssemblyPackage)
+        {
+            return new CompatibilityIssue(
+                CompatibilityIssueType.ToolsPackageWithExtraPackageTypes,
+                referenceAssemblyPackage,
+                string.Empty,
+                null,
+                null,
+                new List<NuGetFramework>(),
+                Enumerable.Empty<FrameworkRuntimePair>());
+        }
+
+        public static CompatibilityIssue IncompatibleToolsPackage(PackageIdentity packageIdentity, NuGetFramework framework, string runtimeIdentifier, HashSet<FrameworkRuntimePair> available)
+        {
+            return new CompatibilityIssue(
+                CompatibilityIssueType.PackageToolsAssetsIncompatible,
+                packageIdentity,
+                string.Empty,
+                framework,
+                runtimeIdentifier,
+                Enumerable.Empty<NuGetFramework>(),
+                available);
         }
 
         public static CompatibilityIssue IncompatibleProject(
@@ -87,7 +115,8 @@ namespace NuGet.Commands
                 string.Empty,
                 framework,
                 runtimeIdentifier,
-                projectFrameworks);
+                projectFrameworks,
+                Enumerable.Empty<FrameworkRuntimePair>());
         }
 
         public static CompatibilityIssue IncompatibleProjectType(
@@ -99,7 +128,8 @@ namespace NuGet.Commands
                 string.Empty,
                 null,
                 null,
-                new List<NuGetFramework>());
+                new List<NuGetFramework>(),
+                Enumerable.Empty<FrameworkRuntimePair>());
         }
 
         public override string ToString()
@@ -113,72 +143,105 @@ namespace NuGet.Commands
 
         public string Format()
         {
-            if (Type == CompatibilityIssueType.ReferenceAssemblyNotImplemented)
+            switch (Type)
             {
-                if (string.IsNullOrEmpty(RuntimeIdentifier))
-                {
-                    return string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingImplementationFx, Package.Id, Package.Version, AssemblyName, Framework);
-                }
-
-                return string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingImplementationFxRuntime, Package.Id, Package.Version, AssemblyName, Framework, RuntimeIdentifier);
-            }
-            else if (Type == CompatibilityIssueType.PackageIncompatible)
-            {
-                var message = string.Format(CultureInfo.CurrentCulture,
-                    Strings.Log_PackageNotCompatibleWithFx,
-                    Package.Id,
-                    Package.Version.ToNormalizedString(),
-                    FormatFramework(Framework, RuntimeIdentifier));
-
-                var supports = string.Format(CultureInfo.CurrentCulture,
-                            Strings.Log_PackageNotCompatibleWithFx_Supports,
-                            Package.Id,
-                            Package.Version.ToNormalizedString());
-
-                var noSupports = string.Format(CultureInfo.CurrentCulture,
-                            Strings.Log_PackageNotCompatibleWithFx_NoSupports,
-                            Package.Id,
-                            Package.Version.ToNormalizedString());
-
-                return FormatMessage(message, supports, noSupports);
-            }
-            else if (Type == CompatibilityIssueType.ProjectIncompatible)
-            {
-                var message = string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_ProjectNotCompatibleWithFx,
+                case CompatibilityIssueType.ReferenceAssemblyNotImplemented:
+                    {
+                        if (string.IsNullOrEmpty(RuntimeIdentifier))
+                        {
+                            return string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingImplementationFx, Package.Id, Package.Version, AssemblyName, Framework);
+                        }
+                        return string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingImplementationFxRuntime, Package.Id, Package.Version, AssemblyName, Framework, RuntimeIdentifier);
+                    }
+                case CompatibilityIssueType.PackageIncompatible:
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_PackageNotCompatibleWithFx,
                         Package.Id,
+                        Package.Version.ToNormalizedString(),
                         FormatFramework(Framework, RuntimeIdentifier));
 
-                var supports = string.Format(CultureInfo.CurrentCulture,
-                            Strings.Log_ProjectNotCompatibleWithFx_Supports,
-                            Package.Id);
+                        var supports = string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Log_PackageNotCompatibleWithFx_Supports,
+                                    Package.Id,
+                                    Package.Version.ToNormalizedString());
 
-                var noSupports = string.Format(CultureInfo.CurrentCulture,
-                            Strings.Log_ProjectNotCompatibleWithFx_NoSupports,
-                            Package.Id);
+                        var noSupports = string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Log_PackageNotCompatibleWithFx_NoSupports,
+                                    Package.Id,
+                                    Package.Version.ToNormalizedString());
 
-                return FormatMessage(message, supports, noSupports);
-            }
-            else if (Type == CompatibilityIssueType.ProjectWithIncorrectDependencyCount)
-            {
-                var message = string.Format(CultureInfo.CurrentCulture,
-                       Strings.Error_ProjectWithIncorrectDependenciesCount,
+                        return FormatMessage(message, supports, noSupports);
+                    }
+                case CompatibilityIssueType.ProjectIncompatible:
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture,
+                       Strings.Log_ProjectNotCompatibleWithFx,
                        Package.Id,
-                       1);
+                       FormatFramework(Framework, RuntimeIdentifier));
 
-                return FormatMessage(message, string.Empty, string.Empty);
+                        var supports = string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Log_ProjectNotCompatibleWithFx_Supports,
+                                    Package.Id);
+
+                        var noSupports = string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Log_ProjectNotCompatibleWithFx_NoSupports,
+                                    Package.Id);
+
+                        return FormatMessage(message, supports, noSupports);
+                    }
+                case CompatibilityIssueType.PackageToolsAssetsIncompatible:
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture,
+                            Strings.Log_PackageNotCompatibleWithFx,
+                            Package.Id,
+                            Package.Version,
+                            FormatFramework(Framework, RuntimeIdentifier));
+
+                        var supports = string.Format(CultureInfo.CurrentCulture,
+                                 Strings.Log_PackageNotCompatibleWithFx_Supports,
+                                 Package.Id,
+                                 Package.Version.ToNormalizedString());
+
+                        var noSupports = string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Log_PackageNotCompatibleWithFx_NoSupports,
+                                    Package.Id,
+                                    Package.Version.ToNormalizedString());
+
+                        return FormatMessage(message, supports, noSupports);
+                    }
+                case CompatibilityIssueType.ProjectWithIncorrectDependencyCount:
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture,
+                               Strings.Error_ProjectWithIncorrectDependenciesCount,
+                               Package.Id,
+                               1);
+
+                        return FormatMessage(message, string.Empty, string.Empty);
+                    }
+                case CompatibilityIssueType.IncompatiblePackageWithDotnetTool:
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture,
+                               "Invalid project-package combination for {0} {1}. DotnetToolReference project style can only contain references of the DotnetTool type",
+                               Package.Id,
+                               Package.Version.ToNormalizedString(),
+                               1);
+
+                        return FormatMessage(message, string.Empty, string.Empty);
+                    }
+                case CompatibilityIssueType.ToolsPackageWithExtraPackageTypes:
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture,
+                               "Invalid tools package - {0} {1}. Tools packages cannot contain more than 1 PackageType.",
+                               Package.Id,
+                               Package.Version.ToNormalizedString(),
+                               1);
+                        return FormatMessage(message, string.Empty, string.Empty);
+                    }
+
+                default:
+                    return null;
             }
-            else if (Type == CompatibilityIssueType.IncompatiblePackageWithDotnetTool)
-            {
-                var message = string.Format(CultureInfo.CurrentCulture,
-                       "Invalid project <-> package combination for '{0}'. DotnetToolReference project style can only contain references of the DotnetTool type",
-                       Package.Id,
-                       1);
-
-                return FormatMessage(message, string.Empty, string.Empty);
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -209,6 +272,27 @@ namespace NuGet.Commands
                 {
                     // Write single frameworks on the same line.
                     sb.Append($" {FormatFramework(AvailableFrameworks.Single())}");
+                }
+            }
+            else if(AvailableFrameworkRuntimePairs.Any())
+            {
+                sb.AppendFormat(supports);
+
+                if (AvailableFrameworkRuntimePairs.Count > 1)
+                {
+                    // Write multiple frameworks on new lines
+                    foreach (var framework in AvailableFrameworkRuntimePairs.Select(e => FormatFramework(e.Framework, e.RuntimeIdentifier))
+                        .OrderBy(s => s, StringComparer.CurrentCultureIgnoreCase))
+                    {
+                        sb.Append(Environment.NewLine);
+                        sb.Append($"  - {framework}");
+                    }
+                }
+                else
+                {
+                    // Write single frameworks on the same line.
+                    var frp = AvailableFrameworkRuntimePairs.Single();
+                    sb.Append($" {FormatFramework(frp.Framework, frp.RuntimeIdentifier)}");
                 }
             }
             else
@@ -262,7 +346,9 @@ namespace NuGet.Commands
         ReferenceAssemblyNotImplemented,
         PackageIncompatible,
         ProjectIncompatible,
+        PackageToolsAssetsIncompatible,
         ProjectWithIncorrectDependencyCount,
-        IncompatiblePackageWithDotnetTool
+        IncompatiblePackageWithDotnetTool,
+        ToolsPackageWithExtraPackageTypes
     }
 }
