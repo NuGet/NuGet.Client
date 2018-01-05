@@ -325,19 +325,12 @@ namespace Dotnet.Integration.Test
 
         private static void KillDotnetExe(string pathToDotnetExe)
         {
-<<<<<<< HEAD
 
             var processes = Process.GetProcessesByName("dotnet")
                 .Where(t => string.Compare(t.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), ignoreCase: true) == 0);
             var testDirProcesses = Process.GetProcesses()
                 .Where(t => t.MainModule.FileName.StartsWith(TestFileSystemUtility.NuGetTestFolder, StringComparison.OrdinalIgnoreCase));
             try
-=======
-            var processes = Process.GetProcessesByName("dotnet");
-            var testDirProcesses = Process.GetProcesses().Where(t => t.MainModule.FileName.StartsWith(TestFileSystemUtility.NuGetTestFolder));
-            
-            if(processes != null && processes.Length >=1)
->>>>>>> kill processes in the test directory
             {
                 if (processes != null)
                 {
