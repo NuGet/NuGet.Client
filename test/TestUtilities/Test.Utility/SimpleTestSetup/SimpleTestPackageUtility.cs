@@ -82,9 +82,7 @@ namespace NuGet.Test.Utility
            string repositoryDir,
            SimpleTestPackageContext packageContext)
         {
-            var id = packageContext.Id;
-            var version = packageContext.Version;
-            var packageName = packageContext.IsSymbolPackage ? $"{id}.{version.ToString()}.symbols.nupkg" : $"{id}.{version.ToString()}.nupkg";
+            var packageName = packageContext.PackageName;
 
             var packagePath = Path.Combine(repositoryDir, packageName);
             var file = new FileInfo(packagePath);
@@ -225,7 +223,15 @@ namespace NuGet.Test.Utility
 
                 if (packageContext.Signatures.Count > 0)
                 {
-                    throw new NotImplementedException();
+                    foreach (var signature in packageContext.Signatures)
+                    {
+                        var signatureEntry = zip.CreateEntry(SigningSpecifications.V1.SignaturePath);
+                        using (var signatureStream = new MemoryStream(signature.GetBytes()))
+                        using (var signatureEntryStream = signatureEntry.Open())
+                        {
+                            signatureStream.CopyTo(signatureEntryStream);
+                        }
+                    }
                 }
 
                 zip.AddEntry($"{id}.nuspec", xml.ToString(), Encoding.UTF8);

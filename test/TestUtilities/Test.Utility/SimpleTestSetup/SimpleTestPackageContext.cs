@@ -16,13 +16,14 @@ namespace NuGet.Test.Utility
     public class SimpleTestPackageContext
     {
         public SimpleTestPackageContext(string packageId)
+            : this ()
         {
             Id = packageId;
         }
 
         public SimpleTestPackageContext(string packageId, string version)
+            : this (packageId)
         {
-            Id = packageId;
             Version = version;
         }
 
@@ -33,6 +34,7 @@ namespace NuGet.Test.Utility
 
         public SimpleTestPackageContext()
         {
+            Signatures = new List<Signature>();
         }
 
         public string Id { get; set; } = "packageA";
@@ -54,7 +56,7 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Package signatures.
         /// </summary>
-        public List<Signature> Signatures { get; set; } = new List<Signature>();
+        public List<Signature> Signatures { get; set; }
 
         /// <summary>
         /// runtime.json
@@ -64,6 +66,17 @@ namespace NuGet.Test.Utility
         public bool IsSymbolPackage { get; set; }
 
         public PackageIdentity Identity => new PackageIdentity(Id, NuGetVersion.Parse(Version));
+
+        public string PackageName => IsSymbolPackage ? $"{Id}.{Version}.symbols.nupkg" : $"{Id}.{Version}.nupkg";
+
+        /// <summary>
+        /// Add a signature to the zip.
+        /// </summary>
+        /// <param name="signature"></param>
+        public void AddSignature(Signature signature)
+        {
+            Signatures.Add(signature);
+        }
 
         /// <summary>
         /// Add a file to the zip. Ex: lib/net45/a.dll

@@ -29,12 +29,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_trustedTestCert == null)
                 {
-                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCodeSigningEkuCert;
-
-                    // Code Sign EKU needs trust to a root authority
-                    // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
-                    // This makes all the associated tests to require admin privilege
-                    _trustedTestCert = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
                 }
 
                 return _trustedTestCert;
@@ -47,12 +42,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_trustedTestCertExpired == null)
                 {
-                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorExpiredCert;
-
-                    // Code Sign EKU needs trust to a root authority
-                    // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
-                    // This makes all the associated tests to require admin privilege
-                    _trustedTestCertExpired = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertExpired = SigningTestUtility.GenerateTrustedTestCertificateExpired();
                 }
 
                 return _trustedTestCertExpired;
@@ -65,12 +55,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_trustedTestCertNotYetValid == null)
                 {
-                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorNotYetValidCert;
-
-                    // Code Sign EKU needs trust to a root authority
-                    // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
-                    // This makes all the associated tests to require admin privilege
-                    _trustedTestCertNotYetValid = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertNotYetValid = SigningTestUtility.GenerateTrustedTestCertificateNotYetValid();
                 }
 
                 return _trustedTestCertNotYetValid;

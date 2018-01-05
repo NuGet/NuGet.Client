@@ -10,10 +10,17 @@ namespace NuGet.Tests.Apex
     {
         public static void CreatePackageInSource(string packageSource, string packageName, string packageVersion)
         {
+            var package = CreatePackage(packageName, packageVersion);
+            SimpleTestPackageUtility.CreatePackages(packageSource, package);
+        }
+
+        public static SimpleTestPackageContext CreatePackage(string packageName, string packageVersion)
+        {
             var package = new SimpleTestPackageContext(packageName, packageVersion);
             package.Files.Clear();
             package.AddFile("lib/net45/_._");
-            SimpleTestPackageUtility.CreatePackages(packageSource, package);
+
+            return package;
         }
 
         public static bool IsPackageInstalled(NuGetConsoleTestExtension nuGetConsole, string projectPath, string packageName, string packageVersion)

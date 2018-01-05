@@ -31,6 +31,7 @@
     <Compile Include="Fixtures\VisualStudioHostFixtureFactory.cs" />
     <Compile Include="Fixtures\VisualStudioOperationsFixture.cs" />
     <Compile Include="NuGetIVsApiTests\IVsPackageInstallerTestCase.cs" />
+    <Compile Include="NuGetIVsApiTests\NuGetPackageSigningTestCase.cs" />
     <Compile Include="NuGetIVsApiTests\NuGetConsoleTestCase.cs" />
     <Compile Include="NuGetIVsApiTests\NetCoreProjectTestCase.cs" />
     <Compile Include="NuGetIVsApiTests\NuGetUITestCase.cs" />

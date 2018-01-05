@@ -93,6 +93,27 @@ namespace Test.Utility.Signing
             gen.SetNotAfter(notAfter);
         };
 
+        /// Modification generator that can be passed to TestCertificate.Generate().
+        /// The generator will create a certificate that is valid but will expire in a 15 seconds
+        /// </summary>
+        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorExpireIn15Seconds = delegate (X509V3CertificateGenerator gen)
+        {
+            // CodeSigning EKU
+            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
+
+            gen.AddExtension(
+                X509Extensions.ExtendedKeyUsage.Id,
+                critical: true,
+                extensionValue: new ExtendedKeyUsage(usages));
+
+
+            var notBefore = DateTime.UtcNow.Subtract(TimeSpan.FromHours(1));
+            var notAfter = DateTime.UtcNow.Add(TimeSpan.FromSeconds(15));
+
+            gen.SetNotBefore(notBefore);
+            gen.SetNotAfter(notAfter);
+        };
+
         /// <summary>
         /// Generates a list of certificates representing a chain of certificates.
         /// The first certificate is the root certificate stored in StoreName.Root and StoreLocation.LocalMachine.
@@ -356,6 +377,46 @@ namespace Test.Utility.Signing
         {
             var pass = new Guid().ToString();
             return new X509Certificate2(cert.Export(X509ContentType.Pfx, pass), pass, X509KeyStorageFlags.PersistKeySet);
+        }
+
+        public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificate()
+        {
+            var actionGenerator = CertificateModificationGeneratorForCodeSigningEkuCert;
+
+            // Code Sign EKU needs trust to a root authority
+            // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
+            // This makes all the associated tests to require admin privilege
+            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+        }
+
+        public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateExpired()
+        {
+            var actionGenerator = CertificateModificationGeneratorExpiredCert;
+
+            // Code Sign EKU needs trust to a root authority
+            // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
+            // This makes all the associated tests to require admin privilege
+            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+        }
+
+        public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateNotYetValid()
+        {
+            var actionGenerator = CertificateModificationGeneratorNotYetValidCert;
+
+            // Code Sign EKU needs trust to a root authority
+            // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
+            // This makes all the associated tests to require admin privilege
+            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+        }
+
+        public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatExpiresIn15Seconds()
+        {
+            var actionGenerator = CertificateModificationGeneratorExpireIn15Seconds;
+
+            // Code Sign EKU needs trust to a root authority
+            // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
+            // This makes all the associated tests to require admin privilege
+            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
         }
     }
 }
