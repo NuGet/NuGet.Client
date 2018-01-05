@@ -19,6 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.GetPackOutputItemsTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetProjectTargetFrameworksTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.Pack.GetProjectReferencesFromAssetsFileTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
 
   <PropertyGroup>
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
@@ -187,7 +188,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
-  <Target Name="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn);_CalculateInputsOutputsForPack" Condition="$(IsPackable) == 'true'"
+  <Target Name="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn);_CalculateInputsOutputsForPack;_GetProjectReferenceVersions" Condition="$(IsPackable) == 'true'"
           Inputs="@(NuGetPackInput)" Outputs="@(NuGetPackOutput)">
     <!-- Call Pack -->
     <PackTask PackItem="$(PackProjectInputFile)"
@@ -207,6 +208,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               Tags="$(PackageTags)"
               DevelopmentDependency="$(DevelopmentDependency)"
               BuildOutputInPackage="@(_BuildOutputInPackage)"
+              ProjectReferencesWithVersions="@(_ProjectReferencesWithVersions)"
               TargetPathsToSymbols="@(_TargetPathsToSymbols)"
               TargetFrameworks="@(_TargetFrameworks)"
               AssemblyName="$(AssemblyName)"
@@ -246,6 +248,45 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup Condition="'$(PackProjectInputFile)' == ''">
       <PackProjectInputFile>$(MSBuildProjectFullPath)</PackProjectInputFile>
     </PropertyGroup>
+  </Target>
+  
+  <Target Name="_GetProjectReferenceVersions" DependsOnTargets="_CalculateInputsOutputsForPack;$(GetPackageVersionDependsOn)">
+    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
+    </ConvertToAbsolutePath>
+
+    <ConvertToAbsolutePath Condition="'$(ProjectAssetsFile)' != ''" Paths="$(ProjectAssetsFile)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="ProjectAssetsFileAbsolutePath" />
+    </ConvertToAbsolutePath>
+
+    <GetProjectReferencesFromAssetsFileTask
+        RestoreOutputAbsolutePath="$(RestoreOutputAbsolutePath)"
+        ProjectAssetsFileAbsolutePath="$(ProjectAssetsFileAbsolutePath)">
+      <Output
+        TaskParameter="ProjectReferences"
+        ItemName="_ProjectReferencesFromAssetsFile" />
+    </GetProjectReferencesFromAssetsFileTask>
+
+    <Msbuild
+      Projects="@(_ProjectReferencesFromAssetsFile)"
+      Targets="_GetProjectVersion"
+      SkipNonexistentTargets="true"
+      SkipNonexistentProjects="true"
+      Properties="BuildProjectReferences=false;">
+      <Output
+        TaskParameter="TargetOutputs"
+        ItemName="_ProjectReferencesWithVersions"/>
+    </Msbuild>
+  </Target>
+
+  <Target Name="_GetProjectVersion" DependsOnTargets="$(GetPackageVersionDependsOn)"
+          Returns="@(_ProjectPathWithVersion)">
+    <ItemGroup>
+      <_ProjectPathWithVersion Include="$(MSBuildProjectFullPath)">
+        <ProjectVersion Condition="'$(PackageVersion)' != ''">$(PackageVersion)</ProjectVersion>
+        <ProjectVersion Condition="'$(PackageVersion)' == ''">1.0.0</ProjectVersion>
+      </_ProjectPathWithVersion>
+    </ItemGroup>
   </Target>
 
   <Target Name="_WalkEachTargetPerFramework">

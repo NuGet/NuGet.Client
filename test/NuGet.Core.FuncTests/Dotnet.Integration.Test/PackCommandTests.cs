@@ -1,18 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using NuGet.XPlat.FuncTest;
 using Xunit;
 
 
@@ -110,21 +106,21 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp20, libItems[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp21, libItems[0].TargetFramework);
                     if (includeSymbols)
                     {
                         Assert.Equal(new[]
                         {
-                            "lib/netcoreapp2.0/ConsoleApp1.dll",
-                            "lib/netcoreapp2.0/ConsoleApp1.pdb",
-                            "lib/netcoreapp2.0/ConsoleApp1.runtimeconfig.json"
+                            "lib/netcoreapp2.1/ConsoleApp1.dll",
+                            "lib/netcoreapp2.1/ConsoleApp1.pdb",
+                            "lib/netcoreapp2.1/ConsoleApp1.runtimeconfig.json"
                         }, libItems[0].Items);
                     }
                     else
                     {
                         Assert.Equal(
                             new[]
-                            {"lib/netcoreapp2.0/ConsoleApp1.dll", "lib/netcoreapp2.0/ConsoleApp1.runtimeconfig.json"},
+                            {"lib/netcoreapp2.1/ConsoleApp1.dll", "lib/netcoreapp2.1/ConsoleApp1.runtimeconfig.json"},
                             libItems[0].Items);
                     }
                 }
@@ -382,7 +378,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1,
                         dependencyGroups.Count);
 
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp20,
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp21,
                         dependencyGroups[0].TargetFramework);
                     var packagesA = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(2,
@@ -399,11 +395,169 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp20, libItems[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp21, libItems[0].TargetFramework);
                     Assert.Equal(
                         new[]
-                        {"lib/netcoreapp2.0/ClassLibrary1.dll", "lib/netcoreapp2.0/ClassLibrary1.runtimeconfig.json"},
+                        {"lib/netcoreapp2.1/ClassLibrary1.dll", "lib/netcoreapp2.1/ClassLibrary1.runtimeconfig.json"},
                         libItems[0].Items);
+                }
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("TargetFramework", "netstandard1.4")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net46")]
+        public void PackCommand_PackProject_GetsProjectRefVersionFromMsbuild(string tfmProperty, string tfmValue)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var referencedProject = "ClassLibrary2";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                var refProjectFile = Path.Combine(testDirectory, referencedProject, $"{referencedProject}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                using (var refStream = new FileStream(refProjectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    var attributes = new Dictionary<string, string>();
+
+                    var properties = new Dictionary<string, string>();
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "ProjectReference",
+                        @"..\ClassLibrary2\ClassLibrary2.csproj",
+                        string.Empty,
+                        properties,
+                        attributes);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, tfmProperty, tfmValue);
+
+                    var refXml = XDocument.Load(refStream);
+                    ProjectFileUtils.AddProperty(refXml, "PackageVersion", "1.2.3-alpha", "'$(ExcludeRestorePackageImports)' != 'true'");
+                    ProjectFileUtils.SetTargetFrameworkForProject(refXml, tfmProperty, tfmValue);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                    ProjectFileUtils.WriteXmlToFile(refXml, refStream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    var dependencyGroups = nuspecReader
+                        .GetDependencyGroups()
+                        .OrderBy(x => x.TargetFramework,
+                            new NuGetFrameworkSorter())
+                        .ToList();
+
+                    Assert.Equal(tfmValue.Split(';').Count(),
+                        dependencyGroups.Count);
+                    foreach(var depGroup in dependencyGroups)
+                    {
+                        var packages = depGroup.Packages.ToList();
+                        var package = packages.Where(t => t.Id.Equals("ClassLibrary2")).First();
+                        Assert.Equal(new VersionRange(new NuGetVersion("1.2.3-alpha")), package.VersionRange);
+                    }
+                }
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("TargetFramework", "netstandard1.4")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net46")]
+        public void PackCommand_PackProject_GetPackageVersionDependsOnWorks(string tfmProperty, string tfmValue)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var referencedProject = "ClassLibrary2";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                var refProjectFile = Path.Combine(testDirectory, referencedProject, $"{referencedProject}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                using (var refStream = new FileStream(refProjectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    var attributes = new Dictionary<string, string>();
+
+                    var properties = new Dictionary<string, string>();
+                    var target = @"<Target Name=""CalculatePackageVersion"">
+    <PropertyGroup>
+      <PackageVersion>1.2.3-alpha</PackageVersion>
+    </PropertyGroup>
+  </Target>";
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "ProjectReference",
+                        @"..\ClassLibrary2\ClassLibrary2.csproj",
+                        string.Empty,
+                        properties,
+                        attributes);
+                    ProjectFileUtils.AddProperty(xml, "GetPackageVersionDependsOn", "CalculatePackageVersion");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, tfmProperty, tfmValue);
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(xml, target);
+
+                    var refXml = XDocument.Load(refStream);
+                    ProjectFileUtils.AddProperty(refXml, "GetPackageVersionDependsOn", "CalculatePackageVersion");
+                    ProjectFileUtils.SetTargetFrameworkForProject(refXml, tfmProperty, tfmValue);
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(refXml, target);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                    ProjectFileUtils.WriteXmlToFile(refXml, refStream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3-alpha.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3-alpha.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    var dependencyGroups = nuspecReader
+                        .GetDependencyGroups()
+                        .OrderBy(x => x.TargetFramework,
+                            new NuGetFrameworkSorter())
+                        .ToList();
+
+                    Assert.Equal(tfmValue.Split(';').Count(),
+                        dependencyGroups.Count);
+                    foreach (var depGroup in dependencyGroups)
+                    {
+                        var packages = depGroup.Packages.ToList();
+                        var package = packages.Where(t => t.Id.Equals("ClassLibrary2")).First();
+                        Assert.Equal(new VersionRange(new NuGetVersion("1.2.3-alpha")), package.VersionRange);
+                    }
                 }
             }
         }
