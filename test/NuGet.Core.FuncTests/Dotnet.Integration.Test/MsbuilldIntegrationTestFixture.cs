@@ -47,7 +47,7 @@ namespace Dotnet.Integration.Test
                 CreateDotnetNewProject(testDirectory.Path, projectName, " console", timeOut: 300000);
             }
         }
-        internal void CreateDotnetNewProject(string solutionRoot, string projectName, string args = "console", int timeOut=60000)
+        internal void CreateDotnetNewProject(string solutionRoot, string projectName, string args = "console", int timeOut = 60000)
         {
             var workingDirectory = Path.Combine(solutionRoot, projectName);
             if (!Directory.Exists(workingDirectory))
@@ -90,7 +90,7 @@ namespace Dotnet.Integration.Test
             Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.AllOutput}");
         }
 
-        internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath="obj")
+        internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath = "obj")
         {
             var envVar = new Dictionary<string, string>();
             envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
@@ -125,7 +125,7 @@ namespace Dotnet.Integration.Test
         private void CopyLatestCliToTestDirectory(string destinationDir)
         {
             var cliDir = Path.GetDirectoryName(_dotnetCli);
-            
+
             //Create sub-directory structure in destination
             foreach (var directory in Directory.GetDirectories(cliDir, "*", SearchOption.AllDirectories))
             {
@@ -165,7 +165,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        private void CopyNupkgFilesToTarget(PackageArchiveReader nupkg, string destPath, IEnumerable<string> files )
+        private void CopyNupkgFilesToTarget(PackageArchiveReader nupkg, string destPath, IEnumerable<string> files)
         {
             var packageFileExtractor = new PackageFileExtractor(files,
                                          PackageExtractionBehavior.XmlDocFileSaveMode);
@@ -193,21 +193,34 @@ namespace Dotnet.Integration.Test
 
         private static void KillDotnetExe(string pathToDotnetExe)
         {
-            var processes = Process.GetProcessesByName("dotnet");
-            if(processes != null && processes.Length >=1)
+
+            var processes = Process.GetProcessesByName("dotnet")
+                .Where(t => string.Compare(t.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), ignoreCase: true) == 0);
+            var testDirProcesses = Process.GetProcesses()
+                .Where(t => t.MainModule.FileName.StartsWith(TestFileSystemUtility.NuGetTestFolder, StringComparison.OrdinalIgnoreCase));
+            try
             {
-                try
+                if (processes != null)
                 {
-                    foreach(var process in processes)
+                    foreach (var process in processes)
                     {
-                        if(string.Compare(process.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), true) == 0)
+                        if (string.Compare(process.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), true) == 0)
                         {
                             process.Kill();
                         }
                     }
                 }
-                catch { }
+
+                if (testDirProcesses != null)
+                {
+                    foreach (var process in testDirProcesses)
+                    {
+                        process.Kill();
+                    }
+                }
+
             }
+            catch { }
         }
 
         /// <summary>
@@ -225,7 +238,7 @@ namespace Dotnet.Integration.Test
             {
                 Directory.Delete(path, true);
             }
-            catch (IOException) 
+            catch (IOException)
             {
                 Directory.Delete(path, true);
             }

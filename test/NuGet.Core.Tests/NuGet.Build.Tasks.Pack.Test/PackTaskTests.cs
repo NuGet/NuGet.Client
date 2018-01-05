@@ -335,6 +335,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 PackageOutputPath = "PackageOutputPath",
                 PackageTypes = new string[0],
                 PackageVersion = "PackageVersion",
+                ProjectReferencesWithVersions = new ITaskItem[0],
                 ProjectUrl = "ProjectUrl",
                 ReleaseNotes = "ReleaseNotes",
                 RepositoryType = "RepositoryType",

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using NuGet.Commands;
 using NuGet.Common;
@@ -20,6 +21,7 @@ namespace NuGet.Build.Tasks.Pack
         public string[] TargetFrameworks { get; set; }
         public string[] PackageTypes { get; set; }
         public ITaskItem[] BuildOutputInPackage { get; set; }
+        public ITaskItem[] ProjectReferencesWithVersions { get; set; }
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
         public string Title { get; set; }
@@ -87,6 +89,25 @@ namespace NuGet.Build.Tasks.Pack
         {
             try
             {
+#if DEBUG
+                var debugPackTask = Environment.GetEnvironmentVariable("DEBUG_PACK_TASK");
+                if (!string.IsNullOrEmpty(debugPackTask) && debugPackTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
+                {
+#if IS_CORECLR
+                    Console.WriteLine("Waiting for debugger to attach.");
+                    Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+
+                    while (!Debugger.IsAttached)
+                    {
+                        System.Threading.Thread.Sleep(100);
+                    }
+                    Debugger.Break();
+#else
+            Debugger.Launch();
+#endif
+                }
+#endif
+
                 var request = GetRequest();
                 var logic = PackTaskLogic;
                 PackageBuilder packageBuilder = null;
@@ -109,7 +130,7 @@ namespace NuGet.Build.Tasks.Pack
                 ExceptionUtilities.LogException(ex, Logger);
                 return false;
             }
-            
+
         }
 
         /// <summary>
@@ -153,6 +174,7 @@ namespace NuGet.Build.Tasks.Pack
                 PackageTypes = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(PackageTypes),
                 PackageVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageVersion),
                 PackItem = MSBuildUtility.WrapMSBuildItem(PackItem),
+                ProjectReferencesWithVersions = MSBuildUtility.WrapMSBuildItem(ProjectReferencesWithVersions),
                 ProjectUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(ProjectUrl),
                 ReleaseNotes = MSBuildStringUtility.TrimAndGetNullForEmpty(ReleaseNotes),
                 RepositoryType = MSBuildStringUtility.TrimAndGetNullForEmpty(RepositoryType),
