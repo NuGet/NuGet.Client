@@ -112,7 +112,7 @@ namespace NuGet.Packaging.Signing
                 return SignatureVerificationStatus.Invalid;
             }
 
-            if (!VerificationUtility.IsSigningCertificateValid(certificate, failuresAreFatal, issues))
+            if (VerificationUtility.IsSigningCertificateValid(certificate, failuresAreFatal, issues))
             {
                 timestamp = timestamp ?? new Timestamp();
                 if (Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(certificate, timestamp))

@@ -74,7 +74,7 @@ namespace NuGet.Packaging.FuncTest
                     () => test.Signer.SignAsync(test.Request, NullLogger.Instance, CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3018, exception.Code);
-                Assert.Equal("Certificate chain validation failed with error: NotTimeValid", exception.Message);
+                Assert.Contains("A required certificate is not within its validity period", exception.Message);
 
                 var isSigned = await IsSignedAsync(test.WriteStream);
 
@@ -91,7 +91,7 @@ namespace NuGet.Packaging.FuncTest
                     () => test.Signer.SignAsync(test.Request, NullLogger.Instance, CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3018, exception.Code);
-                Assert.Equal("Certificate chain validation failed with error: NotTimeValid", exception.Message);
+                Assert.Contains("A required certificate is not within its validity period", exception.Message);
 
                 var isSigned = await IsSignedAsync(test.WriteStream);
 
