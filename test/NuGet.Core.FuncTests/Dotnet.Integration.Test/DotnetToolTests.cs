@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
@@ -286,10 +287,11 @@ namespace Dotnet.Integration.Test
                 // Act
                 var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
 
+                var framework = NuGetFramework.Parse(tfm);
                 // Assert
                 Assert.True(result.Item1 == 1, result.AllOutput);
                 Assert.Contains("NU1202", result.AllOutput);
-                Assert.Contains($"supports {tfm} (.NETCoreApp,Version=v2.0) / {packageRID}", result.AllOutput);
+                Assert.Contains($"supports: {tfm} ({framework.DotNetFrameworkName}) / {packageRID}", result.AllOutput);
             }
         }
 
