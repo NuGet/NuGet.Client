@@ -54,5 +54,7 @@ namespace NuGet.Build.Tasks.Pack
         public string[] TargetFrameworks { get; set; }
         public IMSBuildItem[] TargetPathsToSymbols { get; set; }
         public string Title { get; set; }
+        public IMSBuildItem[] FrameworksWithSuppressedAssemblyReferences { get; set; }
+        public IMSBuildItem[] FrameworksWithSuppressedDependencies { get; set; }
     }
 }

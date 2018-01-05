@@ -42,6 +42,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ImportNuGetBuildTasksPackTargetsFromSdk Condition="'$(ImportNuGetBuildTasksPackTargetsFromSdk)' == ''">false</ImportNuGetBuildTasksPackTargetsFromSdk>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>.dll; .exe; .winmd; .json; .pri; .xml; $(AllowedOutputExtensionsInPackageBuildOutputFolder)</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>.pdb; .mdb; $(AllowedOutputExtensionsInPackageBuildOutputFolder); $(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder)</AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>
+    <SuppressAssemblyReferencesInPackage Condition="'$(SuppressAssemblyReferencesInPackage)' == ''">false</SuppressAssemblyReferencesInPackage>
+    <SuppressDependenciesInPackage Condition="'$(SuppressDependenciesInPackage)' == ''">false</SuppressDependenciesInPackage>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' == 'true' ">
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
@@ -211,6 +213,8 @@ Copyright (c) .NET Foundation. All rights reserved.
               ProjectReferencesWithVersions="@(_ProjectReferencesWithVersions)"
               TargetPathsToSymbols="@(_TargetPathsToSymbols)"
               TargetFrameworks="@(_TargetFrameworks)"
+              FrameworksWithSuppressedAssemblyReferences="@(_FrameworksWithSuppressedAssemblykReferences)"
+              FrameworksWithSuppressedDependencies="@(_FrameworksWithSuppressedDependencies)"
               AssemblyName="$(AssemblyName)"
               PackageOutputPath="$(PackageOutputAbsolutePath)"
               IncludeSymbols="$(IncludeSymbols)"
@@ -345,6 +349,40 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_FrameworkAssemblyReferences" />
     </MSBuild>
+
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GetFrameworksWithSuppressedDependencies"
+      Properties="TargetFramework=%(_TargetFrameworks.Identity);
+                  BuildProjectReferences=false;">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_FrameworksWithSuppressedDependencies" />
+    </MSBuild>
+
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GetFrameworksWithSuppressedAssemblyReferences"
+      Properties="TargetFramework=%(_TargetFrameworks.Identity);
+                  BuildProjectReferences=false;">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_FrameworksWithSuppressedAssemblykReferences" />
+    </MSBuild>
+  </Target>
+
+  <Target Name ="_GetFrameworksWithSuppressedDependencies" Returns="@(_TfmWithDependenciesSuppressed)">
+    <ItemGroup>
+      <_TfmWithDependenciesSuppressed Include="$(TargetFramework)" Condition="'$(SuppressDependenciesInPackage)' == 'true'"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name ="_GetFrameworksWithSuppressedAssemblyReferences" Returns="@(_TfmWithFrameworkReferencesSuppressed)">
+    <ItemGroup>
+      <_TfmWithDependenciesSuppressed Include="$(TargetFramework)" Condition="'$(SuppressAssemblyReferencesInPackage)' == 'true'"/>
+    </ItemGroup>
   </Target>
 
   <Target Name ="_GetFrameworkAssemblyReferences" DependsOnTargets="ResolveReferences" Returns="@(TfmSpecificFrameworkAssemblyReferences)">
