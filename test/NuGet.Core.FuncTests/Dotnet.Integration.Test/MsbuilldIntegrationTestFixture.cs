@@ -193,12 +193,14 @@ namespace Dotnet.Integration.Test
 
         private static void KillDotnetExe(string pathToDotnetExe)
         {
-            var processes = Process.GetProcessesByName("dotnet");
+
+            var processes = Process.GetProcessesByName("dotnet")
+                .Where(t => string.Compare(t.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), ignoreCase: true) == 0);
             var testDirProcesses = Process.GetProcesses()
-                .Where(t => t.MainModule.FileName.StartsWith(TestFileSystemUtility.NuGetTestFolder));
-            if (processes != null && processes.Length >= 1)
+                .Where(t => t.MainModule.FileName.StartsWith(TestFileSystemUtility.NuGetTestFolder, StringComparison.OrdinalIgnoreCase));
+            try
             {
-                try
+                if (processes != null)
                 {
                     foreach (var process in processes)
                     {
@@ -207,13 +209,18 @@ namespace Dotnet.Integration.Test
                             process.Kill();
                         }
                     }
+                }
+
+                if (testDirProcesses != null)
+                {
                     foreach (var process in testDirProcesses)
                     {
                         process.Kill();
                     }
                 }
-                catch { }
+
             }
+            catch { }
         }
 
         /// <summary>

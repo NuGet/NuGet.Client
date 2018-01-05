@@ -250,7 +250,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
   
-  <Target Name="_GetProjectReferenceVersions" DependsOnTargets="_CalculateInputsOutputsForPacks;$(GetPackageVersionDependsOn)">
+  <Target Name="_GetProjectReferenceVersions" DependsOnTargets="_CalculateInputsOutputsForPack;$(GetPackageVersionDependsOn)">
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
@@ -279,7 +279,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Msbuild>
   </Target>
 
-  <Target Name="_GetProjectVersion" DependsOnTarget="$(GetPackageVersionDependsOn)"
+  <Target Name="_GetProjectVersion" DependsOnTargets="$(GetPackageVersionDependsOn)"
           Returns="@(_ProjectPathWithVersion)">
     <ItemGroup>
       <_ProjectPathWithVersion Include="$(MSBuildProjectFullPath)">
