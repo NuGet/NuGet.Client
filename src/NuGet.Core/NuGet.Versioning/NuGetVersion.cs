@@ -177,7 +177,7 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual bool IsLegacyVersion
         {
-            get { return Version.Revision > 0; }
+            get { return Version.Revision >= 0; }
         }
 
         /// <summary>
