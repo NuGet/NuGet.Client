@@ -170,6 +170,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid project-package combination for {0} {1}. DotnetToolReference project style can only contain references of the DotnetTool type.
+        /// </summary>
+        internal static string Error_InvalidProjectPackageCombo {
+            get {
+                return ResourceManager.GetString("Error_InvalidProjectPackageCombo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to build package because of an unsupported targetFramework value on &apos;{0}&apos;..
         /// </summary>
         internal static string Error_InvalidTargetFramework {
@@ -265,6 +274,15 @@ namespace NuGet.Commands {
         internal static string Error_ProjectWithIncorrectDependenciesCount {
             get {
                 return ResourceManager.GetString("Error_ProjectWithIncorrectDependenciesCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid tools package {0} {1}. Tools packages cannot contain more than 1 PackageType..
+        /// </summary>
+        internal static string Error_ToolsPackageWithExtraPackageTypes {
+            get {
+                return ResourceManager.GetString("Error_ToolsPackageWithExtraPackageTypes", resourceCulture);
             }
         }
         

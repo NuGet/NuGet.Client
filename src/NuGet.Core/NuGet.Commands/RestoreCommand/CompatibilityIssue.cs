@@ -222,23 +222,20 @@ namespace NuGet.Commands
                 case CompatibilityIssueType.IncompatiblePackageWithDotnetTool:
                     {
                         var message = string.Format(CultureInfo.CurrentCulture,
-                               "Invalid project-package combination for {0} {1}. DotnetToolReference project style can only contain references of the DotnetTool type",
+                               Strings.Error_InvalidProjectPackageCombo,
                                Package.Id,
-                               Package.Version.ToNormalizedString(),
-                               1);
+                               Package.Version.ToNormalizedString());
 
                         return FormatMessage(message, string.Empty, string.Empty);
                     }
                 case CompatibilityIssueType.ToolsPackageWithExtraPackageTypes:
                     {
                         var message = string.Format(CultureInfo.CurrentCulture,
-                               "Invalid tools package - {0} {1}. Tools packages cannot contain more than 1 PackageType.",
+                               Strings.Error_ToolsPackageWithExtraPackageTypes,
                                Package.Id,
-                               Package.Version.ToNormalizedString(),
-                               1);
+                               Package.Version.ToNormalizedString());
                         return FormatMessage(message, string.Empty, string.Empty);
                     }
-
                 default:
                     return null;
             }
