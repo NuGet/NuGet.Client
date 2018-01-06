@@ -498,18 +498,18 @@
       
       <TestResultOutputFormat Condition="'$(TestResultOutputFormat)' == ''">html</TestResultOutputFormat>
       <!-- Build exe commands -->
-      <TestResultsHtml Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName).$(TestResultOutputFormat)</TestResultsHtml>
-      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) $DesktopInputTestAssembliesSpaced /logger:trx;LogFileName=$(TestResultsDirectory)$(TestResultsFileName)</VSTestCommand>
+      <TestResultsHtml Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName)-xunit.$(TestResultOutputFormat)</TestResultsHtml>
+      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) --TestAdapterPath:. --logger:xunit;LogFileName=$(TestResultsDirectory)$(TestResultsFileName)-vstest.$(TestResultOutputFormat)</VSTestCommand>
       <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
       <DesktopTestCommand Condition=" '$(TestResultsHtml)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsHtml)</DesktopTestCommand>
     </PropertyGroup>
 
     <!-- Desktop -->
-    <!--Exec Command="$(DesktopTestCommand)"
+    <Exec Command="$(DesktopTestCommand)"
           ContinueOnError="true"
           Condition=" '$(DesktopInputTestAssemblies)' != '' AND '$(SkipDesktopTests)' != 'true' ">
       <Output TaskParameter="ExitCode" PropertyName="DesktopTestErrorCode"/>
-    </Exec-->
+    </Exec>
 
     <!-- VSTest/NETCore -->
     <Exec Command="$(VSTestCommand)"
@@ -521,7 +521,7 @@
     <!--Error Text="Desktop $(TestResultsFileName) tests failed! Results: $(TestResultsHtml)" Condition=" '$(DesktopTestErrorCode)' != '0' AND '$(DesktopTestErrorCode)' != '' " /-->
     <Error Text="NETCore $(TestResultsFileName) tests failed!" Condition=" '$(VSTestErrorCode)' != '0' AND '$(VSTestErrorCode)' != '' " />
 
-    <!--Message Text="Desktop $(TestResultsFileName) tests passed!" Condition=" '$(DesktopTestErrorCode)' == '0' " /-->
+    <Message Text="Desktop $(TestResultsFileName) tests passed!" Condition=" '$(DesktopTestErrorCode)' == '0' " />
     <Message Text="NETCore $(TestResultsFileName) tests passed!" Condition=" '$(VSTestErrorCode)' == '0' " />
   </Target>
 </Project>
