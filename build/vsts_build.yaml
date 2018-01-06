@@ -123,7 +123,7 @@ phases:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
       testRunTitle: "NuGet.Client Desktop Unit Tests On Windows"
-      searchFolder: "$(Build.Repository.LocalPath)\\artifacts\\TestResults"
+      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
       mergeTestResults: "true"
       publishRunAttachments: "false"
     condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
@@ -134,7 +134,7 @@ phases:
       testRunner: "VSTest"
       testResultsFiles: "*.trx"
       testRunTitle: "NuGet.Client .NET Core Unit Tests On Windows"
-      searchFolder: "$(Build.Repository.LocalPath)\\artifacts\\TestResults"
+      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
       mergeTestResults: "true"
       publishRunAttachments: "false"
     condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
@@ -374,7 +374,7 @@ phases:
     inputs:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
-      searchFolder: "$(Build.Repository.LocalPath)\\artifacts\\TestResults"
+      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
       mergeTestResults: "true"
       testRunTitle: "NuGet.Client Desktop Functional Tests On Windows"
     condition: "succeededOrFailed()"
@@ -384,7 +384,7 @@ phases:
     inputs:
       testRunner: "VSTest"
       testResultsFiles: "*.trx"
-      searchFolder: "$(Build.Repository.LocalPath)\\artifacts\\TestResults"
+      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
       mergeTestResults: "true"
       testRunTitle: "NuGet.Client .NET Core Funtional Tests On Windows"
     condition: "succeededOrFailed()"
@@ -420,7 +420,7 @@ phases:
     condition: "succeededOrFailed()"
     inputs:
       testRunner: "VSTest"
-      testResultsFiles: "*.trx"
+      testResultsFiles: "*.xml"
       testRunTitle: "NuGet.Client Tests on Linux"
       searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
       mergeTestResults: "true"
@@ -697,7 +697,7 @@ phases:
     inputs:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
-      searchFolder: "$(System.DefaultWorkingDirectory)\\artifacts\\testresults"
+      searchFolder: "$(System.DefaultWorkingDirectory)\\build\\testresults"
       mergeTestResults: "true"
       testRunTitle: "NuGet.Client Apex Tests"
     condition: "succeededOrFailed()"

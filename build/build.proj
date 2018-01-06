@@ -483,7 +483,7 @@
     </MSBuild>
 
     <PropertyGroup>
-      <TestResultsDirectory>$(ArtifactsDirectory)TestResults\</TestResultsDirectory>
+      <TestResultsDirectory>$(RepositoryRootDirectory)TestResults\</TestResultsDirectory>
     </PropertyGroup>
 
     <!-- Ensure the test results dir exists -->
@@ -496,12 +496,13 @@
       <CoreInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsCore", "true"))</CoreInputTestAssemblies>
       <CoreInputTestAssembliesSpaced>$(CoreInputTestAssemblies.Replace(';', ' '))</CoreInputTestAssembliesSpaced>
       
-      <TestResultOutputFormat Condition="'$(TestResultOutputFormat)' == ''">html</TestResultOutputFormat>
+      <TestResultOutputFormat Condition="'$(TestResultOutputFormat)' == ''">xml</TestResultOutputFormat>
       <!-- Build exe commands -->
-      <TestResultsHtml Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName)-xunit.$(TestResultOutputFormat)</TestResultsHtml>
-      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) --TestAdapterPath:. --logger:xunit;LogFileName=$(TestResultsDirectory)$(TestResultsFileName)-vstest.$(TestResultOutputFormat)</VSTestCommand>
+      <TestResultsXunit Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName)-xunit.$(TestResultOutputFormat)</TestResultsXunit>
+      <TestResultsVsts Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName)-vsts.$(TestResultOutputFormat)</TestResultsVsts>
+      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) --TestAdapterPath:. --logger:xunit;LogFilePath=$(TestResultsVsts)</VSTestCommand>
       <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
-      <DesktopTestCommand Condition=" '$(TestResultsHtml)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsHtml)</DesktopTestCommand>
+      <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit)</DesktopTestCommand>
     </PropertyGroup>
 
     <!-- Desktop -->
@@ -518,10 +519,10 @@
       <Output TaskParameter="ExitCode" PropertyName="VSTestErrorCode"/>
     </Exec>
 
-    <!--Error Text="Desktop $(TestResultsFileName) tests failed! Results: $(TestResultsHtml)" Condition=" '$(DesktopTestErrorCode)' != '0' AND '$(DesktopTestErrorCode)' != '' " /-->
-    <Error Text="NETCore $(TestResultsFileName) tests failed!" Condition=" '$(VSTestErrorCode)' != '0' AND '$(VSTestErrorCode)' != '' " />
+    <Error Text="Desktop $(TestResultsFileName) tests failed! Results: $(TestResultsXunit)" Condition=" '$(DesktopTestErrorCode)' != '0' AND '$(DesktopTestErrorCode)' != '' " />
+    <Error Text="NETCore $(TestResultsFileName) tests failed! Results: $(TestResultsVsts)" Condition=" '$(VSTestErrorCode)' != '0' AND '$(VSTestErrorCode)' != '' " />
 
-    <Message Text="Desktop $(TestResultsFileName) tests passed!" Condition=" '$(DesktopTestErrorCode)' == '0' " />
-    <Message Text="NETCore $(TestResultsFileName) tests passed!" Condition=" '$(VSTestErrorCode)' == '0' " />
+    <Message Text="Desktop $(TestResultsFileName) tests passed! Results: $(TestResultsXunit)" Condition=" '$(DesktopTestErrorCode)' == '0' " />
+    <Message Text="NETCore $(TestResultsFileName) tests passed! Results: $(TestResultsVsts)" Condition=" '$(VSTestErrorCode)' == '0' " />
   </Target>
 </Project>
