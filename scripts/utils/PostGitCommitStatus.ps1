@@ -83,8 +83,8 @@ function SetCommitStatusForTestResult {
     # the status for those tests will forever be in pending state.
     if(($env:AGENT_JOBSTATUS -eq "Failed" -or $env:AGENT_JOBSTATUS -eq "Canceled") -and $TestName -eq "Unit Tests On Windows")
     {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "failed"
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "failed"
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "failed"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
     }
 }

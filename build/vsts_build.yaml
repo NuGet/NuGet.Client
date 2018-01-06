@@ -122,18 +122,7 @@ phases:
     inputs:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
-      testRunTitle: "NuGet.Client Desktop Unit Tests On Windows"
-      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
-      mergeTestResults: "true"
-      publishRunAttachments: "false"
-    condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
-
-  - task: PublishTestResults@2
-    displayName: "Publish NETCore Test Results"
-    inputs:
-      testRunner: "VSTest"
-      testResultsFiles: "*.trx"
-      testRunTitle: "NuGet.Client .NET Core Unit Tests On Windows"
+      testRunTitle: "NuGet.Client Unit Tests On Windows"
       searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
       mergeTestResults: "true"
       publishRunAttachments: "false"
@@ -376,17 +365,7 @@ phases:
       testResultsFiles: "*.xml"
       searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
       mergeTestResults: "true"
-      testRunTitle: "NuGet.Client Desktop Functional Tests On Windows"
-    condition: "succeededOrFailed()"
-
-  - task: PublishTestResults@2
-    displayName: "Publish NETCore Test Results"
-    inputs:
-      testRunner: "VSTest"
-      testResultsFiles: "*.trx"
-      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
-      mergeTestResults: "true"
-      testRunTitle: "NuGet.Client .NET Core Funtional Tests On Windows"
+      testRunTitle: "NuGet.Client Functional Tests On Windows"
     condition: "succeededOrFailed()"
 
 - phase: Tests_On_Linux
@@ -420,7 +399,7 @@ phases:
     condition: "succeededOrFailed()"
     inputs:
       testRunner: "VSTest"
-      testResultsFiles: "*.xml"
+      testResultsFiles: "*.trx"
       testRunTitle: "NuGet.Client Tests on Linux"
       searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
       mergeTestResults: "true"
@@ -697,7 +676,7 @@ phases:
     inputs:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
-      searchFolder: "$(System.DefaultWorkingDirectory)\\build\\testresults"
+      searchFolder: "$(System.DefaultWorkingDirectory)\\build\\TestResults"
       mergeTestResults: "true"
       testRunTitle: "NuGet.Client Apex Tests"
     condition: "succeededOrFailed()"

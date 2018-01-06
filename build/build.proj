@@ -483,7 +483,7 @@
     </MSBuild>
 
     <PropertyGroup>
-      <TestResultsDirectory>$(RepositoryRootDirectory)TestResults\</TestResultsDirectory>
+      <TestResultsDirectory>$(BuildCommonDirectory)TestResults\</TestResultsDirectory>
     </PropertyGroup>
 
     <!-- Ensure the test results dir exists -->
@@ -500,7 +500,9 @@
       <!-- Build exe commands -->
       <TestResultsXunit Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName)-xunit.$(TestResultOutputFormat)</TestResultsXunit>
       <TestResultsVsts Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName)-vsts.$(TestResultOutputFormat)</TestResultsVsts>
-      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) --TestAdapterPath:. --logger:xunit;LogFilePath=$(TestResultsVsts)</VSTestCommand>
+      <VsTestLogger Condition="'$(IsXPlat)' == 'true'">/logger:trx;LogFilePath=$(TestResultsDirectory)$(TestResultsFileName).trx</VsTestLogger>
+      <VsTestLogger Condition="'$(IsXPlat)' != 'true'">--TestAdapterPath:. --logger:xunit;LogFilePath=$(TestResultsVsts)
+      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) $(VsTestLogger)</VSTestCommand>
       <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
       <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit)</DesktopTestCommand>
     </PropertyGroup>
