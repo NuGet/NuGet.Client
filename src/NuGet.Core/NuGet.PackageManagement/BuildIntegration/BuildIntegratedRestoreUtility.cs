@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement
 {
@@ -143,6 +144,34 @@ namespace NuGet.PackageManagement
             return parentNuGetprojects
                 .OrderBy(parent => parent.MSBuildProjectPath, StringComparer.Ordinal)
                 .ToList();
+        }
+
+        public static void UpdatePackageReferenceMetadata(
+            PackageSpec packageSpec,
+            FallbackPackagePathResolver pathResolver,
+            PackageIdentity package)
+        {
+            var info = pathResolver.GetPackageInfo(package.Id, package.Version);
+            var nuspecFilePath = info?.PathResolver.GetManifestFilePath(package.Id, package.Version);
+            var nuspecReader = new NuspecReader(nuspecFilePath);
+            var developmentDependency = nuspecReader.GetDevelopmentDependency();
+
+            if (developmentDependency)
+            {
+                foreach (var frameworkInfo in packageSpec.TargetFrameworks
+                    .OrderBy(framework => framework.FrameworkName.ToString(),
+                        StringComparer.Ordinal))
+                {
+                    var dependency = frameworkInfo.Dependencies.First(dep => dep.Name.Equals(package.Id, StringComparison.OrdinalIgnoreCase));
+
+                    if (dependency?.SuppressParent == LibraryIncludeFlagUtils.DefaultSuppressParent &&
+                        dependency?.IncludeType == LibraryIncludeFlags.All)
+                    {
+                        dependency.SuppressParent = LibraryIncludeFlags.All;
+                        dependency.IncludeType = LibraryIncludeFlags.All & ~LibraryIncludeFlags.Compile;
+                    }
+                }
+            }
         }
     }
 }

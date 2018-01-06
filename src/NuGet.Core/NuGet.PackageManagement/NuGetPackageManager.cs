@@ -2717,10 +2717,29 @@ namespace NuGet.PackageManagement
                     }
                 }
 
+                var pathResolver = new FallbackPackagePathResolver(
+                    projectAction.RestoreResult.LockFile.PackageSpec.RestoreMetadata.PackagesPath,
+                    projectAction.RestoreResult.LockFile.PackageSpec.RestoreMetadata.FallbackFolders);
+
                 foreach (var originalAction in projectAction.OriginalActions.Where(e => !ignoreActions.Contains(e)))
                 {
                     if (originalAction.NuGetProjectActionType == NuGetProjectActionType.Install)
                     {
+                        if (buildIntegratedProject.ProjectStyle == ProjectStyle.PackageReference)
+                        {
+                            BuildIntegratedRestoreUtility.UpdatePackageReferenceMetadata(
+                                projectAction.RestoreResult.LockFile.PackageSpec,
+                                pathResolver,
+                                originalAction.PackageIdentity);
+
+                            var framework = projectAction.InstallationContext.SuccessfulFrameworks.FirstOrDefault();
+                            var resolvedAction = projectAction.RestoreResult.LockFile.PackageSpec.TargetFrameworks.FirstOrDefault(fm => fm.FrameworkName.Equals(framework))
+                                .Dependencies.First(dependency => dependency.Name.Equals(originalAction.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase));
+
+                            projectAction.InstallationContext.SuppressParent = resolvedAction.SuppressParent;
+                            projectAction.InstallationContext.IncludeType = resolvedAction.IncludeType;
+                        }
+
                         // Install the package to the project
                         await buildIntegratedProject.InstallPackageAsync(
                             originalAction.PackageIdentity.Id,
@@ -2740,8 +2759,6 @@ namespace NuGet.PackageManagement
 
                 var logger = new ProjectContextLogger(nuGetProjectContext);
                 var referenceContext = new DependencyGraphCacheContext(logger, Settings);
-                var pathContext = NuGetPathContext.Create(Settings);
-                var pathResolver = new FallbackPackagePathResolver(pathContext);
 
                 var now = DateTime.UtcNow;
                 Action<SourceCacheContext> cacheContextModifier = c => c.MaxAge = now;
