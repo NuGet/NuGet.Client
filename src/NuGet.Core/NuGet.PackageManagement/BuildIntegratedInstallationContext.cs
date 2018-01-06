@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.ProjectManagement.Projects;
 
 namespace NuGet.ProjectManagement
@@ -39,5 +40,15 @@ namespace NuGet.ProjectManagement
         /// framework evaluation depends on the target framework string matching exactly.
         /// </summary>
         public IDictionary<NuGetFramework, string> OriginalFrameworks { get; }
+
+        /// <summary>
+        /// Define transitive behavior for each package dependency for the current project.
+        /// </summary>
+        public LibraryIncludeFlags SuppressParent { get; set; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
+
+        /// <summary>
+        /// Define what all sections of the current package to include in this project.
+        /// </summary>
+        public LibraryIncludeFlags IncludeType { get; set; } = LibraryIncludeFlags.All;
     }
 }
