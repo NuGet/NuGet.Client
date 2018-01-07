@@ -20,12 +20,12 @@ namespace NuGet.Packaging.Signing
         {
             token.ThrowIfCancellationRequested();
 
-            var result = VerifyValidityAndTrust(package, signature, settings);
+            var result = VerifyValidityAndTrust(signature, settings);
             return Task.FromResult(result);
         }
 
 #if IS_DESKTOP
-        private PackageVerificationResult VerifyValidityAndTrust(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifyValidityAndTrust(Signature signature, SignedPackageVerifierSettings settings)
         {
             var issues = new List<SignatureLog>
             {
@@ -272,7 +272,7 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 #else
-        private PackageVerificationResult VerifyValidityAndTrust(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifyValidityAndTrust(Signature signature, SignedPackageVerifierSettings settings)
         {
             throw new NotSupportedException();
         }

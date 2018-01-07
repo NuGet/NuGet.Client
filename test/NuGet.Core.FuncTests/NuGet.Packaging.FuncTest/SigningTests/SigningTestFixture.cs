@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Packaging.Signing;
 using Org.BouncyCastle.Crypto;
@@ -17,6 +18,9 @@ namespace NuGet.Packaging.FuncTest
     /// </summary>
     public class SigningTestFixture : IDisposable
     {
+        private const string _timestamper = "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer";
+        private const int _trustedCertChainLength = 3;
+
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
@@ -138,6 +142,8 @@ namespace NuGet.Packaging.FuncTest
                 return _signingSpecifications;
             }
         }
+
+        public string Timestamper => _timestamper;
 
         public void Dispose()
         {

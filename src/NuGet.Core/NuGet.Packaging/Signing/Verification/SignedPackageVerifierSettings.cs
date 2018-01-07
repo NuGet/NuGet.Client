@@ -20,12 +20,11 @@ namespace NuGet.Packaging.Signing
 
         public bool AllowIgnoreTimestamp { get; }
 
-
         public bool FailWithMultipleTimestamps { get; }
 
         public bool AllowNoTimestamp { get; }
 
-        private SignedPackageVerifierSettings(bool allowUnsigned, bool allowUntrusted, bool allowIgnoreTimestamp, bool failWithMultupleTimestamps, bool allowNoTimestamp)
+        public SignedPackageVerifierSettings(bool allowUnsigned, bool allowUntrusted, bool allowIgnoreTimestamp, bool failWithMultupleTimestamps, bool allowNoTimestamp)
         {
             AllowUnsigned = allowUnsigned;
             AllowUntrusted = allowUntrusted;
@@ -44,8 +43,14 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public static SignedPackageVerifierSettings Default { get; } = AllowAll;
 
+        /// <summary>
+        /// Default policy for scenarios in VS
+        /// </summary>
         public static SignedPackageVerifierSettings VSClientDefaultPolicy { get; } = new SignedPackageVerifierSettings(allowUnsigned: true, allowUntrusted: true, allowIgnoreTimestamp: true, failWithMultupleTimestamps: false, allowNoTimestamp: true);
 
+        /// <summary>
+        /// Default policy for nuget.exe verify --signatures command
+        /// </summary>
         public static SignedPackageVerifierSettings VerifyCommandDefaultPolicy { get; } = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultupleTimestamps: false, allowNoTimestamp: true);
     }
 }

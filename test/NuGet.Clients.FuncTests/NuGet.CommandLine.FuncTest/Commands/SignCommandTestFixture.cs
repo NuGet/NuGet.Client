@@ -3,9 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.CommandLine.Test;
 using NuGet.Packaging.Signing;
+using NuGet.Test.Utility;
 using Test.Utility.Signing;
 
 namespace NuGet.CommandLine.FuncTest.Commands
@@ -17,12 +21,22 @@ namespace NuGet.CommandLine.FuncTest.Commands
     {
         private static readonly string _testTimestampServer = Environment.GetEnvironmentVariable("TIMESTAMP_SERVER_URL");
 
+        private const int _validCertChainLength = 3;
+        private const int _invalidCertChainLength = 2;
+
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TrustedTestCert<TestCertificate> _trustedTestCertWithInvalidEku;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
+        private TrustedCertificateChain _trustedTestCertChain;
+        private TrustedCertificateChain _revokedTestCertChain;
+        private TrustedCertificateChain _revocationUnknownTestCertChain;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
+        private MockServer _crlServer;
+        private bool _crlServerRunning;
+        private object _crlServerRunningLock = new object();
+        private TestDirectory _testDirectory;
         private string _nugetExePath;
 
         public TrustedTestCert<TestCertificate> TrustedTestCertificate
@@ -71,7 +85,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertExpired = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertExpired = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
                 }
 
                 return _trustedTestCertExpired;
@@ -89,12 +103,83 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertNotYetValid = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertNotYetValid = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
                 }
 
                 return _trustedTestCertNotYetValid;
             }
         }
+
+        public TrustedTestCert<TestCertificate> TrustedTestCertificateWithChain
+        {
+            get
+            {
+                if (_trustedTestCertChain == null)
+                {
+                    var certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path);
+
+                    _trustedTestCertChain = new TrustedCertificateChain()
+                    {
+                        Certificates = certChain
+                    };
+
+                    SetUpCrlDistributionPoint();
+                }
+
+                return _trustedTestCertChain.Leaf;
+            }
+        }
+
+        public TrustedTestCert<TestCertificate> RevokedTestCertificateWithChain
+        {
+            get
+            {
+                if (_revokedTestCertChain == null)
+                {
+                    var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path);
+
+                    _revokedTestCertChain = new TrustedCertificateChain()
+                    {
+                        Certificates = certChain
+                    };
+
+                    // mark leaf certificate as revoked
+                    _revokedTestCertChain.Certificates[0].Source.Crl.RevokeCertificate(_revokedTestCertChain.Leaf.Source.Cert);
+
+                    SetUpCrlDistributionPoint();
+                }
+
+                return _revokedTestCertChain.Leaf;
+            }
+        }
+
+        public TrustedTestCert<TestCertificate> RevocationUnknownTestCertificateWithChain
+        {
+            get
+            {
+                if (_revocationUnknownTestCertChain == null)
+                {
+                    var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path);
+
+                    _revocationUnknownTestCertChain = new TrustedCertificateChain()
+                    {
+                        Certificates = certChain
+                    };
+
+                    // delete crl to make revocation status unknown
+                    var crlPath = _revocationUnknownTestCertChain.Certificates[0].Source.Crl.CrlLocalPath;
+                    if (File.Exists(crlPath))
+                    {
+                        File.Delete(crlPath);
+                    }
+
+                    SetUpCrlDistributionPoint();
+                }
+
+                return _revocationUnknownTestCertChain.Leaf;
+            }
+        }
+
 
         public IList<ISignatureVerificationProvider> TrustProviders
         {
@@ -138,13 +223,94 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 return _nugetExePath;
             }
         }
+        public MockServer CrlServer
+        {
+            get
+            {
+                if (_crlServer == null)
+                {
+                    _crlServer = new MockServer();
+                }
+
+                return _crlServer;
+            }
+        }
+
+        public TestDirectory TestDirectory
+        {
+            get
+            {
+                if (_testDirectory == null)
+                {
+                    _testDirectory = TestDirectory.Create();
+                }
+
+                return _testDirectory;
+            }
+        }
 
         public string Timestamper => _testTimestampServer;
+
+        private void SetUpCrlDistributionPoint()
+        {
+            lock (_crlServerRunningLock)
+            {
+                if (!_crlServerRunning)
+                {
+                    CrlServer.Get.Add(
+                        "/",
+                        request =>
+                        {
+                            var urlSplits = request.RawUrl.Split('/').Where(s => !string.IsNullOrEmpty(s)).ToArray();
+                            if (urlSplits.Length != 2 || !urlSplits[1].EndsWith(".crl"))
+                            {
+                                return new Action<HttpListenerResponse>(response =>
+                                {
+                                    response.StatusCode = 404;
+                                });
+                            }
+                            else
+                            {
+                                var crlName = urlSplits[1];
+                                var crlPath = Path.Combine(TestDirectory, crlName);
+                                if (File.Exists(crlPath))
+                                {
+                                    return new Action<HttpListenerResponse>(response =>
+                                    {
+                                        response.ContentType = "application/pkix-crl";
+                                        response.StatusCode = 200;
+                                        var content = File.ReadAllBytes(crlPath);
+                                        MockServer.SetResponseContent(response, content);
+                                    });
+                                }
+                                else
+                                {
+                                    return new Action<HttpListenerResponse>(response =>
+                                    {
+                                        response.StatusCode = 404;
+                                    });
+                                }
+                            }
+                        });
+
+                    CrlServer.Start();
+                    _crlServerRunning = true;
+                }
+            }
+        }
 
         public void Dispose()
         {
             _trustedTestCert?.Dispose();
             _trustedTestCertWithInvalidEku?.Dispose();
+            _trustedTestCertExpired?.Dispose();
+            _trustedTestCertNotYetValid?.Dispose();
+            _trustedTestCertChain?.Dispose();
+            _revokedTestCertChain?.Dispose();
+            _revocationUnknownTestCertChain?.Dispose();
+            _crlServer?.Stop();
+            _crlServer?.Dispose();
+            _testDirectory?.Dispose();
         }
     }
 }
