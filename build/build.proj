@@ -501,7 +501,7 @@
       <TestResultsXunit Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName)-xunit.$(TestResultOutputFormat)</TestResultsXunit>
       <TestResultsVsts Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName)-vsts.$(TestResultOutputFormat)</TestResultsVsts>
       <VsTestLogger Condition="'$(IsXPlat)' == 'true'">/logger:trx;LogFilePath=$(TestResultsDirectory)$(TestResultsFileName).trx</VsTestLogger>
-      <VsTestLogger Condition="'$(IsXPlat)' != 'true'">--TestAdapterPath:. --logger:xunit;LogFilePath=$(TestResultsVsts)
+      <VsTestLogger Condition="'$(IsXPlat)' != 'true'">--TestAdapterPath:. --logger:xunit;LogFilePath=$(TestResultsVsts)</VsTestLogger>
       <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) $(VsTestLogger)</VSTestCommand>
       <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
       <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit)</DesktopTestCommand>
