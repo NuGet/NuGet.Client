@@ -3,16 +3,15 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using NuGet.Common;
 using NuGet.Packaging.Signing;
-using NuGet.Test.Utility;
+using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class PackageSigningUtilitiesTests
+    public class CertificateUtilityTests
     {
         [Theory]
         [InlineData("SHA256WITHRSAENCRYPTION", Oids.Sha256WithRSAEncryption)]
@@ -82,63 +81,55 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetCertificateChain_WhenCertificateNull_Throws()
+        public void IsCertificateValidityPeriodInTheFuture_WithValidityStartInTheFuture_ReturnsTrue()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => CertificateChainUtility.GetCertificateChainForSigning(certificate: null, extraStore: new X509Certificate2Collection(), certificateType: NuGetVerificationCertificateType.Signature));
-
-            Assert.Equal("certificate", exception.ParamName);
-        }
-
-        [Fact]
-        public void GetCertificateChain_WhenExtraStoreNull_Throws()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => CertificateChainUtility.GetCertificateChainForSigning(new X509Certificate2(), extraStore: null, certificateType: NuGetVerificationCertificateType.Signature));
-
-            Assert.Equal("extraStore", exception.ParamName);
-        }
-
-        [Fact]
-        public void GetCertificateChain_WithUntrustedRoot_Throws()
-        {
-            using (var chain = new X509Chain())
-            using (var rootCertificate = GetCertificate("root.crt"))
-            using (var intermediateCertificate = GetCertificate("intermediate.crt"))
-            using (var leafCertificate = GetCertificate("leaf.crt"))
+            using (var certificate = SigningTestUtility.GenerateCertificate(
+                "test",
+                generator => { },
+                notBefore: DateTime.UtcNow.Add(TimeSpan.FromHours(1))
+                ))
             {
-                var extraStore = new X509Certificate2Collection
-                {
-                    rootCertificate,
-                    intermediateCertificate
-                };
-
-                var exception = Assert.Throws<SignatureException>(
-                    () => CertificateChainUtility.GetCertificateChainForSigning(leafCertificate, extraStore, NuGetVerificationCertificateType.Signature));
-
-                Assert.Equal(NuGetLogCode.NU3018, exception.Code);
+                Assert.True(CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate));
             }
         }
 
         [Fact]
-        public void GetCertificateChain_ReturnsCertificatesInOrder()
+        public void IsCertificateValidityPeriodInTheFuture_WithValidityStartInThePast_ReturnsFalse()
         {
-            using (var chain = new X509Chain())
-            using (var rootCertificate = GetCertificate("root.crt"))
-            using (var intermediateCertificate = GetCertificate("intermediate.crt"))
-            using (var leafCertificate = GetCertificate("leaf.crt"))
+            using (var certificate = SigningTestUtility.GenerateCertificate(
+                "test",
+                generator => { },
+                notBefore: DateTime.UtcNow.Subtract(TimeSpan.FromHours(1))
+                ))
             {
-                chain.ChainPolicy.ExtraStore.Add(rootCertificate);
-                chain.ChainPolicy.ExtraStore.Add(intermediateCertificate);
+                Assert.False(CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate));
+            }
+        }
 
-                chain.Build(leafCertificate);
+        [Fact]
+        public void HasLifetimeSigningEku_WithLifetimeSignerEku_ReturnsTrue()
+        {
+            using (var certificate = SigningTestUtility.GenerateCertificate("test",
+                generator =>
+                {
+                    generator.AddExtension(
+                        X509Extensions.ExtendedKeyUsage.Id,
+                        critical: true,
+                        extensionValue: new DerSequence(new DerObjectIdentifier(Oids.LifetimeSignerEkuOid)));
+                }))
+            {
+                Assert.Equal(1, GetExtendedKeyUsageCount(certificate));
+                Assert.True(CertificateUtility.HasLifetimeSigningEku(certificate));
+            }
+        }
 
-                var certificateChain = CertificateChainUtility.CertificateChainToList(chain);
-
-                Assert.Equal(3, certificateChain.Count);
-                Assert.Equal(leafCertificate.Thumbprint, certificateChain[0].Thumbprint);
-                Assert.Equal(intermediateCertificate.Thumbprint, certificateChain[1].Thumbprint);
-                Assert.Equal(rootCertificate.Thumbprint, certificateChain[2].Thumbprint);
+        [Fact]
+        public void HasLifetimeSigningEku_WithoutLifetimeSignerEku_ReturnsFalse()
+        {
+            using (var certificate = SigningTestUtility.GenerateCertificate("test", generator => { }))
+            {
+                Assert.Equal(0, GetExtendedKeyUsageCount(certificate));
+                Assert.False(CertificateUtility.HasLifetimeSigningEku(certificate));
             }
         }
 
@@ -241,13 +232,6 @@ namespace NuGet.Packaging.Test
             }
 
             return 0;
-        }
-
-        private static X509Certificate2 GetCertificate(string name)
-        {
-            var bytes = ResourceTestUtility.GetResourceBytes($"NuGet.Packaging.Test.compiler.resources.{name}", typeof(PackageSigningUtilitiesTests));
-
-            return new X509Certificate2(bytes);
         }
     }
 }

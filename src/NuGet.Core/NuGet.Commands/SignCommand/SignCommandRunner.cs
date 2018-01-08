@@ -26,8 +26,6 @@ namespace NuGet.Commands
 
             var cert = await GetCertificateAsync(signArgs);
 
-            SigningUtility.VerifyCertificate(cert);
-
             signArgs.Logger.LogInformation(Environment.NewLine);
             signArgs.Logger.LogInformation(Strings.SignCommandDisplayCertificate);
             signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2ToString(cert));

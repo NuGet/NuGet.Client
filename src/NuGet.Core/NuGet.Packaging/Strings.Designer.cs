@@ -323,24 +323,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signing certificate chains to an untrusted root..
-        /// </summary>
-        internal static string ErrorSigningCertUntrustedRoot {
-            get {
-                return ResourceManager.GetString("ErrorSigningCertUntrustedRoot", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Timestamp signature validation failed..
-        /// </summary>
-        internal static string ErrorTimestampVerificationFailed {
-            get {
-                return ResourceManager.GetString("ErrorTimestampVerificationFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unable to delete temporary file &apos;{0}&apos;. Error: &apos;{1}&apos;..
         /// </summary>
         internal static string ErrorUnableToDeleteFile {
@@ -746,20 +728,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp&apos;s certificate has a weak public key..
+        ///   Looks up a localized string similar to The timestamp certificate does not meet a minimum public key length requirement..
         /// </summary>
         internal static string TimestampCertificateFailsPublicKeyLengthRequirement {
             get {
                 return ResourceManager.GetString("TimestampCertificateFailsPublicKeyLengthRequirement", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The timestamp&apos;s certificate uses an unsupported signature algorithm..
-        /// </summary>
-        internal static string TimestampCertificateHasUnsupportedSignatureAlgorithm {
-            get {
-                return ResourceManager.GetString("TimestampCertificateHasUnsupportedSignatureAlgorithm", resourceCulture);
             }
         }
         

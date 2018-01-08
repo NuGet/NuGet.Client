@@ -212,7 +212,7 @@ namespace NuGet.Packaging.Signing
             return true;
         }
 
-        internal static bool IsCertificateValidityPeriodInTheFuture(X509Certificate2 certificate)
+        public static bool IsCertificateValidityPeriodInTheFuture(X509Certificate2 certificate)
         {
             return DateTime.Now < certificate.NotBefore;
         }

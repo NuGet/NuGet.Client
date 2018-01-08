@@ -19,30 +19,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public static class SigningUtility
     {
-        public static void VerifyCertificate(X509Certificate2 certificate)
-        {
-            if (!CertificateUtility.IsSignatureAlgorithmSupported(certificate))
-            {
-                throw new SignatureException(NuGetLogCode.NU3013, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm);
-            }
-
-            if (!CertificateUtility.IsCertificatePublicKeyValid(certificate))
-            {
-                throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
-            }
-
-            if (CertificateUtility.HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEkuOid))
-            {
-                throw new SignatureException(NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSignerEKU);
-            }
-
-            if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate))
-            {
-                throw new SignatureException(NuGetLogCode.NU3017, Strings.SignatureNotYetValid);
-            }
-        }
-  
-
         public static void Verify(SignPackageRequest request)
         {
             if (request == null)
@@ -60,11 +36,21 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
             }
 
+            if (CertificateUtility.HasExtendedKeyUsage(request.Certificate, Oids.LifetimeSignerEkuOid))
+            {
+                throw new SignatureException(NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSignerEKU);
+            }
+
+            if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(request.Certificate))
+            {
+                throw new SignatureException(NuGetLogCode.NU3017, Strings.SignatureNotYetValid);
+            }
+
             request.BuildSigningCertificateChainOnce();
         }
 
 #if IS_DESKTOP
-        public static CryptographicAttributeObjectCollection GetSignedAttributes(
+        internal static CryptographicAttributeObjectCollection GetSignedAttributes(
             SignPackageRequest request,
             IReadOnlyList<X509Certificate2> chainList)
         {

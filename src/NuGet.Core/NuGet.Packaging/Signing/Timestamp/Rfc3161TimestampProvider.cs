@@ -123,6 +123,11 @@ namespace NuGet.Packaging.Signing
 
                     var timestampSignerCertificate = timestampCms.SignerInfos[0].Certificate;
 
+                    if (timestampSignerCertificate == null)
+                    {
+                        throw new TimestampException(NuGetLogCode.NU3020, Strings.TimestampNoCertificate);
+                    }
+
                     if (!timestampCertChain.Build(timestampSignerCertificate))
                     {
                         var messages = CertificateChainUtility.GetMessagesFromChainStatuses(timestampCertChain.ChainStatus);
@@ -152,14 +157,14 @@ namespace NuGet.Packaging.Signing
             {
                 signerInfo.CheckSignature(verifySignatureOnly: true);
             }
-            catch
+            catch(Exception e)
             {
-                throw new TimestampException(NuGetLogCode.NU3021, Strings.ErrorTimestampVerificationFailed);
+                throw new TimestampException(NuGetLogCode.NU3021, Strings.TimestampSignatureValidationFailed, e);
             }
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(signerInfo.Certificate))
             {
-                throw new TimestampException(NuGetLogCode.NU3022, Strings.TimestampCertificateHasUnsupportedSignatureAlgorithm);
+                throw new TimestampException(NuGetLogCode.NU3022, Strings.TimestampUnsupportedSignatureAlgorithm);
             }
 
             if (!CertificateUtility.IsCertificatePublicKeyValid(signerInfo.Certificate))
@@ -169,7 +174,7 @@ namespace NuGet.Packaging.Signing
 
             if (!spec.AllowedHashAlgorithmOids.Contains(signerInfo.DigestAlgorithm.Value))
             {
-                throw new TimestampException(NuGetLogCode.NU3024, Strings.TimestampCertificateHasUnsupportedSignatureAlgorithm);
+                throw new TimestampException(NuGetLogCode.NU3024, Strings.TimestampUnsupportedSignatureAlgorithm);
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(signerInfo.Certificate))

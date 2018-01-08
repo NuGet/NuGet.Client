@@ -41,7 +41,7 @@ namespace NuGet.Packaging.Signing
 
                 if (BuildCertificateChain(chain, certificate, out var chainStatuses))
                 {
-                    return CertificateChainToList(chain);
+                    return GetCertificateListFromChain(chain);
                 }
 
                 var messages = GetMessagesFromChainStatuses(chainStatuses);
@@ -54,8 +54,9 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Create an ordered list of certificates. The leaf node is returned first.
         /// </summary>
+        /// <param name="certChain">Certificate chain to be converted to list.</param>
         /// <remarks>This does not check validity or trust. It returns the chain as-is.</remarks>
-        public static IReadOnlyList<X509Certificate2> CertificateChainToList(X509Chain certChain)
+        public static IReadOnlyList<X509Certificate2> GetCertificateListFromChain(X509Chain certChain)
         {
             if (certChain == null)
             {
