@@ -118,7 +118,7 @@ phases:
     condition: "and(always(),eq(variables['BuildRTM'], 'true'))"
 
   - task: PublishTestResults@2
-    displayName: "Publish Desktop Test Results"
+    displayName: "Publish Test Results"
     inputs:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
@@ -358,7 +358,7 @@ phases:
     condition: "always()"
 
   - task: PublishTestResults@2
-    displayName: "Publish Desktop Test Results"
+    displayName: "Publish Test Results"
     continueOnError: "true"
     inputs:
       testRunner: "XUnit"
@@ -398,8 +398,8 @@ phases:
     displayName: "Publish Test Results"
     condition: "succeededOrFailed()"
     inputs:
-      testRunner: "VSTest"
-      testResultsFiles: "*.trx"
+      testRunner: "XUnit"
+      testResultsFiles: "*.xml"
       testRunTitle: "NuGet.Client Tests on Linux"
       searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
       mergeTestResults: "true"
@@ -440,23 +440,12 @@ phases:
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
     inputs:
-      testRunner: "VSTest"
-      testResultsFiles: "*.trx"
-      searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
-      mergeTestResults: "true"
-      testRunTitle: "NuGet.Client Tests on Mac"
-    condition: "succeededOrFailed()"
-
-  - task: PublishTestResults@2
-    displayName: "Publish Test Results for Mono"
-    inputs:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
       searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
       mergeTestResults: "true"
-      testRunTitle: "NuGet.Client Tests on Mono for Mac"
+      testRunTitle: "NuGet.Client Tests On Mac"
     condition: "succeededOrFailed()"
-
 
 - phase: End_To_End_Tests_On_Windows
   dependsOn: Build_and_UnitTest
