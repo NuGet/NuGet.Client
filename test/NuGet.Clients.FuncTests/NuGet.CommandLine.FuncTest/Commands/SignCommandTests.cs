@@ -198,7 +198,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_SignPackageWithValidCertChain()
         {
             // Arrange
-            var cert = _testFixture.TrustedTestCertificateWithChain;
+            var cert = _testFixture.TrustedTestCertificateChain.Leaf;
 
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())

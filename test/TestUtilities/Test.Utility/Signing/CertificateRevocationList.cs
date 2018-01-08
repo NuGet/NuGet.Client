@@ -51,14 +51,8 @@ namespace Test.Utility.Signing
             crlGen.SetIssuerDN(bcIssuerCert.SubjectDN);
             crlGen.SetThisUpdate(DateTime.Now);
             crlGen.SetNextUpdate(DateTime.Now.AddYears(1));
-
-            crlGen.AddExtension(X509Extensions.AuthorityKeyIdentifier,
-                               false,
-                               new AuthorityKeyIdentifierStructure(bcIssuerCert));
-
-            crlGen.AddExtension(X509Extensions.CrlNumber,
-                               false,
-                               new CrlNumber(version));
+            crlGen.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(bcIssuerCert));
+            crlGen.AddExtension(X509Extensions.CrlNumber, false, new CrlNumber(version));
 
             if (revokedCertificate != null)
             {

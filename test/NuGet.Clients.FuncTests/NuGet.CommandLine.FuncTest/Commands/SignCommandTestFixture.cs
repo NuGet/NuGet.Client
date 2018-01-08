@@ -110,7 +110,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        public TrustedTestCert<TestCertificate> TrustedTestCertificateWithChain
+        public TrustedCertificateChain TrustedTestCertificateChain
         {
             get
             {
@@ -126,7 +126,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     SetUpCrlDistributionPoint();
                 }
 
-                return _trustedTestCertChain.Leaf;
+                return _trustedTestCertChain;
             }
         }
 
