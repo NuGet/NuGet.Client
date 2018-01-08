@@ -5,8 +5,10 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Xunit;
 
 namespace NuGet.Packaging.Test
 {
@@ -33,6 +35,31 @@ namespace NuGet.Packaging.Test
             var verifier = new PackageSignatureVerifier(verificationProviders, settings);
             var result = await verifier.VerifySignaturesAsync(signPackage, CancellationToken.None);
             return result;
+        }
+
+        internal static byte[] GetResourceBytes(string name)
+        {
+            return ResourceTestUtility.GetResourceBytes($"NuGet.Packaging.Test.compiler.resources.{name}", typeof(SignTestUtility));
+        }
+
+        internal static X509Certificate2 GetCertificate(string name)
+        {
+            var bytes = GetResourceBytes(name);
+
+            return new X509Certificate2(bytes);
+        }
+
+        internal static byte[] GetHash(X509Certificate2 certificate, HashAlgorithmName hashAlgorithm)
+        {
+            return hashAlgorithm.ComputeHash(certificate.RawData);
+        }
+
+        internal static void VerifyByteArrays(byte[] expected, byte[] actual)
+        {
+            var expectedHex = BitConverter.ToString(expected).Replace("-", "");
+            var actualHex = BitConverter.ToString(actual).Replace("-", "");
+
+            Assert.Equal(expectedHex, actualHex);
         }
     }
 }

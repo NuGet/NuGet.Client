@@ -3,7 +3,6 @@
 
 #if NET46
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
@@ -18,6 +17,11 @@ namespace NuGet.Packaging.Test
 
         public SignatureTests(CertificatesFixture fixture)
         {
+            if (fixture == null)
+            {
+                throw new ArgumentNullException(nameof(fixture));
+            }
+
             _fixture = fixture;
         }
 
@@ -62,7 +66,7 @@ namespace NuGet.Packaging.Test
             using (var test = new LoadTest(_fixture))
             {
                 test.CmsSigner.SignedAttributes.Add(
-                    AttributeUtility.GetCommitmentTypeIndication(SignatureType.Author));
+                    AttributeUtility.CreateCommitmentTypeIndication(SignatureType.Author));
                 test.CmsSigner.SignedAttributes.Add(new Pkcs9SigningTime());
 
                 test.SignedCms.ComputeSignature(test.CmsSigner);
@@ -71,7 +75,32 @@ namespace NuGet.Packaging.Test
                     () => Signature.Load(test.SignedCms.Encode()));
 
                 Assert.Equal(NuGetLogCode.NU3011, exception.Code);
-                Assert.Equal("The author signature is invalid.", exception.Message);
+                Assert.Equal("The signing-certificate-v2 attribute must be present.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public void Load_WithAuthorSignatureWithMultipleSigningCertificateV2AttributeValues_Throws()
+        {
+            using (var test = new LoadTest(_fixture))
+            {
+                test.CmsSigner.SignedAttributes.Add(
+                    AttributeUtility.CreateCommitmentTypeIndication(SignatureType.Author));
+                test.CmsSigner.SignedAttributes.Add(new Pkcs9SigningTime());
+
+                var attribute = AttributeUtility.CreateSigningCertificateV2(test.Certificate, HashAlgorithmName.SHA256);
+
+                attribute.Values.Add(attribute.Values[0]);
+                
+                test.CmsSigner.SignedAttributes.Add(attribute);
+
+                test.SignedCms.ComputeSignature(test.CmsSigner);
+
+                var exception = Assert.Throws<SignatureException>(
+                    () => Signature.Load(test.SignedCms.Encode()));
+
+                Assert.Equal(NuGetLogCode.NU3011, exception.Code);
+                Assert.Equal("Multiple signing-certificate-v2 attribute values are not allowed.", exception.Message);
             }
         }
 
@@ -80,12 +109,10 @@ namespace NuGet.Packaging.Test
         {
             using (var test = new LoadTest(_fixture))
             {
-                var chain = new List<X509Certificate2>() { test.Certificate };
-
                 test.CmsSigner.SignedAttributes.Add(
-                    AttributeUtility.GetCommitmentTypeIndication(SignatureType.Author));
+                    AttributeUtility.CreateCommitmentTypeIndication(SignatureType.Author));
                 test.CmsSigner.SignedAttributes.Add(
-                    AttributeUtility.GetSigningCertificateV2(chain, HashAlgorithmName.SHA256));
+                    AttributeUtility.CreateSigningCertificateV2(test.Certificate, HashAlgorithmName.SHA256));
 
                 test.SignedCms.ComputeSignature(test.CmsSigner);
 
@@ -93,28 +120,39 @@ namespace NuGet.Packaging.Test
                     () => Signature.Load(test.SignedCms.Encode()));
 
                 Assert.Equal(NuGetLogCode.NU3011, exception.Code);
-                Assert.Equal("The author signature is invalid.", exception.Message);
+                Assert.Equal("The primary signature is invalid.", exception.Message);
             }
         }
 
         [Fact]
-        public void Load_WithAuthorSignature_ReturnSignature()
+        public void Load_WithAuthorSignature_ReturnsSignature()
         {
             using (var test = new LoadTest(_fixture))
             {
-                var chain = new List<X509Certificate2>() { test.Certificate };
-
                 test.CmsSigner.SignedAttributes.Add(
-                    AttributeUtility.GetCommitmentTypeIndication(SignatureType.Author));
+                    AttributeUtility.CreateCommitmentTypeIndication(SignatureType.Author));
                 test.CmsSigner.SignedAttributes.Add(new Pkcs9SigningTime());
                 test.CmsSigner.SignedAttributes.Add(
-                    AttributeUtility.GetSigningCertificateV2(chain, HashAlgorithmName.SHA256));
+                    AttributeUtility.CreateSigningCertificateV2(test.Certificate, HashAlgorithmName.SHA256));
 
                 test.SignedCms.ComputeSignature(test.CmsSigner);
 
                 var signature = Signature.Load(test.SignedCms.Encode());
 
                 Assert.Equal(SignatureType.Author, signature.Type);
+            }
+        }
+
+        [Fact]
+        public void Load_WithGenericSignature_ReturnsSignatureWithUnknownType()
+        {
+            using (var test = new LoadTest(_fixture))
+            {
+                test.SignedCms.ComputeSignature(test.CmsSigner);
+
+                var signature = Signature.Load(test.SignedCms.Encode());
+
+                Assert.Equal(SignatureType.Unknown, signature.Type);
             }
         }
 

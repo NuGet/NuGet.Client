@@ -24,6 +24,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
         internal const byte ContextSpecificConstructedTag1 = ContextSpecificConstructedTag0 | 1;
         internal const byte ContextSpecificConstructedTag2 = ContextSpecificConstructedTag0 | 2;
         internal const byte ContextSpecificConstructedTag3 = ContextSpecificConstructedTag0 | 3;
+        internal const byte ContextSpecificConstructedTag4 = ContextSpecificConstructedTag0 | 4;
         internal const byte ConstructedSequence = ConstructedFlag | (byte)DerTag.Sequence;
 
         // 0b1100_0000
@@ -210,6 +211,13 @@ namespace NuGet.Packaging.Signing.DerEncoding
             bool value = _data[_position] != 0;
             _position += length;
             return value;
+        }
+
+        internal byte[] ReadValue(DerTag tag)
+        {
+            EatTag(tag);
+
+            return ReadContentAsBytes();
         }
 
         internal int ReadInteger()

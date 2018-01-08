@@ -71,6 +71,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A complete certificate chain could not be built for the signing certificate..
+        /// </summary>
+        internal static string CertificateChainBuildFailed {
+            get {
+                return ResourceManager.GetString("CertificateChainBuildFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SHA1 hash: {0}.
         /// </summary>
         internal static string CertUtilityCertificateHash {
@@ -377,15 +386,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The author signature is invalid..
-        /// </summary>
-        internal static string InvalidAuthorSignature {
-            get {
-                return ResourceManager.GetString("InvalidAuthorSignature", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to {0} This validation error occurred in a &apos;{1}&apos; element..
         /// </summary>
         internal static string InvalidNuspecElement {
@@ -449,11 +449,29 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The primary signature is invalid..
+        /// </summary>
+        internal static string InvalidPrimarySignature {
+            get {
+                return ResourceManager.GetString("InvalidPrimarySignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package signature content is invalid..
         /// </summary>
         internal static string InvalidSignatureContent {
             get {
                 return ResourceManager.GetString("InvalidSignatureContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp signature is invalid..
+        /// </summary>
+        internal static string InvalidTimestampSignature {
+            get {
+                return ResourceManager.GetString("InvalidTimestampSignature", resourceCulture);
             }
         }
         
@@ -683,6 +701,24 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The signing-certificate attribute is not allowed..
+        /// </summary>
+        internal static string SigningCertificateAttributeMustNotBePresent {
+            get {
+                return ResourceManager.GetString("SigningCertificateAttributeMustNotBePresent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A certificate referenced by the signing-certificate attribute could not be found..
+        /// </summary>
+        internal static string SigningCertificateCertificateNotFound {
+            get {
+                return ResourceManager.GetString("SigningCertificateCertificateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The signing certificate does not meet a minimum public key length requirement..
         /// </summary>
         internal static string SigningCertificateFailsPublicKeyLengthRequirement {
@@ -701,11 +737,83 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An attribute with &quot;signing-certificate-v2&quot; OID ({0}) is required..
+        ///   Looks up a localized string similar to The signing-certificate attribute is invalid..
         /// </summary>
-        internal static string SigningCertificateV2AttributeRequired {
+        internal static string SigningCertificateInvalid {
             get {
-                return ResourceManager.GetString("SigningCertificateV2AttributeRequired", resourceCulture);
+                return ResourceManager.GetString("SigningCertificateInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple signing-certificate attributes are not allowed..
+        /// </summary>
+        internal static string SigningCertificateMultipleAttributes {
+            get {
+                return ResourceManager.GetString("SigningCertificateMultipleAttributes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple signing-certificate attribute values are not allowed..
+        /// </summary>
+        internal static string SigningCertificateMultipleAttributeValues {
+            get {
+                return ResourceManager.GetString("SigningCertificateMultipleAttributeValues", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The signing-certificate-v2 attribute must be present..
+        /// </summary>
+        internal static string SigningCertificateV2AttributeMustBePresent {
+            get {
+                return ResourceManager.GetString("SigningCertificateV2AttributeMustBePresent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A certificate referenced by the signing-certificate-v2 attribute could not be found..
+        /// </summary>
+        internal static string SigningCertificateV2CertificateNotFound {
+            get {
+                return ResourceManager.GetString("SigningCertificateV2CertificateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The signing-certificate-v2 attribute is invalid..
+        /// </summary>
+        internal static string SigningCertificateV2Invalid {
+            get {
+                return ResourceManager.GetString("SigningCertificateV2Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple signing-certificate-v2 attributes are not allowed..
+        /// </summary>
+        internal static string SigningCertificateV2MultipleAttributes {
+            get {
+                return ResourceManager.GetString("SigningCertificateV2MultipleAttributes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple signing-certificate-v2 attribute values are not allowed..
+        /// </summary>
+        internal static string SigningCertificateV2MultipleAttributeValues {
+            get {
+                return ResourceManager.GetString("SigningCertificateV2MultipleAttributeValues", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The signing-certificate-v2 attribute uses an unsupported hash algorithm..
+        /// </summary>
+        internal static string SigningCertificateV2UnsupportedHashAlgorithm {
+            get {
+                return ResourceManager.GetString("SigningCertificateV2UnsupportedHashAlgorithm", resourceCulture);
             }
         }
         

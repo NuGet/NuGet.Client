@@ -255,7 +255,7 @@ namespace NuGet.Common
         NU3010 = 3010,
 
         /// <summary>
-        /// The author signature is invalid.
+        /// The primary signature is invalid.
         /// </summary>
         NU3011 = 3011,
 
@@ -343,6 +343,11 @@ namespace NuGet.Common
         /// Chain building failed for timestamp
         /// </summary>
         NU3028 = 3028,
+
+        /// <summary>
+        /// The timestamp signature is invalid.
+        /// </summary>
+        NU3029 = 3029,
 
         /// <summary>
         /// Undefined Package Error.

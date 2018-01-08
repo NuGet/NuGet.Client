@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Security.Cryptography;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -36,7 +34,7 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
             }
 
-            if (CertificateUtility.HasExtendedKeyUsage(request.Certificate, Oids.LifetimeSignerEkuOid))
+            if (CertificateUtility.HasExtendedKeyUsage(request.Certificate, Oids.LifetimeSignerEku))
             {
                 throw new SignatureException(NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSignerEKU);
             }
@@ -54,6 +52,11 @@ namespace NuGet.Packaging.Signing
             SignPackageRequest request,
             IReadOnlyList<X509Certificate2> chainList)
         {
+            if (chainList == null || chainList.Count == 0)
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(chainList));
+            }
+
             var attributes = new CryptographicAttributeObjectCollection
             {
                 new Pkcs9SigningTime()
@@ -62,11 +65,10 @@ namespace NuGet.Packaging.Signing
             if (request.SignatureType != SignatureType.Unknown)
             {
                 // Add signature type if set.
-                attributes.Add(AttributeUtility.GetCommitmentTypeIndication(request.SignatureType));
+                attributes.Add(AttributeUtility.CreateCommitmentTypeIndication(request.SignatureType));
             }
 
-            // Add the full chain of certificate hashes
-            attributes.Add(AttributeUtility.GetSigningCertificateV2(chainList, request.SignatureHashAlgorithm));
+            attributes.Add(AttributeUtility.CreateSigningCertificateV2(chainList[0], request.SignatureHashAlgorithm));
 
             return attributes;
         }

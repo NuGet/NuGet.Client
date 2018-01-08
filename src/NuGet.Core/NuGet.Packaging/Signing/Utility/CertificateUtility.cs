@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
@@ -141,9 +142,8 @@ namespace NuGet.Packaging.Signing
         /// <returns>True if the certificate has the lifetime signing EKU</returns>
         public static bool HasLifetimeSigningEku(X509Certificate2 certificate)
         {
-            return HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEkuOid);
+            return HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEku);
         }
-
 
         /// <summary>
         /// Checks if an X509Certificate2 contains a particular Extended Key Usage (EKU).
@@ -155,7 +155,7 @@ namespace NuGet.Packaging.Signing
         {
             foreach (var extension in certificate.Extensions)
             {
-                if (string.Equals(extension.Oid.Value, Oids.EnhancedKeyUsageOid))
+                if (string.Equals(extension.Oid.Value, Oids.EnhancedKeyUsage))
                 {
                     var ekuExtension = (X509EnhancedKeyUsageExtension)extension;
 
@@ -188,7 +188,7 @@ namespace NuGet.Packaging.Signing
         {
             foreach (var extension in certificate.Extensions)
             {
-                if (string.Equals(extension.Oid.Value, Oids.EnhancedKeyUsageOid))
+                if (string.Equals(extension.Oid.Value, Oids.EnhancedKeyUsage))
                 {
                     var ekuExtension = (X509EnhancedKeyUsageExtension)extension;
 
@@ -215,6 +215,11 @@ namespace NuGet.Packaging.Signing
         public static bool IsCertificateValidityPeriodInTheFuture(X509Certificate2 certificate)
         {
             return DateTime.Now < certificate.NotBefore;
+        }
+
+        internal static byte[] GetHash(X509Certificate2 certificate, HashAlgorithmName hashAlgorithm)
+        {
+            return hashAlgorithm.ComputeHash(certificate.RawData);
         }
     }
 }

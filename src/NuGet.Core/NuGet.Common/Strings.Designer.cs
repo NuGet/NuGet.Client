@@ -150,5 +150,14 @@ namespace NuGet.Common {
                 return ResourceManager.GetString("UnsupportedHashAlgorithm", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The hash algorithm &apos;{0}&apos; is unsupported..
+        /// </summary>
+        internal static string UnsupportedHashAlgorithmName {
+            get {
+                return ResourceManager.GetString("UnsupportedHashAlgorithmName", resourceCulture);
+            }
+        }
     }
 }

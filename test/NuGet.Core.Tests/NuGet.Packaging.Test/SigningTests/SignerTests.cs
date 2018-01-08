@@ -22,6 +22,11 @@ namespace NuGet.Packaging.Test
 
         public SignerTests(CertificatesFixture fixture)
         {
+            if (fixture == null)
+            {
+                throw new ArgumentNullException(nameof(fixture));
+            }
+
             _fixture = fixture;
         }
 

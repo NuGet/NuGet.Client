@@ -70,7 +70,7 @@ namespace NuGet.Packaging.FuncTest
                 timestampedCms.Certificates.Count.Should().Be(1);
                 timestampedCms.SignerInfos.Count.Should().Be(1);
                 timestampedCms.SignerInfos[0].UnsignedAttributes.Count.Should().Be(1);
-                timestampedCms.SignerInfos[0].UnsignedAttributes[0].Oid.Value.Should().Be(Oids.SignatureTimeStampTokenAttributeOid);
+                timestampedCms.SignerInfos[0].UnsignedAttributes[0].Oid.Value.Should().Be(Oids.SignatureTimeStampTokenAttribute);
 
             }
         }

@@ -117,60 +117,6 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithNoSigningCertificate_Throws()
-        {
-            var package = new SimpleTestPackageContext();
-
-            using (var directory = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            {
-                var packageFilePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(testCertificate, package, directory);
-
-                using (var packageReader = new PackageArchiveReader(packageFilePath))
-                {
-                    var signature = (await packageReader.GetSignaturesAsync(CancellationToken.None)).Single();
-                    var signatureWithNoCertificates = GenerateSignatureWithNoCertificates(signature);
-                    var provider = new SignatureTrustAndValidityVerificationProvider();
-
-                    var result = await provider.GetTrustResultAsync(
-                        packageReader,
-                        signatureWithNoCertificates,
-                        SignedPackageVerifierSettings.Default,
-                        CancellationToken.None);
-
-                    var issue = result.Issues.FirstOrDefault(log => log.Code == NuGetLogCode.NU3010);
-
-                    Assert.NotNull(issue);
-                    Assert.Equal("The primary signature does not have a signing certificate.", issue.Message);
-                }
-            }
-        }
-
-        private static Signature GenerateSignatureWithNoCertificates(Signature signature)
-        {
-            var certificateStore = X509StoreFactory.Create(
-                "Certificate/Collection",
-                new X509CollectionStoreParameters(Array.Empty<Org.BouncyCastle.X509.X509Certificate>()));
-            var crlStore = X509StoreFactory.Create(
-                "CRL/Collection",
-                new X509CollectionStoreParameters(Array.Empty<Org.BouncyCastle.X509.X509Crl>()));
-            var bytes = signature.SignedCms.Encode();
-
-            using (var readStream = new MemoryStream(bytes))
-            using (var writeStream = new MemoryStream())
-            {
-                CmsSignedDataParser.ReplaceCertificatesAndCrls(
-                    readStream,
-                    certificateStore,
-                    crlStore,
-                    certificateStore,
-                    writeStream);
-
-                return Signature.Load(writeStream.ToArray());
-            }
-        }
-
         private static Signature GenerateInvalidSignature(Signature signature)
         {
             var hash = Encoding.UTF8.GetBytes(signature.SignatureContent.HashValue);

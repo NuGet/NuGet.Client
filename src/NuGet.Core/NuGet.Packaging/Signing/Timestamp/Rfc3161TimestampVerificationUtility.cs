@@ -37,7 +37,7 @@ namespace NuGet.Packaging.Signing
             out Rfc3161TimestampTokenInfo tstInfo)
         {
             tstInfo = null;
-            if (timestampCms.ContentInfo.ContentType.Value.Equals(Oids.TSTInfoContentTypeOid))
+            if (timestampCms.ContentInfo.ContentType.Value.Equals(Oids.TSTInfoContentType))
             {
                 tstInfo = new Rfc3161TimestampTokenInfo(timestampCms.ContentInfo.Content);
                 return true;
@@ -52,7 +52,7 @@ namespace NuGet.Packaging.Signing
 
             if (!tstInfo.AccuracyInMicroseconds.HasValue)
             {
-                if (StringComparer.Ordinal.Equals(tstInfo.PolicyId, Oids.BaselineTimestampPolicyOid))
+                if (StringComparer.Ordinal.Equals(tstInfo.PolicyId, Oids.BaselineTimestampPolicy))
                 {
                     accuracyInMilliseconds = 1000;
                 }
