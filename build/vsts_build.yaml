@@ -1,7 +1,7 @@
 name: $(SourceBranchName)-$(Date:yyyyMMdd)-$(rev:rr)
 phases:
 
-- phase: Initialize_GitHub_Status
+- phase: Initialize_Build
   queue:
     name: VSEng-MicroBuildVS2017
     timeoutInMinutes: 60
@@ -17,9 +17,17 @@ phases:
       inlineScript: |
         . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
         InitializeAllTestsToPending -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion)
+  
+  - task: PowerShell@1
+    displayName: "Add Build Tags"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[build.addbuildtag]$env:BUILD_SOURCEVERSIONAUTHOR"
+        Write-Host "##vso[build.addbuildtag]$env:BUILD_SOURCEBRANCHNAME" 
 
 - phase: Build_and_UnitTest
-  dependsOn: Initialize_GitHub_Status
+  dependsOn: Initialize_Build
   queue:
     name: VSEng-MicroBuildVS2017
     timeoutInMinutes: 90
@@ -308,7 +316,7 @@ phases:
 
 
 - phase: Functional_Tests_On_Windows
-  dependsOn: Initialize_GitHub_Status
+  dependsOn: Initialize_Build
   queue:
     name: VSEng-MicroBuildSxS
     timeoutInMinutes: 120
@@ -382,7 +390,7 @@ phases:
     condition: "succeededOrFailed()"
 
 - phase: Tests_On_Linux
-  dependsOn: Initialize_GitHub_Status
+  dependsOn: Initialize_Build
   queue:
     name: DDNuGet-Linux
     timeoutInMinutes: 45
