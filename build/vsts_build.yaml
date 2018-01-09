@@ -108,15 +108,6 @@ phases:
       msbuildArguments: "/t:CoreUnitTests;UnitTestsVS15 /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Revision) /p:TestResultOutputFormat=xml"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
-  - task: PowerShell@1
-    displayName: "Initialize Git Commit Status on GitHub"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Unit Tests On Windows"
-    condition: "and(always(),eq(variables['BuildRTM'], 'true'))"
-
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
     inputs:
@@ -127,6 +118,16 @@ phases:
       mergeTestResults: "true"
       publishRunAttachments: "false"
     condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
+
+  - task: PowerShell@1
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      scriptType: "inlineScript"
+      arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Unit Tests On Windows"
+    condition: "and(always(),eq(variables['BuildRTM'], 'true'))"
 
   - task: PublishBuildArtifacts@1
     displayName: "Publish NuGet.CommandLine.Test as artifact"
@@ -348,15 +349,6 @@ phases:
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CoreFuncTests  /p:BuildRTM=false  /p:BuildNumber=$(Revision) /p:TestResultOutputFormat=xml"
 
-  - task: PowerShell@1
-    displayName: "Initialize Git Commit Status on GitHub"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Functional Tests On Windows"
-    condition: "always()"
-
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
     continueOnError: "true"
@@ -367,6 +359,16 @@ phases:
       mergeTestResults: "true"
       testRunTitle: "NuGet.Client Functional Tests On Windows"
     condition: "succeededOrFailed()"
+
+  - task: PowerShell@1
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      scriptType: "inlineScript"
+      arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -TestName "Functional Tests On Windows"
+    condition: "always()"
 
 - phase: Tests_On_Linux
   dependsOn: Initialize_Build
@@ -384,7 +386,17 @@ phases:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
-  
+
+  - task: PublishTestResults@2
+    displayName: "Publish Test Results"
+    condition: "succeededOrFailed()"
+    inputs:
+      testRunner: "XUnit"
+      testResultsFiles: "*.xml"
+      testRunTitle: "NuGet.Client Tests On Linux"
+      searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
+      mergeTestResults: "true"
+
   - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
     displayName: "Initialize Git Commit Status on GitHub"
     inputs:
@@ -393,16 +405,6 @@ phases:
       args: "$(NuGetLurkerPersonalAccessToken) \"Tests On Linux\" $(Agent.JobStatus)"
       cwd: "$(Build.Repository.LocalPath)"
     condition: "always()"
-
-  - task: PublishTestResults@2
-    displayName: "Publish Test Results"
-    condition: "succeededOrFailed()"
-    inputs:
-      testRunner: "XUnit"
-      testResultsFiles: "*.xml"
-      testRunTitle: "NuGet.Client Tests on Linux"
-      searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
-      mergeTestResults: "true"
 
 - phase: Tests_On_Mac
   dependsOn: Build_and_UnitTest
@@ -428,15 +430,6 @@ phases:
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
 
-  - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
-    displayName: "Initialize Git Commit Status on GitHub"
-    inputs:
-      type: "FilePath"
-      scriptPath: "scripts/utils/PostGitCommitStatus.sh"
-      args: "$(NuGetLurkerPersonalAccessToken) \"Tests On Mac\" $(Agent.JobStatus)"
-      cwd: "$(Build.Repository.LocalPath)"
-    condition: "always()"
-
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
     inputs:
@@ -446,6 +439,15 @@ phases:
       mergeTestResults: "true"
       testRunTitle: "NuGet.Client Tests On Mac"
     condition: "succeededOrFailed()"
+
+  - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      type: "FilePath"
+      scriptPath: "scripts/utils/PostGitCommitStatus.sh"
+      args: "$(NuGetLurkerPersonalAccessToken) \"Tests On Mac\" $(Agent.JobStatus)"
+      cwd: "$(Build.Repository.LocalPath)"
+    condition: "always()"
 
 - phase: End_To_End_Tests_On_Windows
   dependsOn: Build_and_UnitTest
@@ -457,7 +459,6 @@ phases:
     name: DDNuGet-Windows
     timeoutInMinutes: 75
     demands: DotNetFramework
-
 
   steps:
   - task: PowerShell@1
@@ -518,15 +519,6 @@ phases:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
       arguments: "-PMCCommand $(EndToEndTestCommandToRun) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 15.0"
 
-  - task: PowerShell@1
-    displayName: "Initialize Git Commit Status on GitHub"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "EndToEnd Tests On Windows"
-    condition: "always()"
-
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
     inputs:
@@ -534,8 +526,18 @@ phases:
       testResultsFiles: "*.xml"
       searchFolder: "$(System.DefaultWorkingDirectory)\\testresults"
       mergeTestResults: "true"
-      testRunTitle: "NuGet.Client End To End Tests "
+      testRunTitle: "NuGet.Client EndToEnd Tests On Windows"
     condition: "succeededOrFailed()"
+
+  - task: PowerShell@1
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      scriptType: "inlineScript"
+      arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "EndToEnd Tests On Windows"
+    condition: "always()"
 
   - task: PowerShell@1
     displayName: "Kill running instances of DevEnv"
@@ -651,15 +653,6 @@ phases:
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml  /p:NUGET_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\35MSSharedLib1024.snk /p:BuildNumber=$(Build.BuildNumber)"
 
-  - task: PowerShell@1
-    displayName: "Initialize Git Commit Status on GitHub"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Apex Tests On Windows"
-    condition: "always()"
-
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
     inputs:
@@ -667,8 +660,18 @@ phases:
       testResultsFiles: "*.xml"
       searchFolder: "$(System.DefaultWorkingDirectory)\\build\\TestResults"
       mergeTestResults: "true"
-      testRunTitle: "NuGet.Client Apex Tests"
+      testRunTitle: "NuGet.Client Apex Tests On Windows"
     condition: "succeededOrFailed()"
+
+  - task: PowerShell@1
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
+      scriptType: "inlineScript"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Apex Tests On Windows"
+    condition: "always()"
 
   - task: PowerShell@1
     displayName: "Kill running instances of DevEnv"
