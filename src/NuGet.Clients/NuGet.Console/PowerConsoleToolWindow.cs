@@ -36,7 +36,7 @@ namespace NuGetConsole.Implementation
     public sealed class PowerConsoleToolWindow : ToolWindowPane, IOleCommandTarget, IPowerConsoleService
     {
         private JoinableTask _loadTask;
-
+        private const string F1KeywordValuePmc = "VS.NuGet.PackageManager.Console";
         /// <summary>
         /// Get VS IComponentModel service.
         /// </summary>
@@ -147,6 +147,11 @@ namespace NuGetConsole.Implementation
 
             // Register key bindings to use in the editor
             var windowFrame = (IVsWindowFrame)Frame;
+            if (windowFrame != null)
+            {
+                // Set F1 help keyword
+                WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmc);
+            }
             var cmdUi = VSConstants.GUID_TextEditorFactory;
             windowFrame.SetGuidProperty((int)__VSFPROPID.VSFPROPID_InheritKeyBindings, ref cmdUi);
 
