@@ -98,7 +98,13 @@ namespace NuGet.Packaging.Signing
                 // ensure response is for this request
                 ValidateTimestampResponseNonce(nonce, timestampToken);
 
+                if (!timestampToken.TokenInfo.HasMessageHash(signatureValueHashByteArray))
+                {
+                    throw new TimestampException(NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed);
+                }
+
                 var timestampCms = timestampToken.AsSignedCms();
+                ValidateTimestampCms(request.SigningSpec, timestampCms);
 
                 byte[] timestampByteArray;
 
@@ -108,30 +114,29 @@ namespace NuGet.Packaging.Signing
                     var policy = timestampCertChain.ChainPolicy;
 
                     policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEkuOid));
-                    policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
+                    policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
 
                     policy.ExtraStore.AddRange(timestampCms.Certificates);
 
                     policy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
                     policy.RevocationMode = X509RevocationMode.Online;
 
-                    var timestampSignerCertificate = GetTimestampSignerCertificate(timestampCms);
-                    if (DateTime.Now < timestampSignerCertificate.NotBefore)
+                    var timestampSignerCertificate = timestampCms.SignerInfos[0].Certificate;
+
+                    if (timestampSignerCertificate == null)
                     {
-                        throw new TimestampException(LogMessage.CreateError(
-                            NuGetLogCode.NU3025,
-                            string.Format(CultureInfo.CurrentCulture,
-                            Strings.TimestampCertificateInvalid,
-                            $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestampSignerCertificate)}")));
+                        throw new TimestampException(NuGetLogCode.NU3020, Strings.TimestampNoCertificate);
                     }
 
                     if (!timestampCertChain.Build(timestampSignerCertificate))
                     {
+                        var messages = CertificateChainUtility.GetMessagesFromChainStatuses(timestampCertChain.ChainStatus);
+
                         throw new TimestampException(LogMessage.CreateError(
                             NuGetLogCode.NU3028,
                             string.Format(CultureInfo.CurrentCulture,
                             Strings.TimestampCertificateChainBuildFailure,
-                            $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestampSignerCertificate)}")));
+                            string.Join(", ", messages))));
                     }
 
                     // Insert all the certificates into timestampCms
@@ -145,6 +150,39 @@ namespace NuGet.Packaging.Signing
             }
         }
 
+        private static void ValidateTimestampCms(SigningSpecifications spec, SignedCms timestampCms)
+        {
+            var signerInfo = timestampCms.SignerInfos[0];
+            try
+            {
+                signerInfo.CheckSignature(verifySignatureOnly: true);
+            }
+            catch(Exception e)
+            {
+                throw new TimestampException(NuGetLogCode.NU3021, Strings.TimestampSignatureValidationFailed, e);
+            }
+
+            if (!CertificateUtility.IsSignatureAlgorithmSupported(signerInfo.Certificate))
+            {
+                throw new TimestampException(NuGetLogCode.NU3022, Strings.TimestampUnsupportedSignatureAlgorithm);
+            }
+
+            if (!CertificateUtility.IsCertificatePublicKeyValid(signerInfo.Certificate))
+            {
+                throw new TimestampException(NuGetLogCode.NU3023, Strings.TimestampCertificateFailsPublicKeyLengthRequirement);
+            }
+
+            if (!spec.AllowedHashAlgorithmOids.Contains(signerInfo.DigestAlgorithm.Value))
+            {
+                throw new TimestampException(NuGetLogCode.NU3024, Strings.TimestampUnsupportedSignatureAlgorithm);
+            }
+
+            if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(signerInfo.Certificate))
+            {
+                throw new TimestampException(NuGetLogCode.NU3025, Strings.TimestampNotYetValid);
+            }
+        }
+
         private static void ValidateTimestampResponseNonce(
                 byte[] nonce,
                 Rfc3161TimestampToken timestampToken)
@@ -153,9 +191,7 @@ namespace NuGet.Packaging.Signing
             {
                 throw new TimestampException(LogMessage.CreateError(
                     NuGetLogCode.NU3026,
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampResponseExceptionGeneral,
-                    Strings.TimestampFailureNonceMismatch)));
+                    Strings.TimestampFailureNonceMismatch));
             }
         }
 
@@ -168,11 +204,6 @@ namespace NuGet.Packaging.Signing
                 .Cast<X509ChainElement>()
                 .Where(c => !timestampCms.Certificates.Contains(c.Certificate))
                 .Select(c => c.Certificate.Export(X509ContentType.Cert)));
-        }
-
-        private static X509Certificate2 GetTimestampSignerCertificate(SignedCms timestampCms)
-        {
-            return timestampCms.SignerInfos[0].Certificate;
         }
 
         private static byte[] GenerateNonce()

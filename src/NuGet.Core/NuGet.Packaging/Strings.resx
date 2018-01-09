@@ -240,12 +240,8 @@
     <value>Timestamp signature validation failed.</value>
   </data>
   <data name="TimestampCertificateChainBuildFailure" xml:space="preserve">
-    <value>The timestamp service's certificate chain could not be built for the following certificate: {0}</value>
-    <comment>0 -  X509Certificate2 details in the following format -
-Subject Name:
-SHA1 hash:
-Issued by:
-Valid from:</comment>
+    <value>The timestamp service's certificate chain could not be built: {0}</value>
+    <comment>0 -  chain status messages</comment>
   </data>
   <data name="SignedPackageUnableToAccessSignature" xml:space="preserve">
     <value>The package was not opened correctly to perform signature operations. Please use a Stream-based constructor to have access to signature attributes of the package.</value>
@@ -315,7 +311,7 @@ Valid from:</comment>
     <value>Byte signature too big to seek in current stream position.</value>
   </data>
   <data name="ErrorInvalidCertificateChain" xml:space="preserve">
-    <value>Certificate chain validation failed with error: {0}</value>
+    <value>Certificate chain validation failed with error(s): {0}</value>
   </data>
   <data name="ErrorNoCertificate" xml:space="preserve">
     <value>The primary signature does not have a signing certificate.</value>
@@ -345,7 +341,7 @@ Valid from:</comment>
     <value>Timestamp: {0}</value>
   </data>
   <data name="ErrorCertificateHasLifetimeSignerEKU" xml:space="preserve">
-    <value>Certificates with lifetime signer EKU are not supported.</value>
+    <value>The lifetime signer EKU is not supported.</value>
   </data>
   <data name="ErrorInvalidPackageArchive" xml:space="preserve">
     <value>Invalid package archive.</value>
@@ -433,5 +429,8 @@ Valid from:</comment>
   <data name="SigningCertificateV2AttributeRequired" xml:space="preserve">
     <value>An attribute with "signing-certificate-v2" OID ({0}) is required.</value>
     <comment>0 - the expected OID value</comment>
+  </data>
+  <data name="TimestampCertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
+    <value>The timestamp certificate does not meet a minimum public key length requirement.</value>
   </data>
 </root>
