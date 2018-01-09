@@ -529,12 +529,12 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\NuGet.Client\\VSCollect.exe
+        Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\VSCollect.exe
         if(-not (Test-Path $(EndToEndResultsDropPath)))
           {
             New-Item -Path $(EndToEndResultsDropPath) -ItemType Directory -Force
           }
-        $(System.DefaultWorkingDirectory)\\NuGet.Client\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\e2e-collectlogs.zip
+        $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\e2e-collectlogs.zip
     condition: "failed()"
 
   - task: PowerShell@1
@@ -644,12 +644,12 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\NuGet.Client\\VSCollect.exe
+        Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\VSCollect.exe
         if(-not (Test-Path $(EndToEndResultsDropPath)))
           {
             New-Item -Path $(EndToEndResultsDropPath) -ItemType Directory -Force
           }
-        $(System.DefaultWorkingDirectory)\\NuGet.Client\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\apex-collectlogs.zip
+        $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\apex-collectlogs.zip
     condition: "failed()"
 
   - task: MSBuild@1
