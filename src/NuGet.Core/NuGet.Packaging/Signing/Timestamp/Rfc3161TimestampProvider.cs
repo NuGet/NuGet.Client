@@ -141,7 +141,7 @@ namespace NuGet.Packaging.Signing
 
                     // Insert all the certificates into timestampCms
                     InsertTimestampCertChainIntoTimestampCms(timestampCms, timestampCertChain, timestampNativeCms);
-                    timestampByteArray = timestampCms.Encode();
+                    timestampByteArray = timestampNativeCms.Encode();
                 }
 
                 signatureNativeCms.AddTimestamp(timestampByteArray);
