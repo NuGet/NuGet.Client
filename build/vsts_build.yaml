@@ -397,13 +397,23 @@ phases:
       searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
       mergeTestResults: "true"
 
-  - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
+  # - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
+  #   displayName: "Initialize Git Commit Status on GitHub"
+  #   inputs:
+  #     type: "FilePath"
+  #     scriptPath: "scripts/utils/PostGitCommitStatus.sh"
+  #     args: "$(NuGetLurkerPersonalAccessToken) \"Tests On Linux\" $(Agent.JobStatus)"
+  #     cwd: "$(Build.Repository.LocalPath)"
+  #   condition: "always()"
+
+  - task: PowerShell@2
     displayName: "Initialize Git Commit Status on GitHub"
     inputs:
-      type: "FilePath"
-      scriptPath: "scripts/utils/PostGitCommitStatus.sh"
-      args: "$(NuGetLurkerPersonalAccessToken) \"Tests On Linux\" $(Agent.JobStatus)"
-      cwd: "$(Build.Repository.LocalPath)"
+      targetType: "inline"
+      script: |
+        . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Linux"        
+      failOnStderr: "true"
     condition: "always()"
 
 - phase: Tests_On_Mac
