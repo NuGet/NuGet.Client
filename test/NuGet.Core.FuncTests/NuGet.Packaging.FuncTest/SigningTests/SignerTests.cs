@@ -91,7 +91,7 @@ namespace NuGet.Packaging.FuncTest
                     () => test.Signer.SignAsync(test.Request, NullLogger.Instance, CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3017, exception.Code);
-                Assert.Contains("A required certificate is not within its validity period", exception.Message);
+                Assert.Contains("The signing certificate is not yet valid", exception.Message);
 
                 var isSigned = await IsSignedAsync(test.WriteStream);
 
