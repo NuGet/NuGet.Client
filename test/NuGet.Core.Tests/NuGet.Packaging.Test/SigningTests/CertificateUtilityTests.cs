@@ -85,8 +85,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = SigningTestUtility.GenerateCertificate(
                 "test",
-                generator => { },
-                notBefore: DateTime.UtcNow.Add(TimeSpan.FromHours(1))
+                modifyGenerator: SigningTestUtility.CertificateModificationGeneratorNotYetValidCert
                 ))
             {
                 Assert.True(CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate));
@@ -98,8 +97,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = SigningTestUtility.GenerateCertificate(
                 "test",
-                generator => { },
-                notBefore: DateTime.UtcNow.Subtract(TimeSpan.FromHours(1))
+                generator => { }
                 ))
             {
                 Assert.False(CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate));

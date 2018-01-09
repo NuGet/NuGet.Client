@@ -363,7 +363,7 @@ namespace NuGet.Packaging.Signing
                 {
                     if (hasFoundSignature)
                     {
-                        throw new SignatureException(Strings.Error_NotOnePrimarySignature);
+                        throw new SignatureException(NuGetLogCode.NU3009, Strings.Error_NotOnePrimarySignature);
                     }
 
                     metadata.SignatureCentralDirectoryHeaderIndex = centralDirectoryRecordIndex;
@@ -373,7 +373,7 @@ namespace NuGet.Packaging.Signing
 
             if (!hasFoundSignature)
             {
-                throw new SignatureException(Strings.Error_NotOnePrimarySignature);
+                throw new SignatureException(NuGetLogCode.NU3009, Strings.Error_NotOnePrimarySignature);
             }
         }
 

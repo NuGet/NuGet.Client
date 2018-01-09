@@ -99,9 +99,7 @@ namespace Test.Utility.Signing
             string subjectName,
             Action<X509V3CertificateGenerator> modifyGenerator,
             string signatureAlgorithm = "SHA256WITHRSA",
-            int publicKeyLength = 2048,
-            DateTime? notAfter = null,
-            DateTime? notBefore = null)
+            int publicKeyLength = 2048)
         {
             if (string.IsNullOrEmpty(subjectName))
             {
@@ -119,8 +117,8 @@ namespace Test.Utility.Signing
             certGen.SetSubjectDN(new X509Name($"CN={subjectName}"));
             certGen.SetIssuerDN(new X509Name($"CN={subjectName}"));
 
-            certGen.SetNotAfter(notAfter ?? DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
-            certGen.SetNotBefore(notBefore ?? DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)));
+            certGen.SetNotAfter(DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
+            certGen.SetNotBefore(DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)));
             certGen.SetPublicKey(pair.Public);
 
             var serialNumber = BigIntegers.CreateRandomInRange(BigInteger.One, BigInteger.ValueOf(long.MaxValue), random);
