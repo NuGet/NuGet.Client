@@ -147,6 +147,19 @@ namespace NuGetConsole.Implementation
 
             // Register key bindings to use in the editor
             var windowFrame = (IVsWindowFrame)Frame;
+            if (windowFrame != null)
+            {
+                // Set F1 help keyword
+                object varUserContext = null;
+                if (ErrorHandler.Succeeded(windowFrame.GetProperty((int)__VSFPROPID.VSFPROPID_UserContext, out varUserContext)))
+                {
+                    var userContext = varUserContext as IVsUserContext;
+                    if (userContext != null)
+                    {
+                        userContext.AddAttribute(VSUSERCONTEXTATTRIBUTEUSAGE.VSUC_Usage_LookupF1, "keyword", "VS.NuGet.PackageManager.Console");
+                    }
+                }
+            }
             var cmdUi = VSConstants.GUID_TextEditorFactory;
             windowFrame.SetGuidProperty((int)__VSFPROPID.VSFPROPID_InheritKeyBindings, ref cmdUi);
 
