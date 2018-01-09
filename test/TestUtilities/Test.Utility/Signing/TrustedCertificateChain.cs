@@ -9,7 +9,7 @@ namespace Test.Utility.Signing
 {
     public class TrustedCertificateChain : IDisposable
     {
-        public IList<TrustedTestCert<TestCertificate>> Certificates { get; set; }
+        public IList<TrustedTestCert<TestCertificate>> Certificates { get; set; } = new List<TrustedTestCert<TestCertificate>>();
 
         public TrustedTestCert<TestCertificate> Root => Certificates?.First();
 
@@ -17,7 +17,13 @@ namespace Test.Utility.Signing
 
         public void Dispose()
         {
-            (Certificates as List<TrustedTestCert<TestCertificate>>)?.ForEach(c => c.Dispose());
+            if (Certificates != null)
+            {
+                foreach (var certificate in Certificates)
+                {
+                    certificate.Dispose();
+                }
+            }
         }
     }
 }

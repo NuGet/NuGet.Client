@@ -223,6 +223,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 return _nugetExePath;
             }
         }
+
         public MockServer CrlServer
         {
             get
