@@ -346,11 +346,7 @@ namespace NuGet.Packaging.Signing
                     return false;
                 }
 
-                var generalName = essCertIdV2.IssuerSerial.GeneralNames.FirstOrDefault();
-
-                if (generalName != null &&
-                    generalName.DirectoryName != null &&
-                    generalName.DirectoryName.Name != certificate.IssuerName.Name)
+                if (!AreGeneralNamesEqual(essCertIdV2.IssuerSerial, certificate))
                 {
                     return false;
                 }
@@ -371,11 +367,7 @@ namespace NuGet.Packaging.Signing
                     return false;
                 }
 
-                var generalName = essCertId.IssuerSerial.GeneralNames.FirstOrDefault();
-
-                if (generalName != null &&
-                    generalName.DirectoryName != null &&
-                    generalName.DirectoryName.Name != certificate.IssuerName.Name)
+                if (!AreGeneralNamesEqual(essCertId.IssuerSerial, certificate))
                 {
                     return false;
                 }
@@ -389,6 +381,19 @@ namespace NuGet.Packaging.Signing
             }
 
             return essCertId.CertificateHash.SequenceEqual(actualHash);
+        }
+
+        private static bool AreGeneralNamesEqual(IssuerSerial issuerSerial, X509Certificate2 certificate)
+        {
+            var generalName = issuerSerial.GeneralNames.FirstOrDefault();
+
+            if (generalName != null &&
+                generalName.DirectoryName != null)
+            {
+                return string.Equals(generalName.DirectoryName.Name, certificate.IssuerName.Name, StringComparison.Ordinal);
+            }
+
+            return true;
         }
 
         private static bool AreSerialNumbersEqual(IssuerSerial issuerSerial, X509Certificate2 certificate)
