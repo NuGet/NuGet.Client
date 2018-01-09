@@ -86,7 +86,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentException("Nonce must be null or non-empty", nameof(nonce));
             }
 
-            DataType data = new DataType
+            var data = new DataType
             {
                 _version = 1,
                 _hash = (byte[])messageHash.Clone(),

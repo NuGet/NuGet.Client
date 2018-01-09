@@ -170,7 +170,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Certificates with lifetime signer EKU are not supported..
+        ///   Looks up a localized string similar to The lifetime signer EKU is not supported..
         /// </summary>
         internal static string ErrorCertificateHasLifetimeSignerEKU {
             get {
@@ -197,7 +197,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Certificate chain validation failed with error: {0}.
+        ///   Looks up a localized string similar to Certificate chain validation failed with error(s): {0}.
         /// </summary>
         internal static string ErrorInvalidCertificateChain {
             get {
@@ -719,11 +719,20 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp service&apos;s certificate chain could not be built for the following certificate: {0}.
+        ///   Looks up a localized string similar to The timestamp service&apos;s certificate chain could not be built: {0}.
         /// </summary>
         internal static string TimestampCertificateChainBuildFailure {
             get {
                 return ResourceManager.GetString("TimestampCertificateChainBuildFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp certificate does not meet a minimum public key length requirement..
+        /// </summary>
+        internal static string TimestampCertificateFailsPublicKeyLengthRequirement {
+            get {
+                return ResourceManager.GetString("TimestampCertificateFailsPublicKeyLengthRequirement", resourceCulture);
             }
         }
         

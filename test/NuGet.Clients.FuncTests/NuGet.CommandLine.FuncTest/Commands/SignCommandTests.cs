@@ -99,7 +99,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_invalidEkuErrorCode);
-                result.AllOutput.Should().Contain("NotValidForUsage");
+                result.AllOutput.Should().Contain("The certificate is not valid for the requested usage");
             }
         }
 
