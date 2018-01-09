@@ -434,6 +434,18 @@ namespace NuGet.Packaging.Signing.DerEncoding
             return TrimTrailingNulls(str);
         }
 
+        internal void ReadNull()
+        {
+            EatTag(DerTag.Null);
+
+            var contentLength = EatLength();
+
+            if (contentLength != 0)
+            {
+                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
+            }
+        }
+
         private static string TrimTrailingNulls(string value)
         {
             // .NET's string comparisons start by checking the length, so a trailing

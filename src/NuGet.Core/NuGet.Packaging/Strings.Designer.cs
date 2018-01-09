@@ -386,6 +386,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The ASN.1 data is invalid..
+        /// </summary>
+        internal static string InvalidAsn1 {
+            get {
+                return ResourceManager.GetString("InvalidAsn1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} This validation error occurred in a &apos;{1}&apos; element..
         /// </summary>
         internal static string InvalidNuspecElement {
@@ -562,6 +571,15 @@ namespace NuGet.Packaging {
         internal static string PackageStreamShouldBeSeekable {
             get {
                 return ResourceManager.GetString("PackageStreamShouldBeSeekable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The primary signature does not have a timestamp..
+        /// </summary>
+        internal static string PrimarySignatureHasNoTimestamp {
+            get {
+                return ResourceManager.GetString("PrimarySignatureHasNoTimestamp", resourceCulture);
             }
         }
         
@@ -967,6 +985,15 @@ namespace NuGet.Packaging {
         internal static string UnableToReadPackageHashInformation {
             get {
                 return ResourceManager.GetString("UnableToReadPackageHashInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The ASN.1 data is unsupported..
+        /// </summary>
+        internal static string UnsupportedAsn1 {
+            get {
+                return ResourceManager.GetString("UnsupportedAsn1", resourceCulture);
             }
         }
         

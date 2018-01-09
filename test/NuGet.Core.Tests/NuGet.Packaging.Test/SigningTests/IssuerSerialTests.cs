@@ -2,10 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using NuGet.Packaging.Signing;
+using System.Security.Cryptography;
+using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Math;
 using Test.Utility.Signing;
 using Xunit;
+using BcGeneralName = Org.BouncyCastle.Asn1.X509.GeneralName;
+using BcIssuerSerial = Org.BouncyCastle.Asn1.X509.IssuerSerial;
+using IssuerSerial = NuGet.Packaging.Signing.IssuerSerial;
 
 namespace NuGet.Packaging.Test
 {
@@ -41,7 +46,7 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(1, issuerSerial.GeneralNames.Count);
                 Assert.Equal(certificate.IssuerName.Name, issuerSerial.GeneralNames[0].DirectoryName.Name);
-                SignTestUtility.VerifyByteArrays(certificate.GetSerialNumber(), issuerSerial.SerialNumber);
+                SignTestUtility.VerifySerialNumber(certificate, issuerSerial);
             }
         }
 
@@ -55,7 +60,7 @@ namespace NuGet.Packaging.Test
             {
                 var issuerSerial = IssuerSerial.Create(certificate);
 
-                SignTestUtility.VerifyByteArrays(certificate.GetSerialNumber(), issuerSerial.SerialNumber);
+                SignTestUtility.VerifySerialNumber(certificate, issuerSerial);
             }
         }
 
@@ -69,8 +74,31 @@ namespace NuGet.Packaging.Test
             {
                 var issuerSerial = IssuerSerial.Create(certificate);
 
-                SignTestUtility.VerifyByteArrays(certificate.GetSerialNumber(), issuerSerial.SerialNumber);
+                SignTestUtility.VerifySerialNumber(certificate, issuerSerial);
             }
+        }
+
+        [Fact]
+        public void Read_WithInvalidAsn1_Throws()
+        {
+            Assert.Throws<CryptographicException>(
+                () => IssuerSerial.Read(new byte[] { 0x30, 0x07 }));
+        }
+
+        [Fact]
+        public void Read_WithValidInput_ReturnsIssuerSerial()
+        {
+            var directoryName = new X509Name("CN=test");
+            var generalNames = new GeneralNames(
+                new BcGeneralName(BcGeneralName.DirectoryName, directoryName));
+            var bcIssuerSerial = new BcIssuerSerial(generalNames, new DerInteger(BigInteger.One));
+            var bytes = bcIssuerSerial.GetDerEncoded();
+
+            var issuerSerial = IssuerSerial.Read(bytes);
+
+            Assert.Equal(1, issuerSerial.GeneralNames.Count);
+            Assert.Equal(directoryName.ToString(), issuerSerial.GeneralNames[0].DirectoryName.Name);
+            Assert.Equal(bcIssuerSerial.Serial.Value.ToByteArray(), issuerSerial.SerialNumber);
         }
     }
 }

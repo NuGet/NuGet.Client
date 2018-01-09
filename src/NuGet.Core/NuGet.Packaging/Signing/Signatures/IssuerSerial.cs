@@ -45,8 +45,12 @@ namespace NuGet.Packaging.Signing
             }
 
             var generalNames = new [] { GeneralName.Create(certificate.IssuerName) };
+            var serialNumber = certificate.GetSerialNumber();
 
-            return new IssuerSerial(generalNames, certificate.GetSerialNumber());
+            // Convert from little endian to big endian.
+            Array.Reverse(serialNumber);
+
+            return new IssuerSerial(generalNames, serialNumber);
         }
 
         public static IssuerSerial Read(byte[] bytes)
@@ -62,26 +66,16 @@ namespace NuGet.Packaging.Signing
             var generalNames = ReadGeneralNames(sequenceReader);
             var serialNumber = sequenceReader.ReadIntegerBytes();
 
-            // Change endianness.
-            Array.Reverse(serialNumber);
-
             return new IssuerSerial(generalNames, serialNumber);
         }
 
         internal byte[][] Encode()
         {
-            var serialNumber = new byte[SerialNumber.Length];
-
-            Array.Copy(SerialNumber, serialNumber, serialNumber.Length);
-
-            // Change endianness.
-            Array.Reverse(serialNumber);
-
             // Per RFC 5280 section 4.1.2.2 (https://tools.ietf.org/html/rfc5280#section-4.1.2.2)
             // serial number must be an unsigned integer.
             return DerEncoder.ConstructSegmentedSequence(
                 DerEncoder.ConstructSegmentedSequence(GeneralNames.First().Encode()),
-                DerEncoder.SegmentedEncodeUnsignedInteger(serialNumber));
+                DerEncoder.SegmentedEncodeUnsignedInteger(SerialNumber));
         }
 
         private static IReadOnlyList<GeneralName> ReadGeneralNames(DerSequenceReader reader)
@@ -94,6 +88,11 @@ namespace NuGet.Packaging.Signing
             if (generalName != null)
             {
                 generalNames.Add(generalName);
+            }
+
+            if (sequenceReader.HasData)
+            {
+                throw new SignatureException(Strings.InvalidAsn1);
             }
 
             return generalNames.AsReadOnly();

@@ -147,8 +147,14 @@ namespace NuGet.Packaging.Test
                     hashAlgorithmName,
                     CryptoHashUtility.OidToHashAlgorithmName(essCertIdV2.HashAlgorithm.Algorithm.Value));
                 Assert.Equal(certificate.IssuerName.Name, essCertIdV2.IssuerSerial.GeneralNames[0].DirectoryName.Name);
+
+                var serialNumber = certificate.GetSerialNumber();
+
+                // Convert from little endian to big endian.
+                Array.Reverse(serialNumber);
+
                 SignTestUtility.VerifyByteArrays(
-                    certificate.GetSerialNumber(),
+                    serialNumber,
                     essCertIdV2.IssuerSerial.SerialNumber);
             }
         }

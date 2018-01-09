@@ -2,9 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Packaging.Signing;
+using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Asn1.X509;
 using Xunit;
+using BcGeneralName = Org.BouncyCastle.Asn1.X509.GeneralName;
+using GeneralName = NuGet.Packaging.Signing.GeneralName;
 
 namespace NuGet.Packaging.Test
 {
@@ -32,32 +37,29 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Read_WithInvalidAsn1_ReturnsNull()
+        public void Read_WithInvalidAsn1_Throws()
         {
-            var generalName = GeneralName.Read(new byte[] { 0x30, 0x07 });
-
-            Assert.Null(generalName);
+            Assert.Throws<CryptographicException>(
+                () => GeneralName.Read(new byte[] { 0x30, 0x07 }));
         }
 
         [Fact]
-        public void Read_WithUnsupportedChoice_ReturnsNull()
+        public void Read_WithUnsupportedChoice_Throws()
         {
-            var generalName = GeneralName.Read(
-                new byte[] { 0x30, 0x06, 0xa8, 0x04, 0x06, 0x02, 0x2a, 0x03 });
+            var bytes = new BcGeneralName(BcGeneralName.RegisteredID, new DerObjectIdentifier("1.2.3")).GetDerEncoded();
 
-            Assert.Null(generalName);
+            var exception = Assert.Throws<SignatureException>(
+                () => GeneralName.Read(bytes));
+
+            Assert.Equal("The ASN.1 data is unsupported.", exception.Message);
         }
 
         [Fact]
         public void Read_WithDistinguishedName_ReturnsGeneralName()
         {
-            var generalName = GeneralName.Read(
-                new byte[]
-                {
-                    0xa4, 0x11, 0x30, 0x0f, 0x31, 0x0d, 0x30, 0x0b,
-                    0x06, 0x03, 0x55, 0x04, 0x03, 0x13, 0x04, 0x74,
-                    0x65, 0x73, 0x74
-                });
+            var bytes = new BcGeneralName(BcGeneralName.DirectoryName, new X509Name("CN=test")).GetDerEncoded();
+
+            var generalName = GeneralName.Read(bytes);
 
             Assert.NotNull(generalName);
             Assert.Equal("CN=test", generalName.DirectoryName.Name);

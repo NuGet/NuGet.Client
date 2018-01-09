@@ -70,5 +70,14 @@ namespace NuGet.Packaging.Signing
 
         // RFC 5280 "id-ce-subjectKeyIdentifier" https://tools.ietf.org/html/rfc5280#section-4.2.1.2
         public const string SubjectKeyIdentifier = "2.5.29.14";
+
+        // RFC 5280 "anyPolicy" https://tools.ietf.org/html/rfc5280#section-4.2.1.4
+        public const string AnyPolicy = "2.5.29.32.0";
+
+        // RFC 5280 "id-qt-cps" https://tools.ietf.org/html/rfc5280#section-4.2.1.4
+        public const string IdQtCps = "1.3.6.1.5.5.7.2.1";
+
+        // RFC 5280 "id-qt-unotice" https://tools.ietf.org/html/rfc5280#section-4.2.1.4
+        public const string IdQtUnotice = "1.3.6.1.5.5.7.2.2";
     }
 }

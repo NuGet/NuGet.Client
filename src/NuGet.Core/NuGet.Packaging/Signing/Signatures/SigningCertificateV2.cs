@@ -21,10 +21,14 @@ namespace NuGet.Packaging.Signing
     public sealed class SigningCertificateV2
     {
         public IReadOnlyList<EssCertIdV2> Certificates { get; }
+        public IReadOnlyList<PolicyInformation> Policies { get; }
 
-        private SigningCertificateV2(IReadOnlyList<EssCertIdV2> certificates)
+        private SigningCertificateV2(
+            IReadOnlyList<EssCertIdV2> certificates,
+            IReadOnlyList<PolicyInformation> policies)
         {
             Certificates = certificates;
+            Policies = policies;
         }
 
         public static SigningCertificateV2 Create(X509Certificate2 certificate, HashAlgorithmName hashAlgorithmName)
@@ -36,7 +40,7 @@ namespace NuGet.Packaging.Signing
 
             var essCertIdV2 = EssCertIdV2.Create(certificate, hashAlgorithmName);
 
-            return new SigningCertificateV2(new[] { essCertIdV2 });
+            return new SigningCertificateV2(new[] { essCertIdV2 }, policies: null);
         }
 
         public static SigningCertificateV2 Read(byte[] bytes)
@@ -50,10 +54,20 @@ namespace NuGet.Packaging.Signing
         {
             var essCertIdV2Reader = reader.ReadSequence();
             var certificates = ReadCertificates(essCertIdV2Reader);
+            IReadOnlyList<PolicyInformation> policies = null;
 
-            // Skip the "policies" field.  We do not use it.
+            if (reader.HasData)
+            {
+                var policiesReader = reader.ReadSequence();
+                policies = ReadPolicies(policiesReader);
 
-            return new SigningCertificateV2(certificates.AsReadOnly());
+                if (reader.HasData)
+                {
+                    throw new SignatureException(Strings.InvalidAsn1);
+                }
+            }
+
+            return new SigningCertificateV2(certificates, policies);
         }
 
         public byte[] Encode()
@@ -68,7 +82,7 @@ namespace NuGet.Packaging.Signing
             return DerEncoder.ConstructSequence(DerEncoder.ConstructSegmentedSequence(entries));
         }
 
-        private static List<EssCertIdV2> ReadCertificates(DerSequenceReader reader)
+        private static IReadOnlyList<EssCertIdV2> ReadCertificates(DerSequenceReader reader)
         {
             var certificates = new List<EssCertIdV2>();
 
@@ -79,7 +93,21 @@ namespace NuGet.Packaging.Signing
                 certificates.Add(certificate);
             }
 
-            return certificates;
+            return certificates.AsReadOnly();
+        }
+
+        private static IReadOnlyList<PolicyInformation> ReadPolicies(DerSequenceReader reader)
+        {
+            var policies = new List<PolicyInformation>();
+
+            while (reader.HasData)
+            {
+                var policy = PolicyInformation.Read(reader);
+
+                policies.Add(policy);
+            }
+
+            return policies.AsReadOnly();
         }
     }
 }

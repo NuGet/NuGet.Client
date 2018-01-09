@@ -79,15 +79,28 @@ namespace NuGet.Packaging.Signing
         {
             var tag = reader.PeekTag();
 
+            // Per RFC 2634 section 5.4.1 (https://tools.ietf.org/html/rfc2634#section-5.4.1)
+            // only the directory name choice (#4) is allowed.
             if (tag == DerSequenceReader.ContextSpecificConstructedTag4)
             {
                 var value = reader.ReadValue((DerSequenceReader.DerTag)DerSequenceReader.ContextSpecificConstructedTag4);
+
+                if (reader.HasData)
+                {
+                    throw new SignatureException(Strings.InvalidAsn1);
+                }
+
                 var directoryName = new X500DistinguishedName(value);
 
                 return new GeneralName(directoryName);
             }
 
-            return null;
+            while (reader.HasData)
+            {
+                reader.ValidateAndSkipDerValue();
+            }
+
+            throw new SignatureException(Strings.UnsupportedAsn1);
         }
 
         internal byte[][] Encode()

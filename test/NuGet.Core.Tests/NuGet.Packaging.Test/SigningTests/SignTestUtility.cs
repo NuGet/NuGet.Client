@@ -54,6 +54,16 @@ namespace NuGet.Packaging.Test
             return hashAlgorithm.ComputeHash(certificate.RawData);
         }
 
+        internal static void VerifySerialNumber(X509Certificate2 certificate, IssuerSerial issuerSerial)
+        {
+            var serialNumber = certificate.GetSerialNumber();
+
+            // Convert from little endian to big endian.
+            Array.Reverse(serialNumber);
+
+            VerifyByteArrays(serialNumber, issuerSerial.SerialNumber);
+        }
+
         internal static void VerifyByteArrays(byte[] expected, byte[] actual)
         {
             var expectedHex = BitConverter.ToString(expected).Replace("-", "");

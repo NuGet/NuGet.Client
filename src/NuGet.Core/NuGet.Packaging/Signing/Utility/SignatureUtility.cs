@@ -94,7 +94,7 @@ namespace NuGet.Packaging.Signing
 
             if (timestamp == null)
             {
-                throw new SignatureException(NuGetLogCode.NU3029, Strings.InvalidTimestampSignature);
+                throw new SignatureException(NuGetLogCode.NU3029, Strings.PrimarySignatureHasNoTimestamp);
             }
 
             return GetTimestampSignatureSigningCertificates(
@@ -260,102 +260,68 @@ namespace NuGet.Packaging.Signing
             // This returns a new X509Certificate2Collection, which is mutable.
             // Changes to this collection instance are not reflected back to SignedCms.Certificates.
             var extraStore = signedCms.Certificates;
+            IReadOnlyList<X509Certificate2> certificates = null;
 
             if (signingCertificateV2Attribute != null)
             {
                 var reader = signingCertificateV2Attribute.ToDerSequenceReader();
                 var signingCertificateV2 = SigningCertificateV2.Read(reader);
 
-                return GetCertificates(
-                    signerInfo.Certificate,
-                    extraStore,
-                    signingCertificateV2,
-                    errors,
-                    includeChain,
-                    signingSpecifications,
-                    isIssuerSerialRequired);
+                if (signingCertificateV2.Certificates.Count == 0)
+                {
+                    throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV2Invalid);
+                }
+
+                foreach (var essCertIdV2 in signingCertificateV2.Certificates)
+                {
+                    if (!signingSpecifications.AllowedHashAlgorithmOids.Contains(
+                        essCertIdV2.HashAlgorithm.Algorithm.Value,
+                        StringComparer.Ordinal))
+                    {
+                        throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV2UnsupportedHashAlgorithm);
+                    }
+                }
+
+                if (!IsMatch(signerInfo.Certificate, signingCertificateV2.Certificates[0], errors, isIssuerSerialRequired))
+                {
+                    throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV2CertificateNotFound);
+                }
+
+                certificates = GetCertificateChain(signerInfo.Certificate, extraStore, includeChain);
+
+                if (certificates == null || certificates.Count == 0)
+                {
+                    throw new SignatureException(errors.ChainBuildingFailed, Strings.CertificateChainBuildFailed);
+                }
             }
-            else if (signingCertificateAttribute != null)
+
+            if (signingCertificateAttribute != null)
             {
                 var reader = signingCertificateAttribute.ToDerSequenceReader();
                 var signingCertificate = SigningCertificate.Read(reader);
 
-                return GetCertificates(
-                    signerInfo.Certificate,
-                    extraStore,
-                    signingCertificate,
-                    errors,
-                    includeChain);
-            }
-
-            return GetCertificateChain(signerInfo.Certificate, extraStore, includeChain);
-        }
-
-        private static IReadOnlyList<X509Certificate2> GetCertificates(
-            X509Certificate2 signerCertificate,
-            X509Certificate2Collection extraStore,
-            SigningCertificateV2 signingCertificateV2,
-            Errors errors,
-            bool includeChain,
-            SigningSpecifications signingSpecifications,
-            bool isIssuerSerialRequired)
-        {
-            if (signingCertificateV2.Certificates.Count == 0)
-            {
-                throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV2Invalid);
-            }
-
-            if (!IsMatch(signerCertificate, signingCertificateV2.Certificates[0], errors, isIssuerSerialRequired))
-            {
-                throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV2CertificateNotFound);
-            }
-
-            var chain = GetCertificateChain(signerCertificate, extraStore, includeChain);
-
-            if (chain == null || chain.Count == 0)
-            {
-                throw new SignatureException(errors.ChainBuildingFailed, Strings.CertificateChainBuildFailed);
-            }
-
-            foreach (var essCertIdV2 in signingCertificateV2.Certificates)
-            {
-                // Verify hash algorithm is allowed
-                if (!signingSpecifications.AllowedHashAlgorithmOids.Contains(
-                    essCertIdV2.HashAlgorithm.Algorithm.Value,
-                    StringComparer.Ordinal))
+                if (signingCertificate.Certificates.Count == 0)
                 {
-                    throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV2UnsupportedHashAlgorithm);
+                    throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateInvalid);
+                }
+
+                if (!IsMatch(signerInfo.Certificate, signingCertificate.Certificates[0]))
+                {
+                    throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateCertificateNotFound);
+                }
+
+                if (certificates == null)
+                {
+                    certificates = GetCertificateChain(signerInfo.Certificate, extraStore, includeChain);
+
+                    if (certificates == null || certificates.Count == 0)
+                    {
+                        throw new SignatureException(errors.ChainBuildingFailed, Strings.CertificateChainBuildFailed);
+                    }
                 }
             }
 
-            return chain;
-        }
-
-        private static IReadOnlyList<X509Certificate2> GetCertificates(
-            X509Certificate2 signerCertificate,
-            X509Certificate2Collection extraStore,
-            SigningCertificate signingCertificate,
-            Errors errors,
-            bool includeChain)
-        {
-            if (signingCertificate.Certificates.Count == 0)
-            {
-                throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateInvalid);
-            }
-
-            if (!IsMatch(signerCertificate, signingCertificate.Certificates[0]))
-            {
-                throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateCertificateNotFound);
-            }
-
-            var chain = GetCertificateChain(signerCertificate, extraStore, includeChain);
-
-            if (chain == null || chain.Count == 0)
-            {
-                throw new SignatureException(errors.ChainBuildingFailed, Strings.CertificateChainBuildFailed);
-            }
-
-            return chain;
+            return certificates ?? GetCertificateChain(signerInfo.Certificate, extraStore, includeChain);
         }
 
         private static bool IsMatch(
@@ -429,6 +395,9 @@ namespace NuGet.Packaging.Signing
         {
             var certificateSerialNumber = certificate.GetSerialNumber();
 
+            // Convert from little endian to big endian.
+            Array.Reverse(certificateSerialNumber);
+
             return issuerSerial.SerialNumber.SequenceEqual(certificateSerialNumber);
         }
 
@@ -451,7 +420,9 @@ namespace NuGet.Packaging.Signing
                 chain.Build(certificate);
 
                 if (chain.ChainStatus.Length > 0 &&
-                    (chain.ChainStatus[0].Status & X509ChainStatusFlags.PartialChain) == X509ChainStatusFlags.PartialChain)
+                    (chain.ChainStatus[0].Status.HasFlag(X509ChainStatusFlags.Cyclic) ||
+                     chain.ChainStatus[0].Status.HasFlag(X509ChainStatusFlags.PartialChain) ||
+                     chain.ChainStatus[0].Status.HasFlag(X509ChainStatusFlags.NotSignatureValid)))
                 {
                     return null;
                 }

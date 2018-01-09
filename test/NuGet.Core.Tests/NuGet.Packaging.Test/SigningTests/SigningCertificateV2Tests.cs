@@ -2,10 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
+using System.Text;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
+using Org.BouncyCastle.Asn1;
 using Xunit;
+using BcAlgorithmIdentifier = Org.BouncyCastle.Asn1.X509.AlgorithmIdentifier;
+using BcEssCertIdV2 = Org.BouncyCastle.Asn1.Ess.EssCertIDv2;
+using BcPolicyInformation = Org.BouncyCastle.Asn1.X509.PolicyInformation;
+using BcSigningCertificateV2 = Org.BouncyCastle.Asn1.Ess.SigningCertificateV2;
+using SigningCertificateV2 = NuGet.Packaging.Signing.SigningCertificateV2;
 
 namespace NuGet.Packaging.Test
 {
@@ -50,7 +56,8 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(SignTestUtility.GetHash(certificate, hashAlgorithmName), essCertIdV2.CertificateHash);
                 Assert.Equal(1, essCertIdV2.IssuerSerial.GeneralNames.Count);
                 Assert.Equal(certificate.IssuerName.Name, essCertIdV2.IssuerSerial.GeneralNames[0].DirectoryName.Name);
-                SignTestUtility.VerifyByteArrays(certificate.GetSerialNumber(), essCertIdV2.IssuerSerial.SerialNumber);
+                SignTestUtility.VerifySerialNumber(certificate, essCertIdV2.IssuerSerial);
+                Assert.Null(signingCertificateV2.Policies);
             }
         }
 
@@ -98,21 +105,79 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
-        public void Read_WithOnlyCertificateHash_ReturnsSigningCertificateV2()
+        [Theory]
+        [InlineData(HashAlgorithmName.SHA256)]
+        [InlineData(HashAlgorithmName.SHA384)]
+        [InlineData(HashAlgorithmName.SHA512)]
+        public void Read_WithMultipleEssCertIds_ReturnsSigningCertificateV2(HashAlgorithmName hashAlgorithmName)
         {
-            var bytes = Asn1TestData.SigningCertificateV2OnlyCertificateHash;
-            var expectedCertificateHash = bytes.Skip(8).Take(32).ToArray();
+            var bcEssCertIdV2_1 = CreateBcEssCertIdV2(hashAlgorithmName, "1");
+            var bcEssCertIdV2_2 = CreateBcEssCertIdV2(hashAlgorithmName, "2");
+            var bcEssCertIdV2_3 = CreateBcEssCertIdV2(hashAlgorithmName, "3");
+            var bcSigningCertificateV2 = new BcSigningCertificateV2(
+                new[] { bcEssCertIdV2_1, bcEssCertIdV2_2, bcEssCertIdV2_3 });
+            var bytes = bcSigningCertificateV2.GetDerEncoded();
 
-            var signingCertificateV2 = SigningCertificateV2.Read(bytes);
+            var signingCertificate = SigningCertificateV2.Read(bytes);
 
-            Assert.Equal(1, signingCertificateV2.Certificates.Count);
+            Assert.Equal(3, signingCertificate.Certificates.Count);
+            Assert.Null(signingCertificate.Policies);
 
-            var essCertIdV2 = signingCertificateV2.Certificates[0];
+            SignTestUtility.VerifyByteArrays(
+                bcEssCertIdV2_1.GetCertHash(),
+                signingCertificate.Certificates[0].CertificateHash);
+            Assert.Null(signingCertificate.Certificates[0].IssuerSerial);
 
-            Assert.Equal(Oids.Sha256, essCertIdV2.HashAlgorithm.Algorithm.Value);
-            SignTestUtility.VerifyByteArrays(expectedCertificateHash, essCertIdV2.CertificateHash);
-            Assert.Null(essCertIdV2.IssuerSerial);
+            SignTestUtility.VerifyByteArrays(
+                bcEssCertIdV2_2.GetCertHash(),
+                signingCertificate.Certificates[1].CertificateHash);
+            Assert.Null(signingCertificate.Certificates[1].IssuerSerial);
+
+            SignTestUtility.VerifyByteArrays(
+                bcEssCertIdV2_3.GetCertHash(),
+                signingCertificate.Certificates[2].CertificateHash);
+            Assert.Null(signingCertificate.Certificates[2].IssuerSerial);
+        }
+
+        [Fact]
+        public void Read_WithNoEssCertIds_ReturnsSigningCertificateV2()
+        {
+            var bcSigningCertificateV2 = new BcSigningCertificateV2(new BcEssCertIdV2[0]);
+            var bytes = bcSigningCertificateV2.GetDerEncoded();
+
+            var signingCertificate = SigningCertificateV2.Read(bytes);
+
+            Assert.Equal(0, signingCertificate.Certificates.Count);
+            Assert.Null(signingCertificate.Policies);
+        }
+
+        [Fact]
+        public void Read_WithPolicyInformation_ReturnsSigningCertificateV2()
+        {
+            var bcEssCertIdV2 = CreateBcEssCertIdV2(HashAlgorithmName.SHA256, "1");
+            var bcPolicyInfo = new BcPolicyInformation(new DerObjectIdentifier(Oids.AnyPolicy));
+            var bcSigningCertificateV2 = new BcSigningCertificateV2(
+                new[] { bcEssCertIdV2 }, new[] { bcPolicyInfo });
+            var bytes = bcSigningCertificateV2.GetDerEncoded();
+
+            var signingCertificate = SigningCertificateV2.Read(bytes);
+
+            Assert.Equal(1, signingCertificate.Certificates.Count);
+            Assert.Equal(1, signingCertificate.Policies.Count);
+
+            var policyInfo = signingCertificate.Policies[0];
+
+            Assert.Equal(bcPolicyInfo.PolicyIdentifier.ToString(), policyInfo.PolicyIdentifier.Value);
+            Assert.Null(policyInfo.PolicyQualifiers);
+        }
+
+        private static BcEssCertIdV2 CreateBcEssCertIdV2(HashAlgorithmName hashAlgorithmName, string text)
+        {
+            var hash = CryptoHashUtility.ComputeHash(hashAlgorithmName, Encoding.UTF8.GetBytes(text));
+            var bcAlgorithmIdentifier = new BcAlgorithmIdentifier(
+                new DerObjectIdentifier(hashAlgorithmName.ConvertToOidString()));
+
+            return new BcEssCertIdV2(bcAlgorithmIdentifier, hash);
         }
     }
 }

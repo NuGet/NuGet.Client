@@ -48,6 +48,11 @@ namespace NuGet.Packaging.Signing
             if (sequenceReader.HasData)
             {
                 issuerSerial = IssuerSerial.Read(sequenceReader);
+
+                if (sequenceReader.HasData)
+                {
+                    throw new SignatureException(Strings.SigningCertificateInvalid);
+                }
             }
 
             return new EssCertId(hash, issuerSerial);

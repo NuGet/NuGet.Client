@@ -36,7 +36,17 @@ namespace NuGet.Packaging.Signing
             var algIdReader = reader.ReadSequence();
             var algorithm = algIdReader.ReadOid();
 
-            // Skip the "parameters" field.  We do not use it.
+            // For all algorithms we currently support, parameter must be null.
+            // However, presence of a DER encoded NULL value is optional.
+            if (algIdReader.HasData)
+            {
+                algIdReader.ReadNull();
+
+                if (algIdReader.HasData)
+                {
+                    throw new SignatureException(Strings.SigningCertificateV2Invalid);
+                }
+            }
 
             return new AlgorithmIdentifier(algorithm);
         }

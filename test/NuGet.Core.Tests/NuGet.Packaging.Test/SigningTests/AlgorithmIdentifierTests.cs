@@ -3,7 +3,10 @@
 
 using System.Security.Cryptography;
 using NuGet.Packaging.Signing;
+using Org.BouncyCastle.Asn1;
 using Xunit;
+using AlgorithmIdentifier = NuGet.Packaging.Signing.AlgorithmIdentifier;
+using BcAlgorithmIdentifier = Org.BouncyCastle.Asn1.X509.AlgorithmIdentifier;
 
 namespace NuGet.Packaging.Test
 {
@@ -16,56 +19,28 @@ namespace NuGet.Packaging.Test
                 () => AlgorithmIdentifier.Read(new byte[] { 0x30, 0x0b }));
         }
 
-        [Fact]
-        public void Read_WithSha1_ReturnsAlgorithmIdentifier()
+        [Theory]
+        [InlineData(Oids.Sha1)]
+        [InlineData(Oids.Sha256)]
+        [InlineData(Oids.Sha384)]
+        [InlineData(Oids.Sha512)]
+        public void Read_WithValidInput_ReturnsAlgorithmIdentifier(string oid)
         {
-            var algorithmId = AlgorithmIdentifier.Read(
-                new byte[]
-                {
-                    0x30, 0x07, 0x06, 0x05, 0x2b, 0x0e, 0x03, 0x02,
-                    0x1a
-                });
+            var bytes = new BcAlgorithmIdentifier(new DerObjectIdentifier(oid)).GetDerEncoded();
 
-            Assert.Equal(Oids.Sha1, algorithmId.Algorithm.Value);
+            var algorithmId = AlgorithmIdentifier.Read(bytes);
+
+            Assert.Equal(oid, algorithmId.Algorithm.Value);
         }
 
         [Fact]
-        public void Read_WithSha256_ReturnsAlgorithmIdentifier()
+        public void Read_WithExplicitNullParameters_ReturnsAlgorithmIdentifier()
         {
-            var algorithmId = AlgorithmIdentifier.Read(
-                new byte[]
-                {
-                    0x30, 0x0b, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01,
-                    0x65, 0x03, 0x04, 0x02, 0x01
-                });
+            var bytes = new BcAlgorithmIdentifier(new DerObjectIdentifier(Oids.Sha256), DerNull.Instance).GetDerEncoded();
+
+            var algorithmId = AlgorithmIdentifier.Read(bytes);
 
             Assert.Equal(Oids.Sha256, algorithmId.Algorithm.Value);
-        }
-
-        [Fact]
-        public void Read_WithSha384_ReturnsAlgorithmIdentifier()
-        {
-            var algorithmId = AlgorithmIdentifier.Read(
-                new byte[]
-                {
-                    0x30, 0x0b, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01,
-                    0x65, 0x03, 0x04, 0x02, 0x02
-                });
-
-            Assert.Equal(Oids.Sha384, algorithmId.Algorithm.Value);
-        }
-
-        [Fact]
-        public void Read_WithSha512_ReturnsAlgorithmIdentifier()
-        {
-            var algorithmId = AlgorithmIdentifier.Read(
-                new byte[]
-                {
-                    0x30, 0x0b, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01,
-                    0x65, 0x03, 0x04, 0x02, 0x03
-                });
-
-            Assert.Equal(Oids.Sha512, algorithmId.Algorithm.Value);
         }
     }
 }
