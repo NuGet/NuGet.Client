@@ -70,9 +70,15 @@ fi
 # Unit tests
 echo "$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
 $DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
-$RESULTFILE = "build/TestResults/TestResults.xml"
-if [ -f  "$RESULTFILE" ]; then
-	mv "$RESULTFILE" "build/TestResults/TestResults.$(date +%H%M%S).xml"
+RESULTFILE="build/TestResults/TestResults.xml"
+
+echo "Checking if result file exists at $DIR$RESULTFILE"
+if [ -f  "$DIR$RESULTFILE" ]
+then
+	echo "Renaming $DIR$RESULTFILE"
+	mv "$RESULTFILE" "$DIR/build/TestResults/TestResults.$(date +%H%M%S).xml"
+else
+	echo "$DIR$RESULTFILE not found."
 fi
 
 if [ $? -ne 0 ]; then
@@ -83,8 +89,13 @@ fi
 # Func tests
 echo "$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
 $DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
-if [ -f  "$RESULTFILE" ]; then
-	mv "$RESULTFILE" "build/TestResults/TestResults.$(date +%H%M%S).xml"
+echo "Checking if result file exists at $DIR$RESULTFILE"
+if [ -f  "$DIR$RESULTFILE" ]
+then
+	echo "Renaming $DIR$RESULTFILE"
+	mv "$RESULTFILE" "$DIR/build/TestResults/TestResults.$(date +%H%M%S).xml"
+else
+	echo "$DIR$RESULTFILE not found."
 fi
 
 if [ $? -ne 0 ]; then

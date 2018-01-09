@@ -75,7 +75,7 @@ function SetCommitStatusForTestResult {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "succeeded"
     }
     else {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "failed"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "Failed"
     }
 
     # If the build gets cancelled or fails when the unit tests are running , we also need to call the github api to update status
