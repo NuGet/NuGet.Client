@@ -1228,7 +1228,7 @@ namespace NuGet.PackageManagement
 
                 // emit resolve actions telemetry event
                 TelemetryServiceUtility.StopTimer();
-                telemetryService.EmitTelemetryEvent(
+                telemetryService?.EmitTelemetryEvent(
                    new ActionTelemetryStepEvent(string.Format(TelemetryConstants.ResolvedActionsStepName, projectId), TelemetryServiceUtility.GetTimerElapsedTimeInSeconds()));
 
                 if (nuGetProjectActions.Count == 0)
@@ -1758,7 +1758,7 @@ namespace NuGet.PackageManagement
 
             // emit resolve actions telemetry event
             TelemetryServiceUtility.StopTimer();
-            telemetryService.EmitTelemetryEvent(
+            telemetryService?.EmitTelemetryEvent(
                 new ActionTelemetryStepEvent(string.Format(TelemetryConstants.ResolvedActionsStepName, projectId), TelemetryServiceUtility.GetTimerElapsedTimeInSeconds()));
 
             nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.ResolvedActionsToInstallPackage, packageIdentity);
