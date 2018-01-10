@@ -53,7 +53,7 @@ namespace Test.Utility.Signing
 
         public static string GenerateCertificateName()
         {
-            return "NuGetTest " + Guid.NewGuid().ToString();
+            return "NuGetTest-" + Guid.NewGuid().ToString();
         }
 
         public static TestCertificate Generate(Action<X509V3CertificateGenerator> modifyGenerator = null, ChainCertificateRequest chainCertificateRequest = null)
