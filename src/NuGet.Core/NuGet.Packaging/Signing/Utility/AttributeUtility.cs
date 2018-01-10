@@ -193,7 +193,8 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         private static List<SignatureType> GetCommitmentTypeIndicationRawValues(CryptographicAttributeObject attribute)
         {
-            var values = new List<SignatureType>(1);
+            // Most packages should have either 0 or 1 signature types.
+            var values = new List<SignatureType>(capacity: 1);
 
             /*
                 From RFC 5126 (https://tools.ietf.org/html/rfc5126.html#section-5.11.1):
