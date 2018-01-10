@@ -80,12 +80,8 @@ namespace NuGet.Packaging.FuncTest
         public async void Rfc3161TimestampProvider_AssertCompleteChain_Success()
         {
             // Arrange
-            var logger = new TestLogger();
             var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
-
-            // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             using (var packageStream = nupkg.CreateAsStream())

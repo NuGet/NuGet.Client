@@ -73,7 +73,7 @@ namespace NuGet.Packaging.Signing
         }
 
 
-        public static void SetCertBuildChainPolicy(
+        internal static void SetCertBuildChainPolicy(
             X509ChainPolicy policy,
             X509Certificate2Collection additionalCertificates,
             DateTime verificationTime,
@@ -100,7 +100,7 @@ namespace NuGet.Packaging.Signing
         }
 
 
-        public static bool BuildCertificateChain(X509Chain chain, X509Certificate2 certificate, out X509ChainStatus[] status)
+        internal static bool BuildCertificateChain(X509Chain chain, X509Certificate2 certificate, out X509ChainStatus[] status)
         {
             if (certificate == null)
             {
