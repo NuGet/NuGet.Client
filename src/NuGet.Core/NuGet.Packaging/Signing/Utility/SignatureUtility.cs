@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 #if IS_DESKTOP
@@ -10,6 +11,7 @@ using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
+using NuGet.Packaging.Signing.DerEncoding;
 
 namespace NuGet.Packaging.Signing
 {
@@ -264,7 +266,7 @@ namespace NuGet.Packaging.Signing
 
             if (signingCertificateV2Attribute != null)
             {
-                var reader = signingCertificateV2Attribute.ToDerSequenceReader();
+                var reader = CreateDerSequenceReader(signingCertificateV2Attribute);
                 var signingCertificateV2 = SigningCertificateV2.Read(reader);
 
                 if (signingCertificateV2.Certificates.Count == 0)
@@ -297,7 +299,7 @@ namespace NuGet.Packaging.Signing
 
             if (signingCertificateAttribute != null)
             {
-                var reader = signingCertificateAttribute.ToDerSequenceReader();
+                var reader = CreateDerSequenceReader(signingCertificateAttribute);
                 var signingCertificate = SigningCertificate.Read(reader);
 
                 if (signingCertificate.Certificates.Count == 0)
@@ -434,6 +436,16 @@ namespace NuGet.Packaging.Signing
 
                 return CertificateChainUtility.GetCertificateListFromChain(chain);
             }
+        }
+
+        private static DerSequenceReader CreateDerSequenceReader(CryptographicAttributeObject attribute)
+        {
+            if (attribute.Values.Count != 1)
+            {
+                throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.SignatureContainsInvalidAttribute, attribute.Oid.Value));
+            }
+
+            return new DerSequenceReader(attribute.Values[0].RawData);
         }
 
         private sealed class Errors

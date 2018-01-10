@@ -10,7 +10,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
-using NuGet.Packaging.Signing.DerEncoding;
 
 namespace NuGet.Packaging.Signing
 {
@@ -25,47 +24,53 @@ namespace NuGet.Packaging.Signing
         public static CryptographicAttributeObject CreateCommitmentTypeIndication(SignatureType type)
         {
             // SignatureType -> Oid
-            var valueOid = GetSignatureTypeOid(type);
+            var oid = GetSignatureTypeOid(type);
 
-            // DER encode the signature type Oid in a sequence.
-            // CommitmentTypeQualifier ::= SEQUENCE {
-            // commitmentTypeIdentifier CommitmentTypeIdentifier,
-            // qualifier                  ANY DEFINED BY commitmentTypeIdentifier }
-            var commitmentTypeData = DerEncoder.ConstructSequence(new List<byte[][]>() { DerEncoder.SegmentedEncodeOid(valueOid) });
-            var data = new AsnEncodedData(Oids.CommitmentTypeIndication, commitmentTypeData);
+            var commitmentTypeQualifier = CommitmentTypeQualifier.Create(new Oid(oid));
+            var value = new AsnEncodedData(Oids.CommitmentTypeIndication, commitmentTypeQualifier.Encode());
 
-            // Create an attribute
             return new CryptographicAttributeObject(
-                oid: new Oid(Oids.CommitmentTypeIndication),
-                values: new AsnEncodedDataCollection(data));
+                new Oid(Oids.CommitmentTypeIndication),
+                new AsnEncodedDataCollection(value));
         }
 
         /// <summary>
-        /// Oid -> SignatureType
+        /// Gets the signature type from a commitment-type-indication attribute object.
         /// </summary>
         /// <param name="attribute">A commitment-type-indication attribute object.</param>
-        /// <remarks>Unknown Oids are ignored. Throws for empty values and invalid combinations.</remarks>
+        /// <remarks>Unknown OIDs are ignored.</remarks>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="attribute" /> is <c>null</c>.</exception>
+        /// <exception cref="SignatureException">Thrown if <paramref name="attribute" /> is invalid.</exception>
         public static SignatureType GetCommitmentTypeIndication(CryptographicAttributeObject attribute)
         {
-            if (!IsValidCommitmentTypeIndication(attribute))
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
+            if (attribute.Oid.Value != Oids.CommitmentTypeIndication)
             {
                 throw new SignatureException(Strings.CommitmentTypeIndicationAttributeInvalid);
             }
 
-            // Remove unknown values, these could be future values.
-            // Invalid combinations and empty checks have already been done.
-            var knownValues = GetCommitmentTypeIndicationRawValues(attribute)
-                .Where(e => e != SignatureType.Unknown)
-                .ToList();
+            var values = GetCommitmentTypeIndicationRawValues(attribute);
 
-            // Return the only recognized value.
-            if (knownValues.Count == 1)
+            // Remove unknown values, these could be future values.
+            var knownValues = values.Where(e => e != SignatureType.Unknown).Distinct().ToList();
+
+            if (knownValues.Count == 0)
             {
-                return knownValues[0];
+                return SignatureType.Unknown;
             }
 
-            // All values were unknown
-            return SignatureType.Unknown;
+            // Author and repository values are mutually exclusive in the same signature.
+            // If multiple distinct known values exist then the attribute is invalid.
+            if (knownValues.Count > 1)
+            {
+                throw new SignatureException(Strings.CommitmentTypeIndicationAttributeInvalidCombination);
+            }
+
+            return knownValues[0];
         }
 
         internal static SignatureType GetCommitmentTypeIndication(SignerInfo signer)
@@ -77,36 +82,6 @@ namespace NuGet.Packaging.Signing
             }
 
             return SignatureType.Unknown;
-        }
-
-        /// <summary>
-        /// True if the commitment-type-indication value does not
-        /// contain an invalid combination of values. Unknown
-        /// values are ignored.
-        /// </summary>
-        public static bool IsValidCommitmentTypeIndication(CryptographicAttributeObject attribute)
-        {
-            var values = GetCommitmentTypeIndicationRawValues(attribute);
-
-            // Zero values is invalid.
-            if (values.Count < 1)
-            {
-                return false;
-            }
-
-            // Remove unknown values, these could be future values.
-            var knownValues = values.Where(e => e != SignatureType.Unknown).ToList();
-
-            // Currently the value must be a single value of author or repository. If multiple
-            // known values exist then either there is a duplicate or both author and repository
-            // was listed in the attribute.
-            if (knownValues.Count > 1)
-            {
-                return false;
-            }
-
-            // A known or unknown value is present, and no invalid combinations exist.
-            return true;
         }
 
         /// <summary>
@@ -190,21 +165,6 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// CryptographicAttributeObject -> DerSequenceReader
-        /// </summary>
-        internal static DerSequenceReader ToDerSequenceReader(this CryptographicAttributeObject attribute)
-        {
-            var values = attribute.Values.ToList();
-
-            if (values.Count != 1)
-            {
-                ThrowInvalidAttributeException(attribute);
-            }
-
-            return new DerSequenceReader(values[0].RawData);
-        }
-
-        /// <summary>
         /// Throw a signature exception due to an invalid attribute. This is used for unusual situations
         /// where the format is corrupt.
         /// </summary>
@@ -233,12 +193,32 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         private static List<SignatureType> GetCommitmentTypeIndicationRawValues(CryptographicAttributeObject attribute)
         {
-            var values = new List<SignatureType>(1);
-            var reader = attribute.ToDerSequenceReader();
+            // Most packages should have either 0 or 1 signature types.
+            var values = new List<SignatureType>(capacity: 1);
 
-            while (reader.HasData)
+            /*
+                From RFC 5126 (https://tools.ietf.org/html/rfc5126.html#section-5.11.1):
+
+                    CommitmentTypeIndication ::= SEQUENCE {
+                      commitmentTypeId CommitmentTypeIdentifier,
+                      commitmentTypeQualifier SEQUENCE SIZE (1..MAX) OF
+                                     CommitmentTypeQualifier OPTIONAL}
+
+                    CommitmentTypeIdentifier ::= OBJECT IDENTIFIER
+            */
+
+            // CryptographicAttributeObject.Values represent the values in the commitmentTypeQualifier sequence above.
+            // CryptographicAttributeObject forces its Values property to be an empty collection, so it is impossible
+            // from CryptographicAttributeObject to distinguish between the sequence being absent, which is permitted
+            // here, and the sequence being empty, which is invalid here.
+            // We'll err on the side of leniency and treat an empty sequence like an absent sequence.
+
+            foreach (var value in attribute.Values)
             {
-                values.Add(GetSignatureType(reader.ReadOidAsString()));
+                var qualifier = CommitmentTypeQualifier.Read(value.RawData);
+                var signatureType = GetSignatureType(qualifier.CommitmentTypeIdentifier.Value);
+
+                values.Add(signatureType);
             }
 
             return values;
