@@ -95,13 +95,8 @@ namespace NuGet.Packaging.Signing
                     _timestamperUrl,
                     TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
 
-                // ensure response is for this request
-                ValidateTimestampResponseNonce(nonce, timestampToken);
-
-                if (!timestampToken.TokenInfo.HasMessageHash(signatureValueHashByteArray))
-                {
-                    throw new TimestampException(NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed);
-                }
+                // quick check for response validity
+                ValidateTimestampResponse(nonce, signatureValueHashByteArray, timestampToken);
 
                 var timestampCms = timestampToken.AsSignedCms();
                 ValidateTimestampCms(request.SigningSpec, timestampCms);
@@ -132,11 +127,7 @@ namespace NuGet.Packaging.Signing
                     {
                         var messages = CertificateChainUtility.GetMessagesFromChainStatuses(timestampCertChain.ChainStatus);
 
-                        throw new TimestampException(LogMessage.CreateError(
-                            NuGetLogCode.NU3028,
-                            string.Format(CultureInfo.CurrentCulture,
-                            Strings.TimestampCertificateChainBuildFailure,
-                            string.Join(", ", messages))));
+                        throw new TimestampException(NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.TimestampCertificateChainBuildFailure, string.Join(", ", messages)));
                     }
 
                     // Insert all the certificates into timestampCms
@@ -183,15 +174,16 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private static void ValidateTimestampResponseNonce(
-                byte[] nonce,
-                Rfc3161TimestampToken timestampToken)
+        private static void ValidateTimestampResponse(byte[] nonce, byte[] data, Rfc3161TimestampToken timestampToken)
         {
             if (!nonce.SequenceEqual(timestampToken.TokenInfo.GetNonce()))
             {
-                throw new TimestampException(LogMessage.CreateError(
-                    NuGetLogCode.NU3026,
-                    Strings.TimestampFailureNonceMismatch));
+                throw new TimestampException(NuGetLogCode.NU3026, Strings.TimestampFailureNonceMismatch);
+            }
+
+            if (!timestampToken.TokenInfo.HasMessageHash(data))
+            {
+                throw new TimestampException(NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed);
             }
         }
 

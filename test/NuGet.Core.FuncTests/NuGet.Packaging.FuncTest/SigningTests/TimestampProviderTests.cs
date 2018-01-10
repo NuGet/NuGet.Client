@@ -76,6 +76,51 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
+        public void Rfc3161TimestampProvider_AssertCompleteChain_Success()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
+            var data = "Test data to be signed and timestamped";
+
+            using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
+                var signatureValue = signedCms.Encode();
+
+                var request = new TimestampRequest
+                {
+                    Certificate = authorCert,
+                    SigningSpec = SigningSpecifications.V1,
+                    TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
+                    SignatureValue = signatureValue
+                };
+
+                // Act
+                var timestampedData = timestampProvider.TimestampData(request, logger, CancellationToken.None);
+                var timestampedSignature = Signature.Load(timestampedData);
+                var timestampedCms = timestampedSignature.SignedCms;
+                var timestamps = timestampedSignature.Timestamps;
+
+                using (var chain = new X509Chain())
+                {
+                    CertificateChainUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestamp.UpperLimit.LocalDateTime, NuGetVerificationCertificateType.Signature);
+                    var chainBuildingSucceed = CertificateChainUtility.BuildCertificateChain(chain, certificate, out var chainStatuses);
+                }
+
+                // Assert
+                timestampedData.Should().NotBeNull();
+                timestampedCms.Should().NotBeNull();
+                timestampedCms.Detached.Should().BeFalse();
+                timestampedCms.ContentInfo.Should().NotBeNull();
+                timestampedCms.Certificates.Count.Should().Be(1);
+                timestampedCms.SignerInfos.Count.Should().Be(1);
+                timestampedCms.SignerInfos[0].UnsignedAttributes.Count.Should().Be(1);
+                timestampedCms.SignerInfos[0].UnsignedAttributes[0].Oid.Value.Should().Be(Oids.SignatureTimeStampTokenAttributeOid);
+            }
+        }
+
+        [CIOnlyFact]
         public void Rfc3161TimestampProvider_Failure_NullRequest()
         {
             // Arrange

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -20,6 +21,8 @@ namespace NuGet.Commands
     {
         public async Task<int> ExecuteCommandAsync(SignArgs signArgs)
         {
+            Debugger.Launch();
+
             // resolve path into multiple packages if needed.
             var packagesToSign = LocalFolderUtility.ResolvePackageFromPath(signArgs.PackagePath);
             LocalFolderUtility.EnsurePackageFileExists(signArgs.PackagePath, packagesToSign);
