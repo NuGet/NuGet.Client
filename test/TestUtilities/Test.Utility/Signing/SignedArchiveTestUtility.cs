@@ -93,7 +93,7 @@ namespace Test.Utility.Signing
         /// <param name="testCert">Certificate to be used while generating the signature.</param>
         /// <param name="nupkg">Package for which the signature has to be generated.</param>
         /// <returns>Signature for the package.</returns>
-        public static async Task<Signature> CreateSignatureForPackageAsync(X509Certificate2 testCert, Stream packageStream)
+        public static async Task<Signature> CreateSignatureForPackageAsync(X509Certificate2 testCert, Stream packageStream, ITimestampProvider timestampProvider = null)
         {
             var testLogger = new TestLogger();
             var hashAlgorithm = HashAlgorithmName.SHA256;
@@ -104,7 +104,7 @@ namespace Test.Utility.Signing
                 var zipArchiveHash = await package.GetArchiveHashAsync(request.SignatureHashAlgorithm, CancellationToken.None);
                 var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
                 var signatureContent = new SignatureContent(SigningSpecifications.V1, hashAlgorithm, base64ZipArchiveHash);
-                var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
+                var testSignatureProvider = new X509SignatureProvider(timestampProvider);
 
                 return await testSignatureProvider.CreateSignatureAsync(request, signatureContent, testLogger, CancellationToken.None);
             }

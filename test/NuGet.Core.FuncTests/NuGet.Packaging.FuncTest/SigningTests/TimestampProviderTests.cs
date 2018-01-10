@@ -5,7 +5,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
@@ -70,41 +70,31 @@ namespace NuGet.Packaging.FuncTest
                 timestampedCms.Should().NotBeNull();
                 timestampedCms.Detached.Should().BeFalse();
                 timestampedCms.ContentInfo.Should().NotBeNull();
-                timestampedCms.Certificates.Count.Should().Be(1);
                 timestampedCms.SignerInfos.Count.Should().Be(1);
                 timestampedCms.SignerInfos[0].UnsignedAttributes.Count.Should().Be(1);
                 timestampedCms.SignerInfos[0].UnsignedAttributes[0].Oid.Value.Should().Be(Oids.SignatureTimeStampTokenAttribute);
-
             }
         }
 
         [CIOnlyFact]
-        public void Rfc3161TimestampProvider_AssertCompleteChain_Success()
+        public async void Rfc3161TimestampProvider_AssertCompleteChain_Success()
         {
-            Debugger.Launch();
-
             // Arrange
             var logger = new TestLogger();
             var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
-            var data = "Test data to be signed and timestamped";
+
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var testLogger = new TestLogger();
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var packageStream = nupkg.CreateAsStream())
             {
-                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
-                var signatureValue = signedCms.Encode();
-
-                var request = new TimestampRequest
-                {
-                    Certificate = authorCert,
-                    SigningSpec = SigningSpecifications.V1,
-                    TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
-                    SignatureValue = signatureValue
-                };
-
                 // Act
-                var timestampedData = timestampProvider.TimestampData(request, logger, CancellationToken.None);
-                var timestampedCms = new SignedCms();
-                timestampedCms.Decode(timestampedData);
+                var signature = await SignedArchiveTestUtility.CreateSignatureForPackageAsync(authorCert, packageStream, timestampProvider);
+                var authorSignedCms = signature.SignedCms;
+                var timestamp = signature.Timestamps.First();
+                var timestampCms = timestamp.SignedCms;
                 IReadOnlyList<X509Certificate2> chainCertificates = new List<X509Certificate2>();
                 var chainBuildSuccess = true;
 
@@ -113,31 +103,33 @@ namespace NuGet.Packaging.FuncTest
                 {
                     var policy = timestampCertChain.ChainPolicy;
 
-                    policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEkuOid));
+                    policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEku));
                     policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
                     policy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
                     policy.RevocationMode = X509RevocationMode.Online;
 
-                    var timestampSignerCertificate = timestampedCms.SignerInfos[0].Certificate;
+                    var timestampSignerCertificate = timestampCms.SignerInfos[0].Certificate;
                     chainBuildSuccess = timestampCertChain.Build(timestampSignerCertificate);
                     chainCertificates = CertificateChainUtility.GetCertificateListFromChain(timestampCertChain);
                 }
 
                 // Assert
-                timestampedData.Should().NotBeNull();
-                timestampedCms.Should().NotBeNull();
-                timestampedCms.Detached.Should().BeFalse();
-                timestampedCms.ContentInfo.Should().NotBeNull();
-                timestampedCms.Certificates.Count.Should().Be(1);
-                timestampedCms.SignerInfos.Count.Should().Be(1);
-                timestampedCms.SignerInfos[0].UnsignedAttributes.Count.Should().Be(1);
-                timestampedCms.SignerInfos[0].UnsignedAttributes[0].Oid.Value.Should().Be(Oids.SignatureTimeStampTokenAttributeOid);
+                authorSignedCms.Should().NotBeNull();
+                authorSignedCms.Detached.Should().BeFalse();
+                authorSignedCms.ContentInfo.Should().NotBeNull();
+                authorSignedCms.SignerInfos.Count.Should().Be(1);
+                authorSignedCms.SignerInfos[0].UnsignedAttributes.Count.Should().Be(1);
+                authorSignedCms.SignerInfos[0].UnsignedAttributes[0].Oid.Value.Should().Be(Oids.SignatureTimeStampTokenAttribute);
+
+                timestampCms.Should().NotBeNull();
+                timestampCms.Detached.Should().BeFalse();
+                timestampCms.ContentInfo.Should().NotBeNull();
 
                 chainBuildSuccess.Should().BeTrue();
-                chainCertificates.Count.Should().Be(timestampedCms.Certificates.Count);
-                foreach(var cert in chainCertificates)
+                chainCertificates.Count.Should().Be(timestampCms.Certificates.Count);
+                foreach (var cert in chainCertificates)
                 {
-                    timestampedCms.Certificates.Contains(cert).Should().BeTrue();
+                    timestampCms.Certificates.Contains(cert).Should().BeTrue();
                 }
             }
         }
