@@ -9,12 +9,17 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Packaging.Signing.DerEncoding;
+using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Asn1.Pkcs;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
     public class AttributeUtilityTests : IClassFixture<CertificatesFixture>
     {
+        private const string CommitmentTypeIdentifierProofOfDelivery = "1.2.840.113549.1.9.16.6.3";
+        private const string CommitmentTypeIdentifierProofOfSender = "1.2.840.113549.1.9.16.6.4";
+
         private readonly CertificatesFixture _fixture;
 
         public AttributeUtilityTests(CertificatesFixture fixture)
@@ -42,58 +47,96 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetCommitmentTypeIndication_CommitmentTypeIndicationWithAuthorSignatureAndUnknownVerifyAuthor()
+        public void GetCommitmentTypeIndication_WhenAttributeNull_Throws()
         {
-            var attribute = GetCommitmentTypeTestAttribute(Oids.CommitmentTypeIdentifierProofOfOrigin, "1.3.6.1.5.5.7.3.3");
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => AttributeUtility.GetCommitmentTypeIndication(attribute: null));
+
+            Assert.Equal("attribute", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetCommitmentTypeIndication_WhenAttributeNotCommitmentTypeIndication_Throws()
+        {
+            var attribute = new CryptographicAttributeObject(new Oid(Oids.SigningCertificateV2));
+
+            var exception = Assert.Throws<SignatureException>(
+                () => AttributeUtility.GetCommitmentTypeIndication(attribute));
+
+            Assert.Equal("The attribute is not a valid commitment-type-indication attribute.", exception.Message);
+        }
+
+        [Fact]
+        public void GetCommitmentTypeIndication_WithOriginType_ReturnsAuthor()
+        {
+            var attribute = GetCommitmentTypeTestAttribute(Oids.CommitmentTypeIdentifierProofOfOrigin);
             AttributeUtility.GetCommitmentTypeIndication(attribute).Should().Be(SignatureType.Author);
         }
 
         [Fact]
-        public void GetCommitmentTypeIndication_CommitmentTypeIndicationWithUnknownSignatureType()
+        public void GetCommitmentTypeIndication_WithReceiptType_ReturnsRepository()
         {
-            var attribute = GetCommitmentTypeTestAttribute("1.3.6.1.5.5.7.3.3");
+            var attribute = GetCommitmentTypeTestAttribute(Oids.CommitmentTypeIdentifierProofOfReceipt);
+            AttributeUtility.GetCommitmentTypeIndication(attribute).Should().Be(SignatureType.Repository);
+        }
+
+        [Fact]
+        public void GetCommitmentTypeIndication_WithUnknownType_ReturnsUnknown()
+        {
+            var attribute = GetCommitmentTypeTestAttribute(CommitmentTypeIdentifierProofOfDelivery);
             AttributeUtility.GetCommitmentTypeIndication(attribute).Should().Be(SignatureType.Unknown);
         }
 
         [Fact]
-        public void IsValidCommitmentTypeIndication_CommitmentTypeIndicationWithBothRepoAndAuthorVerifyFailure()
+        public void GetCommitmentTypeIndication_WithMultipleUnknownTypes_ReturnsUnknown()
         {
-            var attribute = GetCommitmentTypeTestAttribute(Oids.CommitmentTypeIdentifierProofOfReceipt, Oids.CommitmentTypeIdentifierProofOfOrigin);
-            AttributeUtility.IsValidCommitmentTypeIndication(attribute).Should().BeFalse();
+            var attribute = GetCommitmentTypeTestAttribute(
+                CommitmentTypeIdentifierProofOfDelivery, CommitmentTypeIdentifierProofOfSender);
+            AttributeUtility.GetCommitmentTypeIndication(attribute).Should().Be(SignatureType.Unknown);
         }
 
         [Fact]
-        public void IsValidCommitmentTypeIndication_CommitmentTypeIndicationWithDuplicateValuesVerifyFailure()
-        {
-            var attribute = GetCommitmentTypeTestAttribute(Oids.CommitmentTypeIdentifierProofOfOrigin, Oids.CommitmentTypeIdentifierProofOfOrigin);
-            AttributeUtility.IsValidCommitmentTypeIndication(attribute).Should().BeFalse();
-        }
-
-        [Fact]
-        public void IsValidCommitmentTypeIndication_CommitmentTypeIndicationWithNoValueVerifyFailure()
+        public void GetCommitmentTypeIndication_WithNoType_ReturnsUnknown()
         {
             var attribute = GetCommitmentTypeTestAttribute();
-            AttributeUtility.IsValidCommitmentTypeIndication(attribute).Should().BeFalse();
+
+            Assert.Equal(SignatureType.Unknown, AttributeUtility.GetCommitmentTypeIndication(attribute));
+        }
+
+        [Fact]
+        public void GetCommitmentTypeIndication_WithBothOriginAndReceiptTypes_Throws()
+        {
+            var attribute = GetCommitmentTypeTestAttribute(
+                Oids.CommitmentTypeIdentifierProofOfOrigin, Oids.CommitmentTypeIdentifierProofOfReceipt);
+
+            var exception = Assert.Throws<SignatureException>(
+                () => AttributeUtility.GetCommitmentTypeIndication(attribute));
+
+            Assert.Equal("The commitment-type-indication attribute contains an invalid combination of values.", exception.Message);
+        }
+
+        [Fact]
+        public void GetCommitmentTypeIndication_WithDuplicateOriginTypes_ReturnsAuthor()
+        {
+            var attribute = GetCommitmentTypeTestAttribute(
+                Oids.CommitmentTypeIdentifierProofOfOrigin, Oids.CommitmentTypeIdentifierProofOfOrigin);
+
+            Assert.Equal(SignatureType.Author, AttributeUtility.GetCommitmentTypeIndication(attribute));
+        }
+
+        [Fact]
+        public void GetCommitmentTypeIndication_WithOriginAndUnknownType_ReturnsAuthor()
+        {
+            var attribute = GetCommitmentTypeTestAttribute(
+                Oids.CommitmentTypeIdentifierProofOfOrigin, CommitmentTypeIdentifierProofOfSender);
+
+            Assert.Equal(SignatureType.Author, AttributeUtility.GetCommitmentTypeIndication(attribute));
         }
 
         [Fact]
         public void GetCommitmentTypeIndication_CommitmentTypeIndicationWithBothRepoAndAuthorVerifyThrows()
         {
             var attribute = GetCommitmentTypeTestAttribute(Oids.CommitmentTypeIdentifierProofOfReceipt, Oids.CommitmentTypeIdentifierProofOfOrigin);
-            Assert.Throws<SignatureException>(() => AttributeUtility.GetCommitmentTypeIndication(attribute));
-        }
-
-        [Fact]
-        public void GetCommitmentTypeIndication_CommitmentTypeIndicationWithDuplicateValuesVerifyThrows()
-        {
-            var attribute = GetCommitmentTypeTestAttribute(Oids.CommitmentTypeIdentifierProofOfOrigin, Oids.CommitmentTypeIdentifierProofOfOrigin);
-            Assert.Throws<SignatureException>(() => AttributeUtility.GetCommitmentTypeIndication(attribute));
-        }
-
-        [Fact]
-        public void GetCommitmentTypeIndication_CommitmentTypeIndicationWithNoValueVerifyThrows()
-        {
-            var attribute = GetCommitmentTypeTestAttribute();
             Assert.Throws<SignatureException>(() => AttributeUtility.GetCommitmentTypeIndication(attribute));
         }
 
@@ -164,19 +207,17 @@ namespace NuGet.Packaging.Test
         /// </summary>
         private static CryptographicAttributeObject GetCommitmentTypeTestAttribute(params string[] oids)
         {
-            var values = new List<byte[][]>();
+            var commitmentTypeIndication = new Oid(Oids.CommitmentTypeIndication);
+            var values = new AsnEncodedDataCollection();
 
             foreach (var oid in oids)
             {
-                values.Add(DerEncoder.SegmentedEncodeOid(oid));
+                var value = DerEncoder.ConstructSequence(DerEncoder.SegmentedEncodeOid(oid));
+
+                values.Add(new AsnEncodedData(commitmentTypeIndication, value));
             }
 
-            var commitmentTypeData = DerEncoder.ConstructSequence(values);
-            var data = new AsnEncodedData(Oids.CommitmentTypeIndication, commitmentTypeData);
-
-            return new CryptographicAttributeObject(
-                new Oid(Oids.CommitmentTypeIndication),
-                new AsnEncodedDataCollection(data));
+            return new CryptographicAttributeObject(commitmentTypeIndication, values);
         }
     }
 }
