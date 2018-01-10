@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Test.Utility.Signing
 {
-    public class TrustedCertificateChain : IDisposable
+    public class TrustedTestCertificateChain : IDisposable
     {
         public IList<TrustedTestCert<TestCertificate>> Certificates { get; set; } = new List<TrustedTestCert<TestCertificate>>();
 

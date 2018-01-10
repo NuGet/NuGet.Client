@@ -28,9 +28,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private TrustedTestCert<TestCertificate> _trustedTestCertWithInvalidEku;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
-        private TrustedCertificateChain _trustedTestCertChain;
-        private TrustedCertificateChain _revokedTestCertChain;
-        private TrustedCertificateChain _revocationUnknownTestCertChain;
+        private TrustedTestCertificateChain _trustedTestCertChain;
+        private TrustedTestCertificateChain _revokedTestCertChain;
+        private TrustedTestCertificateChain _revocationUnknownTestCertChain;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
         private MockServer _crlServer;
@@ -110,7 +110,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        public TrustedCertificateChain TrustedTestCertificateChain
+        public TrustedTestCertificateChain TrustedTestCertificateChain
         {
             get
             {
@@ -118,7 +118,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 {
                     var certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path);
 
-                    _trustedTestCertChain = new TrustedCertificateChain()
+                    _trustedTestCertChain = new TrustedTestCertificateChain()
                     {
                         Certificates = certChain
                     };
@@ -138,7 +138,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 {
                     var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path);
 
-                    _revokedTestCertChain = new TrustedCertificateChain()
+                    _revokedTestCertChain = new TrustedTestCertificateChain()
                     {
                         Certificates = certChain
                     };
@@ -159,19 +159,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_revocationUnknownTestCertChain == null)
                 {
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path);
+                    var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: false);
 
-                    _revocationUnknownTestCertChain = new TrustedCertificateChain()
+                    _revocationUnknownTestCertChain = new TrustedTestCertificateChain()
                     {
                         Certificates = certChain
                     };
-
-                    // delete crl to make revocation status unknown
-                    var crlPath = _revocationUnknownTestCertChain.Certificates[0].Source.Crl.CrlLocalPath;
-                    if (File.Exists(crlPath))
-                    {
-                        File.Delete(crlPath);
-                    }
 
                     SetUpCrlDistributionPoint();
                 }

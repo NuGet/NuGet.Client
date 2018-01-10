@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using FluentAssertions;
@@ -97,7 +96,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
-                result.AllOutput.Should().Contain("NotValidForUsage");
+                result.AllOutput.Should().Contain("The certificate is not valid for the requested usage");
             }
         }
 
@@ -247,14 +246,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var result = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"sign {packagePath} -CertificateFingerprint {cert.Source.Cert.Thumbprint}  -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation} -Verbosity Detailed",
+                    $"sign {packagePath} -CertificateFingerprint {cert.Source.Cert.Thumbprint}  -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
                     waitForExit: true);
 
                 // Assert
                 result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
-                result.AllOutput.Should().Contain("Revoked");
+                result.AllOutput.Should().Contain("The certificate is revoked");
             }
         }
 
@@ -280,14 +279,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var result = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"sign {packagePath} -CertificateFingerprint {cert.Source.Cert.Thumbprint} -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation} -Verbosity Detailed",
+                    $"sign {packagePath} -CertificateFingerprint {cert.Source.Cert.Thumbprint} -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
                     waitForExit: true);
 
                 // Assert
                 result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
-                result.AllOutput.Should().Contain("RevocationStatusUnknown");
+                result.AllOutput.Should().Contain("The revocation function was unable to check revocation for the certificate");
             }
         }
 
