@@ -148,4 +148,8 @@
   <data name="UnsupportedHashAlgorithm" xml:space="preserve">
     <value>Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.</value>
   </data>
+  <data name="UnsupportedHashAlgorithmName" xml:space="preserve">
+    <value>The hash algorithm '{0}' is unsupported.</value>
+    <comment>{0} is an algorithm identifier</comment>
+  </data>
 </root>

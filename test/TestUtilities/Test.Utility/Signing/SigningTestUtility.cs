@@ -144,6 +144,55 @@ namespace Test.Utility.Signing
             return certResult;
         }
 
+        /// <summary>
+        /// Create a self signed certificate.
+        /// </summary>
+        public static X509Certificate2 GenerateCertificate(
+            string subjectName,
+            AsymmetricCipherKeyPair keyPair)
+        {
+            if (string.IsNullOrEmpty(subjectName))
+            {
+                subjectName = "NuGetTest";
+            }
+
+            var certGen = new X509V3CertificateGenerator();
+            certGen.SetSubjectDN(new X509Name($"CN={subjectName}"));
+            certGen.SetIssuerDN(new X509Name($"CN={subjectName}"));
+
+            certGen.SetNotAfter(DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
+            certGen.SetNotBefore(DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)));
+            certGen.SetPublicKey(keyPair.Public);
+
+            var random = new SecureRandom();
+            var serialNumber = BigIntegers.CreateRandomInRange(BigInteger.One, BigInteger.ValueOf(long.MaxValue), random);
+
+            certGen.SetSerialNumber(serialNumber);
+
+            var subjectKeyIdentifier = new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(keyPair.Public));
+            certGen.AddExtension(X509Extensions.SubjectKeyIdentifier.Id, false, subjectKeyIdentifier);
+            certGen.AddExtension(X509Extensions.KeyUsage, true, new KeyUsage(KeyUsage.KeyCertSign));
+            certGen.AddExtension(X509Extensions.BasicConstraints.Id, true, new BasicConstraints(false));
+
+            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
+
+            certGen.AddExtension(
+                X509Extensions.ExtendedKeyUsage.Id,
+                critical: true,
+                extensionValue: new ExtendedKeyUsage(usages));
+
+            var issuerPrivateKey = keyPair.Private;
+            var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", issuerPrivateKey, random);
+            var certificate = certGen.Generate(signatureFactory);
+            var certResult = new X509Certificate2(certificate.GetEncoded());
+
+#if IS_DESKTOP
+            certResult.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
+#endif
+
+            return certResult;
+        }
+
 #if IS_DESKTOP
         /// <summary>
         /// Convert a cert private key into a AsymmetricKeyParameter

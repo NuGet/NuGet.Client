@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
+#if IS_DESKTOP
+using System.Security.Cryptography.Pkcs;
+#endif
 using System.Security.Cryptography.X509Certificates;
-using NuGet.Common;
 using NuGet.Packaging.Signing.DerEncoding;
 
 namespace NuGet.Packaging.Signing
@@ -15,12 +17,12 @@ namespace NuGet.Packaging.Signing
     public static class AttributeUtility
     {
 #if IS_DESKTOP
-
         /// <summary>
         /// Create a CommitmentTypeIndication attribute.
         /// https://tools.ietf.org/html/rfc5126.html#section-5.11.1
         /// </summary>
-        public static CryptographicAttributeObject GetCommitmentTypeIndication(SignatureType type)
+        /// <param name="type">The signature type.</param>
+        public static CryptographicAttributeObject CreateCommitmentTypeIndication(SignatureType type)
         {
             // SignatureType -> Oid
             var valueOid = GetSignatureTypeOid(type);
@@ -41,6 +43,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Oid -> SignatureType
         /// </summary>
+        /// <param name="attribute">A commitment-type-indication attribute object.</param>
         /// <remarks>Unknown Oids are ignored. Throws for empty values and invalid combinations.</remarks>
         public static SignatureType GetCommitmentTypeIndication(CryptographicAttributeObject attribute)
         {
@@ -62,6 +65,17 @@ namespace NuGet.Packaging.Signing
             }
 
             // All values were unknown
+            return SignatureType.Unknown;
+        }
+
+        internal static SignatureType GetCommitmentTypeIndication(SignerInfo signer)
+        {
+            var commitmentTypeIndication = signer.SignedAttributes.GetAttributeOrDefault(Oids.CommitmentTypeIndication);
+            if (commitmentTypeIndication != null)
+            {
+                return GetCommitmentTypeIndication(commitmentTypeIndication);
+            }
+
             return SignatureType.Unknown;
         }
 
@@ -98,6 +112,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Oid -> SignatureType
         /// </summary>
+        /// <param name="oid">The commitment-type-indication value.</param>
         public static SignatureType GetSignatureType(string oid)
         {
             switch (oid)
@@ -114,6 +129,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// SignatureType -> Oid
         /// </summary>
+        /// <param name="signatureType">The signature type.</param>
         public static string GetSignatureTypeOid(SignatureType signatureType)
         {
             switch (signatureType)
@@ -130,102 +146,25 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Create a signing-certificate-v2 from a certificate.
         /// </summary>
-        public static CryptographicAttributeObject GetSigningCertificateV2(IEnumerable<X509Certificate2> chain, Common.HashAlgorithmName hashAlgorithm)
+        /// <param name="certificate">The signing certificate.</param>
+        /// <param name="hashAlgorithm">The hash algorithm for the signing-certificate-v2 attribute.</param>
+        public static CryptographicAttributeObject CreateSigningCertificateV2(
+            X509Certificate2 certificate,
+            Common.HashAlgorithmName hashAlgorithm)
         {
-            // Build the cert chain as-is
-            var certEntries = chain.Select(e => CreateESSCertIDv2Entry(e, hashAlgorithm)).ToList();
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
 
-            var data = new AsnEncodedData(Oids.SigningCertificateV2, DerEncoder.ConstructSequence(certEntries));
+            var signingCertificateV2 = SigningCertificateV2.Create(certificate, hashAlgorithm);
+            var bytes = signingCertificateV2.Encode();
 
-            // Create an attribute
+            var data = new AsnEncodedData(Oids.SigningCertificateV2, bytes);
+
             return new CryptographicAttributeObject(
-                oid: new Oid(Oids.SigningCertificateV2),
-                values: new AsnEncodedDataCollection(data));
-        }
-
-        /// <summary>
-        /// Verify a signing-certificate-v2 attribute.
-        /// </summary>
-        public static bool IsValidSigningCertificateV2(
-            X509Certificate2 signatureCertificate,
-            X509Chain chain,
-            CryptographicAttributeObject signingCertV2Attribute,
-            SigningSpecifications signingSpecifications)
-        {
-            return IsValidSigningCertificateV2(
-                signatureCertificate: signatureCertificate,
-                chain: CertificateChainUtility.GetCertificateListFromChain(chain),
-                signingCertV2Attribute: signingCertV2Attribute,
-                signingSpecifications: signingSpecifications);
-        }
-
-        /// <summary>
-        /// Verify a signing-certificate-v2 attribute.
-        /// </summary>
-        public static bool IsValidSigningCertificateV2(
-            X509Certificate2 signatureCertificate,
-            IReadOnlyList<X509Certificate2> chain,
-            CryptographicAttributeObject signingCertV2Attribute,
-            SigningSpecifications signingSpecifications)
-        {
-            return IsValidSigningCertificateV2(
-                signatureCertificate: signatureCertificate,
-                localCertificateChain: chain,
-                attributeCertificateChain: GetESSCertIDv2Entries(signingCertV2Attribute),
-                signingSpecifications: signingSpecifications);
-        }
-
-        /// <summary>
-        /// Verify components of a signing-certificate-v2 attribute.
-        /// </summary>
-        public static bool IsValidSigningCertificateV2(
-            X509Certificate2 signatureCertificate,
-            IReadOnlyList<X509Certificate2> localCertificateChain,
-            IReadOnlyList<KeyValuePair<Common.HashAlgorithmName, byte[]>> attributeCertificateChain,
-            SigningSpecifications signingSpecifications)
-        {
-            // Verify chain counts to avoid unneeded hashing
-            if (localCertificateChain.Count != attributeCertificateChain.Count || attributeCertificateChain.Count < 1)
-            {
-                return false;
-            }
-
-            // Check each entry in the chain
-            for (var i = 0; i < attributeCertificateChain.Count; i++)
-            {
-                var attributeEntry = attributeCertificateChain[i];
-                var localEntry = localCertificateChain[i];
-
-                // Verify hash algorithm is allowed
-                if (!signingSpecifications.AllowedHashAlgorithmOids.Contains(
-                    attributeEntry.Key.ConvertToOidString(),
-                    StringComparer.Ordinal))
-                {
-                    return false;
-                }
-
-                // Hash the local cert using the attribute hash algorithm
-                var localValue = GetESSCertIDv2Entry(localEntry, attributeEntry.Key);
-
-                // Verify the hashes match
-                if (!VerifyHash(localValue, attributeEntry))
-                {
-                    return false;
-                }
-
-                // Verify the first entry is the leaf cert used
-                if (i == 0)
-                {
-                    var leafHash = GetESSCertIDv2Entry(signatureCertificate, attributeEntry.Key);
-
-                    if (!VerifyHash(leafHash, attributeEntry))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
+                new Oid(Oids.SigningCertificateV2),
+                new AsnEncodedDataCollection(data));
         }
 
         /// <summary>
@@ -251,25 +190,9 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Compare hash values.
-        /// </summary>
-        private static bool VerifyHash(KeyValuePair<Common.HashAlgorithmName, byte[]> a, KeyValuePair<Common.HashAlgorithmName, byte[]> b)
-        {
-            return VerifyHash(a.Value, b.Value);
-        }
-
-        /// <summary>
-        /// Compare hash values.
-        /// </summary>
-        private static bool VerifyHash(byte[] a, byte[] b)
-        {
-            return a.SequenceEqual(b);
-        }
-
-        /// <summary>
         /// CryptographicAttributeObject -> DerSequenceReader
         /// </summary>
-        private static DerSequenceReader ToDerSequenceReader(this CryptographicAttributeObject attribute)
+        internal static DerSequenceReader ToDerSequenceReader(this CryptographicAttributeObject attribute)
         {
             var values = attribute.Values.ToList();
 
@@ -285,7 +208,7 @@ namespace NuGet.Packaging.Signing
         /// Throw a signature exception due to an invalid attribute. This is used for unusual situations
         /// where the format is corrupt.
         /// </summary>
-        internal static void ThrowInvalidAttributeException(CryptographicAttributeObject attribute)
+        private static void ThrowInvalidAttributeException(CryptographicAttributeObject attribute)
         {
             throw new SignatureException(string.Format(CultureInfo.CurrentCulture, Strings.SignatureContainsInvalidAttribute, attribute.Oid.Value));
         }
@@ -303,79 +226,6 @@ namespace NuGet.Packaging.Signing
             }
 
             return values;
-        }
-
-        // ESSCertIDv2::=  SEQUENCE {
-        //    hashAlgorithm AlgorithmIdentifier
-        //           DEFAULT {algorithm id-sha256 },
-        //    certHash Hash,
-        //    issuerSerial IssuerSerial OPTIONAL
-        // }
-        private static byte[][] CreateESSCertIDv2Entry(X509Certificate2 cert, Common.HashAlgorithmName hashAlgorithm)
-        {
-            // Get hash Oid
-            var hashAlgorithmOid = hashAlgorithm.ConvertToOidString();
-            var entry = GetESSCertIDv2Entry(cert, hashAlgorithm);
-
-            return DerEncoder.ConstructSegmentedSequence(new List<byte[][]>()
-            {
-                // AlgorithmIdentifier
-                DerEncoder.SegmentedEncodeOid(hashAlgorithmOid),
-
-                // Hash
-                DerEncoder.SegmentedEncodeOctetString(entry.Value)
-            });
-        }
-
-        // Cert -> Hash pair
-        private static KeyValuePair<Common.HashAlgorithmName, byte[]> GetESSCertIDv2Entry(X509Certificate2 cert, Common.HashAlgorithmName hashAlgorithm)
-        {
-            // Hash the certificate
-            var hashValue = GetCertificateHash(cert, hashAlgorithm);
-
-            return new KeyValuePair<Common.HashAlgorithmName, byte[]>(hashAlgorithm, hashValue);
-        }
-
-        // Cert -> Hash
-        private static byte[] GetCertificateHash(X509Certificate2 cert, Common.HashAlgorithmName hashAlgorithm)
-        {
-            return hashAlgorithm.ComputeHash(cert.RawData);
-        }
-
-        // Attribute -> Hashes
-        public static List<KeyValuePair<Common.HashAlgorithmName, byte[]>> GetESSCertIDv2Entries(CryptographicAttributeObject attribute)
-        {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
-
-            if (!StringComparer.Ordinal.Equals(Oids.SigningCertificateV2, attribute.Oid.Value))
-            {
-                throw new ArgumentException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.SigningCertificateV2AttributeRequired,
-                    Oids.SigningCertificateV2), nameof(attribute));
-            }
-
-            var entries = new List<KeyValuePair<Common.HashAlgorithmName, byte[]>>();
-            var reader = attribute.ToDerSequenceReader();
-
-            while (reader.HasData)
-            {
-                entries.Add(GetESSCertIDv2Entry(reader.ReadSequence()));
-            }
-
-            return entries;
-        }
-
-        // DER -> Hash
-        private static KeyValuePair<Common.HashAlgorithmName, byte[]> GetESSCertIDv2Entry(DerSequenceReader reader)
-        {
-            var hashAlgorithm = CryptoHashUtility.OidToHashAlgorithmName(reader.ReadOidAsString());
-            var attributeHashValue = reader.ReadOctetString();
-
-            return new KeyValuePair<Common.HashAlgorithmName, byte[]>(hashAlgorithm, attributeHashValue);
         }
 
         /// <summary>
