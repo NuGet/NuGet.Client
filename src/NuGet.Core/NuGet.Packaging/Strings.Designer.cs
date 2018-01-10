@@ -134,11 +134,20 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to commitment-type-indication attribute contains an invalid value..
+        ///   Looks up a localized string similar to The attribute is not a valid commitment-type-indication attribute..
         /// </summary>
         internal static string CommitmentTypeIndicationAttributeInvalid {
             get {
                 return ResourceManager.GetString("CommitmentTypeIndicationAttributeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The commitment-type-indication attribute contains an invalid combination of values..
+        /// </summary>
+        internal static string CommitmentTypeIndicationAttributeInvalidCombination {
+            get {
+                return ResourceManager.GetString("CommitmentTypeIndicationAttributeInvalidCombination", resourceCulture);
             }
         }
         
