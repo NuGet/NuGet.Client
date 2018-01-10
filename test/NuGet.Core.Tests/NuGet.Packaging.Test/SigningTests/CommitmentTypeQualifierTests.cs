@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Security.Cryptography;
 using NuGet.Packaging.Signing;
 using Org.BouncyCastle.Asn1;
@@ -12,6 +13,24 @@ namespace NuGet.Packaging.Test
 {
     public class CommitmentTypeQualifierTests
     {
+        [Fact]
+        public void Create_WhenCommitmentTypeIdentifierNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => CommitmentTypeQualifier.Create(commitmentTypeIdentifier: null));
+
+            Assert.Equal("commitmentTypeIdentifier", exception.ParamName);
+        }
+
+        [Fact]
+        public void Create_WithCommitmentTypeIdentifier_ReturnsCommitmentTypeQualifier()
+        {
+            var commitmentTypeQualifier = CommitmentTypeQualifier.Create(new Oid(Oids.CommitmentTypeIdentifierProofOfOrigin));
+
+            Assert.Equal(Oids.CommitmentTypeIdentifierProofOfOrigin, commitmentTypeQualifier.CommitmentTypeIdentifier.Value);
+            Assert.Null(commitmentTypeQualifier.Qualifier);
+        }
+
         [Fact]
         public void Read_WithInvalidAsn1_Throws()
         {

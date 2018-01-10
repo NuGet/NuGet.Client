@@ -10,7 +10,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
-using NuGet.Packaging.Signing.DerEncoding;
 
 namespace NuGet.Packaging.Signing
 {
@@ -25,19 +24,14 @@ namespace NuGet.Packaging.Signing
         public static CryptographicAttributeObject CreateCommitmentTypeIndication(SignatureType type)
         {
             // SignatureType -> Oid
-            var valueOid = GetSignatureTypeOid(type);
+            var oid = GetSignatureTypeOid(type);
 
-            // DER encode the signature type Oid in a sequence.
-            // CommitmentTypeQualifier ::= SEQUENCE {
-            // commitmentTypeIdentifier CommitmentTypeIdentifier,
-            // qualifier                  ANY DEFINED BY commitmentTypeIdentifier }
-            var commitmentTypeData = DerEncoder.ConstructSequence(new List<byte[][]>() { DerEncoder.SegmentedEncodeOid(valueOid) });
-            var data = new AsnEncodedData(Oids.CommitmentTypeIndication, commitmentTypeData);
+            var commitmentTypeQualifier = CommitmentTypeQualifier.Create(new Oid(oid));
+            var value = new AsnEncodedData(Oids.CommitmentTypeIndication, commitmentTypeQualifier.Encode());
 
-            // Create an attribute
             return new CryptographicAttributeObject(
-                oid: new Oid(Oids.CommitmentTypeIndication),
-                values: new AsnEncodedDataCollection(data));
+                new Oid(Oids.CommitmentTypeIndication),
+                new AsnEncodedDataCollection(value));
         }
 
         /// <summary>

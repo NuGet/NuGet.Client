@@ -3,14 +3,11 @@
 
 #if NET46
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Packaging.Signing.DerEncoding;
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.Pkcs;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -33,14 +30,21 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void CreateCommitmentTypeIndication_CommitmentTypeIndicationWithAuthorSignature()
+        public void CreateCommitmentTypeIndication_WithUnknownSignature_Throws()
+        {
+            Assert.Throws<ArgumentException>(
+                () => AttributeUtility.CreateCommitmentTypeIndication(SignatureType.Unknown));
+        }
+
+        [Fact]
+        public void CreateCommitmentTypeIndication_WithAuthorSignature_ReturnsOriginType()
         {
             var attribute = AttributeUtility.CreateCommitmentTypeIndication(SignatureType.Author);
             AttributeUtility.GetCommitmentTypeIndication(attribute).Should().Be(SignatureType.Author);
         }
 
         [Fact]
-        public void CreateCommitmentTypeIndication_CommitmentTypeIndicationWithRepositorySignature()
+        public void CreateCommitmentTypeIndication_WithRepositorySignature_ReturnsReceiptType()
         {
             var attribute = AttributeUtility.CreateCommitmentTypeIndication(SignatureType.Repository);
             AttributeUtility.GetCommitmentTypeIndication(attribute).Should().Be(SignatureType.Repository);
