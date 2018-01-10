@@ -128,7 +128,7 @@ namespace NuGet.Packaging.Signing
 
                 var attr = new CRYPT_ATTRIBUTE()
                 {
-                    pszObjId = hb.AllocAsciiString(Oids.SignatureTimeStampTokenAttributeOid),
+                    pszObjId = hb.AllocAsciiString(Oids.SignatureTimeStampTokenAttribute),
                     cValue = 1,
                     rgValue = unmanagedBlob
                 };

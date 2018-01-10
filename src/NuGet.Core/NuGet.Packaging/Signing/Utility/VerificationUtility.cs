@@ -28,7 +28,7 @@ namespace NuGet.Packaging.Signing
                 isValid = false;
             }
 
-            if (CertificateUtility.HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEkuOid))
+            if (CertificateUtility.HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEku))
             {
                 issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSignerEKU));
                 isValid = false;

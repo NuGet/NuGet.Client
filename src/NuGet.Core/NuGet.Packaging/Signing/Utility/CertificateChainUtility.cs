@@ -50,7 +50,6 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-
         /// <summary>
         /// Create an ordered list of certificates. The leaf node is returned first.
         /// </summary>
@@ -82,11 +81,11 @@ namespace NuGet.Packaging.Signing
         {
             if (certificateType == NuGetVerificationCertificateType.Signature)
             {
-                policy.ApplicationPolicy.Add(new Oid(Oids.CodeSigningEkuOid));
+                policy.ApplicationPolicy.Add(new Oid(Oids.CodeSigningEku));
             }
             else if (certificateType == NuGetVerificationCertificateType.Timestamp)
             {
-                policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEkuOid));
+                policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEku));
             }
 
             policy.ExtraStore.AddRange(additionalCertificates);

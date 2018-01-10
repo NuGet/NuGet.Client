@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Packaging.Signing;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Generators;
+using Org.BouncyCastle.Security;
 using Test.Utility.Signing;
 
 namespace NuGet.Packaging.FuncTest
@@ -17,6 +20,7 @@ namespace NuGet.Packaging.FuncTest
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
+        private IReadOnlyList<TrustedTestCert<TestCertificate>> _trustedTestCertificateWithReissuedCertificate;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
 
@@ -71,6 +75,37 @@ namespace NuGet.Packaging.FuncTest
                 }
 
                 return _trustedTestCertNotYetValid;
+            }
+        }
+
+        public IReadOnlyList<TrustedTestCert<TestCertificate>> TrustedTestCertificateWithReissuedCertificate
+        {
+            get
+            {
+                if (_trustedTestCertificateWithReissuedCertificate == null)
+                {
+                    var random = new SecureRandom();
+                    var keyPairGenerator = new RsaKeyPairGenerator();
+                    var parameters = new KeyGenerationParameters(random, strength: 2048);
+
+                    keyPairGenerator.Init(parameters);
+
+                    var keyPair = keyPairGenerator.GenerateKeyPair();
+                    var certificateName = TestCertificate.GenerateCertificateName();
+                    var certificate1 = SigningTestUtility.GenerateCertificate(certificateName, keyPair);
+                    var certificate2 = SigningTestUtility.GenerateCertificate(certificateName, keyPair);
+
+                    var testCertificate1 = new TestCertificate() { Cert = certificate1 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    var testCertificate2 = new TestCertificate() { Cert = certificate2 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+
+                    _trustedTestCertificateWithReissuedCertificate = new[]
+                    {
+                        testCertificate1,
+                        testCertificate2
+                    };
+                }
+
+                return _trustedTestCertificateWithReissuedCertificate;
             }
         }
 

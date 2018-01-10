@@ -47,7 +47,7 @@ namespace NuGet.Common
                      !hashAlgorithm.Equals(SHA256HashAlgorithm, StringComparison.OrdinalIgnoreCase))
             {
                 // Only support a vetted list of hash algorithms.
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithm, hashAlgorithm), "hashAlgorithm");
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithm, hashAlgorithm), nameof(hashAlgorithm));
             }
 
             _hashAlgorithm = hashAlgorithm;

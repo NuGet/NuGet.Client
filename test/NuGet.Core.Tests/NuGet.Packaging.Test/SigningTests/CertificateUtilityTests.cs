@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
@@ -105,6 +106,28 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void GetCertificateListFromChain_ReturnsCertificatesInOrder()
+        {
+            using (var chain = new X509Chain())
+            using (var rootCertificate = SignTestUtility.GetCertificate("root.crt"))
+            using (var intermediateCertificate = SignTestUtility.GetCertificate("intermediate.crt"))
+            using (var leafCertificate = SignTestUtility.GetCertificate("leaf.crt"))
+            {
+                chain.ChainPolicy.ExtraStore.Add(rootCertificate);
+                chain.ChainPolicy.ExtraStore.Add(intermediateCertificate);
+
+                chain.Build(leafCertificate);
+
+                var certificateList = CertificateChainUtility.GetCertificateListFromChain(chain);
+
+                Assert.Equal(3, certificateList.Count);
+                Assert.Equal(leafCertificate.Thumbprint, certificateList[0].Thumbprint);
+                Assert.Equal(intermediateCertificate.Thumbprint, certificateList[1].Thumbprint);
+                Assert.Equal(rootCertificate.Thumbprint, certificateList[2].Thumbprint);
+            }
+        }
+
+        [Fact]
         public void HasLifetimeSigningEku_WithLifetimeSignerEku_ReturnsTrue()
         {
             using (var certificate = SigningTestUtility.GenerateCertificate("test",
@@ -113,7 +136,7 @@ namespace NuGet.Packaging.Test
                     generator.AddExtension(
                         X509Extensions.ExtendedKeyUsage.Id,
                         critical: true,
-                        extensionValue: new DerSequence(new DerObjectIdentifier(Oids.LifetimeSignerEkuOid)));
+                        extensionValue: new DerSequence(new DerObjectIdentifier(Oids.LifetimeSignerEku)));
                 }))
             {
                 Assert.Equal(1, GetExtendedKeyUsageCount(certificate));
@@ -144,7 +167,7 @@ namespace NuGet.Packaging.Test
                 }))
             {
                 Assert.Equal(1, GetExtendedKeyUsageCount(certificate));
-                Assert.True(CertificateUtility.HasExtendedKeyUsage(certificate, Oids.CodeSigningEkuOid));
+                Assert.True(CertificateUtility.HasExtendedKeyUsage(certificate, Oids.CodeSigningEku));
             }
         }
 
@@ -154,7 +177,7 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate("test", generator => { }))
             {
                 Assert.Equal(0, GetExtendedKeyUsageCount(certificate));
-                Assert.False(CertificateUtility.HasExtendedKeyUsage(certificate, Oids.CodeSigningEkuOid));
+                Assert.False(CertificateUtility.HasExtendedKeyUsage(certificate, Oids.CodeSigningEku));
             }
         }
 
@@ -171,7 +194,7 @@ namespace NuGet.Packaging.Test
                 }))
             {
                 Assert.Equal(1, GetExtendedKeyUsageCount(certificate));
-                Assert.True(CertificateUtility.IsValidForPurposeFast(certificate, Oids.CodeSigningEkuOid));
+                Assert.True(CertificateUtility.IsValidForPurposeFast(certificate, Oids.CodeSigningEku));
             }
         }
 
@@ -188,7 +211,7 @@ namespace NuGet.Packaging.Test
                 }))
             {
                 Assert.Equal(1, GetExtendedKeyUsageCount(certificate));
-                Assert.False(CertificateUtility.IsValidForPurposeFast(certificate, Oids.CodeSigningEkuOid));
+                Assert.False(CertificateUtility.IsValidForPurposeFast(certificate, Oids.CodeSigningEku));
             }
         }
 
@@ -205,7 +228,7 @@ namespace NuGet.Packaging.Test
                 }))
             {
                 Assert.Equal(2, GetExtendedKeyUsageCount(certificate));
-                Assert.False(CertificateUtility.IsValidForPurposeFast(certificate, Oids.CodeSigningEkuOid));
+                Assert.False(CertificateUtility.IsValidForPurposeFast(certificate, Oids.CodeSigningEku));
             }
         }
 
@@ -215,7 +238,7 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate("test", generator => { }))
             {
                 Assert.Equal(0, GetExtendedKeyUsageCount(certificate));
-                Assert.True(CertificateUtility.IsValidForPurposeFast(certificate, Oids.CodeSigningEkuOid));
+                Assert.True(CertificateUtility.IsValidForPurposeFast(certificate, Oids.CodeSigningEku));
             }
         }
 
@@ -223,7 +246,7 @@ namespace NuGet.Packaging.Test
         {
             foreach (var extension in certificate.Extensions)
             {
-                if (string.Equals(extension.Oid.Value, Oids.EnhancedKeyUsageOid))
+                if (string.Equals(extension.Oid.Value, Oids.EnhancedKeyUsage))
                 {
                     return ((X509EnhancedKeyUsageExtension)extension).EnhancedKeyUsages.Count;
                 }

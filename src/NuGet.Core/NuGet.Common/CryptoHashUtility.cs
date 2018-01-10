@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -193,7 +194,25 @@ namespace NuGet.Common
             }
 #endif
 
-            throw new ArgumentException(nameof(hashAlgorithmName));
+            throw new ArgumentException(
+                string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithmName, hashAlgorithmName),
+                nameof(hashAlgorithmName));
+        }
+
+        public static HashAlgorithm GetSha1HashProvider()
+        {
+#if !IS_CORECLR
+            if (AllowFipsAlgorithmsOnly.Value)
+            {
+                return new SHA1CryptoServiceProvider();
+            }
+            else
+            {
+                return new SHA1Managed();
+            }
+#else
+            return SHA1.Create();
+#endif
         }
 
         // Read this value once.
@@ -231,9 +250,9 @@ namespace NuGet.Common
         /// Extension method to convert NuGet.Common.HashAlgorithmName to System.Security.Cryptography.HashAlgorithmName
         /// </summary>
         /// <returns>System.Security.Cryptography.HashAlgorithmName equivalent of the NuGet.Common.HashAlgorithmName</returns>
-        public static System.Security.Cryptography.HashAlgorithmName ConvertToSystemSecurityHashAlgorithmName(this HashAlgorithmName hashAlgorithm)
+        public static System.Security.Cryptography.HashAlgorithmName ConvertToSystemSecurityHashAlgorithmName(this HashAlgorithmName hashAlgorithmName)
         {
-            switch (hashAlgorithm)
+            switch (hashAlgorithmName)
             {
                 case HashAlgorithmName.SHA256:
                     return System.Security.Cryptography.HashAlgorithmName.SHA256;
@@ -242,7 +261,9 @@ namespace NuGet.Common
                 case HashAlgorithmName.SHA512:
                     return System.Security.Cryptography.HashAlgorithmName.SHA512;
                 default:
-                    throw new InvalidDataException();
+                    throw new ArgumentException(
+                        string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithmName, hashAlgorithmName),
+                        nameof(hashAlgorithmName));
             }
         }
 
@@ -250,9 +271,9 @@ namespace NuGet.Common
         /// Extension method to convert NuGet.Common.HashAlgorithmName to an Oid string
         /// </summary>
         /// <returns>Oid string equivalent of the NuGet.Common.HashAlgorithmName</returns>
-        public static string ConvertToOidString(this HashAlgorithmName hashAlgorithm)
+        public static string ConvertToOidString(this HashAlgorithmName hashAlgorithmName)
         {
-            switch (hashAlgorithm)
+            switch (hashAlgorithmName)
             {
                 case HashAlgorithmName.SHA256:
                     return SHA256_OID;
@@ -261,7 +282,9 @@ namespace NuGet.Common
                 case HashAlgorithmName.SHA512:
                     return SHA512_OID;
                 default:
-                    throw new InvalidDataException();
+                    throw new ArgumentException(
+                        string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithmName, hashAlgorithmName),
+                        nameof(hashAlgorithmName));
             }
         }
 
@@ -292,7 +315,9 @@ namespace NuGet.Common
                 case SHA512_OID:
                     return HashAlgorithmName.SHA512;
                 default:
-                    throw new InvalidDataException();
+                    throw new ArgumentException(
+                        string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithmName, oid),
+                        nameof(oid));
             }
         }
     }

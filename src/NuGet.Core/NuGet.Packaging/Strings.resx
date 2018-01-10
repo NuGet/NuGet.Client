@@ -423,12 +423,56 @@ Valid from:</comment>
   <data name="InvalidPackageSignatureFileEntry" xml:space="preserve">
     <value>The package signature file entry is invalid.</value>
   </data>
-  <data name="InvalidAuthorSignature" xml:space="preserve">
-    <value>The author signature is invalid.</value>
+  <data name="InvalidPrimarySignature" xml:space="preserve">
+    <value>The primary signature is invalid.</value>
   </data>
-  <data name="SigningCertificateV2AttributeRequired" xml:space="preserve">
-    <value>An attribute with "signing-certificate-v2" OID ({0}) is required.</value>
-    <comment>0 - the expected OID value</comment>
+  <data name="CertificateChainBuildFailed" xml:space="preserve">
+    <value>A complete certificate chain could not be built for the signing certificate.</value>
+  </data>
+  <data name="SigningCertificateAttributeMustNotBePresent" xml:space="preserve">
+    <value>The signing-certificate attribute is not allowed.</value>
+  </data>
+  <data name="SigningCertificateCertificateNotFound" xml:space="preserve">
+    <value>A certificate referenced by the signing-certificate attribute could not be found.</value>
+  </data>
+  <data name="SigningCertificateMultipleAttributes" xml:space="preserve">
+    <value>Multiple signing-certificate attributes are not allowed.</value>
+  </data>
+  <data name="SigningCertificateMultipleAttributeValues" xml:space="preserve">
+    <value>Multiple signing-certificate attribute values are not allowed.</value>
+  </data>
+  <data name="SigningCertificateV2AttributeMustBePresent" xml:space="preserve">
+    <value>The signing-certificate-v2 attribute must be present.</value>
+  </data>
+  <data name="SigningCertificateV2CertificateNotFound" xml:space="preserve">
+    <value>A certificate referenced by the signing-certificate-v2 attribute could not be found.</value>
+  </data>
+  <data name="SigningCertificateV2MultipleAttributes" xml:space="preserve">
+    <value>Multiple signing-certificate-v2 attributes are not allowed.</value>
+  </data>
+  <data name="SigningCertificateV2MultipleAttributeValues" xml:space="preserve">
+    <value>Multiple signing-certificate-v2 attribute values are not allowed.</value>
+  </data>
+  <data name="SigningCertificateV2UnsupportedHashAlgorithm" xml:space="preserve">
+    <value>The signing-certificate-v2 attribute uses an unsupported hash algorithm.</value>
+  </data>
+  <data name="InvalidTimestampSignature" xml:space="preserve">
+    <value>The timestamp signature is invalid.</value>
+  </data>
+  <data name="SigningCertificateInvalid" xml:space="preserve">
+    <value>The signing-certificate attribute is invalid.</value>
+  </data>
+  <data name="SigningCertificateV2Invalid" xml:space="preserve">
+    <value>The signing-certificate-v2 attribute is invalid.</value>
+  </data>
+  <data name="PrimarySignatureHasNoTimestamp" xml:space="preserve">
+    <value>The primary signature does not have a timestamp.</value>
+  </data>
+  <data name="InvalidAsn1" xml:space="preserve">
+    <value>The ASN.1 data is invalid.</value>
+  </data>
+  <data name="UnsupportedAsn1" xml:space="preserve">
+    <value>The ASN.1 data is unsupported.</value>
   </data>
   <data name="TimestampCertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
     <value>The timestamp certificate does not meet a minimum public key length requirement.</value>

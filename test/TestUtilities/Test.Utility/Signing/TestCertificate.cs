@@ -45,9 +45,14 @@ namespace Test.Utility.Signing
             return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, storeLocation);
         }
 
+        public static string GenerateCertificateName()
+        {
+            return "NuGetTest " + Guid.NewGuid().ToString();
+        }
+
         public static TestCertificate Generate(Action<X509V3CertificateGenerator> modifyGenerator = null)
         {
-            var certName = "NuGetTest " + Guid.NewGuid().ToString();
+            var certName = GenerateCertificateName();
 
             var pair = new TestCertificate
             {

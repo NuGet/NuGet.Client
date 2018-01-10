@@ -113,7 +113,7 @@ namespace NuGet.Packaging.Signing
                 {
                     var policy = timestampCertChain.ChainPolicy;
 
-                    policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEkuOid));
+                    policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEku));
                     policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
 
                     policy.ExtraStore.AddRange(timestampCms.Certificates);
