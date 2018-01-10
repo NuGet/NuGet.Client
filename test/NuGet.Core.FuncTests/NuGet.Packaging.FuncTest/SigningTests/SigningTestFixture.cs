@@ -17,6 +17,8 @@ namespace NuGet.Packaging.FuncTest
     /// </summary>
     public class SigningTestFixture : IDisposable
     {
+        private static readonly string _testTimestampServer = Environment.GetEnvironmentVariable("TIMESTAMP_SERVER_URL");
+
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
@@ -138,6 +140,8 @@ namespace NuGet.Packaging.FuncTest
                 return _signingSpecifications;
             }
         }
+
+        public string Timestamper => _testTimestampServer;
 
         public void Dispose()
         {

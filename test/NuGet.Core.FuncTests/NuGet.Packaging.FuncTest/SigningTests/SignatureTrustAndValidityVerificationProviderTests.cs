@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -15,8 +14,6 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
-using Org.BouncyCastle.Cms;
-using Org.BouncyCastle.X509.Store;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -113,6 +110,67 @@ namespace NuGet.Packaging.FuncTest
 
                     Assert.NotNull(issue);
                     Assert.Equal("Primary signature validation failed.", issue.Message);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifySignedPackage_SettingsRequireExactlyOneTimestamp_MultipleTimestamps_Fails()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var testLogger = new TestLogger();
+            var setting = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultupleTimestamps: true, allowNoTimestamp: false);
+            var signatureProvider = new X509SignatureProvider(timestampProvider: null);
+            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testFixture.Timestamper));
+            var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
+
+            using (var package = new PackageArchiveReader(nupkg.CreateAsStream(), leaveStreamOpen: false))
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var signatureRequest = new SignPackageRequest(testCertificate, HashAlgorithmName.SHA256))
+            {
+                var signature = await SignedArchiveTestUtility.CreateSignatureForPackageAsync(signatureProvider, package, signatureRequest, testLogger);
+                var timestampedSignature = await SignedArchiveTestUtility.TimestampSignature(timestampProvider, signatureRequest, signature, testLogger);
+                var reTimestampedSignature = await SignedArchiveTestUtility.TimestampSignature(timestampProvider, signatureRequest, timestampedSignature, testLogger);
+
+                timestampedSignature.Timestamps.Count.Should().Be(1);
+                reTimestampedSignature.Timestamps.Count.Should().Be(2);
+
+                // Act
+                var result = await verificationProvider.GetTrustResultAsync(package, reTimestampedSignature, setting, CancellationToken.None);
+                var totalErrorIssues = result.GetErrorIssues();
+
+                // Assert
+                result.Trust.Should().Be(SignatureVerificationStatus.Invalid);
+                totalErrorIssues.Count().Should().Be(1);
+                totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3000);
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifySignedPackage_SettingsRequireTimestamp_NoTimestamp_Fails()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var setting = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultupleTimestamps: false, allowNoTimestamp: false);
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
+                var verifier = new PackageSignatureVerifier(_trustProviders, setting);
+                using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+
+                    // Assert
+                    result.Valid.Should().BeFalse();
+                    resultsWithErrors.Count().Should().Be(1);
+                    totalErrorIssues.Count().Should().Be(1);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3027);
                 }
             }
         }

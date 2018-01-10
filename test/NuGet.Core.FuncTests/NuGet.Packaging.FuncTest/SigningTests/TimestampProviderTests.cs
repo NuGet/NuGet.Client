@@ -51,7 +51,6 @@ namespace NuGet.Packaging.FuncTest
 
                 var request = new TimestampRequest
                 {
-                    Certificate = authorCert,
                     SigningSpec = SigningSpecifications.V1,
                     TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
                     SignatureValue = signatureValue
@@ -97,7 +96,6 @@ namespace NuGet.Packaging.FuncTest
 
                 var request = new TimestampRequest
                 {
-                    Certificate = authorCert,
                     SigningSpec = SigningSpecifications.V1,
                     TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
                     SignatureValue = signatureValue
@@ -127,7 +125,6 @@ namespace NuGet.Packaging.FuncTest
 
                 var request = new TimestampRequest
                 {
-                    Certificate = authorCert,
                     SigningSpec = SigningSpecifications.V1,
                     TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
                     SignatureValue = signatureValue
@@ -157,7 +154,6 @@ namespace NuGet.Packaging.FuncTest
 
                 var request = new TimestampRequest
                 {
-                    Certificate = authorCert,
                     SigningSpec = SigningSpecifications.V1,
                     TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
                     SignatureValue = signatureValue

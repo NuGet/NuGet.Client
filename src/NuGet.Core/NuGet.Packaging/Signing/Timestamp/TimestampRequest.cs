@@ -20,11 +20,6 @@ namespace NuGet.Packaging.Signing
         public byte[] SignatureValue { get; set; }
 
         /// <summary>
-        /// X509Certificate2 used to generate the Signature.
-        /// </summary>
-        public X509Certificate2 Certificate { get; set; }
-
-        /// <summary>
         /// Hash algorithm to be used for timestamping.
         /// </summary>
         public HashAlgorithmName TimestampHashAlgorithm { get; set; }
