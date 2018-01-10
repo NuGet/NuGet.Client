@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     {
         private const string _packageAlreadySignedError = "NU3001: The package already contains a signature. Please remove the existing signature before adding a new signature.";
         private readonly string _invalidPasswordErrorCode = NuGetLogCode.NU3001.ToString();
-        private readonly string _invalidEkuErrorCode = NuGetLogCode.NU3018.ToString();
+        private readonly string _chainBuildFailureErrorCode = NuGetLogCode.NU3018.ToString();
         private readonly string _noCertFoundErrorCode = NuGetLogCode.NU3001.ToString();
         private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3002.ToString();
 
@@ -42,8 +42,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_SignPackage()
         {
             // Arrange
-            var testLogger = new TestLogger();
-
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
             {
@@ -73,7 +71,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_SignPackageWithInvalidEkuFails()
         {
             // Arrange
-            var testLogger = new TestLogger();
             var invalidEkuCert = _testFixture.TrustedTestCertificateWithInvalidEku;
 
             using (var dir = TestDirectory.Create())
@@ -98,7 +95,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Assert
                 result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
-                result.AllOutput.Should().Contain(_invalidEkuErrorCode);
+                result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
                 result.AllOutput.Should().Contain("The certificate is not valid for the requested usage");
             }
         }
@@ -107,7 +104,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_SignPackageWithExpiredCertificateFails()
         {
             // Arrange
-            var testLogger = new TestLogger();
             var expiredCert = _testFixture.TrustedTestCertificateExpired;
 
             using (var dir = TestDirectory.Create())
@@ -140,7 +136,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_SignPackageWithNotYetValidCertificateFails()
         {
             // Arrange
-            var testLogger = new TestLogger();
             var cert = _testFixture.TrustedTestCertificateNotYetValid;
 
             using (var dir = TestDirectory.Create())
@@ -173,8 +168,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_SignPackageWithTimestamping()
         {
             // Arrange
-            var testLogger = new TestLogger();
-
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
             {
@@ -201,11 +194,106 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [CIOnlyFact]
+        public void SignCommand_SignPackageWithValidCertChain()
+        {
+            // Arrange
+            var cert = _testFixture.TrustedTestCertificateChain.Leaf;
+
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
+            {
+                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    zipStream.CopyTo(fileStream);
+                }
+
+                // Act
+                var result = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"sign {packagePath} -CertificateFingerprint {cert.Source.Cert.Thumbprint}  -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
+                    waitForExit: true);
+
+                // Assert
+                result.Success.Should().BeTrue();
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
+            }
+        }
+
+        [CIOnlyFact]
+        public void SignCommand_SignPackageWithRevokedLeafCertChain()
+        {
+            // Arrange
+            var cert = _testFixture.RevokedTestCertificateWithChain;
+
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
+            {
+                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    zipStream.CopyTo(fileStream);
+                }
+
+                // Act
+                var result = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"sign {packagePath} -CertificateFingerprint {cert.Source.Cert.Thumbprint}  -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
+                    waitForExit: true);
+
+                // Assert
+                result.Success.Should().BeFalse();
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
+                result.AllOutput.Should().Contain("The certificate is revoked");
+            }
+        }
+
+        [CIOnlyFact]
+        public void SignCommand_SignPackageWithUnknownRevocationCertChain()
+        {
+            // Arrange
+            var cert = _testFixture.RevocationUnknownTestCertificateWithChain;
+
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
+            {
+                var packagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+
+                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    zipStream.CopyTo(fileStream);
+                }
+
+                // Act
+                var result = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"sign {packagePath} -CertificateFingerprint {cert.Source.Cert.Thumbprint} -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
+                    waitForExit: true);
+
+                // Assert
+                result.Success.Should().BeFalse();
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
+                result.AllOutput.Should().Contain("The revocation function was unable to check revocation for the certificate");
+            }
+        }
+
+        [CIOnlyFact]
         public void SignCommand_SignPackageWithOutputDirectory()
         {
             // Arrange
-            var testLogger = new TestLogger();
-
             using (var dir = TestDirectory.Create())
             using (var outputDir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
@@ -239,8 +327,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_ResignPackageWithoutOverwriteFails()
         {
             // Arrange
-            var testLogger = new TestLogger();
-
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
             {
@@ -278,8 +364,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_ResignPackageWithOverwriteSuccess()
         {
             // Arrange
-            var testLogger = new TestLogger();
-
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
             {
@@ -317,8 +401,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_SignPackageWithOverwriteSuccess()
         {
             // Arrange
-            var testLogger = new TestLogger();
-
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
             {
@@ -348,8 +430,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_SignPackageWithPfxFileSuccess()
         {
             // Arrange
-            var testLogger = new TestLogger();
-
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
             {
@@ -389,8 +469,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_SignPackageWithPfxFileInteractiveSuccess()
         {
             // Arrange
-            var testLogger = new TestLogger();
-
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
             {
@@ -434,8 +512,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_SignPackageWithPfxFileInteractiveInvalidPasswordFails()
         {
             // Arrange
-            var testLogger = new TestLogger();
-
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
             {
@@ -479,8 +555,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_SignPackageWithPfxFileWithoutPasswordAndWithNonInteractiveFails()
         {
             // Arrange
-            var testLogger = new TestLogger();
-
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
             {
@@ -520,8 +594,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void SignCommand_SignPackageWithPfxFileWithNonInteractiveAndStdInPasswordFails()
         {
             // Arrange
-            var testLogger = new TestLogger();
-
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
             {
