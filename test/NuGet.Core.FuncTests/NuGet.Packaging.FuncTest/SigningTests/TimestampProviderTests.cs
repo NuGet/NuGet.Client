@@ -4,6 +4,9 @@
 #if IS_DESKTOP
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -78,6 +81,8 @@ namespace NuGet.Packaging.FuncTest
         [CIOnlyFact]
         public void Rfc3161TimestampProvider_AssertCompleteChain_Success()
         {
+            Debugger.Launch();
+
             // Arrange
             var logger = new TestLogger();
             var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
@@ -98,14 +103,24 @@ namespace NuGet.Packaging.FuncTest
 
                 // Act
                 var timestampedData = timestampProvider.TimestampData(request, logger, CancellationToken.None);
-                var timestampedSignature = Signature.Load(timestampedData);
-                var timestampedCms = timestampedSignature.SignedCms;
-                var timestamps = timestampedSignature.Timestamps;
+                var timestampedCms = new SignedCms();
+                timestampedCms.Decode(timestampedData);
+                IReadOnlyList<X509Certificate2> chainCertificates = new List<X509Certificate2>();
+                var chainBuildSuccess = true;
 
-                using (var chain = new X509Chain())
+                // rebuild the chain to get the list of certificates
+                using (var timestampCertChain = new X509Chain())
                 {
-                    CertificateChainUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestamp.UpperLimit.LocalDateTime, NuGetVerificationCertificateType.Signature);
-                    var chainBuildingSucceed = CertificateChainUtility.BuildCertificateChain(chain, certificate, out var chainStatuses);
+                    var policy = timestampCertChain.ChainPolicy;
+
+                    policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEkuOid));
+                    policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
+                    policy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+                    policy.RevocationMode = X509RevocationMode.Online;
+
+                    var timestampSignerCertificate = timestampedCms.SignerInfos[0].Certificate;
+                    chainBuildSuccess = timestampCertChain.Build(timestampSignerCertificate);
+                    chainCertificates = CertificateChainUtility.GetCertificateListFromChain(timestampCertChain);
                 }
 
                 // Assert
@@ -117,6 +132,13 @@ namespace NuGet.Packaging.FuncTest
                 timestampedCms.SignerInfos.Count.Should().Be(1);
                 timestampedCms.SignerInfos[0].UnsignedAttributes.Count.Should().Be(1);
                 timestampedCms.SignerInfos[0].UnsignedAttributes[0].Oid.Value.Should().Be(Oids.SignatureTimeStampTokenAttributeOid);
+
+                chainBuildSuccess.Should().BeTrue();
+                chainCertificates.Count.Should().Be(timestampedCms.Certificates.Count);
+                foreach(var cert in chainCertificates)
+                {
+                    timestampedCms.Certificates.Contains(cert).Should().BeTrue();
+                }
             }
         }
 
