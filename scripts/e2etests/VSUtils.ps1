@@ -33,6 +33,47 @@ function GetVSFolderPath {
     return $VSFolderPath
 }
 
+function LaunchVSAndWaitForDTE {
+    param (
+        [string]$ActivityLogFullPath,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
+        [string]$VSVersion,
+        [Parameter(Mandatory = $true)]
+        $DTEReadyPollFrequencyInSecs,
+        [Parameter(Mandatory = $true)]
+        $NumberOfPolls
+    )
+
+    KillRunningInstancesOfVS
+
+    if ($ActivityLogFullPath) {
+        LaunchVS -VSVersion $VSVersion -ActivityLogFullPath $ActivityLogFullPath
+    }
+    else {
+        LaunchVS -VSVersion $VSVersion
+    }
+
+    $dte2 = $null
+    $count = 0
+    Write-Host "Will wait for $NumberOfPolls times and $DTEReadyPollFrequencyInSecs seconds each time."
+
+    while ($count -lt $NumberOfPolls) {
+        # Wait for $VSLaunchWaitTimeInSecs secs for VS to load before getting the DTE COM object
+        Write-Host "Waiting for $DTEReadyPollFrequencyInSecs seconds for DTE to become available"
+        start-sleep $DTEReadyPollFrequencyInSecs
+
+        $dte2 = GetDTE2 $VSVersion
+        if ($dte2) {
+            Write-Host 'Obtained DTE. Wait for 5 seconds...'
+            start-sleep 5
+            return $true
+        }
+
+        $count++
+    }
+}
+
 function GetVSIDEFolderPath {
     param(
         [Parameter(Mandatory = $true)]
