@@ -114,7 +114,14 @@ function Get-TestRun {
     $testRuns = Invoke-RestMethod -Uri $url -Method GET -Headers $Headers
     Write-Host $testRuns
     $matchingRun = $testRuns.value | where { $_.name -ieq $TestName }
-    $testUrl = $env:VstsTestRunUrl -f $matchingRun.id
+    if(-not $matchingRun)
+    {
+        $testUrl = $env:BUILDURL
+    }
+    else
+    {
+        $testUrl = $env:VstsTestRunUrl -f $matchingRun.id
+    }
     $failedTests = $matchingRun.unanalyzedTests
     return $testUrl,$failedTests
 }

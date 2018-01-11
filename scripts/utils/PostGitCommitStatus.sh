@@ -7,7 +7,7 @@ echo "$3"
 if [ "$3" == "Succeeded" ]; then
     echo "Tests succeeded"
     STATE="success"
-    DESCRIPTION="succeeded"
+    DESCRIPTION="Succeeded"
 elif [ "$3" == "Canceled" ]; then
     echo "Tests succeeded"
     STATE="error"
