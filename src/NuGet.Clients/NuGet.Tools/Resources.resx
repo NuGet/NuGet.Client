@@ -129,9 +129,6 @@
   <data name="AccountProvider_TriedToShowUIOnNonInteractive" xml:space="preserve">
     <value>Unable to authenticate without prompting user.</value>
   </data>
-  <data name="BuildIntegratedPackageRestoreFailedForProject" xml:space="preserve">
-    <value>NuGet Package restore failed for project {0} for '{1}'.</value>
-  </data>
   <data name="CanNotCreateWindow" xml:space="preserve">
     <value>Can not create tool window.</value>
   </data>

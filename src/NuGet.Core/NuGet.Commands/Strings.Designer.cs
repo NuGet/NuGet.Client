@@ -666,15 +666,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Loaded project {0} from {1}..
-        /// </summary>
-        internal static string Log_LoadedProject {
-            get {
-                return ResourceManager.GetString("Log_LoadedProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to {0} {1} is specified in the Lock File target for {2} but is not present in the top-level Libraries list..
         /// </summary>
         internal static string Log_LockFileMissingLibraryForTargetLibrary {
