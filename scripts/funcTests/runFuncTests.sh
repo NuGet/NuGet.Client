@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 env
-sudo ln -s /usr/bin/pwsh /usr/bin/powershell
-chmod +x /usr/bin/powershell
-chmod + /usr/bin/pwsh
-
 while true ; do
 	case "$1" in
 		-c|--clear-cache) CLEAR_CACHE=1 ; shift ;;
