@@ -603,6 +603,23 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [Fact]
+        public void ReadSignedArchiveMetadata_WithPackageSignatureEntry_ReturnsMetadata()
+        {
+            using (var stream = new MemoryStream(GetResource("SignatureFileEntry.zip")))
+            using (var reader = new BinaryReader(stream))
+            {
+                var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+
+                Assert.Equal(1, metadata.CentralDirectoryHeaders.Count);
+                Assert.Equal(0, metadata.SignatureCentralDirectoryHeaderIndex);
+
+                var header = metadata.CentralDirectoryHeaders[0];
+
+                Assert.True(header.IsPackageSignatureFile);
+            }
+        }
+
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
