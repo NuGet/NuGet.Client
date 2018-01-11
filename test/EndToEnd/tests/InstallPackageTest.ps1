@@ -2482,23 +2482,6 @@ function Test-InstallPackageWithXdtTransformTransformsTheFile
     Assert-NotNull $content.configuration["system.web"].customErrors
 }
 
-function Test-InstallPackageAddImportStatement
-{
-    param ($context)
-
-    # Arrange
-    $p = New-ConsoleApplication
-
-    # Act
-    $p | Install-Package PackageWithImport -Source $context.RepositoryPath
-
-    # Assert
-    Assert-Package $p PackageWithImport 2.0.0
-    Assert-Reference $p 'PackageWithImport'
-    Assert-ProjectImport $p "..\packages\PackageWithImport.2.0.0\build\PackageWithImport.targets"
-    Assert-ProjectImport $p "..\packages\PackageWithImport.2.0.0\build\PackageWithImport.props"
-}
-
 # Solution-level package used
 function Test-ReinstallSolutionLevelPackageWorks
 {
