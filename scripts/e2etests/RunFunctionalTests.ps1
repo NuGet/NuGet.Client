@@ -35,6 +35,16 @@ Write-Host 'Before starting the functional tests, force delete all the Results.h
 
 CleanTempFolder
 
+$result = LaunchVSAndWaitForDTE -VSVersion $VSVersion -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50
+if ($result -eq $true) {
+    Write-Host 'Do the kill VS, Launch VS and wait for DTE one more time'
+    $result = LaunchVSAndWaitForDTE -VSVersion $VSVersion -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50 -ActivityLogFullPath $env:ActivityLogFullPath
+    if ($result -eq $false) {
+        Write-Error "Could not obtain DTE after waiting $NumberOfPolls * $DTEReadyPollFrequencyInSecs = " $NumberOfPolls * $DTEReadyPollFrequencyInSecs " secs"
+        exit 1
+    }
+}
+
 $dte2 = GetDTE2 $VSVersion
 
 if (!$dte2)

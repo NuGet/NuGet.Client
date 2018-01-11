@@ -538,12 +538,6 @@ phases:
     condition: "failed()"
 
   - task: PowerShell@1
-    displayName: "LaunchVS.ps1"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\LaunchVS.ps1"
-      arguments: "-VSVersion 15.0 -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50"
-
-  - task: PowerShell@1
     displayName: "RunFunctionalTests.ps1"
     continueOnError: "true"
     inputs:
