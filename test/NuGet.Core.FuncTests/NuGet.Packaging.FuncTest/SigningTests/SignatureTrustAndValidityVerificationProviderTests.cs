@@ -5,7 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -39,7 +41,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignedPackage_ValidCertificate_Success()
+        public async Task VerifySignaturesAsync_ValidCertificate_Success()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -62,7 +64,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignedPackage_ValidCertificateAndTimestamp_Success()
+        public async Task VerifySignaturesAsync_ValidCertificateAndTimestamp_Success()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -115,12 +117,12 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignedPackage_SettingsRequireExactlyOneTimestamp_MultipleTimestamps_Fails()
+        public async Task GetTrustResultAsync_SettingsRequireExactlyOneTimestamp_MultipleTimestamps_Fails()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
             var testLogger = new TestLogger();
-            var setting = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultupleTimestamps: true, allowNoTimestamp: false);
+            var setting = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultipleTimestamps: true, allowNoTimestamp: false);
             var signatureProvider = new X509SignatureProvider(timestampProvider: null);
             var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testFixture.Timestamper));
             var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
@@ -147,12 +149,108 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
+        private static FileInfo CreatePackageFile(TestDirectory testDirectory)
+        {
+            var packageContext = new SimpleTestPackageContext();
+            var packageFile = new FileInfo(Path.Combine(testDirectory, "Package.nupkg"));
+
+            using (var readStream = packageContext.CreateAsStream())
+            using (var writeStream = packageFile.OpenWrite())
+            {
+                readStream.CopyTo(writeStream);
+            }
+
+            return packageFile;
+        }
+
+        private static SignatureContent CreateSignatureContent(FileInfo packageFile)
+        {
+            using (var stream = packageFile.OpenRead())
+            using (var hashAlgorithm = HashAlgorithmName.SHA256.GetHashProvider())
+            {
+                var hash = hashAlgorithm.ComputeHash(stream, leaveStreamOpen: false);
+
+                return new SignatureContent(SigningSpecifications.V1, HashAlgorithmName.SHA256, Convert.ToBase64String(hash));
+            }
+        }
+
+        private static SignedCms CreateSignature(SignatureContent signatureContent, X509Certificate2 certificate)
+        {
+            var cmsSigner = new CmsSigner(certificate);
+
+            cmsSigner.DigestAlgorithm = HashAlgorithmName.SHA256.ConvertToOid();
+            cmsSigner.IncludeOption = X509IncludeOption.WholeChain;
+
+            var contentInfo = new ContentInfo(signatureContent.GetBytes());
+            var signedCms = new SignedCms(contentInfo);
+
+            signedCms.ComputeSignature(cmsSigner);
+
+            return signedCms;
+        }
+
+        private static async Task<FileInfo> SignPackageFileAsync(TestDirectory directory, FileInfo packageFile, X509Certificate2 certificate)
+        {
+            var signatureContent = CreateSignatureContent(packageFile);
+            var signedPackageFile = new FileInfo(Path.Combine(directory, "SignedPackage.nupkg"));
+            var signature = CreateSignature(signatureContent, certificate);
+
+            using (var packageReadStream = packageFile.OpenRead())
+            using (var packageWriteStream = signedPackageFile.OpenWrite())
+            using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
+            using (var signatureStream = new MemoryStream(signature.Encode()))
+            {
+                await package.AddSignatureAsync(signatureStream, CancellationToken.None);
+            }
+
+            return signedPackageFile;
+        }
+
+        // Verify a package meeting minimum signature requirements.
+        // This signature is neither an author nor repository signature.
         [CIOnlyFact]
-        public async Task VerifySignedPackage_SettingsRequireTimestamp_NoTimestamp_Fails()
+        public async Task VerifySignaturesAsync_WithBasicSignedCms_Succeeds()
+        {
+            var settings = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: false,
+                failWithMultipleTimestamps: false,
+                allowNoTimestamp: true);
+
+            using (var directory = TestDirectory.Create())
+            using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var unsignedPackageFile = CreatePackageFile(directory);
+                var signedPackageFile = await SignPackageFileAsync(directory, unsignedPackageFile, certificate);
+                var verifier = new PackageSignatureVerifier(_trustProviders, settings);
+
+                using (var packageReader = new PackageArchiveReader(signedPackageFile.FullName))
+                {
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+
+                    Assert.Equal(1, result.Results.Count);
+
+                    var signedPackageVerificationResult = (SignedPackageVerificationResult)result.Results[0];
+                    var signer = signedPackageVerificationResult.Signature.SignedCms.SignerInfos[0];
+                    Assert.Equal(0, signer.SignedAttributes.Count);
+                    Assert.Equal(0, signer.UnsignedAttributes.Count);
+
+                    Assert.Equal(0, resultsWithErrors.Count());
+                    Assert.Equal(0, totalErrorIssues.Count());
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifySignaturesAsync_SettingsRequireTimestamp_NoTimestamp_Fails()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var setting = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultupleTimestamps: false, allowNoTimestamp: false);
+            var setting = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultipleTimestamps: false, allowNoTimestamp: false);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
