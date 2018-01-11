@@ -583,11 +583,18 @@ phases:
       inlineScript: "gci env:* | sort-object name;
       Write-Host \"##vso[build.updatebuildnumber]$env:BuildNumber\""
 
-  - task: PowerShell@1
-    displayName: "Configure.ps1"
+  - task: NuGetToolInstaller@0
+    displayName: "Use NuGet 4.5.0"
     inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)/configure.ps1"
-      arguments: "-Force -CI"
+      versionSpec: "4.5.0"
+
+  - task: NuGetCommand@2
+    displayName: "Download packages.config packages"
+    inputs:
+      restoreSolution: ".nuget/packages.config"
+      feedsToUse: "config"
+      nugetConfigPath: "NuGet.Config"
+      restoreDirectory: "$(System.DefaultWorkingDirectory)/packages"
 
   - task: CopyFiles@2
     displayName: "Copy Public Key Files"
