@@ -2482,26 +2482,6 @@ function Test-InstallPackageWithXdtTransformTransformsTheFile
     Assert-NotNull $content.configuration["system.web"].customErrors
 }
 
-# Disabling this test since its inconsistent and there is no good way
-# to fix it. This scenario is already covered through functional tests.
-# Later we'll also add apex test for the similar case, if possible.
-function InstallPackageAddImportStatement
-{
-    param ($context)
-
-    # Arrange
-    $p = New-ConsoleApplication
-
-    # Act
-    $p | Install-Package PackageWithImport -Source $context.RepositoryPath
-
-    # Assert
-    Assert-Package $p PackageWithImport 2.0.0
-    Assert-Reference $p 'PackageWithImport'
-    Assert-ProjectImport $p "..\packages\PackageWithImport.2.0.0\build\PackageWithImport.targets"
-    Assert-ProjectImport $p "..\packages\PackageWithImport.2.0.0\build\PackageWithImport.props"
-}
-
 # Solution-level package used
 function Test-ReinstallSolutionLevelPackageWorks
 {
