@@ -2482,7 +2482,10 @@ function Test-InstallPackageWithXdtTransformTransformsTheFile
     Assert-NotNull $content.configuration["system.web"].customErrors
 }
 
-function Test-InstallPackageAddImportStatement
+# Disabling this test since its inconsistent and there is no good way
+# to fix it. This scenario is already covered through functional tests.
+# Later we'll also add apex test for the similar case, if possible.
+function InstallPackageAddImportStatement
 {
     param ($context)
 
