@@ -83,17 +83,16 @@ namespace NuGet.Commands
 
                     logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_FinishedWithErrors, errors, warnings));
 
-                    if (errors > 0)
-                    {
-                        logger.LogError(Environment.NewLine + Strings.VerifyCommand_Failed);
-                    }
-
                     result = errors;
                 }
 
                 if (verificationResult.Valid)
                 {
                     logger.LogInformation(Environment.NewLine + Strings.VerifyCommand_Success);
+                }
+                else
+                {
+                    logger.LogError(Environment.NewLine + Strings.VerifyCommand_Failed);
                 }
 
                 return result;

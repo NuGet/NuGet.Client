@@ -482,4 +482,7 @@ Valid from:</comment>
   <data name="CommitmentTypeIndicationAttributeInvalid" xml:space="preserve">
     <value>The attribute is not a valid commitment-type-indication attribute.</value>
   </data>
+  <data name="SignatureNotTimeValid" xml:space="preserve">
+    <value>The primary signature validity period has expired.</value>
+  </data>
 </root>

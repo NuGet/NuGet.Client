@@ -111,10 +111,6 @@ namespace NuGet.Packaging.Signing
                 timestamp = timestamp ?? new Timestamp();
                 if (Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(certificate, timestamp))
                 {
-                    // Read signed attribute containing the original cert hashes
-                    // var signingCertificateAttribute = signature.SignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningCertificateV2);
-                    // TODO: how are we going to use the signingCertificateAttribute?
-
                     var certificateExtraStore = signature.SignedCms.Certificates;
 
                     using (var chain = new X509Chain())
@@ -175,6 +171,10 @@ namespace NuGet.Packaging.Signing
                         issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, string.Join(", ", chainStatuses.Select(x => x.ToString())))));
                     }
                 }
+                else
+                {
+                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3003, Strings.SignatureNotTimeValid));
+                }
             }
 
             return SignatureVerificationStatus.Untrusted;
@@ -202,12 +202,6 @@ namespace NuGet.Packaging.Signing
                     Strings.VerificationTimestamperCertDisplay,
                     $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate)}")));
 
-                //var signingCertificateAttribute = timestampSignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningCertificate);
-                //if (signingCertificateAttribute == null)
-                //{
-                //    signingCertificateAttribute = timestampSignerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningCertificateV2);
-                //}
-                // TODO: how are we going to use the signingCertificateAttribute?
 
                 var certificateExtraStore = timestamp.SignedCms.Certificates;
 
