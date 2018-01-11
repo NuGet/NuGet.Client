@@ -261,6 +261,7 @@ namespace NuGet.Packaging.Signing
                 var centralDirectoryMetadata = new CentralDirectoryHeaderMetadata()
                 {
                     IsPackageSignatureFile = isPackageSignatureFile,
+                    HeaderSize = header.GetSizeInBytes(),
                     OffsetToFileHeader = header.RelativeOffsetOfLocalHeader,
                     Position = header.OffsetFromStart
                 };
