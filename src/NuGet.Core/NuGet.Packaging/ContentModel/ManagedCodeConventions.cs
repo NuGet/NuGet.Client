@@ -55,6 +55,14 @@ namespace NuGet.Client
                 FrameworkConstants.CommonFrameworks.DotNet)
         });
 
+        private static readonly PatternTable AnyTable = new PatternTable(new[]
+        {
+            new PatternTableEntry(
+                PropertyNames.TargetFrameworkMoniker,
+                "any",
+                AnyFramework.Instance )
+        });
+
         private RuntimeGraph _runtimeGraph;
 
         private Dictionary<string, NuGetFramework> _frameworkCache
@@ -512,11 +520,11 @@ namespace NuGet.Client
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                         {
-                            new PatternDefinition("tools/{tfm}/{rid}/{any?}", table: DotnetAnyTable),
+                            new PatternDefinition("tools/{tfm}/{rid}/{any?}", table: AnyTable),
                         },
                     pathPatterns: new PatternDefinition[]
                         {
-                            new PatternDefinition("tools/{tfm}/{rid}/{any}", table: DotnetAnyTable),
+                            new PatternDefinition("tools/{tfm}/{rid}/{any}", table: AnyTable),
                     });
             }
         }

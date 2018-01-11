@@ -157,7 +157,7 @@ namespace NuGet.Client.Test
         }
 
         [Fact]
-        public void ContentModel_ToolsAnyMapsToDotnet() // TODO NK - Is this normal? Can we prevent this?
+        public void ContentModel_ToolsAnyMapsToAny()
         {
             // Arrange
             var conventions = new ManagedCodeConventions(
@@ -177,7 +177,7 @@ namespace NuGet.Client.Test
 
             // Assert
             Assert.Equal(1, groups.Count);
-            Assert.Equal(FrameworkConstants.CommonFrameworks.DotNet, (NuGetFramework)groups[0].Properties["tfm"]);
+            Assert.Equal(NuGetFramework.AnyFramework, (NuGetFramework)groups[0].Properties["tfm"]);
         }
     }
 }

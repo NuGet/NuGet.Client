@@ -60,7 +60,7 @@ namespace NuGet.Client.Test
         }
 
         [Fact]
-        public void ContentModel_AnyTFMDefaulsToDotnet()
+        public void ContentModel_AnyTFMDefaulsToAny()
         {
             // Arrange
             var conventions = new ManagedCodeConventions(
@@ -80,17 +80,17 @@ namespace NuGet.Client.Test
 
             // Assert
             Assert.Equal(1, groups.Count);
-            Assert.Equal(FrameworkConstants.CommonFrameworks.DotNet, (NuGetFramework)groups.First().Properties["tfm"]);
+            Assert.Equal(NuGetFramework.AnyFramework, (NuGetFramework)groups.First().Properties["tfm"]);
             Assert.Equal(rid, groups.First().Properties["rid"]);
         }
 
         [Fact]
-        public void ContentModel_AnyTFMDefaultsToDotnetndAnyRIDisAnyRID()
+        public void ContentModel_AnyTFMDefaultsToAnyandAnyRIDisAnyRID()
         {
             // Arrange
             var conventions = new ManagedCodeConventions(
                 new RuntimeGraph(
-                    new List<CompatibilityProfile>() { new CompatibilityProfile("net46.app") })); // TODO NK - Testing on a compat profile with no framework runtime pair does not test jack shit does it?
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("net46.app") }));
 
             var collection = new ContentItemCollection();
             var rid = "any";
@@ -105,12 +105,12 @@ namespace NuGet.Client.Test
 
             // Assert
             Assert.Equal(1, groups.Count);
-            Assert.Equal(FrameworkConstants.CommonFrameworks.DotNet, (NuGetFramework)groups.First().Properties["tfm"]);
+            Assert.Equal(NuGetFramework.AnyFramework, (NuGetFramework)groups.First().Properties["tfm"]);
             Assert.Equal(rid, groups.First().Properties["rid"]);
         }
 
         [Fact]
-        public void ContentModel_GetNearestRIDAndTFM() // TODO NK - how to make sure that Any maps to any TFM. 
+        public void ContentModel_GetNearestRIDAndTFM()
         {
             // Arrange
             var runtimes = new List<RuntimeDescription>()
@@ -158,6 +158,16 @@ namespace NuGet.Client.Test
             {
                 $"tools/net46/{rid}/a.dll",
             });
+
+            // Arrange
+            var criteria = conventions.Criteria.ForFrameworkAndRuntime(NuGetFramework.Parse("net46"), rid);
+
+            // Act
+            var group = collection.FindBestItemGroup(criteria, conventions.Patterns.ToolsAssemblies);
+
+            // Assert
+            Assert.Equal(FrameworkConstants.CommonFrameworks.Net46, (NuGetFramework)group.Properties["tfm"]);
+            Assert.Equal(rid, group.Properties["rid"]);
 
             // Act
             var groups = collection.FindItemGroups(conventions.Patterns.ToolsAssemblies)

@@ -75,23 +75,29 @@ namespace NuGet.Commands
                 };
 
                 // Populate assets
+
                 if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
                 {
                     AddToolsAssets(library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
+                    if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
+                    {
+                        break;
+                    }
                 }
                 else
                 { 
                     AddAssets(library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
+                    // Check if compatile assets were found.
+                    // If no compatible assets were found and this is the last check
+                    // continue on with what was given, this will fail in the normal
+                    // compat verification.
+                    if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
+                    {
+                        // Stop when compatible assets are found.
+                        break;
+                    }
                 }
-                // Check if compatile assets were found.
-                // If no compatible assets were found and this is the last check
-                // continue on with what was given, this will fail in the normal
-                // compat verification.
-                if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
-                {
-                    // Stop when compatible assets are found.
-                    break;
-                }
+
             }
 
 

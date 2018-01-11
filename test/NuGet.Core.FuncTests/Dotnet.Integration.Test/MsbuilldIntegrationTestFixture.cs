@@ -10,10 +10,10 @@ using System.Threading;
 using NuGet.XPlat.FuncTest;
 using NuGet.Test.Utility;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol;
 using Xunit;
-using NuGet.Packaging.Core;
 
 namespace Dotnet.Integration.Test
 {

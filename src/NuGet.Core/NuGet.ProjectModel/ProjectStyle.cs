@@ -21,23 +21,23 @@ namespace NuGet.ProjectModel
         PackageReference = 2,
 
         /// <summary>
-        /// DotnetToolReference project
-        /// </summary>
-        DotnetToolReference = 3,
-
-        /// <summary>
         /// DotnetCliToolReference "project"
         /// </summary>
-        DotnetCliTool = 4,
+        DotnetCliTool = 3,
 
         /// <summary>
         /// Non-MSBuild project with no project dependencies.
         /// </summary>
-        Standalone = 5,
+        Standalone = 4,
 
         /// <summary>
         /// Packages.config project
         /// </summary>
-        PackagesConfig = 6
+        PackagesConfig = 5, 
+
+                /// <summary>
+        /// DotnetToolReference project
+        /// </summary>
+        DotnetToolReference = 6
     }
 }

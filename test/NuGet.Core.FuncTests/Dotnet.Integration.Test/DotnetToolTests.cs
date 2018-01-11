@@ -470,6 +470,53 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("net461")]
+        [InlineData("netcoreapp2.0")]
+        public void DotnetToolTests_BasicDotnetToolRestoreWithNestedValues_Succeeds(string tfm)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ToolRestoreProject";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var source = Path.Combine(testDirectory, "packageSource");
+                var rid = "win-x64";
+                var packageName = string.Join("ToolPackage-", tfm, rid);
+                var packageVersion = NuGetVersion.Parse("1.0.0");
+                var packages = new List<PackageIdentity>() { new PackageIdentity(packageName, packageVersion) };
+
+                var package = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
+                package.Files.Clear();
+                package.AddFile($"tools/{tfm}/{rid}/a.dll");
+                package.AddFile($"tools/{tfm}/{rid}/tool1/b.dll");
+                package.PackageType = PackageType.DotnetTool;
+                package.UseDefaultRuntimeAssemblies = false;
+                package.PackageTypes.Add(PackageType.DotnetTool);
+                SimpleTestPackageUtility.CreatePackages(source, package);
+
+                _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
+                    projectName: projectName, targetFramework: tfm, rid: rid,
+                    source: source, packages: packages);
+
+                // Act
+                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+
+                // Assert
+                Assert.True(result.Item1 == 0, result.AllOutput);
+                // Verify the assets file
+                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
+                Assert.NotNull(lockFile);
+                Assert.Equal(2, lockFile.Targets.Count);
+                var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(rid, StringComparison.CurrentCultureIgnoreCase) : false);
+                Assert.Equal(1, ridTargets.Count());
+                var toolsAssemblies = ridTargets.First().Libraries.First().ToolsAssemblies;
+                Assert.Equal(1, toolsAssemblies.Count);
+                var toolsAssemblyPaths = toolsAssemblies.Select(e => e.Path);
+                Assert.Contains($"tools/{tfm}/{rid}/a.dll", toolsAssemblyPaths);
+                Assert.Contains($"tools/{tfm}/{rid}/tool1/b.dll", toolsAssemblyPaths);
+            }
+        }
+
         public static string GetResource(string name, Type type)
         {
             using (var reader = new StreamReader(type.GetTypeInfo().Assembly.GetManifestResourceStream(name)))

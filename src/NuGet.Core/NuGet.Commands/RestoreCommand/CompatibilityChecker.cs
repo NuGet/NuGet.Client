@@ -334,7 +334,7 @@ namespace NuGet.Commands
             contentItems.Load(compatibilityData.Files);
 
 
-            if (compatibilityData.TargetLibrary.PackageType.Any(e => e.Equals(PackageType.DotnetTool)))
+            if (compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetTool))
             {
                 foreach (var group in contentItems.FindItemGroups(graph.Conventions.Patterns.ToolsAssemblies))
                 {
@@ -363,11 +363,11 @@ namespace NuGet.Commands
                     new PackageIdentity(node.Key.Name, node.Key.Version));
 
                 issues.Add(issue);
-                await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1204, issue, graph));//
+                await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1204, issue, graph));
             }
 
             if (containsDotnetToolPackageType &&
-                    !(HasCompatibleAssets(compatibilityData.TargetLibrary) || !compatibilityData.Files.Any(p => p.StartsWith("tools/", StringComparison.OrdinalIgnoreCase))))
+                    !(HasCompatibleToolsAssets(compatibilityData.TargetLibrary) || !compatibilityData.Files.Any(p => p.StartsWith("tools/", StringComparison.OrdinalIgnoreCase))))
             {
                 var available = GetAvailableFrameworkRuntimePairs(compatibilityData, graph);
                 var issue = CompatibilityIssue.IncompatibleToolsPackage(
@@ -382,7 +382,7 @@ namespace NuGet.Commands
 
             if (ProjectStyle.DotnetToolReference == compatibilityData.PackageSpec.RestoreMetadata?.ProjectStyle)
             {
-                if (compatibilityData.PackageSpec.GetAllPackageDependencies().Any(e => e.Name.Equals(compatibilityData.TargetLibrary.Name)))
+                if (compatibilityData.PackageSpec.GetAllPackageDependencies().Any(e => e.Name.Equals(compatibilityData.TargetLibrary.Name, StringComparison.OrdinalIgnoreCase)))
                 {
                     if (!containsDotnetToolPackageType)
                     {
@@ -417,9 +417,14 @@ namespace NuGet.Commands
                 targetLibrary.ContentFiles.Count > 0 ||                               // Shared content
                 targetLibrary.ResourceAssemblies.Count > 0 ||                         // Resources (satellite package)
                 targetLibrary.Build.Count > 0 ||                                      // Build
-                targetLibrary.BuildMultiTargeting.Count > 0 ||                        // Cross targeting build
-                targetLibrary.ToolsAssemblies.Count > 0;                              // Tools assemblies - This makes a package not backwards compatible potentially, but do tools assets matter
+                targetLibrary.BuildMultiTargeting.Count > 0;                          // Cross targeting build
         }
+
+        internal static bool HasCompatibleToolsAssets(LockFileTargetLibrary targetLibrary)
+        {
+            return targetLibrary.ToolsAssemblies.Count > 0;  // Tools assemblies
+        }
+
 
         private CompatibilityData GetCompatibilityData(RestoreTargetGraph graph, LibraryIdentity libraryId, PackageSpec packageSpec)
         {
