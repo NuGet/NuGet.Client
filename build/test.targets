@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TestResultsDirectory>$(ArtifactsDirectory)TestResults\</TestResultsDirectory>
+    <TestResultsDirectory>$(BuildCommonDirectory)TestResults\</TestResultsDirectory>
   </PropertyGroup>
 
   <!-- Workaround for test projects not automatically creating binding redirects -->

@@ -7,11 +7,15 @@ echo "$3"
 if [ "$3" == "Succeeded" ]; then
     echo "Tests succeeded"
     STATE="success"
-    DESCRIPTION="succeeded"
+    DESCRIPTION="Succeeded"
+elif [ "$3" == "Canceled" ]; then
+    echo "Tests succeeded"
+    STATE="error"
+    DESCRIPTION="Canceled"
 else
     echo "Tests failed or were cancelled"
 	STATE="failure"
-    DESCRIPTION="failed"
+    DESCRIPTION="Failed"
 fi
 
 curl -u nugetlurker:$1 https://api.github.com/repos/nuget/nuget.client/statuses/$BUILD_SOURCEVERSION --data "{\"state\":\"$STATE\",\"context\":\"$2\", \"description\":\"$DESCRIPTION\", \"target_url\":\"$BUILDURL\"}"

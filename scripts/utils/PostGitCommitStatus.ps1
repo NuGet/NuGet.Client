@@ -68,14 +68,21 @@ function SetCommitStatusForTestResult {
         [Parameter(Mandatory = $True)]
         [string]$TestName,
         [Parameter(Mandatory = $True)]
-        [string]$CommitSha
+        [string]$CommitSha,
+        [Parameter(Mandatory = $True)]
+        [string]$VstsPersonalAccessToken
     )
-
+    $testRun = Get-TestRun -TestName "NuGet.Client $TestName" -PersonalAccessToken $VstsPersonalAccessToken
+    $url = $testRun[0]
+    $failures = $testRun[1]
     if ($env:AGENT_JOBSTATUS -eq "Succeeded") {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "succeeded"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "success" -CommitSha $CommitSha -TargetUrl $url -Description $env:AGENT_JOBSTATUS
+    }
+    elseif ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $url -Description "$failures tests failed"
     }
     else {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "failed"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "error" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
     }
 
     # If the build gets cancelled or fails when the unit tests are running , we also need to call the github api to update status
@@ -83,8 +90,38 @@ function SetCommitStatusForTestResult {
     # the status for those tests will forever be in pending state.
     if(($env:AGENT_JOBSTATUS -eq "Failed" -or $env:AGENT_JOBSTATUS -eq "Canceled") -and $TestName -eq "Unit Tests On Windows")
     {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "failed"
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "failed"
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "failed"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "failure" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
     }
+}
+
+function Get-TestRun {
+    param(
+        [Parameter(Mandatory = $True)]
+        [string]$TestName,
+        [Parameter(Mandatory = $True)]
+        [string]$PersonalAccessToken
+    )
+    $url = "$env:VstsTestRunsRestApi$env:BUILD_BUILDID"
+    Write-Host $url
+    $Token = ":$PersonalAccessToken"
+    $Base64Token = [System.Convert]::ToBase64String([char[]]$Token)
+
+    $Headers = @{
+        Authorization = 'Basic {0}' -f $Base64Token;
+    }
+    $testRuns = Invoke-RestMethod -Uri $url -Method GET -Headers $Headers
+    Write-Host $testRuns
+    $matchingRun = $testRuns.value | where { $_.name -ieq $TestName }
+    if(-not $matchingRun)
+    {
+        $testUrl = $env:BUILDURL
+    }
+    else
+    {
+        $testUrl = $env:VstsTestRunUrl -f $matchingRun.id
+    }
+    $failedTests = $matchingRun.unanalyzedTests
+    return $testUrl,$failedTests
 }

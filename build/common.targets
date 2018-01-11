@@ -246,52 +246,6 @@
 
   <!--
     ============================================================
-    RunTests for the current project
-    Top level entry point for tests
-    ============================================================
-  -->
-  <Target Name="RunTests"
-          DependsOnTargets="Build;GetTargetFrameworkSet"
-          Condition=" '$(TestProject)' == 'true' AND '$(SkipTests)' != 'true' ">
-    <Message Text="Running tests for $(ProjectName)" Importance="high" />
-    
-    <!-- Execute tests for each framework -->
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="RunTestsInner"
-      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
-                  Configuration=$(Configuration);
-                  VisualStudioVersion=$(VisualStudioVersion);">
-    </MSBuild>
-  </Target>
-
-  <!--
-    ============================================================
-    RunTests for the current framework
-    Called by RunTests, this calls XUnit
-    ============================================================
-  -->
-  <Target Name="RunTestsInner">
-    <PropertyGroup>
-      <TestAssemblyPath>$(OutputPath)$(AssemblyName).dll</TestAssemblyPath>
-    </PropertyGroup>
-    <Message Text="Running tests on $(TestAssemblyPath)" Importance="high" />
-
-    <!-- Ensure the test results dir exists -->
-    <MakeDir Directories="$(TestResultsDirectory)"
-      Condition=" '$(IsDesktop)' == 'true' AND '$(SkipDesktopTests)' != 'true' " />
-
-    <!-- For desktop frameworks use the console runner -->
-    <Exec Command="$(XunitConsoleExePath) $(TestAssemblyPath) -html $(TestResultsDirectory)$(ProjectName).VS$(VisualStudioVersion).html"
-          Condition=" '$(IsDesktop)' == 'true' AND '$(SkipDesktopTests)' != 'true' " />
-
-    <!-- For other frameworks call dotnet test -->
-    <Exec Command="$(DotnetExePath) test -f $(TargetFramework) --no-build -c $(Configuration)"
-          Condition=" '$(IsDesktop)' != 'true' AND '$(SkipCoreTests)' != 'true' " />
-  </Target>
-
-  <!--
-    ============================================================
     GetTestAssemblies
     ============================================================
   -->
