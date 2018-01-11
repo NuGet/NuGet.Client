@@ -225,7 +225,7 @@ namespace NuGet.PackageManagement.UI
                         return;
                     }
 
-                    TelemetryServiceUtility.StartorResumeTimer();
+                    TelemetryServiceUtility.StartOrResumeTimer();
 
                     using (var sourceCacheContext = new SourceCacheContext())
                     {
@@ -267,12 +267,12 @@ namespace NuGet.PackageManagement.UI
                             }
                         }
 
-                        TelemetryServiceUtility.StartorResumeTimer();
+                        TelemetryServiceUtility.StartOrResumeTimer();
 
                         // Show the license acceptance window.
                         var accepted = await CheckLicenseAcceptanceAsync(uiService, results, token);
 
-                        TelemetryServiceUtility.StartorResumeTimer();
+                        TelemetryServiceUtility.StartOrResumeTimer();
 
                         if (!accepted)
                         {
@@ -284,7 +284,7 @@ namespace NuGet.PackageManagement.UI
                         {
                             var shouldContinue = ShouldContinueDueToDotnetDeprecation(uiService, actions, token);
 
-                            TelemetryServiceUtility.StartorResumeTimer();
+                            TelemetryServiceUtility.StartOrResumeTimer();
 
                             if (!shouldContinue)
                             {

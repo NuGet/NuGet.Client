@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             TelemetryService = new NuGetVSActionTelemetryService();
 
             // start timer for telemetry event
-            TelemetryServiceUtility.StartorResumeTimer();
+            TelemetryServiceUtility.StartOrResumeTimer();
 
             // Run Preprocess outside of JTF
             Preprocess();

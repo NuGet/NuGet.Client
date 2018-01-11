@@ -133,12 +133,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (!ShouldContinueDueToDotnetDeprecation(actions, isPreview))
                 {
                     // resume telemetry event timer after ui confirmation
-                    TelemetryServiceUtility.StartorResumeTimer();
+                    TelemetryServiceUtility.StartOrResumeTimer();
                     return;
                 }
 
                 // resume telemetry event timer after ui confirmation
-                TelemetryServiceUtility.StartorResumeTimer();
+                TelemetryServiceUtility.StartOrResumeTimer();
 
                 if (isPreview)
                 {
@@ -206,12 +206,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (!ShouldContinueDueToDotnetDeprecation(actions, isPreview))
                 {
                     // resume telemetry event timer after ui confirmation
-                    TelemetryServiceUtility.StartorResumeTimer();
+                    TelemetryServiceUtility.StartOrResumeTimer();
                     return;
                 }
 
                 // resume telemetry event timer after ui confirmation
-                TelemetryServiceUtility.StartorResumeTimer();
+                TelemetryServiceUtility.StartOrResumeTimer();
 
                 if (isPreview)
                 {

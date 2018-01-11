@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Common;
-using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
 {
@@ -18,7 +17,8 @@ namespace NuGet.VisualStudio
            NuGetOperationStatus status,
            int packageCount,
            DateTimeOffset endTime,
-           double duration) : base(projectIds, operationType, startTime, status, packageCount, endTime, duration)
+           double duration) :
+            base(projectIds, operationType, startTime, status, packageCount, endTime, duration)
         {
             Source = source;
         }
@@ -44,26 +44,5 @@ namespace NuGet.VisualStudio
                 }
             );
         }
-    }
-
-    /// <summary>
-    /// Define different sources to trigger nuget action.
-    /// </summary>
-    public enum OperationSource
-    {
-        /// <summary>
-        /// When nuget action is trigger from Package Management Console.
-        /// </summary>
-        PMC = 0,
-
-        /// <summary>
-        /// When nuget action is trigger from Nuget Manager UI.
-        /// </summary>
-        UI = 1,
-
-        /// <summary>
-        /// When nuget action is trigger from nuget public api.
-        /// </summary>
-        API = 2,
     }
 }

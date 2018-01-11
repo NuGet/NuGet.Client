@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             TelemetryService = new NuGetVSActionTelemetryService();
 
             // start timer for telemetry event
-            TelemetryServiceUtility.StartorResumeTimer();
+            TelemetryServiceUtility.StartOrResumeTimer();
 
             // Run Preprocess outside of JTF
             Preprocess();
@@ -340,12 +340,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (!ShouldContinueDueToDotnetDeprecation(actions, WhatIf.IsPresent))
             {
                 // resume telemetry event timer after ui interaction
-                TelemetryServiceUtility.StartorResumeTimer();
+                TelemetryServiceUtility.StartOrResumeTimer();
                 return;
             }
 
             // resume telemetry event timer after ui interaction
-            TelemetryServiceUtility.StartorResumeTimer();
+            TelemetryServiceUtility.StartOrResumeTimer();
 
             if (WhatIf.IsPresent)
             {

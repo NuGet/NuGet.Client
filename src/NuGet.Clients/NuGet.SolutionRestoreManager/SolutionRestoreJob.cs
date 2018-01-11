@@ -136,7 +136,7 @@ namespace NuGet.SolutionRestoreManager
             _status = NuGetOperationStatus.NoOp;
 
             // start timer for telemetry event
-            TelemetryServiceUtility.StartorResumeTimer();
+            TelemetryServiceUtility.StartOrResumeTimer();
             var telemetryService = new NuGetVSActionTelemetryService();
             var projects = Enumerable.Empty<NuGetProject>();
 

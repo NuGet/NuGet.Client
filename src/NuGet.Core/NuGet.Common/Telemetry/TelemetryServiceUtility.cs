@@ -10,7 +10,7 @@ namespace NuGet.Common
     {
         private static Stopwatch _stopWatch;
 
-        public static void StartorResumeTimer()
+        public static void StartOrResumeTimer()
         {
             if (_stopWatch == null)
             {
@@ -29,15 +29,14 @@ namespace NuGet.Common
 
         public static TimeSpan GetTimerElapsedTime()
         {
-            var duration = new TimeSpan();
-
             if (_stopWatch != null)
             {
-                duration = _stopWatch.Elapsed;
+                var duration = _stopWatch.Elapsed;
                 _stopWatch.Reset();
+                return duration;
             }
 
-            return duration;
+            return TimeSpan.MinValue;
         }
 
         public static double GetTimerElapsedTimeInSeconds()

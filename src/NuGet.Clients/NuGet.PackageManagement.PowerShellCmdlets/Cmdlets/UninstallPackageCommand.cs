@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             // Enable granular level events for this uninstall operation
             TelemetryService = new NuGetVSActionTelemetryService();
-            TelemetryServiceUtility.StartorResumeTimer();
+            TelemetryServiceUtility.StartOrResumeTimer();
 
             // Run Preprocess outside of JTF
             Preprocess();

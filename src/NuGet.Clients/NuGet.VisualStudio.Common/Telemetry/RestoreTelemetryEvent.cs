@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Common;
-using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
 {

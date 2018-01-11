@@ -961,7 +961,7 @@ namespace NuGet.PackageManagement
             nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
 
             var telemetryService = nuGetProjectContext.TelemetryService;
-            TelemetryServiceUtility.StartorResumeTimer();
+            TelemetryServiceUtility.StartOrResumeTimer();
 
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
@@ -1114,7 +1114,7 @@ namespace NuGet.PackageManagement
                 TelemetryServiceUtility.StopTimer();
                 telemetryService?.EmitTelemetryEvent(
                     new ActionTelemetryStepEvent(string.Format(TelemetryConstants.GatherDependencyStepName, projectId), TelemetryServiceUtility.GetTimerElapsedTimeInSeconds()));
-                TelemetryServiceUtility.StartorResumeTimer();
+                TelemetryServiceUtility.StartOrResumeTimer();
 
                 if (!availablePackageDependencyInfoWithSourceSet.Any())
                 {
@@ -1196,7 +1196,7 @@ namespace NuGet.PackageManagement
                 TelemetryServiceUtility.StopTimer();
                 telemetryService?.EmitTelemetryEvent(
                     new ActionTelemetryStepEvent(string.Format(TelemetryConstants.ResolveDependencyStepName, projectId), TelemetryServiceUtility.GetTimerElapsedTimeInSeconds()));
-                TelemetryServiceUtility.StartorResumeTimer();
+                TelemetryServiceUtility.StartOrResumeTimer();
 
                 if (newListOfInstalledPackages == null)
                 {
@@ -1550,7 +1550,7 @@ namespace NuGet.PackageManagement
             var projectId = string.Empty;
             nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
             var telemetryService = nuGetProjectContext.TelemetryService;
-            TelemetryServiceUtility.StartorResumeTimer();
+            TelemetryServiceUtility.StartOrResumeTimer();
 
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
@@ -1611,7 +1611,7 @@ namespace NuGet.PackageManagement
                     TelemetryServiceUtility.StopTimer();
                     telemetryService?.EmitTelemetryEvent(
                         new ActionTelemetryStepEvent(string.Format(TelemetryConstants.GatherDependencyStepName, projectId), TelemetryServiceUtility.GetTimerElapsedTimeInSeconds()));
-                    TelemetryServiceUtility.StartorResumeTimer();
+                    TelemetryServiceUtility.StartOrResumeTimer();
 
                     if (!availablePackageDependencyInfoWithSourceSet.Any())
                     {
@@ -1672,7 +1672,7 @@ namespace NuGet.PackageManagement
                     TelemetryServiceUtility.StopTimer();
                     telemetryService?.EmitTelemetryEvent(
                         new ActionTelemetryStepEvent(string.Format(TelemetryConstants.ResolveDependencyStepName, projectId), TelemetryServiceUtility.GetTimerElapsedTimeInSeconds()));
-                    TelemetryServiceUtility.StartorResumeTimer();
+                    TelemetryServiceUtility.StartOrResumeTimer();
 
                     if (newListOfInstalledPackages == null)
                     {
