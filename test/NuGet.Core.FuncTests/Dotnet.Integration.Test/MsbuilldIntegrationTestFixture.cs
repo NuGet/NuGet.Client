@@ -21,6 +21,7 @@ namespace Dotnet.Integration.Test
         private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli();
         internal readonly string TestDotnetCli;
         internal readonly string MsBuildSdksPath;
+        private readonly Dictionary<string, string> _processEnvVars = new Dictionary<string, string>();
 
         public MsbuildIntegrationTestFixture()
         {
@@ -28,7 +29,9 @@ namespace Dotnet.Integration.Test
             TestDotnetCli = Path.Combine(cliDirectory, "dotnet.exe");
             MsBuildSdksPath = Path.Combine(Directory.GetDirectories
                 (Path.Combine(cliDirectory, "sdk"))
-                .First(), "Sdks");
+                .First(), "Sdks");            
+            _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
+            _processEnvVars.Add("UseSharedCompilation", "false");
             // We do this here so that dotnet new will extract all the packages on the first run on the machine.
             InitDotnetNewToExtractPackages();
         }
@@ -58,7 +61,8 @@ namespace Dotnet.Integration.Test
                 workingDirectory,
                 $"new {args}",
                 waitForExit: true,
-                timeOutInMilliseconds: timeOut);
+                timeOutInMilliseconds: timeOut,
+                environmentVariables: _processEnvVars);
 
             // TODO : remove this workaround when https://github.com/dotnet/templating/issues/294 is fixed
             if (result.Item1 != 0)
@@ -67,13 +71,15 @@ namespace Dotnet.Integration.Test
                 workingDirectory,
                 $"new {args} --debug:reinit",
                 waitForExit: true,
-                timeOutInMilliseconds: 300000);
+                timeOutInMilliseconds: 300000,
+                environmentVariables: _processEnvVars);
 
                 result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"new {args} ",
                 waitForExit: true,
-                timeOutInMilliseconds: 300000);
+                timeOutInMilliseconds: 300000,
+                environmentVariables: _processEnvVars);
             }
 
             Assert.True(result.Item1 == 0, $"Creating project failed with following log information :\n {result.AllOutput}");
@@ -85,20 +91,19 @@ namespace Dotnet.Integration.Test
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"restore {projectName}.csproj {args}",
-                waitForExit: true);
+                waitForExit: true,
+                environmentVariables: _processEnvVars);
             Assert.True(result.Item1 == 0, $"Restore failed with following log information :\n {result.AllOutput}");
             Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.AllOutput}");
         }
 
         internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath = "obj")
         {
-            var envVar = new Dictionary<string, string>();
-            envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"pack {projectName}.csproj {args} /p:NuspecOutputPath={nuspecOutputPath}",
                 waitForExit: true,
-                environmentVariables: envVar);
+                environmentVariables: _processEnvVars);
             Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.AllOutput}");
             Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.AllOutput}");
             return result;
@@ -109,7 +114,8 @@ namespace Dotnet.Integration.Test
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"msbuild {projectName}.csproj {args} /p:AppendRuntimeIdentifierToOutputPath=false",
-                waitForExit: true);
+                waitForExit: true,
+                environmentVariables: _processEnvVars);
             Assert.True(result.Item1 == 0, $"Build failed with following log information :\n {result.AllOutput}");
             Assert.True(result.Item3 == "", $"Build failed with following message in error stream :\n {result.AllOutput}");
         }
@@ -245,6 +251,10 @@ namespace Dotnet.Integration.Test
             catch (UnauthorizedAccessException)
             {
                 Directory.Delete(path, true);
+            }
+            catch
+            {
+
             }
         }
     }
