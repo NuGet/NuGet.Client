@@ -149,20 +149,6 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        private static FileInfo CreatePackageFile(TestDirectory testDirectory)
-        {
-            var packageContext = new SimpleTestPackageContext();
-            var packageFile = new FileInfo(Path.Combine(testDirectory, "Package.nupkg"));
-
-            using (var readStream = packageContext.CreateAsStream())
-            using (var writeStream = packageFile.OpenWrite())
-            {
-                readStream.CopyTo(writeStream);
-            }
-
-            return packageFile;
-        }
-
         private static SignatureContent CreateSignatureContent(FileInfo packageFile)
         {
             using (var stream = packageFile.OpenRead())
@@ -221,7 +207,8 @@ namespace NuGet.Packaging.FuncTest
             using (var directory = TestDirectory.Create())
             using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var unsignedPackageFile = CreatePackageFile(directory);
+                var packageContext = new SimpleTestPackageContext();
+                var unsignedPackageFile = packageContext.CreateAsFile(directory, "Package.nupkg");
                 var signedPackageFile = await SignPackageFileAsync(directory, unsignedPackageFile, certificate);
                 var verifier = new PackageSignatureVerifier(_trustProviders, settings);
 

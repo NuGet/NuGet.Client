@@ -7,7 +7,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Xml.Linq;
-using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.Versioning;
@@ -111,6 +110,25 @@ namespace NuGet.Test.Utility
             var stream = new MemoryStream();
             SimpleTestPackageUtility.CreatePackage(stream, this);
             return stream;
+        }
+
+        /// <summary>
+        /// Creates a file and writes to it.
+        /// </summary>
+        /// <param name="testDirectory">The directory for the new file.</param>
+        /// <param name="fileName">The file name.</param>
+        /// <returns>A <see cref="FileInfo" /> object.</returns>
+        public FileInfo CreateAsFile(TestDirectory testDirectory, string fileName)
+        {
+            var packageFile = new FileInfo(Path.Combine(testDirectory, fileName));
+
+            using (var readStream = CreateAsStream())
+            using (var writeStream = packageFile.OpenWrite())
+            {
+                readStream.CopyTo(writeStream);
+            }
+
+            return packageFile;
         }
     }
 }
