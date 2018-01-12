@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -15,10 +14,10 @@ namespace NuGet.Packaging.Signing
     public interface ISignedPackageReader : IDisposable
     {
         /// <summary>
-        /// Get all signatures used to sign a package.
+        /// Get package signature.
         /// </summary>
-        /// <remarks>Returns an empty list if the package is unsigned.</remarks>
-        Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token);
+        /// <remarks>Returns a null if the package is unsigned.</remarks>
+        Task<Signature> GetSignatureAsync(CancellationToken token);
 
         /// <summary>
         /// Check if a package contains signing information.
