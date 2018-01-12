@@ -638,6 +638,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The primary signature validity period has expired..
+        /// </summary>
+        internal static string SignatureNotTimeValid {
+            get {
+                return ResourceManager.GetString("SignatureNotTimeValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The signing certificate is not yet valid..
         /// </summary>
         internal static string SignatureNotYetValid {
