@@ -254,11 +254,13 @@ namespace NuGet.Packaging.Signing
                     metadata.StartOfFileHeaders = header.RelativeOffsetOfLocalHeader;
                 }
 
-                var isUtf8 = SignedPackageArchiveUtility.IsUtf8(header.GeneralPurposeBitFlag);
+                var isPackageSignatureFile = SignedPackageArchiveUtility.IsPackageSignatureFileEntry(
+                    header.FileName,
+                    header.GeneralPurposeBitFlag);
 
                 var centralDirectoryMetadata = new CentralDirectoryHeaderMetadata()
                 {
-                    Filename = SignedPackageArchiveUtility.GetString(header.FileName, isUtf8),
+                    IsPackageSignatureFile = isPackageSignatureFile,
                     HeaderSize = header.GetSizeInBytes(),
                     OffsetToFileHeader = header.RelativeOffsetOfLocalHeader,
                     Position = header.OffsetFromStart
@@ -300,7 +302,7 @@ namespace NuGet.Packaging.Signing
             {
                 var record = centralDirectoryRecords[centralDirectoryRecordIndex];
 
-                if (StringComparer.Ordinal.Equals(record.Filename, _signingSpecification.SignaturePath))
+                if (record.IsPackageSignatureFile)
                 {
                     metadata.SignatureCentralDirectoryHeaderIndex = centralDirectoryRecordIndex;
                 }
@@ -359,7 +361,7 @@ namespace NuGet.Packaging.Signing
             {
                 var record = centralDirectoryRecords[centralDirectoryRecordIndex];
 
-                if (StringComparer.Ordinal.Equals(record.Filename, _signingSpecification.SignaturePath))
+                if (record.IsPackageSignatureFile)
                 {
                     if (hasFoundSignature)
                     {

@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
@@ -17,40 +18,45 @@ namespace NuGet.Packaging.Signing
     {
         private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
 
-#if IS_DESKTOP
         /// <summary>
         /// Utility method to know if a zip archive is signed.
         /// </summary>
         /// <param name="reader">Binary reader pointing to a zip archive.</param>
         /// <returns>true if the given archive is signed</returns>
-        private static bool IsSigned(BinaryReader reader)
+        public static bool IsSigned(BinaryReader reader)
         {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
             try
             {
                 var endOfCentralDirectoryRecord = EndOfCentralDirectoryRecord.Read(reader);
 
                 // Look for signature central directory record
                 reader.BaseStream.Seek(endOfCentralDirectoryRecord.OffsetOfStartOfCentralDirectory, SeekOrigin.Begin);
-                CentralDirectoryHeader header;
+                CentralDirectoryHeader centralDirectoryHeader;
 
-                while (CentralDirectoryHeader.TryRead(reader, out header))
+                while (CentralDirectoryHeader.TryRead(reader, out centralDirectoryHeader))
                 {
-                    var isUtf8 = IsUtf8(header.GeneralPurposeBitFlag);
-                    var fileName = GetString(header.FileName, isUtf8);
-
-                    if (string.Equals(fileName, _signingSpecification.SignaturePath, StringComparison.Ordinal))
+                    if (IsPackageSignatureFileEntry(
+                        centralDirectoryHeader.FileName,
+                        centralDirectoryHeader.GeneralPurposeBitFlag))
                     {
                         // Go to local file header
-                        reader.BaseStream.Seek(header.RelativeOffsetOfLocalHeader, SeekOrigin.Begin);
+                        reader.BaseStream.Seek(centralDirectoryHeader.RelativeOffsetOfLocalHeader, SeekOrigin.Begin);
 
-                        // Make sure file header exists there
-                        var fileHeaderSignature = reader.ReadUInt32();
-                        if (fileHeaderSignature != LocalFileHeader.Signature)
+                        // Make sure local file header exists
+                        LocalFileHeader localFileHeader;
+                        if (!LocalFileHeader.TryRead(reader, out localFileHeader))
                         {
                             throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
                         }
 
-                        return true;
+                        return IsPackageSignatureFileEntry(
+                            localFileHeader.FileName,
+                            localFileHeader.GeneralPurposeBitFlag);
                     }
                 }
             }
@@ -59,7 +65,23 @@ namespace NuGet.Packaging.Signing
 
             return false;
         }
-#endif
+
+        internal static bool IsPackageSignatureFileEntry(byte[] fileName, ushort generalPurposeBitFlag)
+        {
+            if (fileName == null || IsUtf8(generalPurposeBitFlag))
+            {
+                return false;
+            }
+
+            var expectedFileName = Encoding.ASCII.GetBytes(_signingSpecification.SignaturePath);
+
+            // The ZIP format specification says the code page should be IBM code page 437 (CP437)
+            // if bit 11 of the general purpose bit flag field is not set.  CP437 is not the same
+            // as ASCII, but there is overlap.
+            // All characters in the package signature file name are in that overlap, so we can
+            // use the ASCII decoder instead of pulling in a new package for full CP437 support.
+            return fileName.SequenceEqual(expectedFileName);
+        }
 
         public static bool IsZip64(BinaryReader reader)
         {
@@ -185,7 +207,7 @@ namespace NuGet.Packaging.Signing
             // Make sure it is signed with a valid signature file
             if (!IsSigned(reader))
             {
-                throw new Exception(Strings.SignedPackageNotSignedOnVerify);
+                throw new SignatureException(NuGetLogCode.NU3003, Strings.SignedPackageNotSignedOnVerify);
             }
 
             var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
@@ -280,13 +302,7 @@ namespace NuGet.Packaging.Signing
 
             return centralDirectoryRecordsList;
         }
-
 #else
-
-        internal static bool IsSigned(BinaryReader reader)
-        {
-            throw new NotImplementedException();
-        }
 
         internal static void SignZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
         {
@@ -299,19 +315,9 @@ namespace NuGet.Packaging.Signing
         }
 
 #endif
-        internal static bool IsUtf8(uint generalPurposeBitFlags)
+        internal static bool IsUtf8(ushort generalPurposeBitFlags)
         {
-            return (generalPurposeBitFlags & (1 << 11)) == 1;
-        }
-
-        internal static string GetString(byte[] bytes, bool isUtf8)
-        {
-            if (isUtf8)
-            {
-                return Encoding.UTF8.GetString(bytes);
-            }
-
-            return Encoding.ASCII.GetString(bytes);
+            return (generalPurposeBitFlags & (1 << 11)) != 0;
         }
 
         private static bool CompareHash(byte[] expectedHash, byte[] actualHash)
