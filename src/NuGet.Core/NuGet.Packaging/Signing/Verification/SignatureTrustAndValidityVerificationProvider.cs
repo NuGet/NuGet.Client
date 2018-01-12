@@ -173,7 +173,7 @@ namespace NuGet.Packaging.Signing
                 }
                 else
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3003, Strings.SignatureNotTimeValid));
+                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3011, Strings.SignatureNotTimeValid));
                 }
             }
 
