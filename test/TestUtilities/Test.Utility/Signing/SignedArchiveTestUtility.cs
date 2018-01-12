@@ -227,7 +227,7 @@ namespace Test.Utility.Signing
             {
                 var record = centralDirectoryRecords[centralDirectoryRecordIndex];
 
-                if (StringComparer.Ordinal.Equals(record.Filename, signingSpecification.SignaturePath))
+                if (record.IsPackageSignatureFile)
                 {
                     return centralDirectoryRecordIndex;
                 }
@@ -342,7 +342,7 @@ namespace Test.Utility.Signing
             var recordIndex = 0;
             for (; recordIndex < cdr.Count; recordIndex++)
             {
-                if (StringComparer.Ordinal.Equals(cdr[recordIndex].Filename, spec.SignaturePath))
+                if (cdr[recordIndex].IsPackageSignatureFile)
                 {
                     break;
                 }

@@ -25,9 +25,9 @@ namespace NuGet.Packaging.Signing
         public long FileEntryTotalSize { get; set; }
 
         /// <summary>
-        /// Filename for the central directory header
+        /// Flag indicating if the entry is the package signature file
         /// </summary>
-        public string Filename { get; set; }
+        public bool IsPackageSignatureFile { get; set; }
 
         /// <summary>
         /// Size of central directory header, in bytes.

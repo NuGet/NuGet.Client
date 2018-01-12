@@ -576,7 +576,7 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(0x84, header.Position);
                 Assert.Equal(0, header.OffsetToFileHeader);
                 Assert.Equal(0x2a, header.FileEntryTotalSize);
-                Assert.Equal("1.txt", header.Filename);
+                Assert.False(header.IsPackageSignatureFile);
                 Assert.Equal(0x33, header.HeaderSize);
                 Assert.Equal(0, header.ChangeInOffset);
                 Assert.Equal(0, header.IndexInHeaders);
@@ -586,7 +586,7 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(0xb7, header.Position);
                 Assert.Equal(0x2a, header.OffsetToFileHeader);
                 Assert.Equal(0x2f, header.FileEntryTotalSize);
-                Assert.Equal("2.txt", header.Filename);
+                Assert.False(header.IsPackageSignatureFile);
                 Assert.Equal(0x33, header.HeaderSize);
                 Assert.Equal(0, header.ChangeInOffset);
                 Assert.Equal(1, header.IndexInHeaders);
@@ -596,10 +596,27 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(0xea, header.Position);
                 Assert.Equal(0x59, header.OffsetToFileHeader);
                 Assert.Equal(0x2b, header.FileEntryTotalSize);
-                Assert.Equal("3.txt", header.Filename);
+                Assert.False(header.IsPackageSignatureFile);
                 Assert.Equal(0x33, header.HeaderSize);
                 Assert.Equal(0, header.ChangeInOffset);
                 Assert.Equal(2, header.IndexInHeaders);
+            }
+        }
+
+        [Fact]
+        public void ReadSignedArchiveMetadata_WithPackageSignatureEntry_ReturnsMetadata()
+        {
+            using (var stream = new MemoryStream(GetResource("SignatureFileEntry.zip")))
+            using (var reader = new BinaryReader(stream))
+            {
+                var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+
+                Assert.Equal(1, metadata.CentralDirectoryHeaders.Count);
+                Assert.Equal(0, metadata.SignatureCentralDirectoryHeaderIndex);
+
+                var header = metadata.CentralDirectoryHeaders[0];
+
+                Assert.True(header.IsPackageSignatureFile);
             }
         }
 
