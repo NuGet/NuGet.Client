@@ -389,7 +389,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="_GetRestoreProjectStyle"
     DependsOnTargets="_GetProjectJsonPath;CollectPackageReferences"
-    Returns="$(RestoreProjectStyle)">
+    Returns="$(RestoreProjectStyle);$(PackageReferenceCompatibleProjectStyle)">
     <!-- This may be overridden by setting RestoreProjectStyle in the project. -->
     <PropertyGroup>
       <!-- If any PackageReferences exist treat it as PackageReference. This has priority over project.json. -->
@@ -398,6 +398,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' AND '$(_CurrentProjectJsonPath)' != '' ">ProjectJson</RestoreProjectStyle>
       <!-- This project is either a packages.config project or one that does not use NuGet at all. -->
       <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' ">Unknown</RestoreProjectStyle>
+    </PropertyGroup>
+    <PropertyGroup>
+      <PackageReferenceCompatibleProjectStyle Condition="  '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'DotnetToolReference' ">true</PackageReferenceCompatibleProjectStyle>
     </PropertyGroup>
   </Target>
 
@@ -497,7 +500,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreSettingsCurrentProject"
-    Condition=" '$(TargetFrameworks)' == '' AND ( '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'DotnetToolReference' ) "
+    Condition=" '$(TargetFrameworks)' == '' AND '$(PackageReferenceCompatibleProjectStyle)' == 'true' "
     DependsOnTargets="_GetRestoreSettingsPerFramework"
     Returns="@(_RestoreSettingsPerFramework)">
   </Target>
@@ -509,7 +512,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreSettingsAllFrameworks"
-    Condition=" '$(TargetFrameworks)' != '' AND ( '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'DotnetToolReference' ) "
+    Condition=" '$(TargetFrameworks)' != '' AND '$(PackageReferenceCompatibleProjectStyle)' == 'true' "
     DependsOnTargets="_GetRestoreTargetFrameworksAsItems;_GetRestoreProjectStyle"
     Returns="@(_RestoreSettingsPerFramework)">
 
@@ -555,9 +558,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreTargetFrameworksOutput;_GetRestoreSettings"
     Returns="@(_RestoreGraphEntry)">
 
-    <PropertyGroup>
-      <PackageReferenceCompatibleProjectStyle Condition="  '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'DotnetToolReference' ">true</PackageReferenceCompatibleProjectStyle>
-    </PropertyGroup>
     <!-- Determine the restore output path -->
     <PropertyGroup Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' OR '$(RestoreProjectStyle)' == 'ProjectJson' ">
       <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
@@ -750,7 +750,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Write out package references for NETCore -->
     <GetRestorePackageReferencesTask
-      Condition=" ('$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'DotnetToolReference') "
+      Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' "
       ProjectUniqueName="$(MSBuildProjectFullPath)"
       PackageReferences="@(PackageReference)"
       TargetFrameworks="$(TargetFramework)">
@@ -765,7 +765,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <!-- Write out target framework information -->
-    <ItemGroup Condition="  ('$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'DotnetToolReference') AND '$(_CombinedFallbacks)' != '' ">
+    <ItemGroup Condition="  '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(_CombinedFallbacks)' != '' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
         <Type>TargetFrameworkInformation</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
