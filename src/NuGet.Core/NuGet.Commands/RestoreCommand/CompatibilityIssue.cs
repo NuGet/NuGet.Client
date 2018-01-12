@@ -70,25 +70,25 @@ namespace NuGet.Commands
         public static CompatibilityIssue IncompatiblePackageWithDotnetTool(PackageIdentity referenceAssemblyPackage)
         {
             return new CompatibilityIssue(
-                CompatibilityIssueType.IncompatiblePackageWithDotnetTool,
-                referenceAssemblyPackage,
-                string.Empty,
-                null,
-                null,
-                new List<NuGetFramework>(),
-                Enumerable.Empty<FrameworkRuntimePair>());
+                type: CompatibilityIssueType.IncompatiblePackageWithDotnetTool,
+                package : referenceAssemblyPackage,
+                assemblyName: string.Empty,
+                framework: null,
+                runtimeIdentifier: null,
+                availableFrameworks: Enumerable.Empty<NuGetFramework>(),
+                availableFrameworkRuntimePairs: Enumerable.Empty<FrameworkRuntimePair>());
         }
 
         public static CompatibilityIssue ToolsPackageWithExtraPackageTypes(PackageIdentity referenceAssemblyPackage)
         {
             return new CompatibilityIssue(
-                CompatibilityIssueType.ToolsPackageWithExtraPackageTypes,
-                referenceAssemblyPackage,
-                string.Empty,
-                null,
-                null,
-                new List<NuGetFramework>(),
-                Enumerable.Empty<FrameworkRuntimePair>());
+                type: CompatibilityIssueType.ToolsPackageWithExtraPackageTypes,
+                package: referenceAssemblyPackage,
+                assemblyName: string.Empty,
+                framework: null,
+                runtimeIdentifier: null,
+                availableFrameworks: Enumerable.Empty<NuGetFramework>(),
+                availableFrameworkRuntimePairs: Enumerable.Empty<FrameworkRuntimePair>());
         }
 
         public static CompatibilityIssue IncompatibleToolsPackage(PackageIdentity packageIdentity, NuGetFramework framework, string runtimeIdentifier, HashSet<FrameworkRuntimePair> available)
@@ -124,12 +124,12 @@ namespace NuGet.Commands
         {
             return new CompatibilityIssue(
                 CompatibilityIssueType.ProjectWithIncorrectDependencyCount,
-                project,
-                string.Empty,
-                null,
-                null,
-                new List<NuGetFramework>(),
-                Enumerable.Empty<FrameworkRuntimePair>());
+                package: project,
+                assemblyName: string.Empty,
+                framework: null,
+                runtimeIdentifier: null,
+                availableFrameworks: Enumerable.Empty<NuGetFramework>(),
+                availableFrameworkRuntimePairs: Enumerable.Empty<FrameworkRuntimePair>());
         }
 
         public override string ToString()

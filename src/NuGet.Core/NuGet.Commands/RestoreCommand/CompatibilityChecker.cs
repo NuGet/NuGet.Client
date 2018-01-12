@@ -251,7 +251,7 @@ namespace NuGet.Commands
                 graph.Conventions.Patterns.ResourceAssemblies,
                 graph.Conventions.Patterns.CompileRefAssemblies,
                 graph.Conventions.Patterns.RuntimeAssemblies,
-                graph.Conventions.Patterns.ContentFiles,
+                graph.Conventions.Patterns.ContentFiles
             };
 
             foreach (var pattern in patterns)
@@ -323,7 +323,7 @@ namespace NuGet.Commands
                 HasCompatibleAssets(compatibilityData.TargetLibrary) ||
                 !compatibilityData.Files.Any(p =>
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
-                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase)); // No assemblies at all (for any TxM)
+                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase));                       // No assemblies at all (for any TxM)
         }
 
         private static HashSet<FrameworkRuntimePair> GetAvailableFrameworkRuntimePairs(CompatibilityData compatibilityData, RestoreTargetGraph graph)
@@ -382,14 +382,11 @@ namespace NuGet.Commands
 
             if (ProjectStyle.DotnetToolReference == compatibilityData.PackageSpec.RestoreMetadata?.ProjectStyle)
             {
-                if (compatibilityData.PackageSpec.GetAllPackageDependencies().Any(e => e.Name.Equals(compatibilityData.TargetLibrary.Name, StringComparison.OrdinalIgnoreCase)))
+                if (!containsDotnetToolPackageType && compatibilityData.PackageSpec.GetAllPackageDependencies().Any(e => e.Name.Equals(compatibilityData.TargetLibrary.Name, StringComparison.OrdinalIgnoreCase)))
                 {
-                    if (!containsDotnetToolPackageType)
-                    {
-                        var issue = CompatibilityIssue.IncompatiblePackageWithDotnetTool(new PackageIdentity(node.Key.Name, node.Key.Version));
-                        issues.Add(issue);
-                        await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1212, issue, graph));
-                    }
+                    var issue = CompatibilityIssue.IncompatiblePackageWithDotnetTool(new PackageIdentity(node.Key.Name, node.Key.Version));
+                    issues.Add(issue);
+                    await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1212, issue, graph));
                 }
             }
             else
