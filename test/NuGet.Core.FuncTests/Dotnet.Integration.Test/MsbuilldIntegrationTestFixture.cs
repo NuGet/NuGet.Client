@@ -341,11 +341,6 @@ namespace Dotnet.Integration.Test
                             process.Kill();
                         }
                     }
-
-                    foreach (var process in testDirProcesses)
-                    {
-                        process.Kill();
-                    }
                 }
 
                 if (testDirProcesses != null)
