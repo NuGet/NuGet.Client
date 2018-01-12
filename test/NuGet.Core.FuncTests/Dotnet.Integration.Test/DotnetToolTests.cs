@@ -470,9 +470,9 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
-        [InlineData("net461")]
-        [InlineData("netcoreapp2.0")]
+        // [PlatformTheory(Platform.Windows)]
+        // [InlineData("net461")]
+        // [InlineData("netcoreapp2.0")]
         public void DotnetToolTests_BasicDotnetToolRestoreWithNestedValues_Succeeds(string tfm)
         {
             using (var testDirectory = TestDirectory.Create())
