@@ -36,18 +36,19 @@ namespace NuGet.Packaging.Signing
                 try
                 {
                     // Read package signatures
-                    var signatures = await package.GetSignaturesAsync(token);
-                    var signaturesAreValid = signatures.Count > 0; // Fail if there are no signatures
+                    var signature = await package.GetSignatureAsync(token);
 
-                    // Verify that the signatures are trusted
-                    foreach (var signature in signatures)
+                    if (signature != null)
                     {
+                        // Verify that the signature is trusted
                         var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, _settings, token)));
-                        signaturesAreValid &= IsValid(sigTrustResults, _settings.AllowUntrusted);
+                        valid = IsValid(sigTrustResults, _settings.AllowUntrusted);
                         trustResults.AddRange(sigTrustResults);
                     }
-
-                    valid = signaturesAreValid;
+                    else
+                    {
+                        valid = false;
+                    }
                 }
                 catch (SignatureException e)
                 {

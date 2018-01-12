@@ -243,9 +243,9 @@ namespace NuGet.Protocol.Tests
                 throw new NotImplementedException();
             }
 
-            public override Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
+            public override Task<Signature> GetSignatureAsync(CancellationToken token)
             {
-                throw new NotImplementedException();
+                return Task.FromResult<Signature>(null);
             }
 
             public override Stream GetStream(string path)
@@ -255,7 +255,7 @@ namespace NuGet.Protocol.Tests
 
             public override Task<bool> IsSignedAsync(CancellationToken token)
             {
-                throw new NotImplementedException();
+                return Task.FromResult(false);
             }
 
             public override Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)

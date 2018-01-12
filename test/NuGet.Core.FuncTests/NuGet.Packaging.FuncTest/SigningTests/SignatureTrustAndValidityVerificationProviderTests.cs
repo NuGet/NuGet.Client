@@ -96,7 +96,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageReader = new PackageArchiveReader(packageFilePath))
                 {
-                    var signature = (await packageReader.GetSignaturesAsync(CancellationToken.None)).Single();
+                    var signature = (await packageReader.GetSignatureAsync(CancellationToken.None));
                     var invalidSignature = GenerateInvalidSignature(signature);
                     var provider = new SignatureTrustAndValidityVerificationProvider();
 
