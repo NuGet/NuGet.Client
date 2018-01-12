@@ -1124,9 +1124,9 @@ namespace NuGet.Protocol.Plugins
             return tempDirectoryPath;
         }
 
-        public override Task<IReadOnlyList<Signature>> GetSignaturesAsync(CancellationToken token)
+        public override Task<Signature> GetSignatureAsync(CancellationToken token)
         {
-            return Task.FromResult<IReadOnlyList<Signature>>(new List<Signature>());
+            return Task.FromResult<Signature>(null);
         }
 
         public override Task<bool> IsSignedAsync(CancellationToken token)

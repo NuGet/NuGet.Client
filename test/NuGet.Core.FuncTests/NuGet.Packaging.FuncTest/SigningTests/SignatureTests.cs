@@ -55,11 +55,9 @@ namespace NuGet.Packaging.FuncTest
                 using (var stream = File.OpenRead(signedPackagePath))
                 using (var reader = new PackageArchiveReader(stream))
                 {
-                    var signatures = await reader.GetSignaturesAsync(CancellationToken.None);
+                    var signature = await reader.GetSignatureAsync(CancellationToken.None);
 
-                    signatures.Count.Should().Be(1);
-
-                    var signature = signatures[0];
+                    signature.Should().NotBeNull();
                     signature.Timestamps.Should().NotBeEmpty();
                 }
             }
@@ -82,11 +80,9 @@ namespace NuGet.Packaging.FuncTest
                 using (var stream = File.OpenRead(signedPackagePath))
                 using (var reader = new PackageArchiveReader(stream))
                 {
-                    var signatures = await reader.GetSignaturesAsync(CancellationToken.None);
+                    var signature = await reader.GetSignatureAsync(CancellationToken.None);
 
-                    signatures.Count.Should().Be(1);
-
-                    var signature = signatures[0];
+                    signature.Should().NotBeNull();
                     signature.Timestamps.Should().BeEmpty();
                 }
             }
@@ -157,7 +153,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageReader = new PackageArchiveReader(packageFilePath))
                 {
-                    var signature = (await packageReader.GetSignaturesAsync(CancellationToken.None)).Single();
+                    var signature = (await packageReader.GetSignatureAsync(CancellationToken.None));
 
                     var certificateStore = X509StoreFactory.Create(
                         "Certificate/Collection",
