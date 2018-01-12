@@ -80,11 +80,20 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SHA1 hash: {0}.
+        ///   Looks up a localized string similar to {0} hash: {1}.
         /// </summary>
         internal static string CertUtilityCertificateHash {
             get {
                 return ResourceManager.GetString("CertUtilityCertificateHash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SHA1 hash: {0}.
+        /// </summary>
+        internal static string CertUtilityCertificateHashSha1 {
+            get {
+                return ResourceManager.GetString("CertUtilityCertificateHashSha1", resourceCulture);
             }
         }
         
@@ -157,6 +166,15 @@ namespace NuGet.Packaging {
         internal static string Error_InvalidTargetFramework {
             get {
                 return ResourceManager.GetString("Error_InvalidTargetFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No certificate matching the provided {0} fingerprints was found in the signature..
+        /// </summary>
+        internal static string Error_NoMatchingCertificate {
+            get {
+                return ResourceManager.GetString("Error_NoMatchingCertificate", resourceCulture);
             }
         }
         

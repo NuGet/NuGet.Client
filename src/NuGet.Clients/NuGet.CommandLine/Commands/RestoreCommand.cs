@@ -304,7 +304,7 @@ namespace NuGet.CommandLine
             var collectorLogger = new RestoreCollectorLogger(Console);
 
             var signedPackageVerifier = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs()),
                             SignedPackageVerifierSettings.Default);
 
             var projectContext = new ConsoleProjectContext(collectorLogger)

@@ -95,7 +95,7 @@ namespace NuGet.Protocol
             }
 
             var signedPackageVerifier = new PackageSignatureVerifier(
-                          SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                          SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs()),
                           SignedPackageVerifierSettings.Default);
 
             // The following call adds it to the global packages folder.

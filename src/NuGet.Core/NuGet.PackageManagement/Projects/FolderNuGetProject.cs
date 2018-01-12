@@ -149,7 +149,7 @@ namespace NuGet.ProjectManagement
                     if (packageExtractionContext == null)
                     {
                         var signedPackageVerifier = !downloadResourceResult.SignatureVerified ? new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs()),
                             SignedPackageVerifierSettings.Default) : null;
 
                         packageExtractionContext = new PackageExtractionContext(
@@ -411,7 +411,7 @@ namespace NuGet.ProjectManagement
             if (packageExtractionContext == null)
             {
                 var signedPackageVerifier = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs()),
                             SignedPackageVerifierSettings.Default);
 
                 packageExtractionContext = new PackageExtractionContext(

@@ -156,7 +156,7 @@ namespace NuGet.Commands
         /// Package Signature verifier
         /// </summary>
         public IPackageSignatureVerifier PackageSignatureVerifier { get; set; } = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs()),
                             SignedPackageVerifierSettings.Default);
     }
 }

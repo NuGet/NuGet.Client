@@ -41,6 +41,11 @@ namespace NuGet.Commands
         public LogLevel LogLevel { get; set; }
 
         /// <summary>
+        /// Hashing Algorithm to be used to calculate and display certificate fingerprint.
+        /// </summary>
+        public HashAlgorithmName FingerprintHashAlgorithm { get; set; }
+
+        /// <summary>
         /// If not empty, signer certificate fingerprint must match one in this list
         /// </summary>
         public IEnumerable<string> CertificateFingerprint { get; set; }

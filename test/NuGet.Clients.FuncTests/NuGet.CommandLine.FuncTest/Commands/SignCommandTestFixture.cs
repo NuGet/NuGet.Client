@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.CommandLine.Test;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
@@ -182,7 +183,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 {
                     _trustProviders = new List<ISignatureVerificationProvider>()
                     {
-                        new SignatureTrustAndValidityVerificationProvider(),
+                        new SignatureTrustAndValidityVerificationProvider(HashAlgorithmName.SHA256),
                         new IntegrityVerificationProvider()
                     };
                 }

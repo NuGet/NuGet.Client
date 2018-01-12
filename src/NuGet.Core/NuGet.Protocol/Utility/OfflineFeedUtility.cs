@@ -195,7 +195,7 @@ namespace NuGet.Protocol.Core.Types
                             : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
 
                         var signedPackageVerifier = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs()),
                             SignedPackageVerifierSettings.Default);
 
                         var packageExtractionContext = new PackageExtractionContext(

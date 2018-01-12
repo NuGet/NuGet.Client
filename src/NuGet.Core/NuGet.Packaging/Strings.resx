@@ -254,7 +254,7 @@
   <data name="SignedPackageNotSignedOnRemove" xml:space="preserve">
     <value>The package is not signed. Unable to remove signature from an unsigned package.</value>
   </data>
-  <data name="CertUtilityCertificateHash" xml:space="preserve">
+  <data name="CertUtilityCertificateHashSha1" xml:space="preserve">
     <value>SHA1 hash: {0}</value>
     <comment>0 - certificate sha1 hash</comment>
   </data>
@@ -505,5 +505,14 @@ Valid from:</comment>
   </data>
   <data name="InvalidArgument" xml:space="preserve">
     <value>The argument is invalid.</value>
+  </data>
+  <data name="Error_NoMatchingCertificate" xml:space="preserve">
+    <value>No certificate matching the provided {0} fingerprints was found in the signature.</value>
+    <comment>0 - Hash algorithm name used for fingerprint</comment>
+  </data>
+  <data name="CertUtilityCertificateHash" xml:space="preserve">
+    <value>{0} hash: {1}</value>
+    <comment>0 - Hash algorithm name
+1 - certificate hash in given hash algorithm</comment>
   </data>
 </root>

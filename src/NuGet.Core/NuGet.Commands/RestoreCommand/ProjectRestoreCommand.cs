@@ -256,7 +256,7 @@ namespace NuGet.Commands
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
 
             var signedPackageVerifier = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs()),
                             SignedPackageVerifierSettings.Default);
 
             // Check if the package has already been installed.

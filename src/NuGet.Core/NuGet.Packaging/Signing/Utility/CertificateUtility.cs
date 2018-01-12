@@ -22,17 +22,33 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="cert">X509Certificate2 to be converted to string.</param>
         /// <returns>string representation of the X509Certificate2.</returns>
-        public static string X509Certificate2ToString(X509Certificate2 cert)
+        public static string X509Certificate2ToString(X509Certificate2 cert, HashAlgorithmName fingerprintAlgorithm)
         {
             var certStringBuilder = new StringBuilder();
-            X509Certificate2ToString(cert, certStringBuilder, indentation: "");
+            X509Certificate2ToString(cert, certStringBuilder, fingerprintAlgorithm, indentation: "");
             return certStringBuilder.ToString();
         }
 
-        private static void X509Certificate2ToString(X509Certificate2 cert, StringBuilder certStringBuilder, string indentation)
+        public static string GetCertificateFingerprint(HashAlgorithmName fingerprintAlgorithm, X509Certificate2 certificate)
         {
+            var hash = string.Empty;
+
+            using (var hashAlgorithm = fingerprintAlgorithm.GetHashProvider())
+            {
+                var hashBytes = hashAlgorithm.ComputeHash(certificate.RawData);
+                hash = Convert.ToBase64String(hashBytes);
+            }
+
+            return hash;
+        }
+
+        private static void X509Certificate2ToString(X509Certificate2 cert, StringBuilder certStringBuilder, HashAlgorithmName fingerprintAlgorithm, string indentation)
+        {
+            var certificateFingerprint = GetCertificateFingerprint(fingerprintAlgorithm, cert);
+
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateSubjectName, cert.Subject)}");
-            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, cert.Thumbprint)}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHashSha1, cert.Thumbprint)}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(), certificateFingerprint)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter)}");
         }
@@ -53,7 +69,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="certCollection">X509Certificate2Collection to be converted to string.</param>
         /// <returns>string representation of the X509Certificate2Collection.</returns>
-        public static string X509Certificate2CollectionToString(X509Certificate2Collection certCollection)
+        public static string X509Certificate2CollectionToString(X509Certificate2Collection certCollection, HashAlgorithmName fingerprintAlgorithm)
         {
             var collectionStringBuilder = new StringBuilder();
 
@@ -62,7 +78,7 @@ namespace NuGet.Packaging.Signing
             for (var i = 0; i < Math.Min(_limit, certCollection.Count); i++)
             {
                 var cert = certCollection[i];
-                X509Certificate2ToString(cert, collectionStringBuilder, indentation: "");
+                X509Certificate2ToString(cert, collectionStringBuilder,  fingerprintAlgorithm, indentation: "");
                 collectionStringBuilder.AppendLine();
             }
 
@@ -75,7 +91,7 @@ namespace NuGet.Packaging.Signing
         }
 
 
-        public static string X509ChainToString(X509Chain chain)
+        public static string X509ChainToString(X509Chain chain, HashAlgorithmName fingerprintAlgorithm)
         {
             var collectionStringBuilder = new StringBuilder();
             var indentationLevel = "    ";
@@ -85,7 +101,7 @@ namespace NuGet.Packaging.Signing
             // Start in 1 to omit main certificate (only build the chain)
             for (var i = 1; i < Math.Min(_limit, chainElementsCount); i++)
             {
-                X509Certificate2ToString(chain.ChainElements[i].Certificate, collectionStringBuilder, indentation);
+                X509Certificate2ToString(chain.ChainElements[i].Certificate, collectionStringBuilder, fingerprintAlgorithm, indentation);
                 collectionStringBuilder.AppendLine();
                 indentation += indentationLevel;
             }

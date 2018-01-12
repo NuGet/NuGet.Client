@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.CommandLine
 {
@@ -39,6 +41,32 @@ namespace NuGet.CommandLine
             return fileName != null &&
                 fileName.StartsWith("packages.", StringComparison.OrdinalIgnoreCase) &&
                 fileName.EndsWith(".config", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static HashAlgorithmName ValidateAndParseHashAlgorithm(string value, string name, SigningSpecifications spec)
+        {
+            var hashAlgorithm = HashAlgorithmName.SHA256;
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                if (!spec.AllowedHashAlgorithms.Contains(value, StringComparer.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                        NuGetCommand.CommandInvalidArgumentException,
+                        name));
+                }
+
+                hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(value);
+            }
+
+            if (hashAlgorithm == HashAlgorithmName.Unknown)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                        NuGetCommand.CommandInvalidArgumentException,
+                        name));
+            }
+
+            return hashAlgorithm;
         }
     }
 }

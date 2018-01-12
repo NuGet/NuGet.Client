@@ -152,7 +152,7 @@ namespace Test.Utility.Signing
 
         public static async Task<VerifySignaturesResult> VerifySignatureAsync(SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)
         {
-            var verificationProviders = new[] { new SignatureTrustAndValidityVerificationProvider() };
+            var verificationProviders = new[] { new SignatureTrustAndValidityVerificationProvider(HashAlgorithmName.SHA256) };
             var verifier = new PackageSignatureVerifier(verificationProviders, settings);
             var result = await verifier.VerifySignaturesAsync(signPackage, CancellationToken.None);
             return result;

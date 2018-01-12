@@ -85,8 +85,8 @@ namespace NuGet.CommandLine
             var signingSpec = SigningSpecifications.V1;
             var storeLocation = ValidateAndParseStoreLocation();
             var storeName = ValidateAndParseStoreName();
-            var hashAlgorithm = ValidateAndParseHashAlgorithm(HashAlgorithm, nameof(HashAlgorithm), signingSpec);
-            var timestampHashAlgorithm = ValidateAndParseHashAlgorithm(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm), signingSpec);
+            var hashAlgorithm = CommandLineUtility.ValidateAndParseHashAlgorithm(HashAlgorithm, nameof(HashAlgorithm), signingSpec);
+            var timestampHashAlgorithm = CommandLineUtility.ValidateAndParseHashAlgorithm(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm), signingSpec);
 
             return new SignArgs()
             {
@@ -108,32 +108,6 @@ namespace NuGet.CommandLine
             };
         }
 
-        private HashAlgorithmName ValidateAndParseHashAlgorithm(string value, string name, SigningSpecifications spec)
-        {
-            var hashAlgorithm = HashAlgorithmName.SHA256;
-
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (!spec.AllowedHashAlgorithms.Contains(value, StringComparer.OrdinalIgnoreCase))
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
-                        NuGetCommand.SignCommandInvalidArgumentException,
-                        name));
-                }
-
-                hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(value);
-            }
-
-            if (hashAlgorithm == HashAlgorithmName.Unknown)
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
-                        NuGetCommand.SignCommandInvalidArgumentException,
-                        name));
-            }
-
-            return hashAlgorithm;
-        }
-
         private StoreName ValidateAndParseStoreName()
         {
             var storeName = StoreName.My;
@@ -142,7 +116,7 @@ namespace NuGet.CommandLine
                 !Enum.TryParse(CertificateStoreName, ignoreCase: true, result: out storeName))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
-                    NuGetCommand.SignCommandInvalidArgumentException,
+                    NuGetCommand.CommandInvalidArgumentException,
                     nameof(CertificateStoreName)));
             }
 
@@ -157,7 +131,7 @@ namespace NuGet.CommandLine
                 !Enum.TryParse(CertificateStoreLocation, ignoreCase: true, result: out storeLocation))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
-                    NuGetCommand.SignCommandInvalidArgumentException,
+                    NuGetCommand.CommandInvalidArgumentException,
                     nameof(CertificateStoreLocation)));
             }
 
