@@ -3853,11 +3853,8 @@ namespace Proj2
         }
     }
 }");
-                var msbuildPath = Util.GetMsbuildPathOnWindows();
-                if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
-                {
-                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
-                }
+
+                var msbuildPath = Util.GetMsbuildPath();
 
                 // Act
                 var r = CommandRunner.Run(
@@ -3982,11 +3979,9 @@ namespace Proj2
         }
     }
 }");
-                var msbuildPath = Util.GetMsbuildPathOnWindows();
-                if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
-                {
-                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
-                }
+
+                var msbuildPath = Util.GetMsbuildPath();
+
 
                 // Act
                 var r = CommandRunner.Run(

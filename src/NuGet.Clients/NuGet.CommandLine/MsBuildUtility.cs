@@ -598,21 +598,26 @@ namespace NuGet.CommandLine
             {
                 return null;
             }
-
+            //Use mscorlib to find mono and msbuild directory
+            var systemLibLocation = Path.GetDirectoryName(typeof(System.Object).Assembly.Location);
+            var msbuildBasePathOnMono = Path.GetFullPath(Path.Combine(systemLibLocation,"..","msbuild"));
+            //Combine msbuild version paths
+            var msBuildPathOnMono14 = Path.Combine(msbuildBasePathOnMono, "14.1", "bin");
+            var msBuildPathOnMono15 = Path.Combine(msbuildBasePathOnMono, "15.0", "bin");
             if (string.IsNullOrEmpty(userVersion))
             {
                 return new[] {
-                        new MsBuildToolset(version: "15.0", path: CommandLineConstants.MsBuildPathOnMac15),
-                        new MsBuildToolset(version: "14.1", path: CommandLineConstants.MsBuildPathOnMac14)}
+                        new MsBuildToolset(version: "15.0", path: msBuildPathOnMono15),
+                        new MsBuildToolset(version: "14.1", path: msBuildPathOnMono14)}
                     .FirstOrDefault(t => Directory.Exists(t.Path));
             }
             else
             {
                 switch (userVersion)
                 {
-                    case "14.1": return new MsBuildToolset(version: "14.1", path: CommandLineConstants.MsBuildPathOnMac14);
+                    case "14.1": return new MsBuildToolset(version: "14.1", path: msBuildPathOnMono14);
                     case "15":
-                    case "15.0": return new MsBuildToolset(version: userVersion, path: CommandLineConstants.MsBuildPathOnMac15);
+                    case "15.0": return new MsBuildToolset(version: userVersion, path: msBuildPathOnMono15);
                 }
             }
 
@@ -928,13 +933,15 @@ namespace NuGet.CommandLine
             if (RuntimeEnvironmentHelper.IsMono)
             {
                 // Try to find msbuild or xbuild in $Path.
+
                 var pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
 
                 if (pathDirs?.Length > 0)
                 {
-                    foreach (var exeName in new[] { "msbuild", "xbuild" })
+                    foreach (var exeName in new[] {"msbuild", "xbuild"})
                     {
-                        var exePath = pathDirs.Select(dir => Path.Combine(dir, exeName)).FirstOrDefault(File.Exists);
+                        var exePath = pathDirs.Select(dir => Path.Combine(dir, exeName))
+                            .FirstOrDefault(File.Exists);
                         if (exePath != null)
                         {
                             return exePath;
@@ -942,18 +949,7 @@ namespace NuGet.CommandLine
                     }
                 }
 
-                // Try to find msbuild.exe from hard code path.
-                var path = new[] { CommandLineConstants.MsBuildPathOnMac15, CommandLineConstants.MsBuildPathOnMac14 }.
-                    Select(p => Path.Combine(p, "msbuild.exe")).FirstOrDefault(File.Exists);
-
-                if (path != null)
-                {
-                    return path;
-                }
-                else
-                {
-                    return Path.Combine(msbuildDirectory, "xbuild.exe");
-                }
+                return Path.Combine(msbuildDirectory, "xbuild.exe");
             }
             else
             {

@@ -70,11 +70,7 @@ namespace NuGet.CommandLine
                 File.WriteAllText(projectPath, projectXml);
 
                 // Act
-                var msbuildPath = Util.GetMsbuildPathOnWindows();
-                if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
-                {
-                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
-                }
+                var msbuildPath = Util.GetMsbuildPath();
                 var factory = new ProjectFactory(msbuildPath, projectPath, null) { Build = false };
                 var packageBuilder = factory.CreateBuilder(basePath, null, "", true);
                 var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
@@ -144,11 +140,8 @@ namespace NuGet.CommandLine
                 var projectPath = Path.Combine(workingDirectory, "test.csproj");
                 File.WriteAllText(projectPath, projectXml);
 
-                var msbuildPath = Util.GetMsbuildPathOnWindows();
-                if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
-                {
-                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
-                }
+                var msbuildPath = Util.GetMsbuildPath();
+
                 var factory = new ProjectFactory(msbuildPath, projectPath, cmdLineProperties) { Build = false };
                 // Cmdline properties are added to the factory, see PackCommand.cs(351)
                 factory.ProjectProperties["owner"] = "overriden";
@@ -218,11 +211,8 @@ namespace NuGet.CommandLine
                 var projectPath = Path.Combine(workingDirectory, "test.csproj");
                 File.WriteAllText(projectPath, projectXml);
 
-                var msbuildPath = Util.GetMsbuildPathOnWindows();
-                if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
-                {
-                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
-                }
+                var msbuildPath = Util.GetMsbuildPath();
+
                 var factory = new ProjectFactory(msbuildPath, projectPath, cmdLineProperties) { Build = false };
                 // Cmdline properties are added to the factory, see PackCommand.cs
                 factory.ProjectProperties.AddRange(cmdLineProperties);
@@ -292,11 +282,8 @@ namespace NuGet.CommandLine
                 var projectPath = Path.Combine(workingDirectory, "test.csproj");
                 File.WriteAllText(projectPath, projectXml);
 
-                var msbuildPath = Util.GetMsbuildPathOnWindows();
-                if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
-                {
-                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
-                }
+                var msbuildPath = Util.GetMsbuildPath();
+
                 var factory = new ProjectFactory(msbuildPath, projectPath, cmdLineProperties) { Build = false };
                 // Cmdline properties are added to the factory, see PackCommand.cs
                 factory.ProjectProperties.AddRange(cmdLineProperties);
@@ -368,7 +355,7 @@ namespace NuGet.CommandLine
                 File.WriteAllText(projectPath, projectXml);
 
                 // Act
-                var msbuildPath = Util.GetMsbuildPathOnWindows();
+                var msbuildPath = Util.GetMsbuildPath();
                 var factory = new ProjectFactory(msbuildPath, projectPath, null) { Build = false };
                 var packageBuilder = factory.CreateBuilder(basePath, cmdLineVersion, "", true);
                 var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
