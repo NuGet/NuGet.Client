@@ -599,7 +599,7 @@ namespace NuGet.CommandLine
                 return null;
             }
             //Use mscorlib to find mono and msbuild directory
-            var systemLibLocation = Path.GetDirectoryName(typeof(System.Object).Assembly.Location);
+            var systemLibLocation = Path.GetDirectoryName(typeof(object).Assembly.Location);
             var msbuildBasePathOnMono = Path.GetFullPath(Path.Combine(systemLibLocation,"..","msbuild"));
             //Combine msbuild version paths
             var msBuildPathOnMono14 = Path.Combine(msbuildBasePathOnMono, "14.1", "bin");
@@ -947,9 +947,8 @@ namespace NuGet.CommandLine
                     }
                 }
 
-                // Try to find msbuild.exe from hard code path.
-                var path = new[] { CommandLineConstants.MsBuildPathOnMac15, CommandLineConstants.MsBuildPathOnMac14 }.
-                    Select(p => Path.Combine(p, "msbuild.exe")).FirstOrDefault(File.Exists);
+                // Find the first mono path that exists
+                var path = GetMsBuildFromMonoPaths(userVersion: null)?.Path;
 
                 if (path != null)
                 {
