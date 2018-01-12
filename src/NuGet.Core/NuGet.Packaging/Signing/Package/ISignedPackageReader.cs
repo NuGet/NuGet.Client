@@ -14,9 +14,9 @@ namespace NuGet.Packaging.Signing
     public interface ISignedPackageReader : IDisposable
     {
         /// <summary>
-        /// Get all signatures used to sign a package.
+        /// Get package signature.
         /// </summary>
-        /// <remarks>Returns an empty list if the package is unsigned.</remarks>
+        /// <remarks>Returns a null if the package is unsigned.</remarks>
         Task<Signature> GetSignatureAsync(CancellationToken token);
 
         /// <summary>
