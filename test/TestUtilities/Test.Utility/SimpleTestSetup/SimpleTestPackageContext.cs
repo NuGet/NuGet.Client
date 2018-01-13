@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml.Linq;
 using NuGet.Packaging.Core;
@@ -34,7 +35,6 @@ namespace NuGet.Test.Utility
 
         public SimpleTestPackageContext()
         {
-            Signatures = new List<Signature>();
         }
 
         public string Id { get; set; } = "packageA";
@@ -53,10 +53,7 @@ namespace NuGet.Test.Utility
 
         public bool UseDefaultRuntimeAssemblies { get; set; } = true;
 
-        /// <summary>
-        /// Package signatures.
-        /// </summary>
-        public List<Signature> Signatures { get; set; }
+        public X509Certificate2 CertificateToSign { get; set; }
 
         /// <summary>
         /// runtime.json
@@ -68,15 +65,6 @@ namespace NuGet.Test.Utility
         public PackageIdentity Identity => new PackageIdentity(Id, NuGetVersion.Parse(Version));
 
         public string PackageName => IsSymbolPackage ? $"{Id}.{Version}.symbols.nupkg" : $"{Id}.{Version}.nupkg";
-
-        /// <summary>
-        /// Add a signature to the zip.
-        /// </summary>
-        /// <param name="signature"></param>
-        public void AddSignature(Signature signature)
-        {
-            Signatures.Add(signature);
-        }
 
         /// <summary>
         /// Add a file to the zip. Ex: lib/net45/a.dll

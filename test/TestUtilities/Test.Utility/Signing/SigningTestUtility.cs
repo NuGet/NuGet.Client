@@ -96,7 +96,7 @@ namespace Test.Utility.Signing
         /// Modification generator that can be passed to TestCertificate.Generate().
         /// The generator will create a certificate that is valid but will expire in a 15 seconds
         /// </summary>
-        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorExpireIn15Seconds = delegate (X509V3CertificateGenerator gen)
+        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorExpireIn5Seconds = delegate (X509V3CertificateGenerator gen)
         {
             // CodeSigning EKU
             var usages = new[] { KeyPurposeID.IdKPCodeSigning };
@@ -108,7 +108,7 @@ namespace Test.Utility.Signing
 
 
             var notBefore = DateTime.UtcNow.Subtract(TimeSpan.FromHours(1));
-            var notAfter = DateTime.UtcNow.Add(TimeSpan.FromSeconds(15));
+            var notAfter = DateTime.UtcNow.Add(TimeSpan.FromSeconds(5));
 
             gen.SetNotBefore(notBefore);
             gen.SetNotAfter(notAfter);
@@ -409,9 +409,9 @@ namespace Test.Utility.Signing
             return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
         }
 
-        public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatExpiresIn15Seconds()
+        public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatExpiresIn5Seconds()
         {
-            var actionGenerator = CertificateModificationGeneratorExpireIn15Seconds;
+            var actionGenerator = CertificateModificationGeneratorExpireIn5Seconds;
 
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog

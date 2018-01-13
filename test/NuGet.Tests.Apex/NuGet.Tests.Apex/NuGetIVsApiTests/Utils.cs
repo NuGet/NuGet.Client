@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using Test.Utility.Signing;
 
 namespace NuGet.Tests.Apex
 {
@@ -12,6 +14,19 @@ namespace NuGet.Tests.Apex
         {
             var package = CreatePackage(packageName, packageVersion);
             SimpleTestPackageUtility.CreatePackages(packageSource, package);
+        }
+
+        public static void CreateSignedPackageInSource(string packageSource, string packageName, string packageVersion, X509Certificate2 testCertificate)
+        {
+            var package = CreateSignedPackage(packageName, packageVersion, testCertificate);
+            SimpleTestPackageUtility.CreatePackages(packageSource, package);
+        }
+
+        public static SimpleTestPackageContext CreateSignedPackage(string packageName, string packageVersion, X509Certificate2 testCertificate) {
+            var package = CreatePackage(packageName, packageVersion);
+            package.CertificateToSign = testCertificate;
+
+            return package;
         }
 
         public static SimpleTestPackageContext CreatePackage(string packageName, string packageVersion)

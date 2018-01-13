@@ -27,6 +27,7 @@
     <Compile Include="Apex\NuGetApexVerifier.cs" />
     <Compile Include="Fixtures\ApexTestRequirementsFixture.cs" />
     <Compile Include="Fixtures\IVisualStudioHostFixtureFactory.cs" />
+    <Compile Include="Fixtures\SignedPackagesTestsApexFixture.cs" />
     <Compile Include="Fixtures\VisualStudioHostFixture.cs" />
     <Compile Include="Fixtures\VisualStudioHostFixtureFactory.cs" />
     <Compile Include="Fixtures\VisualStudioOperationsFixture.cs" />

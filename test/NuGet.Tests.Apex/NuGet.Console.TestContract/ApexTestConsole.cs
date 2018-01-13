@@ -57,6 +57,23 @@ namespace NuGet.Console.TestContract
             return false;
         }
 
+        public bool ConsoleContainsMessage(string message)
+        {
+            var snapshot = (_wpfConsole.Content as IWpfTextViewHost).TextView.TextBuffer.CurrentSnapshot;
+            for (var i = 0; i < snapshot.LineCount; i++)
+            {
+                var snapshotLine = snapshot.GetLineFromLineNumber(i);
+                var lineText = snapshotLine.GetText();
+
+                var foundMessage = lineText.Contains(message);
+                if (foundMessage)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public void Clear()
         {
             _wpfConsole.Clear();

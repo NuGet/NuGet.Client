@@ -14,14 +14,14 @@ using Xunit;
 
 namespace NuGet.Tests.Apex
 {
-    public class NuGetPackageSigningTestCase : SharedVisualStudioHostTestClass, IClassFixture<VisualStudioHostFixtureFactory>
+    public class NuGetPackageSigningTestCase : SharedVisualStudioHostTestClass, IClassFixture<SignedPackagesTestsApexFixture>
     {
-        private TrustedTestCert<TestCertificate> _trustedTestCert;
+        private SignedPackagesTestsApexFixture _fixture;
 
-        public NuGetPackageSigningTestCase(VisualStudioHostFixtureFactory visualStudioHostFixtureFactory)
-            : base(visualStudioHostFixtureFactory)
+        public NuGetPackageSigningTestCase(SignedPackagesTestsApexFixture apexSigningFixture)
+            : base(apexSigningFixture)
         {
-            _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
+            _fixture = apexSigningFixture;
         }
 
         [CIOnlyNuGetWpfTheory]
@@ -30,11 +30,9 @@ namespace NuGet.Tests.Apex
         [InlineData(ProjectTemplate.NetStandardClassLib)]
         public void InstallSignedPackageFromPMC(ProjectTemplate projectTemplate)
         {
-            var packageName = "TestPackage";
-            var packageVersion = "1.0.0";
+            var signedPackage = _fixture.SignedTestPackage;
 
             using (var pathContext = new SimpleTestPathContext())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 // Arrange
                 EnsureVisualStudioHost();
@@ -44,19 +42,15 @@ namespace NuGet.Tests.Apex
                 var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
                 project.Build();
 
-                Task.Run(async () =>
-                {
-                    var packageToSign = Utils.CreatePackage(packageName, packageVersion);
-                    await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, packageToSign, pathContext.PackageSource, packageToSign.PackageName);
-                }).GetAwaiter().GetResult();
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, signedPackage);
 
                 var nugetTestService = GetNuGetTestService();
                 Assert.True(nugetTestService.EnsurePackageManagerConsoleIsOpen());
 
                 var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
 
-                Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion));
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion));
+                Assert.True(nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, signedPackage.Id, signedPackage.Version));
                 project.Build();
                 Assert.True(VisualStudio.HasNoErrorsInErrorList());
                 Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
@@ -72,11 +66,9 @@ namespace NuGet.Tests.Apex
         [InlineData(ProjectTemplate.NetStandardClassLib)]
         public void UninstallSignedPackageFromPMC(ProjectTemplate projectTemplate)
         {
-            var packageName = "TestPackage";
-            var packageVersion = "1.0.0";
+            var signedPackage = _fixture.SignedTestPackage;
 
             using (var pathContext = new SimpleTestPathContext())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 // Arrange
                 EnsureVisualStudioHost();
@@ -86,23 +78,19 @@ namespace NuGet.Tests.Apex
                 var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
                 project.Build();
 
-                Task.Run(async () =>
-                {
-                    var packageToSign = Utils.CreatePackage(packageName, packageVersion);
-                    await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, packageToSign, pathContext.PackageSource, packageToSign.PackageName);
-                }).GetAwaiter().GetResult();
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, signedPackage);
 
                 var nugetTestService = GetNuGetTestService();
                 Assert.True(nugetTestService.EnsurePackageManagerConsoleIsOpen());
 
                 var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
 
-                Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion));
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion));
+                Assert.True(nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, signedPackage.Id, signedPackage.Version));
                 project.Build();
 
-                Assert.True(nugetConsole.UninstallPackageFromPMC(packageName));
-                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion));
+                Assert.True(nugetConsole.UninstallPackageFromPMC(signedPackage.Id));
+                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, signedPackage.Id, signedPackage.Version));
 
                 solutionService.Save();
                 project.Build();
@@ -119,12 +107,10 @@ namespace NuGet.Tests.Apex
         [InlineData(ProjectTemplate.NetStandardClassLib)]
         public void UpdateUnsignedPackageToSignedVersionFromPMC(ProjectTemplate projectTemplate)
         {
-            var packageName = "TestPackage";
-            var packageVersion1 = "1.0.0";
-            var packageVersion2 = "2.0.0";
+            var packageVersion09 = "0.9.0";
+            var signedPackage = _fixture.SignedTestPackage;
 
             using (var pathContext = new SimpleTestPathContext())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 // Arrange
                 EnsureVisualStudioHost();
@@ -134,136 +120,25 @@ namespace NuGet.Tests.Apex
                 var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
                 project.Build();
 
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion1);
-
-                Task.Run(async () =>
-                {
-                    var packageToSign = Utils.CreatePackage(packageName, packageVersion2);
-                    await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, packageToSign, pathContext.PackageSource, packageToSign.PackageName);
-                }).GetAwaiter().GetResult();
+                Utils.CreatePackageInSource(pathContext.PackageSource, signedPackage.Id, packageVersion09);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, signedPackage);
 
                 var nugetTestService = GetNuGetTestService();
                 Assert.True(nugetTestService.EnsurePackageManagerConsoleIsOpen());
 
                 var nugetConsole = nugetTestService.GetPackageManagerConsole(project.UniqueName);
 
-                Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion1));
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion1));
+                Assert.True(nugetConsole.InstallPackageFromPMC(signedPackage.Id, packageVersion09));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, signedPackage.Id, packageVersion09));
                 project.Build();
 
-                Assert.True(nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2));
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion2));
-                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion1));
+                Assert.True(nugetConsole.UpdatePackageFromPMC(signedPackage.Id, signedPackage.Version));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, signedPackage.Id, signedPackage.Version));
+                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, signedPackage.Id, packageVersion09));
                 project.Build();
 
                 Assert.True(VisualStudio.HasNoErrorsInErrorList());
                 Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
-
-                nugetConsole.Clear();
-                solutionService.Save();
-            }
-        }
-
-        [CIOnlyNuGetWpfTheory]
-        [InlineData(ProjectTemplate.ClassLibrary)]
-        [InlineData(ProjectTemplate.NetCoreConsoleApp)]
-        [InlineData(ProjectTemplate.NetStandardClassLib)]
-        public void InstallSignedAndUnsignedPackagesFromPMC(ProjectTemplate projectTemplate)
-        {
-            var packageName2 = "TestPackage2";
-            var packageVersion2 = "1.2.3";
-
-            var packageName1 = "TestPackage1";
-            var packageVersion1 = "1.0.0";
-
-            using (var pathContext = new SimpleTestPathContext())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-
-                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
-                project.Build();
-
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName1, packageVersion1);
-
-                Task.Run(async () =>
-                {
-                    var packageToSign = Utils.CreatePackage(packageName2, packageVersion2);
-                    await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, packageToSign, pathContext.PackageSource, packageToSign.PackageName);
-                }).GetAwaiter().GetResult();
-
-                var nugetTestService = GetNuGetTestService();
-                Assert.True(nugetTestService.EnsurePackageManagerConsoleIsOpen());
-
-                var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
-
-                Assert.True(nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1));
-                Assert.True(nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2));
-                project.Build();
-                Assert.True(VisualStudio.HasNoErrorsInErrorList());
-                Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName1, packageVersion1));
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName2, packageVersion2));
-
-                nugetConsole.Clear();
-                solutionService.Save();
-            }
-        }
-
-        [CIOnlyNuGetWpfTheory]
-        [InlineData(ProjectTemplate.ClassLibrary)]
-        [InlineData(ProjectTemplate.NetCoreConsoleApp)]
-        [InlineData(ProjectTemplate.NetStandardClassLib)]
-        public void UninstallSignedAndUnsignedPackagesFromPMC(ProjectTemplate projectTemplate)
-        {
-            var packageName2 = "TestPackage2";
-            var packageVersion2 = "1.2.3";
-
-            var packageName1 = "TestPackage1";
-            var packageVersion1 = "1.0.0";
-
-            using (var pathContext = new SimpleTestPathContext())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-
-                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
-                project.Build();
-
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName1, packageVersion1);
-
-                Task.Run(async () =>
-                {
-                    var packageToSign = Utils.CreatePackage(packageName2, packageVersion2);
-                    await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, packageToSign, pathContext.PackageSource, packageToSign.PackageName);
-                }).GetAwaiter().GetResult();
-
-                var nugetTestService = GetNuGetTestService();
-                Assert.True(nugetTestService.EnsurePackageManagerConsoleIsOpen());
-
-                var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
-
-                Assert.True(nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1));
-                Assert.True(nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2));
-                project.Build();
-                Assert.True(VisualStudio.HasNoErrorsInErrorList());
-                Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName1, packageVersion1));
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName2, packageVersion2));
-
-                Assert.True(nugetConsole.UninstallPackageFromPMC(packageName1));
-                Assert.True(nugetConsole.UninstallPackageFromPMC(packageName2));
-                project.Build();
-                solutionService.SaveAll();
-
-                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName1, packageVersion1));
-                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName2, packageVersion2));
 
                 nugetConsole.Clear();
                 solutionService.Save();
@@ -276,12 +151,10 @@ namespace NuGet.Tests.Apex
         [InlineData(ProjectTemplate.NetStandardClassLib)]
         public void DowngradeSignedPackageToUnsignedVersionFromPMC(ProjectTemplate projectTemplate)
         {
-            var packageName = "TestPackage";
-            var packageVersion1 = "1.0.0";
-            var packageVersion2 = "2.0.0";
+            var packageVersion09 = "0.9.0";
+            var signedPackage = _fixture.SignedTestPackage;
 
             using (var pathContext = new SimpleTestPathContext())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 // Arrange
                 EnsureVisualStudioHost();
@@ -291,28 +164,23 @@ namespace NuGet.Tests.Apex
                 var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
                 project.Build();
 
-                Task.Run(async () =>
-                {
-                    var packageToSign = Utils.CreatePackage(packageName, packageVersion1);
-                    await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, packageToSign, pathContext.PackageSource, packageToSign.PackageName);
-                }).GetAwaiter().GetResult();
-
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion2);
+                Utils.CreatePackageInSource(pathContext.PackageSource, signedPackage.Id, packageVersion09);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, signedPackage);
 
                 var nugetTestService = GetNuGetTestService();
                 Assert.True(nugetTestService.EnsurePackageManagerConsoleIsOpen());
 
                 var nugetConsole = nugetTestService.GetPackageManagerConsole(project.UniqueName);
 
-                Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion2));
+                Assert.True(nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version));
                 project.Build();
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion2));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, signedPackage.Id, signedPackage.Version));
 
-                Assert.True(nugetConsole.UpdatePackageFromPMC(packageName, packageVersion1));
+                Assert.True(nugetConsole.UpdatePackageFromPMC(signedPackage.Id, packageVersion09));
                 project.Build();
 
-                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion2));
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion1));
+                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, signedPackage.Id, signedPackage.Version));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, signedPackage.Id, packageVersion09));
 
                 nugetConsole.Clear();
                 solutionService.Save();
@@ -325,8 +193,8 @@ namespace NuGet.Tests.Apex
         [InlineData(ProjectTemplate.NetStandardClassLib)]
         public void InstallSignedPackageWithExpiredCertificateFromPMC(ProjectTemplate projectTemplate)
         {
-            var packageName = "TestPackage";
-            var packageVersion = "1.0.0";
+            var signedPackagePath = _fixture.ExpiredCertSignedTestPackagePath;
+            var signedPackage = _fixture.ExpiredCertSignedTestPackage;
 
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -338,26 +206,15 @@ namespace NuGet.Tests.Apex
                 var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
                 project.Build();
 
-                Task.Run(async () =>
-                {
-                    var packageToSign = Utils.CreatePackage(packageName, packageVersion);
-                    var certWillExpire = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn15Seconds();
-                    using (var testCertificate = new X509Certificate2(certWillExpire.Source.Cert))
-                    {
-                        await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, packageToSign, pathContext.PackageSource, packageToSign.PackageName);
-                    }
-
-                    // Wait for cert to expire
-                    Thread.Sleep(15000);
-                }).GetAwaiter().GetResult();
-
                 var nugetTestService = GetNuGetTestService();
                 Assert.True(nugetTestService.EnsurePackageManagerConsoleIsOpen());
 
+                File.Copy(signedPackagePath, Path.Combine(pathContext.PackageSource, signedPackage.PackageName));
+
                 var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
 
-                Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion));
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion));
+                Assert.True(nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, signedPackage.Id, signedPackage.Version));
                 project.Build();
                 Assert.True(VisualStudio.HasNoErrorsInErrorList());
                 Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
@@ -373,11 +230,9 @@ namespace NuGet.Tests.Apex
         [InlineData(ProjectTemplate.NetStandardClassLib)]
         public void InstallSignedTamperedPackageFromPMCAndFail(ProjectTemplate projectTemplate)
         {
-            var packageName = "TestPackage";
-            var packageVersion = "1.0.0";
+            var signedPackage = _fixture.SignedTestPackage;
 
             using (var pathContext = new SimpleTestPathContext())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 // Arrange
                 EnsureVisualStudioHost();
@@ -387,22 +242,19 @@ namespace NuGet.Tests.Apex
                 var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
                 project.Build();
 
-                Task.Run(async () =>
-                {
-                    var packageToSign = Utils.CreatePackage(packageName, packageVersion);
-                    var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, packageToSign, pathContext.PackageSource, packageToSign.PackageName);
-                    SignedArchiveTestUtility.TamperWithPackage(signedPackagePath);
-                }).GetAwaiter().GetResult();
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, signedPackage);
+                SignedArchiveTestUtility.TamperWithPackage(Path.Combine(pathContext.PackageSource, signedPackage.PackageName));
 
                 var nugetTestService = GetNuGetTestService();
                 Assert.True(nugetTestService.EnsurePackageManagerConsoleIsOpen());
 
                 var nugetConsole = nugetTestService.GetPackageManagerConsole(project.UniqueName);
 
-                Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion));
+                Assert.True(nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version));
+                Assert.True(nugetConsole.IsMessageFoundInPMC("package integrity check failed"));
                 project.Build();
 
-                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion));
+                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, signedPackage.Id, signedPackage.Version));
 
                 nugetConsole.Clear();
                 solutionService.Save();
