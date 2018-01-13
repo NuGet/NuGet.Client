@@ -48,17 +48,15 @@ namespace NuGet.Packaging.Signing
             return data;
         }
 
-        internal static byte[] GetSignatureValueHash(HashAlgorithmName hashAlgorithm, NativeCms nativeCms)
+        internal static byte[] GetSignatureValueHash(HashAlgorithmName hashAlgorithmName, NativeCms nativeCms)
         {
             var signatureValue = nativeCms.GetEncryptedDigest();
 
-            var signatureValueStream = new MemoryStream(signatureValue);
-
-            var signatureValueHashByteArray = hashAlgorithm
-                .GetHashProvider()
-                .ComputeHash(signatureValueStream, leaveStreamOpen: false);
-
-            return signatureValueHashByteArray;
+            using (var signatureValueStream = new MemoryStream(signatureValue))
+            using (var hashAlgorithm = hashAlgorithmName.GetHashProvider())
+            {
+                return hashAlgorithm.ComputeHash(signatureValueStream, leaveStreamOpen: false);
+            }
         }
 
         internal static NativeCms Decode(byte[] input, bool detached)
