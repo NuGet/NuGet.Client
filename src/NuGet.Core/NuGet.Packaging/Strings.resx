@@ -483,4 +483,7 @@ Valid from:</comment>
   <data name="SignatureNotTimeValid" xml:space="preserve">
     <value>The primary signature validity period has expired.</value>
   </data>
+  <data name="SigningCertificateV1OrV2AttributeMustBePresent" xml:space="preserve">
+    <value>Either the signing-certificate or signing-certificate-v2 attribute must be present.</value>
+  </data>
 </root>

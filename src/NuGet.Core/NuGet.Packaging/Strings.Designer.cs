@@ -800,6 +800,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Either the signing-certificate or signing-certificate-v2 attribute must be present..
+        /// </summary>
+        internal static string SigningCertificateV1OrV2AttributeMustBePresent {
+            get {
+                return ResourceManager.GetString("SigningCertificateV1OrV2AttributeMustBePresent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The signing-certificate-v2 attribute must be present..
         /// </summary>
         internal static string SigningCertificateV2AttributeMustBePresent {
