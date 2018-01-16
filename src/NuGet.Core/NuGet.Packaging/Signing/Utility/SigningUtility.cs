@@ -34,9 +34,9 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
             }
 
-            if (CertificateUtility.HasExtendedKeyUsage(request.Certificate, Oids.LifetimeSignerEku))
+            if (CertificateUtility.HasExtendedKeyUsage(request.Certificate, Oids.LifetimeSigningEku))
             {
-                throw new SignatureException(NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSignerEKU);
+                throw new SignatureException(NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSigningEKU);
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(request.Certificate))
@@ -48,10 +48,15 @@ namespace NuGet.Packaging.Signing
         }
 
 #if IS_DESKTOP
-        internal static CryptographicAttributeObjectCollection GetSignedAttributes(
+        public static CryptographicAttributeObjectCollection CreateSignedAttributes(
             SignPackageRequest request,
             IReadOnlyList<X509Certificate2> chainList)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             if (chainList == null || chainList.Count == 0)
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(chainList));

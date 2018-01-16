@@ -142,7 +142,7 @@ namespace NuGet.Packaging.Signing
         /// <returns>True if the certificate has the lifetime signing EKU</returns>
         public static bool HasLifetimeSigningEku(X509Certificate2 certificate)
         {
-            return HasExtendedKeyUsage(certificate, Oids.LifetimeSignerEku);
+            return HasExtendedKeyUsage(certificate, Oids.LifetimeSigningEku);
         }
 
         /// <summary>

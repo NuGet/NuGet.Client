@@ -3,17 +3,27 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using NuGet.Common;
 using NuGet.Packaging.Signing;
-using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class CertificateUtilityTests
+    public class CertificateUtilityTests : IClassFixture<CertificatesFixture>
     {
+        private readonly CertificatesFixture _fixture;
+
+        public CertificateUtilityTests(CertificatesFixture fixture)
+        {
+            if (fixture == null)
+            {
+                throw new ArgumentNullException(nameof(fixture));
+            }
+
+            _fixture = fixture;
+        }
+
         [Theory]
         [InlineData("SHA256WITHRSAENCRYPTION", Oids.Sha256WithRSAEncryption)]
         [InlineData("SHA384WITHRSAENCRYPTION", Oids.Sha384WithRSAEncryption)]
@@ -33,10 +43,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void IsSignatureAlgorithmSupported_WhenUnsupported_ReturnsFalse()
         {
-            using (var certificate = SigningTestUtility.GenerateCertificate(
-                "test",
-                generator => { },
-                "SHA256WITHRSAANDMGF1"))
+            using (var certificate = _fixture.GetRsaSsaPssCertificate())
             {
                 // RSASSA-PSS
                 Assert.Equal("1.2.840.113549.1.1.10", certificate.SignatureAlgorithm.Value);
@@ -86,8 +93,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = SigningTestUtility.GenerateCertificate(
                 "test",
-                modifyGenerator: SigningTestUtility.CertificateModificationGeneratorNotYetValidCert
-                ))
+                modifyGenerator: SigningTestUtility.CertificateModificationGeneratorNotYetValidCert))
             {
                 Assert.True(CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate));
             }
@@ -98,8 +104,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = SigningTestUtility.GenerateCertificate(
                 "test",
-                generator => { }
-                ))
+                generator => { }))
             {
                 Assert.False(CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate));
             }
@@ -130,14 +135,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void HasLifetimeSigningEku_WithLifetimeSignerEku_ReturnsTrue()
         {
-            using (var certificate = SigningTestUtility.GenerateCertificate("test",
-                generator =>
-                {
-                    generator.AddExtension(
-                        X509Extensions.ExtendedKeyUsage.Id,
-                        critical: true,
-                        extensionValue: new DerSequence(new DerObjectIdentifier(Oids.LifetimeSignerEku)));
-                }))
+            using (var certificate = _fixture.GetLifetimeSigningCertificate())
             {
                 Assert.Equal(1, GetExtendedKeyUsageCount(certificate));
                 Assert.True(CertificateUtility.HasLifetimeSigningEku(certificate));
