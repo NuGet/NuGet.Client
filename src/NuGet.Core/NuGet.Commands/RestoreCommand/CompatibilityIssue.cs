@@ -261,8 +261,7 @@ namespace NuGet.Commands
                     foreach (var framework in AvailableFrameworks.Select(FormatFramework)
                         .OrderBy(s => s, StringComparer.CurrentCultureIgnoreCase))
                     {
-                        sb.Append(Environment.NewLine);
-                        sb.Append($"  - {framework}");
+                        sb.Append(Environment.NewLine).Append($"  - {framework}");
                     }
                 }
                 else
@@ -281,8 +280,7 @@ namespace NuGet.Commands
                     foreach (var framework in AvailableFrameworkRuntimePairs.Select(e => FormatFramework(e.Framework, e.RuntimeIdentifier))
                         .OrderBy(s => s, StringComparer.CurrentCultureIgnoreCase))
                     {
-                        sb.Append(Environment.NewLine);
-                        sb.Append($"  - {framework}");
+                        sb.Append(Environment.NewLine).Append($"  - {framework}");
                     }
                 }
                 else

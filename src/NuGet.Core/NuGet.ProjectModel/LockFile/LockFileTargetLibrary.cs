@@ -144,7 +144,7 @@ namespace NuGet.ProjectModel
                 combiner.AddObject(item);
             }
 
-            foreach(var item in PackageType)
+            foreach(var item in PackageType.OrderBy(e => e))
             {
                 combiner.AddObject(item);
             }
