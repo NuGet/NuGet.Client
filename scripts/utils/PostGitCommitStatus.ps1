@@ -103,7 +103,7 @@ function Get-TestRun {
         [Parameter(Mandatory = $True)]
         [string]$PersonalAccessToken
     )
-    $url = "$env:VstsTestRunsRestApi$env:BUILD_BUILDID"
+    $url = "$env:VSTSTESTRUNSRESTAPI$env:BUILD_BUILDID"
     Write-Host $url
     $Token = ":$PersonalAccessToken"
     $Base64Token = [System.Convert]::ToBase64String([char[]]$Token)
