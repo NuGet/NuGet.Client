@@ -120,7 +120,7 @@ function Get-TestRun {
     }
     else
     {
-        $testUrl = $env:VstsTestRunUrl -f $matchingRun.id
+        $testUrl = $env:VSTSTESTRUNURL -f $matchingRun.id
     }
     $failedTests = $matchingRun.unanalyzedTests
     return $testUrl,$failedTests
