@@ -20,7 +20,7 @@ namespace NuGet.Build.Tasks.Pack {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -130,6 +130,15 @@ namespace NuGet.Build.Tasks.Pack {
         internal static string InvalidTargetFramework {
             get {
                 return ResourceManager.GetString("InvalidTargetFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot generate a package from a project which has IsPackable property set to false..
+        /// </summary>
+        internal static string IsPackableFalseError {
+            get {
+                return ResourceManager.GetString("IsPackableFalseError", resourceCulture);
             }
         }
         

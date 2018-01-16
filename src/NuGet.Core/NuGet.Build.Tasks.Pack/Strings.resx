@@ -147,6 +147,9 @@
   <data name="InvalidTargetFramework" xml:space="preserve">
     <value>Invalid target framework for the file '{0}'.</value>
   </data>
+  <data name="IsPackableFalseError" xml:space="preserve">
+    <value>Cannot generate a package from a project which has IsPackable property set to false.</value>
+  </data>
   <data name="NoPackItemProvided" xml:space="preserve">
     <value>No project was provided to the PackTask.</value>
   </data>
