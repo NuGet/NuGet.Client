@@ -1,3 +1,4 @@
+
 <!--
 ***********************************************************************************************
 NuGet.targets
@@ -20,6 +21,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.GetPackOutputItemsTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetProjectTargetFrameworksTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.GetProjectReferencesFromAssetsFileTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.Pack.IsPackableFalseErrorTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
 
   <PropertyGroup>
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
@@ -181,7 +183,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="Pack" DependsOnTargets="$(PackDependsOn)">
-     <Error Condition="$(IsPackable) == 'false'" Text="Cannot generate a package from a project which has IsPackable = false." />
+     <IsPackableFalseErrorTask Condition="$(IsPackable) == 'false'"/>
   </Target>
   <Target Name="_IntermediatePack">
     <PropertyGroup>
