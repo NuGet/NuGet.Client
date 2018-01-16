@@ -17,6 +17,13 @@ namespace NuGet.Packaging.Signing
 {
     public static class SignatureUtility
     {
+        private enum SigningCertificateRequirement
+        {
+            NoRequirement,
+            OnlyV2,
+            EitherOrBoth
+        }
+
 #if IS_DESKTOP
         /// <summary>
         /// Gets certificates in the certificate chain for the primary signature.
@@ -72,7 +79,31 @@ namespace NuGet.Packaging.Signing
                 invalidSignatureString: Strings.InvalidPrimarySignature,
                 chainBuildingFailed: NuGetLogCode.NU3018);
 
-            return GetCertificates(signedCms, signerInfo, errors, signingSpecifications, includeChain);
+            var signatureType = AttributeUtility.GetCommitmentTypeIndication(signerInfo);
+            SigningCertificateRequirement signingCertificateRequirement;
+            bool isIssuerSerialRequired;
+
+            switch (signatureType)
+            {
+                case SignatureType.Author:
+                case SignatureType.Repository:
+                    signingCertificateRequirement = SigningCertificateRequirement.OnlyV2;
+                    isIssuerSerialRequired = true;
+                    break;
+                default:
+                    signingCertificateRequirement = SigningCertificateRequirement.NoRequirement;
+                    isIssuerSerialRequired = false;
+                    break;
+            }
+
+            return GetCertificates(
+                signedCms,
+                signerInfo,
+                signingCertificateRequirement,
+                isIssuerSerialRequired,
+                errors,
+                signingSpecifications,
+                includeChain);
         }
 
         /// <summary>
@@ -132,9 +163,13 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(errors.InvalidSignature, errors.InvalidSignatureString);
             }
 
+            const bool isIssuerSerialRequired = false;
+
             return GetCertificates(
                 signedCms,
                 signedCms.SignerInfos[0],
+                SigningCertificateRequirement.EitherOrBoth,
+                isIssuerSerialRequired,
                 errors,
                 SigningSpecifications.V1,
                 includeChain);
@@ -143,6 +178,8 @@ namespace NuGet.Packaging.Signing
         private static IReadOnlyList<X509Certificate2> GetCertificates(
             SignedCms signedCms,
             SignerInfo signerInfo,
+            SigningCertificateRequirement signingCertificateRequirement,
+            bool isIssuerSerialRequired,
             Errors errors,
             SigningSpecifications signingSpecifications,
             bool includeChain)
@@ -169,7 +206,7 @@ namespace NuGet.Packaging.Signing
                 --------------------------------------------------
                 RFC 3161 requires the signing-certificate attribute.  The RFC 5816 update introduces the newer
                 signing-certificate-v2 attribute, which may replace or, for backwards compatibility, be present
-                alongside the older ssigning-certificate attribute.
+                alongside the older signing-certificate attribute.
 
                 The issuerSerial field is not required, but should be validated if present.
 
@@ -238,24 +275,27 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            var signatureType = AttributeUtility.GetCommitmentTypeIndication(signerInfo);
-            var isIssuerSerialRequired = false;
-
-            switch (signatureType)
+            switch (signingCertificateRequirement)
             {
-                case SignatureType.Author:
-                case SignatureType.Repository:
-                    if (signingCertificateAttribute != null)
+                case SigningCertificateRequirement.OnlyV2:
                     {
-                        throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateAttributeMustNotBePresent);
-                    }
+                        if (signingCertificateAttribute != null)
+                        {
+                            throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateAttributeMustNotBePresent);
+                        }
 
-                    if (signingCertificateV2Attribute == null)
+                        if (signingCertificateV2Attribute == null)
+                        {
+                            throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV2AttributeMustBePresent);
+                        }
+                    }
+                    break;
+
+                case SigningCertificateRequirement.EitherOrBoth:
+                    if (signingCertificateAttribute == null && signingCertificateV2Attribute == null)
                     {
-                        throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV2AttributeMustBePresent);
+                        throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV1OrV2AttributeMustBePresent);
                     }
-
-                    isIssuerSerialRequired = true;
                     break;
             }
 
