@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 env
+ln -s /usr/bin/pwsh /usr/bin/powershell
 
 while true ; do
 	case "$1" in
