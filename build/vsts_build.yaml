@@ -447,7 +447,7 @@ phases:
       arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
       script: |
         . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
-        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Linux"        
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Mac"        
       failOnStderr: "true"
     condition: "always()"
 

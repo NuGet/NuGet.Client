@@ -79,7 +79,14 @@ function SetCommitStatusForTestResult {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "success" -CommitSha $CommitSha -TargetUrl $url -Description $env:AGENT_JOBSTATUS
     }
     elseif ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $url -Description "$failures tests failed"
+        if(-not $failures)
+        {
+            Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $url -Description "Tests failed to run"    
+        }
+        else
+        {
+            Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $url -Description "$failures tests failed"
+        }
     }
     else {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "error" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
