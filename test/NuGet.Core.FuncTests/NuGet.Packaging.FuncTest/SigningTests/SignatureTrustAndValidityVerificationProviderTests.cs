@@ -5,9 +5,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -149,49 +147,6 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        private static SignatureContent CreateSignatureContent(FileInfo packageFile)
-        {
-            using (var stream = packageFile.OpenRead())
-            using (var hashAlgorithm = HashAlgorithmName.SHA256.GetHashProvider())
-            {
-                var hash = hashAlgorithm.ComputeHash(stream, leaveStreamOpen: false);
-
-                return new SignatureContent(SigningSpecifications.V1, HashAlgorithmName.SHA256, Convert.ToBase64String(hash));
-            }
-        }
-
-        private static SignedCms CreateSignature(SignatureContent signatureContent, X509Certificate2 certificate)
-        {
-            var cmsSigner = new CmsSigner(certificate);
-
-            cmsSigner.DigestAlgorithm = HashAlgorithmName.SHA256.ConvertToOid();
-            cmsSigner.IncludeOption = X509IncludeOption.WholeChain;
-
-            var contentInfo = new ContentInfo(signatureContent.GetBytes());
-            var signedCms = new SignedCms(contentInfo);
-
-            signedCms.ComputeSignature(cmsSigner);
-
-            return signedCms;
-        }
-
-        private static async Task<FileInfo> SignPackageFileAsync(TestDirectory directory, FileInfo packageFile, X509Certificate2 certificate)
-        {
-            var signatureContent = CreateSignatureContent(packageFile);
-            var signedPackageFile = new FileInfo(Path.Combine(directory, "SignedPackage.nupkg"));
-            var signature = CreateSignature(signatureContent, certificate);
-
-            using (var packageReadStream = packageFile.OpenRead())
-            using (var packageWriteStream = signedPackageFile.OpenWrite())
-            using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
-            using (var signatureStream = new MemoryStream(signature.Encode()))
-            {
-                await package.AddSignatureAsync(signatureStream, CancellationToken.None);
-            }
-
-            return signedPackageFile;
-        }
-
         // Verify a package meeting minimum signature requirements.
         // This signature is neither an author nor repository signature.
         [CIOnlyFact]
@@ -209,7 +164,10 @@ namespace NuGet.Packaging.FuncTest
             {
                 var packageContext = new SimpleTestPackageContext();
                 var unsignedPackageFile = packageContext.CreateAsFile(directory, "Package.nupkg");
-                var signedPackageFile = await SignPackageFileAsync(directory, unsignedPackageFile, certificate);
+                var signedPackageFile = await SignedArchiveTestUtility.SignPackageFileWithBasicSignedCmsAsync(
+                    directory,
+                    unsignedPackageFile,
+                    certificate);
                 var verifier = new PackageSignatureVerifier(_trustProviders, settings);
 
                 using (var packageReader = new PackageArchiveReader(signedPackageFile.FullName))
@@ -223,6 +181,7 @@ namespace NuGet.Packaging.FuncTest
 
                     var signedPackageVerificationResult = (SignedPackageVerificationResult)result.Results[0];
                     var signer = signedPackageVerificationResult.Signature.SignedCms.SignerInfos[0];
+
                     Assert.Equal(0, signer.SignedAttributes.Count);
                     Assert.Equal(0, signer.UnsignedAttributes.Count);
 

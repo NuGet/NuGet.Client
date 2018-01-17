@@ -29,7 +29,7 @@ namespace NuGet.Packaging.Signing
         /// Gets certificates in the certificate chain for the primary signature.
         /// </summary>
         /// <param name="signature">The primary signature.</param>
-        /// <returns>A read-only list of X.509 certificates ordered from signing certificate to root.</returns>
+        /// <returns>A non-empty, read-only list of X.509 certificates ordered from signing certificate to root.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="signature" /> is <c>null</c>.</exception>
         /// <remarks>
         /// WARNING:  This method does not perform revocation, trust, or certificate validity checking.
@@ -110,7 +110,7 @@ namespace NuGet.Packaging.Signing
         /// Gets certificates in the certificate chain for a timestamp on the primary signature.
         /// </summary>
         /// <param name="signature">The primary signature.</param>
-        /// <returns>A read-only list of X.509 certificates ordered from signing certificate to root.</returns>
+        /// <returns>A non-empty, read-only list of X.509 certificates ordered from signing certificate to root.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="signature" /> is <c>null</c>.</exception>
         /// <remarks>
         /// WARNING:  This method does not perform revocation, trust, or certificate validity checking.
@@ -299,11 +299,6 @@ namespace NuGet.Packaging.Signing
                     break;
             }
 
-            // This returns a new X509Certificate2Collection, which is mutable.
-            // Changes to this collection instance are not reflected back to SignedCms.Certificates.
-            var extraStore = signedCms.Certificates;
-            IReadOnlyList<X509Certificate2> certificates = null;
-
             if (signingCertificateV2Attribute != null)
             {
                 var reader = CreateDerSequenceReader(signingCertificateV2Attribute);
@@ -328,13 +323,6 @@ namespace NuGet.Packaging.Signing
                 {
                     throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV2CertificateNotFound);
                 }
-
-                certificates = GetCertificateChain(signerInfo.Certificate, extraStore, includeChain);
-
-                if (certificates == null || certificates.Count == 0)
-                {
-                    throw new SignatureException(errors.ChainBuildingFailed, Strings.CertificateChainBuildFailed);
-                }
             }
 
             if (signingCertificateAttribute != null)
@@ -351,19 +339,16 @@ namespace NuGet.Packaging.Signing
                 {
                     throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateCertificateNotFound);
                 }
-
-                if (certificates == null)
-                {
-                    certificates = GetCertificateChain(signerInfo.Certificate, extraStore, includeChain);
-
-                    if (certificates == null || certificates.Count == 0)
-                    {
-                        throw new SignatureException(errors.ChainBuildingFailed, Strings.CertificateChainBuildFailed);
-                    }
-                }
             }
 
-            return certificates ?? GetCertificateChain(signerInfo.Certificate, extraStore, includeChain);
+            var certificates = GetCertificateChain(signerInfo.Certificate, signedCms.Certificates, includeChain);
+
+            if (certificates == null || certificates.Count == 0)
+            {
+                throw new SignatureException(errors.ChainBuildingFailed, Strings.CertificateChainBuildFailed);
+            }
+
+            return certificates;
         }
 
         private static bool IsMatch(
