@@ -119,7 +119,7 @@ namespace NuGet.Packaging.Signing
                 signer.Certificates.Add(certificate);
             }
 
-            var attributes = SigningUtility.GetSignedAttributes(request, chain);
+            var attributes = SigningUtility.CreateSignedAttributes(request, chain);
 
             foreach (var attribute in attributes)
             {

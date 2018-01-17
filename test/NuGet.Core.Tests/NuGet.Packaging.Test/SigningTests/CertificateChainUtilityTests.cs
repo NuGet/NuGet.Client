@@ -5,7 +5,6 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
-using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -34,9 +33,9 @@ namespace NuGet.Packaging.Test
         public void GetCertificateChainForSigning_WithUntrustedRoot_Throws()
         {
             using (var chain = new X509Chain())
-            using (var rootCertificate = GetCertificate("root.crt"))
-            using (var intermediateCertificate = GetCertificate("intermediate.crt"))
-            using (var leafCertificate = GetCertificate("leaf.crt"))
+            using (var rootCertificate = SignTestUtility.GetCertificate("root.crt"))
+            using (var intermediateCertificate = SignTestUtility.GetCertificate("intermediate.crt"))
+            using (var leafCertificate = SignTestUtility.GetCertificate("leaf.crt"))
             {
                 var extraStore = new X509Certificate2Collection
                 {
@@ -55,9 +54,9 @@ namespace NuGet.Packaging.Test
         public void GetCertificateChainForSigning_ReturnsCertificatesInOrder()
         {
             using (var chain = new X509Chain())
-            using (var rootCertificate = GetCertificate("root.crt"))
-            using (var intermediateCertificate = GetCertificate("intermediate.crt"))
-            using (var leafCertificate = GetCertificate("leaf.crt"))
+            using (var rootCertificate = SignTestUtility.GetCertificate("root.crt"))
+            using (var intermediateCertificate = SignTestUtility.GetCertificate("intermediate.crt"))
+            using (var leafCertificate = SignTestUtility.GetCertificate("leaf.crt"))
             {
                 chain.ChainPolicy.ExtraStore.Add(rootCertificate);
                 chain.ChainPolicy.ExtraStore.Add(intermediateCertificate);
@@ -71,13 +70,6 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(intermediateCertificate.Thumbprint, certificateChain[1].Thumbprint);
                 Assert.Equal(rootCertificate.Thumbprint, certificateChain[2].Thumbprint);
             }
-        }
-
-        private static X509Certificate2 GetCertificate(string name)
-        {
-            var bytes = ResourceTestUtility.GetResourceBytes($"NuGet.Packaging.Test.compiler.resources.{name}", typeof(CertificateChainUtilityTests));
-
-            return new X509Certificate2(bytes);
         }
     }
 }
