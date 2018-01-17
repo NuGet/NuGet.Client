@@ -56,9 +56,7 @@ phases:
       - DotNetFramework
       - msbuild
 
-  steps:
-
-  
+  steps:  
   - task: PowerShell@1
     displayName: "Print Environment Variables"
     inputs:
@@ -508,8 +506,7 @@ phases:
   - Build_and_UnitTest
   - Initialize_Build
   variables:
-    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumer.BuildNumber']]
-  condition: "succeeded()"
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
   queue:
     name: DDNuGet-Windows
     timeoutInMinutes: 75
@@ -521,8 +518,8 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        gci env:* | sort-object name
         Write-Host "##vso[build.updatebuildnumber]$env:BuildNumber"
+        gci env:* | sort-object name      
 
   - task: PowerShell@1
     displayName: "Bootstrap.ps1"
@@ -605,7 +602,6 @@ phases:
   - Initialize_Build
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-  condition: "succeeded()"
   queue:
     name: DDNuGet-Windows
     timeoutInMinutes: 75
@@ -617,9 +613,9 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        gci env:* | sort-object name
         Write-Host "##vso[build.updatebuildnumber]$env:BuildNumber"
-
+        gci env:* | sort-object name
+        
   - task: NuGetToolInstaller@0
     displayName: "Use NuGet 4.5.0"
     inputs:
