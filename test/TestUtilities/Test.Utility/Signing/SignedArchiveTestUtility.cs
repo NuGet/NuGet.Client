@@ -4,6 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+#if IS_DESKTOP
+using System.Security.Cryptography.Pkcs;
+#endif
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +14,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Xunit;
 
 namespace Test.Utility.Signing
 {
@@ -160,6 +164,59 @@ namespace Test.Utility.Signing
 
             return await signatureProvider.CreateSignatureAsync(request, signatureContent, testLogger, CancellationToken.None);
         }
+
+#if IS_DESKTOP
+        private static SignatureContent CreateSignatureContent(FileInfo packageFile)
+        {
+            using (var stream = packageFile.OpenRead())
+            using (var hashAlgorithm = HashAlgorithmName.SHA256.GetHashProvider())
+            {
+                var hash = hashAlgorithm.ComputeHash(stream, leaveStreamOpen: false);
+
+                return new SignatureContent(SigningSpecifications.V1, HashAlgorithmName.SHA256, Convert.ToBase64String(hash));
+            }
+        }
+
+        private static SignedCms CreateSignature(SignatureContent signatureContent, X509Certificate2 certificate)
+        {
+            var cmsSigner = new CmsSigner(certificate);
+
+            cmsSigner.DigestAlgorithm = HashAlgorithmName.SHA256.ConvertToOid();
+            cmsSigner.IncludeOption = X509IncludeOption.WholeChain;
+
+            var contentInfo = new ContentInfo(signatureContent.GetBytes());
+            var signedCms = new SignedCms(contentInfo);
+
+            signedCms.ComputeSignature(cmsSigner);
+
+            Assert.Empty(signedCms.SignerInfos[0].SignedAttributes);
+            Assert.Empty(signedCms.SignerInfos[0].UnsignedAttributes);
+
+            return signedCms;
+        }
+
+        // This generates a package with a basic signed CMS.
+        // The signature MUST NOT have any signed or unsigned attributes.
+        public static async Task<FileInfo> SignPackageFileWithBasicSignedCmsAsync(
+            TestDirectory directory,
+            FileInfo packageFile,
+            X509Certificate2 certificate)
+        {
+            var signatureContent = CreateSignatureContent(packageFile);
+            var signedPackageFile = new FileInfo(Path.Combine(directory, Guid.NewGuid().ToString()));
+            var signature = CreateSignature(signatureContent, certificate);
+
+            using (var packageReadStream = packageFile.OpenRead())
+            using (var packageWriteStream = signedPackageFile.OpenWrite())
+            using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
+            using (var signatureStream = new MemoryStream(signature.Encode()))
+            {
+                await package.AddSignatureAsync(signatureStream, CancellationToken.None);
+            }
+
+            return signedPackageFile;
+        }
+#endif
 
         /// <summary>
         /// Timestamps a signature for tests.
