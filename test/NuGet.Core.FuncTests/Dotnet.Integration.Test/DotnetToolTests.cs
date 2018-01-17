@@ -510,7 +510,7 @@ namespace Dotnet.Integration.Test
                 var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(rid, StringComparison.CurrentCultureIgnoreCase) : false);
                 Assert.Equal(1, ridTargets.Count());
                 var toolsAssemblies = ridTargets.First().Libraries.First().ToolsAssemblies;
-                Assert.Equal(1, toolsAssemblies.Count);
+                Assert.Equal(2, toolsAssemblies.Count);
                 var toolsAssemblyPaths = toolsAssemblies.Select(e => e.Path);
                 Assert.Contains($"tools/{tfm}/{rid}/a.dll", toolsAssemblyPaths);
                 Assert.Contains($"tools/{tfm}/{rid}/tool1/b.dll", toolsAssemblyPaths);

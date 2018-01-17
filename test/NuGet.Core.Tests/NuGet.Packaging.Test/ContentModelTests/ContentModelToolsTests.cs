@@ -178,5 +178,41 @@ namespace NuGet.Client.Test
             Assert.Equal(FrameworkConstants.CommonFrameworks.Net46, (NuGetFramework)groups.First().Properties["tfm"]);
             Assert.Equal(rid, groups.First().Properties["rid"]);
         }
+
+        [Fact]
+        public void ContentModel_IncludesNestedElements()
+        {
+            // Arrange
+            var rid = "win-x64";
+            var runtimes = new List<RuntimeDescription>()
+            {
+                new RuntimeDescription(rid),
+            };
+
+            var conventions = new ManagedCodeConventions(
+                new RuntimeGraph(
+                    runtimes,
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("net46.app") }));
+
+            var criteria = conventions.Criteria.ForFrameworkAndRuntime(NuGetFramework.Parse("net46"), rid);
+
+            var collection = new ContentItemCollection();
+            collection.Load(new string[]
+            {
+                $"tools/net46/{rid}/a.dll",
+                $"tools/net46/{rid}/net46/a.dll",
+            });
+
+            // Act
+            var group = collection.FindBestItemGroup(criteria, conventions.Patterns.ToolsAssemblies);
+
+            // Assert
+            Assert.Equal(FrameworkConstants.CommonFrameworks.Net46, (NuGetFramework)group.Properties["tfm"]);
+            Assert.Equal(rid, group.Properties["rid"]);
+            var paths = group.Items.Select(e => e.Path);
+            Assert.Contains($"tools/net46/{rid}/a.dll", paths);
+            Assert.Contains($"tools/net46/{rid}/net46/a.dll", paths);
+
+        }
     }
 }
