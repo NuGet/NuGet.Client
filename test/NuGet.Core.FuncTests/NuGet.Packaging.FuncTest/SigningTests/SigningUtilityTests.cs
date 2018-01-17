@@ -5,6 +5,7 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Packaging.FuncTest
@@ -24,7 +25,7 @@ namespace NuGet.Packaging.FuncTest
             _fixture = fixture;
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void Verify_WithValidInput_DoesNotThrow()
         {
             using (var certificate = new X509Certificate2(_fixture.TrustedTestCertificate.Source.PublicCert.RawData))
