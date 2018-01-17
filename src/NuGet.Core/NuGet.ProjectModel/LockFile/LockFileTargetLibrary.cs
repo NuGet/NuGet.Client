@@ -42,6 +42,7 @@ namespace NuGet.ProjectModel
 
         public IList<LockFileItem> ToolsAssemblies { get; set; } = new List<LockFileItem>();
 
+        // Package Type does not belong in Equals and HashCode, since it's only used for compatibility checking post restore.
         public IList<PackageType> PackageType { get; set; } = new List<PackageType>();
 
 
@@ -72,7 +73,6 @@ namespace NuGet.ProjectModel
                 && Build.OrderedEquals(other.Build, item => item.Path, StringComparer.OrdinalIgnoreCase)
                 && BuildMultiTargeting.OrderedEquals(other.BuildMultiTargeting, item => item.Path, StringComparer.OrdinalIgnoreCase)
                 && ToolsAssemblies.OrderedEquals(other.ToolsAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase)
-                && PackageType.OrderedEquals(other.PackageType, item => item);
         }
 
         public override bool Equals(object obj)
@@ -140,11 +140,6 @@ namespace NuGet.ProjectModel
             }
 
             foreach (var item in ToolsAssemblies.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
-            {
-                combiner.AddObject(item);
-            }
-
-            foreach(var item in PackageType.OrderBy(e => e))
             {
                 combiner.AddObject(item);
             }
