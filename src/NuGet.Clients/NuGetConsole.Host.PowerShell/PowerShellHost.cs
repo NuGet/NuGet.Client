@@ -247,7 +247,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     var hr = VsMonitorSelection.IsCmdUIContextActive(
                         _solutionExistsCookie, out var pfActive);
