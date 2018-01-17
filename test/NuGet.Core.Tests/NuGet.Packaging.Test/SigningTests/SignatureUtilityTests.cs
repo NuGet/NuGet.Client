@@ -4,15 +4,31 @@
 #if NET46
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Packaging.Signing;
+using NuGet.Test.Utility;
 using Org.BouncyCastle.Cms;
 using Org.BouncyCastle.X509.Store;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class SignatureUtilityTests
+    public class SignatureUtilityTests : IClassFixture<CertificatesFixture>
     {
+        private readonly CertificatesFixture _fixture;
+
+        public SignatureUtilityTests(CertificatesFixture fixture)
+        {
+            if (fixture == null)
+            {
+                throw new ArgumentNullException(nameof(fixture));
+            }
+
+            _fixture = fixture;
+        }
+
         [Fact]
         public void GetPrimarySignatureCertificates_WhenSignatureNull_Throws()
         {
@@ -33,6 +49,31 @@ namespace NuGet.Packaging.Test
             Assert.Equal("8219f5772ef562a3ea9b90da00ca7b9523a96fbf", certificates[0].Thumbprint, StringComparer.OrdinalIgnoreCase);
             Assert.Equal("d8198d59087bbe6a6e7d69af62030145366be93e", certificates[1].Thumbprint, StringComparer.OrdinalIgnoreCase);
             Assert.Equal("6d73d582b73b5b3b18a27506acceedea75ab63c2", certificates[2].Thumbprint, StringComparer.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public async Task GetPrimarySignatureCertificates_WithUnknownSignature_ReturnsCertificates()
+        {
+            using (var directory = TestDirectory.Create())
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                var packageContext = new SimpleTestPackageContext();
+                var unsignedPackageFile = packageContext.CreateAsFile(directory, "Package.nupkg");
+                var signedPackageFile = await SignedArchiveTestUtility.SignPackageFileWithBasicSignedCmsAsync(
+                    directory,
+                    unsignedPackageFile,
+                    certificate);
+
+                using (var packageReader = new PackageArchiveReader(signedPackageFile.FullName))
+                {
+                    var signature = await packageReader.GetSignatureAsync(CancellationToken.None);
+
+                    var certificates = SignatureUtility.GetPrimarySignatureCertificates(signature);
+
+                    Assert.Equal(1, certificates.Count);
+                    Assert.Equal(certificate.RawData, certificates[0].RawData);
+                }
+            }
         }
 
         [Fact]
