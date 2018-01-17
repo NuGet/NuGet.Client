@@ -340,8 +340,8 @@ Valid from:</comment>
   <data name="TimestampValue" xml:space="preserve">
     <value>Timestamp: {0}</value>
   </data>
-  <data name="ErrorCertificateHasLifetimeSignerEKU" xml:space="preserve">
-    <value>The lifetime signer EKU is not supported.</value>
+  <data name="ErrorCertificateHasLifetimeSigningEKU" xml:space="preserve">
+    <value>The lifetime signing EKU is not supported.</value>
   </data>
   <data name="ErrorInvalidPackageArchive" xml:space="preserve">
     <value>Invalid package archive.</value>

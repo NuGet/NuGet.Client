@@ -51,7 +51,7 @@ namespace NuGet.Packaging.Signing
         public const string TSTInfoContentType = "1.2.840.113549.1.9.16.1.4";
 
         // XCN_OID_KP_LIFETIME_SIGNING https://msdn.microsoft.com/en-us/library/windows/desktop/aa378132(v=vs.85).aspx
-        public const string LifetimeSignerEku = "1.3.6.1.4.1.311.10.3.13";
+        public const string LifetimeSigningEku = "1.3.6.1.4.1.311.10.3.13";
 
         // RFC 5126 "commitment-type-indication" https://tools.ietf.org/html/rfc5126.html#section-5.11.1
         public const string CommitmentTypeIndication = "1.2.840.113549.1.9.16.2.16";

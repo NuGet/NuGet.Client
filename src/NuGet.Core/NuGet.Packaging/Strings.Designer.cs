@@ -188,11 +188,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The lifetime signer EKU is not supported..
+        ///   Looks up a localized string similar to The lifetime signing EKU is not supported..
         /// </summary>
-        internal static string ErrorCertificateHasLifetimeSignerEKU {
+        internal static string ErrorCertificateHasLifetimeSigningEKU {
             get {
-                return ResourceManager.GetString("ErrorCertificateHasLifetimeSignerEKU", resourceCulture);
+                return ResourceManager.GetString("ErrorCertificateHasLifetimeSigningEKU", resourceCulture);
             }
         }
         
