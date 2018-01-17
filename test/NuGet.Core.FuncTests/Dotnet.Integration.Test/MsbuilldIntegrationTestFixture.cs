@@ -22,12 +22,8 @@ namespace Dotnet.Integration.Test
         private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli();
         internal readonly string TestDotnetCli;
         internal readonly string MsBuildSdksPath;
-<<<<<<< HEAD
         private readonly Dictionary<string, string> _processEnvVars = new Dictionary<string, string>();
 
-=======
-        
->>>>>>> collect all files in the tools group
         public MsbuildIntegrationTestFixture()
         {
             var cliDirectory = CopyLatestCliForPack();
@@ -37,6 +33,7 @@ namespace Dotnet.Integration.Test
                 .First(), "Sdks");            
             _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
             _processEnvVars.Add("UseSharedCompilation", "false");
+            _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
             // We do this here so that dotnet new will extract all the packages on the first run on the machine.
             InitDotnetNewToExtractPackages();
         }
@@ -125,16 +122,11 @@ namespace Dotnet.Integration.Test
 
         internal CommandRunnerResult RestoreToolProject(string workingDirectory, string projectName, string args = "")
         {
-
-            var envVar = new Dictionary<string, string>();
-            envVar.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
-            envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
-
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"restore {projectName}.csproj {args}",
                 waitForExit: true,
-                environmentVariables: envVar);
+                environmentVariables: _processEnvVars);
             return result;
         }
 
