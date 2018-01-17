@@ -72,7 +72,7 @@ namespace NuGet.ProjectModel
                 && RuntimeTargets.OrderedEquals(other.RuntimeTargets, item => item.Path, StringComparer.OrdinalIgnoreCase)
                 && Build.OrderedEquals(other.Build, item => item.Path, StringComparer.OrdinalIgnoreCase)
                 && BuildMultiTargeting.OrderedEquals(other.BuildMultiTargeting, item => item.Path, StringComparer.OrdinalIgnoreCase)
-                && ToolsAssemblies.OrderedEquals(other.ToolsAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase)
+                && ToolsAssemblies.OrderedEquals(other.ToolsAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)
