@@ -524,7 +524,7 @@ namespace NuGet.Client
                         },
                     pathPatterns: new PatternDefinition[]
                         {
-                            new PatternDefinition("tools/{tfm}/{rid}/{any}", table: AnyTable),
+                            new PatternDefinition("tools/{tfm}/{rid}/{any?}", table: AnyTable),
                     });
             }
         }
