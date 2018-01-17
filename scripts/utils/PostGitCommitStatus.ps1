@@ -79,7 +79,14 @@ function SetCommitStatusForTestResult {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "success" -CommitSha $CommitSha -TargetUrl $url -Description $env:AGENT_JOBSTATUS
     }
     elseif ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $url -Description "$failures tests failed"
+        if(-not $failures)
+        {
+            Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $url -Description "Tests failed to run"    
+        }
+        else
+        {
+            Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "failure" -CommitSha $CommitSha -TargetUrl $url -Description "$failures tests failed"
+        }
     }
     else {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName $TestName -Status "error" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description $env:AGENT_JOBSTATUS
@@ -103,7 +110,7 @@ function Get-TestRun {
         [Parameter(Mandatory = $True)]
         [string]$PersonalAccessToken
     )
-    $url = "$env:VstsTestRunsRestApi$env:BUILD_BUILDID"
+    $url = "$env:VSTSTESTRUNSRESTAPI$env:BUILD_BUILDID"
     Write-Host $url
     $Token = ":$PersonalAccessToken"
     $Base64Token = [System.Convert]::ToBase64String([char[]]$Token)
@@ -120,7 +127,7 @@ function Get-TestRun {
     }
     else
     {
-        $testUrl = $env:VstsTestRunUrl -f $matchingRun.id
+        $testUrl = $env:VSTSTESTRUNURL -f $matchingRun.id
     }
     $failedTests = $matchingRun.unanalyzedTests
     return $testUrl,$failedTests

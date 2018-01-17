@@ -377,7 +377,6 @@ phases:
     timeoutInMinutes: 45
     demands: sh
 
-
   steps:
   - task: ShellScript@2
     displayName: "Run Tests"
@@ -397,13 +396,15 @@ phases:
       searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
       mergeTestResults: "true"
 
-  - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
+  - task: PowerShell@2
     displayName: "Initialize Git Commit Status on GitHub"
     inputs:
-      type: "FilePath"
-      scriptPath: "scripts/utils/PostGitCommitStatus.sh"
-      args: "$(NuGetLurkerPersonalAccessToken) \"Tests On Linux\" $(Agent.JobStatus)"
-      cwd: "$(Build.Repository.LocalPath)"
+      targetType: "inline"
+      arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
+      script: |
+        . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Linux"        
+      failOnStderr: "true"
     condition: "always()"
 
 - phase: Tests_On_Mac
@@ -413,7 +414,6 @@ phases:
     name: VSEng-MicroBuildMacSierra
     timeoutInMinutes: 60
     demands: sh
-
 
   steps:
   - task: DownloadBuildArtifacts@0
@@ -440,13 +440,15 @@ phases:
       testRunTitle: "NuGet.Client Tests On Mac"
     condition: "succeededOrFailed()"
 
-  - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
+  - task: PowerShell@2
     displayName: "Initialize Git Commit Status on GitHub"
     inputs:
-      type: "FilePath"
-      scriptPath: "scripts/utils/PostGitCommitStatus.sh"
-      args: "$(NuGetLurkerPersonalAccessToken) \"Tests On Mac\" $(Agent.JobStatus)"
-      cwd: "$(Build.Repository.LocalPath)"
+      targetType: "inline"
+      arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
+      script: |
+        . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Mac"        
+      failOnStderr: "true"
     condition: "always()"
 
 - phase: End_To_End_Tests_On_Windows
