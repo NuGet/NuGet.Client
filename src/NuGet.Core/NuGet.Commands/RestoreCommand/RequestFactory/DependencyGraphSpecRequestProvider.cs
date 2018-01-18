@@ -24,7 +24,6 @@ namespace NuGet.Commands
 
         private readonly DependencyGraphSpec _dgFile;
         private readonly RestoreCommandProvidersCache _providerCache;
-        private readonly Dictionary<string, PackageSpec> _projectJsonCache = new Dictionary<string, PackageSpec>(StringComparer.Ordinal);
 
         public DependencyGraphSpecRequestProvider(
             RestoreCommandProvidersCache providerCache,

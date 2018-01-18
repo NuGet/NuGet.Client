@@ -52,7 +52,6 @@ namespace NuGet.ProjectModel
             SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles);
             SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
             SetPackOptions(writer, packageSpec);
-            SetRestoreSettings(writer, packageSpec);
             SetMSBuildMetadata(writer, packageSpec);
             SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
 
@@ -96,6 +95,7 @@ namespace NuGet.ProjectModel
             }
         }
 
+        // The restore settings, current despite the name, do not include any setting that affect the final result of restore, rather just a decision on whether or not to display the errors in the error list ourselves. (in SDK projects, we don't do it)
         private static void SetRestoreSettings(IObjectWriter writer, PackageSpec packageSpec)
         {
             var restoreSettings = packageSpec.RestoreSettings;
@@ -205,7 +205,7 @@ namespace NuGet.ProjectModel
 
                         writer.WriteObjectStart("projectReferences");
 
-                        foreach (var project in framework.ProjectReferences)
+                        foreach (var project in framework.ProjectReferences.OrderBy(e => e.ProjectPath, PathUtility.GetStringComparerBasedOnOS()))
                         {
                             writer.WriteObjectStart(project.ProjectUniqueName);
 
