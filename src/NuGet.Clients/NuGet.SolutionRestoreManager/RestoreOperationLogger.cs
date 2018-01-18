@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
+using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using MSBuildVerbosityLevel = NuGet.SolutionRestoreManager.VerbosityLevel;

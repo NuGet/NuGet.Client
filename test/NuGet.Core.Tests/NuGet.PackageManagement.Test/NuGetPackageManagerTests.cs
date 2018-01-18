@@ -6018,7 +6018,7 @@ namespace NuGet.Test
                 Assert.Equal(3, telemetryEvents.Count);
                 var projectId = string.Empty;
                 nugetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
-                VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents.Select(p => (string)p.Properties[TelemetryConstants.StepNamePropertyName]));
+                VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents.Select(p => (string)p.Properties["StepName"]));
             }
         }
 
@@ -6067,7 +6067,7 @@ namespace NuGet.Test
                 Assert.Equal(1, telemetryEvents.Count);
                 var projectId = string.Empty;
                 buildIntegratedProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
-                Assert.Equal(telemetryEvents[0].Properties[TelemetryConstants.StepNamePropertyName],
+                Assert.Equal(telemetryEvents[0].Properties["StepName"],
                     string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId));
             }
         }
@@ -6137,7 +6137,7 @@ namespace NuGet.Test
                 Assert.Equal(3, telemetryEvents.Count);
                 var projectId = string.Empty;
                 nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
-                VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents.Select(p => (string)p.Properties[TelemetryConstants.StepNamePropertyName]));
+                VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents.Select(p => (string)p.Properties["StepName"]));
             }
         }        
 
@@ -6191,7 +6191,7 @@ namespace NuGet.Test
                 nugetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
 
                 Assert.Equal(1, telemetryEvents.Count);
-                Assert.Equal(telemetryEvents[0].Properties[TelemetryConstants.StepNamePropertyName],(
+                Assert.Equal(telemetryEvents[0].Properties["StepName"],(
                     string.Format(TelemetryConstants.ExecuteActionStepName, projectId)));
             }
         }
@@ -6256,9 +6256,9 @@ namespace NuGet.Test
                 buildIntegratedProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
 
                 Assert.Equal(2, telemetryEvents.Count);
-                Assert.Equal(telemetryEvents[0].Properties[TelemetryConstants.StepNamePropertyName],
+                Assert.Equal(telemetryEvents[0].Properties["StepName"],
                     string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId));
-                Assert.Equal(telemetryEvents[1].Properties[TelemetryConstants.StepNamePropertyName],
+                Assert.Equal(telemetryEvents[1].Properties["StepName"],
                     string.Format(TelemetryConstants.ExecuteActionStepName, projectId));
 
             }

@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet.VisualStudio.Telemetry;
 using NuGet.VisualStudio;
 using Xunit;
-using NuGet.Common;
 using System.Globalization;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
