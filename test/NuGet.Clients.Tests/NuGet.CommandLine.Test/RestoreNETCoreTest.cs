@@ -5748,7 +5748,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_PackageTypesDoNotAffectAssetsFil()
+        public async Task RestoreNetCore_PackageTypesDoNotAffectAssetsFile()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
