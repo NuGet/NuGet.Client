@@ -5746,5 +5746,56 @@ namespace NuGet.CommandLine.Test
                 Assert.Contains("The restore inputs for 'parent' have not changed. No further actions are required to complete the restore.", r2.Item2);
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_PackageTypesDoNotAffectAssetsFil()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    "project",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.PackageTypes.Add(PackageType.Dependency);
+                packageX.PackageTypes.Add(PackageType.DotnetCliTool);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act && Assert
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                Assert.Equal(0, r.Item1);
+                Assert.Contains("Writing cache file", r.Item2);
+                Assert.Contains("Writing lock file to disk", r.Item2);
+
+                // Pre-condition, Assert deleting the correct file
+                Assert.True(File.Exists(project.CacheFileOutputPath));
+                File.Delete(project.CacheFileOutputPath);
+
+                r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                Assert.Equal(0, r.Item1);
+                Assert.Contains("Writing cache file", r.Item2);
+                Assert.DoesNotContain("Writing lock file to disk", r.Item2);
+
+
+            }
+        }
     }
 }
