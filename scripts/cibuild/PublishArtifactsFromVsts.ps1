@@ -67,7 +67,7 @@ if(Test-Path $NupkgsDir)
 {
     Write-Output "Publishing nupkgs from '$Nupkgs'"
     # Push all nupkgs to the nuget-build feed on myget.
-    Get-Item "$NupkgsDir\*.nupkg"  | Push-ToMyGet -ApiKey $NuGetBuildFeedApiKey -BuildFeed $NuGetBuildFeedUrl -SymbolSource $NuGetBuildSymbolsFeedUrl
+    Get-Item "$NupkgsDir\*.nupkg" -Exclude "Test.*.nupkg" | Push-ToMyGet -ApiKey $NuGetBuildFeedApiKey -BuildFeed $NuGetBuildFeedUrl -SymbolSource $NuGetBuildSymbolsFeedUrl
     # We push NuGet.Build.Tasks.Pack nupkg to dotnet-core feed as per the request of the CLI team.
     Get-Item "$NupkgsDir\NuGet.Build.Tasks.Pack*.nupkg" | Push-ToMyGet -ApiKey $DotnetCoreFeedApiKey -BuildFeed $DotnetCoreFeedUrl -SymbolSource $DotnetCoreSymbolsFeedUrl
 }
