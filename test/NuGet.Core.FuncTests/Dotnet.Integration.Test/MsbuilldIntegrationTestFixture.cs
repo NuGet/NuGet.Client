@@ -267,8 +267,8 @@ namespace Dotnet.Integration.Test
                     continue;
                 }
                 try
-                { 
-                File.Delete(targetFilePath);
+                {
+                    File.Delete(targetFilePath);
                 }
                 catch
                 {

@@ -105,7 +105,7 @@ namespace NuGet.Packaging.Core
 
             var res = StringComparer.OrdinalIgnoreCase.Compare(Name, other.Name);
 
-            if(res != 0)
+            if (res != 0)
             {
                 return res;
             }

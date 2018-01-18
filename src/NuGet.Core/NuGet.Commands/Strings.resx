@@ -683,7 +683,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>{0} is the certificate store name</comment>
   </data>
   <data name="Error_ProjectWithIncorrectDependenciesCount" xml:space="preserve">
-    <value>Project {0} must have exactly {1} package reference(s).</value>
+    <value>Project {0} must have a single package reference(s).</value>
   </data>
   <data name="Log_SkippingCompatibiilityCheckOnRidlessGraphForDotnetToolReferenceProject" xml:space="preserve">
     <value>Skipping compatibility checks of the ridless graph for DotnetToolReference project type. This graph is not used. </value>
@@ -692,6 +692,6 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Invalid project-package combination for {0} {1}. DotnetToolReference project style can only contain references of the DotnetTool type</value>
   </data>
   <data name="Error_ToolsPackageWithExtraPackageTypes" xml:space="preserve">
-    <value>Invalid tools package {0} {1}. Tools packages cannot contain more than 1 PackageType.</value>
+    <value>Invalid tools package {0} {1}. Tools packages cannot contain more than one PackageType.</value>
   </data>
 </root>

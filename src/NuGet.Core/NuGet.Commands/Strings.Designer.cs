@@ -269,7 +269,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project {0} must have exactly {1} package reference(s)..
+        ///   Looks up a localized string similar to Project {0} must have a single package reference(s)..
         /// </summary>
         internal static string Error_ProjectWithIncorrectDependenciesCount {
             get {
@@ -278,7 +278,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid tools package {0} {1}. Tools packages cannot contain more than 1 PackageType..
+        ///   Looks up a localized string similar to Invalid tools package {0} {1}. Tools packages cannot contain more than one PackageType..
         /// </summary>
         internal static string Error_ToolsPackageWithExtraPackageTypes {
             get {
