@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private void VerifyTelemetryEventData(string operationId, VSActionsTelemetryEvent expected, TelemetryEvent actual)
         {
             Assert.NotNull(actual);
-            Assert.Equal(ActionEventBase.NugetActionEventName, actual.Name);
+            Assert.Equal(ActionsTelemetryEvent.NugetActionEventName, actual.Name);
             Assert.Equal(10, actual.Properties.Count);
 
             Assert.Equal(expected.OperationType.ToString(), actual.Properties["OperationType"].ToString());

@@ -20,7 +20,7 @@ namespace NuGet.VisualStudio
             int packageCount,
             int noOpProjectsCount,
             DateTimeOffset endTime,
-            double duration) : base(projectIds, startTime, status, packageCount, endTime, duration)
+            double duration) : base(RestoreActionEventName, projectIds, startTime, status, packageCount, endTime, duration)
         {
             OperationSource = source;
             NoOpProjectsCount = noOpProjectsCount;

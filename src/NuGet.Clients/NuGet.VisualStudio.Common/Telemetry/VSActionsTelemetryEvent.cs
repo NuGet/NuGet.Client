@@ -30,7 +30,7 @@ namespace NuGet.VisualStudio
         {
             var telemtryEvent = base.ToTelemetryEvent(operationIdPropertyName, operationId);
 
-            telemtryEvent.Properties.Add(nameof(Source), OperationType);
+            telemtryEvent.Properties.Add(nameof(Source), Source);
 
             return telemtryEvent;
         }

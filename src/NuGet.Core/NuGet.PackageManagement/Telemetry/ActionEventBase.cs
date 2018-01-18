@@ -13,6 +13,7 @@ namespace NuGet.PackageManagement
     public class ActionEventBase : INuGetTelemetryEvent
     {
         public ActionEventBase(
+            string eventName,
             string[] projectIds,
             DateTimeOffset startTime,
             NuGetOperationStatus status,
@@ -20,6 +21,7 @@ namespace NuGet.PackageManagement
             DateTimeOffset endTime,
             double duration)
         {
+            EventName = eventName;
             ProjectIds = projectIds;
             PackagesCount = packageCount;
             Status = status;
@@ -29,7 +31,7 @@ namespace NuGet.PackageManagement
             ProjectsCount = projectIds.Length;
         }
 
-        public const string NugetActionEventName = "NugetAction";
+        public string EventName { get; }
 
         public string[] ProjectIds { get; }
 
@@ -48,7 +50,7 @@ namespace NuGet.PackageManagement
         public virtual TelemetryEvent ToTelemetryEvent(string operationIdPropertyName, string operationId)
         {
             return new TelemetryEvent(
-                NugetActionEventName,
+                EventName,
                 new Dictionary<string, object>
                 {
                     { operationIdPropertyName, operationId },

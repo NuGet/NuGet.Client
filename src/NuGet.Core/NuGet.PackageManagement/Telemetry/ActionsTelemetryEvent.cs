@@ -18,10 +18,12 @@ namespace NuGet.PackageManagement
             NuGetOperationStatus status,
             int packageCount,
             DateTimeOffset endTime,
-            double duration) : base(projectIds, startTime, status, packageCount, endTime, duration)
+            double duration) : base(NugetActionEventName, projectIds, startTime, status, packageCount, endTime, duration)
         {
             OperationType = operationType;
         }
+
+        public const string NugetActionEventName = "NugetAction";
 
         public NuGetOperationType OperationType { get; }
 
