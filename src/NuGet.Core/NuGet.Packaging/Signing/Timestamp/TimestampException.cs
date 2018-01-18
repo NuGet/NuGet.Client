@@ -11,8 +11,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class TimestampException : SignatureException
     {
-        private readonly ILogMessage _logMessage;
-
         public TimestampException()
             : base(string.Empty)
         {
@@ -31,17 +29,6 @@ namespace NuGet.Packaging.Signing
         public TimestampException(string message)
             : this(NuGetLogCode.NU3000, message)
         {
-        }
-
-        public TimestampException(ILogMessage logMessage)
-            : base(logMessage?.Message)
-        {
-            _logMessage = logMessage ?? throw new ArgumentNullException(nameof(logMessage));
-        }
-
-        public override ILogMessage AsLogMessage()
-        {
-            return _logMessage;
         }
     }
 }
