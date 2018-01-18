@@ -19,6 +19,19 @@ phases:
         InitializeAllTestsToPending -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion)
   
   - task: PowerShell@1
+    displayName: "Update Build Number"
+    name: "updatebuildnumber"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        $revision = Get-Content $env:BUILDCOUNTERFILE
+        $newBuildCounter = [System.Decimal]::Parse($revision)
+        $newBuildCounter++
+        Set-Content $env:BUILDCOUNTERFILE $newBuildCounter
+        Write-Host "##vso[build.updatebuildnumber]$newBuildCounter"
+        Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
+
+  - task: PowerShell@1
     displayName: "Add Build Tags"
     inputs:
       scriptType: "inlineScript"
@@ -28,6 +41,8 @@ phases:
 
 - phase: Build_and_UnitTest
   dependsOn: Initialize_Build
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
   queue:
     name: VSEng-MicroBuildVS2017
     timeoutInMinutes: 90
@@ -41,7 +56,15 @@ phases:
       - DotNetFramework
       - msbuild
 
-  steps:
+  steps:  
+  - task: PowerShell@1
+    displayName: "Print Environment Variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[build.updatebuildnumber]$env:BuildNumber"
+        gci env:* | sort-object name
+
   - task: PowerShell@1
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
@@ -49,17 +72,10 @@ phases:
     displayName: "Run Configure.ps1"
 
   - task: PowerShell@1
-    name: configuration
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\ConfigureVstsBuild.ps1"
-      arguments: "-BuildCounterFile $(BuildCounterFile) -BuildInfoJsonFile $(BuildInfoJsonFile) -BuildRTM $(BuildRTM)"
+      arguments: "-BuildCounterFile $(BuildCounterFile) -BuildInfoJsonFile $(BuildInfoJsonFile) -BuildRTM $(BuildRTM) -SkipUpdateBuildNumber"
     displayName: "Configure VSTS CI Environment"
-
-  - task: PowerShell@1
-    displayName: "Print Environment Variables"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: "gci env:* | sort-object name"
 
   - task: MicroBuildLocalizationPlugin@1
     displayName: "Install Localization Plugin"
@@ -88,7 +104,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(Revision) /p:BuildRTM=$(BuildRTM) /v:m"
+      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m"
 
   - task: MSBuild@1
     displayName: "Build for VS2017"
@@ -96,7 +112,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Revision)"
+      msbuildArguments: "/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
 
   - task: MSBuild@1
     displayName: "Run unit tests"
@@ -105,7 +121,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS15 /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Revision) /p:TestResultOutputFormat=xml"
+      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS15 /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
   - task: PublishTestResults@2
@@ -160,7 +176,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(Revision)"
+      msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
 
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
@@ -223,7 +239,7 @@ phases:
       solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/p:BuildNumber=$(Revision)"
+      msbuildArguments: "/p:BuildNumber=$(BuildNumber)"
     condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   - task: CopyFiles@2
@@ -307,6 +323,8 @@ phases:
 
 - phase: Functional_Tests_On_Windows
   dependsOn: Initialize_Build
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
   queue:
     name: VSEng-MicroBuildSxS
     timeoutInMinutes: 120
@@ -315,6 +333,14 @@ phases:
         - msbuild
 
   steps:
+  - task: PowerShell@1
+    displayName: "Print Environment Variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[build.updatebuildnumber]$env:BuildNumber"
+        gci env:* | sort-object name
+
   - task: PowerShell@1
     displayName: "Download Config Files"
     enabled: "false"
@@ -338,7 +364,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(Revision) /p:BuildRTM=false /v:m"
+      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
 
   - task: MSBuild@1
     displayName: "Run Functional Tests"
@@ -347,7 +373,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreFuncTests  /p:BuildRTM=false  /p:BuildNumber=$(Revision) /p:TestResultOutputFormat=xml"
+      msbuildArguments: "/t:CoreFuncTests  /p:BuildRTM=false  /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -372,12 +398,23 @@ phases:
 
 - phase: Tests_On_Linux
   dependsOn: Initialize_Build
+  variables:
+    BUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
   queue:
     name: DDNuGet-Linux
     timeoutInMinutes: 45
     demands: sh
 
   steps:
+  - task: PowerShell@2
+    displayName: "Update Build Number"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "##vso[build.updatebuildnumber]$env:BUILDNUMBER"
+      failOnStderr: "true"
+    condition: "always()"
+
   - task: ShellScript@2
     displayName: "Run Tests"
     continueOnError: "true"
@@ -408,7 +445,11 @@ phases:
     condition: "always()"
 
 - phase: Tests_On_Mac
-  dependsOn: Build_and_UnitTest
+  dependsOn:
+  - Build_and_UnitTest
+  - Initialize_Build
+  variables:
+    BUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
   condition: "succeeded()"
   queue:
     name: VSEng-MicroBuildMacSierra
@@ -416,6 +457,15 @@ phases:
     demands: sh
 
   steps:
+  - task: PowerShell@2
+    displayName: "Update Build Number"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "##vso[build.updatebuildnumber]$env:BUILDNUMBER"
+      failOnStderr: "true"
+    condition: "always()"
+
   - task: DownloadBuildArtifacts@0
     displayName: "Download NuGet.ComamandLine.Test artifacts"
     inputs:
@@ -452,11 +502,11 @@ phases:
     condition: "always()"
 
 - phase: End_To_End_Tests_On_Windows
-  dependsOn: Build_and_UnitTest
-  condition: "succeeded()"
+  dependsOn:
+  - Build_and_UnitTest
+  - Initialize_Build
   variables:
-    BuildNumber: $[dependencies.Build_and_UnitTest.outputs['RTM.configuration.BuildNumber']]
-  condition: "succeeded()"
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
   queue:
     name: DDNuGet-Windows
     timeoutInMinutes: 75
@@ -467,8 +517,9 @@ phases:
     displayName: "Print Environment Variables"
     inputs:
       scriptType: "inlineScript"
-      inlineScript: "gci env:* | sort-object name;
-      Write-Host \"##vso[build.updatebuildnumber]$env:BuildNumber\""    
+      inlineScript: |
+        Write-Host "##vso[build.updatebuildnumber]$env:BuildNumber"
+        gci env:* | sort-object name      
 
   - task: PowerShell@1
     displayName: "Bootstrap.ps1"
@@ -546,11 +597,11 @@ phases:
 
 
 - phase: Apex_Tests_On_Windows
-  dependsOn: Build_and_UnitTest
-  condition: "succeeded()"
+  dependsOn:
+  - Build_and_UnitTest
+  - Initialize_Build
   variables:
-    BuildNumber: $[dependencies.Build_and_UnitTest.outputs['RTM.configuration.BuildNumber']]
-  condition: "succeeded()"
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
   queue:
     name: DDNuGet-Windows
     timeoutInMinutes: 75
@@ -561,9 +612,10 @@ phases:
     displayName: "Print Environment Variables"
     inputs:
       scriptType: "inlineScript"
-      inlineScript: "gci env:* | sort-object name;
-      Write-Host \"##vso[build.updatebuildnumber]$env:BuildNumber\""
-
+      inlineScript: |
+        Write-Host "##vso[build.updatebuildnumber]$env:BuildNumber"
+        gci env:* | sort-object name
+        
   - task: NuGetToolInstaller@0
     displayName: "Use NuGet 4.5.0"
     inputs:
