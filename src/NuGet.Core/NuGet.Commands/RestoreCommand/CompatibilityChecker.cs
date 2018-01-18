@@ -37,7 +37,8 @@ namespace NuGet.Commands
 
         internal async Task<CompatibilityCheckResult> CheckAsync(
             RestoreTargetGraph graph,
-            Dictionary<string, LibraryIncludeFlags> includeFlags)
+            Dictionary<string, LibraryIncludeFlags> includeFlags,
+            PackageSpec packageSpec)
         {
             // The Compatibility Check is designed to alert the user to cases where packages are not behaving as they would
             // expect, due to compatibility issues.
@@ -60,22 +61,33 @@ namespace NuGet.Commands
             // * The Targets (TxMs) defined in the project.json, with no Runtimes
             // * All combinations of TxMs and Runtimes defined in the project.json
             // * Additional (TxMs, Runtime) pairs defined by the "supports" mechanism in project.json
-
             var runtimeAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var compileAssemblies = new Dictionary<string, LibraryIdentity>(StringComparer.OrdinalIgnoreCase);
             var issues = new List<CompatibilityIssue>();
+
+            if (packageSpec.RestoreMetadata?.ProjectStyle == ProjectStyle.DotnetToolReference)
+            {
+                if (packageSpec.GetAllPackageDependencies().Count() != 1)
+                {
+                    // Create issue
+                    var issue = CompatibilityIssue.IncompatibleProjectType(
+                        new PackageIdentity(packageSpec.Name, packageSpec.Version));
+
+                    issues.Add(issue);
+                    await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1211, issue, graph));
+                }
+            }
 
             // Verify framework assets also as part of runtime assets validation.
             foreach (var node in graph.Flattened)
             {
                 await _log.LogAsync(LogLevel.Debug, string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingPackageCompatibility, node.Key.Name, node.Key.Version, graph.Name));
-
                 // Check project compatibility
                 if (node.Key.Type == LibraryType.Project)
                 {
                     // Get the full library
                     var localMatch = node.Data?.Match as LocalMatch;
-                    if (localMatch == null || !IsProjectCompatible(localMatch.LocalLibrary))
+                    if (localMatch == null || !IsProjectFrameworkCompatible(localMatch.LocalLibrary))
                     {
                         var available = new List<NuGetFramework>();
 
@@ -117,13 +129,13 @@ namespace NuGet.Commands
                     continue;
                 }
 
-                var compatibilityData = GetCompatibilityData(graph, node.Key);
+                var compatibilityData = GetCompatibilityData(graph, node.Key, packageSpec);
                 if (compatibilityData == null)
                 {
                     continue;
                 }
 
-                if (!IsCompatible(compatibilityData))
+                if (!IsPackageCompatible(compatibilityData))
                 {
                     var available = GetPackageFrameworks(compatibilityData, graph);
 
@@ -136,6 +148,8 @@ namespace NuGet.Commands
                     issues.Add(issue);
                     await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1202, issue, graph));
                 }
+
+                await VerifyDotnetToolCompatibilityChecks(compatibilityData, node, graph, issues);
 
                 // Check for matching ref/libs if we're checking a runtime-specific graph
                 var targetLibrary = compatibilityData.TargetLibrary;
@@ -214,6 +228,7 @@ namespace NuGet.Commands
             return new CompatibilityCheckResult(graph, issues);
         }
 
+
         /// <summary>
         /// Create an error message for the given issue.
         /// </summary>
@@ -280,7 +295,7 @@ namespace NuGet.Commands
             return available;
         }
 
-        private static bool IsProjectCompatible(Library library)
+        private static bool IsProjectFrameworkCompatible(Library library)
         {
             object frameworkInfoObject;
             if (library.Items.TryGetValue(
@@ -301,7 +316,7 @@ namespace NuGet.Commands
             }
         }
 
-        private bool IsCompatible(CompatibilityData compatibilityData)
+        private bool IsPackageCompatible(CompatibilityData compatibilityData)
         {
             // A package is compatible if it has...
             return
@@ -310,6 +325,81 @@ namespace NuGet.Commands
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
                     || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase));                       // No assemblies at all (for any TxM)
         }
+
+        private static HashSet<FrameworkRuntimePair> GetAvailableFrameworkRuntimePairs(CompatibilityData compatibilityData, RestoreTargetGraph graph)
+        {
+            var available = new HashSet<FrameworkRuntimePair>();
+
+            var contentItems = new ContentItemCollection();
+            contentItems.Load(compatibilityData.Files);
+
+
+            if (compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetTool))
+            {
+                foreach (var group in contentItems.FindItemGroups(graph.Conventions.Patterns.ToolsAssemblies))
+                {
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out var ridObj);
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out var tfmObj);
+
+                    var tfm = tfmObj as NuGetFramework;
+                    var rid = ridObj as string;
+                    if (tfm?.IsSpecificFramework == true)
+                    {
+                        available.Add(new FrameworkRuntimePair(tfm,rid));
+                    }
+                }
+            }
+
+            return available;
+        }
+
+        private async Task VerifyDotnetToolCompatibilityChecks(CompatibilityData compatibilityData, GraphItem<RemoteResolveResult> node, RestoreTargetGraph graph, List<CompatibilityIssue> issues)
+        {
+            var containsDotnetToolPackageType = compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetTool);
+
+            if (compatibilityData.TargetLibrary.PackageType.Count != 1 && containsDotnetToolPackageType)
+            {
+                var issue = CompatibilityIssue.ToolsPackageWithExtraPackageTypes(
+                    new PackageIdentity(node.Key.Name, node.Key.Version));
+
+                issues.Add(issue);
+                await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1204, issue, graph));
+            }
+
+            if (containsDotnetToolPackageType &&
+                    !(HasCompatibleToolsAssets(compatibilityData.TargetLibrary) || !compatibilityData.Files.Any(p => p.StartsWith("tools/", StringComparison.OrdinalIgnoreCase))))
+            {
+                var available = GetAvailableFrameworkRuntimePairs(compatibilityData, graph);
+                var issue = CompatibilityIssue.IncompatibleToolsPackage(
+                        new PackageIdentity(node.Key.Name, node.Key.Version),
+                        graph.Framework,
+                        graph.RuntimeIdentifier,
+                        available);
+
+                issues.Add(issue);
+                await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1202, issue, graph));
+            }
+
+            if (ProjectStyle.DotnetToolReference == compatibilityData.PackageSpec.RestoreMetadata?.ProjectStyle)
+            {
+                if (!containsDotnetToolPackageType && compatibilityData.PackageSpec.GetAllPackageDependencies().Any(e => e.Name.Equals(compatibilityData.TargetLibrary.Name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    var issue = CompatibilityIssue.IncompatiblePackageWithDotnetTool(new PackageIdentity(node.Key.Name, node.Key.Version));
+                    issues.Add(issue);
+                    await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1212, issue, graph));
+                }
+            }
+            else
+            {
+                if (containsDotnetToolPackageType)
+                {
+                    var issue = CompatibilityIssue.IncompatiblePackageWithDotnetTool(new PackageIdentity(node.Key.Name, node.Key.Version));
+                    issues.Add(issue);
+                    await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1212, issue, graph));
+                }
+            }
+        }
+
 
         /// <summary>
         /// Check if the library contains assets.
@@ -327,7 +417,13 @@ namespace NuGet.Commands
                 targetLibrary.BuildMultiTargeting.Count > 0;                          // Cross targeting build
         }
 
-        private CompatibilityData GetCompatibilityData(RestoreTargetGraph graph, LibraryIdentity libraryId)
+        internal static bool HasCompatibleToolsAssets(LockFileTargetLibrary targetLibrary)
+        {
+            return targetLibrary.ToolsAssemblies.Count > 0;  // Tools assemblies
+        }
+
+
+        private CompatibilityData GetCompatibilityData(RestoreTargetGraph graph, LibraryIdentity libraryId, PackageSpec packageSpec)
         {
             // Use data from the current lock file if it exists.
             LockFileTargetLibrary targetLibrary = null;
@@ -377,7 +473,7 @@ namespace NuGet.Commands
                 }
             }
 
-            return new CompatibilityData(files, targetLibrary);
+            return new CompatibilityData(files, targetLibrary, packageSpec);
         }
 
         private class CompatibilityData
@@ -385,10 +481,13 @@ namespace NuGet.Commands
             public IEnumerable<string> Files { get; }
             public LockFileTargetLibrary TargetLibrary { get; }
 
-            public CompatibilityData(IEnumerable<string> files, LockFileTargetLibrary targetLibrary)
+            public PackageSpec PackageSpec { get; }
+
+            public CompatibilityData(IEnumerable<string> files, LockFileTargetLibrary targetLibrary, PackageSpec packageSpec)
             {
                 Files = files;
                 TargetLibrary = targetLibrary;
+                PackageSpec = packageSpec;
             }
         }
     }

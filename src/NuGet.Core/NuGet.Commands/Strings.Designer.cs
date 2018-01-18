@@ -170,6 +170,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid project-package combination for {0} {1}. DotnetToolReference project style can only contain references of the DotnetTool type.
+        /// </summary>
+        internal static string Error_InvalidProjectPackageCombo {
+            get {
+                return ResourceManager.GetString("Error_InvalidProjectPackageCombo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to build package because of an unsupported targetFramework value on &apos;{0}&apos;..
         /// </summary>
         internal static string Error_InvalidTargetFramework {
@@ -256,6 +265,24 @@ namespace NuGet.Commands {
         internal static string Error_ProjectDoesNotExist {
             get {
                 return ResourceManager.GetString("Error_ProjectDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project {0} must have a single package reference(s)..
+        /// </summary>
+        internal static string Error_ProjectWithIncorrectDependenciesCount {
+            get {
+                return ResourceManager.GetString("Error_ProjectWithIncorrectDependenciesCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid tools package {0} {1}. Tools packages cannot contain more than one PackageType..
+        /// </summary>
+        internal static string Error_ToolsPackageWithExtraPackageTypes {
+            get {
+                return ResourceManager.GetString("Error_ToolsPackageWithExtraPackageTypes", resourceCulture);
             }
         }
         
@@ -986,6 +1013,15 @@ namespace NuGet.Commands {
         internal static string Log_SkippingCacheFile {
             get {
                 return ResourceManager.GetString("Log_SkippingCacheFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skipping compatibility checks of the ridless graph for DotnetToolReference project type. This graph is not used. .
+        /// </summary>
+        internal static string Log_SkippingCompatibiilityCheckOnRidlessGraphForDotnetToolReferenceProject {
+            get {
+                return ResourceManager.GetString("Log_SkippingCompatibiilityCheckOnRidlessGraphForDotnetToolReferenceProject", resourceCulture);
             }
         }
         

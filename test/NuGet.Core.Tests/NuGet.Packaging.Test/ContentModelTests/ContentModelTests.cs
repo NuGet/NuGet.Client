@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -148,6 +148,30 @@ namespace NuGet.Client.Test
 
             // Act
             var groups = collection.FindItemGroups(conventions.Patterns.ContentFiles)
+                .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
+                .ToList();
+
+            // Assert
+            Assert.Equal(1, groups.Count);
+            Assert.Equal(NuGetFramework.AnyFramework, (NuGetFramework)groups[0].Properties["tfm"]);
+        }
+
+        [Fact]
+        public void ContentModel_ToolsAnyMapsToAny()
+        {
+            // Arrange
+            var conventions = new ManagedCodeConventions(
+                new RuntimeGraph(
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("net46.app") }));
+
+            var collection = new ContentItemCollection();
+            collection.Load(new string[]
+            {
+                "tools/any/bla/a.dll",
+            });
+
+            // Act
+            var groups = collection.FindItemGroups(conventions.Patterns.ToolsAssemblies)
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
 

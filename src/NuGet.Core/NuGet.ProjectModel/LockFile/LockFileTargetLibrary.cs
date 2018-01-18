@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -40,6 +40,12 @@ namespace NuGet.ProjectModel
 
         public IList<LockFileRuntimeTarget> RuntimeTargets { get; set; } = new List<LockFileRuntimeTarget>();
 
+        public IList<LockFileItem> ToolsAssemblies { get; set; } = new List<LockFileItem>();
+
+        // Package Type does not belong in Equals and HashCode, since it's only used for compatibility checking post restore.
+        public IList<PackageType> PackageType { get; set; } = new List<PackageType>();
+
+
         public bool Equals(LockFileTargetLibrary other)
         {
             if (other == null)
@@ -65,7 +71,8 @@ namespace NuGet.ProjectModel
                 && ContentFiles.OrderedEquals(other.ContentFiles, item => item.Path, StringComparer.OrdinalIgnoreCase)
                 && RuntimeTargets.OrderedEquals(other.RuntimeTargets, item => item.Path, StringComparer.OrdinalIgnoreCase)
                 && Build.OrderedEquals(other.Build, item => item.Path, StringComparer.OrdinalIgnoreCase)
-                && BuildMultiTargeting.OrderedEquals(other.BuildMultiTargeting, item => item.Path, StringComparer.OrdinalIgnoreCase);
+                && BuildMultiTargeting.OrderedEquals(other.BuildMultiTargeting, item => item.Path, StringComparer.OrdinalIgnoreCase)
+                && ToolsAssemblies.OrderedEquals(other.ToolsAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)
@@ -128,6 +135,11 @@ namespace NuGet.ProjectModel
             }
 
             foreach (var item in BuildMultiTargeting.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(item);
+            }
+
+            foreach (var item in ToolsAssemblies.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
             {
                 combiner.AddObject(item);
             }

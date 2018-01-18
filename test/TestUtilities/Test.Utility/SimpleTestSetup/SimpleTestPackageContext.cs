@@ -27,7 +27,7 @@ namespace NuGet.Test.Utility
         }
 
         public SimpleTestPackageContext(PackageIdentity identity)
-            : this (identity.Id, identity.Version.ToString())
+            : this(identity.Id, identity.Version.ToString())
         {
         }
 
@@ -48,6 +48,8 @@ namespace NuGet.Test.Utility
         public List<PackageType> PackageTypes { get; set; } = new List<PackageType>();
         public PackageType PackageType { get; set; }
         public string NoWarn { get; set; }
+
+        public bool UseDefaultRuntimeAssemblies { get; set; } = true;
 
         /// <summary>
         /// Package signatures.

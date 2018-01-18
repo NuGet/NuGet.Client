@@ -253,6 +253,7 @@ namespace NuGet.Commands
             if (string.IsNullOrEmpty(projectLockFilePath))
             {
                 if (_request.ProjectStyle == ProjectStyle.PackageReference
+                    || _request.ProjectStyle == ProjectStyle.DotnetToolReference
                     || _request.ProjectStyle == ProjectStyle.Standalone)
                 {
                     projectLockFilePath = Path.Combine(_request.RestoreOutputPath, LockFileFormat.AssetsFileName);
@@ -470,32 +471,41 @@ namespace NuGet.Commands
                 var checker = new CompatibilityChecker(localRepositories, lockFile, validateRuntimeAssets, logger);
                 foreach (var graph in graphs)
                 {
-                    await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingCompatibility, graph.Name));
+                    // Don't do compat checks for the ridless graph of DotnetTooReference restore. Everything relevant will be caught in the graph with the rid
+                    if (!(ProjectStyle.DotnetToolReference == project.RestoreMetadata?.ProjectStyle && string.IsNullOrEmpty(graph.RuntimeIdentifier)))
+                    { 
+                        await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingCompatibility, graph.Name));
 
-                    var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
+                        var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
 
-                    var res = await checker.CheckAsync(graph, includeFlags);
-                    checkResults.Add(res);
-                    if (res.Success)
-                    {
-                        await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAndProjectsAreCompatible, graph.Name));
+                        var res = await checker.CheckAsync(graph, includeFlags, project);
+                    
+                        checkResults.Add(res);
+                        if (res.Success)
+                        {
+                            await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAndProjectsAreCompatible, graph.Name));
+                        }
+                        else
+                        {
+                            // Get error counts on a project vs package basis
+                            var projectCount = res.Issues.Count(issue => issue.Type == CompatibilityIssueType.ProjectIncompatible);
+                            var packageCount = res.Issues.Count(issue => issue.Type != CompatibilityIssueType.ProjectIncompatible);
+
+                            // Log a summary with compatibility error counts
+                            if (projectCount > 0)
+                            {
+                                await logger.LogAsync(LogLevel.Debug, $"Incompatible projects: {projectCount}");
+                            }
+
+                            if (packageCount > 0)
+                            {
+                                await logger.LogAsync(LogLevel.Debug, $"Incompatible packages: {packageCount}");
+                            }
+                        }
                     }
                     else
                     {
-                        // Get error counts on a project vs package basis
-                        var projectCount = res.Issues.Count(issue => issue.Type == CompatibilityIssueType.ProjectIncompatible);
-                        var packageCount = res.Issues.Count(issue => issue.Type != CompatibilityIssueType.ProjectIncompatible);
-
-                        // Log a summary with compatibility error counts
-                        if (projectCount > 0)
-                        {
-                            await logger.LogAsync(LogLevel.Debug, $"Incompatible projects: {projectCount}");
-                        }
-
-                        if (packageCount > 0)
-                        {
-                            await logger.LogAsync(LogLevel.Debug, $"Incompatible packages: {packageCount}");
-                        }
+                        await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_SkippingCompatibiilityCheckOnRidlessGraphForDotnetToolReferenceProject, graph.Name));
                     }
                 }
             }

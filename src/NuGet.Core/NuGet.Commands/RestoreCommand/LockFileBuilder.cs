@@ -49,9 +49,10 @@ namespace NuGet.Commands
 
             var previousLibraries = previousLockFile?.Libraries.ToDictionary(l => Tuple.Create(l.Name, l.Version));
 
-            if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference)
+            if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference ||
+                project.RestoreMetadata?.ProjectStyle == ProjectStyle.DotnetToolReference)
             {
-                AddProjectFileDependenciesForNETCore(project, lockFile, targetGraphs);
+                AddProjectFileDependenciesForPackageReference(project, lockFile, targetGraphs);
             }
             else
             {
@@ -308,7 +309,7 @@ namespace NuGet.Commands
             }
         }
 
-        private static void AddProjectFileDependenciesForNETCore(PackageSpec project, LockFile lockFile, IEnumerable<RestoreTargetGraph> targetGraphs)
+        private static void AddProjectFileDependenciesForPackageReference(PackageSpec project, LockFile lockFile, IEnumerable<RestoreTargetGraph> targetGraphs)
         {
             // For NETCore put everything under a TFM section
             // Projects are included for NETCore

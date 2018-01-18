@@ -54,11 +54,13 @@ namespace NuGet.Commands
             var runtimeIdentifier = targetGraph.RuntimeIdentifier;
             var framework = targetFrameworkOverride ?? targetGraph.Framework;
 
+            // This will throw an appropriate error if the nuspec is missing
+            var nuspec = package.Nuspec;
+
             var orderedCriteriaSets = cache.GetSelectionCriteria(targetGraph, framework);
             var contentItems = cache.GetContentItems(library, package);
 
-            // This will throw an appropriate error if the nuspec is missing
-            var nuspec = package.Nuspec;
+            var packageTypes = nuspec.GetPackageTypes().AsList();
 
             for (var i = 0; i < orderedCriteriaSets.Count; i++)
             {
@@ -68,22 +70,36 @@ namespace NuGet.Commands
                 {
                     Name = package.Id,
                     Version = package.Version,
-                    Type = LibraryType.Package
+                    Type = LibraryType.Package,
+                    PackageType = packageTypes
                 };
 
                 // Populate assets
-                AddAssets(library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
 
-                // Check if compatile assets were found.
-                // If no compatible assets were found and this is the last check
-                // continue on with what was given, this will fail in the normal
-                // compat verification.
-                if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
+                if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
                 {
-                    // Stop when compatible assets are found.
-                    break;
+                    AddToolsAssets(library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
+                    if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
+                    {
+                        break;
+                    }
                 }
+                else
+                { 
+                    AddAssets(library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
+                    // Check if compatile assets were found.
+                    // If no compatible assets were found and this is the last check
+                    // continue on with what was given, this will fail in the normal
+                    // compat verification.
+                    if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
+                    {
+                        // Stop when compatible assets are found.
+                        break;
+                    }
+                }
+
             }
+
 
             // Add dependencies
             AddDependencies(dependencies, lockFileLib, framework, nuspec);
@@ -203,6 +219,25 @@ namespace NuGet.Commands
 
             // Apply filters from the <references> node in the nuspec
             ApplyReferenceFilter(lockFileLib, framework, nuspec);
+        }
+
+        private static void AddToolsAssets(LockFileLibrary library,
+            LocalPackageInfo package,
+            RestoreTargetGraph targetGraph,
+            LibraryIncludeFlags dependencyType,
+            LockFileTargetLibrary lockFileLib,
+            NuGetFramework framework,
+            string runtimeIdentifier,
+            ContentItemCollection contentItems,
+            NuspecReader nuspec,
+            IReadOnlyList<SelectionCriteria> orderedCriteria)
+        {
+            var toolsGroup = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
+                targetGraph.Conventions.Patterns.ToolsAssemblies);
+
+            lockFileLib.ToolsAssemblies.AddRange(toolsGroup);
         }
 
         private static void AddContentFiles(RestoreTargetGraph targetGraph, LockFileTargetLibrary lockFileLib, NuGetFramework framework, ContentItemCollection contentItems, NuspecReader nuspec)

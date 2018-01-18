@@ -10,6 +10,7 @@ using System.Threading;
 using NuGet.XPlat.FuncTest;
 using NuGet.Test.Utility;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol;
 using Xunit;
@@ -32,6 +33,7 @@ namespace Dotnet.Integration.Test
                 .First(), "Sdks");            
             _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
             _processEnvVars.Add("UseSharedCompilation", "false");
+            _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
             // We do this here so that dotnet new will extract all the packages on the first run on the machine.
             InitDotnetNewToExtractPackages();
         }
@@ -64,30 +66,75 @@ namespace Dotnet.Integration.Test
                 timeOutInMilliseconds: timeOut,
                 environmentVariables: _processEnvVars);
 
-            // TODO : remove this workaround when https://github.com/dotnet/templating/issues/294 is fixed
-            if (result.Item1 != 0)
-            {
-                result = CommandRunner.Run(TestDotnetCli,
-                workingDirectory,
-                $"new {args} --debug:reinit",
-                waitForExit: true,
-                timeOutInMilliseconds: 300000,
-                environmentVariables: _processEnvVars);
-
-                result = CommandRunner.Run(TestDotnetCli,
-                workingDirectory,
-                $"new {args} ",
-                waitForExit: true,
-                timeOutInMilliseconds: 300000,
-                environmentVariables: _processEnvVars);
-            }
-
             Assert.True(result.Item1 == 0, $"Creating project failed with following log information :\n {result.AllOutput}");
             Assert.True(string.IsNullOrWhiteSpace(result.Item3), $"Creating project failed with following message in error stream :\n {result.AllOutput}");
         }
 
+        internal void CreateDotnetToolProject(string solutionRoot, string projectName, string targetFramework, string rid, string source, IList<PackageIdentity> packages, int timeOut = 60000)
+        {
+            var workingDirectory = Path.Combine(solutionRoot, projectName);
+            if (!Directory.Exists(workingDirectory))
+            {
+                Directory.CreateDirectory(workingDirectory);
+            }
+            var projectFileName = Path.Combine(workingDirectory, projectName + ".csproj");
+
+            var restorePackagesPath = Path.Combine(workingDirectory, "tools", "packages");
+            var baseIntermediatepath = Path.Combine(workingDirectory);
+            var restoreSolutionDirectory = workingDirectory;
+            var packageReference = string.Empty;
+            foreach (var package in packages) {
+                packageReference = string.Concat(packageReference, Environment.NewLine, $@"<PackageReference Include=""{ package.Id }"" Version=""{ package.Version.ToString()}""/>");
+            }
+
+            var projectFile = $@"<Project Sdk=""Microsoft.NET.Sdk"">
+                <PropertyGroup><RestoreProjectStyle>DotnetToolReference</RestoreProjectStyle>
+                <OutputType>Exe</OutputType>
+                <TargetFramework> {targetFramework} </TargetFramework>
+                <RuntimeIdentifier>{rid} </RuntimeIdentifier> 
+                <!-- Things that do change-->
+                <RestorePackagesPath>{restorePackagesPath}</RestorePackagesPath>
+                <BaseIntermediateOutputPath>{baseIntermediatepath}</BaseIntermediateOutputPath>
+                <RestoreSolutionDirectory>{restoreSolutionDirectory}</RestoreSolutionDirectory>
+    
+                <RestoreSources>{source}</RestoreSources>
+                <!--Things that don't change -->
+                <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+                <RestoreFallbackFolders>clear</RestoreFallbackFolders>
+                <RestoreAdditionalProjectSources></RestoreAdditionalProjectSources>
+                <RestoreAdditionalProjectFallbackFolders></RestoreAdditionalProjectFallbackFolders>
+                <RestoreAdditionalProjectFallbackFoldersExcludes></RestoreAdditionalProjectFallbackFoldersExcludes>
+              </PropertyGroup>
+                <ItemGroup>
+                    {packageReference}
+                </ItemGroup>
+            </Project>";
+
+            try {
+                File.WriteAllText(projectFileName, projectFile);
+            }
+            catch
+            {
+                // ignore
+            }
+            Assert.True(File.Exists(projectFileName));
+        }
+
+        internal CommandRunnerResult RestoreToolProject(string workingDirectory, string projectName, string args = "")
+        {
+            var result = CommandRunner.Run(TestDotnetCli,
+                workingDirectory,
+                $"restore {projectName}.csproj {args}",
+                waitForExit: true,
+                environmentVariables: _processEnvVars);
+            return result;
+        }
+
         internal void RestoreProject(string workingDirectory, string projectName, string args)
         {
+            var envVar = new Dictionary<string, string>();
+            envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
+
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"restore {projectName}.csproj {args}",
@@ -153,7 +200,9 @@ namespace Dotnet.Integration.Test
         {
             var nupkgsDirectory = DotnetCliUtil.GetNupkgDirectoryInRepo();
             var pathToPackNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks.Pack");
-            var pathToRestoreNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks");
+
+            var nupkgsToCopy = new List<string> { "NuGet.Build.Tasks", "NuGet.Versioning", "NuGet.Protocol", "NuGet.ProjectModel", "NuGet.Packaging", "NuGet.Packaging.Core", "NuGet.LibraryModel", "NuGet.Frameworks", "NuGet.DependencyResolver.Core", "NuGet.Configuration", "NuGet.Common", "NuGet.Commands", "NuGet.CommandLine.XPlat" };
+
             var pathToSdkInCli = Path.Combine(
                     Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
                         .First());
@@ -169,6 +218,75 @@ namespace Dotnet.Integration.Test
                 DeleteDirectory(pathToPackSdk);
                 CopyNupkgFilesToTarget(nupkg, pathToPackSdk, files);
             }
+
+
+            foreach (var nupkgName in nupkgsToCopy) {
+                using (var nupkg = new PackageArchiveReader(FindMostRecentNupkg(nupkgsDirectory, nupkgName)))
+                {
+                    var files = nupkg.GetFiles()
+                    .Where(fileName => fileName.StartsWith("lib/netstandard")
+                                    || fileName.Contains("NuGet.targets"));
+
+                    CopyFlatlistOfFilesToTarget(nupkg, pathToSdkInCli, files);
+                }
+            }
+        }
+
+        private void CopyFlatlistOfFilesToTarget(PackageArchiveReader nupkg, string destination, IEnumerable<string> packageFiles)
+        {
+
+            var packageFileExtractor = new PackageFileExtractor(packageFiles,
+                             PackageExtractionBehavior.XmlDocFileSaveMode);
+            var logger = new TestCommandOutputLogger();
+            var token = CancellationToken.None;
+            var filesCopied = new List<string>();
+
+            foreach (var packageFile in packageFiles)
+            {
+                token.ThrowIfCancellationRequested();
+
+                var entry = nupkg.GetEntry(packageFile);
+
+                var packageFileName = entry.FullName;
+                // An entry in a ZipArchive could start with a '/' based on how it is zipped
+                // Remove it if present
+                if (packageFileName.StartsWith("/", StringComparison.Ordinal))
+                {
+                    packageFileName = packageFileName.Substring(1);
+                }
+                // Get only the name, without the path, since we are extracting to flat list
+                packageFileName = Path.GetFileName(packageFileName);
+
+                // ZipArchive always has forward slashes in them. By replacing them with DirectorySeparatorChar;
+                // in windows, we get the windows-style path
+                var normalizedPath = Uri.UnescapeDataString(packageFileName.Replace('/', Path.DirectorySeparatorChar));
+
+                var targetFilePath = Path.Combine(destination, normalizedPath);
+                if (!targetFilePath.StartsWith(destination, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                try
+                {
+                    File.Delete(targetFilePath);
+                }
+                catch
+                {
+                    // Do nothing
+                }
+                using (var stream = entry.Open())
+                {
+                    var copiedFile = packageFileExtractor.ExtractPackageFile(packageFileName, targetFilePath, stream);
+                    if (copiedFile != null)
+                    {
+                        entry.UpdateFileTimeFromEntry(copiedFile, logger);
+                        entry.UpdateFilePermissionsFromEntry(copiedFile, logger);
+
+                        filesCopied.Add(copiedFile);
+                    }
+                }
+            }
+
         }
 
         private void CopyNupkgFilesToTarget(PackageArchiveReader nupkg, string destPath, IEnumerable<string> files)

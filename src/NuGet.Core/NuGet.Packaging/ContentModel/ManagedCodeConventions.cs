@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -53,6 +53,14 @@ namespace NuGet.Client
                 PropertyNames.TargetFrameworkMoniker,
                 "any",
                 FrameworkConstants.CommonFrameworks.DotNet)
+        });
+
+        private static readonly PatternTable AnyTable = new PatternTable(new[]
+        {
+            new PatternTableEntry(
+                PropertyNames.TargetFrameworkMoniker,
+                "any",
+                AnyFramework.Instance )
         });
 
         private RuntimeGraph _runtimeGraph;
@@ -382,6 +390,11 @@ namespace NuGet.Client
             /// </summary>
             public PatternSet ContentFiles { get; }
 
+            /// <summary>
+            /// Pattern used to identify Tools assets for global tools
+            /// </summary>
+            public PatternSet ToolsAssemblies { get; }
+
             internal ManagedCodePatterns(ManagedCodeConventions conventions)
             {
                 AnyTargettedFile = new PatternSet(
@@ -501,6 +514,17 @@ namespace NuGet.Client
                     pathPatterns: new PatternDefinition[]
                     {
                         new PatternDefinition("contentFiles/{codeLanguage}/{tfm}/{any?}"),
+                    });
+
+                ToolsAssemblies = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                        {
+                            new PatternDefinition("tools/{tfm}/{rid}/{any?}", table: AnyTable),
+                        },
+                    pathPatterns: new PatternDefinition[]
+                        {
+                            new PatternDefinition("tools/{tfm}/{rid}/{any?}", table: AnyTable),
                     });
             }
         }

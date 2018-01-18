@@ -1678,5 +1678,75 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(0, logMessage.TargetGraphs.Count);
             Assert.Equal("test log message", logMessage.Message);
         }
+
+        [Fact]
+        public void LockFileFormat_ReadsLockFileWithTools()
+        {
+            var lockFileContent = @"{
+              ""version"": 1,
+              ""targets"": {
+                "".NETPlatform,Version=v5.0"": {
+                  ""GlobalTool/1.0.0"": {
+                    ""dependencies"": {
+                    },
+                    ""tools"": {
+                      ""tools/dotnet/any/test.dll"": {}
+                    }
+                  }
+                }
+              },
+              ""libraries"": {
+                ""GlobalTool/1.0.0"": {
+                  ""sha512"": ""WFRsJnfRzXYIiDJRbTXGctncx6Hw1F/uS2c5a5CzUwHuA3D/CM152F2HjWt12dLgH0BOcGvcRjKl2AfJ6MnHVg=="",
+                  ""type"": ""package"",
+                  ""files"": [
+                    ""_rels/.rels"",
+                    ""GlobalTool.nuspec"",
+                    ""tools/dotnet/any/test.dll"",
+                    ""package/services/metadata/core-properties/b7eb2b260f1846d69b1ccf1a4e614180.psmdcp"",
+                    ""[Content_Types].xml""
+                  ]
+                }
+              },
+              ""projectFileDependencyGroups"": {
+                """": [
+                  ""GlobalTool [1.0.0, )""
+                ],
+                "".NETPlatform,Version=v5.0"": []
+              }
+            }";
+            var lockFileFormat = new LockFileFormat();
+            var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
+
+            Assert.Equal(1, lockFile.Version);
+
+            var target = lockFile.Targets.Single();
+            Assert.Equal(NuGetFramework.Parse("dotnet"), target.TargetFramework);
+
+            var runtimeTargetLibrary = target.Libraries.Single();
+            Assert.Equal("GlobalTool", runtimeTargetLibrary.Name);
+            Assert.Equal(NuGetVersion.Parse("1.0.0"), runtimeTargetLibrary.Version);
+            Assert.Equal(0, runtimeTargetLibrary.NativeLibraries.Count);
+            Assert.Equal(0, runtimeTargetLibrary.ResourceAssemblies.Count);
+            Assert.Equal(0, runtimeTargetLibrary.FrameworkAssemblies.Count);
+            Assert.Equal(0, runtimeTargetLibrary.RuntimeAssemblies.Count);
+            Assert.Equal(1, runtimeTargetLibrary.ToolsAssemblies.Count);
+            Assert.Equal("tools/dotnet/any/test.dll", runtimeTargetLibrary.ToolsAssemblies.Single().Path);
+            Assert.Equal(0, runtimeTargetLibrary.Dependencies.Count());
+
+            var runtimeLibrary = lockFile.Libraries.Single();
+            Assert.Equal("GlobalTool", runtimeLibrary.Name);
+            Assert.Equal(NuGetVersion.Parse("1.0.0"), runtimeLibrary.Version);
+            Assert.False(string.IsNullOrEmpty(runtimeLibrary.Sha512));
+            Assert.Equal(LibraryType.Package, runtimeLibrary.Type);
+            Assert.Equal(5, runtimeLibrary.Files.Count);
+
+            var emptyDepGroup = lockFile.ProjectFileDependencyGroups.First();
+            Assert.True(string.IsNullOrEmpty(emptyDepGroup.FrameworkName));
+            Assert.Equal("GlobalTool [1.0.0, )", emptyDepGroup.Dependencies.Single());
+            var netPlatDepGroup = lockFile.ProjectFileDependencyGroups.Last();
+            Assert.Equal(NuGetFramework.Parse("dotnet").DotNetFrameworkName, netPlatDepGroup.FrameworkName);
+            Assert.Empty(netPlatDepGroup.Dependencies);
+        }
     }
 }

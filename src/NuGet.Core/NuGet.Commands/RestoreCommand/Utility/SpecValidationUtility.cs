@@ -110,7 +110,11 @@ namespace NuGet.Commands
                 switch (projectStyle)
                 {
                     case ProjectStyle.PackageReference:
-                        ValidateProjectSpecNetCore(spec, files);
+                        ValidateProjectSpecPackageReference(spec, files);
+                        break;
+
+                    case ProjectStyle.DotnetToolReference:
+                        ValidateProjectSpecPackageReference(spec, files);
                         break;
 
                     case ProjectStyle.ProjectJson:
@@ -157,7 +161,7 @@ namespace NuGet.Commands
             }
         }
 
-        private static void ValidateProjectSpecNetCore(PackageSpec spec, IEnumerable<string> files)
+        private static void ValidateProjectSpecPackageReference(PackageSpec spec, IEnumerable<string> files)
         {
             // Verify frameworks
             ValidateFrameworks(spec, files);
