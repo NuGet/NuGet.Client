@@ -5,10 +5,7 @@ using System;
 using System.Collections.Generic;
 using Moq;
 using NuGet.Common;
-using NuGet.PackageManagement.Telemetry;
-using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -134,11 +131,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert
             Assert.NotNull(lastTelemetryEvent);
-            Assert.Equal(TelemetryConstants.NugetActionStepsEventName, lastTelemetryEvent.Name);
+            Assert.Equal(ActionTelemetryStepEvent.NugetActionStepsEventName, lastTelemetryEvent.Name);
             Assert.Equal(3, lastTelemetryEvent.Properties.Count);
 
             Assert.Equal(service.OperationId, lastTelemetryEvent.Properties["OperationId"].ToString());
-            Assert.Equal(stepNameWithProject, lastTelemetryEvent.Properties[TelemetryConstants.StepNamePropertyName].ToString());
+            Assert.Equal(stepNameWithProject, lastTelemetryEvent.Properties["StepName"].ToString());
             Assert.Equal(duration, (double)lastTelemetryEvent.Properties["Duration"]);
         }
 
@@ -154,7 +151,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private void VerifyTelemetryEventData(string operationId, VSActionsTelemetryEvent expected, TelemetryEvent actual)
         {
             Assert.NotNull(actual);
-            Assert.Equal(TelemetryConstants.NugetActionEventName, actual.Name);
+            Assert.Equal(ActionEventBase.NugetActionEventName, actual.Name);
             Assert.Equal(10, actual.Properties.Count);
 
             Assert.Equal(expected.OperationType.ToString(), actual.Properties["OperationType"].ToString());

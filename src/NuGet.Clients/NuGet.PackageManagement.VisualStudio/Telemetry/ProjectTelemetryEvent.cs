@@ -1,9 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.Telemetry
 {
-    public class ProjectTelemetryEvent
+    public class ProjectTelemetryEvent : INuGetTelemetryEvent
     {
         public ProjectTelemetryEvent(
             string nuGetVersion,
@@ -16,6 +19,8 @@ namespace NuGet.PackageManagement.Telemetry
             NuGetProjectType = nuGetProjectType;
             InstalledPackageCount = installedPackageCount;
         }
+
+        public const string ProjectInformationEventName = "ProjectInformation";
 
         /// <summary>
         /// The version of NuGet that emitted this event.
@@ -36,5 +41,18 @@ namespace NuGet.PackageManagement.Telemetry
         /// The number of NuGet packages installed to this project.
         /// </summary>
         public int InstalledPackageCount { get; }
+
+        public TelemetryEvent ToTelemetryEvent(string operationIdPropertyName, string operationId)
+        {
+            return new TelemetryEvent(
+                ProjectInformationEventName,
+                new Dictionary<string, object>
+                {
+                    { nameof(InstalledPackageCount), InstalledPackageCount },
+                    { nameof(NuGetProjectType), NuGetProjectType },
+                    { nameof(NuGetVersion), NuGetVersion },
+                    { nameof(ProjectId), ProjectId.ToString() }
+                });
+        }
     }
 }

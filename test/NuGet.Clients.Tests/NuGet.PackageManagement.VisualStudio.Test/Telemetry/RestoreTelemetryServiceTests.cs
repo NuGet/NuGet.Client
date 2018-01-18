@@ -4,9 +4,7 @@
 using System;
 using Moq;
 using NuGet.Common;
-using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -58,7 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private void VerifyTelemetryEventData(string operationId, RestoreTelemetryEvent expected, TelemetryEvent actual)
         {
             Assert.NotNull(actual);
-            Assert.Equal(TelemetryConstants.RestoreActionEventName, actual.Name);
+            Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
             Assert.Equal(10, actual.Properties.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual.Properties["OperationSource"].ToString());

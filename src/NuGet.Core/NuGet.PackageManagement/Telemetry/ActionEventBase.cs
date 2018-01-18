@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using NuGet.Common;
 
-namespace NuGet.VisualStudio
+namespace NuGet.PackageManagement
 {
     /// <summary>
     /// Base class to generate telemetry data for nuget operations like install, update or restore.
     /// </summary>
-    public abstract class ActionEventBase : INuGetTelemetryEvent
+    public class ActionEventBase : INuGetTelemetryEvent
     {
         public ActionEventBase(
             string[] projectIds,
@@ -28,6 +29,8 @@ namespace NuGet.VisualStudio
             ProjectsCount = projectIds.Length;
         }
 
+        public const string NugetActionEventName = "NugetAction";
+
         public string[] ProjectIds { get; }
 
         public int PackagesCount { get; }
@@ -42,6 +45,22 @@ namespace NuGet.VisualStudio
 
         public int ProjectsCount { get; }
 
-        public abstract TelemetryEvent ToTelemetryEvent(string operationId);
+        public virtual TelemetryEvent ToTelemetryEvent(string operationIdPropertyName, string operationId)
+        {
+            return new TelemetryEvent(
+                NugetActionEventName,
+                new Dictionary<string, object>
+                {
+                    { operationIdPropertyName, operationId },
+                    { nameof(ProjectIds), string.Join(",", ProjectIds) },
+                    { nameof(PackagesCount), PackagesCount },
+                    { nameof(Status), Status },
+                    { nameof(StartTime), StartTime.ToString() },
+                    { nameof(EndTime), EndTime.ToString() },
+                    { nameof(Duration), Duration },
+                    { nameof(ProjectsCount), ProjectsCount }
+                }
+            );
+        }
     }
 }

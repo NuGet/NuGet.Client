@@ -3,17 +3,19 @@
 
 using System;
 using NuGet.Common;
-using NuGet.ProjectManagement;
 using VsTelemetryEvent = Microsoft.VisualStudio.Telemetry.TelemetryEvent;
 using VsTelemetryService = Microsoft.VisualStudio.Telemetry.TelemetryService;
 
 namespace NuGet.VisualStudio.Telemetry
 {
-    public class TelemetrySession : ITelemetrySession
+    public class VSTelemetrySession : ITelemetrySession
     {
-        public static readonly TelemetrySession Instance = new TelemetrySession();
+        public static readonly VSTelemetrySession Instance = new VSTelemetrySession();
 
-        private TelemetrySession() { }
+        public const string VSEventNamePrefix = "VS/NuGet/";
+        public const string VSPropertyNamePrefix = "VS.NuGet.";
+
+        private VSTelemetrySession() { }
 
         public void PostEvent(TelemetryEvent telemetryEvent)
         {
@@ -27,11 +29,11 @@ namespace NuGet.VisualStudio.Telemetry
                 throw new ArgumentNullException(nameof(telemetryEvent));
             }
 
-            var vsTelemetryEvent = new VsTelemetryEvent(TelemetryConstants.VSEventNamePrefix + telemetryEvent.Name);
+            var vsTelemetryEvent = new VsTelemetryEvent(VSEventNamePrefix + telemetryEvent.Name);
 
             foreach (var pair in telemetryEvent.Properties)
             {
-                vsTelemetryEvent.Properties[TelemetryConstants.VSPropertyNamePrefix + pair.Key] = pair.Value;
+                vsTelemetryEvent.Properties[VSPropertyNamePrefix + pair.Key] = pair.Value;
             }
 
             return vsTelemetryEvent;

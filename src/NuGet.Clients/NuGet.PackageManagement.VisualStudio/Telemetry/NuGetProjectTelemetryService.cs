@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -11,7 +10,6 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
@@ -28,18 +26,13 @@ namespace NuGet.PackageManagement.Telemetry
             = new Lazy<string>(() => ClientVersionUtility.GetNuGetAssemblyVersion());
 
         public static NuGetProjectTelemetryService Instance =
-            new NuGetProjectTelemetryService(TelemetrySession.Instance);
+            new NuGetProjectTelemetryService(VSTelemetrySession.Instance);
 
         private readonly ITelemetrySession _telemetrySession;
 
         public NuGetProjectTelemetryService(ITelemetrySession telemetryService)
         {
-            if (telemetryService == null)
-            {
-                throw new ArgumentNullException(nameof(telemetryService));
-            }
-
-            _telemetrySession = telemetryService;
+            _telemetrySession = telemetryService ?? throw new ArgumentNullException(nameof(telemetryService));
         }
 
         public void EmitNuGetProject(NuGetProject nuGetProject)
@@ -113,17 +106,8 @@ namespace NuGet.PackageManagement.Telemetry
         }
 
         public void EmitProjectInformation(ProjectTelemetryEvent projectInformation)
-        {
-            var telemetryEvent = new TelemetryEvent(
-                TelemetryConstants.ProjectInformationEventName,
-                new Dictionary<string, object>
-                {
-                    { TelemetryConstants.InstalledPackageCountPropertyName, projectInformation.InstalledPackageCount },
-                    { TelemetryConstants.NuGetProjectTypePropertyName, projectInformation.NuGetProjectType },
-                    { TelemetryConstants.NuGetVersionPropertyName, projectInformation.NuGetVersion },
-                    { TelemetryConstants.ProjectIdPropertyName, projectInformation.ProjectId.ToString() }
-                });
-            _telemetrySession.PostEvent(telemetryEvent);
+        { 
+            _telemetrySession.PostEvent(projectInformation.ToTelemetryEvent(operationIdPropertyName: string.Empty, operationId: string.Empty));
         }
     }
 }

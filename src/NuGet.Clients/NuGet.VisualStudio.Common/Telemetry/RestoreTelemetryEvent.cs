@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using NuGet.Common;
+using NuGet.PackageManagement;
 
 namespace NuGet.VisualStudio
 {
@@ -26,28 +26,20 @@ namespace NuGet.VisualStudio
             NoOpProjectsCount = noOpProjectsCount;
         }
 
+        public const string RestoreActionEventName = "RestoreInformation";
+
         public RestoreOperationSource OperationSource { get; }
 
         public int NoOpProjectsCount { get; }
 
-        public override TelemetryEvent ToTelemetryEvent(string operationId)
+        public override TelemetryEvent ToTelemetryEvent(string operationIdPropertyName, string operationId)
         {
-            return new TelemetryEvent(
-                TelemetryConstants.RestoreActionEventName,
-                new Dictionary<string, object>
-                {
-                    { TelemetryConstants.OperationIdPropertyName, operationId },
-                    { nameof(ProjectIds), string.Join(",", ProjectIds) },
-                    { nameof(OperationSource), OperationSource },
-                    { nameof(PackagesCount), PackagesCount },
-                    { nameof(Status), Status },
-                    { nameof(StartTime), StartTime.ToString() },
-                    { nameof(EndTime), EndTime.ToString() },
-                    { nameof(Duration), Duration },
-                    { nameof(ProjectsCount), ProjectsCount },
-                    { nameof(NoOpProjectsCount), NoOpProjectsCount }
-                }
-            );
+            var telemtryEvent = base.ToTelemetryEvent(operationIdPropertyName, operationId);
+
+            telemtryEvent.Properties.Add(nameof(OperationSource), OperationSource);
+            telemtryEvent.Properties.Add(nameof(NoOpProjectsCount), NoOpProjectsCount);
+
+            return telemtryEvent;
         }
     }
 }

@@ -29,15 +29,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var operationId = Guid.NewGuid().ToString();
 
-            var telemetryEvent = actionTelemetryData.ToTelemetryEvent(operationId);
+            var telemetryEvent = actionTelemetryData.ToTelemetryEvent(NuGetVSActionTelemetryService.OperationIdPropertyName, operationId);
 
             // Act
-            var vsTelemetryEvent = TelemetrySession.ToVsTelemetryEvent(telemetryEvent);
+            var vsTelemetryEvent = VSTelemetrySession.ToVsTelemetryEvent(telemetryEvent);
 
             // Assert
-            Assert.True(vsTelemetryEvent.Name.StartsWith(TelemetryConstants.VSEventNamePrefix, ignoreCase: true, culture: CultureInfo.InvariantCulture));
+            Assert.True(vsTelemetryEvent.Name.StartsWith(VSTelemetrySession.VSEventNamePrefix, ignoreCase: true, culture: CultureInfo.InvariantCulture));
             Assert.True(vsTelemetryEvent.Properties.Keys.All(
-                p => p.StartsWith(TelemetryConstants.VSPropertyNamePrefix, ignoreCase: true, culture: CultureInfo.InvariantCulture)));
+                p => p.StartsWith(VSTelemetrySession.VSPropertyNamePrefix, ignoreCase: true, culture: CultureInfo.InvariantCulture)));
         }
     }
 }

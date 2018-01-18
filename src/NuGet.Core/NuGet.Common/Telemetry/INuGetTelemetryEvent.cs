@@ -5,6 +5,6 @@ namespace NuGet.Common
 {
     public interface INuGetTelemetryEvent
     {
-        TelemetryEvent ToTelemetryEvent(string operationId);
+        TelemetryEvent ToTelemetryEvent(string operationIdPropertyName, string operationId);
     }
 }

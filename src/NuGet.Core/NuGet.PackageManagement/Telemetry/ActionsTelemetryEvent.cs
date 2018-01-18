@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Common;
 
-namespace NuGet.VisualStudio
+namespace NuGet.PackageManagement
 {
     /// <summary>
     /// Telemetry event data for nuget operations like install, update, or uninstall.
     /// </summary>
-    public abstract class ActionsTelemetryEvent : ActionEventBase
+    public class ActionsTelemetryEvent : ActionEventBase
     {
         public ActionsTelemetryEvent(
             string[] projectIds,
@@ -23,6 +24,15 @@ namespace NuGet.VisualStudio
         }
 
         public NuGetOperationType OperationType { get; }
+
+        public override TelemetryEvent ToTelemetryEvent(string operationIdPropertyName, string operationId)
+        {
+            var telemtryEvent = base.ToTelemetryEvent(operationIdPropertyName, operationId);
+
+            telemtryEvent.Properties.Add(nameof(OperationType), OperationType);
+
+            return telemtryEvent;
+        }
     }
 
     /// <summary>

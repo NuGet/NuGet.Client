@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Common;
+using NuGet.PackageManagement;
 
 namespace NuGet.VisualStudio
 {
@@ -25,24 +26,13 @@ namespace NuGet.VisualStudio
 
         public OperationSource Source { get; }
 
-        public override TelemetryEvent ToTelemetryEvent(string operationId)
+        public override TelemetryEvent ToTelemetryEvent(string operationIdPropertyName, string operationId)
         {
-            return new TelemetryEvent(
-                TelemetryConstants.NugetActionEventName,
-                new Dictionary<string, object>
-                {
-                    { TelemetryConstants.OperationIdPropertyName, operationId },
-                    { nameof(ProjectIds), string.Join(",", ProjectIds) },
-                    { nameof(OperationType), OperationType },
-                    { nameof(Source), Source },
-                    { nameof(PackagesCount), PackagesCount },
-                    { nameof(Status), Status },
-                    { nameof(StartTime), StartTime.ToString() },
-                    { nameof(EndTime), EndTime.ToString() },
-                    { nameof(Duration), Duration },
-                    { nameof(ProjectsCount), ProjectsCount }
-                }
-            );
+            var telemtryEvent = base.ToTelemetryEvent(operationIdPropertyName, operationId);
+
+            telemtryEvent.Properties.Add(nameof(Source), OperationType);
+
+            return telemtryEvent;
         }
     }
 }

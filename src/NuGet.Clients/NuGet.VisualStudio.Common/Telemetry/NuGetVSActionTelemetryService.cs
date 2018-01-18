@@ -17,6 +17,8 @@ namespace NuGet.VisualStudio
 
         public string OperationId { get; }
 
+        public const string OperationIdPropertyName = "OperationId";
+
         public NuGetVSActionTelemetryService(ITelemetrySession telemetrySession)
         {
             _telemetrySession = telemetrySession ?? throw new ArgumentNullException(nameof(telemetrySession));
@@ -24,7 +26,7 @@ namespace NuGet.VisualStudio
         }
 
         public NuGetVSActionTelemetryService():
-            this(TelemetrySession.Instance)
+            this(VSTelemetrySession.Instance)
         {
         }
 
@@ -35,7 +37,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(telemetryData));
             }
 
-            _telemetrySession.PostEvent(telemetryData.ToTelemetryEvent(OperationId));
+            _telemetrySession.PostEvent(telemetryData.ToTelemetryEvent(OperationIdPropertyName, OperationId));
         }
     }
 }

@@ -3,9 +3,8 @@
 
 using System.Collections.Generic;
 using NuGet.Common;
-using NuGet.ProjectManagement;
 
-namespace NuGet.PackageManagement.Telemetry
+namespace NuGet.PackageManagement
 {
     public class ActionTelemetryStepEvent : INuGetTelemetryEvent
     {
@@ -15,17 +14,19 @@ namespace NuGet.PackageManagement.Telemetry
             Duration = duration;
         }
 
+        public const string NugetActionStepsEventName = "NugetActionSteps";
+
         public string StepName { get; }
 
         public double Duration { get; }
 
-        public TelemetryEvent ToTelemetryEvent(string operationId)
+        public TelemetryEvent ToTelemetryEvent(string operationIdPropertyName , string operationId)
         {
             return new TelemetryEvent(
-                TelemetryConstants.NugetActionStepsEventName,
+                NugetActionStepsEventName,
                 new Dictionary<string, object>
                 {
-                    { TelemetryConstants.OperationIdPropertyName, operationId },
+                    { operationIdPropertyName, operationId },
                     { nameof(StepName), string.Join(",", StepName) },
                     { nameof(Duration), Duration }
                 }
