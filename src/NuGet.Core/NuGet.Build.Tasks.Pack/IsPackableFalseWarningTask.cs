@@ -7,12 +7,12 @@ using NuGet.Common;
 
 namespace NuGet.Build.Tasks.Pack
 {
-    public class IsPackableFalseErrorTask : Task
+    public class IsPackableFalseWarningTask : Task
     {
         public ILogger Logger => new MSBuildLogger(Log);
         public override bool Execute()
         {
-            Logger.LogError(string.Format(CultureInfo.CurrentCulture,
+            Logger.LogWarning(string.Format(CultureInfo.CurrentCulture,
                     Strings.IsPackableFalseError));
             return true;
         }
