@@ -180,9 +180,10 @@ namespace NuGet.CommandLine
 
         private string GetSolutionDirectory(PackageRestoreInputs packageRestoreInputs)
         {
-            return packageRestoreInputs.RestoringWithSolutionFile ?
+            var solutionDirectory = packageRestoreInputs.RestoringWithSolutionFile ?
                     packageRestoreInputs.DirectoryOfSolutionFile :
                     SolutionDirectory;
+            return solutionDirectory != null ? PathUtility.EnsureTrailingSlash(solutionDirectory) : null;
         }
 
         private void ReadSettings(PackageRestoreInputs packageRestoreInputs)
