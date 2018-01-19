@@ -95,24 +95,6 @@ namespace NuGet.ProjectModel
             }
         }
 
-        // The restore settings, current despite the name, do not include any setting that affect the final result of restore, rather just a decision on whether or not to display the errors in the error list ourselves. (in SDK projects, we don't do it)
-        private static void SetRestoreSettings(IObjectWriter writer, PackageSpec packageSpec)
-        {
-            var restoreSettings = packageSpec.RestoreSettings;
-
-            // Do not write Restore Setting if the HideWarningsAndErrors is false
-            // This should be changed in the future as more properties are added to ProjectRestoreSettings
-            if (restoreSettings == null || !restoreSettings.HideWarningsAndErrors)
-            {
-                return;
-            }
-            writer.WriteObjectStart(JsonPackageSpecReader.RestoreSettings);
-
-            SetValueIfTrue(writer, JsonPackageSpecReader.HideWarningsAndErrors, restoreSettings.HideWarningsAndErrors);
-
-            writer.WriteObjectEnd();
-        }
-
         private static bool IsMetadataValid(ProjectRestoreMetadata msbuildMetadata)
         {
             if (msbuildMetadata == null)
