@@ -478,12 +478,16 @@ Valid from:</comment>
     <value>The timestamp certificate does not meet a minimum public key length requirement.</value>
   </data>
   <data name="CommitmentTypeIndicationAttributeInvalid" xml:space="preserve">
-    <value>The attribute is not a valid commitment-type-indication attribute.</value>
+    <value>The commitment-type-indication attribute is invalid.</value>
   </data>
   <data name="SignatureNotTimeValid" xml:space="preserve">
     <value>The primary signature validity period has expired.</value>
   </data>
   <data name="SigningCertificateV1OrV2AttributeMustBePresent" xml:space="preserve">
     <value>Either the signing-certificate or signing-certificate-v2 attribute must be present.</value>
+  </data>
+  <data name="MultipleAttributeInstanceFound" xml:space="preserve">
+    <value>Multiple instances of attribute '{0}' were found.</value>
+    <comment>{0} is the attribute OID</comment>
   </data>
 </root>

@@ -5,9 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Packaging.Signing;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Security;
 using Test.Utility.Signing;
 
 namespace NuGet.Packaging.FuncTest
@@ -86,13 +83,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_trustedTestCertificateWithReissuedCertificate == null)
                 {
-                    var random = new SecureRandom();
-                    var keyPairGenerator = new RsaKeyPairGenerator();
-                    var parameters = new KeyGenerationParameters(random, strength: 2048);
-
-                    keyPairGenerator.Init(parameters);
-
-                    var keyPair = keyPairGenerator.GenerateKeyPair();
+                    var keyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
                     var certificateName = TestCertificate.GenerateCertificateName();
                     var certificate1 = SigningTestUtility.GenerateCertificate(certificateName, keyPair);
                     var certificate2 = SigningTestUtility.GenerateCertificate(certificateName, keyPair);
