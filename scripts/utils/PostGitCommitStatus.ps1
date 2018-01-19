@@ -59,7 +59,7 @@ Function InitializeAllTestsToPending {
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Linux" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    $rebuildUrl = "$env:VstsAzureRebuildUrl" -f "$env:BUILD_SOURCEBRANCHNAME","$env:BUILD_SOURCEVERSION"
+    $rebuildUrl = "$env:VstsAzureRebuildUrl" -f "$env:BUILD_SOURCEBRANCHNAME","$env:BUILD_SOURCEVERSION", "$env:BUILD_SOURCEVERSIONAUTHOR"
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Rebuild" -Status "success" -CommitSha $CommitSha -TargetUrl $rebuildUrl -Description "Click on details to rebuild"
 }
 
