@@ -42,25 +42,25 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             telemetrySession.Verify(x => x.PostEvent(It.IsAny<TelemetryEvent>()), Times.Once);
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal("ProjectInformation", lastTelemetryEvent.Name);
-            Assert.Equal(4, lastTelemetryEvent.Properties.Count);
+            Assert.Equal(4, lastTelemetryEvent.Count);
 
-            object nuGetVersion;
-            Assert.True(lastTelemetryEvent.Properties.TryGetValue("NuGetVersion", out nuGetVersion));
+            var nuGetVersion = lastTelemetryEvent["NuGetVersion"];
+            Assert.NotNull(nuGetVersion);
             Assert.IsType<string>(nuGetVersion);
             Assert.Equal(projectInformation.NuGetVersion, nuGetVersion);
 
-            object projectId;
-            Assert.True(lastTelemetryEvent.Properties.TryGetValue("ProjectId", out projectId));
+            var projectId = lastTelemetryEvent["ProjectId"];
+            Assert.NotNull(projectId);
             Assert.IsType<string>(projectId);
             Assert.Equal(projectInformation.ProjectId.ToString(), projectId);
 
-            object actualProjectType;
-            Assert.True(lastTelemetryEvent.Properties.TryGetValue("NuGetProjectType", out actualProjectType));
+            var actualProjectType = lastTelemetryEvent["NuGetProjectType"];
+            Assert.NotNull(actualProjectType);
             Assert.IsType<NuGetProjectType>(actualProjectType);
             Assert.Equal(projectInformation.NuGetProjectType, actualProjectType);
 
-            object installedPackageCount;
-            Assert.True(lastTelemetryEvent.Properties.TryGetValue("InstalledPackageCount", out installedPackageCount));
+            var installedPackageCount = lastTelemetryEvent["InstalledPackageCount"];
+            Assert.NotNull(installedPackageCount);
             Assert.IsType<int>(installedPackageCount);
             Assert.Equal(projectInformation.InstalledPackageCount, installedPackageCount);
         }

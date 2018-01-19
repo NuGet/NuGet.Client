@@ -22,24 +22,14 @@ namespace NuGet.VisualStudio
             DateTimeOffset endTime,
             double duration) : base(RestoreActionEventName, projectIds, startTime, status, packageCount, endTime, duration)
         {
-            OperationSource = source;
-            NoOpProjectsCount = noOpProjectsCount;
+            base[nameof(OperationSource)] = source;
+            base[(nameof(NoOpProjectsCount))] = noOpProjectsCount;
         }
 
         public const string RestoreActionEventName = "RestoreInformation";
 
-        public RestoreOperationSource OperationSource { get; }
+        public RestoreOperationSource OperationSource => (RestoreOperationSource)base[nameof(OperationSource)];
 
-        public int NoOpProjectsCount { get; }
-
-        public override TelemetryEvent ToTelemetryEvent(string operationIdPropertyName, string operationId)
-        {
-            var telemtryEvent = base.ToTelemetryEvent(operationIdPropertyName, operationId);
-
-            telemtryEvent.Properties.Add(nameof(OperationSource), OperationSource);
-            telemtryEvent.Properties.Add(nameof(NoOpProjectsCount), NoOpProjectsCount);
-
-            return telemtryEvent;
-        }
+        public int NoOpProjectsCount => (int)base[nameof(NoOpProjectsCount)];
     }
 }

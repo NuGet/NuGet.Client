@@ -57,11 +57,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(10, actual.Properties.Count);
+            Assert.Equal(10, actual.Count);
 
-            Assert.Equal(expected.OperationSource.ToString(), actual.Properties["OperationSource"].ToString());
+            Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 
-            Assert.Equal(expected.NoOpProjectsCount, (int)actual.Properties["NoOpProjectsCount"]);
+            Assert.Equal(expected.NoOpProjectsCount, (int)actual["NoOpProjectsCount"]);
 
             TestTelemetryUtility.VerifyTelemetryEventData(operationId, expected, actual);
         }

@@ -10,14 +10,41 @@ namespace NuGet.Common
     /// </summary>
     public class TelemetryEvent
     {
+        private IDictionary<string, object> _properties;
+
         public TelemetryEvent(string eventName, Dictionary<string, object> properties)
         {
             Name = eventName;
-            Properties = properties;
+            _properties = properties;
         }
 
         public string Name { get; }
 
-        public IDictionary<string, object> Properties { get; }
+        /// <summary>
+        /// Property count in TelemetryEvent
+        /// </summary>
+        public int Count => _properties.Count;
+
+        public object this[string key]
+        {
+            get
+            {
+                if (key != null)
+                {
+                    _properties.TryGetValue(key, out object value);
+                    return value;
+                }
+                return null;
+            }
+            set
+            {
+                _properties[key] = value;
+            }
+        }
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return _properties.GetEnumerator();
+        }
     }
 }

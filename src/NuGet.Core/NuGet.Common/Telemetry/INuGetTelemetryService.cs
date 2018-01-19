@@ -8,6 +8,6 @@ namespace NuGet.Common
 {
     public interface INuGetTelemetryService
     {
-        void EmitTelemetryEvent(INuGetTelemetryEvent telemetryData);
+        void EmitTelemetryEvent(TelemetryEvent telemetryData);
     }
 }

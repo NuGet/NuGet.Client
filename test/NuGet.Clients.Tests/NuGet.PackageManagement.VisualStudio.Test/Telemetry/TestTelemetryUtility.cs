@@ -13,14 +13,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     {
         public static void VerifyTelemetryEventData(string operationId, ActionEventBase expected, TelemetryEvent actual)
         {
-            Assert.Equal(operationId, actual.Properties["OperationId"].ToString());
-            Assert.Equal(expected.ProjectsCount, (int)actual.Properties["ProjectsCount"]);
-            Assert.Equal(string.Join(",", expected.ProjectIds), actual.Properties["ProjectIds"].ToString());
-            Assert.Equal(expected.PackagesCount, (int)actual.Properties["PackagesCount"]);
-            Assert.Equal(expected.Status.ToString(), actual.Properties["Status"].ToString());
-            Assert.Equal(expected.StartTime.ToString(), actual.Properties["StartTime"].ToString());
-            Assert.Equal(expected.EndTime.ToString(), actual.Properties["EndTime"].ToString());
-            Assert.Equal(expected.Duration, (double)actual.Properties["Duration"]);
+            Assert.Equal(operationId, actual["OperationId"].ToString());
+            Assert.Equal(expected.ProjectsCount, (int)actual["ProjectsCount"]);
+            Assert.Equal(string.Join(",", expected.ProjectIds), actual["ProjectIds"].ToString());
+            Assert.Equal(expected.PackagesCount, (int)actual["PackagesCount"]);
+            Assert.Equal(expected.Status.ToString(), actual["Status"].ToString());
+            Assert.Equal(expected.StartTime, actual["StartTime"]);
+            Assert.Equal(expected.EndTime, actual["EndTime"]);
+            Assert.Equal(expected.Duration, (double)actual["Duration"]);
         }
     }
 }

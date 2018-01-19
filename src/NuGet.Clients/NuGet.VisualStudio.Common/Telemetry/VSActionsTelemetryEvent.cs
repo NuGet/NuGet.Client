@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using NuGet.Common;
 using NuGet.PackageManagement;
 
 namespace NuGet.VisualStudio
@@ -21,18 +19,9 @@ namespace NuGet.VisualStudio
            double duration) :
             base(projectIds, operationType, startTime, status, packageCount, endTime, duration)
         {
-            Source = source;
+            base[nameof(Source)] = source;
         }
 
-        public OperationSource Source { get; }
-
-        public override TelemetryEvent ToTelemetryEvent(string operationIdPropertyName, string operationId)
-        {
-            var telemtryEvent = base.ToTelemetryEvent(operationIdPropertyName, operationId);
-
-            telemtryEvent.Properties.Add(nameof(Source), Source);
-
-            return telemtryEvent;
-        }
+        public OperationSource Source => (OperationSource)base[nameof(Source)];
     }
 }

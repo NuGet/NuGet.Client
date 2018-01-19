@@ -31,7 +31,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             var vsTelemetryEvent = new VsTelemetryEvent(VSEventNamePrefix + telemetryEvent.Name);
 
-            foreach (var pair in telemetryEvent.Properties)
+            foreach (var pair in telemetryEvent)
             {
                 vsTelemetryEvent.Properties[VSPropertyNamePrefix + pair.Key] = pair.Value;
             }

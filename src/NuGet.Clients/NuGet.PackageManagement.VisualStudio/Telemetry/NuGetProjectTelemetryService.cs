@@ -107,7 +107,7 @@ namespace NuGet.PackageManagement.Telemetry
 
         public void EmitProjectInformation(ProjectTelemetryEvent projectInformation)
         { 
-            _telemetrySession.PostEvent(projectInformation.ToTelemetryEvent(operationIdPropertyName: string.Empty, operationId: string.Empty));
+            _telemetrySession.PostEvent(projectInformation);
         }
     }
 }

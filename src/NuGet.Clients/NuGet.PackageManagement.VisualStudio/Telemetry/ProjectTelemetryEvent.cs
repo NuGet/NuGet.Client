@@ -6,18 +6,21 @@ using NuGet.Common;
 
 namespace NuGet.PackageManagement.Telemetry
 {
-    public class ProjectTelemetryEvent : INuGetTelemetryEvent
+    public class ProjectTelemetryEvent : TelemetryEvent
     {
         public ProjectTelemetryEvent(
             string nuGetVersion,
             string projectId,
             NuGetProjectType nuGetProjectType,
-            int installedPackageCount)
+            int installedPackageCount) :
+            base(ProjectInformationEventName, new Dictionary<string, object>
+                {
+                    { nameof(InstalledPackageCount), installedPackageCount },
+                    { nameof(NuGetProjectType), nuGetProjectType },
+                    { nameof(NuGetVersion), nuGetVersion },
+                    { nameof(ProjectId), projectId.ToString() }
+                })
         {
-            NuGetVersion = nuGetVersion;
-            ProjectId = projectId;
-            NuGetProjectType = nuGetProjectType;
-            InstalledPackageCount = installedPackageCount;
         }
 
         public const string ProjectInformationEventName = "ProjectInformation";
@@ -25,34 +28,21 @@ namespace NuGet.PackageManagement.Telemetry
         /// <summary>
         /// The version of NuGet that emitted this event.
         /// </summary>
-        public string NuGetVersion { get; }
+        public string NuGetVersion => (string)base[nameof(NuGetVersion)];
 
         /// <summary>
         /// The project ID related to this event.
         /// </summary>
-        public string ProjectId { get; }
+        public string ProjectId => (string)base[nameof(ProjectId)];
 
         /// <summary>
         /// The type of NuGet project this project is.
         /// </summary>
-        public NuGetProjectType NuGetProjectType { get; }
+        public NuGetProjectType NuGetProjectType => (NuGetProjectType)base[nameof(NuGetProjectType)];
 
         /// <summary>
         /// The number of NuGet packages installed to this project.
         /// </summary>
-        public int InstalledPackageCount { get; }
-
-        public TelemetryEvent ToTelemetryEvent(string operationIdPropertyName, string operationId)
-        {
-            return new TelemetryEvent(
-                ProjectInformationEventName,
-                new Dictionary<string, object>
-                {
-                    { nameof(InstalledPackageCount), InstalledPackageCount },
-                    { nameof(NuGetProjectType), NuGetProjectType },
-                    { nameof(NuGetVersion), NuGetVersion },
-                    { nameof(ProjectId), ProjectId.ToString() }
-                });
-        }
+        public int InstalledPackageCount => (int)base[nameof(InstalledPackageCount)];
     }
 }

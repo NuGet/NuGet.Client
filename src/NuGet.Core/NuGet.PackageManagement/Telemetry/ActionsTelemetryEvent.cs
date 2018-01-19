@@ -20,21 +20,12 @@ namespace NuGet.PackageManagement
             DateTimeOffset endTime,
             double duration) : base(NugetActionEventName, projectIds, startTime, status, packageCount, endTime, duration)
         {
-            OperationType = operationType;
+            base[nameof(OperationType)] = operationType;
         }
 
         public const string NugetActionEventName = "NugetAction";
 
-        public NuGetOperationType OperationType { get; }
-
-        public override TelemetryEvent ToTelemetryEvent(string operationIdPropertyName, string operationId)
-        {
-            var telemtryEvent = base.ToTelemetryEvent(operationIdPropertyName, operationId);
-
-            telemtryEvent.Properties.Add(nameof(OperationType), OperationType);
-
-            return telemtryEvent;
-        }
+        public NuGetOperationType OperationType => (NuGetOperationType)base[nameof(OperationType)];
     }
 
     /// <summary>

@@ -25,10 +25,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var operationId = Guid.NewGuid().ToString();
 
-            var telemetryEvent = actionTelemetryData.ToTelemetryEvent(NuGetVSActionTelemetryService.OperationIdPropertyName, operationId);
+            actionTelemetryData["OperationId"] = operationId;
 
             // Act
-            var vsTelemetryEvent = VSTelemetrySession.ToVsTelemetryEvent(telemetryEvent);
+            var vsTelemetryEvent = VSTelemetrySession.ToVsTelemetryEvent(actionTelemetryData);
 
             // Assert
             Assert.True(vsTelemetryEvent.Name.StartsWith(VSTelemetrySession.VSEventNamePrefix, ignoreCase: true, culture: CultureInfo.InvariantCulture));

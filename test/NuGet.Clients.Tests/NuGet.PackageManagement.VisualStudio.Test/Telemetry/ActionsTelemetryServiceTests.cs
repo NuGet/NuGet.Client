@@ -132,11 +132,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Assert
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(ActionTelemetryStepEvent.NugetActionStepsEventName, lastTelemetryEvent.Name);
-            Assert.Equal(3, lastTelemetryEvent.Properties.Count);
+            Assert.Equal(3, lastTelemetryEvent.Count);
 
-            Assert.Equal(service.OperationId, lastTelemetryEvent.Properties["OperationId"].ToString());
-            Assert.Equal(stepNameWithProject, lastTelemetryEvent.Properties["StepName"].ToString());
-            Assert.Equal(duration, (double)lastTelemetryEvent.Properties["Duration"]);
+            Assert.Equal(service.OperationId, lastTelemetryEvent["OperationId"].ToString());
+            Assert.Equal(stepNameWithProject, lastTelemetryEvent["StepName"].ToString());
+            Assert.Equal(duration, (double)lastTelemetryEvent["Duration"]);
         }
 
         public static IEnumerable<object[]> GetStepNames()
@@ -152,10 +152,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(ActionsTelemetryEvent.NugetActionEventName, actual.Name);
-            Assert.Equal(10, actual.Properties.Count);
+            Assert.Equal(10, actual.Count);
 
-            Assert.Equal(expected.OperationType.ToString(), actual.Properties["OperationType"].ToString());
-            Assert.Equal(expected.Source.ToString(), actual.Properties["Source"].ToString());
+            Assert.Equal(expected.OperationType.ToString(), actual["OperationType"].ToString());
+            Assert.Equal(expected.Source.ToString(), actual["Source"].ToString());
 
             TestTelemetryUtility.VerifyTelemetryEventData(operationId, expected, actual);
         }

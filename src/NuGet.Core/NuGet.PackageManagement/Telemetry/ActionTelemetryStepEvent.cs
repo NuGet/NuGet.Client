@@ -6,31 +6,20 @@ using NuGet.Common;
 
 namespace NuGet.PackageManagement
 {
-    public class ActionTelemetryStepEvent : INuGetTelemetryEvent
+    public class ActionTelemetryStepEvent : TelemetryEvent
     {
-        public ActionTelemetryStepEvent(string stepName, double duration)
+        public ActionTelemetryStepEvent(string stepName, double duration) :
+            base(NugetActionStepsEventName, new Dictionary<string, object>
+                {
+                    { nameof(StepName), string.Join(",", stepName) },
+                    { nameof(Duration), duration }
+                })
         {
-            StepName = stepName;
-            Duration = duration;
         }
 
         public const string NugetActionStepsEventName = "NugetActionSteps";
 
-        public string StepName { get; }
-
-        public double Duration { get; }
-
-        public TelemetryEvent ToTelemetryEvent(string operationIdPropertyName , string operationId)
-        {
-            return new TelemetryEvent(
-                NugetActionStepsEventName,
-                new Dictionary<string, object>
-                {
-                    { operationIdPropertyName, operationId },
-                    { nameof(StepName), string.Join(",", StepName) },
-                    { nameof(Duration), Duration }
-                }
-            );
-        }
+        public string StepName => (string)base[nameof(StepName)];
+        public double Duration => (double)base[nameof(Duration)];
     }
 }
