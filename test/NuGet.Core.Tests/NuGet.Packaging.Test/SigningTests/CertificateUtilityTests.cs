@@ -113,11 +113,13 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void GetCertificateListFromChain_ReturnsCertificatesInOrder()
         {
-            using (var chain = new X509Chain())
+            using (var chainHolder = new X509ChainHolder())
             using (var rootCertificate = SignTestUtility.GetCertificate("root.crt"))
             using (var intermediateCertificate = SignTestUtility.GetCertificate("intermediate.crt"))
             using (var leafCertificate = SignTestUtility.GetCertificate("leaf.crt"))
             {
+                var chain = chainHolder.Chain;
+
                 chain.ChainPolicy.ExtraStore.Add(rootCertificate);
                 chain.ChainPolicy.ExtraStore.Add(intermediateCertificate);
 

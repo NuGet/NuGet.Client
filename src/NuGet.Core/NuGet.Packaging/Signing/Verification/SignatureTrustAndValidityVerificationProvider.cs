@@ -113,8 +113,10 @@ namespace NuGet.Packaging.Signing
                 {
                     var certificateExtraStore = signature.SignedCms.Certificates;
 
-                    using (var chain = new X509Chain())
+                    using (var chainHolder = new X509ChainHolder())
                     {
+                        var chain = chainHolder.Chain;
+
                         // This flags should only be set for verification scenarios, not signing
                         chain.ChainPolicy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
 
@@ -202,11 +204,12 @@ namespace NuGet.Packaging.Signing
                     Strings.VerificationTimestamperCertDisplay,
                     $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate)}")));
 
-
                 var certificateExtraStore = timestamp.SignedCms.Certificates;
 
-                using (var chain = new X509Chain())
+                using (var chainHolder = new X509ChainHolder())
                 {
+                    var chain = chainHolder.Chain;
+
                     // This flags should only be set for verification scenarios, not signing
                     chain.ChainPolicy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
 

@@ -94,9 +94,10 @@ namespace NuGet.Packaging.FuncTest
                 var chainBuildSuccess = true;
 
                 // rebuild the chain to get the list of certificates
-                using (var timestampCertChain = new X509Chain())
+                using (var chainHolder = new X509ChainHolder())
                 {
-                    var policy = timestampCertChain.ChainPolicy;
+                    var chain = chainHolder.Chain;
+                    var policy = chain.ChainPolicy;
 
                     policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEku));
                     policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
@@ -104,8 +105,8 @@ namespace NuGet.Packaging.FuncTest
                     policy.RevocationMode = X509RevocationMode.Online;
 
                     var timestampSignerCertificate = timestampCms.SignerInfos[0].Certificate;
-                    chainBuildSuccess = timestampCertChain.Build(timestampSignerCertificate);
-                    chainCertificates = CertificateChainUtility.GetCertificateListFromChain(timestampCertChain);
+                    chainBuildSuccess = chain.Build(timestampSignerCertificate);
+                    chainCertificates = CertificateChainUtility.GetCertificateListFromChain(chain);
                 }
 
                 // Assert

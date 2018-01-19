@@ -104,9 +104,10 @@ namespace NuGet.Packaging.Signing
                 byte[] timestampByteArray;
 
                 using (var timestampNativeCms = NativeCms.Decode(timestampCms.Encode(), detached: false))
-                using (var timestampCertChain = new X509Chain())
+                using (var chainHolder = new X509ChainHolder())
                 {
-                    var policy = timestampCertChain.ChainPolicy;
+                    var chain = chainHolder.Chain;
+                    var policy = chain.ChainPolicy;
 
                     policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEku));
                     policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
@@ -123,15 +124,15 @@ namespace NuGet.Packaging.Signing
                         throw new TimestampException(NuGetLogCode.NU3020, Strings.TimestampNoCertificate);
                     }
 
-                    if (!timestampCertChain.Build(timestampSignerCertificate))
+                    if (!chain.Build(timestampSignerCertificate))
                     {
-                        var messages = CertificateChainUtility.GetMessagesFromChainStatuses(timestampCertChain.ChainStatus);
+                        var messages = CertificateChainUtility.GetMessagesFromChainStatuses(chain.ChainStatus);
 
                         throw new TimestampException(NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.TimestampCertificateChainBuildFailure, string.Join(", ", messages)));
                     }
 
                     // Insert all the certificates into timestampCms
-                    InsertTimestampCertChainIntoTimestampCms(timestampCms, timestampCertChain, timestampNativeCms);
+                    InsertTimestampCertChainIntoTimestampCms(timestampCms, chain, timestampNativeCms);
                     timestampByteArray = timestampNativeCms.Encode();
                 }
 
