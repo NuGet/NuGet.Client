@@ -74,6 +74,7 @@ namespace NuGet.CommandLine
             IConsole console,
             bool recursive,
             string solutionDirectory,
+            string solutionName,
             string restoreConfigFile,
             string[] sources,
             string packagesDirectory)
@@ -120,7 +121,7 @@ namespace NuGet.CommandLine
                 inputTargetXML.Save(inputTargetPath);
 
                 // Create msbuild parameters and include global properties that cannot be set in the input targets path
-                var arguments = GetMSBuildArguments(entryPointTargetPath, inputTargetPath, nugetExePath, solutionDirectory, restoreConfigFile, sources, packagesDirectory);
+                var arguments = GetMSBuildArguments(entryPointTargetPath, inputTargetPath, nugetExePath, solutionDirectory, solutionName, restoreConfigFile, sources, packagesDirectory);
 
                 var processStartInfo = new ProcessStartInfo
                 {
@@ -221,6 +222,7 @@ namespace NuGet.CommandLine
             string inputTargetPath,
             string nugetExePath,
             string solutionDirectory,
+            string solutionName,
             string restoreConfigFile,
             string[] sources,
             string packagesDirectory)
@@ -259,6 +261,7 @@ namespace NuGet.CommandLine
             AddPropertyIfHasValue(args, "RestoreConfigFile", restoreConfigFile);
             AddPropertyIfHasValue(args, "RestorePackagesPath", packagesDirectory);
             AddPropertyIfHasValue(args, "SolutionDir", solutionDirectory);
+            AddPropertyIfHasValue(args, "SolutionName", solutionName);
 
             // Disable parallel and use ContinueOnError since this may run on an older
             // version of MSBuild that do not support SkipNonexistentTargets.
