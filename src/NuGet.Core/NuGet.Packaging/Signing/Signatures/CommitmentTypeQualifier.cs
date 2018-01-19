@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Security.Cryptography;
 using NuGet.Packaging.Signing.DerEncoding;
 
@@ -26,16 +25,6 @@ namespace NuGet.Packaging.Signing
         {
             CommitmentTypeIdentifier = commitmentTypeIdentifier;
             Qualifier = qualifier;
-        }
-
-        public static CommitmentTypeQualifier Create(Oid commitmentTypeIdentifier)
-        {
-            if (commitmentTypeIdentifier == null)
-            {
-                throw new ArgumentNullException(nameof(commitmentTypeIdentifier));
-            }
-
-            return new CommitmentTypeQualifier(commitmentTypeIdentifier, qualifier: null);
         }
 
         public static CommitmentTypeQualifier Read(byte[] bytes)

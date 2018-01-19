@@ -171,10 +171,7 @@ namespace Test.Utility.Signing
             }
 
             var random = new SecureRandom();
-            var pairGenerator = new RsaKeyPairGenerator();
-            var genParams = new KeyGenerationParameters(random, publicKeyLength);
-            pairGenerator.Init(genParams);
-            var issuerKeyPair = pairGenerator.GenerateKeyPair();
+            var keyPair = GenerateKeyPair(publicKeyLength);
 
             // Create cert
             var subjectDN = $"CN={subjectName}";
@@ -182,7 +179,7 @@ namespace Test.Utility.Signing
             certGen.SetSubjectDN(new X509Name(subjectDN));
 
             // default to new key pair
-            var issuerPrivateKey = issuerKeyPair.Private;
+            var issuerPrivateKey = keyPair.Private;
             var keyUsage = KeyUsage.DigitalSignature;
             var issuerDN = chainCertificateRequest?.IssuerDN ?? subjectDN;
             certGen.SetIssuerDN(new X509Name(issuerDN));
@@ -220,12 +217,12 @@ namespace Test.Utility.Signing
 #endif
             certGen.SetNotAfter(DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
             certGen.SetNotBefore(DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)));
-            certGen.SetPublicKey(issuerKeyPair.Public);
+            certGen.SetPublicKey(keyPair.Public);
 
             var serialNumber = BigIntegers.CreateRandomInRange(BigInteger.One, BigInteger.ValueOf(long.MaxValue), random);
             certGen.SetSerialNumber(serialNumber);
 
-            var subjectKeyIdentifier = new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(issuerKeyPair.Public));
+            var subjectKeyIdentifier = new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(keyPair.Public));
             certGen.AddExtension(X509Extensions.SubjectKeyIdentifier.Id, false, subjectKeyIdentifier);
 
             certGen.AddExtension(X509Extensions.KeyUsage.Id, false, new KeyUsage(keyUsage));
@@ -239,7 +236,7 @@ namespace Test.Utility.Signing
             var certResult = new X509Certificate2(certificate.GetEncoded());
 
 #if IS_DESKTOP
-            certResult.PrivateKey = DotNetUtilities.ToRSA(issuerKeyPair.Private as RsaPrivateCrtKeyParameters);
+            certResult.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
 #endif
 
             return certResult;
@@ -309,15 +306,18 @@ namespace Test.Utility.Signing
             return null;
         }
 
-#if IS_DESKTOP
-        /// <summary>
-        /// Convert a cert private key into a AsymmetricKeyParameter
-        /// </summary>
-        public static AsymmetricKeyParameter GetPrivateKeyParameter(X509Certificate2 cert)
+        public static AsymmetricCipherKeyPair GenerateKeyPair(int publicKeyLength)
         {
-            return DotNetUtilities.GetKeyPair(cert.PrivateKey).Private;
+            var random = new SecureRandom();
+            var keyPairGenerator = new RsaKeyPairGenerator();
+            var parameters = new KeyGenerationParameters(random, publicKeyLength);
+
+            keyPairGenerator.Init(parameters);
+
+            return keyPairGenerator.GenerateKeyPair();
         }
 
+#if IS_DESKTOP
         /// <summary>
         /// Generates a SignedCMS object for some content.
         /// </summary>

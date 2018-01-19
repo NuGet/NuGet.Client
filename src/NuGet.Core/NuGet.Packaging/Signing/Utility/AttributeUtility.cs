@@ -26,8 +26,8 @@ namespace NuGet.Packaging.Signing
             // SignatureType -> Oid
             var oid = GetSignatureTypeOid(type);
 
-            var commitmentTypeQualifier = CommitmentTypeQualifier.Create(new Oid(oid));
-            var value = new AsnEncodedData(Oids.CommitmentTypeIndication, commitmentTypeQualifier.Encode());
+            var commitmentTypeIndication = CommitmentTypeIndication.Create(new Oid(oid));
+            var value = new AsnEncodedData(Oids.CommitmentTypeIndication, commitmentTypeIndication.Encode());
 
             return new CryptographicAttributeObject(
                 new Oid(Oids.CommitmentTypeIndication),
@@ -35,28 +35,25 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Gets the signature type from a commitment-type-indication attribute object.
+        /// Gets the signature type from one or more commitment-type-indication attributes.
         /// </summary>
-        /// <param name="attribute">A commitment-type-indication attribute object.</param>
+        /// <param name="signedAttributes">A <see cref="SignerInfo" /> signed attributes collection.</param>
         /// <remarks>Unknown OIDs are ignored.</remarks>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="attribute" /> is <c>null</c>.</exception>
-        /// <exception cref="SignatureException">Thrown if <paramref name="attribute" /> is invalid.</exception>
-        public static SignatureType GetCommitmentTypeIndication(CryptographicAttributeObject attribute)
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="signedAttributes" /> is <c>null</c>.</exception>
+        /// <exception cref="SignatureException">Thrown if one or more attributes are invalid.</exception>
+        public static SignatureType GetSignatureType(CryptographicAttributeObjectCollection signedAttributes)
         {
-            if (attribute == null)
+            if (signedAttributes == null)
             {
-                throw new ArgumentNullException(nameof(attribute));
+                throw new ArgumentNullException(nameof(signedAttributes));
             }
 
-            if (attribute.Oid.Value != Oids.CommitmentTypeIndication)
-            {
-                throw new SignatureException(Strings.CommitmentTypeIndicationAttributeInvalid);
-            }
-
-            var values = GetCommitmentTypeIndicationRawValues(attribute);
+            var values = signedAttributes.GetAttributes(Oids.CommitmentTypeIndication)
+                .SelectMany(attribute => GetCommitmentTypeIndicationRawValues(attribute))
+                .Distinct();
 
             // Remove unknown values, these could be future values.
-            var knownValues = values.Where(e => e != SignatureType.Unknown).Distinct().ToList();
+            var knownValues = values.Where(e => e != SignatureType.Unknown).ToList();
 
             if (knownValues.Count == 0)
             {
@@ -71,17 +68,6 @@ namespace NuGet.Packaging.Signing
             }
 
             return knownValues[0];
-        }
-
-        internal static SignatureType GetCommitmentTypeIndication(SignerInfo signer)
-        {
-            var commitmentTypeIndication = signer.SignedAttributes.GetAttributeOrDefault(Oids.CommitmentTypeIndication);
-            if (commitmentTypeIndication != null)
-            {
-                return GetCommitmentTypeIndication(commitmentTypeIndication);
-            }
-
-            return SignatureType.Unknown;
         }
 
         /// <summary>
@@ -191,37 +177,81 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Attribute -> SignatureType values with no validation.
         /// </summary>
-        private static List<SignatureType> GetCommitmentTypeIndicationRawValues(CryptographicAttributeObject attribute)
+        private static IEnumerable<SignatureType> GetCommitmentTypeIndicationRawValues(CryptographicAttributeObject attribute)
         {
             // Most packages should have either 0 or 1 signature types.
             var values = new List<SignatureType>(capacity: 1);
 
-            /*
-                From RFC 5126 (https://tools.ietf.org/html/rfc5126.html#section-5.11.1):
-
-                    CommitmentTypeIndication ::= SEQUENCE {
-                      commitmentTypeId CommitmentTypeIdentifier,
-                      commitmentTypeQualifier SEQUENCE SIZE (1..MAX) OF
-                                     CommitmentTypeQualifier OPTIONAL}
-
-                    CommitmentTypeIdentifier ::= OBJECT IDENTIFIER
-            */
-
-            // CryptographicAttributeObject.Values represent the values in the commitmentTypeQualifier sequence above.
-            // CryptographicAttributeObject forces its Values property to be an empty collection, so it is impossible
-            // from CryptographicAttributeObject to distinguish between the sequence being absent, which is permitted
-            // here, and the sequence being empty, which is invalid here.
-            // We'll err on the side of leniency and treat an empty sequence like an absent sequence.
-
             foreach (var value in attribute.Values)
             {
-                var qualifier = CommitmentTypeQualifier.Read(value.RawData);
-                var signatureType = GetSignatureType(qualifier.CommitmentTypeIdentifier.Value);
+                var indication = CommitmentTypeIndication.Read(value.RawData);
+                var signatureType = GetSignatureType(indication.CommitmentTypeId.Value);
 
                 values.Add(signatureType);
             }
 
             return values;
+        }
+
+        /// <summary>
+        /// Gets 0 or 1 attribute with the specified OID.  If more than one attribute is found, an exception is thrown.
+        /// </summary>
+        /// <param name="attributes">A collection of attributes.</param>
+        /// <param name="oid">The attribute OID to search for.</param>
+        /// <returns>Either a <see cref="CryptographicAttributeObject" /> or <c>null</c>, if no attribute was found.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="attributes" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="oid" /> is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="CryptographicException">Thrown if multiple attribute instances with the specified OID were found.</exception>
+        public static CryptographicAttributeObject GetAttribute(this CryptographicAttributeObjectCollection attributes, string oid)
+        {
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
+            if (string.IsNullOrEmpty(oid))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(oid));
+            }
+
+            var matches = attributes.GetAttributes(oid);
+            var instanceCount = matches.Count();
+
+            if (instanceCount == 0)
+            {
+                return null;
+            }
+
+            if (instanceCount > 1)
+            {
+                throw new CryptographicException(string.Format(CultureInfo.CurrentCulture, Strings.MultipleAttributeInstanceFound, oid));
+            }
+
+            return matches.Single();
+        }
+
+        /// <summary>
+        /// Gets 0 or 1 or many attributes with the specified OID.
+        /// </summary>
+        /// <param name="attributes">A collection of attributes.</param>
+        /// <param name="oid">The attribute OID to search for.</param>
+        /// <returns>Either a <see cref="CryptographicAttributeObject" /> or <c>null</c>, if no attribute was found.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="attributes" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="oid" /> is either <c>null</c> or an empty string.</exception>
+        public static IEnumerable<CryptographicAttributeObject> GetAttributes(this CryptographicAttributeObjectCollection attributes, string oid)
+        {
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
+            if (string.IsNullOrEmpty(oid))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(oid));
+            }
+
+            return attributes.Cast<CryptographicAttributeObject>()
+                .Where(attribute => attribute.Oid.Value == oid);
         }
 #endif
     }
