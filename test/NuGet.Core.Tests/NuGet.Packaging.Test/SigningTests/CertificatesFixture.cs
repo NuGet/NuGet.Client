@@ -43,6 +43,9 @@ namespace NuGet.Packaging.Test
             if (!_isDisposed)
             {
                 _defaultCertificate.Dispose();
+                _lifetimeSigningCertificate.Dispose();
+                _notYetValidCertificate.Dispose();
+                _rsaSsaPssCertificate.Dispose();
 
                 GC.SuppressFinalize(this);
 

@@ -443,8 +443,10 @@ namespace NuGet.Packaging.Signing
                 return new[] { certificate };
             }
 
-            using (var chain = new X509Chain())
+            using (var chainHolder = new X509ChainHolder())
             {
+                var chain = chainHolder.Chain;
+
                 chain.ChainPolicy.ExtraStore.AddRange(extraStore);
 
                 chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
