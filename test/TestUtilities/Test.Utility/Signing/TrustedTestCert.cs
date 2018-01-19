@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Test.Utility.Signing
@@ -25,15 +24,21 @@ namespace Test.Utility.Signing
         public TrustedTestCert(T source,
             Func<T, X509Certificate2> getCert,
             StoreName storeName = StoreName.TrustedPeople,
-            StoreLocation storeLocation = StoreLocation.CurrentUser)
+            StoreLocation storeLocation = StoreLocation.CurrentUser,
+            TimeSpan? maximumValidityPeriod = null)
         {
             Source = source;
             TrustedCert = getCert(source);
 
-#if IS_DESKTOP
-            if (TrustedCert.NotAfter - TrustedCert.NotBefore > TimeSpan.FromHours(2))
+            if (!maximumValidityPeriod.HasValue)
             {
-                throw new InvalidOperationException("The cert used is valid for more than two hours.");
+                maximumValidityPeriod = TimeSpan.FromHours(2);
+            }
+
+#if IS_DESKTOP
+            if (TrustedCert.NotAfter - TrustedCert.NotBefore > maximumValidityPeriod.Value)
+            {
+                throw new InvalidOperationException($"The certificate used is valid for more than {maximumValidityPeriod}.");
             }
 #endif
             StoreName = storeName;

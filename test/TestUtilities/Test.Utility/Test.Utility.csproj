@@ -4,7 +4,7 @@
   <PropertyGroup>
     <TargetFrameworks>net46;netstandard1.6</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <Shipping>false</Shipping>
+    <Shipping>true</Shipping>
   </PropertyGroup>
 
   <ItemGroup>
