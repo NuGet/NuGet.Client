@@ -79,7 +79,7 @@ namespace NuGet.Packaging.Signing
                 invalidSignatureString: Strings.InvalidPrimarySignature,
                 chainBuildingFailed: NuGetLogCode.NU3018);
 
-            var signatureType = AttributeUtility.GetCommitmentTypeIndication(signerInfo);
+            var signatureType = AttributeUtility.GetSignatureType(signerInfo.SignedAttributes);
             SigningCertificateRequirement signingCertificateRequirement;
             bool isIssuerSerialRequired;
 

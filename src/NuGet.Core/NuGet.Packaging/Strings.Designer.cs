@@ -134,7 +134,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The attribute is not a valid commitment-type-indication attribute..
+        ///   Looks up a localized string similar to The commitment-type-indication attribute is invalid..
         /// </summary>
         internal static string CommitmentTypeIndicationAttributeInvalid {
             get {
@@ -517,6 +517,15 @@ namespace NuGet.Packaging {
         internal static string MissingNuspec {
             get {
                 return ResourceManager.GetString("MissingNuspec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple instances of attribute &apos;{0}&apos; were found..
+        /// </summary>
+        internal static string MultipleAttributeInstanceFound {
+            get {
+                return ResourceManager.GetString("MultipleAttributeInstanceFound", resourceCulture);
             }
         }
         

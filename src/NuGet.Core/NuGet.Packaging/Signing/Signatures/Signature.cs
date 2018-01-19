@@ -91,7 +91,7 @@ namespace NuGet.Packaging.Signing
 
             var signingSpecifications = SigningSpecifications.V1;
             var signerInfo = cms.SignerInfos[0];
-            var signatureType = AttributeUtility.GetCommitmentTypeIndication(signerInfo);
+            var signatureType = AttributeUtility.GetSignatureType(signerInfo.SignedAttributes);
 
             VerifySigningCertificate(cms, signerInfo, signingSpecifications);
 

@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using NuGet.Packaging.Signing;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.Crypto;
 using Test.Utility.Signing;
 
 namespace NuGet.Packaging.Test
@@ -19,9 +20,12 @@ namespace NuGet.Packaging.Test
 
         private bool _isDisposed;
 
+        internal AsymmetricCipherKeyPair DefaultKeyPair { get; }
+
         public CertificatesFixture()
         {
-            _defaultCertificate = SigningTestUtility.GenerateCertificate("test", generator => { });
+            DefaultKeyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
+            _defaultCertificate = SigningTestUtility.GenerateCertificate("test", DefaultKeyPair);
             _rsaSsaPssCertificate = SigningTestUtility.GenerateCertificate("test", generator => { }, "SHA256WITHRSAANDMGF1");
             _lifetimeSigningCertificate = SigningTestUtility.GenerateCertificate(
                 "test",
