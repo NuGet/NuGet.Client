@@ -4,7 +4,7 @@ Script to post status of tests for the commit to GitHub
 https://developer.github.com/v3/repos/statuses/ 
 
 .DESCRIPTION
-Uses the Personal Access Token of NuGetLurker to automate the tagging process.
+Uses the Personal Access Token of NuGetLurker to post status of tests and build to GitHub.
 #>
 Function Update-GitCommitStatus {
     param(
