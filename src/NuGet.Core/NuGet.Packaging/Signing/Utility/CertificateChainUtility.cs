@@ -31,8 +31,10 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(extraStore));
             }
 
-            using (var chain = new X509Chain())
+            using (var chainHolder = new X509ChainHolder())
             {
+                var chain = chainHolder.Chain;
+
                 SetCertBuildChainPolicy(
                     chain.ChainPolicy,
                     extraStore,
@@ -66,7 +68,10 @@ namespace NuGet.Packaging.Signing
 
             foreach (var item in certChain.ChainElements)
             {
-                certs.Add(item.Certificate);
+                // Return a new certificate object.
+                // This allows the chain and its chain element certificates to be disposed
+                // in both success and error cases.
+                certs.Add(new X509Certificate2(item.Certificate.RawData));
             }
 
             return certs;
