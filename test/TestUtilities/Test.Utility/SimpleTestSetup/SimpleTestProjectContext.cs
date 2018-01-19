@@ -20,6 +20,8 @@ namespace NuGet.Test.Utility
 {
     public class SimpleTestProjectContext
     {
+        private static string ProjectExt = ".csproj";
+
         public SimpleTestProjectContext(string projectName, ProjectStyle type, string solutionRoot)
         {
             if (string.IsNullOrWhiteSpace(projectName))
@@ -33,7 +35,7 @@ namespace NuGet.Test.Utility
             }
 
             ProjectName = projectName;
-            ProjectPath = Path.Combine(solutionRoot, projectName, $"{projectName}.csproj");
+            ProjectPath = Path.Combine(solutionRoot, projectName, $"{projectName}{ProjectExt}");
             OutputPath = Path.Combine(solutionRoot, projectName, "obj");
             Type = type;
         }
@@ -136,6 +138,21 @@ namespace NuGet.Test.Utility
 
                     case ProjectStyle.ProjectJson:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), "project.lock.json");
+
+                    default:
+                        return null;
+                }
+            }
+        }
+
+        public string CacheFileOutputPath
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case ProjectStyle.PackageReference:
+                        return Path.Combine(OutputPath, $"{ProjectName}{ProjectExt}.nuget.cache");
 
                     default:
                         return null;
