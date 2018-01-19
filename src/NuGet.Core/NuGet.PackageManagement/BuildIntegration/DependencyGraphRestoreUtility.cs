@@ -170,7 +170,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Restore a build integrated project(PackageReference & Project.Json only) and update the lock file
+        /// Restore a build integrated project(PackageReference and Project.Json only) and update the lock file
         /// </summary>
         public static async Task<RestoreResult> RestoreProjectAsync(
             ISolutionManager solutionManager,
