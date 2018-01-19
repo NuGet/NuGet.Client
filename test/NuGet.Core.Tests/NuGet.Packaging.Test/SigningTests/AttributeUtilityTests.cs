@@ -456,9 +456,6 @@ namespace NuGet.Packaging.Test
             var attributes = new Asn1EncodableVector();
 
             addAttributes(attributes);
-            //attributes.Add(new Org.BouncyCastle.Asn1.Cms.Attribute(CmsAttributes.SigningTime, new DerSet(new DerUtcTime(DateTime.UtcNow))));
-            //attributes.Add(new Org.BouncyCastle.Asn1.Cms.Attribute(CmsAttributes.SigningTime, new DerSet(new DerUtcTime(DateTime.UtcNow))));
-            //attributes.Add(new Org.BouncyCastle.Asn1.Cms.Attribute(CmsAttributes.SigningTime, new DerSet(new DerUtcTime(DateTime.UtcNow), new DerUtcTime(DateTime.UtcNow))));
 
             var signedAttributes = new AttributeTable(attributes);
             var unsignedAttributes = new AttributeTable(DerSet.Empty);
