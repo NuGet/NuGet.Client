@@ -96,7 +96,9 @@ namespace NuGet.ProjectModel
 
         /// <summary>
         /// Project Settings is used to pass settings like HideWarningsAndErrors down to lower levels.
+        /// Currently they do not include any settings that affect the final result of restore.
         /// This should not be part of the Equals and GetHashCode.
+        /// Don't write this to the package spec
         /// </summary>
         public ProjectRestoreSettings RestoreSettings { get; set; } = new ProjectRestoreSettings();
 

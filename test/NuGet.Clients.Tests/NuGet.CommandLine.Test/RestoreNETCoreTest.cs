@@ -5675,5 +5675,127 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(NuGetFramework.Parse("net45"), projectA.AssetsFile.Targets.Single(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).TargetFramework);
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_WithMultipleProjectToProjectReferences_NoOps()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var parentProject = SimpleTestProjectContext.CreateNETCore(
+                    "parent",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var one = SimpleTestProjectContext.CreateNETCore(
+                    "child1",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var two = SimpleTestProjectContext.CreateNETCore(
+                    "child2",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var three = SimpleTestProjectContext.CreateNETCore(
+                    "child3",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX
+                    );
+                var rnd = new Random();
+
+                var projects = new SimpleTestProjectContext[] { one, two, three }.OrderBy(item => rnd.Next());
+
+                // Parent -> children. Very important that these are added in a random order
+
+                foreach (var project in projects)
+                {
+                    parentProject.AddProjectToAllFrameworks(project);
+                }
+                solution.Projects.Add(one);
+                solution.Projects.Add(two);
+                solution.Projects.Add(three);
+                solution.Projects.Add(parentProject);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act && Assert
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                Assert.Equal(0, r.Item1);
+                Assert.Contains("Writing cache file", r.Item2);
+
+                // Do it again, it should no-op now.
+                // Act && Assert
+                var r2 = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                Assert.Equal(0, r2.Item1);
+                Assert.DoesNotContain("Writing cache file", r2.Item2);
+                Assert.Contains("The restore inputs for 'parent' have not changed. No further actions are required to complete the restore.", r2.Item2);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_PackageTypesDoNotAffectAssetsFile()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    "project",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.PackageTypes.Add(PackageType.Dependency);
+                packageX.PackageTypes.Add(PackageType.DotnetCliTool);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act && Assert
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                Assert.Equal(0, r.Item1);
+                Assert.Contains("Writing cache file", r.Item2);
+                Assert.Contains("Writing lock file to disk", r.Item2);
+
+                // Pre-condition, Assert deleting the correct file
+                Assert.True(File.Exists(project.CacheFileOutputPath));
+                File.Delete(project.CacheFileOutputPath);
+
+                r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                Assert.Equal(0, r.Item1);
+                Assert.Contains("Writing cache file", r.Item2);
+                Assert.DoesNotContain("Writing lock file to disk", r.Item2);
+
+
+            }
+        }
     }
 }
