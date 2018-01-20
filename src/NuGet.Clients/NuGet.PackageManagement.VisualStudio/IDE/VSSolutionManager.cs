@@ -37,6 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
     public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
+        private static readonly string VSNuGetClientName = "NuGet VS VSIX";
 
         private readonly INuGetLockService _initLock = new NuGetLockService();
 
@@ -152,7 +153,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
             var dte = _serviceProvider.GetDTE();
             UserAgent.SetUserAgentString(
-                    new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
+                    new UserAgentStringBuilder(VSNuGetClientName).WithVisualStudioSKU(dte.GetFullVsVersionString()));
 
             HttpHandlerResourceV3.CredentialService = _credentialServiceProvider.GetCredentialService();
 
