@@ -4,14 +4,14 @@ Script to post status of tests for the commit to GitHub
 https://developer.github.com/v3/repos/statuses/ 
 
 .DESCRIPTION
-Uses the Personal Access Token of NuGetLurker to automate the tagging process.
+Uses the Personal Access Token of NuGetLurker to post status of tests and build to GitHub.
 #>
 Function Update-GitCommitStatus {
     param(
         [Parameter(Mandatory = $True)]
         [string]$PersonalAccessToken,
         [Parameter(Mandatory = $True)]
-        [ValidateSet( "Unit Tests On Windows", "Tests On Mac", "Tests On Linux", "Functional Tests On Windows", "EndToEnd Tests On Windows", "Apex Tests On Windows")]
+        [ValidateSet( "Unit Tests On Windows", "Tests On Mac", "Tests On Linux", "Functional Tests On Windows", "EndToEnd Tests On Windows", "Apex Tests On Windows", "Rebuild")]
         [string]$TestName,
         [Parameter(Mandatory = $True)]
         [ValidateSet( "pending", "success", "error", "failure")]
@@ -59,6 +59,8 @@ Function InitializeAllTestsToPending {
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Linux" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+    $rebuildUrl = "$env:VstsAzureRebuildUrl" -f "$env:BUILD_SOURCEBRANCHNAME","$env:BUILD_SOURCEVERSION"
+    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Rebuild" -Status "success" -CommitSha $CommitSha -TargetUrl $rebuildUrl -Description "Click on details to rebuild"
 }
 
 function SetCommitStatusForTestResult {
