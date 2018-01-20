@@ -10,6 +10,7 @@ namespace NuGet.Protocol.Core.Types
     public class UserAgentStringBuilder
     {
         public static readonly string DefaultNuGetClientName = "NuGet Client V3";
+        public static readonly string VSNuGetClientName = "NuGet VS VSIX";
 
         private const string UserAgentWithOSDescriptionAndVisualStudioSKUTemplate = "{0}/{1} ({2}, {3})";
         private const string UserAgentWithOSDescriptionTemplate = "{0}/{1} ({2})";

@@ -152,7 +152,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
             var dte = _serviceProvider.GetDTE();
             UserAgent.SetUserAgentString(
-                    new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
+                    new UserAgentStringBuilder(UserAgentStringBuilder.VSNuGetClientName).WithVisualStudioSKU(dte.GetFullVsVersionString()));
 
             HttpHandlerResourceV3.CredentialService = _credentialServiceProvider.GetCredentialService();
 
