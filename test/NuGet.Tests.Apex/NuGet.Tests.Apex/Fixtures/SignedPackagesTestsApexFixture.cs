@@ -1,12 +1,13 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
-using System.Threading.Tasks;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
+using Xunit;
 
 namespace NuGet.Tests.Apex
 {
@@ -90,6 +91,13 @@ namespace NuGet.Tests.Apex
 
             // Wait for cert to expire
             Thread.Sleep(5000);
+
+            Assert.True(IsCertificateExpired(_trustedExpiredTestCert.Source.Cert));
+        }
+
+        private static bool IsCertificateExpired(X509Certificate2 certificate)
+        {
+            return DateTime.Now > certificate.NotAfter;
         }
 
         public override void Dispose()

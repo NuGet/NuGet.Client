@@ -29,7 +29,7 @@ namespace NuGet.Console.TestContract
             do
             {
                 if (_wpfConsole.Dispatcher.IsStartCompleted && _wpfConsole.Host != null) { return true; }
-                System.Threading.Thread.Sleep(100);
+                Thread.Sleep(100);
             }
             while (stopwatch.Elapsed < timeout);
             return false;
@@ -102,7 +102,7 @@ namespace NuGet.Console.TestContract
                 return false;
             }
             var taskCompletionSource = new TaskCompletionSource<bool>();
-            EventHandler eventHandler = (s, e) => taskCompletionSource.TrySetResult(true);
+            void eventHandler(object s, EventArgs e) => taskCompletionSource.TrySetResult(true);
 
             (_wpfConsole.Dispatcher as IPrivateConsoleDispatcher).SetExecutingCommand(true);
             var wpfHost = _wpfConsole.Host;
