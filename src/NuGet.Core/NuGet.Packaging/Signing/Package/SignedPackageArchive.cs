@@ -86,21 +86,6 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        public Task<bool> IsZip64Async(CancellationToken token)
-        {
-            token.ThrowIfCancellationRequested();
-
-            if (ZipReadStream == null)
-            {
-                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
-            }
-
-            using (var reader = new BinaryReader(ZipReadStream, new UTF8Encoding(), leaveOpen: true))
-            {
-                return Task.FromResult(SignedPackageArchiveUtility.IsZip64(reader));
-            }
-        }
-
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
