@@ -4,7 +4,7 @@
     <IsNetCoreProject>true</IsNetCoreProject>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(IsNetCoreProject)' == 'true' AND '$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'">
+  <ItemGroup Condition="'$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'">
     <PackageReference Include="PdbGit" Version="3.0.41" PrivateAssets="all"/>
   </ItemGroup>
   <PropertyGroup Condition="'$(IsNetCoreProject)' == 'true' AND '$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'">
