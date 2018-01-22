@@ -263,6 +263,11 @@ namespace NuGet.Protocol.Tests
                 throw new NotImplementedException();
             }
 
+            public override Task<bool> IsZip64Async(CancellationToken token)
+            {
+                return Task.FromResult(false);
+            }
+
             protected override void Dispose(bool disposing)
             {
             }

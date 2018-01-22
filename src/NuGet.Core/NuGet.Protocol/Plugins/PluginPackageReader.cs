@@ -1144,6 +1144,11 @@ namespace NuGet.Protocol.Plugins
             throw new NotImplementedException();
         }
 
+        public override Task<bool> IsZip64Async(CancellationToken token)
+        {
+            return Task.FromResult(false);
+        }
+
         private sealed class FileStreamCreator : IDisposable
         {
             private readonly string _filePath;
