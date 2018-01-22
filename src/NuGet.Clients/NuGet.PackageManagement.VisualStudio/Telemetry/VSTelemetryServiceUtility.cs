@@ -2,51 +2,70 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.VisualStudio.Telemetry;
-using Task = System.Threading.Tasks.Task;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.Telemetry
 {
     /// <summary>
-    /// An implementation which emits all of the proper events given a <see cref="ProjectDetails"/> (VS)
-    /// and its corresponding <see cref="NuGetProject"/> (NuGet). It extracts metadata from the two
-    /// project objects and emits any necessary events.
+    /// Some utility apis for telemetry operations.
     /// </summary>
-    public class NuGetProjectTelemetryService
+    public static class VSTelemetryServiceUtility
     {
-        private static readonly Lazy<string> NuGetVersion
+        public static readonly Lazy<string> NuGetVersion
             = new Lazy<string>(() => ClientVersionUtility.GetNuGetAssemblyVersion());
 
-        public static NuGetProjectTelemetryService Instance =
-            new NuGetProjectTelemetryService(VSTelemetrySession.Instance);
-
-        private readonly ITelemetrySession _telemetrySession;
-
-        public NuGetProjectTelemetryService(ITelemetrySession telemetryService)
+        /// <summary>
+        /// Create ActionTelemetryEvent instance.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <param name="operationType"></param>
+        /// <param name="source"></param>
+        /// <param name="startTime"></param>
+        /// <param name="status"></param>
+        /// <param name="statusMessage"></param>
+        /// <param name="packageCount"></param>
+        /// <param name="endTime"></param>
+        /// <param name="duration"></param>
+        /// <returns></returns>
+        public static VSActionsTelemetryEvent GetActionTelemetryEvent(
+            string operationId,
+            IEnumerable<NuGetProject> projects,
+            NuGetOperationType operationType,
+            OperationSource source,
+            DateTimeOffset startTime,
+            NuGetOperationStatus status,
+            int packageCount,
+            double duration)
         {
-            _telemetrySession = telemetryService ?? throw new ArgumentNullException(nameof(telemetryService));
+            var sortedProjects = projects.OrderBy(
+                project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
+
+            var projectIds = sortedProjects.Select(
+                project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)).ToArray();
+
+            return new VSActionsTelemetryEvent(
+                operationId,
+                projectIds,
+                operationType,
+                source,
+                startTime,
+                status,
+                packageCount,
+                DateTimeOffset.Now,
+                duration);
         }
 
-        public void EmitNuGetProject(NuGetProject nuGetProject)
-        {
-            if (nuGetProject == null)
-            {
-                throw new ArgumentNullException(nameof(nuGetProject));
-            }
-
-            // Fire and forget. Emit the events.
-            Task.Run(() => EmitNuGetProjectAsync(nuGetProject));
-        }
-
-        private async Task EmitNuGetProjectAsync(NuGetProject nuGetProject)
+        public static async Task<ProjectTelemetryEvent> GetProjectTelemetryEventAsync(NuGetProject nuGetProject)
         {
             // Get the project details.
             var projectUniqueName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
@@ -85,13 +104,11 @@ namespace NuGet.PackageManagement.Telemetry
                 var installedPackages = await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
                 var installedPackagesCount = installedPackages.Count();
 
-                var projectInformation = new ProjectTelemetryEvent(
+                return new ProjectTelemetryEvent(
                     NuGetVersion.Value,
                     projectId,
                     projectType,
                     installedPackagesCount);
-
-                EmitProjectInformation(projectInformation);
             }
             catch (Exception ex)
             {
@@ -102,12 +119,8 @@ namespace NuGet.PackageManagement.Telemetry
 
                 ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, message);
                 Debug.Fail(message);
+                return null;
             }
-        }
-
-        public void EmitProjectInformation(ProjectTelemetryEvent projectInformation)
-        { 
-            _telemetrySession.PostEvent(projectInformation);
         }
     }
 }

@@ -18,6 +18,7 @@ using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging;
@@ -156,6 +157,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     new UserAgentStringBuilder(VSNuGetClientName).WithVisualStudioSKU(dte.GetFullVsVersionString()));
 
             HttpHandlerResourceV3.CredentialService = _credentialServiceProvider.GetCredentialService();
+            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
 
             _vsMonitorSelection = _serviceProvider.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
 
@@ -694,7 +696,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Emit project specific telemetry as we are adding the project to the cache.
                 // This ensures we do not emit the events over and over while the solution is
                 // open.
-                NuGetProjectTelemetryService.Instance.EmitNuGetProject(nuGetProject);
+                TelemetryActivity.EmitTelemetryEvent(await VSTelemetryServiceUtility.GetProjectTelemetryEventAsync(nuGetProject));
             }
 
             if (string.IsNullOrEmpty(DefaultNuGetProjectName) ||

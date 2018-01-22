@@ -28,7 +28,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
 
+            var operationId = Guid.NewGuid().ToString();
+
             var actionTelemetryData = new VSActionsTelemetryEvent(
+                operationId,
                 projectIds: new[] { Guid.NewGuid().ToString() },
                 operationType: operationType,
                 source: source,
@@ -37,13 +40,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10);
-            var service = new NuGetVSActionTelemetryService(telemetrySession.Object);
+            var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
             service.EmitTelemetryEvent(actionTelemetryData);
 
             // Assert
-            VerifyTelemetryEventData(service.OperationId, actionTelemetryData, lastTelemetryEvent);
+            VerifyTelemetryEventData(operationId, actionTelemetryData, lastTelemetryEvent);
         }
 
         [Theory]
@@ -62,7 +65,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
 
+            var operationId = Guid.NewGuid().ToString();
+
             var actionTelemetryData = new VSActionsTelemetryEvent(
+                operationId,
                 projectIds: new[] { Guid.NewGuid().ToString() },
                 operationType: operationType,
                 source: source,
@@ -71,13 +77,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: 1.30);
-            var service = new NuGetVSActionTelemetryService(telemetrySession.Object);
+            var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
             service.EmitTelemetryEvent(actionTelemetryData);
 
             // Assert
-            VerifyTelemetryEventData(service.OperationId, actionTelemetryData, lastTelemetryEvent);
+            VerifyTelemetryEventData(operationId, actionTelemetryData, lastTelemetryEvent);
         }
 
         [Theory]
@@ -93,7 +99,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
 
+            var operationId = Guid.NewGuid().ToString();
+
             var actionTelemetryData = new VSActionsTelemetryEvent(
+                operationId,
                 projectIds: new[] { Guid.NewGuid().ToString() },
                 operationType: operationType,
                 source: OperationSource.PMC,
@@ -102,13 +111,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: .40);
-            var service = new NuGetVSActionTelemetryService(telemetrySession.Object);
+            var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
             service.EmitTelemetryEvent(actionTelemetryData);
 
             // Assert
-            VerifyTelemetryEventData(service.OperationId, actionTelemetryData, lastTelemetryEvent);
+            VerifyTelemetryEventData(operationId, actionTelemetryData, lastTelemetryEvent);
         }
 
         [Theory]
@@ -124,17 +133,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var duration = 1.12;
             var stepNameWithProject = string.Format(stepName, "testProject");
-            var service = new NuGetVSActionTelemetryService(telemetrySession.Object);
+            var service = new NuGetVSTelemetryService(telemetrySession.Object);
+
+            var operationId = Guid.NewGuid().ToString();
 
             // Act
-            service.EmitTelemetryEvent(new ActionTelemetryStepEvent(stepNameWithProject, duration));
+            service.EmitTelemetryEvent(new ActionTelemetryStepEvent(operationId,stepNameWithProject, duration));
 
             // Assert
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(ActionTelemetryStepEvent.NugetActionStepsEventName, lastTelemetryEvent.Name);
             Assert.Equal(3, lastTelemetryEvent.Count);
 
-            Assert.Equal(service.OperationId, lastTelemetryEvent["OperationId"].ToString());
+            Assert.Equal(operationId, lastTelemetryEvent["OperationId"].ToString());
             Assert.Equal(stepNameWithProject, lastTelemetryEvent["StepName"].ToString());
             Assert.Equal(duration, (double)lastTelemetryEvent["Duration"]);
         }

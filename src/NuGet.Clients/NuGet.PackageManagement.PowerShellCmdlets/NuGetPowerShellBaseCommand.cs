@@ -45,6 +45,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
+        private Guid _operationId;
 
         protected int _packageCount;
         protected NuGetOperationStatus _status = NuGetOperationStatus.Succeeded;
@@ -247,7 +248,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     using (var cacheContext = new SourceCacheContext())
                     {
-                        var downloadContext = new PackageDownloadContext(cacheContext);
+                        var downloadContext = new PackageDownloadContext(cacheContext)
+                        {
+                            ParentId = OperationId
+                        };
 
                         var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                             solutionDirectory,
@@ -287,7 +291,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 source = (string)GetPropertyValueFromHost(ActivePackageSourceKey);
             }
-            
+
             // Look through all available sources (including those disabled) by matching source name and URL (or path).
             var matchingSource = GetMatchingSource(source);
             if (matchingSource != null)
@@ -411,7 +415,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // Throw and unknown source type error if the specified source is neither local nor http
                 return SourceValidationResult.UnknownSourceType(source);
             }
-            
+
             // Check if the source is a valid HTTP URI.
             if (packageSource.IsHttp && packageSource.TrySourceAsUri == null)
             {
@@ -524,7 +528,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     ErrorHandler.WriteProjectNotFoundError(projectName, terminating: false);
                 }
 
-                foreach(var match in matches)
+                foreach (var match in matches)
                 {
                     var matchedProject = await VsSolutionManager.GetNuGetProjectAsync(match);
 
@@ -606,7 +610,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             var searchFilter = new SearchFilter(includePrerelease: includePrerelease);
             searchFilter.IncludeDelisted = false;
-            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, logger: null); 
+            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, logger: null);
             var searchTask = packageFeed.SearchAsync(searchString, searchFilter, Token);
 
             return PackageFeedEnumerator.Enumerate(
@@ -1095,7 +1099,21 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public NuGetActionType ActionType { get; set; }
 
-        public INuGetTelemetryService TelemetryService { get; set; }
+        public Guid OperationId
+        {
+            get
+            {
+                if (_operationId == Guid.Empty)
+                {
+                    _operationId = Guid.NewGuid();
+                }
+                return _operationId;
+            }
+            set
+            {
+                _operationId = value;
+            }
+        }
     }
 
     public class ProgressRecordCollection : KeyedCollection<int, ProgressRecord>

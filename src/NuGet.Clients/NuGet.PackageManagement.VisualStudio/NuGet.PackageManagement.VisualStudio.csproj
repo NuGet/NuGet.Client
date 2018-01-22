@@ -178,7 +178,7 @@
     <Compile Include="SourceControl\VsSourceControlTracker.cs" />
     <Compile Include="Telemetry\NuGetProjectType.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
-    <Compile Include="Telemetry\NuGetProjectTelemetryService.cs" />
+    <Compile Include="Telemetry\VSTelemetryServiceUtility.cs" />
     <Compile Include="Utility\EnvDTEProjectUtility.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\FrameworkAssembly.cs" />

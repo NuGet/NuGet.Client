@@ -992,7 +992,10 @@ namespace NuGet.Commands.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
+                    It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(),
+                    It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
 
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
@@ -1057,7 +1060,10 @@ namespace NuGet.Commands.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
+                    It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(),
+                    It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
 
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)

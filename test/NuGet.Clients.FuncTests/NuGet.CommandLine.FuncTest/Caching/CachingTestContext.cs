@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -318,6 +318,7 @@ namespace NuGet.CommandLine.Test.Caching
                     identity,
                     fileStream,
                     GlobalPackagesPath,
+                    Guid.Empty,
                     Common.NullLogger.Instance,
                     CancellationToken.None))
                 {

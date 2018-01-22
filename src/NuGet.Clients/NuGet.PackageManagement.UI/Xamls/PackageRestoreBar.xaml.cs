@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,7 +42,7 @@ namespace NuGet.PackageManagement.UI
 
         public NuGetActionType ActionType { get; set; }
 
-        public INuGetTelemetryService TelemetryService { get; set; }
+        public Guid OperationId { get; set; }
 
         public PackageRestoreBar(ISolutionManager solutionManager, IPackageRestoreManager packageRestoreManager)
         {
@@ -137,6 +138,7 @@ namespace NuGet.PackageManagement.UI
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             ShowProgressUI();
+            OperationId = Guid.NewGuid();
 
             try
             {

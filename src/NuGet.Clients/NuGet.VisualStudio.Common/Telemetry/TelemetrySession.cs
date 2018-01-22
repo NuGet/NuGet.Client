@@ -5,6 +5,7 @@ using System;
 using NuGet.Common;
 using VsTelemetryEvent = Microsoft.VisualStudio.Telemetry.TelemetryEvent;
 using VsTelemetryService = Microsoft.VisualStudio.Telemetry.TelemetryService;
+using VsTelemetryPiiProperty = Microsoft.VisualStudio.Telemetry.TelemetryPiiProperty;
 
 namespace NuGet.VisualStudio.Telemetry
 {
@@ -34,6 +35,11 @@ namespace NuGet.VisualStudio.Telemetry
             foreach (var pair in telemetryEvent)
             {
                 vsTelemetryEvent.Properties[VSPropertyNamePrefix + pair.Key] = pair.Value;
+            }
+
+            foreach (var pair in telemetryEvent.GetPiiData())
+            {
+                vsTelemetryEvent.Properties[VSPropertyNamePrefix + pair.Key] = new VsTelemetryPiiProperty(pair.Value);
             }
 
             return vsTelemetryEvent;
