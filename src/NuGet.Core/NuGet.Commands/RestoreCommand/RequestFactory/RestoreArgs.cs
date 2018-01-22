@@ -59,6 +59,8 @@ namespace NuGet.Commands
 
         public bool HideWarningsAndErrors { get; set; } = false;
 
+        public Guid ParentId { get; set; }
+
         // Cache directory -> ISettings
         private ConcurrentDictionary<string, ISettings> _settingsCache
             = new ConcurrentDictionary<string, ISettings>(StringComparer.Ordinal);

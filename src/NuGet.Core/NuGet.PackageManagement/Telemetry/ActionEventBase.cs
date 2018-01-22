@@ -14,6 +14,7 @@ namespace NuGet.PackageManagement
     {
         public ActionEventBase(
             string eventName,
+            string operationId,
             string[] projectIds,
             DateTimeOffset startTime,
             NuGetOperationStatus status,
@@ -22,6 +23,7 @@ namespace NuGet.PackageManagement
             double duration) :
             base(eventName, new Dictionary<string, object>
                 {
+                    { nameof(OperationId), operationId },
                     { nameof(ProjectIds), string.Join(",", projectIds) },
                     { nameof(PackagesCount), packageCount },
                     { nameof(Status), status },
@@ -32,6 +34,8 @@ namespace NuGet.PackageManagement
                 })
         {
         }
+
+        public string OperationId => (string)base[nameof(OperationId)];
 
         public string ProjectIds => (string)base[nameof(ProjectIds)];
 

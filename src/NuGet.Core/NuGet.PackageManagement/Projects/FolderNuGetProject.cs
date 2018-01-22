@@ -184,7 +184,8 @@ namespace NuGet.ProjectManagement
                                     downloadResourceResult.PackageReader,
                                     PackagePathResolver,
                                     packageExtractionContext,
-                                    cancellationToken));
+                                    cancellationToken,
+                                    nuGetProjectContext.OperationId));
                         }
                         else
                         {
@@ -194,7 +195,8 @@ namespace NuGet.ProjectManagement
                                     downloadResourceResult.PackageStream,
                                     PackagePathResolver,
                                     packageExtractionContext,
-                                    cancellationToken));
+                                    cancellationToken,
+                                    nuGetProjectContext.OperationId));
                         }
                     }
                     else
@@ -204,7 +206,8 @@ namespace NuGet.ProjectManagement
                                 downloadResourceResult.PackageStream,
                                 PackagePathResolver,
                                 packageExtractionContext,
-                                cancellationToken));
+                                cancellationToken,
+                                nuGetProjectContext.OperationId));
                     }
 
                     var packageSaveMode = GetPackageSaveMode(nuGetProjectContext);

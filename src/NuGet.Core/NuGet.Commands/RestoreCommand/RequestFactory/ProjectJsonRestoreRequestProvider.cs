@@ -89,7 +89,10 @@ namespace NuGet.Commands
                 project,
                 sharedCache,
                 restoreContext.CacheContext,
-                restoreContext.Log);
+                restoreContext.Log)
+            {
+                ParentId = restoreContext.ParentId
+            };
 
             restoreContext.ApplyStandardProperties(request);
 

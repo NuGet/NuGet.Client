@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -207,11 +208,9 @@ namespace NuGet.PackageManagement.UI
             var status = NuGetOperationStatus.Succeeded;
             var startTime = DateTimeOffset.Now;
             var packageCount = 0;
-            var operationId = Guid.NewGuid().ToString();
 
             // Enable granular level telemetry events for nuget ui operation
-            var telemetryService = new NuGetVSActionTelemetryService();
-            uiService.ProjectContext.TelemetryService = telemetryService;
+            uiService.ProjectContext.OperationId = Guid.NewGuid();
 
             await _lockService.ExecuteNuGetOperationAsync(async () =>
             {
@@ -331,6 +330,7 @@ namespace NuGet.PackageManagement.UI
                     uiService.EndOperation();
 
                     var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
+                        uiService.ProjectContext.OperationId.ToString(),
                         uiService.Projects,
                         operationType,
                         OperationSource.UI,
@@ -339,7 +339,7 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         duration.TotalSeconds);
 
-                    telemetryService.EmitTelemetryEvent(actionTelemetryEvent);
+                    TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
                 }
             }, token);
         }

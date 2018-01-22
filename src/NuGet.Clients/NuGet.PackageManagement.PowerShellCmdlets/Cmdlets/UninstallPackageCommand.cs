@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Management.Automation;
 using System.Threading;
 using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -66,9 +68,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var startTime = DateTimeOffset.Now;
             _packageCount = 1;
 
-            // Enable granular level events for this uninstall operation
-            TelemetryService = new NuGetVSActionTelemetryService();
-            TelemetryServiceUtility.StartOrResumeTimer();
+            var stopWatch = Stopwatch.StartNew();
 
             // Run Preprocess outside of JTF
             Preprocess();
@@ -86,18 +86,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }, Token);
             });
 
-            TelemetryServiceUtility.StopTimer();
+            stopWatch.Stop();
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
+                OperationId.ToString(),
                 new[] { Project },
                 NuGetOperationType.Uninstall,
                 OperationSource.PMC,
                 startTime,
                 _status,
                 _packageCount,
-                TelemetryServiceUtility.GetTimerElapsedTimeInSeconds());
+                stopWatch.Elapsed.TotalSeconds);
 
-            // emit telemetry event with granular level events
-            TelemetryService.EmitTelemetryEvent(actionTelemetryEvent);
+            // emit telemetry event along with granular level events
+            TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
         }
 
         protected override void EndProcessing()
