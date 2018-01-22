@@ -34,6 +34,7 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
+            Guid parentId,
             bool forceRestore,
             DependencyGraphSpec dgSpec,
             ILogger log,
@@ -53,6 +54,7 @@ namespace NuGet.PackageManagement
                         sourceCacheContext,
                         sources,
                         dgSpec,
+                        parentId,
                         forceRestore);
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
@@ -77,6 +79,7 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
+            Guid parentId,
             bool forceRestore,
             ILogger log,
             CancellationToken token)
@@ -95,6 +98,7 @@ namespace NuGet.PackageManagement
                         sourceCacheContext,
                         sources,
                         dgSpec,
+                        parentId,
                         forceRestore: forceRestore);
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
@@ -141,6 +145,7 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
+            Guid parentId,
             ILogger log,
             CancellationToken token)
         {
@@ -161,7 +166,7 @@ namespace NuGet.PackageManagement
                 cacheContextModifier(sourceCacheContext);
 
                 // Settings passed here will be used to populate the restore requests.
-                var restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, forceRestore : true);
+                var restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, parentId, forceRestore: true);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -179,6 +184,7 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
+            Guid parentId,
             ILogger log,
             CancellationToken token)
         {
@@ -195,6 +201,7 @@ namespace NuGet.PackageManagement
                 providerCache,
                 cacheContextModifier,
                 sources,
+                parentId,
                 log,
                 token);
 
@@ -270,6 +277,7 @@ namespace NuGet.PackageManagement
             SourceCacheContext sourceCacheContext,
             IEnumerable<SourceRepository> sources,
             DependencyGraphSpec dgFile,
+            Guid parentId,
             bool forceRestore)
         {
             var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings));
@@ -286,7 +294,8 @@ namespace NuGet.PackageManagement
                 PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>() { dgProvider },
                 Log = context.Logger,
                 AllowNoOp = !forceRestore,
-                CachingSourceProvider = caching
+                CachingSourceProvider = caching,
+                ParentId = parentId
             };
 
             return restoreContext;

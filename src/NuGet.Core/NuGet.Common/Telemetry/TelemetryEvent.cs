@@ -11,11 +11,18 @@ namespace NuGet.Common
     public class TelemetryEvent
     {
         private IDictionary<string, object> _properties;
+        private IDictionary<string, object> _piiProperties;
+
+        public TelemetryEvent(string eventName) :
+            this(eventName, new Dictionary<string, object>())
+        {
+        }
 
         public TelemetryEvent(string eventName, Dictionary<string, object> properties)
         {
             Name = eventName;
             _properties = properties;
+            _piiProperties = new Dictionary<string, object>();
         }
 
         public string Name { get; }
@@ -31,7 +38,7 @@ namespace NuGet.Common
             {
                 if (key != null)
                 {
-                    _properties.TryGetValue(key, out object value);
+                    _properties.TryGetValue(key, out var value);
                     return value;
                 }
                 return null;
@@ -45,6 +52,16 @@ namespace NuGet.Common
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
             return _properties.GetEnumerator();
+        }
+
+        public void AddPiiData(string key, object value)
+        {
+            _piiProperties[key] = value;
+        }
+
+        public IEnumerable<KeyValuePair<string, object>> GetPiiData()
+        {
+            return _piiProperties;
         }
     }
 }

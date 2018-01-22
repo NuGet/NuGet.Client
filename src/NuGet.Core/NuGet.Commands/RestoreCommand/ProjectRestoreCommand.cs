@@ -27,10 +27,13 @@ namespace NuGet.Commands
 
         private readonly ProjectRestoreRequest _request;
 
+        public Guid ParentId { get; }
+
         public ProjectRestoreCommand(ProjectRestoreRequest request)
         {
             _logger = request.Log;
             _request = request;
+            ParentId = request.ParentId;
         }
 
         public async Task<Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> TryRestoreAsync(LibraryRange projectRange,
@@ -223,7 +226,6 @@ namespace NuGet.Commands
                 var threadCount = Math.Min(packagesToInstall.Count, _request.MaxDegreeOfConcurrency);
 
                 if (threadCount <= 1)
-
                 {
                     foreach (var match in packagesToInstall)
                     {
@@ -240,10 +242,11 @@ namespace NuGet.Commands
                             var result = true;
                             while (bag.TryTake(out match))
                             {
-                                result = await InstallPackageAsync(match, userPackageFolder, _request.PackageExtractionContext, token);
+                                result &= await InstallPackageAsync(match, userPackageFolder, _request.PackageExtractionContext, token);
                             }
                             return result;
                         });
+
                     success = (await Task.WhenAll(tasks)).All(p => p);
                 }
             }
@@ -254,10 +257,6 @@ namespace NuGet.Commands
         private async Task<bool> InstallPackageAsync(RemoteMatch installItem, NuGetv3LocalRepository userPackageFolder, PackageExtractionContext packageExtractionContext, CancellationToken token)
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
-
-            var signedPackageVerifier = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
 
             // Check if the package has already been installed.
             if (!userPackageFolder.Exists(packageIdentity.Id, packageIdentity.Version))
@@ -280,7 +279,8 @@ namespace NuGet.Commands
                             packageDependency,
                             versionFolderPathResolver,
                             packageExtractionContext,
-                            token);
+                            token,
+                            ParentId);
 
                         // 1) If another project in this process installs the package this will return false but userPackageFolder will contain the package.
                         // 2) If another process installs the package then this will also return false but we still need to update the cache.

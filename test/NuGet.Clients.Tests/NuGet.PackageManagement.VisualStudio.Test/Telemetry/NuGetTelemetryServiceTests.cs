@@ -4,6 +4,7 @@
 using Moq;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
@@ -33,10 +34,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 "15e9591f-9391-4ddf-a246-ca9e0351277d",
                 projectType,
                 3);
-            var target = new NuGetProjectTelemetryService(telemetrySession.Object);
+            var target = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
-            target.EmitProjectInformation(projectInformation);
+            target.EmitTelemetryEvent(projectInformation);
 
             // Assert
             telemetrySession.Verify(x => x.PostEvent(It.IsAny<TelemetryEvent>()), Times.Once);

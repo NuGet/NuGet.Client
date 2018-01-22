@@ -25,64 +25,70 @@ namespace NuGet.Packaging.Signing
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public async Task<VerifySignaturesResult> VerifySignaturesAsync(ISignedPackageReader package, CancellationToken token)
+        public async Task<VerifySignaturesResult> VerifySignaturesAsync(ISignedPackageReader package, CancellationToken token, Guid parentId = default(Guid))
         {
             var valid = false;
             var trustResults = new List<PackageVerificationResult>();
 
-            var isSigned = await package.IsSignedAsync(token);
-            if (isSigned)
+            using (var telemetry = new TelemetryActivity(parentId))
             {
-                try
+                var isSigned = await package.IsSignedAsync(token);
+                if (isSigned)
                 {
-                    var signature = await package.GetSignatureAsync(token);
+                    try
+                    {
+                        var signature = await package.GetSignatureAsync(token);
 
-                    if (signature != null)
-                    {
-                        // Verify that the signature is trusted
-                        var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, _settings, token)));
-                        valid = IsValid(sigTrustResults, _settings.AllowUntrusted);
-                        trustResults.AddRange(sigTrustResults);
+                        if (signature != null)
+                        {
+                            // Verify that the signature is trusted
+                            var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, _settings, token)));
+                            valid = IsValid(sigTrustResults, _settings.AllowUntrusted);
+                            trustResults.AddRange(sigTrustResults);
+                        }
+                        else
+                        {
+                            valid = false;
+                        }
                     }
-                    else
+                    catch (SignatureException e)
                     {
-                        valid = false;
-                    }
-                }
-                catch (SignatureException e)
-                {
-                    // SignatureException generated while parsing signatures
-                    var issues = new[] {
+                        // SignatureException generated while parsing signatures
+                        var issues = new[] {
                         SignatureLog.Issue(!_settings.AllowUntrusted, e.Code, e.Message),
                         SignatureLog.DebugLog(e.ToString())
                     };
-                    trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
-                    valid = _settings.AllowUntrusted;
-                }
-                catch (CryptographicException e)
-                {
-                    // CryptographicException generated while parsing the SignedCms object
-                    var issues = new[] {
+                        trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
+                        valid = _settings.AllowUntrusted;
+                    }
+                    catch (CryptographicException e)
+                    {
+                        // CryptographicException generated while parsing the SignedCms object
+                        var issues = new[] {
                         SignatureLog.Issue(!_settings.AllowUntrusted, NuGetLogCode.NU3003, Strings.ErrorPackageSignatureInvalid),
                         SignatureLog.DebugLog(e.ToString())
                     };
-                    trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
-                    valid = _settings.AllowUntrusted;
+                        trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
+                        valid = _settings.AllowUntrusted;
+                    }
                 }
-            }
-            else if (_settings.AllowUnsigned)
-            {
-                // An unsigned package is valid only if unsigned packages are allowed.
-                valid = true;
-            }
-            else
-            {
-                var issues = new[] { SignatureLog.Issue(fatal: true, code: NuGetLogCode.NU3004, message: Strings.ErrorPackageNotSigned) };
-                trustResults.Add(new UnsignedPackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
-                valid = false;
-            }
+                else if (_settings.AllowUnsigned)
+                {
+                    // An unsigned package is valid only if unsigned packages are allowed.
+                    valid = true;
+                }
+                else
+                {
+                    var issues = new[] { SignatureLog.Issue(fatal: true, code: NuGetLogCode.NU3004, message: Strings.ErrorPackageNotSigned) };
+                    trustResults.Add(new UnsignedPackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
+                    valid = false;
+                }
 
-            return new VerifySignaturesResult(valid, trustResults);
+                var status = valid ? NuGetOperationStatus.Succeeded : NuGetOperationStatus.Failed;
+                telemetry.TelemetryEvent = new PackageSigningTelemetryEvent(isSigned ? PackageSignType.Signed : PackageSignType.Unsigned, status);
+
+                return new VerifySignaturesResult(valid, trustResults);
+            }
         }
 
         /// <summary>

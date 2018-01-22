@@ -12,6 +12,7 @@ using System.Net;
 using System.Text;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -36,6 +37,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
+            // Set to log telemetry service for this install operation
+
             base.Preprocess();
             ParseUserInputForId();
             ParseUserInputForVersion();
@@ -51,9 +54,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void ProcessRecordCore()
         {
             var startTime = DateTimeOffset.Now;
-
-            // Set to log telemetry granular events for this install operation 
-            TelemetryService = new NuGetVSActionTelemetryService();
 
             // start timer for telemetry event
             TelemetryServiceUtility.StartOrResumeTimer();
@@ -89,6 +89,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // stop timer for telemetry event and create action telemetry event instance
             TelemetryServiceUtility.StopTimer();
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
+                OperationId.ToString(),
                 new[] { Project },
                 NuGetOperationType.Install,
                 OperationSource.PMC,
@@ -98,7 +99,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 TelemetryServiceUtility.GetTimerElapsedTimeInSeconds());
 
             // emit telemetry event along with granular level events
-            TelemetryService.EmitTelemetryEvent(actionTelemetryEvent);
+            TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
         }
 
         /// <summary>

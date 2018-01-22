@@ -4,6 +4,7 @@ using NuGet.VisualStudio.Telemetry;
 using NuGet.VisualStudio;
 using Xunit;
 using System.Globalization;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
@@ -14,6 +15,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var actionTelemetryData = new VSActionsTelemetryEvent(
+               Guid.NewGuid().ToString(),
                projectIds: new[] { Guid.NewGuid().ToString() },
                operationType: NuGetOperationType.Install,
                source: OperationSource.UI,
@@ -22,10 +24,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                packageCount: 1,
                endTime: DateTimeOffset.Now,
                duration: 1.30);
-
-            var operationId = Guid.NewGuid().ToString();
-
-            actionTelemetryData["OperationId"] = operationId;
 
             // Act
             var vsTelemetryEvent = VSTelemetrySession.ToVsTelemetryEvent(actionTelemetryData);

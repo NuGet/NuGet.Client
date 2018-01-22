@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -76,6 +77,7 @@ namespace NuGet.Protocol
             PackageIdentity packageIdentity,
             Stream packageStream,
             string globalPackagesFolder,
+            Guid parentId,
             ILogger logger,
             CancellationToken token)
         {
@@ -115,9 +117,11 @@ namespace NuGet.Protocol
                 stream => packageStream.CopyToAsync(stream, BufferSize, token),
                 versionFolderPathResolver,
                 packageExtractionContext,
-                token);
+                token,
+                parentId);
 
             var package = GetPackage(packageIdentity, globalPackagesFolder);
+
             Debug.Assert(package.PackageStream.CanSeek);
             Debug.Assert(package.PackageReader != null);
 
