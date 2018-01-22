@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Common;
 using NuGet.PackageManagement;
 
 namespace NuGet.VisualStudio
@@ -9,6 +10,7 @@ namespace NuGet.VisualStudio
     public class VSActionsTelemetryEvent : ActionsTelemetryEvent
     {
         public VSActionsTelemetryEvent(
+           string operationId,
            string[] projectIds,
            NuGetOperationType operationType,
            OperationSource source,
@@ -17,7 +19,7 @@ namespace NuGet.VisualStudio
            int packageCount,
            DateTimeOffset endTime,
            double duration) :
-            base(projectIds, operationType, startTime, status, packageCount, endTime, duration)
+            base(operationId, projectIds, operationType, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(Source)] = source;
         }

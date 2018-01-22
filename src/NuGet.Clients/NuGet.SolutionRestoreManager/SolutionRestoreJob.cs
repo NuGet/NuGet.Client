@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -108,6 +109,7 @@ namespace NuGet.SolutionRestoreManager
 
             // update instance attributes with the shared context values
             _nuGetProjectContext = jobContext.NuGetProjectContext;
+            _nuGetProjectContext.OperationId = request.OperationId;
 
             using (var ctr1 = token.Register(() => _status = NuGetOperationStatus.Cancelled))
             {
@@ -136,8 +138,7 @@ namespace NuGet.SolutionRestoreManager
             _status = NuGetOperationStatus.NoOp;
 
             // start timer for telemetry event
-            TelemetryServiceUtility.StartOrResumeTimer();
-            var telemetryService = new NuGetVSActionTelemetryService();
+            var stopWatch = Stopwatch.StartNew();
             var projects = Enumerable.Empty<NuGetProject>();
 
             _packageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
@@ -202,8 +203,8 @@ namespace NuGet.SolutionRestoreManager
                 _packageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
                 _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
 
-                TelemetryServiceUtility.StopTimer();
-                var duration = TelemetryServiceUtility.GetTimerElapsedTime();
+                stopWatch.Stop();
+                var duration = stopWatch.Elapsed;
 
                 // Do not log any restore message if user disabled restore.
                 if (_packageRestoreConsent.IsGranted)
@@ -217,7 +218,6 @@ namespace NuGet.SolutionRestoreManager
                 // Emit telemetry event for restore operation
                 EmitRestoreTelemetryEvent(
                     projects,
-                    new NuGetVSActionTelemetryService(),
                     restoreSource,
                     startTime,
                     duration.TotalSeconds);
@@ -225,7 +225,6 @@ namespace NuGet.SolutionRestoreManager
         }
 
         private void EmitRestoreTelemetryEvent(IEnumerable<NuGetProject> projects,
-            INuGetTelemetryService telemetryService,
             RestoreOperationSource source,
             DateTimeOffset startTime,
             double duration)
@@ -236,6 +235,7 @@ namespace NuGet.SolutionRestoreManager
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)).ToArray();
 
             var restoreTelemetryEvent = new RestoreTelemetryEvent(
+                _nuGetProjectContext.OperationId.ToString(),
                 projectIds,
                 source,
                 startTime,
@@ -245,7 +245,7 @@ namespace NuGet.SolutionRestoreManager
                 DateTimeOffset.Now,
                 duration);
 
-            telemetryService.EmitTelemetryEvent(restoreTelemetryEvent);
+            TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
         }
 
         private async Task RestorePackageSpecProjectsAsync(
@@ -316,6 +316,7 @@ namespace NuGet.SolutionRestoreManager
                                 providerCache,
                                 cacheModifier,
                                 sources,
+                                _nuGetProjectContext.OperationId,
                                 forceRestore,
                                 dgSpec,
                                 l,
@@ -524,7 +525,10 @@ namespace NuGet.SolutionRestoreManager
 
             using (var cacheContext = new SourceCacheContext())
             {
-                var downloadContext = new PackageDownloadContext(cacheContext);
+                var downloadContext = new PackageDownloadContext(cacheContext)
+                {
+                    ParentId = _nuGetProjectContext.OperationId
+                };
 
                 await _packageRestoreManager.RestoreMissingPackagesAsync(
                     solutionDirectory,

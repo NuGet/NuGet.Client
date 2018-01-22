@@ -28,8 +28,14 @@ namespace NuGet.Commands
 
         private bool _success = true;
 
+        private Guid _operationId;
+
         private readonly Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> _includeFlagGraphs
             = new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>();
+
+        public Guid ParentId { get; }
+
+        public const string ProjectRestoreInformation = "ProjectRestoreInformation";
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -50,6 +56,7 @@ namespace NuGet.Commands
             collectorLogger.ApplyRestoreInputs(_request.Project);
 
             _logger = collectorLogger;
+            ParentId = request.ParentId;
         }
 
         public Task<RestoreResult> ExecuteAsync()
@@ -59,141 +66,148 @@ namespace NuGet.Commands
 
         public async Task<RestoreResult> ExecuteAsync(CancellationToken token)
         {
-            var restoreTime = Stopwatch.StartNew();
-
-            // Local package folders (non-sources)
-            var localRepositories = new List<NuGetv3LocalRepository>
+            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(ParentId))
             {
-                _request.DependencyProviders.GlobalPackages
-            };
+                _operationId = telemetry.OperationId;
+                var telemetryEvent = new TelemetryEvent(ProjectRestoreInformation);
+                telemetry.TelemetryEvent = telemetryEvent;
+                var restoreTime = Stopwatch.StartNew();
 
-            localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
-
-            var contextForProject = CreateRemoteWalkContext(_request, _logger);
-
-            CacheFile cacheFile = null;
-            if (NoOpRestoreUtilities.IsNoOpSupported(_request))
-            {
-                var cacheFileAndStatus = EvaluateCacheFile();
-                cacheFile = cacheFileAndStatus.Key;
-                if (cacheFileAndStatus.Value)
+                // Local package folders (non-sources)
+                var localRepositories = new List<NuGetv3LocalRepository>
                 {
-                    if (NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
+                    _request.DependencyProviders.GlobalPackages
+                };
+
+                localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
+
+                var contextForProject = CreateRemoteWalkContext(_request, _logger);
+
+                CacheFile cacheFile = null;
+                if (NoOpRestoreUtilities.IsNoOpSupported(_request))
+                {
+                    var cacheFileAndStatus = EvaluateCacheFile();
+                    cacheFile = cacheFileAndStatus.Key;
+                    if (cacheFileAndStatus.Value)
                     {
-                        // Replay Warnings and Errors from an existing lock file in case of a no-op.
-                        await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile, _logger);
+                        if (NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request))
+                        {
+                            // Replay Warnings and Errors from an existing lock file in case of a no-op.
+                            await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile, _logger);
 
-                        restoreTime.Stop();
+                            restoreTime.Stop();
 
-                        return new NoOpRestoreResult(
-                            _success,
-                            _request.ExistingLockFile,
-                            _request.ExistingLockFile,
-                            _request.ExistingLockFile.Path,
-                            cacheFile,
-                            _request.Project.RestoreMetadata.CacheFilePath,
-                            _request.ProjectStyle,
-                            restoreTime.Elapsed);
+                            return new NoOpRestoreResult(
+                                _success,
+                                _request.ExistingLockFile,
+                                _request.ExistingLockFile,
+                                _request.ExistingLockFile.Path,
+                                cacheFile,
+                                _request.Project.RestoreMetadata.CacheFilePath,
+                                _request.ProjectStyle,
+                                restoreTime.Elapsed);
+                        }
                     }
                 }
-            }
 
-            // Restore
-            var graphs = await ExecuteRestoreAsync(
-                _request.DependencyProviders.GlobalPackages,
-                _request.DependencyProviders.FallbackPackageFolders,
-                contextForProject,
-                token);
+                // Restore
+                var graphs = await ExecuteRestoreAsync(
+                    _request.DependencyProviders.GlobalPackages,
+                    _request.DependencyProviders.FallbackPackageFolders,
+                    contextForProject,
+                    token);
 
-            // Create assets file
-            var assetsFile = BuildAssetsFile(
-                _request.ExistingLockFile,
-                _request.Project,
-                graphs,
-                localRepositories,
-                contextForProject);
-
-            _success &= await ValidateRestoreGraphsAsync(graphs, _logger);
-
-            // Check package compatibility
-            var checkResults = await VerifyCompatibilityAsync(
-                _request.Project,
-                _includeFlagGraphs,
-                localRepositories,
-                assetsFile,
-                graphs,
-                _request.ValidateRuntimeAssets,
-                _logger);
-
-
-            if (checkResults.Any(r => !r.Success))
-            {
-                _success = false;
-            }
-
-
-            // Determine the lock file output path
-            var assetsFilePath = GetAssetsFilePath(assetsFile);
-            // Determine the cache file output path
-            var cacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(_request, assetsFile);
-
-            // Tool restores are unique since the output path is not known until after restore
-            if (_request.LockFilePath == null
-                && _request.ProjectStyle == ProjectStyle.DotnetCliTool)
-            {
-                _request.LockFilePath = assetsFilePath;
-            }
-
-            // Generate Targets/Props files
-            var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
-
-            if (contextForProject.IsMsBuildBased)
-            {
-                msbuildOutputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(
+                // Create assets file
+                var assetsFile = BuildAssetsFile(
+                    _request.ExistingLockFile,
                     _request.Project,
-                    assetsFile,
                     graphs,
                     localRepositories,
-                    _request,
-                    assetsFilePath,
-                    _success,
+                    contextForProject);
+
+                _success &= await ValidateRestoreGraphsAsync(graphs, _logger);
+
+                // Check package compatibility
+                var checkResults = await VerifyCompatibilityAsync(
+                    _request.Project,
+                    _includeFlagGraphs,
+                    localRepositories,
+                    assetsFile,
+                    graphs,
+                    _request.ValidateRuntimeAssets,
                     _logger);
+
+
+                if (checkResults.Any(r => !r.Success))
+                {
+                    _success = false;
+                }
+
+
+                // Determine the lock file output path
+                var assetsFilePath = GetAssetsFilePath(assetsFile);
+                // Determine the cache file output path
+                var cacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(_request, assetsFile);
+
+                // Tool restores are unique since the output path is not known until after restore
+                if (_request.LockFilePath == null
+                    && _request.ProjectStyle == ProjectStyle.DotnetCliTool)
+                {
+                    _request.LockFilePath = assetsFilePath;
+                }
+
+                // Generate Targets/Props files
+                var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
+
+                if (contextForProject.IsMsBuildBased)
+                {
+                    msbuildOutputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(
+                        _request.Project,
+                        assetsFile,
+                        graphs,
+                        localRepositories,
+                        _request,
+                        assetsFilePath,
+                        _success,
+                        _logger);
+                }
+
+                // If the request is for a lower lock file version, downgrade it appropriately
+                DowngradeLockFileIfNeeded(assetsFile);
+
+                // Revert to the original case if needed
+                await FixCaseForLegacyReaders(graphs, assetsFile, token);
+
+                // Write the logs into the assets file
+                var logs = _logger.Errors
+                    .Select(l => AssetsLogMessage.Create(l))
+                    .ToList();
+
+                _success &= !logs.Any(l => l.Level == LogLevel.Error);
+
+                assetsFile.LogMessages = logs;
+
+                if (cacheFile != null)
+                {
+                    cacheFile.Success = _success;
+                }
+
+                restoreTime.Stop();
+
+                // Create result
+                return new RestoreResult(
+                    _success,
+                    graphs,
+                    checkResults,
+                    msbuildOutputFiles,
+                    assetsFile,
+                    _request.ExistingLockFile,
+                    assetsFilePath,
+                    cacheFile,
+                    cacheFilePath,
+                    _request.ProjectStyle,
+                    restoreTime.Elapsed);
             }
-
-            // If the request is for a lower lock file version, downgrade it appropriately
-            DowngradeLockFileIfNeeded(assetsFile);
-
-            // Revert to the original case if needed
-            await FixCaseForLegacyReaders(graphs, assetsFile, token);
-
-            // Write the logs into the assets file
-            var logs = _logger.Errors
-                .Select(l => AssetsLogMessage.Create(l))
-                .ToList();
-
-            _success &= !logs.Any(l => l.Level == LogLevel.Error);
-
-            assetsFile.LogMessages = logs;
-
-            if (cacheFile != null)
-            {
-                cacheFile.Success = _success;
-            }
-
-            restoreTime.Stop();
-            // Create result
-            return new RestoreResult(
-                _success,
-                graphs,
-                checkResults,
-                msbuildOutputFiles,
-                assetsFile,
-                _request.ExistingLockFile,
-                assetsFilePath,
-                cacheFile,
-                cacheFilePath,
-                _request.ProjectStyle,
-                restoreTime.Elapsed);
         }
 
         private KeyValuePair<CacheFile, bool> EvaluateCacheFile()
@@ -305,7 +319,7 @@ namespace NuGet.Commands
             // step.
             if (!_request.IsLowercasePackagesDirectory)
             {
-                var originalCase = new OriginalCaseGlobalPackageFolder(_request);
+                var originalCase = new OriginalCaseGlobalPackageFolder(_request, _operationId);
 
                 // Convert the case of all the packages used in the project restore
                 await originalCase.CopyPackagesToOriginalCaseAsync(graphs, token);
@@ -473,9 +487,9 @@ namespace NuGet.Commands
                     await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingCompatibility, graph.Name));
 
                     var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
-
                     var res = await checker.CheckAsync(graph, includeFlags);
                     checkResults.Add(res);
+
                     if (res.Success)
                     {
                         await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAndProjectsAreCompatible, graph.Name));
@@ -552,7 +566,10 @@ namespace NuGet.Commands
                 _request,
                 _request.Project,
                 _request.ExistingLockFile,
-                _logger);
+                _logger)
+            {
+                ParentId = _operationId
+            };
 
             var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
 

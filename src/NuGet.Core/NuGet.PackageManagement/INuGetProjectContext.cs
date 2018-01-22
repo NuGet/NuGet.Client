@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
 using NuGet.Packaging;
-using NuGet.Common;
 
 namespace NuGet.ProjectManagement
 {
@@ -38,7 +39,7 @@ namespace NuGet.ProjectManagement
 
         NuGetActionType ActionType { get; set; }
 
-        INuGetTelemetryService TelemetryService { get; set; }
+        Guid OperationId { get; set; }
     }
 
     /// <summary>

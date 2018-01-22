@@ -5988,8 +5988,8 @@ namespace NuGet.Test
                 .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
 
             var nugetProjectContext = new TestNuGetProjectContext();
-            var telemetryService = new NuGetVSActionTelemetryService(telemetrySession.Object);
-            nugetProjectContext.TelemetryService = telemetryService;
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
             using (var solutionManager = new TestSolutionManager(true))
@@ -6037,8 +6037,9 @@ namespace NuGet.Test
                 .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
 
             var nugetProjectContext = new TestNuGetProjectContext();
-            var telemetryService = new NuGetVSActionTelemetryService(telemetrySession.Object);
-            nugetProjectContext.TelemetryService = telemetryService;
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
             using (var solutionManager = new TestSolutionManager(true))
@@ -6064,11 +6065,13 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 // Assert
-                Assert.Equal(1, telemetryEvents.Count);
+                Assert.Equal(3, telemetryEvents.Count);
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
+
                 var projectId = string.Empty;
                 buildIntegratedProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
-                Assert.Equal(telemetryEvents[0]["StepName"],
-                    string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId));
+                Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
+                    Any(p => (string)p["StepName"] == string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId)));
             }
         }
 
@@ -6109,8 +6112,8 @@ namespace NuGet.Test
                 .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
 
             var nugetProjectContext = new TestNuGetProjectContext();
-            var telemetryService = new NuGetVSActionTelemetryService(telemetrySession.Object);
-            nugetProjectContext.TelemetryService = telemetryService;
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
             using (var solutionManager = new TestSolutionManager(true))
@@ -6156,8 +6159,8 @@ namespace NuGet.Test
                 .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
 
             var nugetProjectContext = new TestNuGetProjectContext();
-            var telemetryService = new NuGetVSActionTelemetryService(telemetrySession.Object);
-            nugetProjectContext.TelemetryService = telemetryService;
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
             using (var solutionManager = new TestSolutionManager(true))
@@ -6190,9 +6193,12 @@ namespace NuGet.Test
                 var projectId = string.Empty;
                 nugetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
 
-                Assert.Equal(1, telemetryEvents.Count);
-                Assert.Equal(telemetryEvents[0]["StepName"],(
-                    string.Format(TelemetryConstants.ExecuteActionStepName, projectId)));
+                Assert.Equal(3, telemetryEvents.Count);
+                Assert.Equal(1, telemetryEvents.Where(p => p.Name == "PackagePreFetcherInformation").Count());
+                Assert.Equal(1, telemetryEvents.Where(p => p.Name == "PackageExtractionInformation").Count());
+                Assert.Equal(1, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
+                Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
+                     Any(p => (string)p["StepName"] == string.Format(TelemetryConstants.ExecuteActionStepName, projectId)));
             }
         }
 
@@ -6211,8 +6217,8 @@ namespace NuGet.Test
                 .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
 
             var nugetProjectContext = new TestNuGetProjectContext();
-            var telemetryService = new NuGetVSActionTelemetryService(telemetrySession.Object);
-            nugetProjectContext.TelemetryService = telemetryService;
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             using (var settingsdir = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager(true))
@@ -6255,12 +6261,14 @@ namespace NuGet.Test
                 var projectId = string.Empty;
                 buildIntegratedProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
 
-                Assert.Equal(2, telemetryEvents.Count);
-                Assert.Equal(telemetryEvents[0]["StepName"],
-                    string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId));
-                Assert.Equal(telemetryEvents[1]["StepName"],
-                    string.Format(TelemetryConstants.ExecuteActionStepName, projectId));
+                Assert.Equal(4, telemetryEvents.Count);
 
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
+                Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
+                    Any(p => (string)p["StepName"] == string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId)));
+                Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
+                    Any(p => (string)p["StepName"] == string.Format(TelemetryConstants.ExecuteActionStepName, projectId)));
             }
         }
 

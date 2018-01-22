@@ -386,7 +386,8 @@ namespace NuGet.Test.Utility
                 {
                     using (var fileStream = File.OpenRead(file))
                     {
-                        await PackageExtractor.InstallFromSourceAsync(identity,
+                        await PackageExtractor.InstallFromSourceAsync(
+                            identity,
                             (stream) => fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
                             new VersionFolderPathResolver(root),
                             new PackageExtractionContext(
@@ -394,7 +395,7 @@ namespace NuGet.Test.Utility
                                 XmlDocFileSaveMode.None,
                                 NullLogger.Instance,
                                 signedPackageVerifier: null),
-                                CancellationToken.None);
+                            CancellationToken.None);
                     }
                 }
             }

@@ -17,6 +17,8 @@ namespace NuGet.Packaging.Signing
 
         public PackageIdentity PackageIdentity { get; }
 
+        public TimeSpan VerifyDuration { get; set; }
+
         public NuGetLogCode Code { get; }
 
         public SignatureException(NuGetLogCode code, string message)

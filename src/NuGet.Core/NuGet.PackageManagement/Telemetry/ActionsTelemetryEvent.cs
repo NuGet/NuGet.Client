@@ -12,13 +12,14 @@ namespace NuGet.PackageManagement
     public class ActionsTelemetryEvent : ActionEventBase
     {
         public ActionsTelemetryEvent(
+            string operationId,
             string[] projectIds,
             NuGetOperationType operationType,
             DateTimeOffset startTime,
             NuGetOperationStatus status,
             int packageCount,
             DateTimeOffset endTime,
-            double duration) : base(NugetActionEventName, projectIds, startTime, status, packageCount, endTime, duration)
+            double duration) : base(NugetActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(OperationType)] = operationType;
         }

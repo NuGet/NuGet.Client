@@ -150,10 +150,11 @@ namespace NuGet.Commands
                 restoreArgs.Log)
             {
                 // Set properties from the restore metadata
-                ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle, 
+                ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle,
                 RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
                 DependencyGraphSpec = projectDgSpec,
-                BaseIntermediateOutputPath = projectPackageSpec.RestoreMetadata.OutputPath
+                BaseIntermediateOutputPath = projectPackageSpec.RestoreMetadata.OutputPath,
+                ParentId = restoreArgs.ParentId
             };
             
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory

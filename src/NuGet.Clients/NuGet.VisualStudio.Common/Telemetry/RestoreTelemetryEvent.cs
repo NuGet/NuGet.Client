@@ -13,6 +13,7 @@ namespace NuGet.VisualStudio
     public class RestoreTelemetryEvent : ActionEventBase
     {
         public RestoreTelemetryEvent(
+            string operationId,
             string[] projectIds,
             RestoreOperationSource source,
             DateTimeOffset startTime,
@@ -20,7 +21,7 @@ namespace NuGet.VisualStudio
             int packageCount,
             int noOpProjectsCount,
             DateTimeOffset endTime,
-            double duration) : base(RestoreActionEventName, projectIds, startTime, status, packageCount, endTime, duration)
+            double duration) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(OperationSource)] = source;
             base[(nameof(NoOpProjectsCount))] = noOpProjectsCount;

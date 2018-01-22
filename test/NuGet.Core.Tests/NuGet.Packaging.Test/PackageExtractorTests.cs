@@ -1918,8 +1918,9 @@ namespace NuGet.Packaging.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
-                    ReturnsAsync(new VerifySignaturesResult(true));
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
+                      It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
+                      ReturnsAsync(new VerifySignaturesResult(true));
 
                 var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
 
@@ -1963,7 +1964,8 @@ namespace NuGet.Packaging.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
 
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
@@ -2001,7 +2003,8 @@ namespace NuGet.Packaging.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
 
                 var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
@@ -2045,7 +2048,8 @@ namespace NuGet.Packaging.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
 
                 var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
@@ -2086,7 +2090,8 @@ namespace NuGet.Packaging.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
 
                 var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
@@ -2127,7 +2132,8 @@ namespace NuGet.Packaging.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
 
                 var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
@@ -2162,7 +2168,8 @@ namespace NuGet.Packaging.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
 
                 var resolver = new PackagePathResolver(root);
@@ -2203,7 +2210,8 @@ namespace NuGet.Packaging.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
 
                 var resolver = new PackagePathResolver(root);
@@ -2240,7 +2248,8 @@ namespace NuGet.Packaging.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
 
                 var resolver = new PackagePathResolver(root);
@@ -2281,7 +2290,8 @@ namespace NuGet.Packaging.Test
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
 
                 var resolver = new PackagePathResolver(root);
@@ -2319,7 +2329,8 @@ namespace NuGet.Packaging.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
 
                 var resolver = new PackagePathResolver(root);
@@ -2363,7 +2374,8 @@ namespace NuGet.Packaging.Test
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(), It.IsAny<CancellationToken>())).
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
 
                 var resolver = new PackagePathResolver(root);
