@@ -8,9 +8,7 @@ using Xunit.Sdk;
 
 namespace NuGet.StaFact
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    [XunitTestCaseDiscoverer("NuGet.StaFact.NuGetWpfTheoryDiscoverer", "NuGet.StaFact")]
-    public class CIOnlyNuGetWpfTheoryAttribute : TheoryAttribute
+    public class CIOnlyNuGetWpfTheoryAttribute : NuGetWpfTheoryAttribute
     {
         private string _skip;
 

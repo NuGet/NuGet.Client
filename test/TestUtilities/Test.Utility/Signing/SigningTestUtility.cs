@@ -93,6 +93,7 @@ namespace Test.Utility.Signing
             gen.SetNotAfter(notAfter);
         };
 
+        /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().
         /// The generator will create a certificate that is valid but will expire in a 15 seconds
         /// </summary>
@@ -121,6 +122,9 @@ namespace Test.Utility.Signing
         /// Please dispose all the certificates in the list after use.
         /// </summary>
         /// <param name="length">Length of the chain.</param>
+        /// <param name="crlServerUri">Uri for crl server</param>
+        /// <param name="crlLocalUri">Uri for crl local</param>
+        /// <param name="configureLeafCrl">Indicates if leaf crl should be configured</param>
         /// <returns>List of certificates representing a chain of certificates.</returns>
         public static IList<TrustedTestCert<TestCertificate>> GenerateCertificateChain(int length, string crlServerUri, string crlLocalUri, bool configureLeafCrl = true)
         {
@@ -343,6 +347,7 @@ namespace Test.Utility.Signing
         /// Generates a SignedCMS object for some content.
         /// </summary>
         /// <param name="content"></param>
+        /// <param name="cert">Certificate for cms signer</param>
         /// <returns>SignedCms object</returns>
         public static SignedCms GenerateSignedCms(X509Certificate2 cert, byte[] content)
         {

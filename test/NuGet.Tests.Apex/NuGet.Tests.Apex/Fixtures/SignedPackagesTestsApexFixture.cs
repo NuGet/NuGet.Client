@@ -45,7 +45,7 @@ namespace NuGet.Tests.Apex
                 if (_signedTestPackageV1 == null)
                 {
                     _signedTestPackageV1 = Utils.CreatePackage(_testPackageName, _packageVersion);
-                    _signedTestPackageV1.CertificateToSign = TrustedTestCertificate.Source.Cert;
+                    _signedTestPackageV1.AuthorSignatureCertificate = TrustedTestCertificate.Source.Cert;
                 }
 
                 return _signedTestPackageV1;
@@ -84,7 +84,7 @@ namespace NuGet.Tests.Apex
             _trustedExpiredTestCert = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn5Seconds();
 
             _expiredSignedTestPackageV1 = Utils.CreatePackage(_expiredTestPackageName, _packageVersion);
-            _expiredSignedTestPackageV1.CertificateToSign = _trustedExpiredTestCert.Source.Cert;
+            _expiredSignedTestPackageV1.AuthorSignatureCertificate = _trustedExpiredTestCert.Source.Cert;
 
             SimpleTestPackageUtility.CreatePackages(_expiredSignedTestPackageV1Directory, _expiredSignedTestPackageV1);
             _expiredSignedTestPackageV1Path = Path.Combine(_expiredSignedTestPackageV1Directory, _expiredSignedTestPackageV1.PackageName);

@@ -107,33 +107,39 @@ namespace NuGet.Test.Utility
             var runtimeJson = packageContext.RuntimeJson;
             var pathResolver = new VersionFolderPathResolver(null);
             var testLogger = new TestLogger();
+            var tempStream = stream;
+            var isUsingTempStream = false;
 
-            using (var tempStream = new MemoryStream())
+            if (packageContext.AuthorSignatureCertificate != null)
             {
-                using (var zip = new ZipArchive(tempStream, ZipArchiveMode.Create, leaveOpen: true))
-                {
-                    if (packageContext.Files.Any())
-                    {
-                        foreach (var entryFile in packageContext.Files)
-                        {
-                            zip.AddEntry(entryFile.Key, entryFile.Value);
-                        }
-                    }
-                    else
-                    {
-                        zip.AddEntry("contentFiles/any/any/config.xml", new byte[] { 0 });
-                        zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
-                        zip.AddEntry("lib/net45/a.dll", new byte[] { 0 });
-                        zip.AddEntry("lib/netstandard1.0/a.dll", new byte[] { 0 });
-                        zip.AddEntry($"build/net45/{id}.targets", @"<targets />", Encoding.UTF8);
-                        zip.AddEntry("runtimes/any/native/a.dll", new byte[] { 0 });
-                        zip.AddEntry("tools/a.exe", new byte[] { 0 });
-                    }
+                tempStream = new MemoryStream();
+                isUsingTempStream = true;
+            }
 
-                    if (!string.IsNullOrEmpty(runtimeJson))
+            using (var zip = new ZipArchive(tempStream, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                if (packageContext.Files.Any())
+                {
+                    foreach (var entryFile in packageContext.Files)
                     {
-                        zip.AddEntry("runtime.json", runtimeJson, Encoding.UTF8);
+                        zip.AddEntry(entryFile.Key, entryFile.Value);
                     }
+                }
+                else
+                {
+                    zip.AddEntry("contentFiles/any/any/config.xml", new byte[] { 0 });
+                    zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
+                    zip.AddEntry("lib/net45/a.dll", new byte[] { 0 });
+                    zip.AddEntry("lib/netstandard1.0/a.dll", new byte[] { 0 });
+                    zip.AddEntry($"build/net45/{id}.targets", @"<targets />", Encoding.UTF8);
+                    zip.AddEntry("runtimes/any/native/a.dll", new byte[] { 0 });
+                    zip.AddEntry("tools/a.exe", new byte[] { 0 });
+                }
+
+                if (!string.IsNullOrEmpty(runtimeJson))
+                {
+                    zip.AddEntry("runtime.json", runtimeJson, Encoding.UTF8);
+                }
 
                 var frameworkAssembliesAndContentFiles = packageContext.UseDefaultRuntimeAssemblies ?
                           $@"<frameworkAssemblies>
@@ -157,91 +163,88 @@ namespace NuGet.Test.Utility
                         </metadata>
                         </package>";
 
-                    var xml = XDocument.Parse(nuspecXml);
+                var xml = XDocument.Parse(nuspecXml);
 
-                    // Add the min client version if it exists
-                    if (!string.IsNullOrEmpty(packageContext.MinClientVersion))
+                // Add the min client version if it exists
+                if (!string.IsNullOrEmpty(packageContext.MinClientVersion))
+                {
+                    xml.Root.Element(XName.Get("metadata"))
+                        .Add(new XAttribute(XName.Get("minClientVersion"), packageContext.MinClientVersion));
+                }
+
+                var dependencies = packageContext.Dependencies.Select(e =>
+                    new PackageDependency(
+                        e.Id,
+                        VersionRange.Parse(e.Version),
+                        string.IsNullOrEmpty(e.Include)
+                            ? new List<string>()
+                            : e.Include.Split(',').ToList(),
+                        string.IsNullOrEmpty(e.Exclude)
+                            ? new List<string>()
+                            : e.Exclude.Split(',').ToList()));
+
+                if (dependencies.Any())
+                {
+                    var metadata = xml.Element(XName.Get("package")).Element(XName.Get("metadata"));
+
+                    var dependenciesNode = new XElement(XName.Get("dependencies"));
+                    var groupNode = new XElement(XName.Get("group"));
+                    dependenciesNode.Add(groupNode);
+                    metadata.Add(dependenciesNode);
+
+                    foreach (var dependency in dependencies)
                     {
-                        xml.Root.Element(XName.Get("metadata"))
-                            .Add(new XAttribute(XName.Get("minClientVersion"), packageContext.MinClientVersion));
-                    }
+                        var node = new XElement(XName.Get("dependency"));
+                        groupNode.Add(node);
+                        node.Add(new XAttribute(XName.Get("id"), dependency.Id));
+                        node.Add(new XAttribute(XName.Get("version"), dependency.VersionRange.ToNormalizedString()));
 
-                    var dependencies = packageContext.Dependencies.Select(e =>
-                        new PackageDependency(
-                            e.Id,
-                            VersionRange.Parse(e.Version),
-                            string.IsNullOrEmpty(e.Include)
-                                ? new List<string>()
-                                : e.Include.Split(',').ToList(),
-                            string.IsNullOrEmpty(e.Exclude)
-                                ? new List<string>()
-                                : e.Exclude.Split(',').ToList()));
-
-                    if (dependencies.Any())
-                    {
-                        var metadata = xml.Element(XName.Get("package")).Element(XName.Get("metadata"));
-
-                        var dependenciesNode = new XElement(XName.Get("dependencies"));
-                        var groupNode = new XElement(XName.Get("group"));
-                        dependenciesNode.Add(groupNode);
-                        metadata.Add(dependenciesNode);
-
-                        foreach (var dependency in dependencies)
+                        if (dependency.Include.Count > 0)
                         {
-                            var node = new XElement(XName.Get("dependency"));
-                            groupNode.Add(node);
-                            node.Add(new XAttribute(XName.Get("id"), dependency.Id));
-                            node.Add(new XAttribute(XName.Get("version"), dependency.VersionRange.ToNormalizedString()));
+                            node.Add(new XAttribute(XName.Get("include"), string.Join(",", dependency.Include)));
+                        }
 
-                            if (dependency.Include.Count > 0)
-                            {
-                                node.Add(new XAttribute(XName.Get("include"), string.Join(",", dependency.Include)));
-                            }
-
-                            if (dependency.Exclude.Count > 0)
-                            {
-                                node.Add(new XAttribute(XName.Get("exclude"), string.Join(",", dependency.Exclude)));
-                            }
+                        if (dependency.Exclude.Count > 0)
+                        {
+                            node.Add(new XAttribute(XName.Get("exclude"), string.Join(",", dependency.Exclude)));
                         }
                     }
+                }
 
-                    if (packageContext.PackageTypes.Count > 0)
+                if (packageContext.PackageTypes.Count > 0)
+                {
+                    var metadata = xml.Element("package").Element("metadata");
+                    var packageTypes = new XElement("packageTypes");
+                    metadata.Add(packageTypes);
+
+                    foreach (var packageType in packageContext.PackageTypes)
                     {
-                        var metadata = xml.Element("package").Element("metadata");
-                        var packageTypes = new XElement("packageTypes");
-                        metadata.Add(packageTypes);
-
-                        foreach (var packageType in packageContext.PackageTypes)
+                        var packageTypeElement = new XElement("packageType");
+                        packageTypeElement.Add(new XAttribute("name", packageType.Name));
+                        if (packageType.Version != PackageType.EmptyVersion)
                         {
-                            var packageTypeElement = new XElement("packageType");
-                            packageTypeElement.Add(new XAttribute("name", packageType.Name));
-                            if (packageType.Version != PackageType.EmptyVersion)
-                            {
-                                packageTypeElement.Add(new XAttribute("version", packageType.Version));
-                            }
-
-                            packageTypes.Add(packageTypeElement);
+                            packageTypeElement.Add(new XAttribute("version", packageType.Version));
                         }
-                    }
 
-                    zip.AddEntry($"{id}.nuspec", xml.ToString(), Encoding.UTF8);
-                }
-
-                if (packageContext.CertificateToSign != null)
-                {
-                    using (var signPackage = new SignedPackageArchive(tempStream, stream))
-                    {
-                        var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
-                        var signer = new Signer(signPackage, testSignatureProvider);
-                        var request = new SignPackageRequest(packageContext.CertificateToSign, signatureHashAlgorithm: HashAlgorithmName.SHA256);
-
-                        signer.SignAsync(request, testLogger, CancellationToken.None).Wait();
+                        packageTypes.Add(packageTypeElement);
                     }
                 }
-                else
+
+                zip.AddEntry($"{id}.nuspec", xml.ToString(), Encoding.UTF8);
+            }
+
+            if (isUsingTempStream)
+            {
+                using (var signPackage = new SignedPackageArchive(tempStream, stream))
                 {
-                    tempStream.CopyTo(stream);
+                    var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
+                    var signer = new Signer(signPackage, testSignatureProvider);
+                    var request = new AuthorSignPackageRequest(packageContext.AuthorSignatureCertificate, hashAlgorithm: HashAlgorithmName.SHA256);
+
+                    signer.SignAsync(request, testLogger, CancellationToken.None).Wait();
                 }
+
+                tempStream.Dispose();
             }
 
             // Reset position

@@ -26,7 +26,7 @@ namespace NuGet.Tests.Apex
 
         public static SimpleTestPackageContext CreateSignedPackage(string packageName, string packageVersion, X509Certificate2 testCertificate) {
             var package = CreatePackage(packageName, packageVersion);
-            package.CertificateToSign = testCertificate;
+            package.AuthorSignatureCertificate = testCertificate;
 
             return package;
         }
