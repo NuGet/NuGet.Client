@@ -42,7 +42,6 @@ namespace NuGet.Packaging.Signing
         /// PrivateKey is only used in mssign command.
         /// </summary>
         public System.Security.Cryptography.CngKey PrivateKey { get; set; }
-
 #endif
 
         /// <summary>
@@ -71,16 +70,56 @@ namespace NuGet.Packaging.Signing
             X509Certificate2 certificate,
             HashAlgorithmName signatureHashAlgorithm,
             HashAlgorithmName timestampHashAlgorithm)
+            : this(certificate, signatureHashAlgorithm, timestampHashAlgorithm, SignatureType.Author)
+        {
+        }
+
+        /// <summary>
+        /// Instantiates a new instance of the <see cref="SignPackageRequest" /> class.
+        /// </summary>
+        /// <param name="certificate">The signing certificate.</param>
+        /// <param name="signatureHashAlgorithm">The signature hash algorithm.</param>
+        /// <param name="timestampHashAlgorithm">The timestamp hash algorithm.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="signatureHashAlgorithm" />
+        /// is invalid.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="timestampHashAlgorithm" />
+        /// is invalid.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="signatureType" />
+        /// is invalid.</exception>
+        public SignPackageRequest(
+            X509Certificate2 certificate,
+            HashAlgorithmName signatureHashAlgorithm,
+            HashAlgorithmName timestampHashAlgorithm,
+            SignatureType signatureType)
         {
             if (certificate == null)
             {
                 throw new ArgumentNullException(nameof(certificate));
             }
 
+            if (!Enum.IsDefined(typeof(HashAlgorithmName), signatureHashAlgorithm) ||
+                signatureHashAlgorithm == HashAlgorithmName.Unknown)
+            {
+                throw new ArgumentException(Strings.InvalidArgument, nameof(signatureHashAlgorithm));
+            }
+
+            if (!Enum.IsDefined(typeof(HashAlgorithmName), timestampHashAlgorithm) ||
+                timestampHashAlgorithm == HashAlgorithmName.Unknown)
+            {
+                throw new ArgumentException(Strings.InvalidArgument, nameof(timestampHashAlgorithm));
+            }
+
+            if (signatureType != SignatureType.Author && signatureType != SignatureType.Repository)
+            {
+                throw new ArgumentException(Strings.InvalidArgument, nameof(signatureType));
+            }
+
             Certificate = certificate;
             SignatureHashAlgorithm = signatureHashAlgorithm;
             TimestampHashAlgorithm = timestampHashAlgorithm;
-            SignatureType = SignatureType.Author;
+            SignatureType = signatureType;
             AdditionalCertificates = new X509Certificate2Collection();
         }
 
@@ -112,6 +151,14 @@ namespace NuGet.Packaging.Signing
             if (Chain == null)
             {
                 Chain = CertificateChainUtility.GetCertificateChainForSigning(Certificate, AdditionalCertificates, NuGetVerificationCertificateType.Signature);
+            }
+        }
+
+        private static void VerifyAlgorithm(HashAlgorithmName signatureHashAlgorithm)
+        {
+            if (!Enum.IsDefined(typeof(HashAlgorithmName), signatureHashAlgorithm))
+            {
+                throw new ArgumentException(Strings.InvalidArgument, nameof(signatureHashAlgorithm));
             }
         }
     }

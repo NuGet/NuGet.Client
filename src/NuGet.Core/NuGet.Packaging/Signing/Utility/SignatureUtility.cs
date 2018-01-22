@@ -238,6 +238,9 @@ namespace NuGet.Packaging.Signing
                     "ESS signing-certificate-v2 Attribute Definition", RFC 5126 section 5.7.3.2 (https://tools.ietf.org/html/rfc5126.html#section-5.7.3.2)
             */
 
+            const string signingCertificateName = "signing-certificate";
+            const string signingCertificateV2Name = "signing-certificate-v2";
+
             CryptographicAttributeObject signingCertificateAttribute = null;
             CryptographicAttributeObject signingCertificateV2Attribute = null;
 
@@ -248,12 +251,22 @@ namespace NuGet.Packaging.Signing
                     case Oids.SigningCertificate:
                         if (signingCertificateAttribute != null)
                         {
-                            throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateMultipleAttributes);
+                            throw new SignatureException(
+                                errors.InvalidSignature,
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.MultipleAttributesDisallowed,
+                                    signingCertificateName));
                         }
 
                         if (attribute.Values.Count != 1)
                         {
-                            throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateMultipleAttributeValues);
+                            throw new SignatureException(
+                                errors.InvalidSignature,
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.ExactlyOneAttributeValueRequired,
+                                    signingCertificateName));
                         }
 
                         signingCertificateAttribute = attribute;
@@ -262,12 +275,22 @@ namespace NuGet.Packaging.Signing
                     case Oids.SigningCertificateV2:
                         if (signingCertificateV2Attribute != null)
                         {
-                            throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV2MultipleAttributes);
+                            throw new SignatureException(
+                                errors.InvalidSignature,
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.MultipleAttributesDisallowed,
+                                    signingCertificateV2Name));
                         }
 
                         if (attribute.Values.Count != 1)
                         {
-                            throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV2MultipleAttributeValues);
+                            throw new SignatureException(
+                                errors.InvalidSignature,
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.ExactlyOneAttributeValueRequired,
+                                    signingCertificateV2Name));
                         }
 
                         signingCertificateV2Attribute = attribute;
@@ -286,7 +309,11 @@ namespace NuGet.Packaging.Signing
 
                         if (signingCertificateV2Attribute == null)
                         {
-                            throw new SignatureException(errors.InvalidSignature, Strings.SigningCertificateV2AttributeMustBePresent);
+                            throw new SignatureException(
+                                errors.InvalidSignature,
+                                string.Format(CultureInfo.CurrentCulture,
+                                    Strings.ExactlyOneAttributeRequired,
+                                    signingCertificateV2Name));
                         }
                     }
                     break;

@@ -437,23 +437,11 @@ Valid from:</comment>
   <data name="SigningCertificateCertificateNotFound" xml:space="preserve">
     <value>A certificate referenced by the signing-certificate attribute could not be found.</value>
   </data>
-  <data name="SigningCertificateMultipleAttributes" xml:space="preserve">
-    <value>Multiple signing-certificate attributes are not allowed.</value>
-  </data>
-  <data name="SigningCertificateMultipleAttributeValues" xml:space="preserve">
-    <value>Multiple signing-certificate attribute values are not allowed.</value>
-  </data>
-  <data name="SigningCertificateV2AttributeMustBePresent" xml:space="preserve">
-    <value>The signing-certificate-v2 attribute must be present.</value>
-  </data>
   <data name="SigningCertificateV2CertificateNotFound" xml:space="preserve">
     <value>A certificate referenced by the signing-certificate-v2 attribute could not be found.</value>
   </data>
-  <data name="SigningCertificateV2MultipleAttributes" xml:space="preserve">
-    <value>Multiple signing-certificate-v2 attributes are not allowed.</value>
-  </data>
-  <data name="SigningCertificateV2MultipleAttributeValues" xml:space="preserve">
-    <value>Multiple signing-certificate-v2 attribute values are not allowed.</value>
+  <data name="SigningCertificateV2NotExactlyOneAttributeValue" xml:space="preserve">
+    <value>The signing-certificate-v2 attribute does not have exactly one attribute value.</value>
   </data>
   <data name="SigningCertificateV2UnsupportedHashAlgorithm" xml:space="preserve">
     <value>The signing-certificate-v2 attribute uses an unsupported hash algorithm.</value>
@@ -488,8 +476,34 @@ Valid from:</comment>
   <data name="SigningCertificateV1OrV2AttributeMustBePresent" xml:space="preserve">
     <value>Either the signing-certificate or signing-certificate-v2 attribute must be present.</value>
   </data>
-  <data name="MultipleAttributeInstanceFound" xml:space="preserve">
-    <value>Multiple instances of attribute '{0}' were found.</value>
-    <comment>{0} is the attribute OID</comment>
+  <data name="NuGetV3ServiceIndexUrlInvalid" xml:space="preserve">
+    <value>The nuget-v3-service-index-url attribute is invalid.</value>
+  </data>
+  <data name="NuGetPackageOwnersInvalid" xml:space="preserve">
+    <value>The nuget-package-owners attribute is invalid.</value>
+  </data>
+  <data name="NuGetPackageOwnersInvalidValue" xml:space="preserve">
+    <value>One or more package owner values are invalid.</value>
+  </data>
+  <data name="NuGetV3ServiceIndexUrlInvalidValue" xml:space="preserve">
+    <value>The nuget-v3-service-index-url attribute value is invalid.</value>
+  </data>
+  <data name="InvalidUrl" xml:space="preserve">
+    <value>The URL value is invalid.</value>
+  </data>
+  <data name="ExactlyOneAttributeRequired" xml:space="preserve">
+    <value>Exactly one {0} attribute is required.</value>
+    <comment>{0} is the attribute name</comment>
+  </data>
+  <data name="ExactlyOneAttributeValueRequired" xml:space="preserve">
+    <value>The {0} attribute must have exactly one attribute value.</value>
+    <comment>{0} is the attribute name</comment>
+  </data>
+  <data name="MultipleAttributesDisallowed" xml:space="preserve">
+    <value>Multiple {0} attributes are not allowed.</value>
+    <comment>{0} is the attribute name</comment>
+  </data>
+  <data name="InvalidArgument" xml:space="preserve">
+    <value>Invalid argument.</value>
   </data>
 </root>

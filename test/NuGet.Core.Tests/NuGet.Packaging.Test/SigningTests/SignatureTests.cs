@@ -75,7 +75,7 @@ namespace NuGet.Packaging.Test
                     () => Signature.Load(test.SignedCms.Encode()));
 
                 Assert.Equal(NuGetLogCode.NU3011, exception.Code);
-                Assert.Equal("The signing-certificate-v2 attribute must be present.", exception.Message);
+                Assert.Equal("Exactly one signing-certificate-v2 attribute is required.", exception.Message);
             }
         }
 
@@ -100,7 +100,7 @@ namespace NuGet.Packaging.Test
                     () => Signature.Load(test.SignedCms.Encode()));
 
                 Assert.Equal(NuGetLogCode.NU3011, exception.Code);
-                Assert.Equal("Multiple signing-certificate-v2 attribute values are not allowed.", exception.Message);
+                Assert.Equal("The signing-certificate-v2 attribute must have exactly one attribute value.", exception.Message);
             }
         }
 

@@ -79,5 +79,9 @@ namespace NuGet.Packaging.Signing
 
         // RFC 5280 "id-qt-unotice" https://tools.ietf.org/html/rfc5280#section-4.2.1.4
         public const string IdQtUnotice = "1.3.6.1.5.5.7.2.2";
+
+        public const string NuGetV3ServiceIndexUrl = "1.3.6.1.4.1.311.84.2.1.1.1";
+
+        public const string NuGetPackageOwners = "1.3.6.1.4.1.311.84.2.1.1.2";
     }
 }
