@@ -22,6 +22,11 @@ namespace NuGet.Packaging.Signing
         public IReadOnlyList<string> PackageOwners { get; }
 
         /// <summary>
+        /// Gets the signature type.
+        /// </summary>
+        public override SignatureType SignatureType => SignatureType.Repository;
+
+        /// <summary>
         /// Instantiates a new instance of the <see cref="RepositorySignPackageRequest" /> class.
         /// </summary>
         /// <param name="certificate">The signing certificate.</param>
@@ -55,7 +60,6 @@ namespace NuGet.Packaging.Signing
                   certificate,
                   signatureHashAlgorithm,
                   timestampHashAlgorithm,
-                  SignatureType.Repository,
                   signaturePlacement)
         {
             if (v3ServiceIndexUrl == null)

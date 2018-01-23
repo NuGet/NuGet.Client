@@ -10,6 +10,11 @@ namespace NuGet.Packaging.Signing
     public sealed class AuthorSignPackageRequest : SignPackageRequest
     {
         /// <summary>
+        /// Gets the signature type.
+        /// </summary>
+        public override SignatureType SignatureType => SignatureType.Author;
+
+        /// <summary>
         /// Instantiates a new instance of the <see cref="AuthorSignPackageRequest" /> class.
         /// </summary>
         /// <param name="certificate">The signing certificate.</param>
@@ -25,7 +30,6 @@ namespace NuGet.Packaging.Signing
                   certificate,
                   signatureHashAlgorithm,
                   signatureHashAlgorithm,
-                  SignatureType.Author,
                   SignaturePlacement.PrimarySignature)
         {
         }
@@ -50,7 +54,6 @@ namespace NuGet.Packaging.Signing
                   certificate,
                   signatureHashAlgorithm,
                   timestampHashAlgorithm,
-                  SignatureType.Author,
                   SignaturePlacement.PrimarySignature)
         {
         }

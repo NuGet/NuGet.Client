@@ -38,7 +38,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Gets the signature type.
         /// </summary>
-        public SignatureType SignatureType { get; }
+        public abstract SignatureType SignatureType { get; }
 
         /// <summary>
         /// Gets the signature placement.
@@ -58,7 +58,6 @@ namespace NuGet.Packaging.Signing
             X509Certificate2 certificate,
             HashAlgorithmName signatureHashAlgorithm,
             HashAlgorithmName timestampHashAlgorithm,
-            SignatureType signatureType,
             SignaturePlacement signaturePlacement)
         {
             if (certificate == null)
@@ -78,11 +77,6 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentException(Strings.InvalidArgument, nameof(timestampHashAlgorithm));
             }
 
-            if (signatureType != SignatureType.Author && signatureType != SignatureType.Repository)
-            {
-                throw new ArgumentException(Strings.InvalidArgument, nameof(signatureType));
-            }
-
             if (!Enum.IsDefined(typeof(SignaturePlacement), signaturePlacement))
             {
                 throw new ArgumentException(Strings.InvalidArgument, nameof(signaturePlacement));
@@ -91,7 +85,6 @@ namespace NuGet.Packaging.Signing
             Certificate = certificate;
             SignatureHashAlgorithm = signatureHashAlgorithm;
             TimestampHashAlgorithm = timestampHashAlgorithm;
-            SignatureType = signatureType;
             SignaturePlacement = signaturePlacement;
             AdditionalCertificates = new X509Certificate2Collection();
         }
