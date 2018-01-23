@@ -78,8 +78,8 @@ namespace NuGet.Packaging.Signing
             return attributes;
         }
 
-        public static CryptographicAttributeObjectCollection CreateSignedAttributesForRepository(
-            SignPackageRequest request,
+        public static CryptographicAttributeObjectCollection CreateSignedAttributes(
+            RepositorySignPackageRequest request,
             IReadOnlyList<X509Certificate2> chainList)
         {
             if (request == null)
@@ -87,17 +87,12 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (request.SignatureType != SignatureType.Repository)
-            {
-                throw new ArgumentException(Strings.InvalidArgument, nameof(request));
-            }
-
             if (chainList == null || chainList.Count == 0)
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(chainList));
             }
 
-            var attributes = CreateSignedAttributes(request, chainList);
+            var attributes = CreateSignedAttributes((SignPackageRequest)request, chainList);
 
             attributes.Add(AttributeUtility.CreateNuGetV3ServiceIndexUrl(request.V3ServiceIndexUrl));
 

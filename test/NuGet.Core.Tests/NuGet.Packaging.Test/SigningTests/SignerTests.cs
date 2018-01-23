@@ -247,7 +247,7 @@ namespace NuGet.Packaging.Test
 
                 signatureProvider = signatureProvider ?? Mock.Of<ISignatureProvider>();
                 var signer = new Signer(signedPackage, signatureProvider);
-                var request = new SignPackageRequest(certificate, signatureHashAlgorithm: hashAlgorithm);
+                var request = new AuthorSignPackageRequest(certificate, signatureHashAlgorithm: hashAlgorithm);
 
                 return new SignTest(
                     signer,

@@ -53,15 +53,15 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            var authorSignature = CreateSignature(request, signatureContent);
+            var signature = CreateSignature(request, signatureContent);
 
             if (_timestampProvider == null)
             {
-                return Task.FromResult(authorSignature);
+                return Task.FromResult(signature);
             }
             else
             {
-                return TimestampSignature(request, logger, authorSignature, token);
+                return TimestampSignature(request, logger, signature, token);
             }
         }
 
