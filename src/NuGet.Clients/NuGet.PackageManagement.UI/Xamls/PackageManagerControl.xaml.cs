@@ -587,7 +587,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        private void SearchPackagesAndRefreshUpdateCount(string searchText, bool useCache)
+        internal void SearchPackagesAndRefreshUpdateCount(string searchText, bool useCache, IVsSearchCallback pSearchCallback = null, IVsSearchTask searchTask = null)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
@@ -614,9 +614,14 @@ namespace NuGet.PackageManagement.UI
 
                 // start SearchAsync task for initial loading of packages
                 var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
-
                 // this will wait for searchResultTask to complete instead of creating a new task
                 _packageList.LoadItems(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
+
+                if (pSearchCallback != null && searchTask != null)
+                {
+                    var searchResult = await searchResultTask;
+                    pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
+                }
 
                 // We only refresh update count, when we don't use cache so check it it's false
                 if (!useCache)
@@ -631,7 +636,6 @@ namespace NuGet.PackageManagement.UI
                         _topPanel._labelUpgradeAvailable.Count = 0;
 
                         var searchResult = await searchResultTask;
-
                         Model.CachedUpdates = new PackageSearchMetadataCache
                         {
                             Packages = searchResult.Items,
@@ -639,6 +643,7 @@ namespace NuGet.PackageManagement.UI
                         };
 
                         _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
+                        
                     }
                     else
                     {
@@ -893,8 +898,8 @@ namespace NuGet.PackageManagement.UI
 
         public IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
         {
-            SearchPackagesAndRefreshUpdateCount(pSearchQuery.SearchString, useCache: true);
-            return null;
+            var searchTask = new NuGetPackageManagerControlSearchTask(this, dwCookie, pSearchQuery, pSearchCallback);
+            return searchTask;
         }
 
         public bool OnNavigationKeyDown(uint dwNavigationKey, uint dwModifiers)
