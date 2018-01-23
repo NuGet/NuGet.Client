@@ -23,16 +23,16 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Constructor_CertificateSignatureHashAlgorithm_WhenCertificateNull_Throws()
+        public void Constructor_CertificateHashAlgorithm_WhenCertificateNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new AuthorSignPackageRequest(certificate: null, signatureHashAlgorithm: HashAlgorithmName.SHA256));
+                () => new AuthorSignPackageRequest(certificate: null, hashAlgorithm: HashAlgorithmName.SHA256));
 
             Assert.Equal("certificate", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_CertificateSignatureHashAlgorithm_WhenSignatureHashAlgorithmInvalid_Throws()
+        public void Constructor_CertificateHashAlgorithm_WhenHashAlgorithmInvalid_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             {
@@ -44,7 +44,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Constructor_CertificateSignatureHashAlgorithm_WithValidInput_InitializesProperties()
+        public void Constructor_CertificateHashAlgorithm_WithValidInput_InitializesProperties()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             {

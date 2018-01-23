@@ -18,18 +18,18 @@ namespace NuGet.Packaging.Signing
         /// Instantiates a new instance of the <see cref="AuthorSignPackageRequest" /> class.
         /// </summary>
         /// <param name="certificate">The signing certificate.</param>
-        /// <param name="signatureHashAlgorithm">The signature hash algorithm.</param>
+        /// <param name="hashAlgorithm">The signature and timestamp hash algorithm.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" />
         /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="signatureHashAlgorithm" />
+        /// <exception cref="ArgumentException">Thrown if <paramref name="hashAlgorithm" />
         /// is invalid.</exception>
         public AuthorSignPackageRequest(
             X509Certificate2 certificate,
-            HashAlgorithmName signatureHashAlgorithm)
+            HashAlgorithmName hashAlgorithm)
             : base(
                   certificate,
-                  signatureHashAlgorithm,
-                  signatureHashAlgorithm,
+                  hashAlgorithm,
+                  hashAlgorithm,
                   SignaturePlacement.PrimarySignature)
         {
         }
