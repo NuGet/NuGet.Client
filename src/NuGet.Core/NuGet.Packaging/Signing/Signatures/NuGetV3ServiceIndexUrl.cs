@@ -27,7 +27,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentException(Strings.InvalidUrl, nameof(v3ServiceIndexUrl));
             }
 
-            if (v3ServiceIndexUrl.Scheme != "https")
+            if (!string.Equals(v3ServiceIndexUrl.Scheme, "https", StringComparison.Ordinal))
             {
                 throw new ArgumentException(Strings.InvalidUrl, nameof(v3ServiceIndexUrl));
             }
@@ -58,7 +58,7 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.NuGetV3ServiceIndexUrlInvalid);
             }
 
-            if (url.Scheme != "https")
+            if (!string.Equals(url.Scheme, "https", StringComparison.Ordinal))
             {
                 throw new SignatureException(Strings.NuGetV3ServiceIndexUrlInvalid);
             }
