@@ -35,7 +35,7 @@
     <LocalizationFilesDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationFilesDirectory>
     <MicroBuildDirectory>$(SolutionPackagesFolder)MicroBuild.Core.0.2.0\build\</MicroBuildDirectory>
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
-    <BlobPublishTargetsPath>$(SolutionPackagesFolder)Microsoft.DotNet.Build.Tasks.Feed.2.1.0-prerelease-02304-01\build\Microsoft.DotNet.Build.Tasks.Feed.targets</BlobPublishTargetsPath>
+    <BlobPublishTargetsPath>$(SolutionPackagesFolder)Microsoft.DotNet.Build.Tasks.Feed.2.1.0-prerelease-02419-02\build\Microsoft.DotNet.Build.Tasks.Feed.targets</BlobPublishTargetsPath>
   </PropertyGroup>
 
   <!-- Defaults -->

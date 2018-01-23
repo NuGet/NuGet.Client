@@ -31,7 +31,12 @@
     <PushToBlobFeed ExpectedFeedUrl="$(FeedUrl)"
                     AccountKey="$(FeedApiKey)"
                     ItemsToPush="@(ItemsToPush)"
-                    Overwrite="$(PublishOverwrite)" />
+                    Overwrite="$(PublishOverwrite)"
+                    ManifestBranch="$(ManifestBranch)"
+                    ManifestBuildId="$(ManifestBuildId)"
+                    ManifestCommit="$(ManifestCommit)"
+                    ManifestName="nuget.client"
+                    SkipCreateManifest="false" />
   </Target>
 
 </Project>
