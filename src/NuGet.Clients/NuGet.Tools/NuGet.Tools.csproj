@@ -18,6 +18,7 @@
     <DeployExtension>false</DeployExtension>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -64,9 +65,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="SolutionUserOptions.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj">
