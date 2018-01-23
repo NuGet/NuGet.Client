@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -81,13 +80,16 @@ namespace NuGet.Packaging.Signing
 
         public static CryptographicAttributeObjectCollection CreateSignedAttributesForRepository(
             SignPackageRequest request,
-            IReadOnlyList<X509Certificate2> chainList,
-            Uri v3ServiceIndexUrl,
-            IReadOnlyList<string> packageOwners)
+            IReadOnlyList<X509Certificate2> chainList)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
+            }
+
+            if (request.SignatureType != SignatureType.Repository)
+            {
+                throw new ArgumentException(Strings.InvalidArgument, nameof(request));
             }
 
             if (chainList == null || chainList.Count == 0)
@@ -95,33 +97,13 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(chainList));
             }
 
-            if (v3ServiceIndexUrl == null)
-            {
-                throw new ArgumentNullException(nameof(v3ServiceIndexUrl));
-            }
-
-            if (!v3ServiceIndexUrl.IsAbsoluteUri)
-            {
-                throw new ArgumentException(Strings.InvalidUrl, nameof(v3ServiceIndexUrl));
-            }
-
-            if (!string.Equals(v3ServiceIndexUrl.Scheme, "https", StringComparison.Ordinal))
-            {
-                throw new ArgumentException(Strings.InvalidUrl, nameof(v3ServiceIndexUrl));
-            }
-
-            if (packageOwners != null && packageOwners.Any(packageOwner => string.IsNullOrWhiteSpace(packageOwner)))
-            {
-                throw new ArgumentException(Strings.NuGetPackageOwnersInvalidValue, nameof(packageOwners));
-            }
-
             var attributes = CreateSignedAttributes(request, chainList);
 
-            attributes.Add(AttributeUtility.CreateNuGetV3ServiceIndexUrl(v3ServiceIndexUrl));
+            attributes.Add(AttributeUtility.CreateNuGetV3ServiceIndexUrl(request.V3ServiceIndexUrl));
 
-            if (packageOwners?.Count > 0)
+            if (request.PackageOwners?.Count > 0)
             {
-                attributes.Add(AttributeUtility.CreateNuGetPackageOwners(packageOwners));
+                attributes.Add(AttributeUtility.CreateNuGetPackageOwners(request.PackageOwners));
             }
 
             return attributes;

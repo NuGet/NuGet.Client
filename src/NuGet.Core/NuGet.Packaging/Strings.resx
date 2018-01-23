@@ -504,6 +504,6 @@ Valid from:</comment>
     <comment>{0} is the attribute name</comment>
   </data>
   <data name="InvalidArgument" xml:space="preserve">
-    <value>Invalid argument.</value>
+    <value>The argument is invalid.</value>
   </data>
 </root>

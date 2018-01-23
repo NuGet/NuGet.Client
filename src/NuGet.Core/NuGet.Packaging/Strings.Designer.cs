@@ -413,7 +413,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid argument..
+        ///   Looks up a localized string similar to The argument is invalid..
         /// </summary>
         internal static string InvalidArgument {
             get {

@@ -157,11 +157,23 @@ namespace NuGet.Packaging.Test
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => SigningUtility.CreateSignedAttributesForRepository(
                         request: null,
-                        chainList: new[] { certificate },
-                        v3ServiceIndexUrl: new Uri("https://test.test"),
-                        packageOwners: new[] { "a" }));
+                        chainList: new[] { certificate }));
 
                 Assert.Equal("request", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public void CreateSignedAttributesForRepository_WithAuthorSigningRequest_Throws()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            using (var request = CreateRequest(certificate))
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => SigningUtility.CreateSignedAttributesForRepository(request, new[] { certificate }));
+
+                Assert.Equal("request", exception.ParamName);
+                Assert.StartsWith("The argument is invalid.", exception.Message);
             }
         }
 
@@ -169,14 +181,10 @@ namespace NuGet.Packaging.Test
         public void CreateSignedAttributesForRepository_WhenChainListNull_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
-            using (var request = CreateRequest(certificate))
+            using (var request = CreateRequestRepository(certificate, new Uri("https://test.test"), new[] { "a" }))
             {
                 var exception = Assert.Throws<ArgumentException>(
-                    () => SigningUtility.CreateSignedAttributesForRepository(
-                        request,
-                        chainList: null,
-                        v3ServiceIndexUrl: new Uri("https://test.test"),
-                        packageOwners: new[] { "a" }));
+                    () => SigningUtility.CreateSignedAttributesForRepository(request, chainList: null));
 
                 Assert.Equal("chainList", exception.ParamName);
                 Assert.StartsWith("The argument cannot be null or empty.", exception.Message);
@@ -187,14 +195,10 @@ namespace NuGet.Packaging.Test
         public void CreateSignedAttributesForRepository_WhenChainListEmpty_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
-            using (var request = CreateRequest(certificate))
+            using (var request = CreateRequestRepository(certificate, new Uri("https://test.test"), new[] { "a" }))
             {
                 var exception = Assert.Throws<ArgumentException>(
-                    () => SigningUtility.CreateSignedAttributesForRepository(
-                        request,
-                        new X509Certificate2[0],
-                        new Uri("https://test.test"),
-                        new[] { "a" }));
+                    () => SigningUtility.CreateSignedAttributesForRepository(request, new X509Certificate2[0]));
 
                 Assert.Equal("chainList", exception.ParamName);
                 Assert.StartsWith("The argument cannot be null or empty.", exception.Message);
@@ -202,77 +206,15 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void CreateSignedAttributesForRepository_WhenV3ServiceIndexUrlNull_Throws()
-        {
-            using (var certificate = _fixture.GetDefaultCertificate())
-            using (var request = CreateRequest(certificate))
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => SigningUtility.CreateSignedAttributesForRepository(
-                        request,
-                        new[] { certificate },
-                        v3ServiceIndexUrl: null,
-                        packageOwners: new[] { "a" }));
-
-                Assert.Equal("v3ServiceIndexUrl", exception.ParamName);
-            }
-        }
-
-        [Fact]
-        public void CreateSignedAttributesForRepository_WheV3ServiceIndexUrlNotAbsolute_Throws()
-        {
-            using (var certificate = _fixture.GetDefaultCertificate())
-            using (var request = CreateRequest(certificate))
-            {
-                var exception = Assert.Throws<ArgumentException>(
-                    () => SigningUtility.CreateSignedAttributesForRepository(
-                        request,
-                        new[] { certificate },
-                        new Uri("/", UriKind.Relative),
-                        new[] { "a" }));
-
-                Assert.Equal("v3ServiceIndexUrl", exception.ParamName);
-                Assert.StartsWith("The URL value is invalid.", exception.Message);
-            }
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData(" ")]
-        public void CreateSignedAttributesForRepository_WhenPackageOwnersContainsInvalidValue_Throws(string packageOwner)
-        {
-            using (var certificate = _fixture.GetDefaultCertificate())
-            using (var request = CreateRequest(certificate))
-            {
-                var packageOwners = new[] { packageOwner };
-
-                var exception = Assert.Throws<ArgumentException>(
-                    () => SigningUtility.CreateSignedAttributesForRepository(
-                        request,
-                        new[] { certificate },
-                        new Uri("https://test.test", UriKind.Absolute),
-                        packageOwners));
-
-                Assert.Equal("packageOwners", exception.ParamName);
-                Assert.StartsWith("One or more package owner values are invalid.", exception.Message);
-            }
-        }
-
-        [Fact]
         public void CreateSignedAttributesForRepository_WhenPackageOwnersNull_ReturnsAttributes()
         {
-            using (var certificate = _fixture.GetDefaultCertificate())
-            using (var request = CreateRequest(certificate))
-            {
-                var v3ServiceIndexUrl = new Uri("https://test.test", UriKind.Absolute);
-                IReadOnlyList<string> packageOwners = null;
+            var v3ServiceIndexUrl = new Uri("https://test.test", UriKind.Absolute);
+            IReadOnlyList<string> packageOwners = null;
 
-                var attributes = SigningUtility.CreateSignedAttributesForRepository(
-                    request,
-                    new[] { certificate },
-                    v3ServiceIndexUrl,
-                    packageOwners);
+            using (var certificate = _fixture.GetDefaultCertificate())
+            using (var request = CreateRequestRepository(certificate, v3ServiceIndexUrl, packageOwners))
+            {
+                var attributes = SigningUtility.CreateSignedAttributesForRepository(request, new[] { certificate });
 
                 Assert.Equal(4, attributes.Count);
 
@@ -283,17 +225,13 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void CreateSignedAttributesForRepository_WhenPackageOwnersEmpty_ReturnsAttributes()
         {
-            using (var certificate = _fixture.GetDefaultCertificate())
-            using (var request = CreateRequest(certificate))
-            {
-                var v3ServiceIndexUrl = new Uri("https://test.test", UriKind.Absolute);
-                var packageOwners = new string[0];
+            var v3ServiceIndexUrl = new Uri("https://test.test", UriKind.Absolute);
+            var packageOwners = new string[0];
 
-                var attributes = SigningUtility.CreateSignedAttributesForRepository(
-                    request,
-                    new[] { certificate },
-                    v3ServiceIndexUrl,
-                    new string[0]);
+            using (var certificate = _fixture.GetDefaultCertificate())
+            using (var request = CreateRequestRepository(certificate, v3ServiceIndexUrl, packageOwners))
+            {
+                var attributes = SigningUtility.CreateSignedAttributesForRepository(request, new[] { certificate });
 
                 Assert.Equal(4, attributes.Count);
 
@@ -304,17 +242,13 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void CreateSignedAttributesForRepository_WhenPackageOwnersNonEmpty_ReturnsAttributes()
         {
-            using (var certificate = _fixture.GetDefaultCertificate())
-            using (var request = CreateRequest(certificate))
-            {
-                var v3ServiceIndexUrl = new Uri("https://test.test", UriKind.Absolute);
-                var packageOwners = new[] { "a" };
+            var v3ServiceIndexUrl = new Uri("https://test.test", UriKind.Absolute);
+            var packageOwners = new[] { "a" };
 
-                var attributes = SigningUtility.CreateSignedAttributesForRepository(
-                    request,
-                    new[] { certificate },
-                    v3ServiceIndexUrl,
-                    packageOwners);
+            using (var certificate = _fixture.GetDefaultCertificate())
+            using (var request = CreateRequestRepository(certificate, v3ServiceIndexUrl, packageOwners))
+            {
+                var attributes = SigningUtility.CreateSignedAttributesForRepository(request, new[] { certificate });
 
                 Assert.Equal(5, attributes.Count);
 
@@ -344,8 +278,9 @@ namespace NuGet.Packaging.Test
 
                     case Oids.CommitmentTypeIndication:
                         var qualifier = CommitmentTypeQualifier.Read(attribute.Values[0].RawData);
+                        var expectedCommitmentType = AttributeUtility.GetSignatureTypeOid(request.SignatureType);
 
-                        Assert.Equal(Oids.CommitmentTypeIdentifierProofOfOrigin, qualifier.CommitmentTypeIdentifier.Value);
+                        Assert.Equal(expectedCommitmentType, qualifier.CommitmentTypeIdentifier.Value);
 
                         commitmentTypeIndicationAttributeFound = true;
                         break;
@@ -420,6 +355,20 @@ namespace NuGet.Packaging.Test
                 certificate,
                 Common.HashAlgorithmName.SHA256,
                 Common.HashAlgorithmName.SHA256);
+        }
+
+        private static SignPackageRequest CreateRequestRepository(
+            X509Certificate2 certificate,
+            Uri v3ServiceIndexUrl,
+            IReadOnlyList<string> packageOwners)
+        {
+            return new SignPackageRequest(
+                certificate,
+                Common.HashAlgorithmName.SHA256,
+                Common.HashAlgorithmName.SHA256,
+                SignaturePlacement.PrimarySignature,
+                v3ServiceIndexUrl,
+                packageOwners);
         }
     }
 }
