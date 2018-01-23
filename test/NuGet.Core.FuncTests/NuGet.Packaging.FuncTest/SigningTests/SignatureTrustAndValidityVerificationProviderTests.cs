@@ -127,7 +127,7 @@ namespace NuGet.Packaging.FuncTest
 
             using (var package = new PackageArchiveReader(nupkg.CreateAsStream(), leaveStreamOpen: false))
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            using (var signatureRequest = new SignPackageRequest(testCertificate, HashAlgorithmName.SHA256))
+            using (var signatureRequest = new AuthorSignPackageRequest(testCertificate, HashAlgorithmName.SHA256))
             {
                 var signature = await SignedArchiveTestUtility.CreateSignatureForPackageAsync(signatureProvider, package, signatureRequest, testLogger);
                 var timestampedSignature = await SignedArchiveTestUtility.TimestampSignature(timestampProvider, signatureRequest, signature, testLogger);

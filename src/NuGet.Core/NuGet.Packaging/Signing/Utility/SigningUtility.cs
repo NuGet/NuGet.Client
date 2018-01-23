@@ -77,6 +77,32 @@ namespace NuGet.Packaging.Signing
 
             return attributes;
         }
+
+        public static CryptographicAttributeObjectCollection CreateSignedAttributes(
+            RepositorySignPackageRequest request,
+            IReadOnlyList<X509Certificate2> chainList)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (chainList == null || chainList.Count == 0)
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(chainList));
+            }
+
+            var attributes = CreateSignedAttributes((SignPackageRequest)request, chainList);
+
+            attributes.Add(AttributeUtility.CreateNuGetV3ServiceIndexUrl(request.V3ServiceIndexUrl));
+
+            if (request.PackageOwners?.Count > 0)
+            {
+                attributes.Add(AttributeUtility.CreateNuGetPackageOwners(request.PackageOwners));
+            }
+
+            return attributes;
+        }
 #endif
     }
 }

@@ -71,6 +71,145 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
+        /// Creates a nuget-v3-service-index-url attribute.
+        /// </summary>
+        /// <param name="v3ServiceIndexUrl">The V3 service index HTTPS URL.</param>
+        /// <returns>An attribute object.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="v3ServiceIndexUrl" /> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="v3ServiceIndexUrl" /> is neither absolute
+        /// nor HTTPS.</exception>
+        public static CryptographicAttributeObject CreateNuGetV3ServiceIndexUrl(Uri v3ServiceIndexUrl)
+        {
+            if (v3ServiceIndexUrl == null)
+            {
+                throw new ArgumentNullException(nameof(v3ServiceIndexUrl));
+            }
+
+            if (!v3ServiceIndexUrl.IsAbsoluteUri)
+            {
+                throw new ArgumentException(Strings.InvalidUrl, nameof(v3ServiceIndexUrl));
+            }
+
+            if (!string.Equals(v3ServiceIndexUrl.Scheme, "https", StringComparison.Ordinal))
+            {
+                throw new ArgumentException(Strings.InvalidUrl, nameof(v3ServiceIndexUrl));
+            }
+
+            var nugetV3ServiceIndexUrl = new NuGetV3ServiceIndexUrl(v3ServiceIndexUrl);
+            var bytes = nugetV3ServiceIndexUrl.Encode();
+
+            return new CryptographicAttributeObject(
+                new Oid(Oids.NuGetV3ServiceIndexUrl),
+                new AsnEncodedDataCollection(new AsnEncodedData(Oids.NuGetV3ServiceIndexUrl, bytes)));
+        }
+
+        /// <summary>
+        /// Gets the V3 service index HTTPS URL from the nuget-v3-service-index-url attribute.
+        /// </summary>
+        /// <param name="signedAttributes">A <see cref="SignerInfo" /> signed attributes collection.</param>
+        /// <returns>The V3 service index HTTPS URL.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="signedAttributes" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="SignatureException">Thrown if either exactly one attribute is not present or if
+        /// the attribute does not contain exactly one attribute value.</exception>
+        public static Uri GetNuGetV3ServiceIndexUrl(CryptographicAttributeObjectCollection signedAttributes)
+        {
+            if (signedAttributes == null)
+            {
+                throw new ArgumentNullException(nameof(signedAttributes));
+            }
+
+            const string attributeName = "nuget-v3-service-index-url";
+
+            var attribute = signedAttributes.GetAttribute(Oids.NuGetV3ServiceIndexUrl);
+
+            if (attribute == null)
+            {
+                throw new SignatureException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.ExactlyOneAttributeRequired,
+                        attributeName));
+            }
+
+            if (attribute.Values.Count != 1)
+            {
+                throw new SignatureException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.ExactlyOneAttributeValueRequired,
+                        attributeName));
+            }
+
+            var nugetV3ServiceIndexUrl = NuGetV3ServiceIndexUrl.Read(attribute.Values[0].RawData);
+
+            return nugetV3ServiceIndexUrl.V3ServiceIndexUrl;
+        }
+
+        /// <summary>
+        /// Creates a nuget-package-owners attribute.
+        /// </summary>
+        /// <param name="packageOwners">A read-only list of package owners.</param>
+        /// <returns>An attribute object.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="packageOwners" /> is either <c>null</c>
+        /// or empty or if any package owner name is invalid.</exception>
+        public static CryptographicAttributeObject CreateNuGetPackageOwners(IReadOnlyList<string> packageOwners)
+        {
+            if (packageOwners == null || packageOwners.Count == 0)
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(packageOwners));
+            }
+
+            if (packageOwners.Any(packageOwner => string.IsNullOrWhiteSpace(packageOwner)))
+            {
+                throw new ArgumentException(Strings.NuGetPackageOwnersInvalidValue, nameof(packageOwners));
+            }
+
+            var nugetPackageOwners = new NuGetPackageOwners(packageOwners);
+            var bytes = nugetPackageOwners.Encode();
+
+            return new CryptographicAttributeObject(
+                new Oid(Oids.NuGetPackageOwners),
+                new AsnEncodedDataCollection(new AsnEncodedData(Oids.NuGetPackageOwners, bytes)));
+        }
+
+        /// <summary>
+        /// Gets a read-only list of package owners from an optional nuget-package-owners attribute.
+        /// </summary>
+        /// <param name="signedAttributes">A <see cref="SignerInfo" /> signed attributes collection.</param>
+        /// <returns>A read-only list of package owners or <c>null</c>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="signedAttributes" /> is <c>null</c>.</exception>
+        /// <exception cref="SignatureException">Thrown if the attribute does not contain exactly one
+        /// attribute value.</exception>
+        public static IReadOnlyList<string> GetNuGetPackageOwners(CryptographicAttributeObjectCollection signedAttributes)
+        {
+            if (signedAttributes == null)
+            {
+                throw new ArgumentNullException(nameof(signedAttributes));
+            }
+
+            var attribute = signedAttributes.GetAttribute(Oids.NuGetPackageOwners);
+
+            if (attribute == null)
+            {
+                return null;
+            }
+
+            if (attribute.Values.Count != 1)
+            {
+                throw new SignatureException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.ExactlyOneAttributeValueRequired,
+                        "nuget-package-owners"));
+            }
+
+            var nugetPackageOwners = NuGetPackageOwners.Read(attribute.Values[0].RawData);
+
+            return nugetPackageOwners.PackageOwners;
+        }
+
+        /// <summary>
         /// Oid -> SignatureType
         /// </summary>
         /// <param name="oid">The commitment-type-indication value.</param>
@@ -224,7 +363,7 @@ namespace NuGet.Packaging.Signing
 
             if (instanceCount > 1)
             {
-                throw new CryptographicException(string.Format(CultureInfo.CurrentCulture, Strings.MultipleAttributeInstanceFound, oid));
+                throw new CryptographicException(string.Format(CultureInfo.CurrentCulture, Strings.MultipleAttributesDisallowed, oid));
             }
 
             return matches.Single();

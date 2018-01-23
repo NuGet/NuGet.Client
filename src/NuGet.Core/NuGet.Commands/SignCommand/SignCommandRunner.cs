@@ -57,7 +57,7 @@ namespace NuGet.Commands
 
         public async Task<int> ExecuteCommandAsync(
             IEnumerable<string> packagesToSign,
-            SignPackageRequest signPackageRequest,
+            AuthorSignPackageRequest signPackageRequest,
             string timestamper,
             ILogger logger,
             string outputDirectory,
@@ -131,7 +131,7 @@ namespace NuGet.Commands
             ILogger logger,
             bool Overwrite,
             ISignatureProvider signatureProvider,
-            SignPackageRequest request,
+            AuthorSignPackageRequest request,
             CancellationToken token)
         {
             // For overwrite we need to first remove the signature and then sign the unsigned package
@@ -155,7 +155,7 @@ namespace NuGet.Commands
         private static async Task AddSignatureAndUpdatePackageAsync(
             ILogger logger,
             ISignatureProvider signatureProvider,
-            SignPackageRequest request,
+            AuthorSignPackageRequest request,
             string packagePath,
             string outputPath,
             CancellationToken token)
@@ -203,9 +203,9 @@ namespace NuGet.Commands
             File.Copy(sourceFilePath, destFilePath, overwrite: true);
         }
 
-        private SignPackageRequest GenerateSignPackageRequest(SignArgs signArgs, X509Certificate2 certificate)
+        private AuthorSignPackageRequest GenerateSignPackageRequest(SignArgs signArgs, X509Certificate2 certificate)
         {
-            return new SignPackageRequest(certificate, signArgs.SignatureHashAlgorithm, signArgs.TimestampHashAlgorithm);
+            return new AuthorSignPackageRequest(certificate, signArgs.SignatureHashAlgorithm, signArgs.TimestampHashAlgorithm);
         }
 
         private static async Task<X509Certificate2> GetCertificateAsync(SignArgs signArgs)

@@ -359,6 +359,24 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Exactly one {0} attribute is required..
+        /// </summary>
+        internal static string ExactlyOneAttributeRequired {
+            get {
+                return ResourceManager.GetString("ExactlyOneAttributeRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} attribute must have exactly one attribute value..
+        /// </summary>
+        internal static string ExactlyOneAttributeValueRequired {
+            get {
+                return ResourceManager.GetString("ExactlyOneAttributeValueRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to update file time for {0}: {1}.
         /// </summary>
         internal static string FailedFileTime {
@@ -391,6 +409,15 @@ namespace NuGet.Packaging {
         internal static string FallbackFolderNotFound {
             get {
                 return ResourceManager.GetString("FallbackFolderNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The argument is invalid..
+        /// </summary>
+        internal static string InvalidArgument {
+            get {
+                return ResourceManager.GetString("InvalidArgument", resourceCulture);
             }
         }
         
@@ -494,6 +521,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The URL value is invalid..
+        /// </summary>
+        internal static string InvalidUrl {
+            get {
+                return ResourceManager.GetString("InvalidUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installing {0} {1}..
         /// </summary>
         internal static string Log_InstallingPackage {
@@ -521,11 +557,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple instances of attribute &apos;{0}&apos; were found..
+        ///   Looks up a localized string similar to Multiple {0} attributes are not allowed..
         /// </summary>
-        internal static string MultipleAttributeInstanceFound {
+        internal static string MultipleAttributesDisallowed {
             get {
-                return ResourceManager.GetString("MultipleAttributeInstanceFound", resourceCulture);
+                return ResourceManager.GetString("MultipleAttributesDisallowed", resourceCulture);
             }
         }
         
@@ -544,6 +580,42 @@ namespace NuGet.Packaging {
         internal static string MustContainAbsolutePath {
             get {
                 return ResourceManager.GetString("MustContainAbsolutePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The nuget-package-owners attribute is invalid..
+        /// </summary>
+        internal static string NuGetPackageOwnersInvalid {
+            get {
+                return ResourceManager.GetString("NuGetPackageOwnersInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to One or more package owner values are invalid..
+        /// </summary>
+        internal static string NuGetPackageOwnersInvalidValue {
+            get {
+                return ResourceManager.GetString("NuGetPackageOwnersInvalidValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The nuget-v3-service-index-url attribute is invalid..
+        /// </summary>
+        internal static string NuGetV3ServiceIndexUrlInvalid {
+            get {
+                return ResourceManager.GetString("NuGetV3ServiceIndexUrlInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The nuget-v3-service-index-url attribute value is invalid..
+        /// </summary>
+        internal static string NuGetV3ServiceIndexUrlInvalidValue {
+            get {
+                return ResourceManager.GetString("NuGetV3ServiceIndexUrlInvalidValue", resourceCulture);
             }
         }
         
@@ -791,38 +863,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple signing-certificate attributes are not allowed..
-        /// </summary>
-        internal static string SigningCertificateMultipleAttributes {
-            get {
-                return ResourceManager.GetString("SigningCertificateMultipleAttributes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Multiple signing-certificate attribute values are not allowed..
-        /// </summary>
-        internal static string SigningCertificateMultipleAttributeValues {
-            get {
-                return ResourceManager.GetString("SigningCertificateMultipleAttributeValues", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Either the signing-certificate or signing-certificate-v2 attribute must be present..
         /// </summary>
         internal static string SigningCertificateV1OrV2AttributeMustBePresent {
             get {
                 return ResourceManager.GetString("SigningCertificateV1OrV2AttributeMustBePresent", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The signing-certificate-v2 attribute must be present..
-        /// </summary>
-        internal static string SigningCertificateV2AttributeMustBePresent {
-            get {
-                return ResourceManager.GetString("SigningCertificateV2AttributeMustBePresent", resourceCulture);
             }
         }
         
@@ -845,20 +890,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple signing-certificate-v2 attributes are not allowed..
+        ///   Looks up a localized string similar to The signing-certificate-v2 attribute does not have exactly one attribute value..
         /// </summary>
-        internal static string SigningCertificateV2MultipleAttributes {
+        internal static string SigningCertificateV2NotExactlyOneAttributeValue {
             get {
-                return ResourceManager.GetString("SigningCertificateV2MultipleAttributes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Multiple signing-certificate-v2 attribute values are not allowed..
-        /// </summary>
-        internal static string SigningCertificateV2MultipleAttributeValues {
-            get {
-                return ResourceManager.GetString("SigningCertificateV2MultipleAttributeValues", resourceCulture);
+                return ResourceManager.GetString("SigningCertificateV2NotExactlyOneAttributeValue", resourceCulture);
             }
         }
         

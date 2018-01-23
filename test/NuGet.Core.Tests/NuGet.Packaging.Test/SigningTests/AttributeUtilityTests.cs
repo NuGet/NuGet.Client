@@ -17,6 +17,7 @@ using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Cms;
 using Org.BouncyCastle.Crypto;
 using Xunit;
+using BcAttribute = Org.BouncyCastle.Asn1.Cms.Attribute;
 using BcCommitmentTypeIndication = Org.BouncyCastle.Asn1.Esf.CommitmentTypeIndication;
 using DotNetUtilities = Org.BouncyCastle.Security.DotNetUtilities;
 
@@ -172,13 +173,13 @@ namespace NuGet.Packaging.Test
                     vector =>
                     {
                         vector.Add(
-                            new Org.BouncyCastle.Asn1.Cms.Attribute(
+                            new BcAttribute(
                                 PkcsObjectIdentifiers.IdAAEtsCommitmentType,
                                 new DerSet(
                                     new BcCommitmentTypeIndication(PkcsObjectIdentifiers.IdCtiEtsProofOfApproval))));
 
                         vector.Add(
-                            new Org.BouncyCastle.Asn1.Cms.Attribute(
+                            new BcAttribute(
                                 PkcsObjectIdentifiers.IdAAEtsCommitmentType,
                                 new DerSet(
                                     new BcCommitmentTypeIndication(PkcsObjectIdentifiers.IdCtiEtsProofOfOrigin))));
@@ -202,13 +203,13 @@ namespace NuGet.Packaging.Test
                     vector =>
                     {
                         vector.Add(
-                            new Org.BouncyCastle.Asn1.Cms.Attribute(
+                            new BcAttribute(
                                 PkcsObjectIdentifiers.IdAAEtsCommitmentType,
                                 new DerSet(
                                     new BcCommitmentTypeIndication(PkcsObjectIdentifiers.IdCtiEtsProofOfOrigin))));
 
                         vector.Add(
-                            new Org.BouncyCastle.Asn1.Cms.Attribute(
+                            new BcAttribute(
                                 PkcsObjectIdentifiers.IdAAEtsCommitmentType,
                                 new DerSet(
                                     new BcCommitmentTypeIndication(PkcsObjectIdentifiers.IdCtiEtsProofOfReceipt))));
@@ -342,13 +343,13 @@ namespace NuGet.Packaging.Test
                     vector =>
                     {
                         vector.Add(
-                            new Org.BouncyCastle.Asn1.Cms.Attribute(
+                            new BcAttribute(
                                 PkcsObjectIdentifiers.IdAAEtsCommitmentType,
                                 new DerSet(
                                     new BcCommitmentTypeIndication(PkcsObjectIdentifiers.IdCtiEtsProofOfOrigin))));
 
                         vector.Add(
-                            new Org.BouncyCastle.Asn1.Cms.Attribute(
+                            new BcAttribute(
                                 PkcsObjectIdentifiers.IdAAEtsCommitmentType,
                                 new DerSet(
                                     new BcCommitmentTypeIndication(PkcsObjectIdentifiers.IdCtiEtsProofOfReceipt))));
@@ -358,7 +359,7 @@ namespace NuGet.Packaging.Test
                     () => AttributeUtility.GetAttribute(attributes, Oids.CommitmentTypeIndication));
 
                 Assert.Equal(
-                    $"Multiple instances of attribute '{Oids.CommitmentTypeIndication}' were found.",
+                    $"Multiple {Oids.CommitmentTypeIndication} attributes are not allowed.",
                     exception.Message);
             }
         }
@@ -400,18 +401,18 @@ namespace NuGet.Packaging.Test
                     vector =>
                     {
                         vector.Add(
-                            new Org.BouncyCastle.Asn1.Cms.Attribute(
+                            new BcAttribute(
                                 CmsAttributes.SigningTime,
                                 new DerSet(new DerUtcTime(DateTime.UtcNow))));
 
                         vector.Add(
-                            new Org.BouncyCastle.Asn1.Cms.Attribute(
+                            new BcAttribute(
                                 PkcsObjectIdentifiers.IdAAEtsCommitmentType,
                                 new DerSet(
                                     new BcCommitmentTypeIndication(PkcsObjectIdentifiers.IdCtiEtsProofOfOrigin))));
 
                         vector.Add(
-                            new Org.BouncyCastle.Asn1.Cms.Attribute(
+                            new BcAttribute(
                                 PkcsObjectIdentifiers.IdAAEtsCommitmentType,
                                 new DerSet(
                                     new BcCommitmentTypeIndication(PkcsObjectIdentifiers.IdCtiEtsProofOfReceipt))));
@@ -427,6 +428,257 @@ namespace NuGet.Packaging.Test
                     PkcsObjectIdentifiers.IdCtiEtsProofOfReceipt.ToString(),
                     CommitmentTypeIndication.Read(matches[1].Values[0].RawData).CommitmentTypeId.Value);
             }
+        }
+
+        [Fact]
+        public void CreateNuGetV3ServiceIndexUrl_WhenV3ServiceIndexUrlNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => AttributeUtility.CreateNuGetV3ServiceIndexUrl(v3ServiceIndexUrl: null));
+
+            Assert.Equal("v3ServiceIndexUrl", exception.ParamName);
+        }
+
+        [Fact]
+        public void CreateNuGetV3ServiceIndexUrl_WhenV3ServiceIndexNotAbsolute_Throws()
+        {
+            var url = new Uri("/", UriKind.Relative);
+            var exception = Assert.Throws<ArgumentException>(() => AttributeUtility.CreateNuGetV3ServiceIndexUrl(url));
+
+            Assert.Equal("v3ServiceIndexUrl", exception.ParamName);
+            Assert.StartsWith("The URL value is invalid.", exception.Message);
+        }
+
+        [Fact]
+        public void CreateNuGetV3ServiceIndexUrl_WhenV3ServiceIndexSchemeIsNotHttps_Throws()
+        {
+            var url = new Uri("http://test.test", UriKind.Absolute);
+            var exception = Assert.Throws<ArgumentException>(() => AttributeUtility.CreateNuGetV3ServiceIndexUrl(url));
+
+            Assert.Equal("v3ServiceIndexUrl", exception.ParamName);
+            Assert.StartsWith("The URL value is invalid.", exception.Message);
+        }
+
+        [Fact]
+        public void CreateNuGetV3ServiceIndexUrl_WithValidInput_ReturnsAttribute()
+        {
+            var url = new Uri("https://test.test", UriKind.Absolute);
+            var attribute = AttributeUtility.CreateNuGetV3ServiceIndexUrl(url);
+
+            Assert.Equal(Oids.NuGetV3ServiceIndexUrl, attribute.Oid.Value);
+            Assert.Equal(1, attribute.Values.Count);
+
+            var nugetV3ServiceIndexUrl = NuGetV3ServiceIndexUrl.Read(attribute.Values[0].RawData);
+
+            Assert.True(nugetV3ServiceIndexUrl.V3ServiceIndexUrl.IsAbsoluteUri);
+            Assert.Equal(url.OriginalString, nugetV3ServiceIndexUrl.V3ServiceIndexUrl.OriginalString);
+        }
+
+        [Fact]
+        public void GetNuGetV3ServiceIndexUrl_WhenSignedAttributesNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => AttributeUtility.GetNuGetV3ServiceIndexUrl(signedAttributes: null));
+
+            Assert.Equal("signedAttributes", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetNuGetV3ServiceIndexUrl_WhenSignedAttributesEmpty_Throws()
+        {
+            var exception = Assert.Throws<SignatureException>(
+                () => AttributeUtility.GetNuGetV3ServiceIndexUrl(new CryptographicAttributeObjectCollection()));
+
+            Assert.Equal("Exactly one nuget-v3-service-index-url attribute is required.", exception.Message);
+        }
+
+        [Fact]
+        public void GetNuGetV3ServiceIndexUrl_WithMultipleAttributes_Throws()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                var attributes = CreateAttributeCollection(certificate, _fixture.DefaultKeyPair.Private,
+                    vector =>
+                    {
+                        var attribute = new BcAttribute(
+                            new DerObjectIdentifier(Oids.NuGetV3ServiceIndexUrl),
+                            new DerSet(new DerIA5String("https://test.test")));
+
+                        vector.Add(attribute);
+                        vector.Add(attribute);
+                    });
+
+                var exception = Assert.Throws<CryptographicException>(
+                    () => AttributeUtility.GetNuGetV3ServiceIndexUrl(attributes));
+
+                Assert.Equal("Multiple 1.3.6.1.4.1.311.84.2.1.1.1 attributes are not allowed.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public void GetNuGetV3ServiceIndexUrl_WithMultipleAttributeValues_Throws()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                var attributes = CreateAttributeCollection(certificate, _fixture.DefaultKeyPair.Private,
+                    vector =>
+                    {
+                        var value = new DerIA5String("https://test.test");
+                        var attribute = new BcAttribute(
+                            new DerObjectIdentifier(Oids.NuGetV3ServiceIndexUrl),
+                            new DerSet(value, value));
+
+                        vector.Add(attribute);
+                    });
+
+                var exception = Assert.Throws<SignatureException>(
+                    () => AttributeUtility.GetNuGetV3ServiceIndexUrl(attributes));
+
+                Assert.Equal(
+                    "The nuget-v3-service-index-url attribute must have exactly one attribute value.",
+                    exception.Message);
+            }
+        }
+
+        [Fact]
+        public void GetNuGetV3ServiceIndexUrl_WithValidInput_ReturnsUrl()
+        {
+            var url = new Uri("https://test.test");
+            var attribute = AttributeUtility.CreateNuGetV3ServiceIndexUrl(url);
+            var attributes = new CryptographicAttributeObjectCollection(attribute);
+
+            var v3ServiceIndexUrl = AttributeUtility.GetNuGetV3ServiceIndexUrl(attributes);
+
+            Assert.True(v3ServiceIndexUrl.IsAbsoluteUri);
+            Assert.Equal(url.OriginalString, v3ServiceIndexUrl.OriginalString);
+        }
+
+        [Fact]
+        public void CreateNuGetPackageOwners_WhenPackageOwnersNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentException>(
+                () => AttributeUtility.CreateNuGetPackageOwners(packageOwners: null));
+
+            Assert.Equal("packageOwners", exception.ParamName);
+        }
+
+        [Fact]
+        public void CreateNuGetPackageOwners_WhenPackageOwnersEmpty_Throws()
+        {
+            var exception = Assert.Throws<ArgumentException>(
+                () => AttributeUtility.CreateNuGetPackageOwners(new string[0]));
+
+            Assert.Equal("packageOwners", exception.ParamName);
+            Assert.StartsWith("The argument cannot be null or empty.", exception.Message);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void CreateNuGetPackageOwners_WhenPackageOwnersContainsInvalidValue_Throws(string packageOwner)
+        {
+            var exception = Assert.Throws<ArgumentException>(
+                () => AttributeUtility.CreateNuGetPackageOwners(new[] { packageOwner }));
+
+            Assert.Equal("packageOwners", exception.ParamName);
+            Assert.StartsWith("One or more package owner values are invalid.", exception.Message);
+        }
+
+        [Fact]
+        public void CreateNuGetPackageOwners_WithValidInput_ReturnsInstance()
+        {
+            var packageOwners = new[] { "a", "b", "c" };
+            var attribute = AttributeUtility.CreateNuGetPackageOwners(packageOwners);
+
+            Assert.Equal(Oids.NuGetPackageOwners, attribute.Oid.Value);
+            Assert.Equal(1, attribute.Values.Count);
+
+            var nugetPackageOwners = NuGetPackageOwners.Read(attribute.Values[0].RawData);
+
+            Assert.Equal(packageOwners, nugetPackageOwners.PackageOwners);
+        }
+
+        [Fact]
+        public void GetNuGetPackageOwners_WhenSignedAttributesNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => AttributeUtility.GetNuGetPackageOwners(signedAttributes: null));
+
+            Assert.Equal("signedAttributes", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetNuGetPackageOwners_WithEmptySignedAttributes_ReturnsNull()
+        {
+            var packageOwners = AttributeUtility.GetNuGetPackageOwners(new CryptographicAttributeObjectCollection());
+
+            Assert.Null(packageOwners);
+        }
+
+        [Fact]
+        public void GetNuGetPackageOwners_WithMultipleAttributes_Throws()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                var attributes = CreateAttributeCollection(certificate, _fixture.DefaultKeyPair.Private,
+                    vector =>
+                    {
+                        var attribute = new BcAttribute(
+                            new DerObjectIdentifier(Oids.NuGetPackageOwners),
+                            new DerSet(
+                                new DerSequence(
+                                    new DerUtf8String("a"),
+                                    new DerUtf8String("b"),
+                                    new DerUtf8String("c"))));
+
+                        vector.Add(attribute);
+                        vector.Add(attribute);
+                    });
+
+                var exception = Assert.Throws<CryptographicException>(
+                    () => AttributeUtility.GetNuGetPackageOwners(attributes));
+
+                Assert.Equal("Multiple 1.3.6.1.4.1.311.84.2.1.1.2 attributes are not allowed.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public void GetNuGetPackageOwners_WithMultipleAttributeValues_Throws()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                var attributes = CreateAttributeCollection(certificate, _fixture.DefaultKeyPair.Private,
+                    vector =>
+                    {
+                        var value = new DerSequence(
+                            new DerUtf8String("a"),
+                            new DerUtf8String("b"),
+                            new DerUtf8String("c"));
+                        var attribute = new BcAttribute(
+                            new DerObjectIdentifier(Oids.NuGetPackageOwners),
+                            new DerSet(value, value));
+
+                        vector.Add(attribute);
+                    });
+
+                var exception = Assert.Throws<SignatureException>(
+                    () => AttributeUtility.GetNuGetPackageOwners(attributes));
+
+                Assert.Equal("The nuget-package-owners attribute must have exactly one attribute value.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public void GetNuGetPackageOwners_WithValidInput_ReturnsUrl()
+        {
+            var packageOwners = new[] { "a", "b", "c" };
+            var attribute = AttributeUtility.CreateNuGetPackageOwners(packageOwners);
+            var attributes = new CryptographicAttributeObjectCollection(attribute);
+
+            var nugetPackageOwners = AttributeUtility.GetNuGetPackageOwners(attributes);
+
+            Assert.Equal(packageOwners, nugetPackageOwners);
         }
 
         /// <summary>

@@ -24,7 +24,7 @@ namespace NuGet.Packaging.Test
         {
             var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(new Uri(_testTimestampServer)));
             var signer = new Signer(signPackage, testSignatureProvider);
-            var request = new SignPackageRequest(certificate, signatureHashAlgorithm: Common.HashAlgorithmName.SHA256);
+            var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256);
 
             await signer.SignAsync(request, testLogger, CancellationToken.None);
         }

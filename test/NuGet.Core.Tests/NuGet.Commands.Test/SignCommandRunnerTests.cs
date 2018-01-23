@@ -138,6 +138,8 @@ namespace NuGet.Commands.Test
                 var packagesFilePath = Path.Combine(test.Directory, "*.nupkg");
 
                 test.Args.PackagePath = packagesFilePath;
+                test.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
+                test.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
 
                 await test.Runner.ExecuteCommandAsync(test.Args);
 

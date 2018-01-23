@@ -136,7 +136,7 @@ namespace NuGet.Packaging.FuncTest
                 WriteStream = packageContext.CreateAsStream();
 
                 Package = new SignedPackageArchive(ReadStream, WriteStream);
-                Request = new SignPackageRequest(_certificate, HashAlgorithmName.SHA256);
+                Request = new AuthorSignPackageRequest(_certificate, HashAlgorithmName.SHA256);
 
                 var signatureProvider = new X509SignatureProvider(timestampProvider: null);
 

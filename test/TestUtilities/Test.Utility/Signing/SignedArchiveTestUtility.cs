@@ -95,14 +95,18 @@ namespace Test.Utility.Signing
         /// Generates a Signature for a package.
         /// </summary>
         /// <param name="testCert">Certificate to be used while generating the signature.</param>
-        /// <param name="nupkg">Package for which the signature has to be generated.</param>
+        /// <param name="packageStream">Package stream for which the signature has to be generated.</param>
+        /// <param name="timestampProvider">An optional timestamp provider.</param>
         /// <returns>Signature for the package.</returns>
-        public static async Task<Signature> CreateSignatureForPackageAsync(X509Certificate2 testCert, Stream packageStream, ITimestampProvider timestampProvider = null)
+        public static async Task<Signature> CreateSignatureForPackageAsync(
+            X509Certificate2 testCert,
+            Stream packageStream,
+            ITimestampProvider timestampProvider = null)
         {
             var testLogger = new TestLogger();
             var hashAlgorithm = HashAlgorithmName.SHA256;
 
-            using (var request = new SignPackageRequest(testCert, hashAlgorithm))
+            using (var request = new AuthorSignPackageRequest(testCert, hashAlgorithm))
             using (var package = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
             {
                 var zipArchiveHash = await package.GetArchiveHashAsync(request.SignatureHashAlgorithm, CancellationToken.None);
@@ -122,7 +126,7 @@ namespace Test.Utility.Signing
         {
             var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
             var signer = new Signer(signPackage, testSignatureProvider);
-            var request = new SignPackageRequest(certificate, signatureHashAlgorithm: HashAlgorithmName.SHA256);
+            var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256);
 
             await signer.SignAsync(request, testLogger, CancellationToken.None);
         }
@@ -135,7 +139,7 @@ namespace Test.Utility.Signing
         {
             var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(new Uri(_testTimestampServer)));
             var signer = new Signer(signPackage, testSignatureProvider);
-            var request = new SignPackageRequest(certificate, signatureHashAlgorithm: HashAlgorithmName.SHA256);
+            var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256);
 
             await signer.SignAsync(request, testLogger, CancellationToken.None);
         }
@@ -222,7 +226,7 @@ namespace Test.Utility.Signing
         /// Timestamps a signature for tests.
         /// </summary>
         /// <param name="timestampProvider">Timestamp provider.</param>
-        /// <param name="signatureRequest">SignPackageRequest containing metadata for timestamp request./param>
+        /// <param name="signatureRequest">SignPackageRequest containing metadata for timestamp request.</param>
         /// <param name="signature">Signature that needs to be timestamped.</param>
         /// <param name="logger">ILogger.</param>
         /// <returns>Timestamped Signature.</returns>

@@ -4,23 +4,18 @@
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
-    /// Indicates author or repository signing.
+    /// Indicates signature placement.
     /// </summary>
-    public enum SignatureType
+    public enum SignaturePlacement
     {
         /// <summary>
-        /// Default unknown value.
+        /// The primary signature.
         /// </summary>
-        Unknown = 0,
+        PrimarySignature = 1,
 
         /// <summary>
-        /// Signed by the author.
+        /// A countersignature on the primary signature.
         /// </summary>
-        Author = 1,
-
-        /// <summary>
-        /// Signed by the repository.
-        /// </summary>
-        Repository = 2
+        Countersignature = 2
     }
 }
