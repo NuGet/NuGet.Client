@@ -1,6 +1,10 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 
@@ -10,10 +14,30 @@ namespace NuGet.Tests.Apex
     {
         public static void CreatePackageInSource(string packageSource, string packageName, string packageVersion)
         {
+            var package = CreatePackage(packageName, packageVersion);
+            SimpleTestPackageUtility.CreatePackages(packageSource, package);
+        }
+
+        public static void CreateSignedPackageInSource(string packageSource, string packageName, string packageVersion, X509Certificate2 testCertificate)
+        {
+            var package = CreateSignedPackage(packageName, packageVersion, testCertificate);
+            SimpleTestPackageUtility.CreatePackages(packageSource, package);
+        }
+
+        public static SimpleTestPackageContext CreateSignedPackage(string packageName, string packageVersion, X509Certificate2 testCertificate) {
+            var package = CreatePackage(packageName, packageVersion);
+            package.AuthorSignatureCertificate = testCertificate;
+
+            return package;
+        }
+
+        public static SimpleTestPackageContext CreatePackage(string packageName, string packageVersion)
+        {
             var package = new SimpleTestPackageContext(packageName, packageVersion);
             package.Files.Clear();
             package.AddFile("lib/net45/_._");
-            SimpleTestPackageUtility.CreatePackages(packageSource, package);
+
+            return package;
         }
 
         public static bool IsPackageInstalled(NuGetConsoleTestExtension nuGetConsole, string projectPath, string packageName, string packageVersion)

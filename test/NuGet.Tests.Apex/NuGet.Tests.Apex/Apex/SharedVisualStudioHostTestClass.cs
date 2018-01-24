@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.VisualStudio;
@@ -30,10 +33,7 @@ namespace NuGet.Tests.Apex
             });
         }
 
-        public override VisualStudioHost VisualStudio
-        {
-            get { return _hostFixture.Value.VisualStudio; }
-        }
+        public override VisualStudioHost VisualStudio => _hostFixture.Value.VisualStudio;
 
         public override TService GetApexService<TService>()
         {
@@ -50,12 +50,6 @@ namespace NuGet.Tests.Apex
             VisualStudio.Stop();
         }
 
-        public IOperations Operations
-        {
-            get
-            {
-                return _hostFixture.Value.Operations;
-            }
-        }
+        public IOperations Operations => _hostFixture.Value.Operations;
     }
 }

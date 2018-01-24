@@ -9,7 +9,7 @@ namespace NuGet.StaFact
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     [XunitTestCaseDiscoverer("NuGet.StaFact.NuGetWpfTheoryDiscoverer", "NuGet.StaFact")]
-    public sealed class NuGetWpfTheoryAttribute : TheoryAttribute
+    public class NuGetWpfTheoryAttribute : TheoryAttribute
     {
     }
 }

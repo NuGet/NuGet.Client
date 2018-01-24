@@ -48,6 +48,11 @@ namespace NuGet.Tests.Apex
             return _pmConsole.IsPackageInstalled(_projectName, packageId, version);
         }
 
+        public bool IsMessageFoundInPMC(string message)
+        {
+            return _pmConsole.ConsoleContainsMessage(message);
+        }
+
         public void Clear()
         {
             _pmConsole.Clear();

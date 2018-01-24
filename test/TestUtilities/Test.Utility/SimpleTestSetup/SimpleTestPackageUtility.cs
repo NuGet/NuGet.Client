@@ -82,9 +82,7 @@ namespace NuGet.Test.Utility
            string repositoryDir,
            SimpleTestPackageContext packageContext)
         {
-            var id = packageContext.Id;
-            var version = packageContext.Version;
-            var packageName = packageContext.IsSymbolPackage ? $"{id}.{version.ToString()}.symbols.nupkg" : $"{id}.{version.ToString()}.nupkg";
+            var packageName = packageContext.PackageName;
 
             var packagePath = Path.Combine(repositoryDir, packageName);
             var file = new FileInfo(packagePath);
@@ -108,8 +106,17 @@ namespace NuGet.Test.Utility
             var version = packageContext.Version;
             var runtimeJson = packageContext.RuntimeJson;
             var pathResolver = new VersionFolderPathResolver(null);
+            var testLogger = new TestLogger();
+            var tempStream = stream;
+            var isUsingTempStream = false;
 
-            using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
+            if (packageContext.AuthorSignatureCertificate != null)
+            {
+                tempStream = new MemoryStream();
+                isUsingTempStream = true;
+            }
+
+            using (var zip = new ZipArchive(tempStream, ZipArchiveMode.Create, leaveOpen: true))
             {
                 if (packageContext.Files.Any())
                 {
@@ -223,12 +230,21 @@ namespace NuGet.Test.Utility
                     }
                 }
 
-                if (packageContext.Signatures.Count > 0)
+                zip.AddEntry($"{id}.nuspec", xml.ToString(), Encoding.UTF8);
+            }
+
+            if (isUsingTempStream)
+            {
+                using (var signPackage = new SignedPackageArchive(tempStream, stream))
                 {
-                    throw new NotImplementedException();
+                    var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
+                    var signer = new Signer(signPackage, testSignatureProvider);
+                    var request = new AuthorSignPackageRequest(packageContext.AuthorSignatureCertificate, hashAlgorithm: HashAlgorithmName.SHA256);
+
+                    signer.SignAsync(request, testLogger, CancellationToken.None).Wait();
                 }
 
-                zip.AddEntry($"{id}.nuspec", xml.ToString(), Encoding.UTF8);
+                tempStream.Dispose();
             }
 
             // Reset position
