@@ -14759,7 +14759,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Verify that the signer certificate matches with one of the specified fingerprints. The hashing algorithm used to match the certificate is indicated with the FingerprintAlgorithm option. A certificate fingerprint is a hash of the certificate used to identify the certificate. If more than one fingerprint is provided, the input should be a string with each fingerprint separated by a semicolon..
+        ///   Looks up a localized string similar to Verify that the signer certificate matches with one of the specified fingerprints. The hash algorithm used to match the certificate is indicated by the &apos;-FingerprintAlgorithm&apos; option. A certificate fingerprint is a hash of the certificate used to identify the certificate. If more than one fingerprint is provided, the input should be a string with each fingerprint separated by a semicolon..
         /// </summary>
         internal static string VerifyCommandCertificateFingerprintDescription {
             get {
@@ -14777,7 +14777,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hash algorithm to be displayed as certificate fingerprint in the certificate information. Defaults to SHA256..
+        ///   Looks up a localized string similar to Hash algorithm for generating the certificate fingerprint. Defaults to SHA256..
         /// </summary>
         internal static string VerifyCommandFingerprintAlgorithmDescription {
             get {

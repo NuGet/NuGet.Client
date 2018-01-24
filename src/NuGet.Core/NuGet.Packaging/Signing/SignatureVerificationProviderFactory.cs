@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Signing
             {
                 new IntegrityVerificationProvider(),
                 new SignatureTrustAndValidityVerificationProvider(args.FingerprintAlgorithm),
-                new WhitelistVerificationProvider(args.FingerprintAlgorithm, args.Whitelist)
+                new AllowListVerificationProvider(args.FingerprintAlgorithm, args.AllowList)
             };
         }
     }

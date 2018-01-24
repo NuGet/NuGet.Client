@@ -5358,7 +5358,7 @@ nuget locals global-packages -list</value>
     <value>Verifies a signed NuGet package.</value>
   </data>
   <data name="VerifyCommandCertificateFingerprintDescription" xml:space="preserve">
-    <value>Verify that the signer certificate matches with one of the specified fingerprints. The hashing algorithm used to match the certificate is indicated with the FingerprintAlgorithm option. A certificate fingerprint is a hash of the certificate used to identify the certificate. If more than one fingerprint is provided, the input should be a string with each fingerprint separated by a semicolon.</value>
+    <value>Verify that the signer certificate matches with one of the specified fingerprints. The hash algorithm used to match the certificate is indicated by the '-FingerprintAlgorithm' option. A certificate fingerprint is a hash of the certificate used to identify the certificate. If more than one fingerprint is provided, the input should be a string with each fingerprint separated by a semicolon.</value>
   </data>
   <data name="VerifyCommandUsageExamples" xml:space="preserve">
     <value>nuget verify -Signatures .\..\MyPackage.nupkg -Signer "86C0E8C51FF0EBDAD355315DF82AA6EC7049B542;BE36A4562FB2EE05DBB3D32323ADF445084ED656" -Verbosity detailed
@@ -5471,6 +5471,6 @@ This option should be used when specifying the certificate via -CertificateSubje
     <value>Specifies that all verifications possible should be performed to the package(s).</value>
   </data>
   <data name="VerifyCommandFingerprintAlgorithmDescription" xml:space="preserve">
-    <value>Hash algorithm to be displayed as certificate fingerprint in the certificate information. Defaults to SHA256.</value>
+    <value>Hash algorithm for generating the certificate fingerprint. Defaults to SHA256.</value>
   </data>
 </root>

@@ -21,6 +21,7 @@ namespace NuGet.Packaging.Signing
         /// Valid from: issue date time to expiry date time in local time
         /// </summary>
         /// <param name="cert">X509Certificate2 to be converted to string.</param>
+        /// <param name="fingerprintAlgorithm">Algorithm used to calculate certificate fingerprint</param>
         /// <returns>string representation of the X509Certificate2.</returns>
         public static string X509Certificate2ToString(X509Certificate2 cert, HashAlgorithmName fingerprintAlgorithm)
         {
@@ -29,26 +30,13 @@ namespace NuGet.Packaging.Signing
             return certStringBuilder.ToString();
         }
 
-        public static string GetCertificateFingerprint(HashAlgorithmName fingerprintAlgorithm, X509Certificate2 certificate)
-        {
-            var hash = string.Empty;
-
-            using (var hashAlgorithm = fingerprintAlgorithm.GetHashProvider())
-            {
-                var hashBytes = hashAlgorithm.ComputeHash(certificate.RawData);
-                hash = Convert.ToBase64String(hashBytes);
-            }
-
-            return hash;
-        }
-
         private static void X509Certificate2ToString(X509Certificate2 cert, StringBuilder certStringBuilder, HashAlgorithmName fingerprintAlgorithm, string indentation)
         {
-            var certificateFingerprint = GetCertificateFingerprint(fingerprintAlgorithm, cert);
+            var certificateFingerprint = GetHash(cert, fingerprintAlgorithm);
 
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateSubjectName, cert.Subject)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHashSha1, cert.Thumbprint)}");
-            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(), certificateFingerprint)}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(), BitConverter.ToString(certificateFingerprint).Replace("-", ""))}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter)}");
         }
@@ -68,6 +56,7 @@ namespace NuGet.Packaging.Signing
         /// ... N more.
         /// </summary>
         /// <param name="certCollection">X509Certificate2Collection to be converted to string.</param>
+        /// <param name="fingerprintAlgorithm">Algorithm used to calculate certificate fingerprint</param>
         /// <returns>string representation of the X509Certificate2Collection.</returns>
         public static string X509Certificate2CollectionToString(X509Certificate2Collection certCollection, HashAlgorithmName fingerprintAlgorithm)
         {
@@ -233,7 +222,13 @@ namespace NuGet.Packaging.Signing
             return DateTime.Now < certificate.NotBefore;
         }
 
-        internal static byte[] GetHash(X509Certificate2 certificate, HashAlgorithmName hashAlgorithm)
+        /// <summary>
+        /// Gets the certificate fingerprint with the given hashing algorithm
+        /// </summary>
+        /// <param name="certificate">X509Certificate2 to be compute fingerprint</param>
+        /// <param name="hashAlgorithm">Hash algorithm for fingerprint</param>
+        /// <returns></returns>
+        public static byte[] GetHash(X509Certificate2 certificate, HashAlgorithmName hashAlgorithm)
         {
             return hashAlgorithm.ComputeHash(certificate.RawData);
         }

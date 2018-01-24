@@ -44,7 +44,7 @@ namespace NuGet.CommandLine
             }
 
             var signingSpec = SigningSpecifications.V1;
-            var hashAlgorithm = CommandLineUtility.ValidateAndParseHashAlgorithm(FingerprintAlgorithm, nameof(FingerprintAlgorithm), signingSpec);
+            var hashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithmFromParameter(FingerprintAlgorithm, nameof(FingerprintAlgorithm), signingSpec);
 
             var verifyArgs = new VerifyArgs()
             {

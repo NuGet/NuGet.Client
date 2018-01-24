@@ -195,7 +195,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [CIOnlyFact]
-        public void VerifyCommand_VerifyOnPackageSignedWithWhitelistedCertificateSucceeds()
+        public void VerifyCommand_VerifyOnPackageSignedWithAllowedCertificateSucceeds()
         {
             // Arrange
             var cert = _testFixture.TrustedTestCertificateChain.Leaf;
@@ -220,11 +220,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 signResult.Success.Should().BeTrue();
 
+                var certificateFingerprint = CertificateUtility.GetHash(cert.Source.Cert, HashAlgorithmName.SHA256);
+                var certificateFingerprintString = BitConverter.ToString(certificateFingerprint).Replace("-", "");
+
                 // Act
                 var verifyResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"verify {packagePath} -Signatures -CertificateFingerprint {CertificateUtility.GetCertificateFingerprint(HashAlgorithmName.SHA256, cert.Source.Cert)};abc;def",
+                    $"verify {packagePath} -Signatures -CertificateFingerprint {certificateFingerprintString};abc;def",
                     waitForExit: true);
 
                 // Assert
@@ -273,7 +276,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [CIOnlyFact]
-        public void VerifyCommand_VerifyOnPackageSignedWithoutWhitelistedCertificateSucceeds()
+        public void VerifyCommand_VerifyOnPackageSignedWithoutAllowedCertificateFails()
         {
             // Arrange
             var cert = _testFixture.TrustedTestCertificateChain.Leaf;

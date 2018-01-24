@@ -19,22 +19,22 @@ using Xunit;
 namespace NuGet.Packaging.FuncTest
 {
     [Collection("Signing Functional Test Collection")]
-    public class WhitelistVerificationProviderTests
+    public class AllowListVerificationProviderTests
     {
-        private const string _noCertInWhitelist = "No certificate matching";
+        private const string _noCertInAllowList = "No certificate matching";
 
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private IList<ISignatureVerificationProvider> _trustProviders;
 
-        public WhitelistVerificationProviderTests(SigningTestFixture fixture)
+        public AllowListVerificationProviderTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedTestCert = _testFixture.TrustedTestCertificate;
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithCertificateInWhitelist_Success()
+        public async Task GetTrustResultAsync_VerifyWithCertificateInAllowList_Success()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -44,13 +44,15 @@ namespace NuGet.Packaging.FuncTest
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
+                var certificateFingerprint = CertificateUtility.GetHash(testCertificate, HashAlgorithmName.SHA256);
+                var certificateFingerprintString = BitConverter.ToString(certificateFingerprint).Replace("-", "");
 
-                var whitelistHashes = new[] { CertificateUtility.GetCertificateFingerprint(fingerprintAlgorithm, testCertificate), "abc" };
-                var whitelist = whitelistHashes.Select(hash => new NuGetSignatureWhitelistObject(hash));
+                var allowListHashes = new[] { certificateFingerprintString, "abc" };
+                var allowList = allowListHashes.Select(hash => new NuGetSignatureAllowListObject(hash));
 
                 var trustProviders = new[]
                 {
-                    new WhitelistVerificationProvider(fingerprintAlgorithm, whitelist)
+                    new AllowListVerificationProvider(fingerprintAlgorithm, allowList)
                 };
 
                 var verifier = new PackageSignatureVerifier(trustProviders, SignedPackageVerifierSettings.Default);
@@ -67,7 +69,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithoutCertificateInWhitelist_Fail()
+        public async Task GetTrustResultAsync_VerifyWithoutCertificateInAllowList_Fail()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -77,12 +79,12 @@ namespace NuGet.Packaging.FuncTest
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
-                var whitelistHashes = new[] { "abc" };
-                var whitelist = whitelistHashes.Select(hash => new NuGetSignatureWhitelistObject(hash));
+                var allowListHashes = new[] { "abc" };
+                var allowList = allowListHashes.Select(hash => new NuGetSignatureAllowListObject(hash));
 
                 var trustProviders = new[]
                 {
-                    new WhitelistVerificationProvider(HashAlgorithmName.SHA256, whitelist)
+                    new AllowListVerificationProvider(HashAlgorithmName.SHA256, allowList)
                 };
 
                 var verifier = new PackageSignatureVerifier(trustProviders, SignedPackageVerifierSettings.Default);
@@ -99,7 +101,7 @@ namespace NuGet.Packaging.FuncTest
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3003);
-                    totalErrorIssues.First().Message.Should().Contain(_noCertInWhitelist);
+                    totalErrorIssues.First().Message.Should().Contain(_noCertInAllowList);
                 }
             }
         }

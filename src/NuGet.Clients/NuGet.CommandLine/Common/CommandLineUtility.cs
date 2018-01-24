@@ -43,27 +43,27 @@ namespace NuGet.CommandLine
                 fileName.EndsWith(".config", StringComparison.OrdinalIgnoreCase);
         }
 
-        public static HashAlgorithmName ValidateAndParseHashAlgorithm(string value, string name, SigningSpecifications spec)
+        /// <summary>
+        /// Parses a parameter's value to a supported hash algorithm and validates it is supported in the given specification
+        /// </summary>
+        /// <param name="parameterValue"></param>
+        /// <param name="parameterName"></param>
+        /// <param name="spec"></param>
+        /// <returns></returns>
+        public static HashAlgorithmName ParseAndValidateHashAlgorithmFromParameter(string parameterValue, string parameterName, SigningSpecifications spec)
         {
             var hashAlgorithm = HashAlgorithmName.SHA256;
 
-            if (!string.IsNullOrEmpty(value))
+            if (!string.IsNullOrEmpty(parameterValue))
             {
-                if (!spec.AllowedHashAlgorithms.Contains(value, StringComparer.OrdinalIgnoreCase))
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
-                        NuGetCommand.CommandInvalidArgumentException,
-                        name));
-                }
-
-                hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(value);
+                hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(parameterValue);
             }
 
-            if (hashAlgorithm == HashAlgorithmName.Unknown)
+            if (hashAlgorithm == HashAlgorithmName.Unknown || !spec.AllowedHashAlgorithms.Contains(hashAlgorithm))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                         NuGetCommand.CommandInvalidArgumentException,
-                        name));
+                        parameterName));
             }
 
             return hashAlgorithm;

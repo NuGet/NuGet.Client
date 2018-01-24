@@ -38,9 +38,10 @@ namespace NuGet.Commands
                 var packagesToVerify = LocalFolderUtility.ResolvePackageFromPath(verifyArgs.PackagePath);
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
 
-                var whitelistObjects = verifyArgs.CertificateFingerprint.Select(fingerprint => new NuGetSignatureWhitelistObject(NuGetSignatureWhitelistObjectType.Any, fingerprint));
+                var allowListObjects = verifyArgs.CertificateFingerprint.Select(fingerprint =>
+                    new NuGetSignatureCertificateHashAllowListObject(NuGetSignatureVerificationTarget.Primary, fingerprint));
 
-                var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs(whitelistObjects, verifyArgs.FingerprintHashAlgorithm));
+                var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs(allowListObjects, verifyArgs.FingerprintHashAlgorithm));
                 var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
 
                 foreach (var package in packagesToVerify)
