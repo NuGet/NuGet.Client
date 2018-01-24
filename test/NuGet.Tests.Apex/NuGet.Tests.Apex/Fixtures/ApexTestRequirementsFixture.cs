@@ -1,24 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace NuGet.Tests.Apex
 {
     public class ApexTestRequirementsFixture : IDisposable
     {
-        private static bool isInitialized = false;
+        private static bool _isInitialized = false;
 
         public ApexTestRequirementsFixture()
         {
-            if (isInitialized)
+            if (_isInitialized)
             {
                 return;
             }
 
             TestInitialize();
-            isInitialized = true;
+            _isInitialized = true;
         }
 
         public void Dispose()

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
 
 namespace NuGet.Test.Utility
 {
-    internal static class XunitAttributeUtility
+    public  static class XunitAttributeUtility
     {
         public static string GetFileExistsInDirSkipMessageOrNull(bool allowSkipOnCI, string directory, params string[] paths)
         {

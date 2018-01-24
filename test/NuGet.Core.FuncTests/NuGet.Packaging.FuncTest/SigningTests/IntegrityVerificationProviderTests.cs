@@ -96,13 +96,7 @@ namespace NuGet.Packaging.FuncTest
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
-
-                // tamper with the package
-                using (var stream = File.Open(signedPackagePath, FileMode.Open))
-                using (var zip = new ZipArchive(stream, ZipArchiveMode.Update))
-                {
-                    zip.Entries.First().Delete();
-                }
+                SignedArchiveTestUtility.TamperWithPackage(signedPackagePath);
 
                 var verifier = new PackageSignatureVerifier(_trustProviders, policy);
 

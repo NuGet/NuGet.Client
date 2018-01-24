@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.Services;
 using Microsoft.Test.Apex.VisualStudio;
-using Microsoft.Test.Apex.VisualStudio.NuGet;
 using Xunit;
 
 namespace NuGet.Tests.Apex
