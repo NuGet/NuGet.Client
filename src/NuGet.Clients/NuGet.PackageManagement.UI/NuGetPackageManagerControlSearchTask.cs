@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
 
@@ -14,12 +12,12 @@ namespace NuGet.PackageManagement.UI
         private IVsSearchCallback _searchCallback;
         private IVsSearchQuery _searchQuery;
 
-        public NuGetPackageManagerControlSearchTask(PackageManagerControl packageManagerControl, uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
+        public NuGetPackageManagerControlSearchTask(PackageManagerControl packageManagerControl, uint id, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
         {
             _packageManagerControl = packageManagerControl;
             _searchCallback = pSearchCallback;
             _searchQuery = pSearchQuery;
-            Id = dwCookie;
+            Id = id;
             ErrorCode = 0;
             SetStatus(VsSearchTaskStatus.Created);
 
@@ -30,7 +28,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                _packageManagerControl.SearchPackagesAndRefreshUpdateCount(_searchQuery.SearchString, true, _searchCallback, this);
+                _packageManagerControl.SearchPackagesAndRefreshUpdateCount(searchText: _searchQuery.SearchString, useCacheForUpdates: true, pSearchCallback: _searchCallback, searchTask: this);
                 SetStatus(VsSearchTaskStatus.Completed);
             });
         }
