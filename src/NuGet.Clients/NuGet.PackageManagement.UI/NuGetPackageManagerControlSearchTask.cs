@@ -31,8 +31,8 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 _packageManagerControl.SearchPackagesAndRefreshUpdateCount(_searchQuery.SearchString, true, _searchCallback, this);
+                SetStatus(VsSearchTaskStatus.Completed);
             });
-            SetStatus(VsSearchTaskStatus.Completed);
         }
 
         public uint Id { get; private set; }
