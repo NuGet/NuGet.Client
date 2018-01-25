@@ -360,7 +360,7 @@ namespace NuGet.CommandLine
                 else
                 {
                     var signedPackageVerifier = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs()),
+                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                             SignedPackageVerifierSettings.Default);
 
                     var projectContext = new ConsoleProjectContext(Console)

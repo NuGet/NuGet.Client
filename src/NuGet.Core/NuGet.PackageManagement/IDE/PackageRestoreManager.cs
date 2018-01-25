@@ -304,7 +304,7 @@ namespace NuGet.PackageManagement
             if (nuGetProjectContext.PackageExtractionContext == null)
             {
                 var signedPackageVerifier = new PackageSignatureVerifier(
-                           SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs()),
+                           SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                            SignedPackageVerifierSettings.Default);
 
                 nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(

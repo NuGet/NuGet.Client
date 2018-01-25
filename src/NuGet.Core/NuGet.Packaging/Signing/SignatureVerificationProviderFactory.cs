@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
@@ -20,6 +21,15 @@ namespace NuGet.Packaging.Signing
                 new IntegrityVerificationProvider(),
                 new SignatureTrustAndValidityVerificationProvider(args.FingerprintAlgorithm),
                 new AllowListVerificationProvider(args.FingerprintAlgorithm, args.AllowList)
+            };
+        }
+
+        public static IEnumerable<ISignatureVerificationProvider> GetSignatureVerificationProviders()
+        {
+            return new List<ISignatureVerificationProvider>()
+            {
+                new IntegrityVerificationProvider(),
+                new SignatureTrustAndValidityVerificationProvider(HashAlgorithmName.SHA256)
             };
         }
     }

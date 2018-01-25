@@ -27,7 +27,7 @@ namespace NuGet.Test.Utility
             using (var reader = new PackageArchiveReader(packagePath))
             {
                 var signedPackageVerifier = requireSignVerify ? new PackageSignatureVerifier(
-                           SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs()),
+                           SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
                            SignedPackageVerifierSettings.Default) : null;
 
                 var pathContext = new PackageExtractionContext(
