@@ -41,8 +41,11 @@ namespace NuGet.Tests.Apex
 
         public virtual void Dispose()
         {
-            CloseVisualStudioHost();
-            //test cleanup
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_TEST_CLOSE_VS_AFTER_EACH_TEST")))
+            {
+                //test cleanup
+                CloseVisualStudioHost();
+            }
         }
     }
 }
