@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -70,6 +70,7 @@
     <Compile Include="Models\ProjectVersionConstraint.cs" />
     <Compile Include="Models\PackageIconMonikers.cs" />
     <Compile Include="NativeMethods.cs" />
+    <Compile Include="NuGetPackageManagerControlSearchTask.cs" />
     <Compile Include="Options\CheckedListBoxAccessibleObject.cs" />
     <Compile Include="Options\CheckedListBoxItemAccessibleObject.cs" />
     <Compile Include="Options\GeneralOptionControl.cs">
@@ -483,7 +484,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.4.0" PrivateAssets="all"/>
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.4.0" PrivateAssets="all" />
   </ItemGroup>
   <PropertyGroup>
     <IncludeContentInPack>false</IncludeContentInPack>
