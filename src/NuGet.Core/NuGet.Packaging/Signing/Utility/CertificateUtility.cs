@@ -230,6 +230,11 @@ namespace NuGet.Packaging.Signing
         /// <returns></returns>
         public static byte[] GetHash(X509Certificate2 certificate, HashAlgorithmName hashAlgorithm)
         {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+
             return hashAlgorithm.ComputeHash(certificate.RawData);
         }
     }

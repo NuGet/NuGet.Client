@@ -9,7 +9,7 @@ namespace NuGet.Packaging.Signing
 {
     public class SignatureVerificationProviderArgs
     {
-        public IEnumerable<NuGetSignatureAllowListObject> AllowList { get; }
+        public IEnumerable<VerificationAllowListObject> AllowList { get; }
 
         public HashAlgorithmName FingerprintAlgorithm { get; }
 
@@ -23,7 +23,7 @@ namespace NuGet.Packaging.Signing
             FingerprintAlgorithm = fingerprintAlgorithm;
         }
 
-        public SignatureVerificationProviderArgs(IEnumerable<NuGetSignatureAllowListObject> allowList, HashAlgorithmName fingerprintAlgorithm)
+        public SignatureVerificationProviderArgs(IEnumerable<VerificationAllowListObject> allowList, HashAlgorithmName fingerprintAlgorithm)
         {
             AllowList = allowList ?? throw new ArgumentNullException(nameof(allowList));
             FingerprintAlgorithm = fingerprintAlgorithm;

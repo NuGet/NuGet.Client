@@ -14,10 +14,10 @@ namespace NuGet.Packaging.Signing
     public class AllowListVerificationProvider : ISignatureVerificationProvider
     {
         private HashAlgorithmName _fingerprintAlgorithm;
-        private IEnumerable<NuGetSignatureAllowListObject> _allowList;
+        private IEnumerable<VerificationAllowListObject> _allowList;
         private bool _shouldCheckAllowList;
 
-        public AllowListVerificationProvider(HashAlgorithmName fingerprintAlgorithm, IEnumerable<NuGetSignatureAllowListObject> allowList)
+        public AllowListVerificationProvider(HashAlgorithmName fingerprintAlgorithm, IEnumerable<VerificationAllowListObject> allowList)
         {
             _fingerprintAlgorithm = fingerprintAlgorithm;
             _allowList = allowList;
@@ -47,16 +47,16 @@ namespace NuGet.Packaging.Signing
         private bool IsSignatureAllowed(Signature signature)
         {
             // Get information needed for allow list verification
-            var primarySingatureCertificateFingerprint = CertificateUtility.GetHash(signature.SignerInfo.Certificate, _fingerprintAlgorithm);
-            var primarySingatureCertificateFingerprintString = BitConverter.ToString(primarySingatureCertificateFingerprint).Replace("-", "");
+            var primarySignatureCertificateFingerprint = CertificateUtility.GetHash(signature.SignerInfo.Certificate, _fingerprintAlgorithm);
+            var primarySignatureCertificateFingerprintString = BitConverter.ToString(primarySignatureCertificateFingerprint).Replace("-", "");
 
             foreach (var allowedObject in _allowList)
             {
                 // Verify the certificate hash allow list objects
-                if (allowedObject is NuGetSignatureCertificateHashAllowListObject)
+                if (allowedObject is CertificateHashAllowListObject)
                 {
-                    if (IsTargetingPrimarySignature(allowedObject.VerificationTarget) &&
-                        StringComparer.OrdinalIgnoreCase.Equals(((NuGetSignatureCertificateHashAllowListObject)allowedObject).CertificateFingerprint, primarySingatureCertificateFingerprintString))
+                    if (allowedObject.VerificationTarget.HasFlag(VerificationTarget.Primary) &&
+                        StringComparer.OrdinalIgnoreCase.Equals(((CertificateHashAllowListObject)allowedObject).CertificateFingerprint, primarySignatureCertificateFingerprintString))
                     {
                         return true;
                     }
@@ -64,16 +64,6 @@ namespace NuGet.Packaging.Signing
             }
 
             return false;
-        }
-
-        private static bool IsTargetingPrimarySignature(NuGetSignatureVerificationTarget verificationTarget)
-        {
-            return (verificationTarget & NuGetSignatureVerificationTarget.Primary) == NuGetSignatureVerificationTarget.Primary;
-        }
-
-        private static bool IsTargetingRepositorySignature(NuGetSignatureVerificationTarget verificationTarget)
-        {
-            return (verificationTarget & NuGetSignatureVerificationTarget.Repository) == NuGetSignatureVerificationTarget.Repository;
         }
 
 #else

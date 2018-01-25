@@ -170,7 +170,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No certificate matching the provided {0} fingerprints was found in the signature..
+        ///   Looks up a localized string similar to No certificate matching the provided {0} fingerprint(s) was found in the signature..
         /// </summary>
         internal static string Error_NoMatchingCertificate {
             get {

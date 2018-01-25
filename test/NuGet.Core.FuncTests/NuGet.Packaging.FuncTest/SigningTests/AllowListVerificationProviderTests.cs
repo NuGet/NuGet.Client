@@ -48,7 +48,7 @@ namespace NuGet.Packaging.FuncTest
                 var certificateFingerprintString = BitConverter.ToString(certificateFingerprint).Replace("-", "");
 
                 var allowListHashes = new[] { certificateFingerprintString, "abc" };
-                var allowList = allowListHashes.Select(hash => new NuGetSignatureAllowListObject(hash));
+                var allowList = allowListHashes.Select(hash => new VerificationAllowListObject(hash));
 
                 var trustProviders = new[]
                 {
@@ -80,7 +80,7 @@ namespace NuGet.Packaging.FuncTest
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
 
                 var allowListHashes = new[] { "abc" };
-                var allowList = allowListHashes.Select(hash => new NuGetSignatureAllowListObject(hash));
+                var allowList = allowListHashes.Select(hash => new VerificationAllowListObject(hash));
 
                 var trustProviders = new[]
                 {

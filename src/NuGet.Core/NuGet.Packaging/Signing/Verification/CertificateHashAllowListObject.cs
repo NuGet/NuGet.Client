@@ -3,11 +3,11 @@
 
 namespace NuGet.Packaging.Signing
 {
-    public class NuGetSignatureCertificateHashAllowListObject : NuGetSignatureAllowListObject
+    public class CertificateHashAllowListObject : VerificationAllowListObject
     {
         public string CertificateFingerprint { get; }
 
-        public NuGetSignatureCertificateHashAllowListObject(NuGetSignatureVerificationTarget target, string fingerprint)
+        public CertificateHashAllowListObject(VerificationTarget target, string fingerprint)
             : base(target)
         {
             CertificateFingerprint = fingerprint;

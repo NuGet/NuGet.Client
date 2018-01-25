@@ -507,7 +507,7 @@ Valid from:</comment>
     <value>The argument is invalid.</value>
   </data>
   <data name="Error_NoMatchingCertificate" xml:space="preserve">
-    <value>No certificate matching the provided {0} fingerprints was found in the signature.</value>
+    <value>No certificate matching the provided {0} fingerprint(s) was found in the signature.</value>
     <comment>0 - Hash algorithm name used for fingerprint</comment>
   </data>
   <data name="CertUtilityCertificateHash" xml:space="preserve">

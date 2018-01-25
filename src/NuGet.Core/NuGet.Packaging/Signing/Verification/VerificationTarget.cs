@@ -6,7 +6,7 @@ using System;
 namespace NuGet.Packaging.Signing
 {
     [Flags]
-    public enum NuGetSignatureVerificationTarget
+    public enum VerificationTarget
     {
         Primary     = 0x000001,
         Repository  = 0x000010

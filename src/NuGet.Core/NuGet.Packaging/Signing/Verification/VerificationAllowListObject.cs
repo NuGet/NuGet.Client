@@ -3,11 +3,11 @@
 
 namespace NuGet.Packaging.Signing
 {
-    public abstract class NuGetSignatureAllowListObject
+    public abstract class VerificationAllowListObject
     {
-        public NuGetSignatureVerificationTarget VerificationTarget { get; }
+        public VerificationTarget VerificationTarget { get; }
 
-        public NuGetSignatureAllowListObject(NuGetSignatureVerificationTarget target)
+        public VerificationAllowListObject(VerificationTarget target)
         {
             VerificationTarget = target;
         }
