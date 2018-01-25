@@ -1,14 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.StaFact;
-using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Tests.Apex
@@ -25,31 +21,23 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetPackageReferenceTemplates))]
         public void InstallPackageFromPMCWithNoAutoRestoreVerifyAssetsFile(ProjectTemplate projectTemplate)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, noAutoRestore: true))
             {
-                // Arrange
-                // Turn off auto restore
-                pathContext.Settings.DisableAutoRestore();
-
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
-
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
 
-                var nugetConsole = GetConsole(project);
+                var nugetConsole = GetConsole(testContext.Project);
 
                 var installed = nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
                 installed.Should().BeTrue("Install-Package should pass");
 
                 // Verify install from project.assets.json
-                var inAssetsFile = Utils.IsPackageInstalledInAssetsFile(nugetConsole, project.FullPath, packageName, packageVersion);
+                var inAssetsFile = Utils.IsPackageInstalledInAssetsFile(nugetConsole, testContext.Project.FullPath, packageName, packageVersion);
                 inAssetsFile.Should().BeTrue("package was installed");
-
-                solutionService.Save();
             }
         }
 
@@ -58,64 +46,27 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetTemplates))]
         public void InstallPackageFromPMCVerifyGetPackageDisplaysPackage(ProjectTemplate projectTemplate)
         {
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
+            // Arrange
+            EnsureVisualStudioHost();
 
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            {
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
 
-                var nugetConsole = GetConsole(project);
+                var nugetConsole = GetConsole(testContext.Project);
 
                 var installed = nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
                 installed.Should().BeTrue("Install-Package should pass");
 
                 // Build before the install check to ensure that everything is up to date.
-                project.Build();
+                testContext.Project.Build();
 
                 // Verify install from Get-Package
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, packageName, packageVersion);
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion);
 
                 VisualStudio.AssertNoErrors();
-
-                solutionService.Save();
-            }
-        }
-
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetTemplates))]
-        public void InstallPackageFromPMCFromNuGetOrg(ProjectTemplate projectTemplate)
-        {
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Arrange
-                pathContext.Settings.DisableAutoRestore();
-
-                var packageSources = SimpleTestSettingsContext.GetOrAddSection(pathContext.Settings.XML, "packageSources");
-                SimpleTestSettingsContext.AddEntry(packageSources, "nugetOnline", "https://api.nuget.org/v3/index.json");
-                pathContext.Settings.Save();
-
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
-                var nugetConsole = GetConsole(project);
-
-                var packageName = "newtonsoft.json";
-                var packageVersion = "9.0.1";
-
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion)
-                    .Should()
-                    .BeTrue("Install-Package should return on time");
-
-                project.Build();
-
-                Utils.IsPackageInstalledInAssetsFile(nugetConsole, project.FullPath, packageName, packageVersion).Should().BeTrue("package should exist in the assets file");
-
-                solutionService.Save();
             }
         }
 
@@ -123,34 +74,28 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetTemplates))]
         public void UninstallPackageFromPMC(ProjectTemplate projectTemplate)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-
-                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
-
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
 
-                var nugetConsole = GetConsole(project);
+                var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion).Should().BeTrue("Install-Package");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, packageName, packageVersion);
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion);
 
                 nugetConsole.UninstallPackageFromPMC(packageName).Should().BeTrue("Uninstall-Package");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsNotInstalled(project.UniqueName, packageName);
+                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, packageName);
 
                 VisualStudio.AssertNoErrors();
-
-                solutionService.Save();
             }
         }
 
@@ -158,36 +103,30 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetTemplates))]
         public void UpdatePackageFromPMC(ProjectTemplate projectTemplate)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-
-                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
-
                 var packageName = "TestPackage";
                 var packageVersion1 = "1.0.0";
                 var packageVersion2 = "2.0.0";
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion1);
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion2);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
 
-                var nugetConsole = GetConsole(project);
+                var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1).Should().BeTrue("Install-Package");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, packageName, packageVersion1);
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion1);
 
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2).Should().BeTrue("UnInstall-Package");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, packageName, packageVersion2);
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion2);
 
                 VisualStudio.AssertNoErrors();
-
-                solutionService.Save();
             }
         }
 
@@ -195,35 +134,29 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetTemplates))]
         public void InstallMultiplePackagesFromPMC(ProjectTemplate projectTemplate)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-
-                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
-
                 var packageName1 = "TestPackage1";
                 var packageVersion1 = "1.0.0";
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName1, packageVersion1);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName1, packageVersion1);
 
                 var packageName2 = "TestPackage2";
                 var packageVersion2 = "1.2.3";
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName2, packageVersion2);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName2, packageVersion2);
 
-                var nugetConsole = GetConsole(project);
+                var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1).Should().BeTrue("Install-Package 1");
                 nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2).Should().BeTrue("Install-Package 2");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, packageName1, packageVersion1);
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, packageName2, packageVersion2);
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName1, packageVersion1);
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName2, packageVersion2);
 
                 VisualStudio.AssertNoErrors();
-
-                solutionService.Save();
             }
         }
 
@@ -231,43 +164,36 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetTemplates))]
         public void UninstallMultiplePackagesFromPMC(ProjectTemplate projectTemplate)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-
-                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
-
                 var packageName1 = "TestPackage1";
                 var packageVersion1 = "1.0.0";
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName1, packageVersion1);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName1, packageVersion1);
 
                 var packageName2 = "TestPackage2";
                 var packageVersion2 = "1.2.3";
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName2, packageVersion2);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName2, packageVersion2);
 
-                var nugetConsole = GetConsole(project);
+                var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1).Should().BeTrue("Install-Package 1");
                 nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2).Should().BeTrue("Install-Package 2");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, packageName1, packageVersion1);
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, packageName2, packageVersion2);
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName1, packageVersion1);
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName2, packageVersion2);
 
                 VisualStudio.AssertNoErrors();
 
-                Assert.True(nugetConsole.UninstallPackageFromPMC(packageName1));
-                Assert.True(nugetConsole.UninstallPackageFromPMC(packageName2));
-                project.Build();
-                solutionService.SaveAll();
+                nugetConsole.UninstallPackageFromPMC(packageName1).Should().BeTrue("Uninstall package 1");
+                nugetConsole.UninstallPackageFromPMC(packageName2).Should().BeTrue("Uninstall package 2");
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsNotInstalled(project.UniqueName, packageName1);
-                GetNuGetTestService().Verify.PackageIsNotInstalled(project.UniqueName, packageName2);
-
-                solutionService.Save();
+                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, packageName1);
+                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, packageName2);
             }
         }
 
@@ -275,79 +201,28 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetTemplates))]
         public void DowngradePackageFromPMC(ProjectTemplate projectTemplate)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-
-                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
-
                 var packageName = "TestPackage";
                 var packageVersion1 = "1.0.0";
                 var packageVersion2 = "2.0.0";
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion1);
-                Utils.CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion2);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
 
-                var nugetConsole = GetConsole(project);
+                var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion2).Should().BeTrue("Install-Package");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, packageName, packageVersion2);
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion2);
 
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion1).Should().BeTrue("Update-Package");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, packageName, packageVersion1);
-
-                solutionService.Save();
-            }
-        }
-
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetNetCoreTemplates))]
-        public void NetCoreTransitivePackageReference(ProjectTemplate projectTemplate)
-        {
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-
-
-                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project1 = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject1");
-                project1.Build();
-                var project2 = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject2");
-                project2.Build();
-                var project3 = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject3");
-                project3.Build();
-                solutionService.Build();
-
-                project1.References.Dte.AddProjectReference(project2);
-                project2.References.Dte.AddProjectReference(project3);
-                solutionService.SaveAll();
-                solutionService.Build();
-
-                var nugetConsole = GetConsole(project3);
-                var packageName = "newtonsoft.json";
-                var packageVersion = "9.0.1";
-
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion, "https://api.nuget.org/v3/index.json").Should().BeTrue("Install-Package");
-                project1.Build();
-                project2.Build();
-                project3.Build();
-
-                GetNuGetTestService().Verify.PackageIsInstalled(project3.UniqueName, packageName, packageVersion);
-
-                Assert.True(project1.References.TryFindReferenceByName("newtonsoft.json", out var result));
-                Assert.NotNull(result);
-                Assert.True(project2.References.TryFindReferenceByName("newtonsoft.json", out var result2));
-                Assert.NotNull(result2);
-
-                solutionService.Save();
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion1);
             }
         }
 
@@ -355,82 +230,59 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetNetCoreTemplates))]
         public void NetCoreTransitivePackageReferenceLimit(ProjectTemplate projectTemplate)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-
-                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project1 = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject1");
-                project1.Build();
-                var project2 = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject2");
+                var project2 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject2");
                 project2.Build();
-                var project3 = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject3");
+                var project3 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject3");
                 project3.Build();
-                var projectX = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProjectX");
+                var projectX = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProjectX");
                 projectX.Build();
-                solutionService.Build();
+                testContext.SolutionService.Build();
 
-                project1.References.Dte.AddProjectReference(project2);
-                project1.References.Dte.AddProjectReference(projectX);
+                testContext.Project.References.Dte.AddProjectReference(project2);
+                testContext.Project.References.Dte.AddProjectReference(projectX);
                 project2.References.Dte.AddProjectReference(project3);
-                solutionService.SaveAll();
-                solutionService.Build();
+                testContext.SolutionService.SaveAll();
+                testContext.SolutionService.Build();
 
                 var nugetConsole = GetConsole(project3);
 
                 var packageName = "newtonsoft.json";
                 var packageVersion = "9.0.1";
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
 
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion, "https://api.nuget.org/v3/index.json").Should().BeTrue("Install-Package");
-                project1.Build();
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion).Should().BeTrue("Install-Package");
+                testContext.Project.Build();
                 project2.Build();
                 project3.Build();
                 projectX.Build();
-                solutionService.Build();
+                testContext.SolutionService.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project3.UniqueName, packageName, packageVersion);
+                GetNuGetTestService().Verify.PackageIsInstalled(project3.UniqueName, packageName);
 
-                Assert.True(project1.References.TryFindReferenceByName("newtonsoft.json", out var result));
-                Assert.NotNull(result);
-                Assert.True(project2.References.TryFindReferenceByName("newtonsoft.json", out var result2));
-                Assert.NotNull(result2);
-                Assert.False(projectX.References.TryFindReferenceByName("newtonsoft.json", out var resultX));
-                Assert.Null(resultX);
+                // Verify install from project.assets.json
+                var inAssetsFile = Utils.IsPackageInstalledInAssetsFile(nugetConsole, testContext.Project.FullPath, packageName, packageVersion);
+                inAssetsFile.Should().BeTrue("package was installed");
 
-                solutionService.Save();
+                var inAssetsFile2 = Utils.IsPackageInstalledInAssetsFile(nugetConsole, project2.FullPath, packageName, packageVersion);
+                inAssetsFile2.Should().BeTrue("package 2 was installed");
+
+                var inAssetsFileX = Utils.IsPackageInstalledInAssetsFile(nugetConsole, projectX.FullPath, packageName, packageVersion);
+                inAssetsFileX.Should().BeFalse("package X was installed");
             }
         }
 
-        private NuGetConsoleTestExtension GetConsole(ProjectTestExtension project)
-        {
-            var nugetTestService = GetNuGetTestService();
-            nugetTestService.EnsurePackageManagerConsoleIsOpen().Should().BeTrue("Console was opened");
-            var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
-
-            // Clear everything before starting
-            nugetConsole.Clear();
-            VisualStudio.ClearWindows();
-
-            return nugetConsole;
-        }
-
-        private static ProjectTestExtension CreateAndInitProject(ProjectTemplate projectTemplate, SimpleTestPathContext pathContext, SolutionService solutionService)
-        {
-            solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-            var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
-            solutionService.Save();
-            project.Build();
-
-            return project;
-        }
-
+        // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
+        // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
             for (var i = 0; i < Utils.GetIterations(); i++)
             {
-                yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
+                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
                 yield return new object[] { ProjectTemplate.NetStandardClassLib };
             }
         }
@@ -439,7 +291,7 @@ namespace NuGet.Tests.Apex
         {
             for (var i = 0; i < Utils.GetIterations(); i++)
             {
-                yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
+                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
                 yield return new object[] { ProjectTemplate.NetStandardClassLib };
             }
         }
@@ -449,7 +301,7 @@ namespace NuGet.Tests.Apex
             for (var i = 0; i < Utils.GetIterations(); i++)
             {
                 yield return new object[] { ProjectTemplate.ClassLibrary };
-                yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
+                yield return new object[] { ProjectTemplate.NetStandardClassLib };
             }
         }
     }

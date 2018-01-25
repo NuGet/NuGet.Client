@@ -1,3 +1,6 @@
 {
-  "methodDisplay": "classAndMethod"
+  "methodDisplay": "classAndMethod",
+  "longRunningTestSeconds": 120,
+  "diagnosticMessages": true,
+  "preEnumerateTheories": false
 }
