@@ -231,7 +231,7 @@ namespace NuGet.Packaging.FuncTest
                 {
                     var signature = await packageReader.GetSignatureAsync(CancellationToken.None);
                     var signatureWithNoCertificates = SignedArchiveTestUtility.GenerateSignatureWithNoCertificates(signature);
-                    var provider = new SignatureTrustAndValidityVerificationProvider();
+                    var provider = new SignatureTrustAndValidityVerificationProvider(HashAlgorithmName.SHA256);
 
                     var result = await provider.GetTrustResultAsync(
                         packageReader,
