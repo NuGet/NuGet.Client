@@ -44,26 +44,26 @@ namespace NuGet.CommandLine
         }
 
         /// <summary>
-        /// Parses a parameter's value to a supported hash algorithm and validates it is supported in the given specification
+        /// Parses a command line argument's value to a supported hash algorithm and validates it is supported in the given specification
         /// </summary>
-        /// <param name="parameterValue"></param>
-        /// <param name="parameterName"></param>
-        /// <param name="spec"></param>
-        /// <returns></returns>
-        public static HashAlgorithmName ParseAndValidateHashAlgorithmFromParameter(string parameterValue, string parameterName, SigningSpecifications spec)
+        /// <param name="argumentValue">Value entered by the user in the given command line argument</param>
+        /// <param name="argumentName">Name of the command line argument</param>
+        /// <param name="spec">Signing specification to validate parsed hash algorithm</param>
+        /// <returns>Supported hash algorithm</returns>
+        public static HashAlgorithmName ParseAndValidateHashAlgorithmFromArgument(string argumentValue, string argumentName, SigningSpecifications spec)
         {
             var hashAlgorithm = HashAlgorithmName.SHA256;
 
-            if (!string.IsNullOrEmpty(parameterValue))
+            if (!string.IsNullOrEmpty(argumentValue))
             {
-                hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(parameterValue);
+                hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(argumentValue);
             }
 
             if (hashAlgorithm == HashAlgorithmName.Unknown || !spec.AllowedHashAlgorithms.Contains(hashAlgorithm))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                         NuGetCommand.CommandInvalidArgumentException,
-                        parameterName));
+                        argumentName));
             }
 
             return hashAlgorithm;

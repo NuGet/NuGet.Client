@@ -85,8 +85,8 @@ namespace NuGet.CommandLine
             var signingSpec = SigningSpecifications.V1;
             var storeLocation = ValidateAndParseStoreLocation();
             var storeName = ValidateAndParseStoreName();
-            var hashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithmFromParameter(HashAlgorithm, nameof(HashAlgorithm), signingSpec);
-            var timestampHashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithmFromParameter(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm), signingSpec);
+            var hashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithmFromArgument(HashAlgorithm, nameof(HashAlgorithm), signingSpec);
+            var timestampHashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithmFromArgument(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm), signingSpec);
 
             return new SignArgs()
             {

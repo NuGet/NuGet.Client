@@ -14,14 +14,12 @@ namespace NuGet.Packaging.Signing
     public class AllowListVerificationProvider : ISignatureVerificationProvider
     {
         private HashAlgorithmName _fingerprintAlgorithm;
-        private IEnumerable<VerificationAllowListObject> _allowList;
-        private bool _shouldCheckAllowList;
+        private IList<VerificationAllowListEntry> _allowList;
 
-        public AllowListVerificationProvider(HashAlgorithmName fingerprintAlgorithm, IEnumerable<VerificationAllowListObject> allowList)
+        public AllowListVerificationProvider(HashAlgorithmName fingerprintAlgorithm, IList<VerificationAllowListEntry> allowList)
         {
             _fingerprintAlgorithm = fingerprintAlgorithm;
             _allowList = allowList;
-            _shouldCheckAllowList = _allowList != null && _allowList.Count() > 0;
         }
 
         public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings, CancellationToken token)
@@ -35,7 +33,7 @@ namespace NuGet.Packaging.Signing
             var status = SignatureVerificationStatus.Trusted;
             var issues = new List<SignatureLog>();
 
-            if (_shouldCheckAllowList && !IsSignatureAllowed(signature))
+            if (_allowList.Count() > 0 && !IsSignatureAllowed(signature))
             {
                 status = SignatureVerificationStatus.Invalid;
                 issues.Add(SignatureLog.Issue(fatal: true, code: NuGetLogCode.NU3003, message: string.Format(CultureInfo.CurrentCulture, Strings.Error_NoMatchingCertificate, _fingerprintAlgorithm.ToString())));
@@ -50,13 +48,14 @@ namespace NuGet.Packaging.Signing
             var primarySignatureCertificateFingerprint = CertificateUtility.GetHash(signature.SignerInfo.Certificate, _fingerprintAlgorithm);
             var primarySignatureCertificateFingerprintString = BitConverter.ToString(primarySignatureCertificateFingerprint).Replace("-", "");
 
-            foreach (var allowedObject in _allowList)
+            foreach (var allowedEntry in _allowList)
             {
                 // Verify the certificate hash allow list objects
-                if (allowedObject is CertificateHashAllowListObject)
+                var certificateHashEntry = allowedEntry as CertificateHashAllowListEntry;
+                if (certificateHashEntry != null)
                 {
-                    if (allowedObject.VerificationTarget.HasFlag(VerificationTarget.Primary) &&
-                        StringComparer.OrdinalIgnoreCase.Equals(((CertificateHashAllowListObject)allowedObject).CertificateFingerprint, primarySignatureCertificateFingerprintString))
+                    if (certificateHashEntry.VerificationTarget.HasFlag(VerificationTarget.Primary) &&
+                        StringComparer.OrdinalIgnoreCase.Equals(certificateHashEntry.CertificateFingerprint, primarySignatureCertificateFingerprintString))
                     {
                         return true;
                     }

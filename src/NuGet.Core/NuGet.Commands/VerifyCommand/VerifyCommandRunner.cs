@@ -39,7 +39,7 @@ namespace NuGet.Commands
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
 
                 var allowListObjects = verifyArgs.CertificateFingerprint.Select(fingerprint =>
-                    new CertificateHashAllowListObject(VerificationTarget.Primary, fingerprint));
+                    new CertificateHashAllowListEntry(VerificationTarget.Primary, fingerprint));
 
                 var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs(allowListObjects, verifyArgs.FingerprintHashAlgorithm));
                 var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
