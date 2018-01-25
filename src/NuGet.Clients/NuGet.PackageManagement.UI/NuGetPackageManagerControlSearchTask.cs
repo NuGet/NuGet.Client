@@ -6,7 +6,7 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
-    public sealed class NuGetPackageManagerControlSearchTask : IVsSearchTask
+    internal sealed class NuGetPackageManagerControlSearchTask : IVsSearchTask
     {
         private PackageManagerControl _packageManagerControl;
         private IVsSearchCallback _searchCallback;
@@ -63,11 +63,11 @@ namespace NuGet.PackageManagement.UI
 
         private enum VsSearchTaskStatus : uint
         {
-            Completed = 2,
             Created = 0,
-            Error = 4,
             Started = 1,
-            Stopped = 3
+            Completed = 2,
+            Stopped = 3,
+            Error = 4
         }
     }
 }
