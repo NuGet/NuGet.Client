@@ -7,6 +7,10 @@
     <NETCoreWPFProject>true</NETCoreWPFProject>
     <TestProject>true</TestProject>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Apex\ApexTestContext.cs" />
+  </ItemGroup>
   
   <ItemGroup>
     <Reference Include="System" />
@@ -20,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Apex\ApexBaseTestClass.cs" />
+    <Compile Include="Apex\ApexTestContext.cs" />
     <Compile Include="Apex\NuGetConsoleTestExtension.cs" />
     <Compile Include="Apex\NuGetTestOperationConfiguration.cs" />
     <Compile Include="Apex\SharedVisualStudioHostTestClass.cs" />

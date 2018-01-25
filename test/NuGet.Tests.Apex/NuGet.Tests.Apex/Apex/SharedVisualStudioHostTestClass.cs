@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using FluentAssertions;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.VisualStudio;
+using Microsoft.Test.Apex.VisualStudio.Solution;
 using Xunit;
 
 namespace NuGet.Tests.Apex
@@ -48,6 +50,17 @@ namespace NuGet.Tests.Apex
         public override void CloseVisualStudioHost()
         {
             VisualStudio.Stop();
+        }
+
+        protected NuGetConsoleTestExtension GetConsole(ProjectTestExtension project)
+        {
+            VisualStudio.ClearWindows();
+
+            var nugetTestService = GetNuGetTestService();
+            nugetTestService.EnsurePackageManagerConsoleIsOpen().Should().BeTrue("Console was opened");
+            var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
+
+            return nugetConsole;
         }
 
         public IOperations Operations => _hostFixture.Value.Operations;

@@ -5,8 +5,10 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -40,6 +42,7 @@ namespace NuGet.Tests.Apex
             var package = new SimpleTestPackageContext(packageName, packageVersion);
             package.Files.Clear();
             package.AddFile("lib/net45/_._");
+            package.AddFile("lib/netstandard1.0/_._");
 
             return package;
         }
@@ -146,6 +149,16 @@ namespace NuGet.Tests.Apex
                 // Run directly
                 action();
             }
+        }
+
+        internal static ProjectTestExtension CreateAndInitProject(ProjectTemplate projectTemplate, SimpleTestPathContext pathContext, SolutionService solutionService)
+        {
+            solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
+            solutionService.Save();
+            project.Build();
+
+            return project;
         }
     }
 }
