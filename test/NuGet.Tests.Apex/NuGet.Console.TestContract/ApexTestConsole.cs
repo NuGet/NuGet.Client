@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Text.Editor;
 using NuGet.VisualStudio;
 using NuGetConsole;
+using NuGetConsole.Implementation;
 using NuGetConsole.Implementation.Console;
 
 namespace NuGet.Console.TestContract
@@ -16,45 +17,43 @@ namespace NuGet.Console.TestContract
     public class ApexTestConsole
     {
         private IWpfConsole _wpfConsole;
+        private PowerConsoleToolWindow _consoleWindow;
 
-        public ApexTestConsole(IWpfConsole WpfConsole)
+        public ApexTestConsole(IWpfConsole WpfConsole, PowerConsoleToolWindow consoleWindow)
         {
-            _wpfConsole = WpfConsole;
+            _wpfConsole = WpfConsole ?? throw new ArgumentNullException(nameof(WpfConsole));
+            _consoleWindow = consoleWindow ?? throw new ArgumentNullException(nameof(consoleWindow));
         }
 
         private bool EnsureInitilizeConsole()
         {
             var stopwatch = Stopwatch.StartNew();
             var timeout = TimeSpan.FromMinutes(5);
+            var loaded = false;
+
             do
             {
-                if (_wpfConsole.Dispatcher.IsStartCompleted && _wpfConsole.Host != null) { return true; }
-                Thread.Sleep(100);
-            }
-            while (stopwatch.Elapsed < timeout);
-            return false;
-        }
-
-        public bool IsPackageInstalled(string projectName, string packageId, string version)
-        {
-            _wpfConsole.Clear();
-            var command = $"Get-Package {packageId} -ProjectName {projectName}";
-            if (WaitForActionComplete(() => RunCommand(command), TimeSpan.FromMinutes(5)))
-            {
-                var snapshot = (_wpfConsole.Content as IWpfTextViewHost).TextView.TextBuffer.CurrentSnapshot;
-                for (var i = 0; i < snapshot.LineCount; i++)
+                // Avoid getting the host until the window has loaded
+                // If the host is loaded first the window will hang
+                if (_consoleWindow.IsLoaded)
                 {
-                    var snapshotLine = snapshot.GetLineFromLineNumber(i);
-                    var lineText = snapshotLine.GetText();
-                    var packageIdResult = Regex.IsMatch(lineText, $"\\b{packageId}\\b", RegexOptions.IgnoreCase);
-                    var versionResult = Regex.IsMatch(lineText, $"\\b{version}\\b", RegexOptions.IgnoreCase);
-                    if (packageIdResult && versionResult)
+                    UIInvoke(() =>
                     {
-                        return true;
-                    }
+                        if (_wpfConsole.Dispatcher.IsStartCompleted && _wpfConsole.Host != null)
+                        {
+                            loaded = true;
+                        }
+                    });
+                }
+
+                if (!loaded)
+                {
+                    System.Threading.Thread.Sleep(100);
                 }
             }
-            return false;
+            while (!loaded && stopwatch.Elapsed < timeout);
+
+            return loaded;
         }
 
         public bool ConsoleContainsMessage(string message)
@@ -76,10 +75,15 @@ namespace NuGet.Console.TestContract
 
         public void Clear()
         {
-            _wpfConsole.Clear();
+            UIInvoke(() => _wpfConsole.Clear());
         }
 
-        public void RunCommand(string command)
+        public bool RunCommand(string command, TimeSpan timeout)
+        {
+            return WaitForActionComplete(() => RunCommandWithoutWait(command), timeout);
+        }
+
+        public void RunCommandWithoutWait(string command)
         {
             if (!string.IsNullOrEmpty(command))
             {
@@ -101,36 +105,27 @@ namespace NuGet.Console.TestContract
             {
                 return false;
             }
-            var taskCompletionSource = new TaskCompletionSource<bool>();
-            void eventHandler(object s, EventArgs e) => taskCompletionSource.TrySetResult(true);
 
-            (_wpfConsole.Dispatcher as IPrivateConsoleDispatcher).SetExecutingCommand(true);
-            var wpfHost = _wpfConsole.Host;
-            var asynchost = wpfHost as IAsyncHost;
-
-            try
+            using (var semaphore = new ManualResetEventSlim())
             {
-                if (asynchost != null)
-                {
-                    asynchost.ExecuteEnd += eventHandler;
-                }
+                void eventHandler(object s, EventArgs e) => semaphore.Set();
+                var dispatcher = (IPrivateConsoleDispatcher)_wpfConsole.Dispatcher;
+                dispatcher.SetExecutingCommand(true);
+                var asynchost = (IAsyncHost)_wpfConsole.Host;
+                asynchost.ExecuteEnd += eventHandler;
 
-                action();
-
-                if (!taskCompletionSource.Task.Wait(timeout))
+                try
                 {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
+                    // Run
+                    action();
 
-            }
-            finally
-            {
-                asynchost.ExecuteEnd -= eventHandler;
-                (_wpfConsole.Dispatcher as IPrivateConsoleDispatcher).SetExecutingCommand(false);
+                    return semaphore.Wait(timeout);
+                }
+                finally
+                {
+                    asynchost.ExecuteEnd -= eventHandler;
+                    dispatcher.SetExecutingCommand(false);
+                }
             }
         }
 

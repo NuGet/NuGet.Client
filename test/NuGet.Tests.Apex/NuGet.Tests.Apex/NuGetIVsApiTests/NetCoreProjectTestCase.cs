@@ -31,7 +31,10 @@ namespace NuGet.Tests.Apex
                 solutionService.SaveAll();
 
                 solutionService.Build();
-                Assert.True(VisualStudio.HasNoErrorsInErrorList());
+
+                VisualStudio.AssertNoErrors();
+
+                solutionService.SaveAll();
             }
         }
 
@@ -57,8 +60,9 @@ namespace NuGet.Tests.Apex
                 solutionService.SaveAll();
 
                 solutionService.Build();
-                Assert.True(VisualStudio.HasNoErrorsInErrorList());
+
                 Assert.True(project1.References.TryFindReferenceByName("TestProject2", out var result));
+                VisualStudio.AssertNoErrors();
             }
         }
     }
