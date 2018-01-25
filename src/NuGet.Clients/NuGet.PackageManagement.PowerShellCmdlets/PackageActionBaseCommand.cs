@@ -270,7 +270,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (Project.ProjectStyle == ProjectStyle.PackageReference && Source != null)
             {
-                var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectStyle, nameof(Source), Project.ProjectStyle, NuGetProject.GetUniqueNameOrName(Project));
+                var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectStyle, nameof(Source), NuGetProject.GetUniqueNameOrName(Project));
                 Log(MessageLevel.Warning, warning);
             }
         }
