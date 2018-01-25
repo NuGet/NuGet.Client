@@ -1,9 +1,11 @@
 ﻿<#
 .SYNOPSIS
-Script to insert NuGet into CLI and SDK
+Script to insert NuGet into CLI and SDK. 
 
 .DESCRIPTION
 Uses the Personal Access Token of NuGetLurker to automate the insertion process into CLI and SDK
+Note - This script can only be used from a VSTS Release Definition because of the env variables it
+depends on.
 
 .PARAMETER PersonalAccessToken
 PersonalAccessToken of the NuGetLurker account
@@ -48,10 +50,12 @@ $Headers= @{
 
 $Build = ${env:BUILD_BUILDNUMBER}
 $Branch = ${env:BUILD_SOURCEBRANCHNAME}
+$AttemptNum = ${env:RELEASE_ATTEMPTNUMBER}
+$Release = ${env:RELEASE_RELEASENAME}
 $NuGetExePath = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'artifacts', 'VS15', "NuGet.exe")
 
 $ProductVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).ProductVersion
-$CreatedBranchName = "nuget-insertbuild$Build"
+$CreatedBranchName = "$Release-$AttemptNum"
 
 Function UpdateNuGetVersionInXmlFile {
     param(
