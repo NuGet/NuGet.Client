@@ -161,7 +161,7 @@ namespace NuGet.ProjectModel
                    OutputPath == other.OutputPath &&
                    ProjectName == other.ProjectName &&
                    ProjectUniqueName == other.ProjectUniqueName &&
-                   EqualityUtility.SequenceEqualWithNullCheck(Sources, other.Sources) &&
+                   Sources.OrderedEquals(other.Sources, source => source.Source, StringComparer.Ordinal) &&
                    PackagesPath == other.PackagesPath &&
                    EqualityUtility.SequenceEqualWithNullCheck(ConfigFilePaths, other.ConfigFilePaths) &&
                    EqualityUtility.SequenceEqualWithNullCheck(FallbackFolders, other.FallbackFolders) &&
