@@ -58,6 +58,11 @@ namespace NuGet.Console.TestContract
 
         public bool ConsoleContainsMessage(string message)
         {
+            if (!EnsureInitilizeConsole())
+            {
+                return false;
+            }
+
             var snapshot = (_wpfConsole.Content as IWpfTextViewHost).TextView.TextBuffer.CurrentSnapshot;
             for (var i = 0; i < snapshot.LineCount; i++)
             {
@@ -75,6 +80,11 @@ namespace NuGet.Console.TestContract
 
         public void Clear()
         {
+            if (!EnsureInitilizeConsole())
+            {
+                return;
+            }
+
             UIInvoke(() => _wpfConsole.Clear());
         }
 
