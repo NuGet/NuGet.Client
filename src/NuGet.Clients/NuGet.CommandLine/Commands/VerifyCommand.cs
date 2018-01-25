@@ -22,9 +22,6 @@ namespace NuGet.CommandLine
             CertificateFingerprint = new List<string>();
         }
 
-        [Option(typeof(NuGetCommand), "VerifyCommandFingerprintAlgorithmDescription")]
-        public string FingerprintAlgorithm { get; set; }
-
         [Option(typeof(NuGetCommand), "VerifyCommandCertificateFingerprintDescription")]
         public ICollection<string> CertificateFingerprint { get; set; }
 
@@ -44,13 +41,11 @@ namespace NuGet.CommandLine
             }
 
             var signingSpec = SigningSpecifications.V1;
-            var hashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithmFromArgument(FingerprintAlgorithm, nameof(FingerprintAlgorithm), signingSpec);
 
             var verifyArgs = new VerifyArgs()
             {
                 Verifications = GetVerificationTypes(),
                 PackagePath = PackagePath,
-                FingerprintHashAlgorithm = hashAlgorithm,
                 CertificateFingerprint = CertificateFingerprint,
                 Logger = Console
             };
