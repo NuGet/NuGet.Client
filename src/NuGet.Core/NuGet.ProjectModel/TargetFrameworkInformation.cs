@@ -67,7 +67,7 @@ namespace NuGet.ProjectModel
             }
 
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
-                   Dependencies.SequenceEqualWithNullCheck(other.Dependencies) &&
+                   Dependencies.OrderedEquals(other.Dependencies, dependency => dependency.Name, StringComparer.Ordinal) &&
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
                    AssetTargetFallback == other.AssetTargetFallback;
         }
