@@ -38,7 +38,6 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var fingerprintAlgorithm = HashAlgorithmName.SHA256;
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -52,7 +51,7 @@ namespace NuGet.Packaging.FuncTest
 
                 var trustProviders = new[]
                 {
-                    new AllowListVerificationProvider(fingerprintAlgorithm, allowList)
+                    new AllowListVerificationProvider(allowList)
                 };
 
                 var verifier = new PackageSignatureVerifier(trustProviders, SignedPackageVerifierSettings.Default);
@@ -84,7 +83,7 @@ namespace NuGet.Packaging.FuncTest
 
                 var trustProviders = new[]
                 {
-                    new AllowListVerificationProvider(HashAlgorithmName.SHA256, allowList)
+                    new AllowListVerificationProvider(allowList)
                 };
 
                 var verifier = new PackageSignatureVerifier(trustProviders, SignedPackageVerifierSettings.Default);

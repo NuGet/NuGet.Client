@@ -34,7 +34,7 @@ namespace NuGet.Packaging.FuncTest
             _trustedTestCert = _testFixture.TrustedTestCertificate;
             _trustProviders = new List<ISignatureVerificationProvider>()
             {
-                new SignatureTrustAndValidityVerificationProvider(HashAlgorithmName.SHA256)
+                new SignatureTrustAndValidityVerificationProvider()
             };
         }
 
@@ -98,7 +98,7 @@ namespace NuGet.Packaging.FuncTest
                 {
                     var signature = await packageReader.GetSignatureAsync(CancellationToken.None);
                     var invalidSignature = SignedArchiveTestUtility.GenerateInvalidSignature(signature);
-                    var provider = new SignatureTrustAndValidityVerificationProvider(HashAlgorithmName.SHA256);
+                    var provider = new SignatureTrustAndValidityVerificationProvider();
 
                     var result = await provider.GetTrustResultAsync(
                         packageReader,
@@ -123,7 +123,7 @@ namespace NuGet.Packaging.FuncTest
             var setting = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultipleTimestamps: true, allowNoTimestamp: false);
             var signatureProvider = new X509SignatureProvider(timestampProvider: null);
             var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testFixture.Timestamper));
-            var verificationProvider = new SignatureTrustAndValidityVerificationProvider(HashAlgorithmName.SHA256);
+            var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
 
             using (var package = new PackageArchiveReader(nupkg.CreateAsStream(), leaveStreamOpen: false))
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -231,7 +231,7 @@ namespace NuGet.Packaging.FuncTest
                 {
                     var signature = await packageReader.GetSignatureAsync(CancellationToken.None);
                     var signatureWithNoCertificates = SignedArchiveTestUtility.GenerateSignatureWithNoCertificates(signature);
-                    var provider = new SignatureTrustAndValidityVerificationProvider(HashAlgorithmName.SHA256);
+                    var provider = new SignatureTrustAndValidityVerificationProvider();
 
                     var result = await provider.GetTrustResultAsync(
                         packageReader,

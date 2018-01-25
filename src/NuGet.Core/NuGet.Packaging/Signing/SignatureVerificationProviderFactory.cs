@@ -19,8 +19,8 @@ namespace NuGet.Packaging.Signing
             return new List<ISignatureVerificationProvider>()
             {
                 new IntegrityVerificationProvider(),
-                new SignatureTrustAndValidityVerificationProvider(args.FingerprintAlgorithm),
-                new AllowListVerificationProvider(args.FingerprintAlgorithm, args.AllowList)
+                new SignatureTrustAndValidityVerificationProvider(),
+                new AllowListVerificationProvider(args.AllowList)
             };
         }
 
@@ -29,7 +29,7 @@ namespace NuGet.Packaging.Signing
             return new List<ISignatureVerificationProvider>()
             {
                 new IntegrityVerificationProvider(),
-                new SignatureTrustAndValidityVerificationProvider(HashAlgorithmName.SHA256)
+                new SignatureTrustAndValidityVerificationProvider()
             };
         }
     }

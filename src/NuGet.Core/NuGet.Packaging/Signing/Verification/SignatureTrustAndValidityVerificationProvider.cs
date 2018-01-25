@@ -18,9 +18,9 @@ namespace NuGet.Packaging.Signing
 
         private SigningSpecifications _specification => SigningSpecifications.V1;
 
-        public SignatureTrustAndValidityVerificationProvider(HashAlgorithmName fingerprintAlgorithm)
+        public SignatureTrustAndValidityVerificationProvider()
         {
-            _fingerprintAlgorithm = fingerprintAlgorithm;
+            _fingerprintAlgorithm = HashAlgorithmName.SHA256;
         }
 
         public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings, CancellationToken token)

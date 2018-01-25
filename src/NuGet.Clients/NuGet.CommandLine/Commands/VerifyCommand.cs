@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NuGet.Commands;
-using NuGet.Packaging.Signing;
 using static NuGet.Commands.VerifyArgs;
 
 namespace NuGet.CommandLine
@@ -39,8 +38,6 @@ namespace NuGet.CommandLine
             {
                 throw new ArgumentNullException(nameof(PackagePath));
             }
-
-            var signingSpec = SigningSpecifications.V1;
 
             var verifyArgs = new VerifyArgs()
             {

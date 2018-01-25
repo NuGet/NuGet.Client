@@ -11,23 +11,14 @@ namespace NuGet.Packaging.Signing
     {
         public IReadOnlyList<VerificationAllowListEntry> AllowList { get; }
 
-        public HashAlgorithmName FingerprintAlgorithm { get; }
-
         public SignatureVerificationProviderArgs()
-            : this(HashAlgorithmName.SHA256)
         {
-        }
-
-        public SignatureVerificationProviderArgs(HashAlgorithmName fingerprintAlgorithm)
-        {
-            FingerprintAlgorithm = fingerprintAlgorithm;
             AllowList = new List<VerificationAllowListEntry>();
         }
 
-        public SignatureVerificationProviderArgs(IReadOnlyList<VerificationAllowListEntry> allowList, HashAlgorithmName fingerprintAlgorithm)
+        public SignatureVerificationProviderArgs(IReadOnlyList<VerificationAllowListEntry> allowList)
         {
             AllowList = allowList ?? throw new ArgumentNullException(nameof(allowList));
-            FingerprintAlgorithm = fingerprintAlgorithm;
         }
     }
 }

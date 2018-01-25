@@ -183,7 +183,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 {
                     _trustProviders = new List<ISignatureVerificationProvider>()
                     {
-                        new SignatureTrustAndValidityVerificationProvider(HashAlgorithmName.SHA256),
+                        new SignatureTrustAndValidityVerificationProvider(),
                         new IntegrityVerificationProvider()
                     };
                 }
