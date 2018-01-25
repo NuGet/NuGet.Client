@@ -14,9 +14,9 @@ namespace NuGet.Packaging.Signing
     public class AllowListVerificationProvider : ISignatureVerificationProvider
     {
         private HashAlgorithmName _fingerprintAlgorithm;
-        private IList<VerificationAllowListEntry> _allowList;
+        private IReadOnlyList<VerificationAllowListEntry> _allowList;
 
-        public AllowListVerificationProvider(HashAlgorithmName fingerprintAlgorithm, IList<VerificationAllowListEntry> allowList)
+        public AllowListVerificationProvider(HashAlgorithmName fingerprintAlgorithm, IReadOnlyList<VerificationAllowListEntry> allowList)
         {
             _fingerprintAlgorithm = fingerprintAlgorithm;
             _allowList = allowList;
