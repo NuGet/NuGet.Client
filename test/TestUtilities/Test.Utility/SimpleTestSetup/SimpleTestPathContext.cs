@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Xml.Linq;
 
 namespace NuGet.Test.Utility
 {
@@ -12,23 +11,55 @@ namespace NuGet.Test.Utility
     /// </summary>
     public class SimpleTestPathContext : IDisposable
     {
+        /// <summary>
+        /// Root working directory
+        /// </summary>
         public TestDirectory WorkingDirectory { get; }
 
+        /// <summary>
+        /// Solution folder
+        /// </summary>
         public string SolutionRoot { get; }
 
+        /// <summary>
+        /// PackageReference install location
+        /// </summary>
         public string UserPackagesFolder { get; }
 
+        /// <summary>
+        /// Packages.config install location
+        /// </summary>
         public string PackagesV2 { get; }
 
+        /// <summary>
+        /// NuGet.Config path
+        /// </summary>
         public string NuGetConfig { get; }
 
+        /// <summary>
+        /// Local package source
+        /// </summary>
         public string PackageSource { get; }
 
+        /// <summary>
+        /// Fallback folder
+        /// </summary>
         public string FallbackFolder { get; }
 
+        /// <summary>
+        /// Http cache location
+        /// </summary>
         public string HttpCacheFolder { get; }
 
+        /// <summary>
+        /// If false the folder will be left after the test finishes
+        /// </summary>
         public bool CleanUp { get; set; } = true;
+
+        /// <summary>
+        /// settings from <see cref="NuGetConfig"/>
+        /// </summary>
+        public SimpleTestSettingsContext Settings { get; }
 
         public SimpleTestPathContext()
         {
@@ -47,49 +78,8 @@ namespace NuGet.Test.Utility
             Directory.CreateDirectory(PackageSource);
             Directory.CreateDirectory(FallbackFolder);
 
-            CreateNuGetConfig();
-        }
-
-        private void CreateNuGetConfig()
-        {
-            var doc = new XDocument();
-            var configuration = new XElement(XName.Get("configuration"));
-            doc.Add(configuration);
-
-            var config = new XElement(XName.Get("config"));
-            configuration.Add(config);
-
-            var globalFolder = new XElement(XName.Get("add"));
-            globalFolder.Add(new XAttribute(XName.Get("key"), "globalPackagesFolder"));
-            globalFolder.Add(new XAttribute(XName.Get("value"), UserPackagesFolder));
-            config.Add(globalFolder);
-
-            var solutionDir = new XElement(XName.Get("add"));
-            solutionDir.Add(new XAttribute(XName.Get("key"), "repositoryPath"));
-            solutionDir.Add(new XAttribute(XName.Get("value"), PackagesV2));
-            config.Add(solutionDir);
-
-            var packageSources = new XElement(XName.Get("packageSources"));
-            configuration.Add(packageSources);
-            packageSources.Add(new XElement(XName.Get("clear")));
-
-            var sourceEntry = new XElement(XName.Get("add"));
-            sourceEntry.Add(new XAttribute(XName.Get("key"), "source"));
-            sourceEntry.Add(new XAttribute(XName.Get("value"), PackageSource));
-            packageSources.Add(sourceEntry);
-
-            var disabledSources = new XElement(XName.Get("disabledPackageSources"));
-            configuration.Add(disabledSources);
-            disabledSources.Add(new XElement(XName.Get("clear")));
-
-            var fallbackFolders = new XElement(XName.Get("fallbackPackageFolders"));
-            configuration.Add(fallbackFolders);
-            var fallbackEntry = new XElement(XName.Get("add"));
-            fallbackEntry.Add(new XAttribute(XName.Get("key"), "shared"));
-            fallbackEntry.Add(new XAttribute(XName.Get("value"), FallbackFolder));
-            fallbackFolders.Add(fallbackEntry);
-
-            File.WriteAllText(NuGetConfig, doc.ToString());
+            Settings = new SimpleTestSettingsContext(NuGetConfig, UserPackagesFolder, PackagesV2, FallbackFolder, PackageSource);
+            Settings.Save();
         }
 
         public void Dispose()
