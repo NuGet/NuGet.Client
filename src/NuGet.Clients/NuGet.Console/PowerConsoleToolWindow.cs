@@ -137,6 +137,11 @@ namespace NuGetConsole.Implementation
             }
         }
 
+        /// <summary>
+        /// Internal for testing, true when the console has been loaded.
+        /// </summary>
+        public bool IsLoaded { get; private set; }
+
         [SuppressMessage(
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",
@@ -159,7 +164,11 @@ namespace NuGetConsole.Implementation
             _loadTask = ThreadHelper.JoinableTaskFactory.StartOnIdle(
                 async () =>
                 {
+                    // Load
                     await Task.Run(LoadConsoleEditorAsync);
+
+                    // Mark as complete
+                    IsLoaded = true;
                 });
         }
 

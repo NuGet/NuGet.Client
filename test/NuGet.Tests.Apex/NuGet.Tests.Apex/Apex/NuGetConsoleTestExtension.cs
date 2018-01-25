@@ -22,30 +22,25 @@ namespace NuGet.Tests.Apex
         public bool InstallPackageFromPMC(string packageId, string version)
         {
             var command = $"Install-Package {packageId} -ProjectName {_projectName} -Version {version} ";
-            return _pmConsole.WaitForActionComplete(() => _pmConsole.RunCommand(command), _timeout);
+            return _pmConsole.RunCommand(command, _timeout);
         }
 
         public bool InstallPackageFromPMC(string packageId, string version, string source)
         {
             var command = $"Install-Package {packageId} -ProjectName {_projectName} -Version {version} -Source {source}";
-            return _pmConsole.WaitForActionComplete(() => _pmConsole.RunCommand(command), _timeout);
+            return _pmConsole.RunCommand(command, _timeout);
         }
 
         public bool UninstallPackageFromPMC(string packageId)
         {
             var command = $"Uninstall-Package {packageId} -ProjectName {_projectName}";
-            return _pmConsole.WaitForActionComplete(() => _pmConsole.RunCommand(command), _timeout);
+            return _pmConsole.RunCommand(command, _timeout);
         }
 
         public bool UpdatePackageFromPMC(string packageId, string version)
         {
             var command = $"Update-Package {packageId} -ProjectName {_projectName} -Version {version}";
-            return _pmConsole.WaitForActionComplete(() => _pmConsole.RunCommand(command), _timeout);
-        }
-
-        public bool IsPackageInstalled(string packageId, string version)
-        {
-            return _pmConsole.IsPackageInstalled(_projectName, packageId, version);
+            return _pmConsole.RunCommand(command, _timeout);
         }
 
         public bool IsMessageFoundInPMC(string message)

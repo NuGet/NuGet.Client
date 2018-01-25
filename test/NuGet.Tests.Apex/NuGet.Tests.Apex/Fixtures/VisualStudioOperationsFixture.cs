@@ -56,8 +56,16 @@ namespace NuGet.Tests.Apex
                         }
                     }
                     _visualStudioHostConfiguration.AddCompositionAssembly(Assembly.GetExecutingAssembly().Location);
-
                     _visualStudioHostConfiguration.InProcessHostConstraints = new List<ITypeConstraint>() { new NuGetTypeConstraint() };
+
+                    // Use the same environment to avoid elevation
+                    _visualStudioHostConfiguration.InheritProcessEnvironment = true;
+
+                    // Launch in the experimental instance of VS
+                    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_TEST_APEX_EXP")))
+                    {
+                        _visualStudioHostConfiguration.CommandLineArguments += " /rootSuffix Exp";
+                    }
                 }
                 return _visualStudioHostConfiguration;
             }

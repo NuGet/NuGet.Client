@@ -140,24 +140,8 @@ namespace NuGet.Tests.Apex
 
         public bool EnsurePackageManagerConsoleIsOpen()
         {
-            IVsWindowFrame window = null;
-            var powerConsoleToolWindowGUID = new Guid("0AD07096-BBA9-4900-A651-0598D26F6D24");
-            var stopwatch = Stopwatch.StartNew();
-            var timeout = TimeSpan.FromMinutes(5);
-
-            var found = UIShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fForceCreate, powerConsoleToolWindowGUID, out window);
-            do
-            {
-                if (found == VSConstants.S_OK && window != null) {
-                    window.Show();
-                    return true;
-                }
-                found = UIShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fForceCreate, powerConsoleToolWindowGUID, out window);
-
-                System.Threading.Thread.Sleep(100);
-            }
-            while (stopwatch.Elapsed < timeout);
-            return false;
+            var pmconsole = NuGetApexConsoleTestService.GetApexTestConsole();
+            return pmconsole != null;
         }
     }
 }

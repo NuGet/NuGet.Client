@@ -33,8 +33,7 @@ namespace NuGet.Tests.Apex
             uiwindow.SeachPackgeFromUI("newtonsoft.json");
 
             // Assert
-            Assert.True(VisualStudio.HasNoErrorsInErrorList());
-            Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+            VisualStudio.AssertNoErrors();
         }
 
         [StaFact]
@@ -54,11 +53,11 @@ namespace NuGet.Tests.Apex
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("newtonsoft.json","9.0.1");
+            project.Build();
 
             // Assert
-            Assert.True(VisualStudio.HasNoErrorsInErrorList());
-            Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
             Assert.True(uiwindow.IsPackageInstalled("newtonsoft.json", "9.0.1"));
+            VisualStudio.AssertNoErrors();
         }
 
         [StaFact]
@@ -79,22 +78,22 @@ namespace NuGet.Tests.Apex
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(nuProject);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
+            project.Build();
 
             // Assert
-            Assert.True(VisualStudio.HasNoErrorsInErrorList());
-            Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+            VisualStudio.AssertNoErrors();
 
             VisualStudio.ClearOutputWindow();
             VisualStudio.SelectProjectInSolutionExplorer(project.Name);
             dte.ExecuteCommand("Project.ManageNuGetPackages");
             var uiwindow2 = nugetTestService.GetUIWindowfromProject(project);
             uiwindow2.InstallPackageFromUI("newtonsoft.json", "9.0.1");
+            project.Build();
 
             // Assert
-            Assert.True(VisualStudio.HasNoErrorsInErrorList());
-            Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
             Assert.True(uiwindow.IsPackageInstalled("newtonsoft.json", "9.0.1"));
             Assert.True(uiwindow2.IsPackageInstalled("newtonsoft.json", "9.0.1"));
+            VisualStudio.AssertNoErrors();
         }
 
         [StaFact]
@@ -107,24 +106,25 @@ namespace NuGet.Tests.Apex
 
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
-            VisualStudio.ClearOutputWindow();
+            VisualStudio.ClearWindows();
 
             // Act
             dte.ExecuteCommand("Project.ManageNuGetPackages");
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
+            project.Build();
 
             // Assert
             Assert.True(uiwindow.IsPackageInstalled("newtonsoft.json", "9.0.1"));
 
             // Act
             uiwindow.UninstallPackageFromUI("newtonsoft.json");
+            project.Build();
 
             // Assert
-            VisualStudio.HasNoErrorsInErrorList();
-            VisualStudio.HasNoErrorsInOutputWindows();
             Assert.False(uiwindow.IsPackageInstalled("newtonsoft.json", "9.0.1"));
+            VisualStudio.AssertNoErrors();
         }
 
         [StaFact]
@@ -137,27 +137,27 @@ namespace NuGet.Tests.Apex
 
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
-            VisualStudio.ClearOutputWindow();
+            VisualStudio.ClearWindows();
 
             // Act
             dte.ExecuteCommand("Project.ManageNuGetPackages");
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
+            project.Build();
 
             // Assert
-            VisualStudio.HasNoErrorsInErrorList();
-            VisualStudio.HasNoErrorsInOutputWindows();
             Assert.True(uiwindow.IsPackageInstalled("newtonsoft.json", "9.0.1"));
+            VisualStudio.AssertNoErrors();
 
             // Act
-            VisualStudio.ClearOutputWindow();
+            VisualStudio.ClearWindows();
             uiwindow.UpdatePackageFromUI("newtonsoft.json", "10.0.3");
+            project.Build();
 
             // Assert
-            VisualStudio.HasNoErrorsInErrorList();
-            VisualStudio.HasNoErrorsInOutputWindows();
             Assert.True(uiwindow.IsPackageInstalled("newtonsoft.json", "10.0.3"));
+            VisualStudio.AssertNoErrors();
         }
     }
 }
