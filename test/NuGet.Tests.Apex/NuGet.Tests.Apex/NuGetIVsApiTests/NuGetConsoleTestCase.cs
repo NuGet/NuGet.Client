@@ -284,5 +284,52 @@ namespace NuGet.Tests.Apex
                 yield return new object[] { ProjectTemplate.NetStandardClassLib };
             }
         }
+
+        [NuGetWpfTheory]
+        [InlineData(ProjectTemplate.ClassLibrary, false)]
+        [InlineData(ProjectTemplate.NetCoreConsoleApp, true)]
+        [InlineData(ProjectTemplate.NetStandardClassLib, true)]
+        public void InstallAndUpdatePackageWithSourceParameterWarns(ProjectTemplate projectTemplate, bool warns)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                EnsureVisualStudioHost();
+                var solutionService = VisualStudio.Get<SolutionService>();
+
+                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
+                var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
+                project.Build();
+
+                var nugetTestService = GetNuGetTestService();
+                Assert.True(nugetTestService.EnsurePackageManagerConsoleIsOpen());
+
+                var nugetConsole = nugetTestService.GetPackageManagerConsole(project.UniqueName);
+
+                var packageName = "newtonsoft.json";
+                var packageVersion1 = "9.0.1";
+                var packageVersion2 = "10.0.3";
+                var source = "https://api.nuget.org/v3/index.json";
+
+                Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion1, source));
+                Assert.Equal(warns, nugetConsole.IsMessageFoundInPMC($"The 'Source' parameter is not respected for the 'PackageReference' based project(s) {project.UniqueName}. The enabled sources in your NuGet configuration will be used"));
+
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion1));
+                project.Build();
+                Assert.True(VisualStudio.HasNoErrorsInErrorList());
+                Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+
+                Assert.True(nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2, source));
+                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion2));
+                Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion1));
+                project.Build();
+
+                Assert.True(VisualStudio.HasNoErrorsInErrorList());
+                Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+
+                nugetConsole.Clear();
+                solutionService.Save();
+            }
+        }
     }
 }
