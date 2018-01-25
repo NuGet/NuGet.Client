@@ -48,5 +48,17 @@ namespace NuGet.Tests.Apex
             var project = NugetPackageManager.Dte.Solution.Projects.Item(projectName);
             return IsFalse(NugetPackageManager.InstallerServices.IsPackageInstalled(project, packageName), "Expected NuGet package {0} to not be installed in project {1}.", packageName, project.Name);
         }
+
+        /// <summary>
+        /// Validate whether specific version of a NuGet package is not installed
+        /// </summary>
+        /// <param name="project">Project name</param>
+        /// <param name="packageName">NuGet package name</param>
+        /// <returns>True if the package is not installed; otherwise false</returns>
+        public bool PackageIsNotInstalled(string projectName, string packageName, string packageVersion)
+        {
+            var project = NugetPackageManager.Dte.Solution.Projects.Item(projectName);
+            return IsFalse(NugetPackageManager.InstallerServices.IsPackageInstalledEx(project, packageName, packageVersion), "Expected NuGet package {0}-{1} to not be installed in project {1}.", packageName, packageVersion, project.Name);
+        }
     }
 }

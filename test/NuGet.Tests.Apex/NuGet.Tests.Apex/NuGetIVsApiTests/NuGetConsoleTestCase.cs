@@ -34,7 +34,7 @@ namespace NuGet.Tests.Apex
                 EnsureVisualStudioHost();
                 var solutionService = VisualStudio.Get<SolutionService>();
 
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
 
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
@@ -63,7 +63,7 @@ namespace NuGet.Tests.Apex
                 // Arrange
                 EnsureVisualStudioHost();
                 var solutionService = VisualStudio.Get<SolutionService>();
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
 
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
@@ -101,7 +101,7 @@ namespace NuGet.Tests.Apex
 
                 EnsureVisualStudioHost();
                 var solutionService = VisualStudio.Get<SolutionService>();
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
                 var nugetConsole = GetConsole(project);
 
                 var packageName = "newtonsoft.json";
@@ -130,7 +130,7 @@ namespace NuGet.Tests.Apex
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
 
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
@@ -165,7 +165,7 @@ namespace NuGet.Tests.Apex
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
 
                 var packageName = "TestPackage";
                 var packageVersion1 = "1.0.0";
@@ -202,7 +202,7 @@ namespace NuGet.Tests.Apex
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
 
                 var packageName1 = "TestPackage1";
                 var packageVersion1 = "1.0.0";
@@ -238,7 +238,7 @@ namespace NuGet.Tests.Apex
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
 
                 var packageName1 = "TestPackage1";
                 var packageVersion1 = "1.0.0";
@@ -282,7 +282,7 @@ namespace NuGet.Tests.Apex
                 var solutionService = VisualStudio.Get<SolutionService>();
 
                 solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
 
                 var packageName = "TestPackage";
                 var packageVersion1 = "1.0.0";
@@ -401,29 +401,6 @@ namespace NuGet.Tests.Apex
 
                 solutionService.Save();
             }
-        }
-
-        private NuGetConsoleTestExtension GetConsole(ProjectTestExtension project)
-        {
-            var nugetTestService = GetNuGetTestService();
-            nugetTestService.EnsurePackageManagerConsoleIsOpen().Should().BeTrue("Console was opened");
-            var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
-
-            // Clear everything before starting
-            nugetConsole.Clear();
-            VisualStudio.ClearWindows();
-
-            return nugetConsole;
-        }
-
-        private static ProjectTestExtension CreateAndInitProject(ProjectTemplate projectTemplate, SimpleTestPathContext pathContext, SolutionService solutionService)
-        {
-            solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-            var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
-            solutionService.Save();
-            project.Build();
-
-            return project;
         }
 
         public static IEnumerable<object[]> GetNetCoreTemplates()
