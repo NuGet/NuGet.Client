@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -21,6 +22,11 @@ namespace NuGet.Build.Tasks
         /// </summary>
         [Required]
         public string CurrentProjectTargetFramework { get; set; }
+
+        /// <summary>
+        /// List of target frameworks to be used as Asset Target Fallback frameworks.
+        /// </summary>
+        public string[] AssetTargetFallbackFrameworks { get; set; }
 
         /// <summary>
         /// The project references for property lookup.
@@ -48,11 +54,39 @@ namespace NuGet.Build.Tasks
                 return !Log.HasLoggedErrors;
             }
 
-            var frameworkToMatch = NuGetFramework.Parse(CurrentProjectTargetFramework);
-            if (frameworkToMatch.IsUnsupported)
+            NuGetFramework frameworkToMatch;
+            var currentProjectFramework = NuGetFramework.Parse(CurrentProjectTargetFramework);
+
+            // validate current project framework
+            if (currentProjectFramework.IsUnsupported)
             {
-                log.LogError(string.Format(Strings.UnsupportedTargetFramework, CurrentProjectTargetFramework));
+                log.LogError(string.Format(Strings.UnsupportedTargetFramework, currentProjectFramework));
                 return false;
+            }
+
+            if (AssetTargetFallbackFrameworks != null ||
+                AssetTargetFallbackFrameworks.Length > 0)
+            {
+                var fallbackFrameworks = new List<NuGetFramework>();
+                foreach(var assetTargetFallbackFramework in AssetTargetFallbackFrameworks)
+                {
+                    var framework = NuGetFramework.Parse(assetTargetFallbackFramework);
+
+                    // validate current project framework
+                    if (framework.IsUnsupported)
+                    {
+                        log.LogError(string.Format(Strings.UnsupportedTargetFramework, currentProjectFramework));
+                        return false;
+                    }
+
+                    fallbackFrameworks.Add(framework);
+                }
+
+                frameworkToMatch = new AssetTargetFallbackFramework(currentProjectFramework, fallbackFrameworks.AsReadOnly());
+            }
+            else
+            {
+                frameworkToMatch = currentProjectFramework;
             }
 
             AssignedProjects = new ITaskItem[AnnotatedProjectReferences.Length];
