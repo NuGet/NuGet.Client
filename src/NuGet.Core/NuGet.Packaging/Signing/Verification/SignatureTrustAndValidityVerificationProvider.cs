@@ -42,18 +42,36 @@ namespace NuGet.Packaging.Signing
             Timestamp validTimestamp;
             try
             {
-                validTimestamp = GetValidTimestamp(signature, !settings.FailWithMultipleTimestamps, !settings.AllowIgnoreTimestamp, !settings.AllowNoTimestamp, issues);
+                validTimestamp = GetValidTimestamp(
+                    signature,
+                    !settings.AllowMultipleTimestamps,
+                    !settings.AllowIgnoreTimestamp,
+                    !settings.AllowNoTimestamp,
+                    !settings.AllowUnknownRevocation,
+                    issues);
             }
             catch (TimestampException)
             {
                 return new SignedPackageVerificationResult(SignatureVerificationStatus.Invalid, signature, issues);
             }
 
-            var status = VerifySignature(signature, validTimestamp, !settings.AllowUntrusted, issues);
+            var status = VerifySignature(
+                signature,
+                validTimestamp,
+                !settings.AllowUntrusted,
+                !settings.AllowUnknownRevocation,
+                issues);
+
             return new SignedPackageVerificationResult(status, signature, issues);
         }
 
-        private Timestamp GetValidTimestamp(Signature signature, bool ignoreMultipleTimestamps, bool treatIssuesAsErrors, bool failIfNoTimestamp, List<SignatureLog> issues)
+        private Timestamp GetValidTimestamp(
+            Signature signature,
+            bool failIfMultipleTimestamps,
+            bool treatIssuesAsErrors,
+            bool failIfNoTimestamp,
+            bool failIfUnknownRevocation,
+            List<SignatureLog> issues)
         {
             var timestamps = signature.Timestamps;
 
@@ -66,7 +84,7 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            if (timestamps.Count > 1 && !ignoreMultipleTimestamps)
+            if (timestamps.Count > 1 && failIfMultipleTimestamps)
             {
                 issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3000, Strings.ErrorMultipleTimestamps));
                 throw new TimestampException();
@@ -79,7 +97,7 @@ namespace NuGet.Packaging.Signing
                 {
                     var signatureHash = NativeCms.GetSignatureValueHash(signature.SignatureContent.HashAlgorithm, authorSignatureNativeCms);
 
-                    if (!IsTimestampValid(timestamp, signatureHash, treatIssuesAsErrors, issues) && treatIssuesAsErrors)
+                    if (!IsTimestampValid(timestamp, signatureHash, treatIssuesAsErrors, failIfUnknownRevocation, issues) && treatIssuesAsErrors)
                     {
                         throw new TimestampException();
                     }
@@ -89,7 +107,12 @@ namespace NuGet.Packaging.Signing
             return timestamp;
         }
 
-        private SignatureVerificationStatus VerifySignature(Signature signature, Timestamp timestamp, bool treatIssuesAsErrors, List<SignatureLog> issues)
+        private SignatureVerificationStatus VerifySignature(
+            Signature signature,
+            Timestamp timestamp,
+            bool treatIssuesAsErrors,
+            bool failIfUnknownRevocation,
+            List<SignatureLog> issues)
         {
             var certificate = signature.SignerInfo.Certificate;
             if (certificate == null)
@@ -166,10 +189,10 @@ namespace NuGet.Packaging.Signing
                             {
                                 foreach (var message in messages)
                                 {
-                                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3018, message));
+                                    issues.Add(SignatureLog.Issue(failIfUnknownRevocation, NuGetLogCode.NU3018, message));
                                 }
                             }
-                            else if (!chainBuildingHasIssues)
+                            if (!chainBuildingHasIssues && (!treatIssuesAsErrors || !failIfUnknownRevocation))
                             {
                                 return SignatureVerificationStatus.Trusted;
                             }
@@ -189,12 +212,12 @@ namespace NuGet.Packaging.Signing
             return SignatureVerificationStatus.Untrusted;
         }
 
-        /// <summary>
-        /// Validates a SignedCms object containing a timestamp response.
-        /// </summary>
-        /// <param name="timestampCms">SignedCms response from the timestamp authority.</param>
-        /// <param name="messageHash">Message hash that was signed and timestamped.</param>
-        private bool IsTimestampValid(Timestamp timestamp, byte[] messageHash, bool treatIssuesAsErrors, List<SignatureLog> issues)
+        private bool IsTimestampValid(
+            Timestamp timestamp,
+            byte[] messageHash,
+            bool treatIssuesAsErrors,
+            bool failIfUnknownRevocation,
+            List<SignatureLog> issues)
         {
             var timestamperCertificate = timestamp.SignerInfo.Certificate;
             if (timestamperCertificate == null)
@@ -259,10 +282,10 @@ namespace NuGet.Packaging.Signing
                         {
                             foreach (var message in messages)
                             {
-                                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3028, message));
+                                issues.Add(SignatureLog.Issue(failIfUnknownRevocation, NuGetLogCode.NU3028, message));
                             }
                         }
-                        else if (!chainBuildingHasIssues)
+                        if (!chainBuildingHasIssues && (!treatIssuesAsErrors || !failIfUnknownRevocation))
                         {
                             return true;
                         }

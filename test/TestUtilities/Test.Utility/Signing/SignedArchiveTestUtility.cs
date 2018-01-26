@@ -8,6 +8,7 @@ using System.IO;
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -299,6 +300,54 @@ namespace Test.Utility.Signing
             }
 
             return -1;
+        }
+
+#if IS_DESKTOP
+        public static Signature GenerateInvalidSignature(Signature signature)
+        {
+            var hash = Encoding.UTF8.GetBytes(signature.SignatureContent.HashValue);
+            var newHash = Encoding.UTF8.GetBytes(new string('0', hash.Length));
+
+            var bytes = signature.SignedCms.Encode();
+            var newBytes = FindAndReplaceSequence(bytes, hash, newHash);
+
+            return Signature.Load(newBytes);
+        }
+#endif
+
+        private static byte[] FindAndReplaceSequence(byte[] bytes, byte[] find, byte[] replace)
+        {
+            var found = false;
+            var from = -1;
+
+            for (var i = 0; !found && i < bytes.Length - find.Length; ++i)
+            {
+                for (var j = 0; j < find.Length; ++j)
+                {
+                    if (bytes[i + j] != find[j])
+                    {
+                        break;
+                    }
+
+                    if (j == find.Length - 1)
+                    {
+                        from = i;
+                        found = true;
+                    }
+                }
+            }
+
+            if (!found)
+            {
+                throw new Exception("Byte sequence not found.");
+            }
+
+            var byteList = new List<byte>(bytes);
+
+            byteList.RemoveRange(from, find.Length);
+            byteList.InsertRange(from, replace);
+
+            return byteList.ToArray();
         }
 
         private static Task ShiftSignatureMetadata(SigningSpecifications spec, BinaryReader reader, BinaryWriter writer, int centralDirectoryIndex, int fileHeaderIndex)
