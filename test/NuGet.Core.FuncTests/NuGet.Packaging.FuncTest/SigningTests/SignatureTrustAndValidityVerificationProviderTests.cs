@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -115,12 +116,142 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
+        public async Task GetTrustResultAsync_IgnoresUnavailableRevocationInformationInVSClient()
+        {
+            // Arrange
+            var setting = SignedPackageVerifierSettings.VSClientDefaultPolicy;
+
+            // Act & Assert
+            var matchingIssues = await VerifyUnavailableRevocationInfo(
+                SignatureVerificationStatus.Trusted,
+                LogLevel.Warning,
+                setting);
+
+            Assert.Empty(matchingIssues);
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_ErrorsOnUnavailableRevocationInformationInVerify()
+        {
+            // Arrange
+            var setting = SignedPackageVerifierSettings.VerifyCommandDefaultPolicy;
+
+            // Act & Assert
+            var matchingIssues = await VerifyUnavailableRevocationInfo(
+                SignatureVerificationStatus.Untrusted,
+                LogLevel.Error,
+                setting);
+
+            Assert.Equal(2, matchingIssues.Count);
+            Assert.Equal(NuGetLogCode.NU3018, matchingIssues[0].Code);
+            Assert.Equal(
+                "The revocation function was unable to check revocation because the revocation server was offline.",
+                matchingIssues[0].Message);
+            Assert.Equal(NuGetLogCode.NU3018, matchingIssues[1].Code);
+            Assert.Equal(
+                "The revocation function was unable to check revocation for the certificate.",
+                matchingIssues[1].Message);
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_IgnoresUnknownRevocationWhenAllowUntrustued()
+        {
+            // Arrange
+            var setting = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowUntrusted: true,
+                allowIgnoreTimestamp: false,
+                allowMultipleTimestamps: false,
+                allowNoTimestamp: false,
+                allowUnknownRevocation: true);
+
+            // Act & Assert
+            var matchingIssues = await VerifyUnavailableRevocationInfo(
+                SignatureVerificationStatus.Trusted,
+                LogLevel.Warning,
+                setting);
+
+            Assert.Empty(matchingIssues);
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WarnsOnUnknownRevocationWhenSpecified()
+        {
+            // Arrange
+            var setting = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: false,
+                allowMultipleTimestamps: false,
+                allowNoTimestamp: false,
+                allowUnknownRevocation: true);
+
+            // Act & Assert
+            var matchingIssues = await VerifyUnavailableRevocationInfo(
+                SignatureVerificationStatus.Trusted,
+                LogLevel.Warning,
+                setting);
+
+            Assert.Equal(2, matchingIssues.Count);
+            Assert.Equal(NuGetLogCode.NU3018, matchingIssues[0].Code);
+            Assert.Equal(
+                "The revocation function was unable to check revocation because the revocation server was offline.",
+                matchingIssues[0].Message);
+            Assert.Equal(NuGetLogCode.NU3018, matchingIssues[1].Code);
+            Assert.Equal(
+                "The revocation function was unable to check revocation for the certificate.",
+                matchingIssues[1].Message);
+        }
+
+        private static async Task<List<SignatureLog>> VerifyUnavailableRevocationInfo(
+            SignatureVerificationStatus expectedStatus,
+            LogLevel expectedLogLevel,
+            SignedPackageVerifierSettings setting)
+        {
+            var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
+
+            using (var nupkgStream = new MemoryStream(GetResource("UnavailableCrlPackage.nupkg")))
+            using (var package = new PackageArchiveReader(nupkgStream, leaveStreamOpen: false))
+            {
+                // Read a signature that is valid in every way except that the CRL information is unavailable.
+                var signature = await package.GetSignatureAsync(CancellationToken.None);
+                var rootCertificate = SignatureUtility.GetPrimarySignatureCertificates(signature).Last();
+
+                // Trust the root CA of the signing certificate.
+                using (var testCertificate = new TrustedTestCert<X509Certificate2>(
+                    rootCertificate,
+                    x => x,
+                    StoreName.Root,
+                    StoreLocation.LocalMachine,
+                    maximumValidityPeriod: TimeSpan.MaxValue))
+                {
+                    // Act
+                    var result = await verificationProvider.GetTrustResultAsync(package, signature, setting, CancellationToken.None);
+
+                    // Assert
+                    Assert.Equal(expectedStatus, result.Trust);
+                    return result
+                        .Issues
+                        .Where(x => x.Level >= expectedLogLevel)
+                        .OrderBy(x => x.Message)
+                        .ToList();
+                }
+            }
+        }
+
+        [CIOnlyFact]
         public async Task GetTrustResultAsync_SettingsRequireExactlyOneTimestamp_MultipleTimestamps_Fails()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
             var testLogger = new TestLogger();
-            var setting = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultipleTimestamps: true, allowNoTimestamp: false);
+            var setting = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: false,
+                allowMultipleTimestamps: false,
+                allowNoTimestamp: false,
+                allowUnknownRevocation: false);
             var signatureProvider = new X509SignatureProvider(timestampProvider: null);
             var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testFixture.Timestamper));
             var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
@@ -156,8 +287,9 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowUntrusted: false,
                 allowIgnoreTimestamp: false,
-                failWithMultipleTimestamps: false,
-                allowNoTimestamp: true);
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: true,
+                allowUnknownRevocation: false);
 
             using (var directory = TestDirectory.Create())
             using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -196,7 +328,13 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var setting = new SignedPackageVerifierSettings(allowUnsigned: false, allowUntrusted: false, allowIgnoreTimestamp: false, failWithMultipleTimestamps: false, allowNoTimestamp: false);
+            var setting = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: false,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: false,
+                allowUnknownRevocation: false);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -245,6 +383,13 @@ namespace NuGet.Packaging.FuncTest
                     Assert.Equal("The primary signature does not have a signing certificate.", issue.Message);
                 }
             }
+        }
+        
+        private static byte[] GetResource(string name)
+        {
+            return ResourceTestUtility.GetResourceBytes(
+                $"NuGet.Packaging.FuncTest.compiler.resources.{name}",
+                typeof(SignatureTrustAndValidityVerificationProviderTests));
         }
     }
 }
