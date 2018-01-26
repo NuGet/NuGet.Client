@@ -12,9 +12,9 @@ namespace NuGet.Tests.Apex
     {
 
         private VisualStudioHost _visualStudio;
-        private SolutionService _solutionService;
         private SimpleTestPathContext _pathContext;
 
+        public SolutionService SolutionService { get; }
         public ProjectTestExtension Project { get; }
         public string PackageSource => _pathContext.PackageSource;
 
@@ -23,15 +23,15 @@ namespace NuGet.Tests.Apex
         {
             _pathContext = new SimpleTestPathContext();
             _visualStudio = visualStudio;
-            _solutionService = _visualStudio.Get<SolutionService>();
+            SolutionService = _visualStudio.Get<SolutionService>();
 
-            Project = Utils.CreateAndInitProject(projectTemplate, _pathContext, _solutionService);
+            Project = Utils.CreateAndInitProject(projectTemplate, _pathContext, SolutionService);
         }
 
         public void Dispose()
         {
-            _solutionService.Save();
-            _solutionService.Close();
+            SolutionService.Save();
+            SolutionService.Close();
 
             _pathContext.Dispose();
         }

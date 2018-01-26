@@ -153,16 +153,6 @@ namespace NuGet.Tests.Apex
 
         internal static ProjectTestExtension CreateAndInitProject(ProjectTemplate projectTemplate, SimpleTestPathContext pathContext, SolutionService solutionService)
         {
-            //FrameworkName framework;
-            //if (projectTemplate == ProjectTemplate.NetCoreConsoleApp)
-            //{
-            //    framework = new FrameworkName(".NETCoreApp,Version=v2.0");
-            //}
-            //else
-            //{
-            //    framework = new FrameworkName(".NETFramework,Version=v4.6");
-            //}
-
             solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
             var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
             solutionService.Save();

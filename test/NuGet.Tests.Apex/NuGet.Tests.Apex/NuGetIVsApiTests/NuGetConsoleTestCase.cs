@@ -379,11 +379,13 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
+        // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
             for (var i = 0; i < Utils.GetIterations(); i++)
             {
-                yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
+                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
                 yield return new object[] { ProjectTemplate.NetStandardClassLib };
             }
         }
@@ -392,7 +394,7 @@ namespace NuGet.Tests.Apex
         {
             for (var i = 0; i < Utils.GetIterations(); i++)
             {
-                yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
+                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
                 yield return new object[] { ProjectTemplate.NetStandardClassLib };
             }
         }
@@ -402,7 +404,7 @@ namespace NuGet.Tests.Apex
             for (var i = 0; i < Utils.GetIterations(); i++)
             {
                 yield return new object[] { ProjectTemplate.ClassLibrary };
-                yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
+                yield return new object[] { ProjectTemplate.NetStandardClassLib };
             }
         }
     }
