@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -26,30 +27,24 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetTemplates))]
         public void InstallSignedPackageFromPMC(ProjectTemplate projectTemplate)
         {
+            // Arrange
+            EnsureVisualStudioHost();
+
             var signedPackage = _fixture.SignedTestPackage;
 
-            using (var pathContext = new SimpleTestPathContext())
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, signedPackage);
+                var nugetConsole = GetConsole(testContext.Project);
 
-                var nugetConsole = GetConsole(project);
-
-                var installed = nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Install-Package should pass");
+                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Install-Package should pass");
 
                 // Build before the install check to ensure that everything is up to date.
-                project.Build();
+                testContext.Project.Build();
 
                 // Verify install from Get-Package
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, signedPackage.Id, signedPackage.Version);
-
-                VisualStudio.AssertNoErrors();
-
-                solutionService.Save();
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
             }
         }
 
@@ -57,32 +52,26 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetTemplates))]
         public void UninstallSignedPackageFromPMC(ProjectTemplate projectTemplate)
         {
+            // Arrange
+            EnsureVisualStudioHost();
+
             var signedPackage = _fixture.SignedTestPackage;
 
-            using (var pathContext = new SimpleTestPathContext())
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, signedPackage);
-
-                var nugetConsole = GetConsole(project);
+                var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Install-Package");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, signedPackage.Id, signedPackage.Version);
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
 
                 nugetConsole.UninstallPackageFromPMC(signedPackage.Id).Should().BeTrue("Uninstall-Package");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsNotInstalled(project.UniqueName, signedPackage.Id);
-
-                VisualStudio.AssertNoErrors();
-
-                solutionService.Save();
+                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, signedPackage.Id);
             }
         }
 
@@ -90,35 +79,29 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetTemplates))]
         public void UpdateUnsignedPackageToSignedVersionFromPMC(ProjectTemplate projectTemplate)
         {
+            // Arrange
+            EnsureVisualStudioHost();
+
             var packageVersion09 = "0.9.0";
             var signedPackage = _fixture.SignedTestPackage;
 
-            using (var pathContext = new SimpleTestPathContext())
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                Utils.CreatePackageInSource(testContext.PackageSource, signedPackage.Id, packageVersion09);
+                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
 
-                Utils.CreatePackageInSource(pathContext.PackageSource, signedPackage.Id, packageVersion09);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, signedPackage);
-
-                var nugetConsole = GetConsole(project);
+                var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, packageVersion09).Should().BeTrue("Install-Package");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, signedPackage.Id, packageVersion09);
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, packageVersion09);
 
                 nugetConsole.UpdatePackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Update-Package");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, signedPackage.Id, signedPackage.Version);
-                GetNuGetTestService().Verify.PackageIsNotInstalled(project.UniqueName, signedPackage.Id, packageVersion09);
-
-                VisualStudio.AssertNoErrors();
-
-                solutionService.Save();
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
+                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, signedPackage.Id, packageVersion09);
             }
         }
 
@@ -126,6 +109,9 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetTemplates))]
         public void DowngradeSignedPackageToUnsignedVersionFromPMC(ProjectTemplate projectTemplate)
         {
+            // Arrange
+            EnsureVisualStudioHost();
+
             // This test is not considered an ideal behavior of the product but states the current behavior.
             // A package that is already installed as signed should be specailly treated and a user should not be
             // able to downgrade to an unsigned version. This test needs to be updated once this behavior gets
@@ -134,32 +120,23 @@ namespace NuGet.Tests.Apex
             var packageVersion09 = "0.9.0";
             var signedPackage = _fixture.SignedTestPackage;
 
-            using (var pathContext = new SimpleTestPathContext())
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                Utils.CreatePackageInSource(testContext.PackageSource, signedPackage.Id, packageVersion09);
+                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
 
-                Utils.CreatePackageInSource(pathContext.PackageSource, signedPackage.Id, packageVersion09);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, signedPackage);
-
-                var nugetConsole = GetConsole(project);
+                var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Install-Package");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, signedPackage.Id, signedPackage.Version);
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
 
                 nugetConsole.UpdatePackageFromPMC(signedPackage.Id, packageVersion09).Should().BeTrue("Update-Package");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, signedPackage.Id, packageVersion09);
-                GetNuGetTestService().Verify.PackageIsNotInstalled(project.UniqueName, signedPackage.Id, signedPackage.Version);
-
-                VisualStudio.AssertNoErrors();
-
-                solutionService.Save();
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, packageVersion09);
+                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
             }
         }
 
@@ -167,30 +144,24 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetTemplates))]
         public void InstallSignedPackageWithExpiredCertificateFromPMC(ProjectTemplate projectTemplate)
         {
+            // Arrange
+            EnsureVisualStudioHost();
+
             var signedPackagePath = _fixture.ExpiredCertSignedTestPackagePath;
             var signedPackage = _fixture.ExpiredCertSignedTestPackage;
 
-            using (var pathContext = new SimpleTestPathContext())
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                File.Copy(signedPackagePath, Path.Combine(testContext.PackageSource, signedPackage.PackageName));
 
-                File.Copy(signedPackagePath, Path.Combine(pathContext.PackageSource, signedPackage.PackageName));
-
-                var nugetConsole = GetConsole(project);
+                var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Install-Package");
-                project.Build();
+                testContext.Project.Build();
 
                 // TODO: Fix bug where no warnings are shwon when package is untrusted but still installed
-                //Assert.True(nugetConsole.IsMessageFoundInPMC("expired certificate"));
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, signedPackage.Id, signedPackage.Version);
-
-                VisualStudio.AssertNoErrors();
-
-                solutionService.Save();
+                //nugetConsole.IsMessageFoundInPMC("expired certificate").Should().BeTrue("expired certificate warning");
+                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
             }
         }
 
@@ -198,29 +169,24 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetTemplates))]
         public void InstallSignedTamperedPackageFromPMCAndFail(ProjectTemplate projectTemplate)
         {
+            // Arrange
+            EnsureVisualStudioHost();
+
             var signedPackage = _fixture.SignedTestPackage;
 
-            using (var pathContext = new SimpleTestPathContext())
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
+                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
+                SignedArchiveTestUtility.TamperWithPackage(Path.Combine(testContext.PackageSource, signedPackage.PackageName));
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, signedPackage);
-                SignedArchiveTestUtility.TamperWithPackage(Path.Combine(pathContext.PackageSource, signedPackage.PackageName));
+                var nugetConsole = GetConsole(testContext.Project);
 
-                var nugetConsole = GetConsole(project);
-
+                // TODO: install should fail, therefore Should().BeFalse()
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Install-Package");
                 nugetConsole.IsMessageFoundInPMC("package integrity check failed").Should().BeTrue("Integrity failed message shown.");
-                project.Build();
+                testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, signedPackage.Id, signedPackage.Version);
-
-                VisualStudio.AssertNoErrors();
-
-                solutionService.Save();
+                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, signedPackage.Id);
             }
         }
 
@@ -229,7 +195,7 @@ namespace NuGet.Tests.Apex
             for (var i = 0; i < Utils.GetIterations(); i++)
             {
                 yield return new object[] { ProjectTemplate.ClassLibrary };
-                yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
+                yield return new object[] { ProjectTemplate.NetStandardClassLib };
             }
         }
     }

@@ -50,6 +50,7 @@ namespace NuGet.Tests.Apex
                 inAssetsFile.Should().BeTrue("package was installed");
 
                 solutionService.Save();
+                solutionService.Close();
             }
         }
 
@@ -83,39 +84,7 @@ namespace NuGet.Tests.Apex
                 VisualStudio.AssertNoErrors();
 
                 solutionService.Save();
-            }
-        }
-
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetTemplates))]
-        public void InstallPackageFromPMCFromNuGetOrg(ProjectTemplate projectTemplate)
-        {
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Arrange
-                pathContext.Settings.DisableAutoRestore();
-
-                var packageSources = SimpleTestSettingsContext.GetOrAddSection(pathContext.Settings.XML, "packageSources");
-                SimpleTestSettingsContext.AddEntry(packageSources, "nugetOnline", "https://api.nuget.org/v3/index.json");
-                pathContext.Settings.Save();
-
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-                var project = Utils.CreateAndInitProject(projectTemplate, pathContext, solutionService);
-                var nugetConsole = GetConsole(project);
-
-                var packageName = "newtonsoft.json";
-                var packageVersion = "9.0.1";
-
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion)
-                    .Should()
-                    .BeTrue("Install-Package should return on time");
-
-                project.Build();
-
-                Utils.IsPackageInstalledInAssetsFile(nugetConsole, project.FullPath, packageName, packageVersion).Should().BeTrue("package should exist in the assets file");
-
-                solutionService.Save();
+                solutionService.Close();
             }
         }
 
@@ -151,6 +120,7 @@ namespace NuGet.Tests.Apex
                 VisualStudio.AssertNoErrors();
 
                 solutionService.Save();
+                solutionService.Close();
             }
         }
 
@@ -188,6 +158,7 @@ namespace NuGet.Tests.Apex
                 VisualStudio.AssertNoErrors();
 
                 solutionService.Save();
+                solutionService.Close();
             }
         }
 
@@ -224,6 +195,7 @@ namespace NuGet.Tests.Apex
                 VisualStudio.AssertNoErrors();
 
                 solutionService.Save();
+                solutionService.Close();
             }
         }
 
@@ -268,6 +240,7 @@ namespace NuGet.Tests.Apex
                 GetNuGetTestService().Verify.PackageIsNotInstalled(project.UniqueName, packageName2);
 
                 solutionService.Save();
+                solutionService.Close();
             }
         }
 
@@ -303,6 +276,7 @@ namespace NuGet.Tests.Apex
                 GetNuGetTestService().Verify.PackageIsInstalled(project.UniqueName, packageName, packageVersion1);
 
                 solutionService.Save();
+                solutionService.Close();
             }
         }
 
@@ -348,6 +322,7 @@ namespace NuGet.Tests.Apex
                 Assert.NotNull(result2);
 
                 solutionService.Save();
+                solutionService.Close();
             }
         }
 
@@ -400,6 +375,7 @@ namespace NuGet.Tests.Apex
                 Assert.Null(resultX);
 
                 solutionService.Save();
+                solutionService.Close();
             }
         }
 

@@ -1,5 +1,6 @@
 {
   "methodDisplay": "classAndMethod",
   "longRunningTestSeconds": 120,
-  "diagnosticMessages": true
+  "diagnosticMessages": true,
+  "preEnumerateTheories": false
 }

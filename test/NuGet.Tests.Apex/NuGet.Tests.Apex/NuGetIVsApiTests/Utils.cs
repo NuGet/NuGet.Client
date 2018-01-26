@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -41,6 +42,7 @@ namespace NuGet.Tests.Apex
             var package = new SimpleTestPackageContext(packageName, packageVersion);
             package.Files.Clear();
             package.AddFile("lib/net45/_._");
+            package.AddFile("lib/netstandard1.0/_._");
 
             return package;
         }
@@ -151,6 +153,16 @@ namespace NuGet.Tests.Apex
 
         internal static ProjectTestExtension CreateAndInitProject(ProjectTemplate projectTemplate, SimpleTestPathContext pathContext, SolutionService solutionService)
         {
+            //FrameworkName framework;
+            //if (projectTemplate == ProjectTemplate.NetCoreConsoleApp)
+            //{
+            //    framework = new FrameworkName(".NETCoreApp,Version=v2.0");
+            //}
+            //else
+            //{
+            //    framework = new FrameworkName(".NETFramework,Version=v4.6");
+            //}
+
             solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
             var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
             solutionService.Save();

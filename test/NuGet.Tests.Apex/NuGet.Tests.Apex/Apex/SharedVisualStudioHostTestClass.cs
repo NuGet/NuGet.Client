@@ -54,13 +54,11 @@ namespace NuGet.Tests.Apex
 
         protected NuGetConsoleTestExtension GetConsole(ProjectTestExtension project)
         {
+            VisualStudio.ClearWindows();
+
             var nugetTestService = GetNuGetTestService();
             nugetTestService.EnsurePackageManagerConsoleIsOpen().Should().BeTrue("Console was opened");
             var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
-
-            // Clear everything before starting
-            nugetConsole.Clear();
-            VisualStudio.ClearWindows();
 
             return nugetConsole;
         }

@@ -35,6 +35,7 @@ namespace NuGet.Tests.Apex
                 VisualStudio.AssertNoErrors();
 
                 solutionService.SaveAll();
+                solutionService.Close();
             }
         }
 
@@ -63,6 +64,8 @@ namespace NuGet.Tests.Apex
 
                 Assert.True(project1.References.TryFindReferenceByName("TestProject2", out var result));
                 VisualStudio.AssertNoErrors();
+
+                solutionService.Close();
             }
         }
     }
