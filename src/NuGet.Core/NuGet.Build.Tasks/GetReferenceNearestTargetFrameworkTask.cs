@@ -64,7 +64,7 @@ namespace NuGet.Build.Tasks
                 return false;
             }
 
-            if (AssetTargetFallbackFrameworks != null ||
+            if (AssetTargetFallbackFrameworks != null &&
                 AssetTargetFallbackFrameworks.Length > 0)
             {
                 var fallbackFrameworks = new List<NuGetFramework>();
