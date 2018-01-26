@@ -5358,7 +5358,7 @@ nuget locals global-packages -list</value>
     <value>Verifies a signed NuGet package.</value>
   </data>
   <data name="VerifyCommandCertificateFingerprintDescription" xml:space="preserve">
-    <value>Verify that the signer certificate matches with one of the specified fingerprints. A certificate fingerprint is a SHA-1 hash of the certificate used to identify the certificate. If more than one fingerprint is provided, the input should be a string with each fingerprint separated by a semicolon.</value>
+    <value>Verify that the signer certificate matches with one of the specified SHA256 fingerprints. A certificate SHA256 fingerprint is a SHA256 hash of the certificate used to identify the certificate. Multiple inputs should be semicolon separated.</value>
   </data>
   <data name="VerifyCommandUsageExamples" xml:space="preserve">
     <value>nuget verify -Signatures .\..\MyPackage.nupkg -Signer "86C0E8C51FF0EBDAD355315DF82AA6EC7049B542;BE36A4562FB2EE05DBB3D32323ADF445084ED656" -Verbosity detailed
@@ -5442,7 +5442,7 @@ This option should be used when specifying the certificate via -CertificateSubje
   <data name="SignCommandTimestamperDescription" xml:space="preserve">
     <value>URL to an RFC 3161 timestamping server.</value>
   </data>
-  <data name="SignCommandInvalidArgumentException" xml:space="preserve">
+  <data name="CommandInvalidArgumentException" xml:space="preserve">
     <value>Invalid value provided for '{0}'. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
     <comment>{0} - argument name</comment>
   </data>

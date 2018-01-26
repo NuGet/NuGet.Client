@@ -28,7 +28,7 @@ namespace NuGet.Commands
 
             signArgs.Logger.LogInformation(Environment.NewLine);
             signArgs.Logger.LogInformation(Strings.SignCommandDisplayCertificate);
-            signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2ToString(cert));
+            signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2ToString(cert, HashAlgorithmName.SHA256));
 
             if (!string.IsNullOrEmpty(signArgs.Timestamper))
             {
@@ -232,7 +232,7 @@ namespace NuGet.Commands
                 if (signArgs.NonInteractive || !RuntimeEnvironmentHelper.IsWindows)
                 {
                     // if on non-windows os or in non interactive mode - display the certs and error out
-                    signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2CollectionToString(matchingCertCollection));
+                    signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2CollectionToString(matchingCertCollection, HashAlgorithmName.SHA256));
                     throw new SignCommandException(
                         LogMessage.CreateError(NuGetLogCode.NU3001,
                         string.Format(Strings.SignCommandMultipleCertException,
@@ -249,7 +249,7 @@ namespace NuGet.Commands
                 }
 #else
                 // if on non-windows os or in non interactive mode - display and error out
-                signArgs.Logger.LogError(CertificateUtility.X509Certificate2CollectionToString(matchingCertCollection));
+                signArgs.Logger.LogError(CertificateUtility.X509Certificate2CollectionToString(matchingCertCollection, HashAlgorithmName.SHA256));
 
                 throw new SignCommandException(
                     LogMessage.CreateError(NuGetLogCode.NU3001,

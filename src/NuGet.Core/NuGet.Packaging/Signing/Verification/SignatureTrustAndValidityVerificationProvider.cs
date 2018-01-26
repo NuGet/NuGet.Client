@@ -14,7 +14,14 @@ namespace NuGet.Packaging.Signing
 {
     public class SignatureTrustAndValidityVerificationProvider : ISignatureVerificationProvider
     {
+        private HashAlgorithmName _fingerprintAlgorithm;
+
         private SigningSpecifications _specification => SigningSpecifications.V1;
+
+        public SignatureTrustAndValidityVerificationProvider()
+        {
+            _fingerprintAlgorithm = HashAlgorithmName.SHA256;
+        }
 
         public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
@@ -93,7 +100,7 @@ namespace NuGet.Packaging.Signing
 
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
                 Strings.VerificationAuthorCertDisplay,
-                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(certificate)}")));
+                $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(certificate, _fingerprintAlgorithm)}")));
 
             try
             {
@@ -123,7 +130,7 @@ namespace NuGet.Packaging.Signing
                         CertificateChainUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestamp.UpperLimit.LocalDateTime, NuGetVerificationCertificateType.Signature);
                         var chainBuildingSucceed = CertificateChainUtility.BuildCertificateChain(chain, certificate, out var chainStatuses);
 
-                        issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
+                        issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain, _fingerprintAlgorithm)));
 
                         if (chainBuildingSucceed)
                         {
@@ -202,7 +209,7 @@ namespace NuGet.Packaging.Signing
 
                 issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
                     Strings.VerificationTimestamperCertDisplay,
-                    $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate)}")));
+                    $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate, _fingerprintAlgorithm)}")));
 
                 var certificateExtraStore = timestamp.SignedCms.Certificates;
 
@@ -217,7 +224,7 @@ namespace NuGet.Packaging.Signing
 
                     var chainBuildSucceed = CertificateChainUtility.BuildCertificateChain(chain, timestamperCertificate, out var chainStatusList);
 
-                    issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain)));
+                    issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain, _fingerprintAlgorithm)));
 
                     if (chainBuildSucceed)
                     {

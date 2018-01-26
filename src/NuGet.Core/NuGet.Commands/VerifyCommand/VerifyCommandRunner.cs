@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -38,9 +39,11 @@ namespace NuGet.Commands
                 var packagesToVerify = LocalFolderUtility.ResolvePackageFromPath(verifyArgs.PackagePath);
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
 
-                var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders();
-                var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                var allowListEntries = verifyArgs.CertificateFingerprint.Select(fingerprint =>
+                    new CertificateHashAllowListEntry(VerificationTarget.Primary, fingerprint)).ToList();
 
+                var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs(allowListEntries));
+                var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
 
                 foreach (var package in packagesToVerify)
                 {

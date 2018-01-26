@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
@@ -28,7 +29,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Returns the set of allowed hash algorithms.
         /// </summary>
-        public abstract string[] AllowedHashAlgorithms { get; }
+        public abstract HashAlgorithmName[] AllowedHashAlgorithms { get; }
 
         /// <summary>
         /// Returns the set of allowed hash algorithm Oids.
