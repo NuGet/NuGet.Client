@@ -13,15 +13,21 @@ namespace NuGet.Tests.Apex
 
         private VisualStudioHost _visualStudio;
         private SimpleTestPathContext _pathContext;
+        private bool _noAutoRestore;
 
         public SolutionService SolutionService { get; }
         public ProjectTestExtension Project { get; }
         public string PackageSource => _pathContext.PackageSource;
 
-
-        public ApexTestContext(VisualStudioHost visualStudio, ProjectTemplate projectTemplate)
+        public ApexTestContext(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, bool noAutoRestore = false)
         {
             _pathContext = new SimpleTestPathContext();
+
+            if (noAutoRestore)
+            {
+                _pathContext.Settings.DisableAutoRestore();
+            }
+
             _visualStudio = visualStudio;
             SolutionService = _visualStudio.Get<SolutionService>();
 
