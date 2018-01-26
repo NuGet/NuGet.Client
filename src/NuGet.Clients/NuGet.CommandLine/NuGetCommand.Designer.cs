@@ -378,6 +378,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value provided for &apos;{0}&apos;. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        internal static string CommandInvalidArgumentException {
+            get {
+                return ResourceManager.GetString("CommandInvalidArgumentException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the path of MSBuild to be used with this command. This command will takes precedence over MSbuildVersion, nuget will always pick MSbuild from this specified path..
         /// </summary>
         internal static string CommandMSBuildPath {
@@ -11584,15 +11593,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value provided for &apos;{0}&apos;. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference.
-        /// </summary>
-        internal static string SignCommandInvalidArgumentException {
-            get {
-                return ResourceManager.GetString("SignCommandInvalidArgumentException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to No value provided for &apos;{0}&apos;, which is needed when using the &apos;{1}&apos; option. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string SignCommandMissingArgumentException {
@@ -14759,7 +14759,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Verify that the signer certificate matches with one of the specified fingerprints. A certificate fingerprint is a SHA-1 hash of the certificate used to identify the certificate. If more than one fingerprint is provided, the input should be a string with each fingerprint separated by a semicolon..
+        ///   Looks up a localized string similar to Verify that the signer certificate matches with one of the specified SHA256 fingerprints. A certificate SHA256 fingerprint is a SHA256 hash of the certificate used to identify the certificate. Multiple inputs should be semicolon separated..
         /// </summary>
         internal static string VerifyCommandCertificateFingerprintDescription {
             get {

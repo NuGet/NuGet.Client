@@ -214,14 +214,14 @@ namespace NuGet.MSSigning.Extensions
 
             if (!string.IsNullOrEmpty(value))
             {
-                if (!spec.AllowedHashAlgorithms.Contains(value, StringComparer.OrdinalIgnoreCase))
+                hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(value);
+
+                if (!spec.AllowedHashAlgorithms.Contains(hashAlgorithm))
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                         NuGetMSSignCommand.MSSignCommandInvalidArgumentException,
                         name));
                 }
-
-                hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(value);
             }
 
             if (hashAlgorithm == Common.HashAlgorithmName.Unknown)

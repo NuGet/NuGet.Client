@@ -86,7 +86,7 @@ namespace NuGet.Packaging.Signing
             {
                 var exceptionBuilder = new StringBuilder();
                 exceptionBuilder.AppendLine(Strings.SignFailureCertificateInvalidProviderType);
-                exceptionBuilder.AppendLine(CertificateUtility.X509Certificate2ToString(request.Certificate));
+                exceptionBuilder.AppendLine(CertificateUtility.X509Certificate2ToString(request.Certificate, Common.HashAlgorithmName.SHA256));
 
                 throw new SignatureException(NuGetLogCode.NU3001, exceptionBuilder.ToString());
             }
