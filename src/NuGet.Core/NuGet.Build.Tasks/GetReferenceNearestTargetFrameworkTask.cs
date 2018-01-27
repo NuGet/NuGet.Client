@@ -12,6 +12,9 @@ namespace NuGet.Build.Tasks
 {
     public class GetReferenceNearestTargetFrameworkTask : Task
     {
+        private const string NEAREST_TARGET_FRAMEWORK = "NearestTargetFramework";
+        private const string TARGET_FRAMEWORKS = "TargetFrameworks";
+
         /// <summary>
         /// The current project's name.
         /// </summary>
@@ -41,10 +44,10 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            var log = new MSBuildLogger(Log);
+            var logger = new MSBuildLogger(Log);
 
-            BuildTasksUtility.LogInputParam(log, nameof(CurrentProjectTargetFramework), CurrentProjectTargetFramework);
-            BuildTasksUtility.LogInputParam(log, nameof(AnnotatedProjectReferences),
+            BuildTasksUtility.LogInputParam(logger, nameof(CurrentProjectTargetFramework), CurrentProjectTargetFramework);
+            BuildTasksUtility.LogInputParam(logger, nameof(AnnotatedProjectReferences),
                 AnnotatedProjectReferences == null
                     ? ""
                     : string.Join(";", AnnotatedProjectReferences.Select(p => p.ItemSpec)));
@@ -54,13 +57,11 @@ namespace NuGet.Build.Tasks
                 return !Log.HasLoggedErrors;
             }
 
-            NuGetFramework frameworkToMatch;
-            var currentProjectFramework = NuGetFramework.Parse(CurrentProjectTargetFramework);
+            var frameworksToMatch = new List<NuGetFramework>();
 
             // validate current project framework
-            if (currentProjectFramework.IsUnsupported)
+            if (!TryParseAndAddFrameworkToList(CurrentProjectTargetFramework, frameworksToMatch, logger))
             {
-                log.LogError(string.Format(Strings.UnsupportedTargetFramework, currentProjectFramework));
                 return false;
             }
 
@@ -68,42 +69,31 @@ namespace NuGet.Build.Tasks
                 AssetTargetFallbackFrameworks.Length > 0)
             {
                 var fallbackFrameworks = new List<NuGetFramework>();
-                foreach(var assetTargetFallbackFramework in AssetTargetFallbackFrameworks)
+                foreach (var assetTargetFallbackFramework in AssetTargetFallbackFrameworks)
                 {
-                    var framework = NuGetFramework.Parse(assetTargetFallbackFramework);
-
-                    // validate current project framework
-                    if (framework.IsUnsupported)
+                    // validate ATF project framework
+                    if (!TryParseAndAddFrameworkToList(assetTargetFallbackFramework, frameworksToMatch, logger))
                     {
-                        log.LogError(string.Format(Strings.UnsupportedTargetFramework, currentProjectFramework));
                         return false;
                     }
-
-                    fallbackFrameworks.Add(framework);
                 }
-
-                frameworkToMatch = new AssetTargetFallbackFramework(currentProjectFramework, fallbackFrameworks.AsReadOnly());
-            }
-            else
-            {
-                frameworkToMatch = currentProjectFramework;
             }
 
             AssignedProjects = new ITaskItem[AnnotatedProjectReferences.Length];
             for (var index = 0; index < AnnotatedProjectReferences.Length; index++)
             {
-                AssignedProjects[index] = AssignPropertiesForSingleReference(AnnotatedProjectReferences[index], frameworkToMatch);
+                AssignedProjects[index] = AssignNearestFrameworkForSingleReference(AnnotatedProjectReferences[index], frameworksToMatch);
             }
 
-            BuildTasksUtility.LogOutputParam(log, nameof(AssignedProjects), string.Join(";", AssignedProjects.Select(p => p.ItemSpec)));
+            BuildTasksUtility.LogOutputParam(logger, nameof(AssignedProjects), string.Join(";", AssignedProjects.Select(p => p.ItemSpec)));
 
             return !Log.HasLoggedErrors;
         }
 
-        private ITaskItem AssignPropertiesForSingleReference(ITaskItem project, NuGetFramework currentProjectTargetFramework)
+        private ITaskItem AssignNearestFrameworkForSingleReference(ITaskItem project, IList<NuGetFramework> currentProjectTargetFrameworks)
         {
             var itemWithProperties = new TaskItem(project);
-            var targetFrameworks = project.GetMetadata("TargetFrameworks");
+            var targetFrameworks = project.GetMetadata(TARGET_FRAMEWORKS);
 
             if (string.IsNullOrEmpty(targetFrameworks))
             {
@@ -112,16 +102,37 @@ namespace NuGet.Build.Tasks
             }
 
             var possibleTargetFrameworks = MSBuildStringUtility.Split(targetFrameworks);
-            var nearestNuGetFramework = NuGetFrameworkUtility.GetNearest(possibleTargetFrameworks, currentProjectTargetFramework, NuGetFramework.Parse);
 
-            itemWithProperties.SetMetadata("NearestTargetFramework", nearestNuGetFramework ?? FrameworkConstants.SpecialIdentifiers.Unsupported);
-
-            if (nearestNuGetFramework == null)
+            foreach (var currentProjectTargetFramework in currentProjectTargetFrameworks)
             {
-                Log.LogError(string.Format(Strings.NoCompatibleTargetFramework, project.ItemSpec, CurrentProjectTargetFramework, targetFrameworks));
+                var nearestNuGetFramework = NuGetFrameworkUtility.GetNearest(possibleTargetFrameworks, currentProjectTargetFramework, NuGetFramework.Parse);
+
+                if (nearestNuGetFramework != null)
+                {
+                    itemWithProperties.SetMetadata(NEAREST_TARGET_FRAMEWORK, nearestNuGetFramework);
+                    return itemWithProperties;
+                }
             }
 
+            // no match found
+            itemWithProperties.SetMetadata(NEAREST_TARGET_FRAMEWORK, FrameworkConstants.SpecialIdentifiers.Unsupported);
+            Log.LogError(string.Format(Strings.NoCompatibleTargetFramework, project.ItemSpec, CurrentProjectTargetFramework, targetFrameworks));
             return itemWithProperties;
+        }
+
+        private static bool TryParseAndAddFrameworkToList(string framework, IList<NuGetFramework> frameworkList, MSBuildLogger logger)
+        {
+            var nugetFramework = NuGetFramework.Parse(framework);
+
+            // validate framework
+            if (nugetFramework.IsUnsupported)
+            {
+                logger.LogError(string.Format(Strings.UnsupportedTargetFramework, framework));
+                return false;
+            }
+
+            frameworkList.Add(nugetFramework);
+            return true;
         }
     }
 }

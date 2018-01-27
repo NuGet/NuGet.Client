@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Moq;
@@ -59,36 +60,6 @@ namespace NuGet.Build.Tasks.Test
             testLogger.Warnings.Should().Be(0);
             testLogger.Errors.Should().Be(1);
             testLogger.DebugMessages.Count.Should().Be(2);
-        }
-
-        [Fact]
-        public void GetReferenceNearestTargetFrameworkTask_NoCompatibleTargetTF()
-        {
-            var buildEngine = new TestBuildEngine();
-            var testLogger = buildEngine.TestLogger;
-
-            var references = new List<ITaskItem>();
-            var reference = new Mock<ITaskItem>();
-            reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
-            reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns("net461");
-            reference.Setup(e => e.GetMetadata("HasSingleTargetFramework")).Returns("true");
-            references.Add(reference.Object);
-
-            var task = new GetReferenceNearestTargetFrameworkTask
-            {
-                BuildEngine = buildEngine,
-                CurrentProjectTargetFramework = "net46",
-                AnnotatedProjectReferences = references.ToArray()
-            };
-
-            var result = task.Execute();
-            result.Should().BeFalse();
-
-            task.AssignedProjects.Should().HaveCount(1);
-
-            testLogger.Warnings.Should().Be(0);
-            testLogger.Errors.Should().Be(1);
-            testLogger.DebugMessages.Count.Should().Be(3);
         }
 
         [Fact]
@@ -209,5 +180,138 @@ namespace NuGet.Build.Tasks.Test
             testLogger.DebugMessages.Count.Should().Be(3);
         }
 
+        [Theory]
+        [InlineData("netcoreapp2.0", "netcoreapp2.0")]
+        [InlineData("net46", "net46")]
+        public void GetReferenceNearestTargetFrameworkTask_WithSingleTfmAndSingleAtf(string referenceProjectFramework, string nearestMatchingFramework)
+        {
+            var buildEngine = new TestBuildEngine();
+            var testLogger = buildEngine.TestLogger;
+
+            var references = new List<ITaskItem>();
+            var reference = new Mock<ITaskItem>();
+            reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
+            reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns(referenceProjectFramework);
+            reference.Setup(e => e.GetMetadata("HasSingleTargetFramework")).Returns("true");
+            references.Add(reference.Object);
+
+            var task = new GetReferenceNearestTargetFrameworkTask
+            {
+                BuildEngine = buildEngine,
+                CurrentProjectTargetFramework = "netcoreapp2.0",
+                AssetTargetFallbackFrameworks = new string[] { "net46" },
+                AnnotatedProjectReferences = references.ToArray()
+            };
+
+            var result = task.Execute();
+            result.Should().BeTrue();
+
+            task.AssignedProjects.Should().HaveCount(1);
+            task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be(nearestMatchingFramework);
+
+            testLogger.Warnings.Should().Be(0);
+            testLogger.Errors.Should().Be(0);
+            testLogger.DebugMessages.Count.Should().Be(3);
+        }
+
+        [Theory]
+        [InlineData("netcoreapp2.0", "netcoreapp2.0")]
+        [InlineData("net46", "net46")]
+        public void GetReferenceNearestTargetFrameworkTask_WithSingleTfmAndMultipleAtf(string referenceProjectFramework, string nearestMatchingFramework)
+        {
+            var buildEngine = new TestBuildEngine();
+            var testLogger = buildEngine.TestLogger;
+
+            var references = new List<ITaskItem>();
+            var reference = new Mock<ITaskItem>();
+            reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
+            reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns(referenceProjectFramework);
+            reference.Setup(e => e.GetMetadata("HasSingleTargetFramework")).Returns("true");
+            references.Add(reference.Object);
+
+            var task = new GetReferenceNearestTargetFrameworkTask
+            {
+                BuildEngine = buildEngine,
+                CurrentProjectTargetFramework = "netcoreapp2.0",
+                AssetTargetFallbackFrameworks = new string[] { "net46", "net461" },
+                AnnotatedProjectReferences = references.ToArray()
+            };
+
+            var result = task.Execute();
+            result.Should().BeTrue();
+
+            task.AssignedProjects.Should().HaveCount(1);
+            task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be(nearestMatchingFramework);
+
+            testLogger.Warnings.Should().Be(0);
+            testLogger.Errors.Should().Be(0);
+            testLogger.DebugMessages.Count.Should().Be(3);
+        }
+
+        [Theory]
+        [InlineData("netcoreapp2.0; netcoreapp1.0", "netcoreapp2.0")]
+        [InlineData("net45; net46", "net46")]
+        public void GetReferenceNearestTargetFrameworkTask_WithMultipleTfmAndSingleAtf(string referenceProjectFramework, string nearestMatchingFramework)
+        {
+            var buildEngine = new TestBuildEngine();
+            var testLogger = buildEngine.TestLogger;
+
+            var references = new List<ITaskItem>();
+            var reference = new Mock<ITaskItem>();
+            reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
+            reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns(referenceProjectFramework);
+            references.Add(reference.Object);
+
+            var task = new GetReferenceNearestTargetFrameworkTask
+            {
+                BuildEngine = buildEngine,
+                CurrentProjectTargetFramework = "netcoreapp2.0",
+                AssetTargetFallbackFrameworks = new string[] { "net46" },
+                AnnotatedProjectReferences = references.ToArray()
+            };
+
+            var result = task.Execute();
+            result.Should().BeTrue();
+
+            task.AssignedProjects.Should().HaveCount(1);
+            task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be(nearestMatchingFramework);
+
+            testLogger.Warnings.Should().Be(0);
+            testLogger.Errors.Should().Be(0);
+            testLogger.DebugMessages.Count.Should().Be(3);
+        }
+
+        [Theory]
+        [InlineData("netcoreapp2.0; netcoreapp1.0", "netcoreapp2.0")]
+        [InlineData("net45; net46", "net46")]
+        public void GetReferenceNearestTargetFrameworkTask_WithMultipleTfmAndMultipleAtf(string referenceProjectFramework, string nearestMatchingFramework)
+        {
+            var buildEngine = new TestBuildEngine();
+            var testLogger = buildEngine.TestLogger;
+
+            var references = new List<ITaskItem>();
+            var reference = new Mock<ITaskItem>();
+            reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
+            reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns(referenceProjectFramework);
+            references.Add(reference.Object);
+
+            var task = new GetReferenceNearestTargetFrameworkTask
+            {
+                BuildEngine = buildEngine,
+                CurrentProjectTargetFramework = "netcoreapp2.0",
+                AssetTargetFallbackFrameworks = new string[] { "net46", "net45", "net461" },
+                AnnotatedProjectReferences = references.ToArray()
+            };
+
+            var result = task.Execute();
+            result.Should().BeTrue();
+
+            task.AssignedProjects.Should().HaveCount(1);
+            task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be(nearestMatchingFramework);
+
+            testLogger.Warnings.Should().Be(0);
+            testLogger.Errors.Should().Be(0);
+            testLogger.DebugMessages.Count.Should().Be(3);
+        }
     }
 }
