@@ -27,7 +27,7 @@ namespace NuGet.Build.Tasks
         public string CurrentProjectTargetFramework { get; set; }
 
         /// <summary>
-        /// List of target frameworks to be used as Asset Target Fallback frameworks.
+        /// Optional list of target frameworks to be used as Asset Target Fallback frameworks.
         /// </summary>
         public string[] AssetTargetFallbackFrameworks { get; set; }
 
@@ -47,6 +47,12 @@ namespace NuGet.Build.Tasks
             var logger = new MSBuildLogger(Log);
 
             BuildTasksUtility.LogInputParam(logger, nameof(CurrentProjectTargetFramework), CurrentProjectTargetFramework);
+
+            BuildTasksUtility.LogInputParam(logger, nameof(AssetTargetFallbackFrameworks),
+                AssetTargetFallbackFrameworks == null
+                    ? ""
+                    : string.Join(";", AssetTargetFallbackFrameworks.Select(p => p)));
+
             BuildTasksUtility.LogInputParam(logger, nameof(AnnotatedProjectReferences),
                 AnnotatedProjectReferences == null
                     ? ""
