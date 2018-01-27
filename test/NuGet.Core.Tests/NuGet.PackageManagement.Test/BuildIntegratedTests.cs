@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
@@ -523,6 +524,69 @@ namespace NuGet.Test
                 Assert.True(rollback);
                 Assert.Equal(0, installedPackages.Count());
                 Assert.False(File.Exists(lockFile));
+            }
+        }
+
+        [Fact]
+        public async Task TestPacManBuildIntegratedInstallAndRollbackPackageVerifyAdditionalMessages()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("91.0.0"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+
+            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var randomProjectFolderPath = TestDirectory.Create())
+            {
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+                var token = CancellationToken.None;
+
+                CreateConfigJsonNet452(randomConfig);
+
+                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPath);
+
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
+
+                var message = string.Empty;
+
+                // Act
+                var messages = new List<ILogMessage>();
+
+                try
+                {
+                    await nuGetPackageManager.InstallPackageAsync(
+                        buildIntegratedProject,
+                        packageIdentity,
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
+                }
+                catch (PackageReferenceRollbackException ex)
+                {
+                    messages.AddRange(ex.LogMessages);
+                }
+
+                var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+
+                // Assert
+                messages.Count.Should().Be(1);
+                messages[0].Message.Should().Contain("Unable to find package nuget.core with version (>= 91.0.0)");
             }
         }
 
