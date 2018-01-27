@@ -77,7 +77,7 @@ namespace NuGet.Console.TestContract
                 }
                 else
                 {
-                    System.Threading.Thread.Sleep(100);
+                    Thread.Sleep(100);
                 }
             }
             while (stopwatch.Elapsed < timeout && window == null);
@@ -88,7 +88,11 @@ namespace NuGet.Console.TestContract
                 if (VSConstants.S_OK == window.GetProperty((int)__VSFPROPID.VSFPROPID_DocView, out var toolPane))
                 {
                     powerConsole = (PowerConsoleToolWindow)toolPane;
-                }
+                    while (!powerConsole.IsLoaded && (stopwatch.Elapsed < timeout && window == null))
+                    {
+                        Thread.Sleep(100);
+                    }
+                } 
             }
 
             return powerConsole;

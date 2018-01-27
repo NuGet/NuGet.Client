@@ -253,8 +253,9 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(project3);
                 var packageName = "newtonsoft.json";
                 var packageVersion = "9.0.1";
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
 
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion, "https://api.nuget.org/v3/index.json").Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion).Should().BeTrue("Install-Package");
                 testContext.Project.Build();
                 project2.Build();
                 project3.Build();
@@ -274,6 +275,8 @@ namespace NuGet.Tests.Apex
         {
             // Arrange
             EnsureVisualStudioHost();
+
+            Debugger.Launch();
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
@@ -295,22 +298,26 @@ namespace NuGet.Tests.Apex
 
                 var packageName = "newtonsoft.json";
                 var packageVersion = "9.0.1";
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
 
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion, "https://api.nuget.org/v3/index.json").Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion).Should().BeTrue("Install-Package");
                 testContext.Project.Build();
                 project2.Build();
                 project3.Build();
                 projectX.Build();
                 testContext.SolutionService.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project3.UniqueName, packageName, packageVersion);
+                GetNuGetTestService().Verify.PackageIsInstalled(project3.UniqueName, packageName);
 
-                testContext.Project.References.TryFindReferenceByName("newtonsoft.json", out var result).Should().BeTrue("Find newtonsoft reference");
-                result.Should().NotBeNull("reference to newtonsoft shoult not be null");
-                project2.References.TryFindReferenceByName("newtonsoft.json", out var result2).Should().BeTrue("Find newtonsoft 2nd reference");
-                result2.Should().NotBeNull("reference 2 to newtonsoft shoult not be null");
-                projectX.References.TryFindReferenceByName("newtonsoft.json", out var resultX).Should().BeTrue("Find newtonsoft X reference");
-                resultX.Should().NotBeNull("reference X to newtonsoft shoult not be null");
+                // Verify install from project.assets.json
+                var inAssetsFile = Utils.IsPackageInstalledInAssetsFile(nugetConsole, testContext.Project.FullPath, packageName, packageVersion);
+                inAssetsFile.Should().BeTrue("package was installed");
+
+                var inAssetsFile2 = Utils.IsPackageInstalledInAssetsFile(nugetConsole, project2.FullPath, packageName, packageVersion);
+                inAssetsFile2.Should().BeTrue("package 2 was installed");
+
+                var inAssetsFileX = Utils.IsPackageInstalledInAssetsFile(nugetConsole, projectX.FullPath, packageName, packageVersion);
+                inAssetsFileX.Should().BeFalse("package X was installed");
             }
         }
 
