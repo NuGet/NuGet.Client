@@ -88,7 +88,7 @@ namespace NuGet.Console.TestContract
                 if (VSConstants.S_OK == window.GetProperty((int)__VSFPROPID.VSFPROPID_DocView, out var toolPane))
                 {
                     powerConsole = (PowerConsoleToolWindow)toolPane;
-                    while (!powerConsole.IsLoaded && (stopwatch.Elapsed < timeout && window == null))
+                    while (!powerConsole.IsLoaded && stopwatch.Elapsed < timeout)
                     {
                         Thread.Sleep(100);
                     }
