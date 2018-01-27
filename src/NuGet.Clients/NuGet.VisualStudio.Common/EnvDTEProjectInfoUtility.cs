@@ -91,6 +91,18 @@ namespace NuGet.VisualStudio
             // for start up scenarios such as VS Templates. In these cases we need to fallback 
             // until we can find one containing the full path.
 
+            // For website projects, always read FullPath from properties list
+            if (IsWebProject(envDTEProject))
+            {
+                // FullPath
+                var fullProjectPath = GetPropertyValue<string>(envDTEProject, FullPath);
+
+                if (!string.IsNullOrEmpty(fullProjectPath))
+                {
+                    return fullProjectPath;
+                }
+            }
+
             // FullName
             if (!string.IsNullOrEmpty(envDTEProject.FullName))
             {
