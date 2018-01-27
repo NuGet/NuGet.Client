@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -153,6 +155,102 @@ namespace NuGet.Common
             }
         }
 
+        /// <summary>
+        /// Run tasks in parallel and returns the results in the original order.
+        /// </summary>
+        /// <remarks>Use Task.Run</remarks>
+        public static Task<T[]> RunAsync<T>(IEnumerable<Func<Task<T>>> tasks, int maxThreads)
+        {
+            return RunAsync(tasks, maxThreads, useTaskRun: true);
+        }
+
+        /// <summary>
+        /// Run tasks in parallel and returns the results in the original order.
+        /// </summary>
+        public static async Task<T[]> RunAsync<T>(IEnumerable<Func<Task<T>>> tasks, int maxThreads, bool useTaskRun)
+        {
+            var toRun = new ConcurrentQueue<WorkItem<T>>();
+
+            var index = 0;
+            foreach (var task in tasks)
+            {
+                // Create work items, save the original position.
+                toRun.Enqueue(new WorkItem<T>(task, index));
+                index++;
+            }
+
+            var totalCount = index;
+
+            // Create an array for the results, at this point index is the count.
+            var results = new T[totalCount];
+
+            List<Task> threads = null;
+            var taskCount = GetAdditionalThreadCount(maxThreads, totalCount);
+
+            if (taskCount > 0)
+            {
+                threads = new List<Task>(taskCount);
+
+                // Create long running tasks to run work on.
+                for (var i = 0; i < taskCount; i++)
+                {
+                    Task task = null;
+
+                    if (useTaskRun)
+                    {
+                        // Start a new task
+                        task = Task.Run(() => RunTaskAsync(toRun, results));
+                    }
+                    else
+                    {
+                        // Run directly
+                        task = RunTaskAsync(toRun, results);
+                    }
+
+                    threads.Add(task);
+                }
+            }
+
+            // Run tasks on the current thread
+            // This is used both for parallel and non-parallel.
+            await RunTaskAsync(toRun, results);
+
+            // After all work completes on this thread, wait for the rest.
+            if (threads != null)
+            {
+                await Task.WhenAll(threads);
+            }
+
+            return results;
+        }
+
+        private static int GetAdditionalThreadCount(int maxThreads, int index)
+        {
+            // Number of threads total
+            var x = Math.Min(index, maxThreads);
+
+            // Remove one for the current thread
+            x--;
+
+            // Avoid -1
+            x = Math.Max(0, x);
+
+            return x;
+        }
+
+        /// <summary>
+        /// Run tasks on a single thread.
+        /// </summary>
+        private static async Task RunTaskAsync<T>(ConcurrentQueue<WorkItem<T>> toRun, T[] results)
+        {
+            // Run until cancelled or we are out of work.
+            while (toRun.TryDequeue(out var item))
+            {
+                var result = await item.Item();
+                results[item.Index] = result;
+            }
+        }
+
         private static FileStream AcquireFileStream(string lockPath)
         {
             FileOptions options;
@@ -245,6 +343,28 @@ namespace NuGet.Common
             else
             {
                 return (char)(input + 0x30);
+            }
+        }
+
+        /// <summary>
+        /// Contains a Func to run and the original position in the queue.
+        /// </summary>
+        private sealed class WorkItem<T>
+        {
+            /// <summary>
+            /// Task to run
+            /// </summary>
+            internal Func<Task<T>> Item { get; }
+
+            /// <summary>
+            /// Original position
+            /// </summary>
+            internal int Index { get; }
+
+            public WorkItem(Func<Task<T>> item, int index)
+            {
+                Item = item;
+                Index = index;
             }
         }
     }

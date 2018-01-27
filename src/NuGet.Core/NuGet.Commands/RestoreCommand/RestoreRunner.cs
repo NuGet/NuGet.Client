@@ -10,7 +10,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.Commands
@@ -65,36 +64,12 @@ namespace NuGet.Commands
                 log.LogVerbose(Strings.Log_RunningNonParallelRestore);
             }
 
-            // Get requests
-            var requests = new Queue<RestoreSummaryRequest>(restoreRequests);
-            var restoreTasks = new List<Task<RestoreSummary>>(maxTasks);
-            var restoreSummaries = new List<RestoreSummary>(requests.Count);
-
-            // Run requests
-            while (requests.Count > 0)
-            {
-                // Throttle and wait for a task to finish if we have hit the limit
-                if (restoreTasks.Count == maxTasks)
-                {
-                    var restoreSummary = await CompleteTaskAsync(restoreTasks);
-                    restoreSummaries.Add(restoreSummary);
-                }
-
-                var request = requests.Dequeue();
-
-                var task = Task.Run(() => ExecuteAndCommitAsync(request, token), token);
-                restoreTasks.Add(task);
-            }
-
-            // Wait for all restores to finish
-            while (restoreTasks.Count > 0)
-            {
-                var restoreSummary = await CompleteTaskAsync(restoreTasks);
-                restoreSummaries.Add(restoreSummary);
-            }
+            // Run restores
+            var restoreSummaries = await ConcurrencyUtilities.RunAsync(
+                    restoreRequests.Select(request => new Func<Task<RestoreSummary>>(() => ExecuteAndCommitAsync(request, token))), maxTasks);
 
             // Summary
-            return restoreSummaries;
+            return restoreSummaries.ToList();
         }
 
         /// <summary>
@@ -121,35 +96,11 @@ namespace NuGet.Commands
             }
 
             // Get requests
-            var requests = new Queue<RestoreSummaryRequest>(restoreRequests);
-            var restoreTasks = new List<Task<RestoreResultPair>>(maxTasks);
-            var restoreResults = new List<RestoreResultPair>(maxTasks);
-
-            // Run requests
-            while (requests.Count > 0)
-            {
-                // Throttle and wait for a task to finish if we have hit the limit
-                if (restoreTasks.Count == maxTasks)
-                {
-                    var restoreSummary = await CompleteTaskAsync(restoreTasks);
-                    restoreResults.Add(restoreSummary);
-                }
-
-                var request = requests.Dequeue();
-
-                var task = Task.Run(() => ExecuteAsync(request, CancellationToken.None));
-                restoreTasks.Add(task);
-            }
-
-            // Wait for all restores to finish
-            while (restoreTasks.Count > 0)
-            {
-                var restoreSummary = await CompleteTaskAsync(restoreTasks);
-                restoreResults.Add(restoreSummary);
-            }
+            var restoreResults = await ConcurrencyUtilities.RunAsync(
+                    restoreRequests.Select(request => new Func<Task<RestoreResultPair>>(() => ExecuteAsync(request, CancellationToken.None))), maxTasks);
 
             // Summary
-            return restoreResults;
+            return restoreResults.ToList();
         }
 
         /// <summary>
@@ -303,21 +254,6 @@ namespace NuGet.Commands
                 summaryRequest.ConfigFiles,
                 summaryRequest.Sources,
                 messages);
-        }
-
-        private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)
-        {
-            var doneTask = await Task.WhenAny(restoreTasks);
-            restoreTasks.Remove(doneTask);
-            return await doneTask;
-        }
-
-        private static async Task<RestoreResultPair>
-            CompleteTaskAsync(List<Task<RestoreResultPair>> restoreTasks)
-        {
-            var doneTask = await Task.WhenAny(restoreTasks);
-            restoreTasks.Remove(doneTask);
-            return await doneTask;
         }
 
         private static async Task<IReadOnlyList<RestoreSummaryRequest>> CreatePreLoadedRequests(
