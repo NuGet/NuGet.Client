@@ -1,14 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.StaFact;
-using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Tests.Apex
@@ -232,51 +228,10 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetNetCoreTemplates))]
-        public void NetCoreTransitivePackageReference(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
-            {
-                var project2 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject2");
-                project2.Build();
-                var project3 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject3");
-                project3.Build();
-                testContext.SolutionService.Build();
-
-                testContext.Project.References.Dte.AddProjectReference(project2);
-                project2.References.Dte.AddProjectReference(project3);
-                testContext.SolutionService.SaveAll();
-                testContext.SolutionService.Build();
-
-                var nugetConsole = GetConsole(project3);
-                var packageName = "newtonsoft.json";
-                var packageVersion = "9.0.1";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
-
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion).Should().BeTrue("Install-Package");
-                testContext.Project.Build();
-                project2.Build();
-                project3.Build();
-
-                GetNuGetTestService().Verify.PackageIsInstalled(project3.UniqueName, packageName, packageVersion);
-
-                testContext.Project.References.TryFindReferenceByName("newtonsoft.json", out var result).Should().BeTrue("Find newtonsoft reference");
-                result.Should().NotBeNull("reference to newtonsoft shoult not be null");
-                project2.References.TryFindReferenceByName("newtonsoft.json", out var result2).Should().BeTrue("Find newtonsoft 2nd reference");
-                result2.Should().NotBeNull("reference2 to newtonsoft shoult not be null");
-            }
-        }
-
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetNetCoreTemplates))]
         public void NetCoreTransitivePackageReferenceLimit(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
-
-            Debugger.Launch();
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
