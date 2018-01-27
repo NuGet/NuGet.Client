@@ -2808,11 +2808,20 @@ namespace NuGet.PackageManagement
             else
             {
                 // Fail and display a rollback message to let the user know they have returned to the original state
-                throw new InvalidOperationException(
-                    string.Format(
+                var message = string.Format(
                         CultureInfo.InvariantCulture,
                         Strings.RestoreFailedRollingBack,
-                        buildIntegratedProject.ProjectName));
+                        buildIntegratedProject.ProjectName);
+
+                // Read additional errors from the lock file if one exists
+                var logMessages = restoreResult.LockFile?
+                    .LogMessages
+                    .Where(e => e.Level == LogLevel.Error)
+                    .Select(e => e.AsRestoreLogMessage())
+                  ?? Enumerable.Empty<ILogMessage>();
+
+                // Throw an exception containing all errors, these will be displayed in the error list
+                throw new PackageReferenceRollbackException(message, logMessages);
             }
 
             await OpenReadmeFile(buildIntegratedProject, nuGetProjectContext, token);
