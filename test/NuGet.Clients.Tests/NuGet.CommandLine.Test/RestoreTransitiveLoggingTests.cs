@@ -1059,6 +1059,75 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
+        //                ToolY
+        public void GivenAProjectReferenceNoWarnsVerifyNoWarningWithTool()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netcoreapp2.0"));
+
+                // Referenced but not created
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    NoWarn = "NU1603"
+                };
+
+                // Created in the source
+                var packageX11 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.1"
+                };
+
+                // Referenced but not created
+                var toolY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.1",
+                    PackageType = PackageType.DotnetCliTool
+                };
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, toolY);
+
+                // B -> X
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.Save();
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.AddPackageToAllFrameworks(toolY);
+                projectA.Save();
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
         // Tests ProjA[net461] -> ProjB[netstandard2.0][ProjectWide NoWarn NU1603] -> PkgX[NU1603]
         //                                                                         -> ToolY[NU1603]
         public void GivenAProjectReferenceWithToolAndProjectWideNoWarnsVerifyNoWarning()
