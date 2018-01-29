@@ -22,6 +22,70 @@ namespace NuGet.CommandLine.Test
     public class NuGetInstallCommandTest
     {
         [Fact]
+        public void InstallCommand_PackageIdInstalledWithSxSAndExcludeVersion()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var packageA1 = new SimpleTestPackageContext("a", "1.0.0");
+
+                var packageB1 = new SimpleTestPackageContext("b", "1.0.0");
+                var packageB15 = new SimpleTestPackageContext("b", "1.5.0");
+                var packageB2 = new SimpleTestPackageContext("b", "2.0.0");
+
+                packageA1.Dependencies.Add(packageB2);
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA1, packageB1, packageB2, packageB15);
+
+                RunInstall(pathContext, "b", 0, "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
+                RunInstall(pathContext, "b", 0, "-Version", "1.5.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
+                RunInstall(pathContext, "a", 0, "-ExcludeVersion", "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
+
+                Directory.GetDirectories(pathContext.SolutionRoot)
+                    .Select(e => Path.GetFileName(e).ToLowerInvariant())
+                    .OrderBy(e => e, StringComparer.OrdinalIgnoreCase)
+                    .Should()
+                    .BeEquivalentTo(new[]
+                    {
+                        "a",
+                        "b",
+                        "b.1.0.0",
+                        "b.1.5.0"
+                    });
+            }
+        }
+
+        [Fact]
+        public void InstallCommand_PackageInstalledSxSWithOverlapOnDependency()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var packageA1 = new SimpleTestPackageContext("a", "1.0.0");
+
+                var packageB1 = new SimpleTestPackageContext("b", "1.0.0");
+                var packageB2 = new SimpleTestPackageContext("b", "2.0.0");
+
+                packageA1.Dependencies.Add(packageB2);
+
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA1, packageB1, packageB2);
+
+                RunInstall(pathContext, "b", 0, "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
+                RunInstall(pathContext, "b", 0, "-Version", "2.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
+                RunInstall(pathContext, "a", 0, "-ExcludeVersion", "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
+
+                Directory.GetDirectories(pathContext.SolutionRoot)
+                    .Select(e => Path.GetFileName(e).ToLowerInvariant())
+                    .OrderBy(e => e, StringComparer.OrdinalIgnoreCase)
+                    .Should()
+                    .BeEquivalentTo(new[]
+                    {
+                        "a",
+                        "b.1.0.0",
+                        "b.2.0.0"
+                    });
+            }
+        }
+
+        [Fact]
         public void InstallCommand_UpdatePackageWithExcludeVersionVerifyPackageReplaced()
         {
             using (var pathContext = new SimpleTestPathContext())

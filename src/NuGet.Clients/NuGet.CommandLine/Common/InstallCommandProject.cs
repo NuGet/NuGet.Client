@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -52,7 +53,9 @@ namespace NuGet.CommandLine
                 else
                 {
                     // Id
-                    packages = LocalFolderUtility.GetPackagesV2(Root, NullLogger.Instance);
+                    // Ignore packages that are in SxS or a different format.
+                    packages = LocalFolderUtility.GetPackagesV2(Root, NullLogger.Instance)
+                        .Where(PackageIsValidForPathResolver);
                 }
             }
 
@@ -105,6 +108,32 @@ namespace NuGet.CommandLine
 
             // Delete the package for nuget.exe install/update scenarios
             return await DeletePackage(packageIdentity, nuGetProjectContext, token);
+        }
+
+        /// <summary>
+        /// Verify the package directory name is the same name that
+        /// the path resolver creates.
+        /// </summary>
+        private bool PackageIsValidForPathResolver(LocalPackageInfo package)
+        {
+            DirectoryInfo packageDirectory = null;
+
+            if (File.Exists(package.Path))
+            {
+                // Get the parent directory
+                packageDirectory = new DirectoryInfo(Path.GetDirectoryName(package.Path));
+            }
+            else
+            {
+                // Use the directory directly
+                packageDirectory = new DirectoryInfo(package.Path);
+            }
+
+            // Verify that the package directory matches the expected name
+            var expectedName = _packagePathResolver.GetPackageDirectoryName(package.Identity);
+            return StringComparer.OrdinalIgnoreCase.Equals(
+                packageDirectory.Name,
+                expectedName);
         }
     }
 }

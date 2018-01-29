@@ -54,9 +54,29 @@ namespace NuGet.Test.Utility
             var assemblyPath = new FileInfo(typeof(TestFileSystemUtility).GetTypeInfo().Assembly.Location);
             var currentDir = assemblyPath.Directory;
 
+            var repoRoot = GetRepositoryRoot(currentDir);
+
+            if (repoRoot == null)
+            {
+                // Try walking up from the current directory, the test assembly
+                // is sometimes put in a temp location
+                repoRoot = GetRepositoryRoot(new DirectoryInfo(Directory.GetCurrentDirectory()));
+            }
+
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_TEST_WORK_PATH")))
+            {
+                // Override if set
+                repoRoot = new DirectoryInfo(Environment.GetEnvironmentVariable("NUGET_TEST_WORK_PATH"));
+            }
+
+            return repoRoot?.FullName;
+        }
+
+        private static DirectoryInfo GetRepositoryRoot(DirectoryInfo currentDir)
+        {
             while (currentDir != null)
             {
-                if (currentDir.GetFiles().Any(e => e.Name.Equals("build.ps1", StringComparison.OrdinalIgnoreCase)))
+                if (currentDir.GetFiles().Any(e => e.Name.Equals("NuGet.sln", StringComparison.OrdinalIgnoreCase)))
                 {
                     // We have found the repo root.
                     break;
@@ -65,7 +85,7 @@ namespace NuGet.Test.Utility
                 currentDir = currentDir.Parent;
             }
 
-            return currentDir?.FullName;
+            return currentDir;
         }
 
         public static bool DeleteRandomTestFolder(string randomTestPath)
