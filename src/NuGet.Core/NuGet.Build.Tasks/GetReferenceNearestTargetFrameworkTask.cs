@@ -27,9 +27,9 @@ namespace NuGet.Build.Tasks
         public string CurrentProjectTargetFramework { get; set; }
 
         /// <summary>
-        /// Optional list of target frameworks to be used as Asset Target Fallback frameworks.
+        /// Optional list of target frameworks to be used as Fallback target frameworks.
         /// </summary>
-        public string[] AssetTargetFallbackFrameworks { get; set; }
+        public string[] FallbackTargetFrameworks { get; set; }
 
         /// <summary>
         /// The project references for property lookup.
@@ -48,10 +48,10 @@ namespace NuGet.Build.Tasks
 
             BuildTasksUtility.LogInputParam(logger, nameof(CurrentProjectTargetFramework), CurrentProjectTargetFramework);
 
-            BuildTasksUtility.LogInputParam(logger, nameof(AssetTargetFallbackFrameworks),
-                AssetTargetFallbackFrameworks == null
+            BuildTasksUtility.LogInputParam(logger, nameof(FallbackTargetFrameworks),
+                FallbackTargetFrameworks == null
                     ? ""
-                    : string.Join(";", AssetTargetFallbackFrameworks.Select(p => p)));
+                    : string.Join(";", FallbackTargetFrameworks.Select(p => p)));
 
             BuildTasksUtility.LogInputParam(logger, nameof(AnnotatedProjectReferences),
                 AnnotatedProjectReferences == null
@@ -71,11 +71,11 @@ namespace NuGet.Build.Tasks
                 return false;
             }
 
-            if (AssetTargetFallbackFrameworks != null &&
-                AssetTargetFallbackFrameworks.Length > 0)
+            if (FallbackTargetFrameworks != null &&
+                FallbackTargetFrameworks.Length > 0)
             {
                 var fallbackFrameworks = new List<NuGetFramework>();
-                foreach (var assetTargetFallbackFramework in AssetTargetFallbackFrameworks)
+                foreach (var assetTargetFallbackFramework in FallbackTargetFrameworks)
                 {
                     // validate ATF project framework
                     if (!TryParseAndAddFrameworkToList(assetTargetFallbackFramework, frameworksToMatch, logger))

@@ -229,7 +229,7 @@ namespace NuGet.Build.Tasks.Test
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "netcoreapp2.0",
-                AssetTargetFallbackFrameworks = new string[] { "abcdef" },
+                FallbackTargetFrameworks = new string[] { "abcdef" },
                 AnnotatedProjectReferences = references.ToArray()
             };
 
@@ -258,7 +258,7 @@ namespace NuGet.Build.Tasks.Test
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "netcoreapp2.0",
-                AssetTargetFallbackFrameworks = new string[] { "net46", "abcdef" },
+                FallbackTargetFrameworks = new string[] { "net46", "abcdef" },
                 AnnotatedProjectReferences = references.ToArray()
             };
 
@@ -290,7 +290,7 @@ namespace NuGet.Build.Tasks.Test
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "netcoreapp2.0",
-                AssetTargetFallbackFrameworks = new string[] { "net46" },
+                FallbackTargetFrameworks = new string[] { "net46" },
                 AnnotatedProjectReferences = references.ToArray()
             };
 
@@ -324,7 +324,7 @@ namespace NuGet.Build.Tasks.Test
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "netcoreapp2.0",
-                AssetTargetFallbackFrameworks = new string[] { "net46", "net461" },
+                FallbackTargetFrameworks = new string[] { "net46", "net461" },
                 AnnotatedProjectReferences = references.ToArray()
             };
 
@@ -357,7 +357,7 @@ namespace NuGet.Build.Tasks.Test
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "netcoreapp2.0",
-                AssetTargetFallbackFrameworks = new string[] { "net46" },
+                FallbackTargetFrameworks = new string[] { "net46" },
                 AnnotatedProjectReferences = references.ToArray()
             };
 
@@ -390,7 +390,7 @@ namespace NuGet.Build.Tasks.Test
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "netcoreapp2.0",
-                AssetTargetFallbackFrameworks = new string[] { "net46", "net45", "net461" },
+                FallbackTargetFrameworks = new string[] { "net46", "net45", "net461" },
                 AnnotatedProjectReferences = references.ToArray()
             };
 
@@ -424,7 +424,7 @@ namespace NuGet.Build.Tasks.Test
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "netcoreapp1.0",
-                AssetTargetFallbackFrameworks = new string[] { "net40", "net41" },
+                FallbackTargetFrameworks = new string[] { "net40", "net41" },
                 AnnotatedProjectReferences = references.ToArray()
             };
 
@@ -456,7 +456,7 @@ namespace NuGet.Build.Tasks.Test
             {
                 BuildEngine = buildEngine,
                 CurrentProjectTargetFramework = "netcoreapp1.0",
-                AssetTargetFallbackFrameworks = new string[] { "net45" },
+                FallbackTargetFrameworks = new string[] { "net45" },
                 AnnotatedProjectReferences = references.ToArray()
             };
 
