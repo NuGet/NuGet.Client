@@ -14,21 +14,6 @@ namespace NuGet.Packaging.Test
 {
     public static class SignTestUtility
     {
-        // Environment variable for a valid RFC 3161 timestamping service.
-        private static readonly string _testTimestampServer = Environment.GetEnvironmentVariable("TIMESTAMP_SERVER_URL");
-
-        /// <summary>
-        /// Sign a package for test purposes.
-        /// </summary>
-        public static async Task SignPackageAsync(TestLogger testLogger, X509Certificate2 certificate, SignedPackageArchive signPackage)
-        {
-            var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(new Uri(_testTimestampServer)));
-            var signer = new Signer(signPackage, testSignatureProvider);
-            var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256);
-
-            await signer.SignAsync(request, testLogger, CancellationToken.None);
-        }
-
         public static async Task<VerifySignaturesResult> VerifySignatureAsync(SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)
         {
             var verificationProviders = new[] { new SignatureTrustAndValidityVerificationProvider() };

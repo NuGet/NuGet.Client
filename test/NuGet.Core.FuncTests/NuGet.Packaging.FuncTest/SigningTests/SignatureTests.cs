@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -44,12 +43,16 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
             using (var dir = TestDirectory.Create())
             {
                 // Act
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(_trustedTestCert.Source.Cert, nupkg, dir);
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(
+                    _trustedTestCert.Source.Cert,
+                    nupkg,
+                    dir,
+                    timestampService.Url);
 
                 // Assert
                 using (var stream = File.OpenRead(signedPackagePath))
@@ -68,7 +71,6 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Test.Utility;
@@ -28,14 +29,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private SignCommandTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private string _nugetExePath;
-        private string _timestamper;
 
         public SignCommandTests(SignCommandTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedTestCert = _testFixture.TrustedTestCertificate;
             _nugetExePath = _testFixture.NuGetExePath;
-            _timestamper = _testFixture.Timestamper;
         }
 
         [CIOnlyFact]
@@ -165,9 +164,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [CIOnlyFact]
-        public void SignCommand_SignPackageWithTimestamping()
+        public async Task SignCommand_SignPackageWithTimestamping()
         {
             // Arrange
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
             {
@@ -184,7 +185,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var result = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Timestamper {_timestamper}",
+                    $"sign {packagePath} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Timestamper {timestampService.Url.OriginalString}",
                     waitForExit: true);
 
                 // Assert

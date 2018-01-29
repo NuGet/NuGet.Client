@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -67,10 +66,16 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(testCertificate, nupkg, dir);
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(
+                    testCertificate,
+                    nupkg,
+                    dir,
+                    timestampService.Url);
                 var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -89,11 +94,16 @@ namespace NuGet.Packaging.FuncTest
         public async Task GetTrustResultAsync_WithInvalidSignature_Throws()
         {
             var package = new SimpleTestPackageContext();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
             using (var directory = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var packageFilePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(testCertificate, package, directory);
+                var packageFilePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(
+                    testCertificate,
+                    package,
+                    directory,
+                    timestampService.Url);
 
                 using (var packageReader = new PackageArchiveReader(packageFilePath))
                 {
@@ -245,6 +255,7 @@ namespace NuGet.Packaging.FuncTest
             // Arrange
             var nupkg = new SimpleTestPackageContext();
             var testLogger = new TestLogger();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowUntrusted: false,
@@ -253,7 +264,7 @@ namespace NuGet.Packaging.FuncTest
                 allowNoTimestamp: false,
                 allowUnknownRevocation: false);
             var signatureProvider = new X509SignatureProvider(timestampProvider: null);
-            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testFixture.Timestamper));
+            var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
 
             using (var package = new PackageArchiveReader(nupkg.CreateAsStream(), leaveStreamOpen: false))
@@ -356,35 +367,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
         }
-        public async Task GetTrustResultAsync_WithNoSigningCertificate_Throws()
-        {
-            var package = new SimpleTestPackageContext();
 
-            using (var directory = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            {
-                var packageFilePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(testCertificate, package, directory);
-
-                using (var packageReader = new PackageArchiveReader(packageFilePath))
-                {
-                    var signature = await packageReader.GetSignatureAsync(CancellationToken.None);
-                    var signatureWithNoCertificates = SignedArchiveTestUtility.GenerateSignatureWithNoCertificates(signature);
-                    var provider = new SignatureTrustAndValidityVerificationProvider();
-
-                    var result = await provider.GetTrustResultAsync(
-                        packageReader,
-                        signatureWithNoCertificates,
-                        SignedPackageVerifierSettings.Default,
-                        CancellationToken.None);
-
-                    var issue = result.Issues.FirstOrDefault(log => log.Code == NuGetLogCode.NU3010);
-
-                    Assert.NotNull(issue);
-                    Assert.Equal("The primary signature does not have a signing certificate.", issue.Message);
-                }
-            }
-        }
-        
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
