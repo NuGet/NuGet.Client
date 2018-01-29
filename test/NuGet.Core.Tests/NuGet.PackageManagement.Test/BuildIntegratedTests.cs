@@ -893,7 +893,7 @@ namespace NuGet.Test
                 var originalProjectJson = File.ReadAllText(projectJson);
 
                 // Act & Assert
-                var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                var exception = await Assert.ThrowsAsync<PackageReferenceRollbackException>(
                     () => nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
                         buildIntegratedProject,
                         actions,
