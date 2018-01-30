@@ -16,9 +16,8 @@ namespace NuGetConsole
     /// </summary>
     public partial class ConsoleContainer : UserControl
     {
-        public ConsoleContainer(IVsShell4 shell)
+        public ConsoleContainer()
         {
-
             InitializeComponent();
 
             ThreadHelper.JoinableTaskFactory.StartOnIdle(
@@ -31,6 +30,7 @@ namespace NuGetConsole
                             var productUpdateService = ServiceLocator.GetInstance<IProductUpdateService>();
                             var packageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
                             var deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+                            var shell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
 
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
