@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Protocol;
+using Test.Utility;
 
 namespace NuGet.CommandLine.Test
 {
@@ -326,11 +327,6 @@ namespace NuGet.CommandLine.Test
 
         private void HandleRequest()
         {
-            const int ERROR_OPERATION_ABORTED = 995;
-            const int ERROR_INVALID_HANDLE = 6;
-            const int ERROR_INVALID_FUNCTION = 1;
-            const int ERROR_OPERATION_ABORTED_MONO = 500;
-
             while (true)
             {
                 try
@@ -344,10 +340,10 @@ namespace NuGet.CommandLine.Test
                 }
                 catch (HttpListenerException ex)
                 {
-                    if (ex.ErrorCode == ERROR_OPERATION_ABORTED ||
-                        ex.ErrorCode == ERROR_INVALID_HANDLE ||
-                        ex.ErrorCode == ERROR_INVALID_FUNCTION ||
-                        RuntimeEnvironmentHelper.IsMono && ex.ErrorCode == ERROR_OPERATION_ABORTED_MONO)
+                    if (ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED ||
+                        ex.ErrorCode == ErrorConstants.ERROR_INVALID_HANDLE ||
+                        ex.ErrorCode == ErrorConstants.ERROR_INVALID_FUNCTION ||
+                        RuntimeEnvironmentHelper.IsMono && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_MONO)
                     {
                         return;
                     }

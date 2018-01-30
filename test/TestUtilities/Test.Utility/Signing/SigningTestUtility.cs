@@ -107,7 +107,6 @@ namespace Test.Utility.Signing
                 critical: true,
                 extensionValue: new ExtendedKeyUsage(usages));
 
-
             var notBefore = DateTime.UtcNow.Subtract(TimeSpan.FromHours(1));
             var notAfter = DateTime.UtcNow.Add(TimeSpan.FromSeconds(5));
 
@@ -423,5 +422,27 @@ namespace Test.Utility.Signing
             // This makes all the associated tests to require admin privilege
             return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
         }
+
+#if IS_DESKTOP
+        public static DisposableList RegisterDefaultResponders(
+            this ISigningTestServer testServer,
+            TimestampService timestampService)
+        {
+            var responders = new DisposableList();
+            var ca = timestampService.CertificateAuthority;
+
+            while (ca != null)
+            {
+                responders.Add(testServer.RegisterResponder(ca));
+                responders.Add(testServer.RegisterResponder(ca.OcspResponder));
+
+                ca = ca.Parent;
+            }
+
+            responders.Add(testServer.RegisterResponder(timestampService));
+
+            return responders;
+        }
+#endif
     }
 }
