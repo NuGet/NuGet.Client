@@ -3,20 +3,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Newtonsoft.Json.Linq;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -40,9 +36,9 @@ namespace NuGet.Commands.Test
                     VersionRange.Parse("1.0.0"),
                     NuGetFramework.Parse("netcoreapp1.0"),
                     pathContext.UserPackagesFolder,
-                    new List<string>() { pathContext.FallbackFolder},
+                    new List<string>() { pathContext.FallbackFolder },
                     new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
-                    new WarningProperties());
+                    projectWideWarningProperties: null);
 
                 dgFile.AddProject(spec);
                 dgFile.AddRestore(spec.Name);
@@ -104,6 +100,28 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public void DotnetCliTool_VerifyPackageSpecWithoutWarningProperties()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Act
+                var spec = ToolRestoreUtility.GetSpec(
+                    Path.Combine(pathContext.SolutionRoot, "tool", "fake.csproj"),
+                    "a",
+                    VersionRange.Parse("1.0.0"),
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                    pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder },
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    projectWideWarningProperties: null);
+
+                // Assert
+                spec.RestoreMetadata.ProjectWideWarningProperties.Should().NotBeNull();
+            }
+        }
+
+        [Fact]
         public async Task DotnetCliTool_BasicToolRestore()
         {
             // Arrange
@@ -120,7 +138,7 @@ namespace NuGet.Commands.Test
                     pathContext.UserPackagesFolder,
                     new List<string>() { pathContext.FallbackFolder },
                     new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
-                    new WarningProperties());
+                    projectWideWarningProperties: null);
 
                 dgFile.AddProject(spec);
                 dgFile.AddRestore(spec.Name);
@@ -159,7 +177,7 @@ namespace NuGet.Commands.Test
                                         pathContext.UserPackagesFolder,
                     new List<string>() { pathContext.FallbackFolder },
                     new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
-                    new WarningProperties());
+                    projectWideWarningProperties: null);
 
                 var spec2 = ToolRestoreUtility.GetSpec(
                     Path.Combine(pathContext.SolutionRoot, "fake2.csproj"),
@@ -169,7 +187,7 @@ namespace NuGet.Commands.Test
                                         pathContext.UserPackagesFolder,
                     new List<string>() { pathContext.FallbackFolder },
                     new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
-                    new WarningProperties());
+                    projectWideWarningProperties: null);
 
                 var dgFile1 = new DependencyGraphSpec();
                 dgFile1.AddProject(spec1);
@@ -230,7 +248,7 @@ namespace NuGet.Commands.Test
                                             pathContext.UserPackagesFolder,
                     new List<string>() { pathContext.FallbackFolder },
                     new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
-                    new WarningProperties());
+                    projectWideWarningProperties: null);
 
                     dgFile.AddProject(spec);
                     dgFile.AddRestore(spec.Name);
@@ -283,7 +301,7 @@ namespace NuGet.Commands.Test
                                             pathContext.UserPackagesFolder,
                     new List<string>() { pathContext.FallbackFolder },
                     new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
-                    new WarningProperties());
+                    projectWideWarningProperties: null);
 
                     dgFile.AddProject(spec);
                     dgFile.AddRestore(spec.Name);
@@ -320,7 +338,7 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData("tool","netcoreapp1.0","1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
+        [InlineData("tool", "netcoreapp1.0", "1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
         [InlineData("Tool", "netcoreapp1.0", "1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
         [InlineData("tOOl", "NetCoreapp1.0", "1.0.0", "tool-netcoreapp1.0-[1.0.0, )")]
         public void DotnetCliTool_TestGetUniqueName(string name, string framework, string version, string expected)
@@ -328,7 +346,7 @@ namespace NuGet.Commands.Test
             Assert.Equal(expected, ToolRestoreUtility.GetUniqueName(name, framework, VersionRange.Parse(version)));
         }
 
-        [Fact] 
+        [Fact]
         public void DotnetCliTool_TestGetUniqueName_VersionRangeAll()
         {
             Assert.Equal("tool-netcoreapp1.0-(, )", ToolRestoreUtility.GetUniqueName("tool", "netcoreapp1.0", VersionRange.All));

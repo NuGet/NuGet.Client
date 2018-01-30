@@ -64,7 +64,7 @@ namespace NuGet.Commands
                             ProjectReferences = { }
                         }
                     },
-                    ProjectWideWarningProperties = projectWideWarningProperties
+                    ProjectWideWarningProperties = projectWideWarningProperties ?? new WarningProperties()
                 }
             };
         }
