@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0">
   <!-- Version -->
   <PropertyGroup>
-    <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">4.5.0</SemanticVersion>
+    <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">4.5.1</SemanticVersion>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">4</NetCoreAssemblyBuildNumber>
