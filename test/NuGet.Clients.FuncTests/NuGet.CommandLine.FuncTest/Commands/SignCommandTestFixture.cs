@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 using NuGet.CommandLine.Test;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
@@ -19,8 +20,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
     /// </summary>
     public class SignCommandTestFixture : IDisposable
     {
-        private static readonly string _testTimestampServer = Environment.GetEnvironmentVariable("TIMESTAMP_SERVER_URL");
-
         private const int _validCertChainLength = 3;
         private const int _invalidCertChainLength = 2;
 
@@ -28,6 +27,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private TrustedTestCert<TestCertificate> _trustedTestCertWithInvalidEku;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
+        private TrustedTestCert<X509Certificate2> _trustedTimestampRoot;
         private TrustedTestCertificateChain _trustedTestCertChain;
         private TrustedTestCertificateChain _revokedTestCertChain;
         private TrustedTestCertificateChain _revocationUnknownTestCertChain;
@@ -38,6 +38,10 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private object _crlServerRunningLock = new object();
         private TestDirectory _testDirectory;
         private string _nugetExePath;
+        private Lazy<Task<SigningTestServer>> _testServer;
+        private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
+        private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
+        private readonly DisposableList _responders;
 
         public TrustedTestCert<TestCertificate> TrustedTestCertificate
         {
@@ -173,7 +177,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-
         public IList<ISignatureVerificationProvider> TrustProviders
         {
             get
@@ -243,7 +246,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        public string Timestamper => _testTimestampServer;
+        public SignCommandTestFixture()
+        {
+            _testServer = new Lazy<Task<SigningTestServer>>(SigningTestServer.CreateAsync);
+            _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
+            _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
+            _responders = new DisposableList();
+        }
 
         private void SetUpCrlDistributionPoint()
         {
@@ -293,18 +302,77 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
+        public async Task<ISigningTestServer> GetSigningTestServerAsync()
+        {
+            return await _testServer.Value;
+        }
+
+        public async Task<CertificateAuthority> GetDefaultTrustedCertificateAuthorityAsync()
+        {
+            return await _defaultTrustedCertificateAuthority.Value;
+        }
+
+        public async Task<TimestampService> GetDefaultTrustedTimestampServiceAsync()
+        {
+            return await _defaultTrustedTimestampService.Value;
+        }
+
         public void Dispose()
         {
             _trustedTestCert?.Dispose();
             _trustedTestCertWithInvalidEku?.Dispose();
             _trustedTestCertExpired?.Dispose();
             _trustedTestCertNotYetValid?.Dispose();
+            _trustedTimestampRoot?.Dispose();
             _trustedTestCertChain?.Dispose();
             _revokedTestCertChain?.Dispose();
             _revocationUnknownTestCertChain?.Dispose();
             _crlServer?.Stop();
             _crlServer?.Dispose();
             _testDirectory?.Dispose();
+            _responders.Dispose();
+
+            if (_testServer.IsValueCreated)
+            {
+                _testServer.Value.Result.Dispose();
+            }
+        }
+
+        private async Task<CertificateAuthority> CreateDefaultTrustedCertificateAuthorityAsync()
+        {
+            var testServer = await _testServer.Value;
+            var rootCa = CertificateAuthority.Create(testServer.Url);
+            var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
+            var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
+
+            _trustedTimestampRoot = new TrustedTestCert<X509Certificate2>(
+                rootCertificate,
+                certificate => certificate,
+                StoreName.Root,
+                StoreLocation.LocalMachine);
+
+            var ca = intermediateCa;
+
+            while (ca != null)
+            {
+                _responders.Add(testServer.RegisterResponder(ca));
+                _responders.Add(testServer.RegisterResponder(ca.OcspResponder));
+
+                ca = ca.Parent;
+            }
+
+            return intermediateCa;
+        }
+
+        private async Task<TimestampService> CreateDefaultTrustedTimestampServiceAsync()
+        {
+            var testServer = await _testServer.Value;
+            var ca = await _defaultTrustedCertificateAuthority.Value;
+            var timestampService = TimestampService.Create(ca);
+
+            _responders.Add(testServer.RegisterResponder(timestampService));
+
+            return timestampService;
         }
     }
 }

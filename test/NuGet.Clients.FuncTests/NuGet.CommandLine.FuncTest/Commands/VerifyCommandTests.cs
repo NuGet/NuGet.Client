@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
@@ -27,14 +28,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private SignCommandTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private string _nugetExePath;
-        private string _timestamper;
 
         public VerifyCommandTests(SignCommandTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedTestCert = _testFixture.TrustedTestCertificate;
             _nugetExePath = _testFixture.NuGetExePath;
-            _timestamper = _testFixture.Timestamper;
         }
 
         [CIOnlyFact]
@@ -75,9 +74,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [CIOnlyFact]
-        public void VerifyCommand_VerifySignedAndTimestampedPackageSucceeds()
+        public async Task VerifyCommand_VerifySignedAndTimestampedPackageSucceeds()
         {
             // Arrange
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+
             using (var dir = TestDirectory.Create())
             using (var zipStream = new SimpleTestPackageContext().CreateAsStream())
             {
@@ -93,7 +94,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var signResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
-                    $"sign {packagePath} -Timestamper {_testFixture.Timestamper} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
+                    $"sign {packagePath} -Timestamper {timestampService.Url.OriginalString} -CertificateFingerprint {_trustedTestCert.Source.Cert.Thumbprint} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
                     waitForExit: true);
 
                 signResult.Success.Should().BeTrue();

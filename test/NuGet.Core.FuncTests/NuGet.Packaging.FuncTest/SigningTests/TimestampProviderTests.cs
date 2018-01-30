@@ -11,9 +11,11 @@ using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.X509;
 using Test.Utility.Signing;
 using Xunit;
@@ -23,28 +25,24 @@ namespace NuGet.Packaging.FuncTest
     [Collection("Signing Functional Test Collection")]
     public class TimestampProviderTests
     {
-        private static readonly string _testTimestampServer = Environment.GetEnvironmentVariable("TIMESTAMP_SERVER_URL");
-        private const string _authorCertExpiredExceptionMessage = "Author certificate was not valid when it was timestamped.";
         private const string _argumentNullExceptionMessage = "Value cannot be null.\r\nParameter name: {0}";
         private const string _operationCancelledExceptionMessage = "The operation was canceled.";
 
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
-        private SigningSpecifications _signingSpecifications;
 
         public TimestampProviderTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedTestCert = _testFixture.TrustedTestCertificate;
-            _signingSpecifications = _testFixture.SigningSpecifications;
         }
 
         [CIOnlyFact]
-        public void Rfc3161TimestampProvider_Success()
+        public async Task TimestampData_WithValidInput_ReturnsTimestamp()
         {
-            // Arrange
             var logger = new TestLogger();
-            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var data = "Test data to be signed and timestamped";
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -76,10 +74,10 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async void Rfc3161TimestampProvider_AssertCompleteChain_Success()
+        public async Task TimestampData_AssertCompleteChain_Success()
         {
-            // Arrange
-            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var nupkg = new SimpleTestPackageContext();
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -131,11 +129,11 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public void Rfc3161TimestampProvider_Failure_NullRequest()
+        public async Task TimestampData_WhenRequestNull_Throws()
         {
-            // Arrange
             var logger = new TestLogger();
-            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var authorCertName = "author@nuget.func.test";
             var data = "Test data to be signed and timestamped";
 
@@ -167,11 +165,10 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public void Rfc3161TimestampProvider_Failure_NullLogger()
+        public async Task TimestampData_WhenLoggerNull_Throws()
         {
-            // Arrange
-            var logger = new TestLogger();
-            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var data = "Test data to be signed and timestamped";
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -191,16 +188,16 @@ namespace NuGet.Packaging.FuncTest
 
                 // Assert
                 timestampAction.ShouldThrow<ArgumentNullException>()
-                    .WithMessage(string.Format(_argumentNullExceptionMessage, nameof(logger)));
+                    .WithMessage(string.Format(_argumentNullExceptionMessage, "logger"));
             }
         }
 
         [CIOnlyFact]
-        public void Rfc3161TimestampProvider_Failure_Cancelled()
+        public async Task TimestampData_WhenCancelled_Throws()
         {
-            // Arrange
             var logger = new TestLogger();
-            var timestampProvider = new Rfc3161TimestampProvider(new Uri(_testTimestampServer));
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var data = "Test data to be signed and timestamped";
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -221,6 +218,43 @@ namespace NuGet.Packaging.FuncTest
                 // Assert
                 timestampAction.ShouldThrow<OperationCanceledException>()
                     .WithMessage(_operationCancelledExceptionMessage);
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task TimestampData_WhenTimestampSigningCertificateRevoked_Throws()
+        {
+            var testServer = await _testFixture.GetSigningTestServerAsync();
+            var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
+            var timestampService = TimestampService.Create(certificateAuthority);
+
+            certificateAuthority.Revoke(timestampService.Certificate, CrlReason.KeyCompromise, DateTimeOffset.UtcNow);
+
+            using (testServer.RegisterResponder(timestampService))
+            {
+                var logger = new TestLogger();
+                var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
+                var data = "Test data to be signed and timestamped";
+
+                using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
+                {
+                    var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
+                    var signatureValue = signedCms.Encode();
+
+                    var request = new TimestampRequest
+                    {
+                        SigningSpec = SigningSpecifications.V1,
+                        TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
+                        SignatureValue = signatureValue
+                    };
+
+                    var exception = Assert.Throws<TimestampException>(
+                        () => timestampProvider.TimestampData(request, logger, CancellationToken.None));
+
+                    Assert.Equal(
+                        "The timestamp service's certificate chain could not be built: The certificate is revoked.",
+                        exception.Message);
+                }
             }
         }
     }

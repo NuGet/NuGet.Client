@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 using NuGet.Packaging.Signing;
 using Test.Utility.Signing;
 
@@ -14,14 +15,25 @@ namespace NuGet.Packaging.FuncTest
     /// </summary>
     public class SigningTestFixture : IDisposable
     {
-        private static readonly string _testTimestampServer = Environment.GetEnvironmentVariable("TIMESTAMP_SERVER_URL");
-
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
+        private TrustedTestCert<X509Certificate2> _trustedTimestampRoot;
         private IReadOnlyList<TrustedTestCert<TestCertificate>> _trustedTestCertificateWithReissuedCertificate;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
+        private Lazy<Task<SigningTestServer>> _testServer;
+        private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
+        private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
+        private readonly DisposableList _responders;
+
+        public SigningTestFixture()
+        {
+            _testServer = new Lazy<Task<SigningTestServer>>(SigningTestServer.CreateAsync);
+            _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
+            _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
+            _responders = new DisposableList();
+        }
 
         public TrustedTestCert<TestCertificate> TrustedTestCertificate
         {
@@ -132,11 +144,78 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        public string Timestamper => _testTimestampServer;
+        public async Task<ISigningTestServer> GetSigningTestServerAsync()
+        {
+            return await _testServer.Value;
+        }
+
+        public async Task<CertificateAuthority> GetDefaultTrustedCertificateAuthorityAsync()
+        {
+            return await _defaultTrustedCertificateAuthority.Value;
+        }
+
+        public async Task<TimestampService> GetDefaultTrustedTimestampServiceAsync()
+        {
+            return await _defaultTrustedTimestampService.Value;
+        }
+
+        private async Task<CertificateAuthority> CreateDefaultTrustedCertificateAuthorityAsync()
+        {
+            var testServer = await _testServer.Value;
+            var rootCa = CertificateAuthority.Create(testServer.Url);
+            var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
+            var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
+
+            _trustedTimestampRoot = new TrustedTestCert<X509Certificate2>(
+                rootCertificate,
+                certificate => certificate,
+                StoreName.Root,
+                StoreLocation.LocalMachine);
+
+            var ca = intermediateCa;
+
+            while (ca != null)
+            {
+                _responders.Add(testServer.RegisterResponder(ca));
+                _responders.Add(testServer.RegisterResponder(ca.OcspResponder));
+
+                ca = ca.Parent;
+            }
+
+            return intermediateCa;
+        }
+
+        private async Task<TimestampService> CreateDefaultTrustedTimestampServiceAsync()
+        {
+            var testServer = await _testServer.Value;
+            var ca = await _defaultTrustedCertificateAuthority.Value;
+            var timestampService = TimestampService.Create(ca);
+
+            _responders.Add(testServer.RegisterResponder(timestampService));
+
+            return timestampService;
+        }
 
         public void Dispose()
         {
             _trustedTestCert?.Dispose();
+            _trustedTestCertExpired?.Dispose();
+            _trustedTestCertNotYetValid?.Dispose();
+            _trustedTimestampRoot?.Dispose();
+            _responders.Dispose();
+
+            if (_trustedTestCertificateWithReissuedCertificate != null)
+            {
+                foreach (var certificate in _trustedTestCertificateWithReissuedCertificate)
+                {
+                    certificate.Dispose();
+                }
+            }
+
+            if (_testServer.IsValueCreated)
+            {
+                _testServer.Value.Result.Dispose();
+            }
         }
     }
 }

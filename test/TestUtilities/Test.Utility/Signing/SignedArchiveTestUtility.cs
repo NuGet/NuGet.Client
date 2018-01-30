@@ -22,7 +22,6 @@ namespace Test.Utility.Signing
     {
         // Central Directory file header size excluding signature, file name, extra field and file comment
         private const uint CentralDirectoryFileHeaderSizeWithoutSignature = 46;
-        private static readonly string _testTimestampServer = Environment.GetEnvironmentVariable("TIMESTAMP_SERVER_URL");
 
         /// <summary>
         /// Generates a signed copy of a package and returns the path to that package
@@ -64,8 +63,13 @@ namespace Test.Utility.Signing
         /// <param name="testCert">Certificate to be used while signing the package</param>
         /// <param name="nupkg">Package to be signed</param>
         /// <param name="dir">Directory for placing the signed package</param>
+        /// <param name="timestampService">RFC 3161 timestamp service URL.</param>
         /// <returns>Path to the signed copy of the package</returns>
-        public static async Task<string> CreateSignedAndTimeStampedPackageAsync(X509Certificate2 testCert, SimpleTestPackageContext nupkg, string dir)
+        public static async Task<string> CreateSignedAndTimeStampedPackageAsync(
+            X509Certificate2 testCert,
+            SimpleTestPackageContext nupkg,
+            string dir,
+            Uri timestampService)
         {
             var testLogger = new TestLogger();
 
@@ -77,7 +81,7 @@ namespace Test.Utility.Signing
                 using (var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
                 {
                     // Sign the package
-                    await SignAndTimeStampPackageAsync(testLogger, testCert, signPackage);
+                    await SignAndTimeStampPackageAsync(testLogger, testCert, signPackage, timestampService);
                 }
 
                 zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
@@ -131,9 +135,13 @@ namespace Test.Utility.Signing
         /// Sign and timestamp a package for test purposes.
         /// This method timestamps a package and should only be used with tests marked with [CIOnlyFact]
         /// </summary>
-        private static async Task SignAndTimeStampPackageAsync(TestLogger testLogger, X509Certificate2 certificate, SignedPackageArchive signPackage)
+        private static async Task SignAndTimeStampPackageAsync(
+            TestLogger testLogger,
+            X509Certificate2 certificate,
+            SignedPackageArchive signPackage,
+            Uri timestampService)
         {
-            var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(new Uri(_testTimestampServer)));
+            var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(timestampService));
             var signer = new Signer(signPackage, testSignatureProvider);
             var request = new SignPackageRequest(certificate, signatureHashAlgorithm: HashAlgorithmName.SHA256);
 
