@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Text.Editor;
@@ -88,9 +87,9 @@ namespace NuGet.Console.TestContract
             UIInvoke(() => _wpfConsole.Clear());
         }
 
-        public bool RunCommand(string command, TimeSpan timeout)
+        public void RunCommand(string command, TimeSpan timeout)
         {
-            return WaitForActionComplete(() => RunCommandWithoutWait(command), timeout);
+            WaitForActionComplete(() => RunCommandWithoutWait(command), timeout);
         }
 
         public void RunCommandWithoutWait(string command)
@@ -109,27 +108,29 @@ namespace NuGet.Console.TestContract
             }
         }
 
-        public bool WaitForActionComplete(Action action, TimeSpan timeout)
+        public void WaitForActionComplete(Action action, TimeSpan timeout)
         {
             if (!EnsureInitilizeConsole())
             {
-                return false;
+                return;
             }
 
             using (var semaphore = new ManualResetEventSlim())
             {
-                void eventHandler(object s, EventArgs e) => semaphore.Set();
                 var dispatcher = (IPrivateConsoleDispatcher)_wpfConsole.Dispatcher;
                 dispatcher.SetExecutingCommand(true);
                 var asynchost = (IAsyncHost)_wpfConsole.Host;
+                void eventHandler(object s, EventArgs e) => semaphore.Set();
                 asynchost.ExecuteEnd += eventHandler;
 
                 try
                 {
+                    Clear();
+
                     // Run
                     action();
 
-                    return semaphore.Wait(timeout);
+                    semaphore.Wait(timeout);
                 }
                 finally
                 {

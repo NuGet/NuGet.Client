@@ -38,7 +38,7 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Install-Package should pass");
+                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
 
                 // Build before the install check to ensure that everything is up to date.
                 testContext.Project.Build();
@@ -63,12 +63,12 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
 
-                nugetConsole.UninstallPackageFromPMC(signedPackage.Id).Should().BeTrue("Uninstall-Package");
+                nugetConsole.UninstallPackageFromPMC(signedPackage.Id);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, signedPackage.Id);
@@ -92,12 +92,12 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, packageVersion09).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(signedPackage.Id, packageVersion09);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, packageVersion09);
 
-                nugetConsole.UpdatePackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Update-Package");
+                nugetConsole.UpdatePackageFromPMC(signedPackage.Id, signedPackage.Version);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
@@ -127,12 +127,12 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
 
-                nugetConsole.UpdatePackageFromPMC(signedPackage.Id, packageVersion09).Should().BeTrue("Update-Package");
+                nugetConsole.UpdatePackageFromPMC(signedPackage.Id, packageVersion09);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, packageVersion09);
@@ -156,7 +156,7 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
                 testContext.Project.Build();
 
                 // TODO: Fix bug where no warnings are shwon when package is untrusted but still installed
@@ -181,8 +181,7 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                // TODO: install should fail, therefore Should().BeFalse()
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
                 nugetConsole.IsMessageFoundInPMC("package integrity check failed").Should().BeTrue("Integrity failed message shown.");
                 testContext.Project.Build();
 

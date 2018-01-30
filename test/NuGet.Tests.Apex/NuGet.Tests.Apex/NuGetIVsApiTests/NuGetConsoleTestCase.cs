@@ -32,8 +32,7 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                var installed = nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-                installed.Should().BeTrue("Install-Package should pass");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
                 // Verify install from project.assets.json
                 var inAssetsFile = Utils.IsPackageInstalledInAssetsFile(nugetConsole, testContext.Project.FullPath, packageName, packageVersion);
@@ -57,8 +56,7 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                var installed = nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-                installed.Should().BeTrue("Install-Package should pass");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
                 // Build before the install check to ensure that everything is up to date.
                 testContext.Project.Build();
@@ -85,12 +83,12 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion);
 
-                nugetConsole.UninstallPackageFromPMC(packageName).Should().BeTrue("Uninstall-Package");
+                nugetConsole.UninstallPackageFromPMC(packageName);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, packageName);
@@ -116,12 +114,12 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion1).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion1);
 
-                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2).Should().BeTrue("UnInstall-Package");
+                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion2);
@@ -149,8 +147,8 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1).Should().BeTrue("Install-Package 1");
-                nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2).Should().BeTrue("Install-Package 2");
+                nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
+                nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName1, packageVersion1);
@@ -179,8 +177,8 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1).Should().BeTrue("Install-Package 1");
-                nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2).Should().BeTrue("Install-Package 2");
+                nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
+                nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName1, packageVersion1);
@@ -188,8 +186,8 @@ namespace NuGet.Tests.Apex
 
                 VisualStudio.AssertNoErrors();
 
-                nugetConsole.UninstallPackageFromPMC(packageName1).Should().BeTrue("Uninstall package 1");
-                nugetConsole.UninstallPackageFromPMC(packageName2).Should().BeTrue("Uninstall package 2");
+                nugetConsole.UninstallPackageFromPMC(packageName1);
+                nugetConsole.UninstallPackageFromPMC(packageName2);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, packageName1);
@@ -214,12 +212,12 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion2).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion2);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion2);
 
-                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion1).Should().BeTrue("Update-Package");
+                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion1);
                 testContext.Project.Build();
 
                 GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion1);
@@ -255,7 +253,7 @@ namespace NuGet.Tests.Apex
                 var packageVersion = "9.0.1";
                 Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
 
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
                 testContext.Project.Build();
                 project2.Build();
                 project3.Build();
