@@ -104,7 +104,6 @@ namespace Test.Utility.Signing
                 try
                 {
                     var context = _listener.GetContext();
-
                     var path = GetBaseAbsolutePath(context.Request.Url);
 
                     IHttpResponder responder;
@@ -117,7 +116,7 @@ namespace Test.Utility.Signing
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine(ex.ToString());
+                            Console.WriteLine($"Unexpected exception in a {nameof(SigningTestServer)} HTTP responder:  {ex.ToString()}");
                         }
                     }
                     else
@@ -139,7 +138,7 @@ namespace Test.Utility.Signing
                         return;
                     }
 
-                    Console.WriteLine("Unexpected error code: {0}. Ex: {1}", ex.ErrorCode, ex);
+                    Console.WriteLine($"Unexpected error code:  {ex.ErrorCode}.  Exception:  {ex.ToString()}");
 
                     throw;
                 }

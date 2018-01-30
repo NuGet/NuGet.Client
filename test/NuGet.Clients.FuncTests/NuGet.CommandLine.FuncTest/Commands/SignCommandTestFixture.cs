@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine.Test;
 using NuGet.Packaging.Signing;
@@ -348,7 +347,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             _trustedTimestampRoot = new TrustedTestCert<X509Certificate2>(
                 rootCertificate,
-                _ => _,
+                certificate => certificate,
                 StoreName.Root,
                 StoreLocation.LocalMachine);
 

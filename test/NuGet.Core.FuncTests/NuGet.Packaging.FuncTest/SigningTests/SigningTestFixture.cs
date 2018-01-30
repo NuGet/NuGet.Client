@@ -153,7 +153,7 @@ namespace NuGet.Packaging.FuncTest
 
             _trustedTimestampRoot = new TrustedTestCert<X509Certificate2>(
                 rootCertificate,
-                _ => _,
+                certificate => certificate,
                 StoreName.Root,
                 StoreLocation.LocalMachine);
 
