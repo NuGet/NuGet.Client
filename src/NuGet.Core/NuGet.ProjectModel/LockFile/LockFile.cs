@@ -107,7 +107,7 @@ namespace NuGet.ProjectModel
         public LockFileLibrary GetLibrary(string name, NuGetVersion version)
         {
             return Libraries.FirstOrDefault(l =>
-                string.Equals(l.Name, name) &&
+                string.Equals(l.Name, name, StringComparison.OrdinalIgnoreCase) &&
                 l.Version.Equals(version));
         }
 
