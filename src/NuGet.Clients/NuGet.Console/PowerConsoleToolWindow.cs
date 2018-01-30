@@ -70,11 +70,6 @@ namespace NuGetConsole.Implementation
             get { return ComponentModel.GetService<IPowerConsoleWindow>() as PowerConsoleWindow; }
         }
 
-        private IVsShell4 VsShell
-        {
-            get { return this.GetService<IVsShell4>(typeof(SVsShell)); }
-        }
-
         private IVsUIShell VsUIShell
         {
             get { return this.GetService<IVsUIShell>(typeof(SVsUIShell)); }
@@ -589,7 +584,7 @@ namespace NuGetConsole.Implementation
             {
                 if (_consoleParentPane == null)
                 {
-                    _consoleParentPane = new ConsoleContainer(VsShell);
+                    _consoleParentPane = new ConsoleContainer();
                 }
                 return _consoleParentPane;
             }
