@@ -1102,8 +1102,16 @@ namespace NuGet.CommandLine.Test
                     PackageType = PackageType.DotnetCliTool
                 };
 
+                // Created in the source
+                var toolY101 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.1",
+                    PackageType = PackageType.DotnetCliTool
+                };
+
                 SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, toolY);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, toolY101);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
