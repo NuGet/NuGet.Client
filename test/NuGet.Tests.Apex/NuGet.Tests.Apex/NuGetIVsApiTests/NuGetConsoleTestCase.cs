@@ -312,7 +312,7 @@ namespace NuGet.Tests.Apex
                 var source = "https://api.nuget.org/v3/index.json";
 
                 Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion1, source));
-                Assert.Equal(warns, nugetConsole.IsMessageFoundInPMC($"The 'Source' parameter is not respected for the 'PackageReference' based project(s) {project.UniqueName}. The enabled sources in your NuGet configuration will be used"));
+                Assert.Equal(warns, nugetConsole.IsMessageFoundInPMC($"The 'Source' parameter is not respected for the transitive package management based project(s) {project.UniqueName}. The enabled sources in your NuGet configuration will be used"));
 
                 Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion1));
                 project.Build();

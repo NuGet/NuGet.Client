@@ -266,11 +266,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             Id = metadata.First().Identity.Id;
         }
 
-        protected virtual void ValidateArgumentsAreSupported()
+        protected virtual void WarnIfParametersAreNotSupported()
         {
-            if (Project.ProjectStyle == ProjectStyle.PackageReference && Source != null)
+            if (Source != null && Project is BuildIntegratedNuGetProject)
             {
-                var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectStyle, nameof(Source), NuGetProject.GetUniqueNameOrName(Project));
+                var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectType, nameof(Source), NuGetProject.GetUniqueNameOrName(Project));
                 Log(MessageLevel.Warning, warning);
             }
         }

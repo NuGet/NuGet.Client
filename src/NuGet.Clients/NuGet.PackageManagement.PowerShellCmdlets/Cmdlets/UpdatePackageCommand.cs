@@ -12,6 +12,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
@@ -118,7 +119,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 await _lockService.ExecuteNuGetOperationAsync(() =>
                 {
                     SubscribeToProgressEvents();
-                    ValidateArgumentsAreSupported();
+                    WarnIfParametersAreNotSupported();
 
                     // Update-Package without ID specified
                     if (!_idSpecified)
@@ -153,14 +154,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             TelemetryService.EmitTelemetryEvent(actionTelemetryEvent);
         }
 
-        protected override void ValidateArgumentsAreSupported()
-        {
-            
+        protected override void WarnIfParametersAreNotSupported()
+        {            
             if (Source != null)
             {
-                var projectNames = string.Join(",", Projects.Where(e => e.ProjectStyle == ProjectStyle.PackageReference).Select(p => NuGetProject.GetUniqueNameOrName(p)));
+                var projectNames = string.Join(",", Projects.Where(e => e is BuildIntegratedNuGetProject).Select(p => NuGetProject.GetUniqueNameOrName(p)));
                 if (!string.IsNullOrEmpty(projectNames)) { 
-                    var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectStyle, nameof(Source), projectNames);
+                    var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectType, nameof(Source), projectNames);
                     Log(MessageLevel.Warning, warning);
                 }
             }
