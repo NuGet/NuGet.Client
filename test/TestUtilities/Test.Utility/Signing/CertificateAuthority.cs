@@ -39,8 +39,8 @@ namespace Test.Utility.Signing
         public OcspResponder OcspResponder => _ocspResponder.Value;
         public CertificateAuthority Parent { get; }
 
-        internal Uri CertificateUri { get; }
-        internal Uri OcspResponderUri { get; }
+        public Uri CertificateUri { get; }
+        public Uri OcspResponderUri { get; }
         internal AsymmetricCipherKeyPair KeyPair { get; }
 
         private CertificateAuthority(
