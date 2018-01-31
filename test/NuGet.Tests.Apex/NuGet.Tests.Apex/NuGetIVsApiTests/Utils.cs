@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
@@ -47,7 +48,39 @@ namespace NuGet.Tests.Apex
             return package;
         }
 
-        public static bool IsPackageInstalledInAssetsFile(NuGetConsoleTestExtension nuGetConsole, string projectPath, string packageName, string packageVersion)
+        public static void AssertPackageIsInstalled(NuGetApexTestService testService, ProjectTemplate projectTemplate, ProjectTestExtension project, string packageName, string packageVersion)
+        {
+            switch (projectTemplate)
+            {
+                case ProjectTemplate.ClassLibrary:
+                    testService.Verify.PackageIsInstalled(project.UniqueName, packageName, packageVersion);
+                    break;
+                case ProjectTemplate.NetCoreClassLib:
+                case ProjectTemplate.NetCoreConsoleApp:
+                case ProjectTemplate.NetStandardClassLib:
+                    var inAssetsFile = Utils.IsPackageInstalledInAssetsFile(project.FullPath, packageName, packageVersion);
+                    inAssetsFile.Should().BeTrue($"{packageName}-{packageVersion} should be installed in {project.Name}");
+                    break;
+            }
+        }
+
+        public static void AssertPackageIsNotInstalled(NuGetApexTestService testService, ProjectTemplate projectTemplate, ProjectTestExtension project, string packageName, string packageVersion)
+        {
+            switch (projectTemplate)
+            {
+                case ProjectTemplate.ClassLibrary:
+                    testService.Verify.PackageIsNotInstalled(project.UniqueName, packageName, packageVersion);
+                    break;
+                case ProjectTemplate.NetCoreClassLib:
+                case ProjectTemplate.NetCoreConsoleApp:
+                case ProjectTemplate.NetStandardClassLib:
+                    var inAssetsFile = Utils.IsPackageInstalledInAssetsFile(project.FullPath, packageName, packageVersion);
+                    inAssetsFile.Should().BeFalse($"{packageName}-{packageVersion} should not be installed in {project.Name}");
+                    break;
+            }
+        }
+
+        public static bool IsPackageInstalledInAssetsFile(string projectPath, string packageName, string packageVersion)
         {
             var assetsFile = GetAssetsFilePath(projectPath);
             var packagesConfig = GetPackagesConfigPath(projectPath);
