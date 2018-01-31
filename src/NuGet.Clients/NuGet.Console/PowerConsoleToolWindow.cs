@@ -162,6 +162,9 @@ namespace NuGetConsole.Implementation
                 {
                     // Load
                     await Task.Run(LoadConsoleEditorAsync);
+
+                    // Mark as complete
+                    IsLoaded = true;
                 });
         }
 
@@ -410,9 +413,6 @@ namespace NuGetConsole.Implementation
                     {
                         PendingMoveFocus(consolePane);
                     }
-
-                    // Mark as complete
-                    IsLoaded = true;
                 }
             }
             catch (Exception x)
