@@ -66,7 +66,8 @@ namespace NuGet.Build.Tasks
             var frameworksToMatch = new List<NuGetFramework>();
 
             // validate current project framework
-            if (!TryParseAndAddFrameworkToList(CurrentProjectTargetFramework, frameworksToMatch, logger))
+            var errorMessage = string.Format(Strings.UnsupportedTargetFramework, CurrentProjectTargetFramework);
+            if (!TryParseAndAddFrameworkToList(CurrentProjectTargetFramework, frameworksToMatch, errorMessage, logger))
             {
                 return false;
             }
@@ -74,11 +75,11 @@ namespace NuGet.Build.Tasks
             if (FallbackTargetFrameworks != null &&
                 FallbackTargetFrameworks.Length > 0)
             {
-                var fallbackFrameworks = new List<NuGetFramework>();
-                foreach (var assetTargetFallbackFramework in FallbackTargetFrameworks)
+                foreach (var fallbackFramework in FallbackTargetFrameworks)
                 {
                     // validate ATF project framework
-                    if (!TryParseAndAddFrameworkToList(assetTargetFallbackFramework, frameworksToMatch, logger))
+                    errorMessage = string.Format(Strings.UnsupportedFallbackFramework, fallbackFramework);
+                    if (!TryParseAndAddFrameworkToList(fallbackFramework, frameworksToMatch, errorMessage, logger))
                     {
                         return false;
                     }
@@ -121,19 +122,18 @@ namespace NuGet.Build.Tasks
             }
 
             // no match found
-            itemWithProperties.SetMetadata(NEAREST_TARGET_FRAMEWORK, FrameworkConstants.SpecialIdentifiers.Unsupported);
             Log.LogError(string.Format(Strings.NoCompatibleTargetFramework, project.ItemSpec, CurrentProjectTargetFramework, targetFrameworks));
             return itemWithProperties;
         }
 
-        private static bool TryParseAndAddFrameworkToList(string framework, IList<NuGetFramework> frameworkList, MSBuildLogger logger)
+        private static bool TryParseAndAddFrameworkToList(string framework, IList<NuGetFramework> frameworkList, string errorMessage, MSBuildLogger logger)
         {
             var nugetFramework = NuGetFramework.Parse(framework);
 
             // validate framework
             if (nugetFramework.IsUnsupported)
             {
-                logger.LogError(string.Format(Strings.UnsupportedTargetFramework, framework));
+                logger.LogError(errorMessage);
                 return false;
             }
 
