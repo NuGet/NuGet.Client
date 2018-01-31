@@ -66,7 +66,8 @@ namespace Test.Utility.Signing
         public X509Certificate IssueCertificate(
             AsymmetricKeyParameter publicKey,
             X509Name subjectName,
-            Action<X509V3CertificateGenerator> customizeCertificate = null)
+            Action<X509V3CertificateGenerator> customizeCertificate = null,
+            DateTime? notBefore = null)
         {
             if (publicKey == null)
             {
@@ -80,7 +81,7 @@ namespace Test.Utility.Signing
 
             var serialNumber = _nextSerialNumber;
             var issuerName = PrincipalUtilities.GetSubjectX509Principal(Certificate);
-            var now = DateTime.UtcNow;
+            var notBeforeValue = notBefore ?? DateTime.UtcNow;
 
             if (customizeCertificate == null)
             {
@@ -109,7 +110,7 @@ namespace Test.Utility.Signing
                 };
             }
 
-            var notAfter = now.AddHours(2);
+            var notAfter = notBeforeValue.AddHours(2);
 
             // An issued certificate should not have a validity period beyond the issuer's validity period.
             if (notAfter > Certificate.NotAfter)
@@ -123,7 +124,7 @@ namespace Test.Utility.Signing
                 serialNumber,
                 issuerName,
                 subjectName,
-                now,
+                notBeforeValue,
                 notAfter,
                 customizeCertificate);
 
