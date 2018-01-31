@@ -816,8 +816,7 @@ namespace NuGet.PackageManagement
                 foreach (var installedPackage in projectInstalledPackageReferences)
                 {
                     // Skip auto referenced packages during update all.
-                    var buildPackageReference = installedPackage as BuildIntegratedPackageReference;
-                    var autoReferenced = buildPackageReference?.Dependency?.AutoReferenced == true;
+                    var autoReferenced = IsPackageReferenceAutoReferenced(installedPackage);
 
                     if (!autoReferenced)
                     {
@@ -871,8 +870,10 @@ namespace NuGet.PackageManagement
                 {
                     var installedPackageReference = projectInstalledPackageReferences
                         .FirstOrDefault(pr => StringComparer.OrdinalIgnoreCase.Equals(pr.PackageIdentity.Id, packageId));
+                    // Skip autoreferenced update when we have only a package ID.
+                    var autoReferenced = IsPackageReferenceAutoReferenced(installedPackageReference);
 
-                    if (installedPackageReference != null)
+                    if (installedPackageReference != null && !autoReferenced)
                     {
                         var resolvedPackage = await GetLatestVersionAsync(
                             packageId,
@@ -910,10 +911,10 @@ namespace NuGet.PackageManagement
                     var installed = projectInstalledPackageReferences
                         .Where(pr => StringComparer.OrdinalIgnoreCase.Equals(pr.PackageIdentity.Id, packageIdentity.Id))
                         .FirstOrDefault();
+                    var autoReferenced = IsPackageReferenceAutoReferenced(installed);
 
-                    //  if the package is not currently installed ignore it
-
-                    if (installed != null)
+                    //  if the package is not currently installed, or the installed one is auto referenced ignore it
+                    if (installed != null && !autoReferenced)
                     {
                         lowLevelActions.Add(NuGetProjectAction.CreateUninstallProjectAction(installed.PackageIdentity, nuGetProject));
                         lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity,
@@ -951,6 +952,12 @@ namespace NuGet.PackageManagement
             }
 
             return actions;
+        }
+
+        private static bool IsPackageReferenceAutoReferenced(PackageReference package)
+        {
+            var buildPackageReference = package as BuildIntegratedPackageReference;
+            return buildPackageReference?.Dependency?.AutoReferenced == true;
         }
 
         /// <summary>
