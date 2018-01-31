@@ -256,35 +256,6 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
-        // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
-        public static IEnumerable<object[]> GetNetCoreTemplates()
-        {
-            for (var i = 0; i < Utils.GetIterations(); i++)
-            {
-                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
-                yield return new object[] { ProjectTemplate.NetStandardClassLib };
-            }
-        }
-
-        public static IEnumerable<object[]> GetPackageReferenceTemplates()
-        {
-            for (var i = 0; i < Utils.GetIterations(); i++)
-            {
-                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
-                yield return new object[] { ProjectTemplate.NetStandardClassLib };
-            }
-        }
-
-        public static IEnumerable<object[]> GetTemplates()
-        {
-            for (var i = 0; i < Utils.GetIterations(); i++)
-            {
-                yield return new object[] { ProjectTemplate.ClassLibrary };
-                yield return new object[] { ProjectTemplate.NetStandardClassLib };
-            }
-        }
-
         [NuGetWpfTheory]
         [InlineData(ProjectTemplate.ClassLibrary, false, false)]
         [InlineData(ProjectTemplate.NetCoreConsoleApp, true, true)]
@@ -335,6 +306,35 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.Clear();
                 solutionService.Save();
+            }
+        }
+
+        // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
+        // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
+        public static IEnumerable<object[]> GetNetCoreTemplates()
+        {
+            for (var i = 0; i < Utils.GetIterations(); i++)
+            {
+                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
+                yield return new object[] { ProjectTemplate.NetStandardClassLib };
+            }
+        }
+
+        public static IEnumerable<object[]> GetPackageReferenceTemplates()
+        {
+            for (var i = 0; i < Utils.GetIterations(); i++)
+            {
+                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
+                yield return new object[] { ProjectTemplate.NetStandardClassLib };
+            }
+        }
+
+        public static IEnumerable<object[]> GetTemplates()
+        {
+            for (var i = 0; i < Utils.GetIterations(); i++)
+            {
+                yield return new object[] { ProjectTemplate.ClassLibrary };
+                yield return new object[] { ProjectTemplate.NetStandardClassLib };
             }
         }
     }
