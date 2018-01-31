@@ -286,10 +286,10 @@ namespace NuGet.Tests.Apex
         }
 
         [NuGetWpfTheory]
-        [InlineData(ProjectTemplate.ClassLibrary, false)]
-        [InlineData(ProjectTemplate.NetCoreConsoleApp, true)]
-        [InlineData(ProjectTemplate.NetStandardClassLib, true)]
-        public void InstallAndUpdatePackageWithSourceParameterWarns(ProjectTemplate projectTemplate, bool warns)
+        [InlineData(ProjectTemplate.ClassLibrary, false, false)]
+        [InlineData(ProjectTemplate.NetCoreConsoleApp, true, true)]
+        [InlineData(ProjectTemplate.NetStandardClassLib, true, true)]
+        public void InstallAndUpdatePackageWithSourceParameterWarns(ProjectTemplate projectTemplate, bool warns, bool installationStatus)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -303,25 +303,31 @@ namespace NuGet.Tests.Apex
 
                 var nugetTestService = GetNuGetTestService();
                 Assert.True(nugetTestService.EnsurePackageManagerConsoleIsOpen());
-
+                
                 var nugetConsole = nugetTestService.GetPackageManagerConsole(project.UniqueName);
 
-                var packageName = "newtonsoft.json";
-                var packageVersion1 = "9.0.1";
-                var packageVersion2 = "10.0.3";
+                var packageName = "TestPackage";
+                var packageVersion1 = "1.0.0";
+                var packageVersion2 = "2.0.0";
+                Utils.CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion1);
+                Utils.CreatePackageInSource(pathContext.PackageSource, packageName, packageVersion2);
                 var source = "https://api.nuget.org/v3/index.json";
 
-                Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion1, source));
-                Assert.Equal(warns, nugetConsole.IsMessageFoundInPMC($"The 'Source' parameter is not respected for the transitive package management based project(s) {project.UniqueName}. The enabled sources in your NuGet configuration will be used"));
+                var expectedMessage = $"The 'Source' parameter is not respected for the transitive package management based project(s) {Path.GetFileNameWithoutExtension(project.UniqueName)}. The enabled sources in your NuGet configuration will be used";
 
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion1));
+                Assert.True(nugetConsole.InstallPackageFromPMC(packageName, packageVersion1, source));
+                Assert.True(warns == nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
+
+                Assert.True(installationStatus == Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion1));
                 project.Build();
                 Assert.True(VisualStudio.HasNoErrorsInErrorList());
                 Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
 
+                nugetConsole.Clear();
                 Assert.True(nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2, source));
-                Assert.True(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion2));
+                Assert.True(installationStatus == Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion2));
                 Assert.False(Utils.IsPackageInstalled(nugetConsole, project.FullPath, packageName, packageVersion1));
+                Assert.True(warns == nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
                 project.Build();
 
                 Assert.True(VisualStudio.HasNoErrorsInErrorList());
