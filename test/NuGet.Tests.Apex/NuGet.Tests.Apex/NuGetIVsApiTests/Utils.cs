@@ -48,45 +48,37 @@ namespace NuGet.Tests.Apex
             return package;
         }
 
-        public static void AssertPackageIsInstalled(NuGetApexTestService testService, ProjectTemplate projectTemplate, ProjectTestExtension project, string packageName, string packageVersion)
+        public static void AssertPackageIsInstalled(NuGetApexTestService testService, ProjectTestExtension project, string packageName, string packageVersion)
         {
-            switch (projectTemplate)
+            var assetsFilePath = GetAssetsFilePath(project.FullPath);
+            if (File.Exists(assetsFilePath))
             {
-                case ProjectTemplate.ClassLibrary:
-                    testService.Verify.PackageIsInstalled(project.UniqueName, packageName, packageVersion);
-                    break;
-                case ProjectTemplate.NetCoreClassLib:
-                case ProjectTemplate.NetCoreConsoleApp:
-                case ProjectTemplate.NetStandardClassLib:
-                    var inAssetsFile = Utils.IsPackageInstalledInAssetsFile(project.FullPath, packageName, packageVersion);
-                    inAssetsFile.Should().BeTrue($"{packageName}-{packageVersion} should be installed in {project.Name}");
-                    break;
+                // Project has an assets file, let's look there to assert
+                var inAssetsFile = IsPackageInstalledInAssetsFile(assetsFilePath, packageName, packageVersion);
+                inAssetsFile.Should().BeTrue($"{packageName}-{packageVersion} should be installed in {project.Name}");
+                return;
             }
+            // Project has not assets file, let's use IVS API to assert
+            testService.Verify.PackageIsInstalled(project.UniqueName, packageName, packageVersion);
         }
 
-        public static void AssertPackageIsNotInstalled(NuGetApexTestService testService, ProjectTemplate projectTemplate, ProjectTestExtension project, string packageName, string packageVersion)
+        public static void AssertPackageIsNotInstalled(NuGetApexTestService testService, ProjectTestExtension project, string packageName, string packageVersion)
         {
-            switch (projectTemplate)
+            var assetsFilePath = GetAssetsFilePath(project.FullPath);
+            if (File.Exists(assetsFilePath))
             {
-                case ProjectTemplate.ClassLibrary:
-                    testService.Verify.PackageIsNotInstalled(project.UniqueName, packageName, packageVersion);
-                    break;
-                case ProjectTemplate.NetCoreClassLib:
-                case ProjectTemplate.NetCoreConsoleApp:
-                case ProjectTemplate.NetStandardClassLib:
-                    var inAssetsFile = Utils.IsPackageInstalledInAssetsFile(project.FullPath, packageName, packageVersion);
-                    inAssetsFile.Should().BeFalse($"{packageName}-{packageVersion} should not be installed in {project.Name}");
-                    break;
+                // Project has an assets file, let's look there to assert
+                var inAssetsFile = IsPackageInstalledInAssetsFile(assetsFilePath, packageName, packageVersion);
+                inAssetsFile.Should().BeFalse($"{packageName}-{packageVersion} should not be installed in {project.Name}");
+                return;
             }
+            // Project has not assets file, let's use IVS API to assert
+            testService.Verify.PackageIsNotInstalled(project.UniqueName, packageName, packageVersion);
         }
 
-        public static bool IsPackageInstalledInAssetsFile(string projectPath, string packageName, string packageVersion)
+        public static bool IsPackageInstalledInAssetsFile(string assetsFilePath, string packageName, string packageVersion)
         {
-            var assetsFile = GetAssetsFilePath(projectPath);
-            var packagesConfig = GetPackagesConfigPath(projectPath);
-            var packagesConfigExists = File.Exists(packagesConfig);
-
-            return PackageExistsInLockFile(assetsFile, packageName, packageVersion);
+            return PackageExistsInLockFile(assetsFilePath, packageName, packageVersion);
         }
 
         /// <summary>
@@ -157,12 +149,6 @@ namespace NuGet.Tests.Apex
         {
             var projectDirectory = Path.GetDirectoryName(projectPath);
             return Path.Combine(projectDirectory, "obj", "project.assets.json");
-        }
-
-        private static string GetPackagesConfigPath(string projectPath)
-        {
-            var projectDirectory = Path.GetDirectoryName(projectPath);
-            return Path.Combine(projectDirectory, "packages.config");
         }
 
         public static void UIInvoke(Action action)

@@ -43,8 +43,7 @@ namespace NuGet.Tests.Apex
                 // Build before the install check to ensure that everything is up to date.
                 testContext.Project.Build();
 
-                // Verify install from Get-Package
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, signedPackage.Id, signedPackage.Version);
             }
         }
 
@@ -66,12 +65,12 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, signedPackage.Id, signedPackage.Version);
 
                 nugetConsole.UninstallPackageFromPMC(signedPackage.Id);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, signedPackage.Id);
+                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), testContext.Project, signedPackage.Id, signedPackage.Version);
             }
         }
 
@@ -95,13 +94,13 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, packageVersion09);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, packageVersion09);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, signedPackage.Id, packageVersion09);
 
                 nugetConsole.UpdatePackageFromPMC(signedPackage.Id, signedPackage.Version);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
-                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, signedPackage.Id, packageVersion09);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, signedPackage.Id, signedPackage.Version);
+                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), testContext.Project, signedPackage.Id, packageVersion09);
             }
         }
 
@@ -130,13 +129,13 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, signedPackage.Id, signedPackage.Version);
 
                 nugetConsole.UpdatePackageFromPMC(signedPackage.Id, packageVersion09);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, packageVersion09);
-                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, signedPackage.Id, packageVersion09);
+                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), testContext.Project, signedPackage.Id, signedPackage.Version);
             }
         }
 
@@ -161,7 +160,7 @@ namespace NuGet.Tests.Apex
 
                 // TODO: Fix bug where no warnings are shwon when package is untrusted but still installed
                 //nugetConsole.IsMessageFoundInPMC("expired certificate").Should().BeTrue("expired certificate warning");
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, signedPackage.Id, signedPackage.Version);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, signedPackage.Id, signedPackage.Version);
             }
         }
 
@@ -185,7 +184,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.IsMessageFoundInPMC("package integrity check failed").Should().BeTrue("Integrity failed message shown.");
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, signedPackage.Id);
+                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), testContext.Project, signedPackage.Id, signedPackage.Version);
             }
         }
 

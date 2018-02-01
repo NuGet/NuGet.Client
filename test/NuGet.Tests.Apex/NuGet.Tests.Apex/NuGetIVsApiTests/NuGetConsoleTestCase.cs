@@ -33,7 +33,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName, packageVersion);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion);
             }
         }
 
@@ -58,7 +58,7 @@ namespace NuGet.Tests.Apex
                 // Build before the install check to ensure that everything is up to date.
                 testContext.Project.Build();
 
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName, packageVersion);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion);
             }
         }
 
@@ -80,12 +80,12 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
                 testContext.Project.Build();
 
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName, packageVersion);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion);
 
                 nugetConsole.UninstallPackageFromPMC(packageName);
                 testContext.Project.Build();
 
-                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName, packageVersion);
+                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion);
             }
         }
 
@@ -109,12 +109,12 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
                 testContext.Project.Build();
 
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName, packageVersion1);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);
 
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
                 testContext.Project.Build();
 
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName, packageVersion2);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion2);
             }
         }
 
@@ -141,8 +141,8 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
                 testContext.Project.Build();
 
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName1, packageVersion1);
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName2, packageVersion2);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName1, packageVersion1);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName2, packageVersion2);
             }
         }
 
@@ -169,15 +169,15 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
                 testContext.Project.Build();
 
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName1, packageVersion1);
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName2, packageVersion2);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName1, packageVersion1);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName2, packageVersion2);
 
                 nugetConsole.UninstallPackageFromPMC(packageName1);
                 nugetConsole.UninstallPackageFromPMC(packageName2);
                 testContext.Project.Build();
 
-                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName1, packageVersion1);
-                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName2, packageVersion2);
+                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), testContext.Project, packageName1, packageVersion1);
+                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), testContext.Project, packageName2, packageVersion2);
             }
         }
 
@@ -201,13 +201,13 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion2);
                 testContext.Project.Build();
 
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName, packageVersion2);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion2);
 
 
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion1);
                 testContext.Project.Build();
 
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName, packageVersion1);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);
             }
         }
 
@@ -247,12 +247,12 @@ namespace NuGet.Tests.Apex
                 projectX.Build();
                 testContext.SolutionService.Build();
 
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, project3, packageName, packageVersion);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), project3, packageName, packageVersion);
 
                 // Verify install from project.assets.json
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, testContext.Project, packageName, packageVersion);
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), projectTemplate, project2, packageName, packageVersion);
-                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), projectTemplate, projectX, packageName, packageVersion);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), project2, packageName, packageVersion);
+                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), projectX, packageName, packageVersion);
             }
         }
 
