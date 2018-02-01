@@ -51,6 +51,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Build in parallel -->
     <RestoreBuildInParallel Condition=" '$(BuildInParallel)' != '' ">$(BuildInParallel)</RestoreBuildInParallel>
     <RestoreBuildInParallel Condition=" '$(RestoreBuildInParallel)' == '' ">true</RestoreBuildInParallel>
+    <!-- Check if the restore target was executed on a sln file -->
+    <_RestoreSolutionFileUsed Condition=" '$(_RestoreSolutionFileUsed)' == '' AND '$(SolutionDir)' != '' AND $(MSBuildProjectFullPath.EndsWith('.metaproj')) == 'true' " >true</_RestoreSolutionFileUsed>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -68,6 +70,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreUseCustomAfterTargets=$(RestoreUseCustomAfterTargets);
       CustomAfterMicrosoftCommonCrossTargetingTargets=$(MSBuildThisFileFullPath);
       CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileFullPath);
+    </_GenerateRestoreGraphProjectEntryInputProperties>
+
+    <!-- Include SolutionDir and SolutionName for solution restores and persist these properties during the walk. -->
+    <_GenerateRestoreGraphProjectEntryInputProperties Condition=" '$(_RestoreSolutionFileUsed)' == 'true' ">
+      $(_GenerateRestoreGraphProjectEntryInputProperties);
+      _RestoreSolutionFileUsed=true;
+      SolutionDir=$(SolutionDir);
+      SolutionName=$(SolutionName);
     </_GenerateRestoreGraphProjectEntryInputProperties>
   </PropertyGroup>
 
