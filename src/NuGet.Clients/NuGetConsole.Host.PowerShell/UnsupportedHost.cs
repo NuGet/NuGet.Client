@@ -71,5 +71,7 @@ namespace NuGetConsole.Host
         {
             get { return null; }
         }
+
+        public bool IsInitializedSuccessfully => false;
     }
 }

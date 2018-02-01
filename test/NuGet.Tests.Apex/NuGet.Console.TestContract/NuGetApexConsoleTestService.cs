@@ -92,7 +92,12 @@ namespace NuGet.Console.TestContract
                     {
                         Thread.Sleep(100);
                     }
-                } 
+                    powerConsole.StartDispatcher();
+                    while (!powerConsole.IsHostSuccessfullyInitialized() && stopwatch.Elapsed < timeout)
+                    {
+                        Thread.Sleep(100);
+                    }
+                }
             }
 
             return powerConsole;
