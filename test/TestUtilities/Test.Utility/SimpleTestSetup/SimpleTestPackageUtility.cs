@@ -228,20 +228,6 @@ namespace NuGet.Test.Utility
                 zip.AddEntry($"{id}.nuspec", xml.ToString(), Encoding.UTF8);
             }
 
-            if (isUsingTempStream)
-            {
-                using (var signPackage = new SignedPackageArchive(tempStream, stream))
-                {
-                    var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
-                    var signer = new Signer(signPackage, testSignatureProvider);
-                    var request = new AuthorSignPackageRequest(packageContext.AuthorSignatureCertificate, hashAlgorithm: HashAlgorithmName.SHA256);
-
-                    signer.SignAsync(request, testLogger, CancellationToken.None).Wait();
-                }
-
-                tempStream.Dispose();
-            }
-
             // Reset position
             stream.Position = 0;
         }

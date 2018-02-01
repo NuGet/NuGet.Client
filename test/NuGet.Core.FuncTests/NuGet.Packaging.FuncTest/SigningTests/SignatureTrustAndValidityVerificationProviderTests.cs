@@ -230,34 +230,6 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
         }
-        public async Task GetTrustResultAsync_WithNoSigningCertificate_Throws()
-        {
-            var package = new SimpleTestPackageContext();
-
-            using (var directory = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            {
-                var packageFilePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(testCertificate, package, directory);
-
-                using (var packageReader = new PackageArchiveReader(packageFilePath))
-                {
-                    var signature = await packageReader.GetSignatureAsync(CancellationToken.None);
-                    var signatureWithNoCertificates = SignedArchiveTestUtility.GenerateSignatureWithNoCertificates(signature);
-                    var provider = new SignatureTrustAndValidityVerificationProvider();
-
-                    var result = await provider.GetTrustResultAsync(
-                        packageReader,
-                        signatureWithNoCertificates,
-                        SignedPackageVerifierSettings.Default,
-                        CancellationToken.None);
-
-                    var issue = result.Issues.FirstOrDefault(log => log.Code == NuGetLogCode.NU3010);
-
-                    Assert.NotNull(issue);
-                    Assert.Equal("The primary signature does not have a signing certificate.", issue.Message);
-                }
-            }
-        }
     }
 }
 #endif
