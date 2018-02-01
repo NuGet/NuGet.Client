@@ -151,9 +151,8 @@ namespace NuGet.Packaging.FuncTest
             var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
             var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
 
-            _trustedTimestampRoot = new TrustedTestCert<X509Certificate2>(
+            _trustedTimestampRoot = TrustedTestCert.Create(
                 rootCertificate,
-                certificate => certificate,
                 StoreName.Root,
                 StoreLocation.LocalMachine);
 

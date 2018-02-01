@@ -228,9 +228,8 @@ namespace NuGet.Packaging.FuncTest
                 var rootCertificate = SignatureUtility.GetPrimarySignatureCertificates(signature).Last();
 
                 // Trust the root CA of the signing certificate.
-                using (var testCertificate = new TrustedTestCert<X509Certificate2>(
+                using (var testCertificate = TrustedTestCert.Create(
                     rootCertificate,
-                    x => x,
                     StoreName.Root,
                     StoreLocation.LocalMachine,
                     maximumValidityPeriod: TimeSpan.MaxValue))
