@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
@@ -47,13 +48,37 @@ namespace NuGet.Tests.Apex
             return package;
         }
 
-        public static bool IsPackageInstalledInAssetsFile(NuGetConsoleTestExtension nuGetConsole, string projectPath, string packageName, string packageVersion)
+        public static void AssertPackageIsInstalled(NuGetApexTestService testService, ProjectTestExtension project, string packageName, string packageVersion)
         {
-            var assetsFile = GetAssetsFilePath(projectPath);
-            var packagesConfig = GetPackagesConfigPath(projectPath);
-            var packagesConfigExists = File.Exists(packagesConfig);
+            var assetsFilePath = GetAssetsFilePath(project.FullPath);
+            if (File.Exists(assetsFilePath))
+            {
+                // Project has an assets file, let's look there to assert
+                var inAssetsFile = IsPackageInstalledInAssetsFile(assetsFilePath, packageName, packageVersion);
+                inAssetsFile.Should().BeTrue($"{packageName}-{packageVersion} should be installed in {project.Name}");
+                return;
+            }
+            // Project has not assets file, let's use IVS API to assert
+            testService.Verify.PackageIsInstalled(project.UniqueName, packageName, packageVersion);
+        }
 
-            return PackageExistsInLockFile(assetsFile, packageName, packageVersion);
+        public static void AssertPackageIsNotInstalled(NuGetApexTestService testService, ProjectTestExtension project, string packageName, string packageVersion)
+        {
+            var assetsFilePath = GetAssetsFilePath(project.FullPath);
+            if (File.Exists(assetsFilePath))
+            {
+                // Project has an assets file, let's look there to assert
+                var inAssetsFile = IsPackageInstalledInAssetsFile(assetsFilePath, packageName, packageVersion);
+                inAssetsFile.Should().BeFalse($"{packageName}-{packageVersion} should not be installed in {project.Name}");
+                return;
+            }
+            // Project has not assets file, let's use IVS API to assert
+            testService.Verify.PackageIsNotInstalled(project.UniqueName, packageName, packageVersion);
+        }
+
+        public static bool IsPackageInstalledInAssetsFile(string assetsFilePath, string packageName, string packageVersion)
+        {
+            return PackageExistsInLockFile(assetsFilePath, packageName, packageVersion);
         }
 
         /// <summary>
@@ -124,12 +149,6 @@ namespace NuGet.Tests.Apex
         {
             var projectDirectory = Path.GetDirectoryName(projectPath);
             return Path.Combine(projectDirectory, "obj", "project.assets.json");
-        }
-
-        private static string GetPackagesConfigPath(string projectPath)
-        {
-            var projectDirectory = Path.GetDirectoryName(projectPath);
-            return Path.Combine(projectDirectory, "packages.config");
         }
 
         public static void UIInvoke(Action action)
