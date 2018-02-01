@@ -80,6 +80,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Certificate chain validation failed..
+        /// </summary>
+        internal static string CertificateChainValidationFailed {
+            get {
+                return ResourceManager.GetString("CertificateChainValidationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} hash: {1}.
         /// </summary>
         internal static string CertUtilityCertificateHash {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using NuGet.Common;
@@ -78,7 +79,6 @@ namespace NuGet.Packaging.Signing
 
             return collectionStringBuilder.ToString();
         }
-
 
         public static string X509ChainToString(X509Chain chain, HashAlgorithmName fingerprintAlgorithm)
         {
@@ -227,7 +227,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="certificate">X509Certificate2 to be compute fingerprint</param>
         /// <param name="hashAlgorithm">Hash algorithm for fingerprint</param>
-        /// <returns></returns>
+        /// <returns>A byte array representing the certificate hash.</returns>
         public static byte[] GetHash(X509Certificate2 certificate, HashAlgorithmName hashAlgorithm)
         {
             if (certificate == null)
@@ -236,6 +236,22 @@ namespace NuGet.Packaging.Signing
             }
 
             return hashAlgorithm.ComputeHash(certificate.RawData);
+        }
+
+        /// <summary>
+        /// Determines if a certificate is self-signed.
+        /// </summary>
+        /// <param name="certificate">The certificate to check.</param>
+        /// <returns>A boolean flag indicating if the certificate is self-signed.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <c>null</c>.</exception>
+        public static bool IsSelfSigned(X509Certificate2 certificate)
+        {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+
+            return certificate.IssuerName.RawData.SequenceEqual(certificate.SubjectName.RawData);
         }
     }
 }

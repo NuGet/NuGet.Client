@@ -38,7 +38,7 @@ namespace NuGet.Packaging.Signing
                 catch (Exception e)
                 {
                     status = SignatureVerificationStatus.Invalid;
-                    issues.Add(SignatureLog.Issue(true, NuGetLogCode.NU3008, Strings.SignaturePackageIntegrityFailure));
+                    issues.Add(SignatureLog.Error(NuGetLogCode.NU3008, Strings.SignaturePackageIntegrityFailure));
                     issues.Add(SignatureLog.DebugLog(e.ToString()));
                 }
             }

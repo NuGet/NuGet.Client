@@ -2,20 +2,37 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class CertificateChainUtilityTests
+    public class CertificateChainUtilityTests : IClassFixture<CertificatesFixture>
     {
+        private readonly CertificatesFixture _fixture;
+
+        public CertificateChainUtilityTests(CertificatesFixture fixture)
+        {
+            if (fixture == null)
+            {
+                throw new ArgumentNullException(nameof(fixture));
+            }
+
+            _fixture = fixture;
+        }
+
         [Fact]
         public void GetCertificateChainForSigning_WhenCertificateNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => CertificateChainUtility.GetCertificateChainForSigning(certificate: null, extraStore: new X509Certificate2Collection(), certificateType: NuGetVerificationCertificateType.Signature));
+                () => CertificateChainUtility.GetCertificateChainForSigning(
+                    certificate: null,
+                    extraStore: new X509Certificate2Collection(),
+                    logger: NullLogger.Instance));
 
             Assert.Equal("certificate", exception.ParamName);
         }
@@ -24,9 +41,24 @@ namespace NuGet.Packaging.Test
         public void GetCertificateChainForSigning_WhenExtraStoreNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => CertificateChainUtility.GetCertificateChainForSigning(new X509Certificate2(), extraStore: null, certificateType: NuGetVerificationCertificateType.Signature));
+                () => CertificateChainUtility.GetCertificateChainForSigning(
+                    new X509Certificate2(),
+                    extraStore: null,
+                    logger: NullLogger.Instance));
 
             Assert.Equal("extraStore", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetCertificateChainForSigning_WhenLoggerNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => CertificateChainUtility.GetCertificateChainForSigning(
+                    new X509Certificate2(),
+                    new X509Certificate2Collection(),
+                    logger: null));
+
+            Assert.Equal("logger", exception.ParamName);
         }
 
         [Fact]
@@ -38,22 +70,71 @@ namespace NuGet.Packaging.Test
             using (var leafCertificate = SignTestUtility.GetCertificate("leaf.crt"))
             {
                 var chain = chainHolder.Chain;
-
-                var extraStore = new X509Certificate2Collection
-                {
-                    rootCertificate,
-                    intermediateCertificate
-                };
+                var extraStore = new X509Certificate2Collection() { rootCertificate, intermediateCertificate };
+                var logger = new TestLogger();
 
                 var exception = Assert.Throws<SignatureException>(
-                    () => CertificateChainUtility.GetCertificateChainForSigning(leafCertificate, extraStore, NuGetVerificationCertificateType.Signature));
+                    () => CertificateChainUtility.GetCertificateChainForSigning(
+                        leafCertificate,
+                        extraStore,
+                        logger));
 
                 Assert.Equal(NuGetLogCode.NU3018, exception.Code);
+                Assert.Equal("Certificate chain validation failed.", exception.Message);
+
+                Assert.Equal(1, logger.Errors);
+                Assert.Equal(2, logger.Warnings);
+                Assert.Contains(logger.LogMessages, message =>
+                    message.Code == NuGetLogCode.NU3018 &&
+                    message.Level == LogLevel.Error &&
+                    message.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
+                Assert.Contains(logger.LogMessages, message =>
+                    message.Code == NuGetLogCode.NU3018 &&
+                    message.Level == LogLevel.Warning &&
+                    message.Message == "The revocation function was unable to check revocation for the certificate.");
+                Assert.Contains(logger.LogMessages, message =>
+                    message.Code == NuGetLogCode.NU3018 &&
+                    message.Level == LogLevel.Warning &&
+                    message.Message == "The revocation function was unable to check revocation because the revocation server was offline.");
             }
         }
 
         [Fact]
-        public void GetCertificateChainForSigning_ReturnsCertificatesInOrder()
+        public void GetCertificateChainForSigning_WithUntrustedSelfSignedCertificate_ReturnsChain()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                var logger = new TestLogger();
+
+                var chain = CertificateChainUtility.GetCertificateChainForSigning(
+                    certificate,
+                    new X509Certificate2Collection(),
+                    logger);
+
+                Assert.Equal(1, chain.Count);
+                Assert.NotSame(certificate, chain[0]);
+                Assert.True(certificate.RawData.SequenceEqual(chain[0].RawData));
+
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(1, logger.Warnings);
+                Assert.Contains(logger.LogMessages, message =>
+                    message.Code == NuGetLogCode.NU3018 &&
+                    message.Level == LogLevel.Warning &&
+                    message.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
+            }
+        }
+
+        [Fact]
+        public void GetCertificateListFromChain_WhenCertChainNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => CertificateChainUtility.GetCertificateListFromChain(certChain: null));
+
+            Assert.Equal("certChain", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetCertificateListFromChain_ReturnsCertificatesInOrder()
         {
             using (var chainHolder = new X509ChainHolder())
             using (var rootCertificate = SignTestUtility.GetCertificate("root.crt"))

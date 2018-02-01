@@ -19,6 +19,7 @@ namespace NuGet.Packaging.FuncTest
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
         private TrustedTestCert<X509Certificate2> _trustedTimestampRoot;
+        private TestCertificate _untrustedTestCert;
         private IReadOnlyList<TrustedTestCert<TestCertificate>> _trustedTestCertificateWithReissuedCertificate;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
@@ -96,6 +97,19 @@ namespace NuGet.Packaging.FuncTest
                 }
 
                 return _trustedTestCertificateWithReissuedCertificate;
+            }
+        }
+
+        public TestCertificate UntrustedTestCertificate
+        {
+            get
+            {
+                if (_untrustedTestCert == null)
+                {
+                    _untrustedTestCert = TestCertificate.Generate(SigningTestUtility.CertificateModificationGeneratorForCodeSigningEkuCert);
+                }
+
+                return _untrustedTestCert;
             }
         }
 

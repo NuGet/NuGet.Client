@@ -7,6 +7,7 @@ using NuGet.Packaging.Signing;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Security;
 using Test.Utility.Signing;
 
 namespace NuGet.Packaging.Test
@@ -16,7 +17,9 @@ namespace NuGet.Packaging.Test
         private readonly X509Certificate2 _defaultCertificate;
         private readonly X509Certificate2 _rsaSsaPssCertificate;
         private readonly X509Certificate2 _lifetimeSigningCertificate;
+        private readonly X509Certificate2 _expiredCertificate;
         private readonly X509Certificate2 _notYetValidCertificate;
+        private readonly X509Certificate2 _nonSelfSignedCertificate;
 
         private bool _isDisposed;
 
@@ -36,10 +39,16 @@ namespace NuGet.Packaging.Test
                         critical: true,
                         extensionValue: new DerSequence(new DerObjectIdentifier(Oids.LifetimeSigningEku)));
                 });
-
+            _expiredCertificate = SigningTestUtility.GenerateCertificate(
+                "test",
+                SigningTestUtility.CertificateModificationGeneratorExpiredCert);
             _notYetValidCertificate = SigningTestUtility.GenerateCertificate(
                 "test",
                 SigningTestUtility.CertificateModificationGeneratorNotYetValidCert);
+            _nonSelfSignedCertificate = SigningTestUtility.GenerateCertificate(
+                "test non-self-signed certificate", // Must be different than the issuing certificate's subject name.
+                generator => { },
+                chainCertificateRequest: new ChainCertificateRequest() { Issuer = _defaultCertificate });
         }
 
         public void Dispose()
@@ -48,8 +57,10 @@ namespace NuGet.Packaging.Test
             {
                 _defaultCertificate.Dispose();
                 _lifetimeSigningCertificate.Dispose();
+                _expiredCertificate.Dispose();
                 _notYetValidCertificate.Dispose();
                 _rsaSsaPssCertificate.Dispose();
+                _nonSelfSignedCertificate.Dispose();
 
                 GC.SuppressFinalize(this);
 
@@ -58,7 +69,9 @@ namespace NuGet.Packaging.Test
         }
 
         internal X509Certificate2 GetDefaultCertificate() => Clone(_defaultCertificate);
+        internal X509Certificate2 GetExpiredCertificate() => Clone(_expiredCertificate);
         internal X509Certificate2 GetLifetimeSigningCertificate() => Clone(_lifetimeSigningCertificate);
+        internal X509Certificate2 GetNonSelfSignedCertificate() => Clone(_nonSelfSignedCertificate);
         internal X509Certificate2 GetNotYetValidCertificate() => Clone(_notYetValidCertificate);
         internal X509Certificate2 GetRsaSsaPssCertificate() => Clone(_rsaSsaPssCertificate);
 

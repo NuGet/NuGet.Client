@@ -242,6 +242,33 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [Fact]
+        public void IsSelfSigned_WhenCertificateNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => CertificateUtility.IsSelfSigned(certificate: null));
+
+            Assert.Equal("certificate", exception.ParamName);
+        }
+
+        [Fact]
+        public void IsSelfSigned_WithSelfSignedCertificate_ReturnsTrue()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                Assert.True(CertificateUtility.IsSelfSigned(certificate));
+            }
+        }
+
+        [Fact]
+        public void IsSelfSigned_WithNonSelfSignedCertificate_ReturnsFalse()
+        {
+            using (var certificate = _fixture.GetNonSelfSignedCertificate())
+            {
+                Assert.False(CertificateUtility.IsSelfSigned(certificate));
+            }
+        }
+
         private static int GetExtendedKeyUsageCount(X509Certificate2 certificate)
         {
             foreach (var extension in certificate.Extensions)

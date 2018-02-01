@@ -46,6 +46,11 @@ namespace NuGet.Packaging.Signing
             return new SignatureLog(level, code, message);
         }
 
+        public static SignatureLog Error(NuGetLogCode code, string message)
+        {
+            return new SignatureLog(LogLevel.Error, code, message);
+        }
+
         public ILogMessage ToLogMessage()
         {
             if (Level == LogLevel.Error)
