@@ -175,13 +175,15 @@ else
         $newBuildCounter = $env:BUILD_BUILDNUMBER        
     }
 
-    
+    $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
+    Write-Host $VsTargetBranch
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
         CommitHash = $env:BUILD_SOURCEVERSION
         BuildBranch = $env:BUILD_SOURCEBRANCHNAME
         LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
         LocalizationRepositoryCommitHash = $LocalizationRepoCommitHash
+        VsTargetBranch = $VsTargetBranch
     }   
 
     New-Item $BuildInfoJsonFile -Force
