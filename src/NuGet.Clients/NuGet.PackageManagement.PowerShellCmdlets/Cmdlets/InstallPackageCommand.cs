@@ -66,6 +66,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 await _lockService.ExecuteNuGetOperationAsync(() =>
                 {
                     SubscribeToProgressEvents();
+                    WarnIfParametersAreNotSupported();
+
                     if (!_readFromPackagesConfig
                         && !_readFromDirectPackagePath
                         && _nugetVersion == null)

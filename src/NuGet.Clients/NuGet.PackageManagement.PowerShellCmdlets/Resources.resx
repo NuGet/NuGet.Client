@@ -295,4 +295,8 @@
 {0} is package id
 {1} is source path</comment>
   </data>
+  <data name="Warning_SourceNotRespectedForProjectType" xml:space="preserve">
+    <value>The '{0}' parameter is not respected for the transitive package management based project(s) {1}. The enabled sources in your NuGet configuration will be used. </value>
+    <comment>{0} is the parameter, {1} are the project names</comment>
+  </data>
 </root>

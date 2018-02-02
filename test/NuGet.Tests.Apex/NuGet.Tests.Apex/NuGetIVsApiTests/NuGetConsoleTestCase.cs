@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.StaFact;
 using Xunit;
@@ -253,6 +254,67 @@ namespace NuGet.Tests.Apex
                 Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion);
                 Utils.AssertPackageIsInstalled(GetNuGetTestService(), project2, packageName, packageVersion);
                 Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), projectX, packageName, packageVersion);
+            }
+        }
+
+        [NuGetWpfTheory]
+        [InlineData(ProjectTemplate.ClassLibrary, false, false)]
+        [InlineData(ProjectTemplate.NetCoreConsoleApp, true, true)]
+        [InlineData(ProjectTemplate.NetStandardClassLib, true, true)]
+        public void InstallAndUpdatePackageWithSourceParameterWarns(ProjectTemplate projectTemplate, bool warns, bool installationStatus)
+        {
+            EnsureVisualStudioHost();
+            var packageName = "TestPackage";
+            var packageVersion1 = "1.0.0";
+            var packageVersion2 = "2.0.0";
+            var source = "https://api.nuget.org/v3/index.json";
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            {
+                // Arrange
+                var solutionService = VisualStudio.Get<SolutionService>();
+                testContext.Project.Build();
+
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
+
+                var nugetTestService = GetNuGetTestService();
+                var nugetConsole = GetConsole(testContext.Project);
+                Assert.True(nugetTestService.EnsurePackageManagerConsoleIsOpen());
+
+                // Act
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion1, source);
+                testContext.Project.Build();
+
+                // Assert
+                var expectedMessage = $"The 'Source' parameter is not respected for the transitive package management based project(s) {Path.GetFileNameWithoutExtension(testContext.Project.UniqueName)}. The enabled sources in your NuGet configuration will be used";
+                Assert.True(warns == nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
+                if (installationStatus)
+                { 
+                    Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);
+                }
+                VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+
+                // setup again
+                nugetConsole.Clear();
+
+                // Act
+                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2, source);
+                testContext.Project.Build();
+
+                // Assert
+                if (installationStatus)
+                { 
+                    Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion2);
+                    Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);
+                }
+                Assert.True(warns == nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
+                VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+
+                nugetConsole.Clear();
+                solutionService.Save();
             }
         }
 

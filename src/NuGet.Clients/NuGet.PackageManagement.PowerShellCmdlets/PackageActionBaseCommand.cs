@@ -15,6 +15,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -263,6 +264,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             // note that we're assuming that package id is the same for all versions.
             Id = metadata.First().Identity.Id;
+        }
+
+        protected virtual void WarnIfParametersAreNotSupported()
+        {
+            if (Source != null && Project is BuildIntegratedNuGetProject)
+            {
+                var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectType, nameof(Source), NuGetProject.GetUniqueNameOrName(Project));
+                Log(MessageLevel.Warning, warning);
+            }
         }
 
         protected override void EndProcessing()

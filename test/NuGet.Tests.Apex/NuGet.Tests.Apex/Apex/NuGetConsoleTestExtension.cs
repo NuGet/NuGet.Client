@@ -43,6 +43,12 @@ namespace NuGet.Tests.Apex
             Execute(command);
         }
 
+        public void UpdatePackageFromPMC(string packageId, string version, string source)
+        {
+            var command = $"Update-Package {packageId} -ProjectName {_projectName} -Version {version} -Source {source}";
+            Execute(command);
+        }
+
         public bool IsMessageFoundInPMC(string message)
         {
             return _pmConsole.ConsoleContainsMessage(message);
