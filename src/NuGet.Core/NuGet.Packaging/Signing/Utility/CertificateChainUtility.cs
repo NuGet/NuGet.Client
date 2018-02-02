@@ -113,6 +113,13 @@ namespace NuGet.Packaging.Signing
             return certs;
         }
 
+        /// <summary>
+        /// Get error/warning chain status flags for certificate chain validation during signing.
+        /// </summary>
+        /// <param name="certificate">The certificate to verify.</param>
+        /// <param name="errorStatusFlags">Error chain status flags.</param>
+        /// <param name="warningStatusFlags">Warning chain status flags.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <c>null</c>.</exception>
         public static void GetChainStatusFlagsForSigning(
             X509Certificate2 certificate,
             out X509ChainStatusFlags errorStatusFlags,
@@ -125,7 +132,7 @@ namespace NuGet.Packaging.Signing
 
             warningStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
 
-            if (CertificateUtility.IsSelfSigned(certificate))
+            if (CertificateUtility.IsSelfIssued(certificate))
             {
                 warningStatusFlags |= X509ChainStatusFlags.UntrustedRoot;
             }

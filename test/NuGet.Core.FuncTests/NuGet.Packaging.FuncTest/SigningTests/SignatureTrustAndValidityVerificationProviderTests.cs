@@ -14,6 +14,9 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Security;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -93,6 +96,55 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
+        public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestamp_Success()
+        {
+            var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var keyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
+            var subjectName = new X509Name("CN=NuGet Test Expired Certificate");
+            var bcCertificate = ca.IssueCertificate(
+                keyPair.Public,
+                subjectName,
+                notBefore: DateTime.UtcNow.AddSeconds(-2), // Must be before the timestamp's lower limit
+                notAfter: DateTime.UtcNow.AddSeconds(10));
+
+            using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
+            using (var directory = TestDirectory.Create())
+            {
+                certificate.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
+
+                var packageContext = new SimpleTestPackageContext();
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(
+                    certificate,
+                    packageContext,
+                    directory,
+                    timestampService.Url);
+
+                var notAfter = certificate.NotAfter.ToUniversalTime();
+                var waitDuration = (notAfter - DateTimeOffset.UtcNow).Add(TimeSpan.FromSeconds(1));
+
+                // Wait for the certificate to expire.  Trust of the signature will require a valid timestamp.
+                await Task.Delay(waitDuration);
+
+                Assert.True(DateTime.UtcNow > notAfter);
+
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+
+                using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                {
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+
+                    var trustProvider = result.Results.Single();
+
+                    Assert.True(result.Valid);
+                    Assert.Equal(SignatureVerificationStatus.Trusted, trustProvider.Trust);
+                    Assert.Equal(0, trustProvider.Issues.Count(issue => issue.Level == LogLevel.Error));
+                    Assert.Equal(0, trustProvider.Issues.Count(issue => issue.Level == LogLevel.Warning));
+                }
+            }
+        }
+
+        [CIOnlyFact]
         public async Task GetTrustResultAsync_WithInvalidSignature_Throws()
         {
             var package = new SimpleTestPackageContext();
@@ -139,15 +191,7 @@ namespace NuGet.Packaging.FuncTest
                 LogLevel.Warning,
                 setting);
 
-            Assert.Equal(2, matchingIssues.Count);
-            Assert.Equal(NuGetLogCode.NU3018, matchingIssues[0].Code);
-            Assert.Equal(
-                "The revocation function was unable to check revocation because the revocation server was offline.",
-                matchingIssues[0].Message);
-            Assert.Equal(NuGetLogCode.NU3018, matchingIssues[1].Code);
-            Assert.Equal(
-                "The revocation function was unable to check revocation for the certificate.",
-                matchingIssues[1].Message);
+            Assert.Empty(matchingIssues);
         }
 
         [CIOnlyFact]
@@ -163,14 +207,9 @@ namespace NuGet.Packaging.FuncTest
                 setting);
 
             Assert.Equal(2, matchingIssues.Count);
-            Assert.Equal(NuGetLogCode.NU3018, matchingIssues[0].Code);
-            Assert.Equal(
-                "The revocation function was unable to check revocation because the revocation server was offline.",
-                matchingIssues[0].Message);
-            Assert.Equal(NuGetLogCode.NU3018, matchingIssues[1].Code);
-            Assert.Equal(
-                "The revocation function was unable to check revocation for the certificate.",
-                matchingIssues[1].Message);
+
+            AssertOfflineRevocation(matchingIssues, LogLevel.Warning);
+            AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning);
         }
 
         [CIOnlyFact]
@@ -192,15 +231,7 @@ namespace NuGet.Packaging.FuncTest
                 LogLevel.Warning,
                 setting);
 
-            Assert.Equal(2, matchingIssues.Count);
-            Assert.Contains(matchingIssues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == LogLevel.Warning &&
-                issue.Message == "The revocation function was unable to check revocation because the revocation server was offline.");
-            Assert.Contains(matchingIssues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == LogLevel.Warning &&
-                issue.Message == "The revocation function was unable to check revocation for the certificate.");
+            Assert.Empty(matchingIssues);
         }
 
         [CIOnlyFact]
@@ -223,14 +254,9 @@ namespace NuGet.Packaging.FuncTest
                 setting);
 
             Assert.Equal(2, matchingIssues.Count);
-            Assert.Contains(matchingIssues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == LogLevel.Warning &&
-                issue.Message == "The revocation function was unable to check revocation because the revocation server was offline.");
-            Assert.Contains(matchingIssues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == LogLevel.Warning &&
-                issue.Message == "The revocation function was unable to check revocation for the certificate.");
+
+            AssertOfflineRevocation(matchingIssues, LogLevel.Warning);
+            AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning);
         }
 
         private static async Task<List<SignatureLog>> VerifyUnavailableRevocationInfo(
@@ -328,19 +354,14 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(SignatureVerificationStatus.Untrusted, result.Trust);
                 Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Error));
                 Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
-                Assert.Contains(result.Issues, issue =>
-                    issue.Code == NuGetLogCode.NU3018 &&
-                    issue.Level == LogLevel.Error &&
-                    issue.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
-                Assert.Contains(result.Issues, issue =>
-                    issue.Code == NuGetLogCode.NU3027 &&
-                    issue.Level == LogLevel.Warning &&
-                    issue.Message == "The primary signature should be timestamped to enable long-term signature validity after the certificate has expired.");
+
+                AssertUntrustedRoot(result.Issues, LogLevel.Error);
+                AssertTimestampMissing(result.Issues, LogLevel.Warning);
             }
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithUntrustedSelfSignedCertificateAndAllowUntrustedSelfSignedCertificate_Succeeds()
+        public async Task GetTrustResultAsync_WithUntrustedSelfSignedCertificateAndAllowUntrustedSelfSignedCertificate_Warns()
         {
             var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
@@ -358,19 +379,14 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(SignatureVerificationStatus.Trusted, result.Trust);
                 Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Error));
                 Assert.Equal(2, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
-                Assert.Contains(result.Issues, issue =>
-                    issue.Code == NuGetLogCode.NU3018 &&
-                    issue.Level == LogLevel.Warning &&
-                    issue.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
-                Assert.Contains(result.Issues, issue =>
-                    issue.Code == NuGetLogCode.NU3027 &&
-                    issue.Level == LogLevel.Warning &&
-                    issue.Message == "The primary signature should be timestamped to enable long-term signature validity after the certificate has expired.");
+
+                AssertUntrustedRoot(result.Issues, LogLevel.Warning);
+                AssertTimestampMissing(result.Issues, LogLevel.Warning);
             }
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithTrustedSelfSignedCertificateAndNotAllowUntrustedSelfSignedCertificate_Succeeds()
+        public async Task GetTrustResultAsync_WithTrustedSelfSignedCertificateAndNotAllowUntrustedSelfSignedCertificate_Warns()
         {
             var settings = new SignedPackageVerifierSettings(
                allowUnsigned: false,
@@ -388,10 +404,8 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(SignatureVerificationStatus.Trusted, result.Trust);
                 Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Error));
                 Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
-                Assert.Contains(result.Issues, issue =>
-                    issue.Code == NuGetLogCode.NU3027 &&
-                    issue.Level == LogLevel.Warning &&
-                    issue.Message == "The primary signature should be timestamped to enable long-term signature validity after the certificate has expired.");
+
+                AssertTimestampMissing(result.Issues, LogLevel.Warning);
             }
         }
 
@@ -474,6 +488,38 @@ namespace NuGet.Packaging.FuncTest
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3027);
                 }
             }
+        }
+
+        private static void AssertOfflineRevocation(IEnumerable<SignatureLog> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == "The revocation function was unable to check revocation because the revocation server was offline.");
+        }
+
+        private static void AssertRevocationStatusUnknown(IEnumerable<SignatureLog> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == "The revocation function was unable to check revocation for the certificate.");
+        }
+
+        private static void AssertTimestampMissing(IEnumerable<SignatureLog> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3027 &&
+                issue.Level == logLevel &&
+                issue.Message == "The primary signature should be timestamped to enable long-term signature validity after the certificate has expired.");
+        }
+
+        private static void AssertUntrustedRoot(IEnumerable<SignatureLog> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
         }
 
         private static byte[] GetResource(string name)

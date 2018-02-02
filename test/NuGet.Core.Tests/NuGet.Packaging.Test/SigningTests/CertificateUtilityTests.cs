@@ -243,29 +243,56 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void IsSelfSigned_WhenCertificateNull_Throws()
+        public void IsSelfIssued_WhenCertificateNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => CertificateUtility.IsSelfSigned(certificate: null));
+                () => CertificateUtility.IsSelfIssued(certificate: null));
 
             Assert.Equal("certificate", exception.ParamName);
         }
 
         [Fact]
-        public void IsSelfSigned_WithSelfSignedCertificate_ReturnsTrue()
+        public void IsSelfIssued_WithPartialChain_ReturnsFalse()
         {
-            using (var certificate = _fixture.GetDefaultCertificate())
+            using (var certificate = SignTestUtility.GetCertificate("leaf.crt"))
             {
-                Assert.True(CertificateUtility.IsSelfSigned(certificate));
+                Assert.False(CertificateUtility.IsSelfIssued(certificate));
             }
         }
 
         [Fact]
-        public void IsSelfSigned_WithNonSelfSignedCertificate_ReturnsFalse()
+        public void IsSelfIssued_WithNonSelfSignedCertificate_ReturnsFalse()
         {
             using (var certificate = _fixture.GetNonSelfSignedCertificate())
             {
-                Assert.False(CertificateUtility.IsSelfSigned(certificate));
+                Assert.False(CertificateUtility.IsSelfIssued(certificate));
+            }
+        }
+
+        [Fact]
+        public void IsSelfIssued_WithSelfSignedCertificate_ReturnsTrue()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                Assert.True(CertificateUtility.IsSelfIssued(certificate));
+            }
+        }
+
+        [Fact]
+        public void IsSelfIssued_WithSelfIssuedCertificate_ReturnsTrue()
+        {
+            using (var certificate = _fixture.GetSelfIssuedCertificate())
+            {
+                Assert.True(CertificateUtility.IsSelfIssued(certificate));
+            }
+        }
+
+        [Fact]
+        public void IsSelfIssued_WithRootCertificate_ReturnsTrue()
+        {
+            using (var certificate = _fixture.GetRootCertificate())
+            {
+                Assert.True(CertificateUtility.IsSelfIssued(certificate));
             }
         }
 

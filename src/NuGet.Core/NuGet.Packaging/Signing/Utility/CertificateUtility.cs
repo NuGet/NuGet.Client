@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using NuGet.Common;
+using NuGet.Packaging.Signing.DerEncoding;
 
 namespace NuGet.Packaging.Signing
 {
@@ -68,7 +69,7 @@ namespace NuGet.Packaging.Signing
             for (var i = 0; i < Math.Min(_limit, certCollection.Count); i++)
             {
                 var cert = certCollection[i];
-                X509Certificate2ToString(cert, collectionStringBuilder,  fingerprintAlgorithm, indentation: "");
+                X509Certificate2ToString(cert, collectionStringBuilder, fingerprintAlgorithm, indentation: "");
                 collectionStringBuilder.AppendLine();
             }
 
@@ -239,19 +240,68 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Determines if a certificate is self-signed.
+        /// Determines if a certificate is self-issued.
         /// </summary>
-        /// <param name="certificate">The certificate to check.</param>
-        /// <returns>A boolean flag indicating if the certificate is self-signed.</returns>
+        /// <remarks>Warning:  this method does not evaluate certificate trust, revocation status, or validity!</remarks>
+        /// <param name="certificate"></param>
+        /// <returns><c>true</c> if the certificate is self-issued; otherwise, <c>false</c>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <c>null</c>.</exception>
-        public static bool IsSelfSigned(X509Certificate2 certificate)
+        public static bool IsSelfIssued(X509Certificate2 certificate)
         {
             if (certificate == null)
             {
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            return certificate.IssuerName.RawData.SequenceEqual(certificate.SubjectName.RawData);
+            using (var chainHolder = new X509ChainHolder())
+            {
+                var chain = chainHolder.Chain;
+
+                chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority |
+                    X509VerificationFlags.IgnoreRootRevocationUnknown |
+                    X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
+                    X509VerificationFlags.IgnoreEndRevocationUnknown;
+
+                chain.Build(certificate);
+
+                if (chain.ChainElements.Count != 1)
+                {
+                    return false;
+                }
+
+                if (chain.ChainStatus.Any(
+                    chainStatus => chainStatus.Status.HasFlag(X509ChainStatusFlags.Cyclic) ||
+                                   chainStatus.Status.HasFlag(X509ChainStatusFlags.PartialChain) ||
+                                   chainStatus.Status.HasFlag(X509ChainStatusFlags.NotSignatureValid)))
+                {
+                    return false;
+                }
+
+                if (!certificate.IssuerName.RawData.SequenceEqual(certificate.SubjectName.RawData))
+                {
+                    return false;
+                }
+
+                var akiExtension = certificate.Extensions[Oids.AuthorityKeyIdentifier];
+                var skiExtension = certificate.Extensions[Oids.SubjectKeyIdentifier] as X509SubjectKeyIdentifierExtension;
+
+                if (akiExtension != null && skiExtension != null)
+                {
+                    var reader = new DerSequenceReader(akiExtension.RawData);
+                    var keyIdentifierTag = (DerSequenceReader.DerTag)DerSequenceReader.ContextSpecificTagFlag;
+
+                    if (reader.HasTag(keyIdentifierTag))
+                    {
+                        var keyIdentifier = reader.ReadValue(keyIdentifierTag);
+                        var akiKeyIdentifier = BitConverter.ToString(keyIdentifier).Replace("-", "");
+
+                        return string.Equals(skiExtension.SubjectKeyIdentifier, akiKeyIdentifier, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+
+                return true;
+            }
         }
     }
 }

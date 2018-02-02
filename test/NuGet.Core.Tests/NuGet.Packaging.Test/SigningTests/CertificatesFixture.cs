@@ -7,7 +7,6 @@ using NuGet.Packaging.Signing;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Security;
 using Test.Utility.Signing;
 
 namespace NuGet.Packaging.Test
@@ -20,6 +19,9 @@ namespace NuGet.Packaging.Test
         private readonly X509Certificate2 _expiredCertificate;
         private readonly X509Certificate2 _notYetValidCertificate;
         private readonly X509Certificate2 _nonSelfSignedCertificate;
+        private readonly X509Certificate2 _selfIssuedCertificate;
+        private readonly X509Certificate2 _rootCertificate;
+        private readonly DisposableList<X509Certificate2> _cyclicChain;
 
         private bool _isDisposed;
 
@@ -49,6 +51,20 @@ namespace NuGet.Packaging.Test
                 "test non-self-signed certificate", // Must be different than the issuing certificate's subject name.
                 generator => { },
                 chainCertificateRequest: new ChainCertificateRequest() { Issuer = _defaultCertificate });
+            _selfIssuedCertificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false);
+            _rootCertificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: true);
+
+            const string name1 = "NuGet Cyclic Test Certificate 1";
+            const string name2 = "NuGet Cyclic Test Certificate 2";
+
+            var keyPair1 = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
+            var keyPair2 = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
+
+            _cyclicChain = new DisposableList<X509Certificate2>()
+            {
+                SigningTestUtility.GenerateCertificate(name1, name2, keyPair1.Private, keyPair2),
+                SigningTestUtility.GenerateCertificate(name2, name1, keyPair2.Private, keyPair1)
+            };
         }
 
         public void Dispose()
@@ -61,6 +77,9 @@ namespace NuGet.Packaging.Test
                 _notYetValidCertificate.Dispose();
                 _rsaSsaPssCertificate.Dispose();
                 _nonSelfSignedCertificate.Dispose();
+                _selfIssuedCertificate.Dispose();
+                _rootCertificate.Dispose();
+                _cyclicChain.Dispose();
 
                 GC.SuppressFinalize(this);
 
@@ -73,7 +92,21 @@ namespace NuGet.Packaging.Test
         internal X509Certificate2 GetLifetimeSigningCertificate() => Clone(_lifetimeSigningCertificate);
         internal X509Certificate2 GetNonSelfSignedCertificate() => Clone(_nonSelfSignedCertificate);
         internal X509Certificate2 GetNotYetValidCertificate() => Clone(_notYetValidCertificate);
+        internal X509Certificate2 GetRootCertificate() => Clone(_rootCertificate);
         internal X509Certificate2 GetRsaSsaPssCertificate() => Clone(_rsaSsaPssCertificate);
+        internal X509Certificate2 GetSelfIssuedCertificate() => Clone(_selfIssuedCertificate);
+
+        internal DisposableList<X509Certificate2> GetCyclicCertificateChain()
+        {
+            var list = new DisposableList<X509Certificate2>();
+
+            foreach (var certificate in _cyclicChain)
+            {
+                list.Add(Clone(certificate));
+            }
+
+            return list;
+        }
 
         private static X509Certificate2 Clone(X509Certificate2 certificate)
         {

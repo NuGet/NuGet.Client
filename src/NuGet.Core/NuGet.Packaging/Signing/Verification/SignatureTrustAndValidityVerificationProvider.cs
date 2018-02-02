@@ -96,14 +96,11 @@ namespace NuGet.Packaging.Signing
             {
                 using (var authorSignatureNativeCms = NativeCms.Decode(signature.SignedCms.Encode(), detached: false))
                 {
-                    if (!allowIgnoreTimestamp)
-                    {
-                        var signatureHash = NativeCms.GetSignatureValueHash(signature.SignatureContent.HashAlgorithm, authorSignatureNativeCms);
+                    var signatureHash = NativeCms.GetSignatureValueHash(signature.SignatureContent.HashAlgorithm, authorSignatureNativeCms);
 
-                        if (!IsTimestampValid(timestamp, signatureHash, allowIgnoreTimestamp, allowUnknownRevocation, issues))
-                        {
-                            throw new TimestampException();
-                        }
+                    if (!IsTimestampValid(timestamp, signatureHash, allowIgnoreTimestamp, allowUnknownRevocation, issues) && !allowIgnoreTimestamp)
+                    {
+                        throw new TimestampException();
                     }
                 }
             }
@@ -170,7 +167,7 @@ namespace NuGet.Packaging.Signing
 
                         var chainBuildingHasIssues = false;
                         var statusFlags = CertificateChainUtility.DefaultObservedStatusFlags;
-                        var isSelfSignedCertificate = CertificateUtility.IsSelfSigned(certificate);
+                        var isSelfSignedCertificate = CertificateUtility.IsSelfIssued(certificate);
 
                         if (isSelfSignedCertificate)
                         {
@@ -187,13 +184,6 @@ namespace NuGet.Packaging.Signing
 
                             chainBuildingHasIssues = true;
                         }
-
-                        // Debug log any errors
-                        issues.Add(SignatureLog.DebugLog(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.ErrorInvalidCertificateChain,
-                                string.Join(", ", chainStatuses.Select(x => x.Status.ToString())))));
 
                         // For all the special cases, chain status list only has unique elements for each chain status flag present
                         // therefore if we are checking for one specific chain status we can use the first of the returned list
@@ -222,9 +212,12 @@ namespace NuGet.Packaging.Signing
                         const X509ChainStatusFlags RevocationStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
                         if (CertificateChainUtility.TryGetStatusMessage(chainStatuses, RevocationStatusFlags, out messages))
                         {
-                            foreach (var message in messages)
+                            if (treatIssueAsError)
                             {
-                                issues.Add(SignatureLog.Issue(!allowUnknownRevocation, NuGetLogCode.NU3018, message));
+                                foreach (var message in messages)
+                                {
+                                    issues.Add(SignatureLog.Issue(!allowUnknownRevocation, NuGetLogCode.NU3018, message));
+                                }
                             }
 
                             if (!chainBuildingHasIssues && allowUnknownRevocation)
@@ -234,6 +227,13 @@ namespace NuGet.Packaging.Signing
 
                             chainBuildingHasIssues = true;
                         }
+
+                        // Debug log any errors
+                        issues.Add(SignatureLog.DebugLog(
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.ErrorInvalidCertificateChain,
+                                string.Join(", ", chainStatuses.Select(x => x.Status.ToString())))));
                     }
                 }
                 else
@@ -252,14 +252,15 @@ namespace NuGet.Packaging.Signing
             bool allowUnknownRevocation,
             List<SignatureLog> issues)
         {
+            var treatIssueAsError = !allowIgnoreTimestamp;
             var timestamperCertificate = timestamp.SignerInfo.Certificate;
             if (timestamperCertificate == null)
             {
-                issues.Add(SignatureLog.Issue(!allowIgnoreTimestamp, NuGetLogCode.NU3020, Strings.TimestampNoCertificate));
+                issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3020, Strings.TimestampNoCertificate));
                 return false;
             }
 
-            if (VerificationUtility.IsTimestampValid(timestamp, messageHash, !allowIgnoreTimestamp, issues, _specification))
+            if (VerificationUtility.IsTimestampValid(timestamp, messageHash, treatIssueAsError, issues, _specification))
             {
                 issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.TimestampValue, timestamp.GeneralizedTime.LocalDateTime.ToString()) + Environment.NewLine));
 
@@ -299,7 +300,7 @@ namespace NuGet.Packaging.Signing
                     {
                         foreach (var message in messages)
                         {
-                            issues.Add(SignatureLog.Issue(!allowIgnoreTimestamp, NuGetLogCode.NU3028, message));
+                            issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3028, message));
                         }
 
                         chainBuildingHasIssues = true;
@@ -312,9 +313,12 @@ namespace NuGet.Packaging.Signing
                     const X509ChainStatusFlags RevocationStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
                     if (CertificateChainUtility.TryGetStatusMessage(chainStatusList, RevocationStatusFlags, out messages))
                     {
-                        foreach (var message in messages)
+                        if (treatIssueAsError)
                         {
-                            issues.Add(SignatureLog.Issue(!allowUnknownRevocation, NuGetLogCode.NU3028, message));
+                            foreach (var message in messages)
+                            {
+                                issues.Add(SignatureLog.Issue(!allowUnknownRevocation, NuGetLogCode.NU3028, message));
+                            }
                         }
 
                         if (!chainBuildingHasIssues && (allowIgnoreTimestamp || allowUnknownRevocation))
@@ -326,9 +330,15 @@ namespace NuGet.Packaging.Signing
                     }
 
                     // Debug log any errors
-                    issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidCertificateChain, string.Join(", ", chainStatusList.Select(x => x.ToString())))));
+                    issues.Add(
+                        SignatureLog.DebugLog(
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.ErrorInvalidCertificateChain,
+                                string.Join(", ", chainStatusList.Select(x => x.Status.ToString())))));
                 }
             }
+
             return false;
         }
 #else
