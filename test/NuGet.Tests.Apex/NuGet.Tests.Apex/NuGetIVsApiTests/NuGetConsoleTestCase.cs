@@ -497,13 +497,15 @@ namespace NuGet.Tests.Apex
                 Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);
                 testContext.Project.Unload();
 
-
                 testContext.SolutionService.SaveAll();
-                testContext.SolutionService.Build();
-
-                var csproj = new XmlDocument();
-                csproj.LoadXml(testContext.Project.FullPath);
-
+                
+                // edit with msbuild
+                var project = GetProject(testContext.Project.FullPath);
+                var packageReferences = GetPackageReferences(project, packageName);
+                packageReferences.Single().SetMetadataValue("IsImplicitlyDefined", "true");
+                project.Save();
+                
+                ProjectCollection.GlobalProjectCollection.UnloadProject(project);
 
                 testContext.Project.Load();
                 testContext.SolutionService.Build();
@@ -518,27 +520,15 @@ namespace NuGet.Tests.Apex
 
         private static Project GetProject(string projectCSProjPath)
         {
-            var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
-            if (projectCSProjPath == null)
-            {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
-            }
-            return new Project(projectRootElement);
+            return new Project(ProjectRootElement.Open(projectCSProjPath, ProjectCollection.GlobalProjectCollection, preserveFormatting: true));
         }
 
-
-        private static ProjectRootElement TryOpenProjectRootElement(string filename)
+        private static IEnumerable<ProjectItem> GetPackageReferences(Project project, string packageId)
         {
-            try
-            {
-                // There is ProjectRootElement.TryOpen but it does not work as expected
-                // I.e. it returns null for some valid projects
-                return ProjectRootElement.Open(filename, ProjectCollection.GlobalProjectCollection, preserveFormatting: true);
-            }
-            catch (Microsoft.Build.Exceptions.InvalidProjectFileException)
-            {
-                return null;
-            }
+            return project.AllEvaluatedItems
+                .Where(item => item.ItemType.Equals("PackageReference", StringComparison.OrdinalIgnoreCase) &&
+                               item.EvaluatedInclude.Equals(packageId, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
 
 
