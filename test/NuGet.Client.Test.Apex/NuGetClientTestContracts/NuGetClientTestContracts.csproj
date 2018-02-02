@@ -42,23 +42,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\out\reference\Microsoft.VisualStudio.Threading.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.PackageManagement">
-      <HintPath>..\..\out\reference\NuGet\NuGet.PackageManagement.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.PackageManagement.UI, Version=4.6.0.4630, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Users\v-atian\Desktop\NuGet.PackageManagement.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Packaging.Core">
-      <HintPath>..\..\out\NuGetReference\NuGet.Packaging.Core\15.0\bin\release\net46\NuGet.Packaging.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.VisualStudio">
-      <HintPath>..\..\out\NuGetReference\NuGet.VisualStudio\15.0\bin\release\net46\NuGet.VisualStudio.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="NuGet.VisualStudio.Common">
-      <HintPath>..\..\out\reference\NuGet\NuGet.VisualStudio.Common.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -79,6 +62,28 @@
     <Compile Include="IPackageManageUITestContract.cs" />
     <Compile Include="NuGetApexUITestService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
+      <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
+      <Name>NuGet.PackageManagement.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
+      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
+      <Name>NuGet.VisualStudio.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
+      <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
+      <Name>NuGet.VisualStudio</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj">
+      <Project>{394aeb96-493c-4839-a5ac-8d93cd2fad40}</Project>
+      <Name>NuGet.PackageManagement</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj">
+      <Project>{d65583e4-8084-466a-ba4b-55a797ea047b}</Project>
+      <Name>NuGet.Packaging.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
