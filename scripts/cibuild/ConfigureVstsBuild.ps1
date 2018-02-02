@@ -176,6 +176,7 @@ else
     }
 
     $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
+    $VsTargetBranch = $VsTargetBranch.Trim()
     Write-Host $VsTargetBranch
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
