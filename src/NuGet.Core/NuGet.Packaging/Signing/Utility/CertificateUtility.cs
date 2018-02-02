@@ -242,8 +242,12 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Determines if a certificate is self-issued.
         /// </summary>
-        /// <remarks>Warning:  this method does not evaluate certificate trust, revocation status, or validity!</remarks>
-        /// <param name="certificate"></param>
+        /// <remarks>Warning:  this method does not evaluate certificate trust, revocation status, or validity!
+        /// This method attempts to build a chain for the provided certificate, and although revocation status
+        /// checking is explicitly skipped, the underlying chain building engine may go online to fetch
+        /// additional information (e.g.:  the issuer's certificate).  This method is not a guaranteed offline
+        /// check.</remarks>
+        /// <param name="certificate">The certificate to check.</param>
         /// <returns><c>true</c> if the certificate is self-issued; otherwise, <c>false</c>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <c>null</c>.</exception>
         public static bool IsSelfIssued(X509Certificate2 certificate)
