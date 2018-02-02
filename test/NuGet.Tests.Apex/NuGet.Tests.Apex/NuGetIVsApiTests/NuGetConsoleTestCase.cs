@@ -474,6 +474,74 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetNetCoreTemplates))]
+        public void NetCoreAutoReferenceCannotBeUpdatedInPMC(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var packageName = "TestPackage";
+            var packageVersion1 = "1.0.0";
+            var packageVersion2 = "2.0.0";
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            {
+
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
+
+                //Preconditions
+                var nugetConsole = GetConsole(testContext.Project);
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
+                testContext.Project.Build();
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);
+                testContext.Project.Unload();
+
+
+                testContext.SolutionService.SaveAll();
+                testContext.SolutionService.Build();
+
+                var csproj = new XmlDocument();
+                csproj.LoadXml(testContext.Project.FullPath);
+
+
+                testContext.Project.Load();
+                testContext.SolutionService.Build();
+                //Act
+                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
+                testContext.SolutionService.Build();
+
+                //Assert
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);;
+            }
+        }
+
+        private static Project GetProject(string projectCSProjPath)
+        {
+            var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
+            if (projectCSProjPath == null)
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
+            }
+            return new Project(projectRootElement);
+        }
+
+
+        private static ProjectRootElement TryOpenProjectRootElement(string filename)
+        {
+            try
+            {
+                // There is ProjectRootElement.TryOpen but it does not work as expected
+                // I.e. it returns null for some valid projects
+                return ProjectRootElement.Open(filename, ProjectCollection.GlobalProjectCollection, preserveFormatting: true);
+            }
+            catch (Microsoft.Build.Exceptions.InvalidProjectFileException)
+            {
+                return null;
+            }
+        }
+
+
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
         // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
         public static IEnumerable<object[]> GetNetCoreTemplates()
