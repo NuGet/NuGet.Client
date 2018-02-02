@@ -9,6 +9,8 @@
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     <VsTargetBranch>lab/d15.$(MinorNuGetVersion)stg</VsTargetBranch>
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d15.$(MinorNuGetVersion)</VsTargetBranch>
+    <SdkTargetBranch>master</SdkTargetBranch>
+    <CliTargetBranch>master</CliTargetBranch>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
@@ -50,5 +52,11 @@
   </Target>
   <Target Name="GetVsTargetBranch">
     <Message Text="$(VsTargetBranch)" Importance="High"/>
+  </Target>
+  <Target Name="GetCliTargetBranch">
+    <Message Text="$(CliTargetBranch)" Importance="High"/>
+  </Target>
+  <Target Name="GetSdkTargetBranch">
+    <Message Text="$(SdkTargetBranch)" Importance="High"/>
   </Target>
 </Project>
