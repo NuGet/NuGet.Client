@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,7 @@ namespace NuGet.Protocol.Core.Types
 {
     public class HttpSourceCacheContext
     {
-        private HttpSourceCacheContext(string rootTempFolder, TimeSpan maxAge, bool directDownload)
+        private HttpSourceCacheContext(string rootTempFolder, TimeSpan maxAge, bool directDownload, SourceCacheContext cacheContext)
         {
             if (maxAge <= TimeSpan.Zero)
             {
@@ -27,6 +27,7 @@ namespace NuGet.Protocol.Core.Types
             RootTempFolder = rootTempFolder;
             MaxAge = maxAge;
             DirectDownload = directDownload;
+            SourceCacheContext = cacheContext ?? throw new ArgumentNullException(nameof(cacheContext));
         }
 
         public TimeSpan MaxAge { get; }
@@ -38,6 +39,11 @@ namespace NuGet.Protocol.Core.Types
         /// disposal of the <see cref="SourceCacheContext"/> that was used to create this instance.
         /// </summary>
         public string RootTempFolder { get; }
+
+        /// <summary>
+        /// Inner cache context.
+        /// </summary>
+        public SourceCacheContext SourceCacheContext { get; }
 
         public static HttpSourceCacheContext Create(SourceCacheContext cacheContext, int retryCount)
         {
@@ -51,14 +57,16 @@ namespace NuGet.Protocol.Core.Types
                 return new HttpSourceCacheContext(
                     rootTempFolder: null,
                     maxAge: cacheContext.MaxAgeTimeSpan,
-                    directDownload: cacheContext.DirectDownload);
+                    directDownload: cacheContext.DirectDownload,
+                    cacheContext: cacheContext);
             }
             else
             {
                 return new HttpSourceCacheContext(
                     cacheContext.GeneratedTempFolder,
                     TimeSpan.Zero,
-                    cacheContext.DirectDownload);
+                    cacheContext.DirectDownload,
+                    cacheContext: cacheContext);
             }
         }
     }

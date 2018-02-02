@@ -599,6 +599,7 @@ namespace NuGet.Protocol
                             response.ReasonPhrase));
                     }
                 },
+                sourceCacheContext,
                 log,
                 token);
             }

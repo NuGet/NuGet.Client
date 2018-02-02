@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
@@ -23,6 +24,35 @@ namespace NuGet.Protocol.Tests
         private const string TestUrl = "https://test.local/test.json";
         private static readonly TimeSpan SmallTimeout = TimeSpan.FromMilliseconds(50);
         private static readonly TimeSpan LargeTimeout = TimeSpan.FromSeconds(5);
+
+        // Add an additional header and verify that it was send in the request.
+        [Fact]
+        public async Task HttpRetryHandler_AddHeaders()
+        {
+            // Arrange
+            var retryHandler = new HttpRetryHandler();
+            var testHandler = new TestHandler();
+            using (var httpClient = new HttpClient(testHandler))
+            {
+                var request = new HttpRetryHandlerRequest(
+                    httpClient,
+                    () => new HttpRequestMessage(HttpMethod.Get, TestUrl));
+
+                var id = Guid.NewGuid().ToString();
+                request.AddHeaders.Add(new KeyValuePair<string, IEnumerable<string>>(ProtocolConstants.SessionId, new[] { id }));
+                var log = new TestLogger();
+
+                // Act
+                using (var actualResponse = await retryHandler.SendAsync(request, log, CancellationToken.None))
+                {
+                    // Assert
+                    testHandler.LastRequest.Headers.GetValues(ProtocolConstants.SessionId)
+                        .FirstOrDefault()
+                        .Should()
+                        .Be(id);
+                }
+            }
+        }
 
         [Fact]
         public async Task HttpRetryHandler_ReturnsContentHeaders()
@@ -386,6 +416,19 @@ namespace NuGet.Protocol.Tests
         private static TimeSpan GetRetryMinTime(int tries, TimeSpan retryDelay)
         {
             return TimeSpan.FromTicks((tries - 1) * retryDelay.Ticks);
+        }
+
+        private class TestHandler : DelegatingHandler
+        {
+            public HttpRequestMessage LastRequest { get; private set; }
+
+            public HttpResponseMessage Response { get; set; } = new HttpResponseMessage(HttpStatusCode.Accepted);
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                LastRequest = request;
+                return Task.FromResult(Response);
+            }
         }
     }
 }
