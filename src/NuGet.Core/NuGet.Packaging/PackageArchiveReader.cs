@@ -302,7 +302,7 @@ namespace NuGet.Packaging
                 var expectedHash = Convert.FromBase64String(signatureContent.HashValue);
                 if (!SignedPackageArchiveUtility.VerifySignedPackageIntegrity(reader, hashAlgorithm, expectedHash))
                 {
-                    throw new SignatureException(Strings.SignaturePackageIntegrityFailure, GetIdentity());
+                    throw new SignatureException(NuGetLogCode.NU3008, Strings.SignaturePackageIntegrityFailure, GetIdentity());
                 }
             }
 #endif

@@ -10,6 +10,7 @@ using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -32,9 +33,22 @@ namespace NuGet.Packaging.Test
         public void Verify_WhenRequestNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => SigningUtility.Verify(request: null));
+                () => SigningUtility.Verify(request: null, logger: NullLogger.Instance));
 
             Assert.Equal("request", exception.ParamName);
+        }
+
+        [Fact]
+        public void Verify_WhenLoggerNull_Throws()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            using (var request = CreateRequest(certificate))
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => SigningUtility.Verify(request, logger: null));
+
+                Assert.Equal("logger", exception.ParamName);
+            }
         }
 
         [Fact]
@@ -43,7 +57,8 @@ namespace NuGet.Packaging.Test
             using (var certificate = _fixture.GetRsaSsaPssCertificate())
             using (var request = CreateRequest(certificate))
             {
-                var exception = Assert.Throws<SignatureException>(() => SigningUtility.Verify(request));
+                var exception = Assert.Throws<SignatureException>(
+                    () => SigningUtility.Verify(request, NullLogger.Instance));
 
                 Assert.Equal(NuGetLogCode.NU3013, exception.Code);
                 Assert.Equal("The signing certificate has an unsupported signature algorithm.", exception.Message);
@@ -56,7 +71,8 @@ namespace NuGet.Packaging.Test
             using (var certificate = _fixture.GetLifetimeSigningCertificate())
             using (var request = CreateRequest(certificate))
             {
-                var exception = Assert.Throws<SignatureException>(() => SigningUtility.Verify(request));
+                var exception = Assert.Throws<SignatureException>(
+                    () => SigningUtility.Verify(request, NullLogger.Instance));
 
                 Assert.Equal(NuGetLogCode.NU3015, exception.Code);
                 Assert.Equal("The lifetime signing EKU is not supported.", exception.Message);
@@ -69,7 +85,8 @@ namespace NuGet.Packaging.Test
             using (var certificate = _fixture.GetNotYetValidCertificate())
             using (var request = CreateRequest(certificate))
             {
-                var exception = Assert.Throws<SignatureException>(() => SigningUtility.Verify(request));
+                var exception = Assert.Throws<SignatureException>(
+                    () => SigningUtility.Verify(request, NullLogger.Instance));
 
                 Assert.Equal(NuGetLogCode.NU3017, exception.Code);
                 Assert.Equal("The signing certificate is not yet valid.", exception.Message);
@@ -77,15 +94,55 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Verify_WithUntrustedRoot_Throws()
+        public void Verify_WhenChainBuildingFails_Throws()
+        {
+            using (var certificate = _fixture.GetExpiredCertificate())
+            using (var request = CreateRequest(certificate))
+            {
+                var logger = new TestLogger();
+
+                var exception = Assert.Throws<SignatureException>(
+                    () => SigningUtility.Verify(request, logger));
+
+                Assert.Equal(NuGetLogCode.NU3018, exception.Code);
+                Assert.Equal("Certificate chain validation failed.", exception.Message);
+
+                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Errors);
+                Assert.Equal(1, logger.Warnings);
+
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
+                    AssertNotTimeValid(logger.LogMessages, LogLevel.Error);
+                }
+                else
+                {
+                    AssertUntrustedRoot(logger.LogMessages, LogLevel.Error);
+                    AssertPartialChain(logger.LogMessages, LogLevel.Error);
+                    AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                }
+            }
+        }
+
+        [Fact]
+        public void Verify_WithUntrustedSelfSignedCertificate_Succeeds()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             using (var request = CreateRequest(certificate))
             {
-                var exception = Assert.Throws<SignatureException>(
-                    () => SigningUtility.Verify(request));
+                var logger = new TestLogger();
 
-                Assert.Equal(NuGetLogCode.NU3018, exception.Code);
+                SigningUtility.Verify(request, logger);
+
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Warnings);
+
+                AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
+
+                if (!RuntimeEnvironmentHelper.IsWindows)
+                {
+                    AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                }
             }
         }
 
@@ -240,6 +297,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
+
         private static void VerifyAttributes(
             CryptographicAttributeObjectCollection attributes,
             SignPackageRequest request)
@@ -332,6 +390,49 @@ namespace NuGet.Packaging.Test
             Assert.Equal(packageOwners != null && packageOwners.Count > 0, nugetPackageOwnersAttributeFound);
         }
 #endif
+
+        private static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            string untrustedRoot;
+
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
+            }
+            else
+            {
+                untrustedRoot = "certificate not trusted";
+            }
+
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == untrustedRoot);
+        }
+
+        private static void AssertNotTimeValid(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.");
+        }
+
+        private static void AssertOfflineRevocation(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == "unable to get certificate CRL");
+        }
+
+        private static void AssertPartialChain(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == "unable to get local issuer certificate");
+        }
 
         private static AuthorSignPackageRequest CreateRequest(X509Certificate2 certificate)
         {

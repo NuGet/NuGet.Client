@@ -242,6 +242,60 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [Fact]
+        public void IsSelfIssued_WhenCertificateNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => CertificateUtility.IsSelfIssued(certificate: null));
+
+            Assert.Equal("certificate", exception.ParamName);
+        }
+
+        [Fact]
+        public void IsSelfIssued_WithPartialChain_ReturnsFalse()
+        {
+            using (var certificate = SignTestUtility.GetCertificate("leaf.crt"))
+            {
+                Assert.False(CertificateUtility.IsSelfIssued(certificate));
+            }
+        }
+
+        [Fact]
+        public void IsSelfIssued_WithNonSelfSignedCertificate_ReturnsFalse()
+        {
+            using (var certificate = _fixture.GetNonSelfSignedCertificate())
+            {
+                Assert.False(CertificateUtility.IsSelfIssued(certificate));
+            }
+        }
+
+        [Fact]
+        public void IsSelfIssued_WithSelfSignedCertificate_ReturnsTrue()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                Assert.True(CertificateUtility.IsSelfIssued(certificate));
+            }
+        }
+
+        [Fact]
+        public void IsSelfIssued_WithSelfIssuedCertificate_ReturnsTrue()
+        {
+            using (var certificate = _fixture.GetSelfIssuedCertificate())
+            {
+                Assert.True(CertificateUtility.IsSelfIssued(certificate));
+            }
+        }
+
+        [Fact]
+        public void IsSelfIssued_WithRootCertificate_ReturnsTrue()
+        {
+            using (var certificate = _fixture.GetRootCertificate())
+            {
+                Assert.True(CertificateUtility.IsSelfIssued(certificate));
+            }
+        }
+
         private static int GetExtendedKeyUsageCount(X509Certificate2 certificate)
         {
             foreach (var extension in certificate.Extensions)

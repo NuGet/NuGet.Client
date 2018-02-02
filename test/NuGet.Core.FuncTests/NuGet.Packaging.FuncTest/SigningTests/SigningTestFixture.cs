@@ -19,20 +19,21 @@ namespace NuGet.Packaging.FuncTest
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
         private TrustedTestCert<X509Certificate2> _trustedTimestampRoot;
+        private TestCertificate _untrustedTestCert;
         private IReadOnlyList<TrustedTestCert<TestCertificate>> _trustedTestCertificateWithReissuedCertificate;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
         private Lazy<Task<SigningTestServer>> _testServer;
         private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
         private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
-        private readonly DisposableList _responders;
+        private readonly DisposableList<IDisposable> _responders;
 
         public SigningTestFixture()
         {
             _testServer = new Lazy<Task<SigningTestServer>>(SigningTestServer.CreateAsync);
             _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
             _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
-            _responders = new DisposableList();
+            _responders = new DisposableList<IDisposable>();
         }
 
         public TrustedTestCert<TestCertificate> TrustedTestCertificate
@@ -96,6 +97,19 @@ namespace NuGet.Packaging.FuncTest
                 }
 
                 return _trustedTestCertificateWithReissuedCertificate;
+            }
+        }
+
+        public TestCertificate UntrustedTestCertificate
+        {
+            get
+            {
+                if (_untrustedTestCert == null)
+                {
+                    _untrustedTestCert = TestCertificate.Generate(SigningTestUtility.CertificateModificationGeneratorForCodeSigningEkuCert);
+                }
+
+                return _untrustedTestCert;
             }
         }
 

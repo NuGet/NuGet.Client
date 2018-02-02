@@ -284,7 +284,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     waitForExit: true);
 
                 // Assert
-                result.Success.Should().BeFalse();
+                result.Success.Should().BeTrue();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
                 result.AllOutput.Should().Contain("The revocation function was unable to check revocation for the certificate");

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -53,7 +51,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            var signature = CreateSignature(request, signatureContent);
+            var signature = CreateSignature(request, signatureContent, logger);
 
             if (_timestampProvider == null)
             {
@@ -66,9 +64,9 @@ namespace NuGet.Packaging.Signing
         }
 
 #if IS_DESKTOP
-        private Signature CreateSignature(SignPackageRequest request, SignatureContent signatureContent)
+        private Signature CreateSignature(SignPackageRequest request, SignatureContent signatureContent, ILogger logger)
         {
-            var cmsSigner = CreateCmsSigner(request);
+            var cmsSigner = CreateCmsSigner(request, logger);
 
             if (request.PrivateKey != null)
             {
@@ -94,7 +92,7 @@ namespace NuGet.Packaging.Signing
             return Signature.Load(cms);
         }
 
-        private static CmsSigner CreateCmsSigner(SignPackageRequest request)
+        private static CmsSigner CreateCmsSigner(SignPackageRequest request, ILogger logger)
         {
             // Subject Key Identifier (SKI) is smaller and less prone to accidental matching than issuer and serial
             // number.  However, to ensure cross-platform verification, SKI should only be used if the certificate
@@ -110,7 +108,7 @@ namespace NuGet.Packaging.Signing
                 signer = new CmsSigner(SubjectIdentifierType.SubjectKeyIdentifier, request.Certificate);
             }
 
-            request.BuildSigningCertificateChainOnce();
+            request.BuildSigningCertificateChainOnce(logger);
 
             var chain = request.Chain;
 
@@ -153,12 +151,12 @@ namespace NuGet.Packaging.Signing
 
             return _timestampProvider.TimestampSignatureAsync(timestampRequest, logger, token);
         }
+
 #else
-        private Signature CreateSignature(SignPackageRequest request, SignatureContent signatureContent)
+        private Signature CreateSignature(SignPackageRequest request, SignatureContent signatureContent, ILogger logger)
         {
             throw new NotSupportedException();
         }
-
 
         private Task<Signature> TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
         {
