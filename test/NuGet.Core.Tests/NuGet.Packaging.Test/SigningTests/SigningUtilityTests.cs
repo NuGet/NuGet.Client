@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -108,17 +107,20 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(NuGetLogCode.NU3018, exception.Code);
                 Assert.Equal("Certificate chain validation failed.", exception.Message);
 
-                Assert.Equal(1, logger.Errors);
+                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Errors);
                 Assert.Equal(1, logger.Warnings);
-                Assert.Equal(2, logger.LogMessages.Count());
-                Assert.Contains(logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Error &&
-                    message.Message == "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.");
-                Assert.Contains(logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Warning &&
-                    message.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
+
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
+                    AssertNotTimeValid(logger.LogMessages, LogLevel.Error);
+                }
+                else
+                {
+                    AssertUntrustedRoot(logger.LogMessages, LogLevel.Error);
+                    AssertPartialChain(logger.LogMessages, LogLevel.Error);
+                    AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                }
             }
         }
 
@@ -133,12 +135,14 @@ namespace NuGet.Packaging.Test
                 SigningUtility.Verify(request, logger);
 
                 Assert.Equal(0, logger.Errors);
-                Assert.Equal(1, logger.Warnings);
-                Assert.Equal(1, logger.Messages.Count());
-                Assert.Contains(logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Warning &&
-                    message.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
+                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Warnings);
+
+                AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
+
+                if (!RuntimeEnvironmentHelper.IsWindows)
+                {
+                    AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                }
             }
         }
 
@@ -293,6 +297,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
+
         private static void VerifyAttributes(
             CryptographicAttributeObjectCollection attributes,
             SignPackageRequest request)
@@ -385,6 +390,49 @@ namespace NuGet.Packaging.Test
             Assert.Equal(packageOwners != null && packageOwners.Count > 0, nugetPackageOwnersAttributeFound);
         }
 #endif
+
+        private static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            string untrustedRoot;
+
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
+            }
+            else
+            {
+                untrustedRoot = "certificate not trusted";
+            }
+
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == untrustedRoot);
+        }
+
+        private static void AssertNotTimeValid(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.");
+        }
+
+        private static void AssertOfflineRevocation(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == "unable to get certificate CRL");
+        }
+
+        private static void AssertPartialChain(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == "unable to get local issuer certificate");
+        }
 
         private static AuthorSignPackageRequest CreateRequest(X509Certificate2 certificate)
         {

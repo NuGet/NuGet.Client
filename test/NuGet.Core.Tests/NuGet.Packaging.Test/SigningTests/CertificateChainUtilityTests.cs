@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
@@ -83,19 +84,15 @@ namespace NuGet.Packaging.Test
                 Assert.Equal("Certificate chain validation failed.", exception.Message);
 
                 Assert.Equal(1, logger.Errors);
-                Assert.Equal(2, logger.Warnings);
-                Assert.Contains(logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Error &&
-                    message.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
-                Assert.Contains(logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Warning &&
-                    message.Message == "The revocation function was unable to check revocation for the certificate.");
-                Assert.Contains(logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Warning &&
-                    message.Message == "The revocation function was unable to check revocation because the revocation server was offline.");
+                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 2 : 1, logger.Warnings);
+
+                AssertUntrustedRoot(logger.LogMessages, LogLevel.Error);
+                AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
+                }
             }
         }
 
@@ -116,11 +113,14 @@ namespace NuGet.Packaging.Test
                 Assert.True(certificate.RawData.SequenceEqual(chain[0].RawData));
 
                 Assert.Equal(0, logger.Errors);
-                Assert.Equal(1, logger.Warnings);
-                Assert.Contains(logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Warning &&
-                    message.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
+                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Warnings);
+
+                AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
+
+                if (!RuntimeEnvironmentHelper.IsWindows)
+                {
+                    AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                }
             }
         }
 
@@ -155,6 +155,52 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(intermediateCertificate.Thumbprint, certificateChain[1].Thumbprint);
                 Assert.Equal(rootCertificate.Thumbprint, certificateChain[2].Thumbprint);
             }
+        }
+
+        private static void AssertOfflineRevocation(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            string offlineRevocation;
+
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                offlineRevocation = "The revocation function was unable to check revocation because the revocation server was offline.";
+            }
+            else
+            {
+                offlineRevocation = "unable to get certificate CRL";
+            }
+
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == offlineRevocation);
+        }
+
+        private static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == "The revocation function was unable to check revocation for the certificate.");
+        }
+
+        private static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            string untrustedRoot;
+
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
+            }
+            else
+            {
+                untrustedRoot = "certificate not trusted";
+            }
+
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == untrustedRoot);
         }
     }
 }
