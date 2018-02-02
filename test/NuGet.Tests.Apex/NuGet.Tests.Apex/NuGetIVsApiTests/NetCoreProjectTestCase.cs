@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.StaFact;
 using NuGet.Test.Utility;
@@ -14,51 +15,51 @@ namespace NuGet.Tests.Apex
 
         // basic create for .net core template
         [NuGetWpfTheory]
-        [InlineData(ProjectTemplate.NetCoreClassLib)]
-        [InlineData(ProjectTemplate.NetStandardClassLib)]
-        [InlineData(ProjectTemplate.NetCoreConsoleApp)]
+        [MemberData(nameof(GetNetCoreTemplates))]
         public void CreateNetCoreProject_RestoresNewProject(ProjectTemplate projectTemplate)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-
-                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
-                project.Build();
-                solutionService.SaveAll();
-
-                solutionService.Build();
-                Assert.True(VisualStudio.HasNoErrorsInErrorList());
+                VisualStudio.AssertNoErrors();
             }
         }
 
         // basic create for .net core template
         [NuGetWpfTheory]
-        [InlineData(ProjectTemplate.NetCoreClassLib)]
-        [InlineData(ProjectTemplate.NetStandardClassLib)]
-        [InlineData(ProjectTemplate.NetCoreConsoleApp)]
+        [MemberData(nameof(GetNetCoreTemplates))]
         public void CreateNetCoreProject_AddProjectReference(ProjectTemplate projectTemplate)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                // Arrange
-                EnsureVisualStudioHost();
-                var solutionService = VisualStudio.Get<SolutionService>();
-
-                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
-                var project1 = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject1");
-                project1.Build();
-                var project2 = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject2");
+                var project2 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject2");
                 project2.Build();
-                project1.References.Dte.AddProjectReference(project2);
-                solutionService.SaveAll();
 
-                solutionService.Build();
-                Assert.True(VisualStudio.HasNoErrorsInErrorList());
-                Assert.True(project1.References.TryFindReferenceByName("TestProject2", out var result));
+                testContext.Project.References.Dte.AddProjectReference(project2);
+                testContext.SolutionService.SaveAll();
+
+                testContext.SolutionService.Build();
+
+                Assert.True(testContext.Project.References.TryFindReferenceByName("TestProject2", out var result));
+                VisualStudio.AssertNoErrors();
+            }
+        }
+
+        // There  is a bug with VS or Apex where NetCoreConsoleApp and NetCoreClassLib create netcore 2.1 projects that are not supported by the sdk
+        // Commenting out any NetCoreConsoleApp or NetCoreClassLib template and swapping it for NetStandardClassLib as both are package ref.
+
+        public static IEnumerable<object[]> GetNetCoreTemplates()
+        {
+            for (var i = 0; i < Utils.GetIterations(); i++)
+            {
+                //yield return new object[] { ProjectTemplate.NetCoreClassLib };
+                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
+                yield return new object[] { ProjectTemplate.NetStandardClassLib };
             }
         }
     }

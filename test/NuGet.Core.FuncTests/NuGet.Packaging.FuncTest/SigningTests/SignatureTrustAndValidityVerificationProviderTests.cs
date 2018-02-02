@@ -108,7 +108,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var packageReader = new PackageArchiveReader(packageFilePath))
                 {
                     var signature = await packageReader.GetSignatureAsync(CancellationToken.None);
-                    var invalidSignature = GenerateInvalidSignature(signature);
+                    var invalidSignature = SignedArchiveTestUtility.GenerateInvalidSignature(signature);
                     var provider = new SignatureTrustAndValidityVerificationProvider();
 
                     var result = await provider.GetTrustResultAsync(
@@ -229,52 +229,6 @@ namespace NuGet.Packaging.FuncTest
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3027);
                 }
             }
-        }
-
-        private static Signature GenerateInvalidSignature(Signature signature)
-        {
-            var hash = Encoding.UTF8.GetBytes(signature.SignatureContent.HashValue);
-            var newHash = Encoding.UTF8.GetBytes(new string('0', hash.Length));
-
-            var bytes = signature.SignedCms.Encode();
-            var newBytes = FindAndReplaceSequence(bytes, hash, newHash);
-
-            return Signature.Load(newBytes);
-        }
-
-        private static byte[] FindAndReplaceSequence(byte[] bytes, byte[] find, byte[] replace)
-        {
-            var found = false;
-            var from = -1;
-
-            for (var i = 0; !found && i < bytes.Length - find.Length; ++i)
-            {
-                for (var j = 0; j < find.Length; ++j)
-                {
-                    if (bytes[i + j] != find[j])
-                    {
-                        break;
-                    }
-
-                    if (j == find.Length - 1)
-                    {
-                        from = i;
-                        found = true;
-                    }
-                }
-            }
-
-            if (!found)
-            {
-                throw new Exception("Byte sequence not found.");
-            }
-
-            var byteList = new List<byte>(bytes);
-
-            byteList.RemoveRange(from, find.Length);
-            byteList.InsertRange(from, replace);
-
-            return byteList.ToArray();
         }
     }
 }

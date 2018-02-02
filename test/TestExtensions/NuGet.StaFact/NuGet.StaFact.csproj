@@ -24,5 +24,8 @@
   <ItemGroup>
     <PackageReference Include="XUnit.StaFact" Version="0.2.9" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
+  </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
 </Project>

@@ -7,6 +7,10 @@
     <NETCoreWPFProject>true</NETCoreWPFProject>
     <TestProject>true</TestProject>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Apex\ApexTestContext.cs" />
+  </ItemGroup>
   
   <ItemGroup>
     <Reference Include="System" />
@@ -20,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Apex\ApexBaseTestClass.cs" />
+    <Compile Include="Apex\ApexTestContext.cs" />
     <Compile Include="Apex\NuGetConsoleTestExtension.cs" />
     <Compile Include="Apex\NuGetTestOperationConfiguration.cs" />
     <Compile Include="Apex\SharedVisualStudioHostTestClass.cs" />
@@ -27,10 +32,12 @@
     <Compile Include="Apex\NuGetApexVerifier.cs" />
     <Compile Include="Fixtures\ApexTestRequirementsFixture.cs" />
     <Compile Include="Fixtures\IVisualStudioHostFixtureFactory.cs" />
+    <Compile Include="Fixtures\SignedPackagesTestsApexFixture.cs" />
     <Compile Include="Fixtures\VisualStudioHostFixture.cs" />
     <Compile Include="Fixtures\VisualStudioHostFixtureFactory.cs" />
     <Compile Include="Fixtures\VisualStudioOperationsFixture.cs" />
     <Compile Include="NuGetIVsApiTests\IVsPackageInstallerTestCase.cs" />
+    <Compile Include="NuGetIVsApiTests\NuGetPackageSigningTestCase.cs" />
     <Compile Include="NuGetIVsApiTests\NuGetConsoleTestCase.cs" />
     <Compile Include="NuGetIVsApiTests\NetCoreProjectTestCase.cs" />
     <Compile Include="NuGetIVsApiTests\NuGetUITestCase.cs" />

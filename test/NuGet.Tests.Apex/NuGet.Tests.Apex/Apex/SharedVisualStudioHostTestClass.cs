@@ -1,6 +1,11 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
+using FluentAssertions;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.VisualStudio;
+using Microsoft.Test.Apex.VisualStudio.Solution;
 using Xunit;
 
 namespace NuGet.Tests.Apex
@@ -30,10 +35,7 @@ namespace NuGet.Tests.Apex
             });
         }
 
-        public override VisualStudioHost VisualStudio
-        {
-            get { return _hostFixture.Value.VisualStudio; }
-        }
+        public override VisualStudioHost VisualStudio => _hostFixture.Value.VisualStudio;
 
         public override TService GetApexService<TService>()
         {
@@ -50,12 +52,17 @@ namespace NuGet.Tests.Apex
             VisualStudio.Stop();
         }
 
-        public IOperations Operations
+        protected NuGetConsoleTestExtension GetConsole(ProjectTestExtension project)
         {
-            get
-            {
-                return _hostFixture.Value.Operations;
-            }
+            VisualStudio.ClearWindows();
+
+            var nugetTestService = GetNuGetTestService();
+            nugetTestService.EnsurePackageManagerConsoleIsOpen().Should().BeTrue("Console was opened");
+            var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
+
+            return nugetConsole;
         }
+
+        public IOperations Operations => _hostFixture.Value.Operations;
     }
 }

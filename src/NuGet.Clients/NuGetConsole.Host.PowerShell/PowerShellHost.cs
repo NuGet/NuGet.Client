@@ -69,6 +69,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         // indicates whether this host has been initialized.
         // null = not initilized, true = initialized successfully, false = initialized unsuccessfully
         private bool? _initialized;
+        public bool IsInitializedSuccessfully => _initialized.HasValue && _initialized.Value;
+
         // store the current (non-truncated) project names displayed in the project name combobox
         private string[] _projectSafeNames;
 

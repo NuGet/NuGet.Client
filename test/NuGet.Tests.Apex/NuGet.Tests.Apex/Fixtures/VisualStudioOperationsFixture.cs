@@ -1,10 +1,10 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.Services;
 using Microsoft.Test.Apex.VisualStudio;
@@ -56,8 +56,16 @@ namespace NuGet.Tests.Apex
                         }
                     }
                     _visualStudioHostConfiguration.AddCompositionAssembly(Assembly.GetExecutingAssembly().Location);
-
                     _visualStudioHostConfiguration.InProcessHostConstraints = new List<ITypeConstraint>() { new NuGetTypeConstraint() };
+
+                    // Use the same environment to avoid elevation
+                    _visualStudioHostConfiguration.InheritProcessEnvironment = true;
+
+                    // Launch in the experimental instance of VS
+                    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_TEST_APEX_EXP")))
+                    {
+                        _visualStudioHostConfiguration.CommandLineArguments += " /rootSuffix Exp";
+                    }
                 }
                 return _visualStudioHostConfiguration;
             }
