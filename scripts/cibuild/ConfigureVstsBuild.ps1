@@ -1,22 +1,17 @@
 <#
 .SYNOPSIS
 Sets build variables during a VSTS build dynamically.
-
 .DESCRIPTION
 This script is used to dynamically set some build variables during VSTS build.
 Specifically, this script reads the buildcounter.txt file in the $(DropRoot) to
 determine the build number of the artifacts, also it sets the $(NupkgOutputDir)
 based on whether $(BuildRTM) is true or false.
-
 .PARAMETER BuildCounterFile
 Path to the file in the drop root which stores the current build counter.
-
 .PARAMETER BuildInfoJsonFile
 Path to the buildInfo.json file that is generated for every build in the output folder.
-
 .PARAMETER BuildRTM
 True/false depending on whether nupkgs are being with or without the release labels.
-
 #>
 
 param
@@ -162,12 +157,18 @@ else
     Write-Host "##vso[task.setvariable variable=Revision;]$newBuildCounter"
     Write-Host "##vso[build.updatebuildnumber]$newBuildCounter"
     Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
+    $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
+    $CliTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranch
+    $SdkTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranch
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
         CommitHash = $env:BUILD_SOURCEVERSION
         BuildBranch = $env:BUILD_SOURCEBRANCHNAME
         LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
         LocalizationRepositoryCommitHash = $LocalizationRepoCommitHash
+        VsTargetBranch = $VsTargetBranch.Trim()
+        CliTargetBranch = $CliTargetBranch.Trim()
+        SdkTargetBranch = $SdkTargetBranch.Trim()
     }   
 
     New-Item $BuildInfoJsonFile -Force
