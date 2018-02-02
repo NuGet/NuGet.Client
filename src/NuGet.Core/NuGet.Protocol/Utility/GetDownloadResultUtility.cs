@@ -95,6 +95,7 @@ namespace NuGet.Protocol
                                     token);
                             }
                         },
+                        downloadContext.SourceCacheContext,
                         logger,
                         token);
                 }

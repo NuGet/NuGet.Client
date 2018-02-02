@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 
 namespace NuGet.Protocol
@@ -49,5 +50,10 @@ namespace NuGet.Protocol
 
         /// <summary>The timeout to apply to <see cref="DownloadTimeoutStream"/> instances.</summary>
         public TimeSpan DownloadTimeout { get; set; }
+
+        /// <summary>
+        /// Additional headers to add to the request.
+        /// </summary>
+        public IList<KeyValuePair<string, IEnumerable<string>>> AddHeaders { get; set; } = new List<KeyValuePair<string, IEnumerable<string>>>();
     }
 }

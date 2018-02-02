@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -125,6 +126,7 @@ namespace NuGet.Protocol
                         request.RequestTimeout,
                         request.DownloadTimeout,
                         request.MaxTries,
+                        request.CacheContext.SourceCacheContext.SessionId,
                         log,
                         lockedToken);
 
@@ -183,9 +185,19 @@ namespace NuGet.Protocol
                 token: token);
         }
 
+        public Task<T> ProcessStreamAsync<T>(
+            HttpSourceRequest request,
+            Func<Stream, Task<T>> processAsync,
+            ILogger log,
+            CancellationToken token)
+        {
+            return ProcessStreamAsync<T>(request, processAsync, cacheContext: null, log: log, token: token);
+        }
+
         public async Task<T> ProcessStreamAsync<T>(
             HttpSourceRequest request,
             Func<Stream, Task<T>> processAsync,
+            SourceCacheContext cacheContext,
             ILogger log,
             CancellationToken token)
         {
@@ -204,21 +216,36 @@ namespace NuGet.Protocol
                     var networkStream = await response.Content.ReadAsStreamAsync();
                     return await processAsync(networkStream);
                 },
+                cacheContext,
                 log,
                 token);
         }
 
-        public async Task<T> ProcessResponseAsync<T>(
+        public Task<T> ProcessResponseAsync<T>(
             HttpSourceRequest request,
             Func<HttpResponseMessage, Task<T>> processAsync,
             ILogger log,
             CancellationToken token)
         {
-            Func<Task<ThrottledResponse>> throttledResponseFactory = () => GetThrottledResponse(
+            return ProcessResponseAsync(request, processAsync, cacheContext: null, log: log, token: token);
+        }
+
+        public async Task<T> ProcessResponseAsync<T>(
+            HttpSourceRequest request,
+            Func<HttpResponseMessage, Task<T>> processAsync,
+            SourceCacheContext cacheContext,
+            ILogger log,
+            CancellationToken token)
+        {
+            // Generate a new session id if no cache context was provided.
+            var sessionId = cacheContext?.SessionId ?? Guid.NewGuid();
+
+            Task<ThrottledResponse> throttledResponseFactory() => GetThrottledResponse(
                 request.RequestFactory,
                 request.RequestTimeout,
                 request.DownloadTimeout,
                 request.MaxTries,
+                sessionId,
                 log,
                 token);
 
@@ -250,6 +277,7 @@ namespace NuGet.Protocol
             TimeSpan requestTimeout,
             TimeSpan downloadTimeout,
             int maxTries,
+            Guid sessionId,
             ILogger log,
             CancellationToken cancellationToken)
         {
@@ -262,6 +290,9 @@ namespace NuGet.Protocol
                 DownloadTimeout = downloadTimeout,
                 MaxTries = maxTries
             };
+
+            // Add X-NuGet-Session-Id to all outgoing requests. This allows feeds to track nuget operations.
+            request.AddHeaders.Add(new KeyValuePair<string, IEnumerable<string>>(ProtocolConstants.SessionId, new[] { sessionId.ToString() }));
 
             // Acquire the semaphore.
             await _throttle.WaitAsync();

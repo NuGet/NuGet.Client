@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -47,6 +47,12 @@ namespace NuGet.Protocol.Core.Types
         /// This should only be used for retries.
         /// </summary>
         public bool RefreshMemoryCache { get; set; }
+
+        /// <summary>
+        /// X-NUGET-SESSION
+        /// This should be unique for each package operation.
+        /// </summary>
+        public Guid SessionId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Package version lists from the server older than this time span
@@ -121,7 +127,8 @@ namespace NuGet.Protocol.Core.Types
                 MaxAge = MaxAge,
                 NoCache = NoCache,
                 GeneratedTempFolder = _generatedTempFolder,
-                RefreshMemoryCache = RefreshMemoryCache
+                RefreshMemoryCache = RefreshMemoryCache,
+                SessionId = SessionId
             };
         }
 

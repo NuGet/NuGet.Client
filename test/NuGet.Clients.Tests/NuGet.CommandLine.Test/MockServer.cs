@@ -36,6 +36,11 @@ namespace NuGet.CommandLine.Test
         public string Uri { get { return PortReserver.BaseUri; } }
 
         /// <summary>
+        /// Observe requests without handling them directly.
+        /// </summary>
+        public Action<HttpListenerContext> RequestObserver { get; set; } = (x) => { };
+
+        /// <summary>
         /// Initializes an instance of MockServer.
         /// </summary>
         public MockServer()
@@ -332,7 +337,10 @@ namespace NuGet.CommandLine.Test
                 try
                 {
                     var context = Listener.GetContext();
+
                     GenerateResponse(context);
+
+                    RequestObserver(context);
                 }
                 catch (ObjectDisposedException)
                 {

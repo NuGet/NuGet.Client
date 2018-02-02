@@ -66,6 +66,13 @@ namespace NuGet.Protocol
                         // disposing it.
                         response?.Dispose();
 
+                        // Add common headers to the request after it is created by the factory. This includes
+                        // X-NuGet-Session-Id which is added to all nuget requests.
+                        foreach (var header in request.AddHeaders)
+                        {
+                            requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                        }
+
                         log.LogInformation("  " + string.Format(
                             CultureInfo.InvariantCulture,
                             Strings.Http_RequestLog,
