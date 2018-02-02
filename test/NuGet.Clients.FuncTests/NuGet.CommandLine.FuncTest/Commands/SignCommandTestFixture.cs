@@ -41,7 +41,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private Lazy<Task<SigningTestServer>> _testServer;
         private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
         private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
-        private readonly DisposableList _responders;
+        private readonly DisposableList<IDisposable> _responders;
 
         public TrustedTestCert<TestCertificate> TrustedTestCertificate
         {
@@ -251,7 +251,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             _testServer = new Lazy<Task<SigningTestServer>>(SigningTestServer.CreateAsync);
             _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
             _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
-            _responders = new DisposableList();
+            _responders = new DisposableList<IDisposable>();
         }
 
         private void SetUpCrlDistributionPoint()

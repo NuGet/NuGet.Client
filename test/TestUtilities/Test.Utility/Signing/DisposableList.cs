@@ -6,7 +6,8 @@ using System.Collections.Generic;
 
 namespace Test.Utility.Signing
 {
-    public sealed class DisposableList : List<IDisposable>, IDisposable
+    public sealed class DisposableList<T> : List<T>, IDisposable
+        where T : IDisposable
     {
         private bool _isDisposed;
 

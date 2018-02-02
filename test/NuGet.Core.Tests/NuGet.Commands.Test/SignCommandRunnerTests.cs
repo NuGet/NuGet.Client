@@ -142,7 +142,7 @@ namespace NuGet.Commands.Test
                 await test.Runner.ExecuteCommandAsync(test.Args);
 
                 Assert.Equal(1, test.Logger.LogMessages.Count(
-                    message => message.Level == LogLevel.Error && message.Code == NuGetLogCode.NU3018));
+                    message => message.Level == LogLevel.Warning && message.Code == NuGetLogCode.NU3018));
             }
         }
 

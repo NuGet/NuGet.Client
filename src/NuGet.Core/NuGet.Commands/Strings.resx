@@ -675,7 +675,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>{0} should be the package identity of the package to verify</comment>
   </data>
   <data name="VerifyCommand_Failed" xml:space="preserve">
-    <value>Could not verify package(s) signature.</value>
+    <value>Package signature validation failed.</value>
   </data>
   <data name="SignCommandCertificateStoreNotFound" xml:space="preserve">
     <value>Certificate store '{0}' not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>

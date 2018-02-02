@@ -17,11 +17,16 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public static class SigningUtility
     {
-        public static void Verify(SignPackageRequest request)
+        public static void Verify(SignPackageRequest request, ILogger logger)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
             }
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(request.Certificate))
@@ -44,7 +49,7 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(NuGetLogCode.NU3017, Strings.SignatureNotYetValid);
             }
 
-            request.BuildSigningCertificateChainOnce();
+            request.BuildSigningCertificateChainOnce(logger);
         }
 
 #if IS_DESKTOP

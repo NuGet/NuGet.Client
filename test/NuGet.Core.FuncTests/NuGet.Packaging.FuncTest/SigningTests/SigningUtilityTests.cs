@@ -33,7 +33,7 @@ namespace NuGet.Packaging.FuncTest
             using (var certificate = new X509Certificate2(_fixture.TrustedTestCertificate.Source.PublicCert.RawData))
             using (var request = new SignPackageRequest(certificate, HashAlgorithmName.SHA256, HashAlgorithmName.SHA256))
             {
-                SigningUtility.Verify(request);
+                SigningUtility.Verify(request, NullLogger.Instance);
             }
         }
     }

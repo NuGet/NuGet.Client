@@ -68,7 +68,7 @@ namespace NuGet.Commands
 
             try
             {
-                SigningUtility.Verify(signPackageRequest);
+                SigningUtility.Verify(signPackageRequest, logger);
             }
             catch (Exception e)
             {

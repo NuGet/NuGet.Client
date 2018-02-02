@@ -107,11 +107,14 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public SignatureType SignatureType { get; }
 
-        internal void BuildSigningCertificateChainOnce()
+        internal void BuildSigningCertificateChainOnce(ILogger logger)
         {
             if (Chain == null)
             {
-                Chain = CertificateChainUtility.GetCertificateChainForSigning(Certificate, AdditionalCertificates, NuGetVerificationCertificateType.Signature);
+                Chain = CertificateChainUtility.GetCertificateChainForSigning(
+                    Certificate,
+                    AdditionalCertificates,
+                    logger);
             }
         }
     }

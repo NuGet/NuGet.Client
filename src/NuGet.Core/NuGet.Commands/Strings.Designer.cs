@@ -1440,7 +1440,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not verify package(s) signature..
+        ///   Looks up a localized string similar to Package signature validation failed..
         /// </summary>
         internal static string VerifyCommand_Failed {
             get {

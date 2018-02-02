@@ -499,4 +499,7 @@ Valid from:</comment>
     <comment>0 - Hash algorithm name
 1 - certificate hash in given hash algorithm</comment>
   </data>
+  <data name="CertificateChainValidationFailed" xml:space="preserve">
+    <value>Certificate chain validation failed.</value>
+  </data>
 </root>
