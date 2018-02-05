@@ -26,9 +26,7 @@ Set-Alias nuget $NuGetExe
 Set-Alias xunit $XunitConsole
 Set-Alias ilmerge $ILMerge
 
-$Version = New-Object -TypeName System.Version -ArgumentList "4.0"
-
-if ($PSVersionTable.PSVersion.CompareTo($Version) -lt 0) {
+if ($PSVersionTable.PSVersion.Major.CompareTo(4) -lt 0) {
     Set-Alias wget Invoke-WebRequest
 }
 
@@ -182,7 +180,7 @@ Function Install-NuGet {
     if ($Force -or -not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
 
-        wget https://dist.nuget.org/win-x86-commandline/v4.4.1/nuget.exe -OutFile $NuGetExe
+        Invoke-WebRequest https://dist.nuget.org/win-x86-commandline/v4.4.1/nuget.exe -OutFile $NuGetExe
     }
 
     # Display nuget info
