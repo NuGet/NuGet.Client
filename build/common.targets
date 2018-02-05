@@ -6,7 +6,7 @@
     <IsDesktop>true</IsDesktop>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' OR '$(TargetFramework)' == 'netcoreapp1.1' OR'$(TargetFramework)' == 'netstandard1.0' OR '$(TargetFramework)' == 'netstandard1.3' OR '$(TargetFramework)' == 'netstandard1.4' OR '$(TargetFramework)' == 'netstandard1.5' OR '$(TargetFramework)' == 'netstandard1.6' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' OR '$(TargetFramework)' == 'netcoreapp1.1' OR'$(TargetFramework)' == 'netstandard1.0' OR '$(TargetFramework)' == 'netstandard1.3' OR '$(TargetFramework)' == 'netstandard1.4' OR '$(TargetFramework)' == 'netstandard1.5' OR '$(TargetFramework)' == 'netstandard1.6' OR '$(TargetFramework)' == 'netstandard2.0' ">
     <DefineConstants>$(DefineConstants);IS_CORECLR</DefineConstants>
     <IsCore>true</IsCore>
   </PropertyGroup>
