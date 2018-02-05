@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using NuGet.Packaging;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     /// <summary>
     /// Warn if the version is not parsable by older nuget clients.

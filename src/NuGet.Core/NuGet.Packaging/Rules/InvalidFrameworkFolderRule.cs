@@ -9,7 +9,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using NuGet.Packaging;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     internal class InvalidFrameworkFolderRule : IPackageRule
     {

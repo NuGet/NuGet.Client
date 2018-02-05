@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using NuGet.Packaging;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     internal class WinRTNameIsObsoleteRule : IPackageRule
     {

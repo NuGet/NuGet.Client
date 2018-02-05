@@ -4,7 +4,7 @@
 using System;
 using NuGet.Common;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     public class PackageIssue
     {

@@ -8,7 +8,7 @@ using System.Linq;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     public class DefaultManifestValuesRule : IPackageRule
     {

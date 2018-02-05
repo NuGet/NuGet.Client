@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using NuGet.Packaging;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     public interface IPackageRule
     {

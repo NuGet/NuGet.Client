@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using NuGet.Packaging;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     internal class MisplacedAssemblyRule : IPackageRule
     {

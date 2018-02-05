@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using NuGet.Commands.Rules;
+using NuGet.Packaging.Rules;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;

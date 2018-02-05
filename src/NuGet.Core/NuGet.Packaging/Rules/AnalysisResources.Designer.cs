@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NuGet.Commands.Rules {
+namespace NuGet.Packaging.Rules {
     using System;
     using System.Reflection;
     
@@ -38,7 +38,7 @@ namespace NuGet.Commands.Rules {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Commands.Rules.AnalysisResources", typeof(AnalysisResources).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Packaging.Rules.AnalysisResources", typeof(AnalysisResources).GetTypeInfo().Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

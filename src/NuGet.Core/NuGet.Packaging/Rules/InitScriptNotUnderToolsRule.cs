@@ -7,7 +7,7 @@ using System.Globalization;
 using System.IO;
 using NuGet.Packaging;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     internal class InitScriptNotUnderToolsRule : IPackageRule
     {

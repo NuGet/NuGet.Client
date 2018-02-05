@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     public static class DefaultPackageRuleSet
     {

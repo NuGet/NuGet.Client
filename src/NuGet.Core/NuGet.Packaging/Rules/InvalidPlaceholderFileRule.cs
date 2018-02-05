@@ -10,7 +10,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     internal class InvalidPlaceholderFileRule : IPackageRule
     {
