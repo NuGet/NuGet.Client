@@ -223,6 +223,36 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
+        public async Task TimestampData_WhenRevocationInformationUnavailable_Success()
+        {
+            var testServer = await _testFixture.GetSigningTestServerAsync();
+            var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
+            var ca2 = ca.CreateIntermediateCertificateAuthority();
+            var timestampService = TimestampService.Create(ca2);
+
+            // Only register the AIA responder.  Do not register the OCSP responder.
+            using (testServer.RegisterResponder(ca2))
+            {
+                VerifyTimestampData(
+                    testServer,
+                    timestampService,
+                    (timestampProvider, request) =>
+                    {
+                        var logger = new TestLogger();
+                        var timestamp = timestampProvider.TimestampData(request, logger, CancellationToken.None);
+
+                        Assert.NotEmpty(timestamp);
+
+                        Assert.Equal(0, logger.Errors);
+                        Assert.Equal(2, logger.Warnings);
+
+                        AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                        AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
+                    });
+            }
+        }
+
+        [CIOnlyFact]
         public async Task TimestampData_WhenTimestampSigningCertificateRevoked_Throws()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
@@ -239,9 +269,7 @@ namespace NuGet.Packaging.FuncTest
                     var exception = Assert.Throws<TimestampException>(
                         () => timestampProvider.TimestampData(request, NullLogger.Instance, CancellationToken.None));
 
-                    Assert.Equal(
-                        "The timestamp service's certificate chain could not be built: The certificate is revoked.",
-                        exception.Message);
+                    Assert.Equal("Certificate chain validation failed.", exception.Message);
                 });
         }
 
@@ -333,6 +361,22 @@ namespace NuGet.Packaging.FuncTest
                     verifyTimestampData(timestampProvider, request);
                 }
             }
+        }
+
+        private static void AssertOfflineRevocation(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3028 &&
+                issue.Level == logLevel &&
+                issue.Message == "The revocation function was unable to check revocation because the revocation server was offline.");
+        }
+
+        private static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3028 &&
+                issue.Level == logLevel &&
+                issue.Message == "The revocation function was unable to check revocation for the certificate.");
         }
     }
 }

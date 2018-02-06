@@ -114,7 +114,8 @@ namespace NuGet.Packaging.Signing
                 Chain = CertificateChainUtility.GetCertificateChainForSigning(
                     Certificate,
                     AdditionalCertificates,
-                    logger);
+                    logger,
+                    CertificateType.Signature);
             }
         }
     }

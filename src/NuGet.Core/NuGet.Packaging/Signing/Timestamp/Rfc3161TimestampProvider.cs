@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
@@ -44,7 +45,6 @@ namespace NuGet.Packaging.Signing
 #endif
             _timestamperUrl = timeStampServerUrl ?? throw new ArgumentNullException(nameof(timeStampServerUrl));
         }
-
 
 #if IS_DESKTOP
 
@@ -101,44 +101,44 @@ namespace NuGet.Packaging.Signing
                 var timestampCms = timestampToken.AsSignedCms();
                 ValidateTimestampCms(request.SigningSpec, timestampCms);
 
-                byte[] timestampByteArray;
+                // If the timestamp signed CMS already has a complete chain for the signing certificate,
+                // it's ready to be added to the signature to be timestamped.
+                // However, a timestamp service is not required to include all certificates in a complete
+                // chain for the signing certificate in the SignedData.certificates collection.
+                // Some timestamp services include all certificates except the root in the
+                // SignedData.certificates collection.
+                var signerInfo = timestampCms.SignerInfos[0];
+                var chain = CertificateChainUtility.GetCertificateChainForSigning(
+                    signerInfo.Certificate,
+                    timestampCms.Certificates,
+                    logger,
+                    CertificateType.Timestamp);
 
-                using (var timestampNativeCms = NativeCms.Decode(timestampCms.Encode(), detached: false))
-                using (var chainHolder = new X509ChainHolder())
-                {
-                    var chain = chainHolder.Chain;
-                    var policy = chain.ChainPolicy;
+                var timestampCmsWithChainCertificates = EnsureCertificatesInCertificatesCollection(timestampCms, chain);
+                var bytes = timestampCmsWithChainCertificates.Encode();
 
-                    policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEku));
-                    policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
-
-                    policy.ExtraStore.AddRange(timestampCms.Certificates);
-
-                    policy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
-                    policy.RevocationMode = X509RevocationMode.Online;
-
-                    var timestampSignerCertificate = timestampCms.SignerInfos[0].Certificate;
-
-                    if (timestampSignerCertificate == null)
-                    {
-                        throw new TimestampException(NuGetLogCode.NU3020, Strings.TimestampNoCertificate);
-                    }
-
-                    if (!chain.Build(timestampSignerCertificate))
-                    {
-                        var messages = CertificateChainUtility.GetMessagesFromChainStatuses(chain.ChainStatus);
-
-                        throw new TimestampException(NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.TimestampCertificateChainBuildFailure, string.Join(", ", messages)));
-                    }
-
-                    // Insert all the certificates into timestampCms
-                    InsertTimestampCertChainIntoTimestampCms(timestampCms, chain, timestampNativeCms);
-                    timestampByteArray = timestampNativeCms.Encode();
-                }
-
-                signatureNativeCms.AddTimestamp(timestampByteArray);
+                signatureNativeCms.AddTimestamp(bytes);
 
                 return signatureNativeCms.Encode();
+            }
+        }
+
+        private static SignedCms EnsureCertificatesInCertificatesCollection(
+            SignedCms timestampCms,
+            IReadOnlyList<X509Certificate2> chain)
+        {
+            using (var timestampNativeCms = NativeCms.Decode(timestampCms.Encode(), detached: false))
+            {
+                timestampNativeCms.AddCertificates(
+                    chain.Where(certificate => !timestampCms.Certificates.Contains(certificate))
+                         .Select(certificate => certificate.RawData));
+
+                var bytes = timestampNativeCms.Encode();
+                var updatedCms = new SignedCms();
+
+                updatedCms.Decode(bytes);
+
+                return updatedCms;
             }
         }
 
@@ -149,9 +149,14 @@ namespace NuGet.Packaging.Signing
             {
                 signerInfo.CheckSignature(verifySignatureOnly: true);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw new TimestampException(NuGetLogCode.NU3021, Strings.TimestampSignatureValidationFailed, e);
+            }
+
+            if (signerInfo.Certificate == null)
+            {
+                throw new TimestampException(NuGetLogCode.NU3020, Strings.TimestampNoCertificate);
             }
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(signerInfo.Certificate))
@@ -186,17 +191,6 @@ namespace NuGet.Packaging.Signing
             {
                 throw new TimestampException(NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed);
             }
-        }
-
-        private static void InsertTimestampCertChainIntoTimestampCms(
-            SignedCms timestampCms,
-            X509Chain timstampCertChain,
-            NativeCms timestampNativeCms)
-        {
-            timestampNativeCms.AddCertificates(timstampCertChain.ChainElements
-                .Cast<X509ChainElement>()
-                .Where(c => !timestampCms.Certificates.Contains(c.Certificate))
-                .Select(c => c.Certificate.Export(X509ContentType.Cert)));
         }
 
         private static byte[] GenerateNonce()

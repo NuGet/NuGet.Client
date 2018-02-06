@@ -15,19 +15,20 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Create a list of certificates in chain order with the leaf first and root last.
         /// </summary>
-        /// <remarks>This must not be used on timestamp certificates as this method does not enforce the requirement
-        /// that timestamps be trusted.</remarks>
         /// <param name="certificate">The certificate for which a chain should be built.</param>
         /// <param name="extraStore">A certificate store containing additional certificates necessary
         /// for chain building.</param>
         /// <param name="logger">A logger.</param>
+        /// <param name="certificateType">The certificate type.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="extraStore" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="certificateType" /> is undefined.</exception>
         public static IReadOnlyList<X509Certificate2> GetCertificateChainForSigning(
             X509Certificate2 certificate,
             X509Certificate2Collection extraStore,
-            ILogger logger)
+            ILogger logger,
+            CertificateType certificateType)
         {
             if (certificate == null)
             {
@@ -44,6 +45,11 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            if (!Enum.IsDefined(typeof(CertificateType), certificateType))
+            {
+                throw new ArgumentException(Strings.InvalidArgument, nameof(certificateType));
+            }
+
             using (var chainHolder = new X509ChainHolder())
             {
                 var chain = chainHolder.Chain;
@@ -52,7 +58,7 @@ namespace NuGet.Packaging.Signing
                     chain.ChainPolicy,
                     extraStore,
                     DateTime.Now,
-                    NuGetVerificationCertificateType.Signature);
+                    certificateType);
 
                 if (chain.Build(certificate))
                 {
@@ -62,26 +68,32 @@ namespace NuGet.Packaging.Signing
                 X509ChainStatusFlags errorStatusFlags;
                 X509ChainStatusFlags warningStatusFlags;
 
-                GetChainStatusFlagsForSigning(certificate, out errorStatusFlags, out warningStatusFlags);
+                GetChainStatusFlagsForSigning(certificate, certificateType, out errorStatusFlags, out warningStatusFlags);
 
                 var fatalStatuses = new List<X509ChainStatus>();
+                var logCode = certificateType == CertificateType.Timestamp ? NuGetLogCode.NU3028 : NuGetLogCode.NU3018;
 
                 foreach (var chainStatus in chain.ChainStatus)
                 {
                     if ((chainStatus.Status & errorStatusFlags) != 0)
                     {
                         fatalStatuses.Add(chainStatus);
-                        logger.Log(LogMessage.CreateError(NuGetLogCode.NU3018, chainStatus.StatusInformation?.Trim()));
+                        logger.Log(LogMessage.CreateError(logCode, chainStatus.StatusInformation?.Trim()));
                     }
                     else if ((chainStatus.Status & warningStatusFlags) != 0)
                     {
-                        logger.Log(LogMessage.CreateWarning(NuGetLogCode.NU3018, chainStatus.StatusInformation?.Trim()));
+                        logger.Log(LogMessage.CreateWarning(logCode, chainStatus.StatusInformation?.Trim()));
                     }
                 }
 
                 if (fatalStatuses.Any())
                 {
-                    throw new SignatureException(NuGetLogCode.NU3018, Strings.CertificateChainValidationFailed);
+                    if (certificateType == CertificateType.Timestamp)
+                    {
+                        throw new TimestampException(logCode, Strings.CertificateChainValidationFailed);
+                    }
+
+                    throw new SignatureException(logCode, Strings.CertificateChainValidationFailed);
                 }
 
                 return GetCertificateListFromChain(chain);
@@ -113,15 +125,9 @@ namespace NuGet.Packaging.Signing
             return certs;
         }
 
-        /// <summary>
-        /// Get error/warning chain status flags for certificate chain validation during signing.
-        /// </summary>
-        /// <param name="certificate">The certificate to verify.</param>
-        /// <param name="errorStatusFlags">Error chain status flags.</param>
-        /// <param name="warningStatusFlags">Warning chain status flags.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <c>null</c>.</exception>
-        public static void GetChainStatusFlagsForSigning(
+        private static void GetChainStatusFlagsForSigning(
             X509Certificate2 certificate,
+            CertificateType certificateType,
             out X509ChainStatusFlags errorStatusFlags,
             out X509ChainStatusFlags warningStatusFlags)
         {
@@ -132,7 +138,7 @@ namespace NuGet.Packaging.Signing
 
             warningStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
 
-            if (CertificateUtility.IsSelfIssued(certificate))
+            if (certificateType == CertificateType.Signature && CertificateUtility.IsSelfIssued(certificate))
             {
                 warningStatusFlags |= X509ChainStatusFlags.UntrustedRoot;
             }
@@ -145,9 +151,9 @@ namespace NuGet.Packaging.Signing
             X509ChainPolicy policy,
             X509Certificate2Collection additionalCertificates,
             DateTime verificationTime,
-            NuGetVerificationCertificateType certificateType)
+            CertificateType certificateType)
         {
-            if (certificateType == NuGetVerificationCertificateType.Timestamp)
+            if (certificateType == CertificateType.Timestamp)
             {
                 policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEku));
             }
@@ -161,7 +167,7 @@ namespace NuGet.Packaging.Signing
             policy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
             policy.RevocationMode = X509RevocationMode.Online;
 
-            if (certificateType != NuGetVerificationCertificateType.Timestamp)
+            if (certificateType != CertificateType.Timestamp)
             {
                 policy.VerificationTime = verificationTime;
             }

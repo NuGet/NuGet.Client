@@ -33,7 +33,8 @@ namespace NuGet.Packaging.Test
                 () => CertificateChainUtility.GetCertificateChainForSigning(
                     certificate: null,
                     extraStore: new X509Certificate2Collection(),
-                    logger: NullLogger.Instance));
+                    logger: NullLogger.Instance,
+                    certificateType: CertificateType.Signature));
 
             Assert.Equal("certificate", exception.ParamName);
         }
@@ -45,7 +46,8 @@ namespace NuGet.Packaging.Test
                 () => CertificateChainUtility.GetCertificateChainForSigning(
                     new X509Certificate2(),
                     extraStore: null,
-                    logger: NullLogger.Instance));
+                    logger: NullLogger.Instance,
+                    certificateType: CertificateType.Signature));
 
             Assert.Equal("extraStore", exception.ParamName);
         }
@@ -57,9 +59,23 @@ namespace NuGet.Packaging.Test
                 () => CertificateChainUtility.GetCertificateChainForSigning(
                     new X509Certificate2(),
                     new X509Certificate2Collection(),
-                    logger: null));
+                    logger: null,
+                    certificateType: CertificateType.Signature));
 
             Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetCertificateChainForSigning_WhenCertificateTypeUndefined_Throws()
+        {
+            var exception = Assert.Throws<ArgumentException>(
+                () => CertificateChainUtility.GetCertificateChainForSigning(
+                    new X509Certificate2(),
+                    new X509Certificate2Collection(),
+                    NullLogger.Instance,
+                    (CertificateType)int.MaxValue));
+
+            Assert.Equal("certificateType", exception.ParamName);
         }
 
         [Fact]
@@ -78,7 +94,8 @@ namespace NuGet.Packaging.Test
                     () => CertificateChainUtility.GetCertificateChainForSigning(
                         leafCertificate,
                         extraStore,
-                        logger));
+                        logger,
+                        CertificateType.Signature));
 
                 Assert.Equal(NuGetLogCode.NU3018, exception.Code);
                 Assert.Equal("Certificate chain validation failed.", exception.Message);
@@ -106,7 +123,8 @@ namespace NuGet.Packaging.Test
                 var chain = CertificateChainUtility.GetCertificateChainForSigning(
                     certificate,
                     new X509Certificate2Collection(),
-                    logger);
+                    logger,
+                    CertificateType.Signature);
 
                 Assert.Equal(1, chain.Count);
                 Assert.NotSame(certificate, chain[0]);

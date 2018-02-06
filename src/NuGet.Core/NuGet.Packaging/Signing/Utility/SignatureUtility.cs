@@ -146,9 +146,9 @@ namespace NuGet.Packaging.Signing
               includeChain: false);
         }
 
-        private static IReadOnlyList<X509Certificate2> GetTimestampSignatureSigningCertificates(
+        internal static IReadOnlyList<X509Certificate2> GetTimestampSignatureSigningCertificates(
             SignedCms signedCms,
-            SigningSpecifications signingSpecificates,
+            SigningSpecifications signingSpecifications,
             bool includeChain)
         {
             var errors = new Errors(
@@ -171,7 +171,7 @@ namespace NuGet.Packaging.Signing
                 SigningCertificateRequirement.EitherOrBoth,
                 isIssuerSerialRequired,
                 errors,
-                SigningSpecifications.V1,
+                signingSpecifications,
                 includeChain);
         }
 

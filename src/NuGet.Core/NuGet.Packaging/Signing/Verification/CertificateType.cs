@@ -3,7 +3,7 @@
 
 namespace NuGet.Packaging.Signing
 {
-    public enum NuGetVerificationCertificateType
+    public enum CertificateType
     {
         Signature = 0,
         Timestamp = 1

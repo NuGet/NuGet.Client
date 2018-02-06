@@ -944,15 +944,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp service&apos;s certificate chain could not be built: {0}.
-        /// </summary>
-        internal static string TimestampCertificateChainBuildFailure {
-            get {
-                return ResourceManager.GetString("TimestampCertificateChainBuildFailure", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The timestamp certificate does not meet a minimum public key length requirement..
         /// </summary>
         internal static string TimestampCertificateFailsPublicKeyLengthRequirement {
