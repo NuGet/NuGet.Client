@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,9 +43,14 @@ namespace NuGet.Configuration
         IList<SettingValue> GetSettingValues(string section, bool isPath = false);
 
         /// <summary>
-        /// Gets all the values under section
+        /// Gets all the values under section as List of KeyValuePair
         /// </summary>
         IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection);
+
+        /// <summary>
+        /// Gets all the values under section as List of SettingValue
+        /// </summary>
+        IList<SettingValue> GetNestedSettingValues(string section, string subSection);
 
         void SetValue(string section, string key, string value);
 
@@ -65,7 +70,9 @@ namespace NuGet.Configuration
         void UpdateSections(string section, IReadOnlyList<SettingValue> values);
 
         void SetNestedValues(string section, string subSection, IList<KeyValuePair<string, string>> values);
+
         bool DeleteValue(string section, string key);
+
         bool DeleteSection(string section);
 
         /// <summary>

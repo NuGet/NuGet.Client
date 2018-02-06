@@ -512,6 +512,13 @@ namespace NuGet.Configuration
 
         public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
         {
+            var values = GetNestedSettingValues(section, subSection);
+
+            return values.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)).ToList().AsReadOnly();
+        }
+
+        public IList<SettingValue> GetNestedSettingValues(string section, string subSection)
+        {
             if (string.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
@@ -530,7 +537,7 @@ namespace NuGet.Configuration
                 curr = curr._next;
             }
 
-            return values.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)).ToList().AsReadOnly();
+            return values.AsReadOnly();
         }
 
         public void SetValue(string section, string key, string value)
