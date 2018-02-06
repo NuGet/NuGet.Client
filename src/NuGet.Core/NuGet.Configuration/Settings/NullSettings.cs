@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -46,6 +46,11 @@ namespace NuGet.Configuration
         public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
         {
             return new List<KeyValuePair<string, string>>().AsReadOnly();
+        }
+
+        public IList<SettingValue> GetNestedSettingValues(string section, string subSection)
+        {
+            return new List<SettingValue>().AsReadOnly();
         }
 
         public void SetValue(string section, string key, string value)
