@@ -63,12 +63,12 @@ namespace NuGet.Configuration
 
         public Settings(string root, string fileName, bool isMachineWideSettings)
         {
-            if (String.IsNullOrEmpty(root))
+            if (string.IsNullOrEmpty(root))
             {
                 throw new ArgumentException("root cannot be null or empty", nameof(root));
             }
 
-            if (String.IsNullOrEmpty(fileName))
+            if (string.IsNullOrEmpty(fileName))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(fileName));
             }
@@ -307,14 +307,14 @@ namespace NuGet.Configuration
             {
                 // Path.Combine is performed with root so it should not be null
                 // However, it is legal for it be empty in this method
-                root = String.Empty;
+                root = string.Empty;
             }
             // for the default location, allow case where file does not exist, in which case it'll end
             // up being created if needed
             Settings appDataSettings = null;
             if (configFileName == null)
             {
-                var defaultSettingsFilePath = String.Empty;
+                var defaultSettingsFilePath = string.Empty;
                 if (useTestingGlobalPath)
                 {
                     defaultSettingsFilePath = Path.Combine(root, "TestingGlobalPath", DefaultSettingsFileName);
@@ -361,7 +361,7 @@ namespace NuGet.Configuration
                 else
                 {
                     appDataSettings = ReadSettings(root, defaultSettingsFilePath);
-                    bool IsEmptyConfig = !appDataSettings.GetSettingValues(ConfigurationConstants.PackageSources).Any();
+                    var IsEmptyConfig = !appDataSettings.GetSettingValues(ConfigurationConstants.PackageSources).Any();
 
                     if (IsEmptyConfig)
                     {
@@ -381,7 +381,7 @@ namespace NuGet.Configuration
             {
                 if (!FileSystemUtility.DoesFileExistIn(root, configFileName))
                 {
-                    var message = String.Format(CultureInfo.CurrentCulture,
+                    var message = string.Format(CultureInfo.CurrentCulture,
                         Resources.FileDoesNotExist,
                         Path.Combine(root, configFileName));
                     throw new InvalidOperationException(message);
@@ -414,7 +414,7 @@ namespace NuGet.Configuration
             string root,
             params string[] paths)
         {
-            if (String.IsNullOrEmpty(root))
+            if (string.IsNullOrEmpty(root))
             {
                 throw new ArgumentException("root cannot be null or empty");
             }
@@ -452,12 +452,12 @@ namespace NuGet.Configuration
 
         public string GetValue(string section, string key, bool isPath = false)
         {
-            if (String.IsNullOrEmpty(section))
+            if (string.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
-            if (String.IsNullOrEmpty(key))
+            if (string.IsNullOrEmpty(key))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
@@ -494,7 +494,7 @@ namespace NuGet.Configuration
 
         public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
         {
-            if (String.IsNullOrEmpty(section))
+            if (string.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
@@ -512,12 +512,12 @@ namespace NuGet.Configuration
 
         public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
         {
-            if (String.IsNullOrEmpty(section))
+            if (string.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
-            if (String.IsNullOrEmpty(subSection))
+            if (string.IsNullOrEmpty(subSection))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subSection));
             }
@@ -547,7 +547,7 @@ namespace NuGet.Configuration
                 return;
             }
 
-            if (String.IsNullOrEmpty(section))
+            if (string.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
@@ -570,7 +570,7 @@ namespace NuGet.Configuration
                 return;
             }
 
-            if (String.IsNullOrEmpty(section))
+            if (string.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
@@ -721,7 +721,7 @@ namespace NuGet.Configuration
                 return;
             }
 
-            if (String.IsNullOrEmpty(section))
+            if (string.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
@@ -753,11 +753,11 @@ namespace NuGet.Configuration
                 return _next.DeleteValue(section, key);
             }
 
-            if (String.IsNullOrEmpty(section))
+            if (string.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
-            if (String.IsNullOrEmpty(key))
+            if (string.IsNullOrEmpty(key))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
@@ -791,7 +791,7 @@ namespace NuGet.Configuration
                 return _next.DeleteSection(section);
             }
 
-            if (String.IsNullOrEmpty(section))
+            if (string.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
@@ -869,7 +869,7 @@ namespace NuGet.Configuration
             var value = XElementUtility.GetOptionalAttributeValue(element, ConfigurationConstants.ValueAttribute);
             value = ApplyEnvironmentTransform(value);
             if (!isPath
-                || String.IsNullOrEmpty(value))
+                || string.IsNullOrEmpty(value))
             {
                 return value;
             }
@@ -944,10 +944,10 @@ namespace NuGet.Configuration
             var valueAttribute = element.Attribute(ConfigurationConstants.ValueAttribute);
 
             if (keyAttribute == null
-                || String.IsNullOrEmpty(keyAttribute.Value)
+                || string.IsNullOrEmpty(keyAttribute.Value)
                 || valueAttribute == null)
             {
-                throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, ConfigFilePath));
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, ConfigFilePath));
             }
 
             var value = ApplyEnvironmentTransform(valueAttribute.Value);
@@ -982,7 +982,7 @@ namespace NuGet.Configuration
 
         private void SetValueInternal(XElement sectionElement, string key, string value, IDictionary<string, string> attributes)
         {
-            if (String.IsNullOrEmpty(key))
+            if (string.IsNullOrEmpty(key))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, ConfigurationConstants.KeyAttribute);
             }
@@ -1031,7 +1031,7 @@ namespace NuGet.Configuration
             }
             else if (!FileSystemUtility.IsPathAFile(settingsPath))
             {
-                var fullPath = Path.Combine(root ?? String.Empty, settingsPath);
+                var fullPath = Path.Combine(root ?? string.Empty, settingsPath);
                 root = Path.GetDirectoryName(fullPath);
                 fileName = Path.GetFileName(fullPath);
             }
@@ -1148,8 +1148,7 @@ namespace NuGet.Configuration
         private static void SetClearTagForSettings(List<Settings> settings)
         {
             var result = new List<Settings>();
-
-            bool foundClear = false;
+            var foundClear = false;
 
             foreach (var setting in settings)
             {
