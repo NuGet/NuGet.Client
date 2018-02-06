@@ -48,6 +48,7 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
+
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
@@ -101,12 +102,14 @@ namespace NuGet.Packaging.FuncTest
             var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var keyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
-            var subjectName = new X509Name("CN=NuGet Test Expired Certificate");
-            var bcCertificate = ca.IssueCertificate(
-                keyPair.Public,
-                subjectName,
-                notBefore: DateTime.UtcNow.AddSeconds(-2), // Must be before the timestamp's lower limit
-                notAfter: DateTime.UtcNow.AddSeconds(10));
+            var now = DateTimeOffset.UtcNow;
+            var issueOptions = new IssueCertificateOptions(keyPair.Public)
+                {
+                    NotAfter = now.AddSeconds(10),
+                    NotBefore = now.AddSeconds(-2),
+                    SubjectName = new X509Name("CN=NuGet Test Expired Certificate")
+                };
+            var bcCertificate = ca.IssueCertificate(issueOptions);
 
             using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
             using (var directory = TestDirectory.Create())
@@ -140,6 +143,140 @@ namespace NuGet.Packaging.FuncTest
                     Assert.Equal(SignatureVerificationStatus.Trusted, trustProvider.Trust);
                     Assert.Equal(0, trustProvider.Issues.Count(issue => issue.Level == LogLevel.Error));
                     Assert.Equal(0, trustProvider.Issues.Count(issue => issue.Level == LogLevel.Warning));
+                }
+            }
+        }
+
+        [CIOnlyFact(Skip = "https://github.com/NuGet/Home/issues/6519")]
+        public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestampWithTooLargeRange_Fails()
+        {
+            var testServer = await _testFixture.GetSigningTestServerAsync();
+            var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
+            var accuracyInSeconds = 30;
+            var serviceOptions = new TimestampServiceOptions() { AccuracyInSeconds = accuracyInSeconds };
+            var timestampService = TimestampService.Create(ca, serviceOptions);
+            var keyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
+            var now = DateTimeOffset.UtcNow;
+            var issueOptions = new IssueCertificateOptions(keyPair.Public)
+            {
+                NotAfter = now.AddSeconds(10),
+                NotBefore = now.AddSeconds(-2),
+                SubjectName = new X509Name("CN=NuGet Test Expired Certificate")
+            };
+            var bcCertificate = ca.IssueCertificate(issueOptions);
+
+            using (testServer.RegisterResponder(timestampService))
+            using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
+            using (var directory = TestDirectory.Create())
+            {
+                certificate.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
+
+                var packageContext = new SimpleTestPackageContext();
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(
+                    certificate,
+                    packageContext,
+                    directory,
+                    timestampService.Url);
+
+                var waitDuration = (issueOptions.NotAfter - DateTimeOffset.UtcNow).Add(TimeSpan.FromSeconds(1));
+
+                // Wait for the certificate to expire.  Trust of the signature will require a valid timestamp.
+                if (waitDuration > TimeSpan.Zero)
+                {
+                    await Task.Delay(waitDuration);
+                }
+
+                Assert.True(DateTime.UtcNow > issueOptions.NotAfter);
+
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+
+                using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                {
+                    var exception = await Assert.ThrowsAsync<Signing.SignatureException>(
+                        () => verifier.VerifySignaturesAsync(packageReader, CancellationToken.None));
+
+                    Assert.Equal("Certificate chain validation failed with error(s): A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.", exception.Message);
+                }
+            }
+        }
+
+        // Verify a package meeting minimum signature requirements.
+        // This signature is neither an author nor repository signature.
+        [CIOnlyFact]
+        public async Task VerifySignaturesAsync_WithBasicSignedCms_Succeeds()
+        {
+            var settings = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowUntrusted: false,
+                allowUntrustedSelfSignedCertificate: false,
+                allowIgnoreTimestamp: false,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: true,
+                allowUnknownRevocation: false);
+
+            using (var directory = TestDirectory.Create())
+            using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var packageContext = new SimpleTestPackageContext();
+                var unsignedPackageFile = packageContext.CreateAsFile(directory, "Package.nupkg");
+                var signedPackageFile = await SignedArchiveTestUtility.SignPackageFileWithBasicSignedCmsAsync(
+                    directory,
+                    unsignedPackageFile,
+                    certificate);
+                var verifier = new PackageSignatureVerifier(_trustProviders, settings);
+
+                using (var packageReader = new PackageArchiveReader(signedPackageFile.FullName))
+                {
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+
+                    Assert.Equal(1, result.Results.Count);
+
+                    var signedPackageVerificationResult = (SignedPackageVerificationResult)result.Results[0];
+                    var signer = signedPackageVerificationResult.Signature.SignedCms.SignerInfos[0];
+
+                    Assert.Equal(0, signer.SignedAttributes.Count);
+                    Assert.Equal(0, signer.UnsignedAttributes.Count);
+
+                    Assert.Equal(0, resultsWithErrors.Count());
+                    Assert.Equal(0, totalErrorIssues.Count());
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifySignaturesAsync_SettingsRequireTimestamp_NoTimestamp_Fails()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var setting = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowUntrusted: false,
+                allowUntrustedSelfSignedCertificate: false,
+                allowIgnoreTimestamp: false,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: false,
+                allowUnknownRevocation: false);
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
+                var verifier = new PackageSignatureVerifier(_trustProviders, setting);
+                using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+
+                    // Assert
+                    result.Valid.Should().BeFalse();
+                    resultsWithErrors.Count().Should().Be(1);
+                    totalErrorIssues.Count().Should().Be(1);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3027);
                 }
             }
         }
@@ -406,87 +543,6 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
 
                 AssertTimestampMissing(result.Issues, LogLevel.Warning);
-            }
-        }
-
-        // Verify a package meeting minimum signature requirements.
-        // This signature is neither an author nor repository signature.
-        [CIOnlyFact]
-        public async Task VerifySignaturesAsync_WithBasicSignedCms_Succeeds()
-        {
-            var settings = new SignedPackageVerifierSettings(
-                allowUnsigned: false,
-                allowUntrusted: false,
-                allowUntrustedSelfSignedCertificate: false,
-                allowIgnoreTimestamp: false,
-                allowMultipleTimestamps: true,
-                allowNoTimestamp: true,
-                allowUnknownRevocation: false);
-
-            using (var directory = TestDirectory.Create())
-            using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            {
-                var packageContext = new SimpleTestPackageContext();
-                var unsignedPackageFile = packageContext.CreateAsFile(directory, "Package.nupkg");
-                var signedPackageFile = await SignedArchiveTestUtility.SignPackageFileWithBasicSignedCmsAsync(
-                    directory,
-                    unsignedPackageFile,
-                    certificate);
-                var verifier = new PackageSignatureVerifier(_trustProviders, settings);
-
-                using (var packageReader = new PackageArchiveReader(signedPackageFile.FullName))
-                {
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
-
-                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
-                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
-
-                    Assert.Equal(1, result.Results.Count);
-
-                    var signedPackageVerificationResult = (SignedPackageVerificationResult)result.Results[0];
-                    var signer = signedPackageVerificationResult.Signature.SignedCms.SignerInfos[0];
-
-                    Assert.Equal(0, signer.SignedAttributes.Count);
-                    Assert.Equal(0, signer.UnsignedAttributes.Count);
-
-                    Assert.Equal(0, resultsWithErrors.Count());
-                    Assert.Equal(0, totalErrorIssues.Count());
-                }
-            }
-        }
-
-        [CIOnlyFact]
-        public async Task VerifySignaturesAsync_SettingsRequireTimestamp_NoTimestamp_Fails()
-        {
-            // Arrange
-            var nupkg = new SimpleTestPackageContext();
-            var setting = new SignedPackageVerifierSettings(
-                allowUnsigned: false,
-                allowUntrusted: false,
-                allowUntrustedSelfSignedCertificate: false,
-                allowIgnoreTimestamp: false,
-                allowMultipleTimestamps: true,
-                allowNoTimestamp: false,
-                allowUnknownRevocation: false);
-
-            using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            {
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
-                var verifier = new PackageSignatureVerifier(_trustProviders, setting);
-                using (var packageReader = new PackageArchiveReader(signedPackagePath))
-                {
-                    // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
-                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
-                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
-
-                    // Assert
-                    result.Valid.Should().BeFalse();
-                    resultsWithErrors.Count().Should().Be(1);
-                    totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3027);
-                }
             }
         }
 

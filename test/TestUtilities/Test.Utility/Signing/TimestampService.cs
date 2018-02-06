@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Asn1.Cmp;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Math;
@@ -21,10 +22,8 @@ namespace Test.Utility.Signing
         private const string RequestContentType = "application/timestamp-query";
         private const string ResponseContentType = "application/timestamp-response";
 
-        // "baseline-ts-policy" from RFC 3628 (https://tools.ietf.org/html/rfc3628#section-5.2)
-        private const string BaselineTimeStampPolicy = "0.4.0.2023.1.1";
-
         private readonly AsymmetricCipherKeyPair _keyPair;
+        private readonly TimestampServiceOptions _options;
         private readonly HashSet<BigInteger> _serialNumbers;
         private BigInteger _nextSerialNumber;
 
@@ -47,7 +46,8 @@ namespace Test.Utility.Signing
             CertificateAuthority certificateAuthority,
             X509Certificate certificate,
             AsymmetricCipherKeyPair keyPair,
-            Uri uri)
+            Uri uri,
+            TimestampServiceOptions options)
         {
             CertificateAuthority = certificateAuthority;
             Certificate = certificate;
@@ -55,14 +55,19 @@ namespace Test.Utility.Signing
             Url = uri;
             _serialNumbers = new HashSet<BigInteger>();
             _nextSerialNumber = BigInteger.One;
+            _options = options;
         }
 
-        public static TimestampService Create(CertificateAuthority certificateAuthority)
+        public static TimestampService Create(
+            CertificateAuthority certificateAuthority,
+            TimestampServiceOptions serviceOptions = null)
         {
             if (certificateAuthority == null)
             {
                 throw new ArgumentNullException(nameof(certificateAuthority));
             }
+
+            serviceOptions = serviceOptions ?? new TimestampServiceOptions();
 
             var keyPair = CertificateUtilities.CreateKeyPair();
             var id = Guid.NewGuid().ToString();
@@ -100,10 +105,15 @@ namespace Test.Utility.Signing
                     extensionValue: ExtendedKeyUsage.GetInstance(new DerSequence(KeyPurposeID.IdKPTimeStamping)));
             };
 
-            var certificate = certificateAuthority.IssueCertificate(keyPair.Public, subjectName, customizeCertificate);
+            var issueOptions = new IssueCertificateOptions(keyPair.Public)
+                {
+                    SubjectName = subjectName,
+                    CustomizeCertificate = customizeCertificate
+                };
+            var certificate = certificateAuthority.IssueCertificate(issueOptions);
             var uri = certificateAuthority.GenerateRandomUri();
 
-            return new TimestampService(certificateAuthority, certificate, keyPair, uri);
+            return new TimestampService(certificateAuthority, certificate, keyPair, uri, serviceOptions);
         }
 
 #if IS_DESKTOP
@@ -121,11 +131,16 @@ namespace Test.Utility.Signing
                 return;
             }
 
+            var policyId = _options.AccuracyInSeconds == 1 ? NuGet.Packaging.Signing.Oids.BaselineTimestampPolicy : "1.2.3.4.5";
             var bytes = ReadRequestBody(context.Request);
             var request = new TimeStampRequest(bytes);
-            var tokenGenerator = new TimeStampTokenGenerator(_keyPair.Private, Certificate, TspAlgorithms.Sha256, BaselineTimeStampPolicy);
+            var tokenGenerator = new TimeStampTokenGenerator(
+                _keyPair.Private,
+                Certificate,
+                _options.SignatureHashAlgorithm.Value,
+                policyId);
 
-            if (request.CertReq)
+            if (_options.ReturnSigningCertificate)
             {
                 var certificates = X509StoreFactory.Create(
                     "Certificate/Collection",
@@ -134,8 +149,22 @@ namespace Test.Utility.Signing
                 tokenGenerator.SetCertificates(certificates);
             }
 
+            tokenGenerator.SetAccuracySeconds(_options.AccuracyInSeconds);
+
             var responseGenerator = new TimeStampResponseGenerator(tokenGenerator, TspAlgorithms.Allowed);
-            var response = responseGenerator.Generate(request, _nextSerialNumber, DateTime.UtcNow);
+            TimeStampResponse response;
+
+            if (_options.ReturnFailure)
+            {
+                response = responseGenerator.GenerateFailResponse(
+                    PkiStatus.Rejection,
+                    PkiFailureInfo.BadAlg,
+                    "Unsupported algorithm");
+            }
+            else
+            {
+                response = responseGenerator.Generate(request, _nextSerialNumber, DateTime.UtcNow);
+            }
 
             _serialNumbers.Add(_nextSerialNumber);
             _nextSerialNumber = _nextSerialNumber.Add(BigInteger.One);
