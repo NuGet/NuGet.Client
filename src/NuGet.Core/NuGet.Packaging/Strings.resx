@@ -273,6 +273,7 @@
   </data>
   <data name="CertUtilityMultipleCertificatesFooter" xml:space="preserve">
     <value>... {0} more.</value>
+    <comment>0 - number of certificates left</comment>
   </data>
   <data name="CertUtilityMultipleCertificatesHeader" xml:space="preserve">
     <value>The following certificates meet all given criteria:</value>
