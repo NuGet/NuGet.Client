@@ -102,7 +102,6 @@ namespace NuGet.Packaging.FuncTest
             var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var keyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
-            var subjectName = new X509Name("CN=NuGet Test Expired Certificate");
             var now = DateTimeOffset.UtcNow;
             var issueOptions = new IssueCertificateOptions(keyPair.Public)
                 {
