@@ -43,8 +43,8 @@ namespace NuGet.Packaging.Signing
             PackageIdentity = package;
         }
 
-        public SignatureException(string message, PackageIdentity package)
-            : this(message)
+        public SignatureException(NuGetLogCode code, string message, PackageIdentity package)
+            : this(code, message)
         {
             PackageIdentity = package;
         }

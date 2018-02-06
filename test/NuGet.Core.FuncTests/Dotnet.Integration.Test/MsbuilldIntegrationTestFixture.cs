@@ -144,6 +144,25 @@ namespace Dotnet.Integration.Test
             Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.AllOutput}");
         }
 
+        /// <summary>
+        /// dotnet.exe args
+        /// </summary>
+        internal CommandRunnerResult RunDotnet(string workingDirectory, string args)
+        {
+            var envVar = new Dictionary<string, string>
+            {
+                { "MSBuildSDKsPath", MsBuildSdksPath }
+            };
+
+            var result = CommandRunner.Run(TestDotnetCli,
+                workingDirectory,
+                args,
+                waitForExit: true,
+                environmentVariables: _processEnvVars);
+
+            return result;
+        }
+
         internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath = "obj")
         {
             var result = CommandRunner.Run(TestDotnetCli,

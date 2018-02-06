@@ -315,6 +315,92 @@ namespace Test.Utility.Signing
             return certResult;
         }
 
+        public static X509Certificate2 GenerateCertificate(
+            string issuerName,
+            string subjectName,
+            AsymmetricKeyParameter issuerPrivateKey,
+            AsymmetricCipherKeyPair keyPair)
+        {
+            var certGen = new X509V3CertificateGenerator();
+            certGen.SetSubjectDN(new X509Name($"CN={subjectName}"));
+            certGen.SetIssuerDN(new X509Name($"CN={issuerName}"));
+
+            certGen.SetNotAfter(DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
+            certGen.SetNotBefore(DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)));
+            certGen.SetPublicKey(keyPair.Public);
+
+            var random = new SecureRandom();
+            var serialNumber = BigIntegers.CreateRandomInRange(BigInteger.One, BigInteger.ValueOf(long.MaxValue), random);
+
+            certGen.SetSerialNumber(serialNumber);
+
+            var subjectKeyIdentifier = new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(keyPair.Public));
+            certGen.AddExtension(X509Extensions.SubjectKeyIdentifier.Id, false, subjectKeyIdentifier);
+            certGen.AddExtension(X509Extensions.KeyUsage, true, new KeyUsage(KeyUsage.KeyCertSign));
+            certGen.AddExtension(X509Extensions.BasicConstraints.Id, true, new BasicConstraints(false));
+
+            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
+
+            certGen.AddExtension(
+                X509Extensions.ExtendedKeyUsage.Id,
+                critical: true,
+                extensionValue: new ExtendedKeyUsage(usages));
+
+            var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", issuerPrivateKey, random);
+            var certificate = certGen.Generate(signatureFactory);
+            var certResult = new X509Certificate2(certificate.GetEncoded());
+
+#if IS_DESKTOP
+            certResult.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
+#endif
+
+            return certResult;
+        }
+
+        public static X509Certificate2 GenerateSelfIssuedCertificate(bool isCa)
+        {
+            var keyPair = GenerateKeyPair(publicKeyLength: 2048);
+            var generator = new X509V3CertificateGenerator();
+            var keyUsages = KeyUsage.DigitalSignature | KeyUsage.KeyCertSign | KeyUsage.CrlSign;
+
+            if (isCa)
+            {
+                keyUsages |= KeyUsage.KeyCertSign;
+            }
+
+            generator.AddExtension(
+                X509Extensions.SubjectKeyIdentifier,
+                critical: false,
+                extensionValue: new SubjectKeyIdentifierStructure(keyPair.Public));
+            generator.AddExtension(
+                X509Extensions.AuthorityKeyIdentifier,
+                critical: false,
+                extensionValue: new AuthorityKeyIdentifierStructure(keyPair.Public));
+            generator.AddExtension(
+                X509Extensions.BasicConstraints,
+                critical: true,
+                extensionValue: new BasicConstraints(cA: isCa));
+            generator.AddExtension(
+                X509Extensions.KeyUsage,
+                critical: true,
+                extensionValue: new KeyUsage(keyUsages));
+
+            var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Self-Issued Certificate ({Guid.NewGuid().ToString()})");
+            var now = DateTime.UtcNow;
+
+            generator.SetSerialNumber(BigInteger.One);
+            generator.SetIssuerDN(subjectName);
+            generator.SetNotBefore(now);
+            generator.SetNotAfter(now.AddHours(1));
+            generator.SetSubjectDN(subjectName);
+            generator.SetPublicKey(keyPair.Public);
+
+            var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", keyPair.Private);
+            var certificate = generator.Generate(signatureFactory);
+
+            return new X509Certificate2(certificate.GetEncoded());
+        }
+
         private static X509SubjectKeyIdentifierExtension GetSubjectKeyIdentifier(X509Certificate2 issuer)
         {
             var subjectKeyIdentifierOid = "2.5.29.14";
@@ -424,11 +510,11 @@ namespace Test.Utility.Signing
         }
 
 #if IS_DESKTOP
-        public static DisposableList RegisterDefaultResponders(
+        public static DisposableList<IDisposable> RegisterDefaultResponders(
             this ISigningTestServer testServer,
             TimestampService timestampService)
         {
-            var responders = new DisposableList();
+            var responders = new DisposableList<IDisposable>();
             var ca = timestampService.CertificateAuthority;
 
             while (ca != null)

@@ -4,6 +4,7 @@
 #if NET46
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -106,7 +107,7 @@ namespace NuGet.Packaging.Test
                         Mock.Of<ILogger>(),
                         CancellationToken.None));
 
-                Assert.Equal(NuGetLogCode.NU3013, exception.AsLogMessage().Code);
+                Assert.Equal(NuGetLogCode.NU3013, exception.Code);
                 Assert.Equal("The signing certificate has an unsupported signature algorithm.", exception.Message);
             }
         }
@@ -126,7 +127,7 @@ namespace NuGet.Packaging.Test
                         Mock.Of<ILogger>(),
                         CancellationToken.None));
 
-                Assert.Equal(NuGetLogCode.NU3014, exception.AsLogMessage().Code);
+                Assert.Equal(NuGetLogCode.NU3014, exception.Code);
                 Assert.Equal("The signing certificate does not meet a minimum public key length requirement.", exception.Message);
             }
         }
@@ -145,7 +146,7 @@ namespace NuGet.Packaging.Test
                         Mock.Of<ILogger>(),
                         CancellationToken.None));
 
-                Assert.Equal(NuGetLogCode.NU3006, exception.AsLogMessage().Code);
+                Assert.Equal(NuGetLogCode.NU3006, exception.Code);
                 Assert.Equal("Signed Zip64 packages are not supported.", exception.Message);
             }
         }
@@ -155,19 +156,52 @@ namespace NuGet.Packaging.Test
         {
             using (var packageStream = new SimpleTestPackageContext().CreateAsStream())
             using (var test = SignTest.Create(
+                 _fixture.GetExpiredCertificate(),
+                HashAlgorithmName.SHA256,
+                packageStream.ToArray(),
+                new X509SignatureProvider(timestampProvider: null)))
+            {
+                var logger = new TestLogger();
+
+                var exception = await Assert.ThrowsAsync<SignatureException>(
+                    () => test.Signer.SignAsync(test.Request, logger, CancellationToken.None));
+
+                Assert.Equal(NuGetLogCode.NU3018, exception.Code);
+                Assert.Equal("Certificate chain validation failed.", exception.Message);
+
+                Assert.Equal(1, logger.Errors);
+                Assert.Equal(1, logger.Warnings);
+                Assert.Contains(logger.LogMessages, message =>
+                    message.Code == NuGetLogCode.NU3018 &&
+                    message.Level == LogLevel.Error &&
+                    message.Message == "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.");
+                Assert.Contains(logger.LogMessages, message =>
+                    message.Code == NuGetLogCode.NU3018 &&
+                    message.Level == LogLevel.Warning &&
+                    message.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WithUntrustedSelfSignedCertificate_Succeeds()
+        {
+            using (var packageStream = new SimpleTestPackageContext().CreateAsStream())
+            using (var test = SignTest.Create(
                  _fixture.GetDefaultCertificate(),
                 HashAlgorithmName.SHA256,
                 packageStream.ToArray(),
                 new X509SignatureProvider(timestampProvider: null)))
             {
-                var exception = await Assert.ThrowsAsync<SignatureException>(
-                    () => test.Signer.SignAsync(
-                        test.Request,
-                        Mock.Of<ILogger>(),
-                        CancellationToken.None));
+                var logger = new TestLogger();
 
-                Assert.Equal(NuGetLogCode.NU3018, exception.AsLogMessage().Code);
-                Assert.Equal("Certificate chain validation failed with error(s): A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.", exception.Message);
+                await test.Signer.SignAsync(test.Request, logger, CancellationToken.None);
+
+                Assert.True(await test.IsSignedAsync());
+
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(1, logger.Warnings);
+                Assert.Equal(1, logger.Messages.Count());
+                Assert.True(logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
             }
         }
 
@@ -256,6 +290,16 @@ namespace NuGet.Packaging.Test
                     request,
                     readStream,
                     writeStream);
+            }
+
+            internal Task<bool> IsSignedAsync()
+            {
+                using (var unused = new MemoryStream())
+                {
+                    var signedPackage = new SignedPackageArchive(_writeStream, unused);
+
+                    return signedPackage.IsSignedAsync(CancellationToken.None);
+                }
             }
         }
     }

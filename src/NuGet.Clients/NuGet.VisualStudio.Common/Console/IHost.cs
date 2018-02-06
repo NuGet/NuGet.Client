@@ -62,6 +62,8 @@ namespace NuGet.VisualStudio
         void SetDefaultProjectIndex(int index);
 
         string[] GetAvailableProjects();
+
+        bool IsInitializedSuccessfully { get; }
     }
 
     /// <summary>

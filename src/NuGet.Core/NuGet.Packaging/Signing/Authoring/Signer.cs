@@ -51,7 +51,7 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(NuGetLogCode.NU3006, Strings.ErrorZip64NotSupported);
             }
 
-            SigningUtility.Verify(request);
+            SigningUtility.Verify(request, logger);
 
             var zipArchiveHash = await _package.GetArchiveHashAsync(request.SignatureHashAlgorithm, token);
             var signatureContent = GenerateSignatureContent(request.SignatureHashAlgorithm, zipArchiveHash);

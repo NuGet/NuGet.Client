@@ -98,7 +98,16 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The framework &apos;{0}&apos; is not a supported target framework..
+        ///   Looks up a localized string similar to The project fallback framework &apos;{0}&apos; is not a supported target framework..
+        /// </summary>
+        internal static string UnsupportedFallbackFramework {
+            get {
+                return ResourceManager.GetString("UnsupportedFallbackFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project target framework &apos;{0}&apos; is not a supported target framework..
         /// </summary>
         internal static string UnsupportedTargetFramework {
             get {

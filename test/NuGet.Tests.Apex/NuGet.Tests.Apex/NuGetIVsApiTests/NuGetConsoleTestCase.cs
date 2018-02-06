@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using FluentAssertions;
+using System.IO;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.StaFact;
 using Xunit;
@@ -32,12 +32,9 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                var installed = nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-                installed.Should().BeTrue("Install-Package should pass");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
-                // Verify install from project.assets.json
-                var inAssetsFile = Utils.IsPackageInstalledInAssetsFile(nugetConsole, testContext.Project.FullPath, packageName, packageVersion);
-                inAssetsFile.Should().BeTrue("package was installed");
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion);
             }
         }
 
@@ -57,16 +54,12 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                var installed = nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-                installed.Should().BeTrue("Install-Package should pass");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
                 // Build before the install check to ensure that everything is up to date.
                 testContext.Project.Build();
 
-                // Verify install from Get-Package
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion);
-
-                VisualStudio.AssertNoErrors();
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion);
             }
         }
 
@@ -85,17 +78,15 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion);
 
-                nugetConsole.UninstallPackageFromPMC(packageName).Should().BeTrue("Uninstall-Package");
+                nugetConsole.UninstallPackageFromPMC(packageName);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, packageName);
-
-                VisualStudio.AssertNoErrors();
+                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion);
             }
         }
 
@@ -116,17 +107,15 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion1).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion1);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);
 
-                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2).Should().BeTrue("UnInstall-Package");
+                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion2);
-
-                VisualStudio.AssertNoErrors();
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion2);
             }
         }
 
@@ -149,14 +138,12 @@ namespace NuGet.Tests.Apex
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1).Should().BeTrue("Install-Package 1");
-                nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2).Should().BeTrue("Install-Package 2");
+                nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
+                nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName1, packageVersion1);
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName2, packageVersion2);
-
-                VisualStudio.AssertNoErrors();
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName1, packageVersion1);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName2, packageVersion2);
             }
         }
 
@@ -166,34 +153,32 @@ namespace NuGet.Tests.Apex
         {
             // Arrange
             EnsureVisualStudioHost();
+            var packageName1 = "TestPackage1";
+            var packageVersion1 = "1.0.0";
+            var packageName2 = "TestPackage2";
+            var packageVersion2 = "1.2.3";
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                var packageName1 = "TestPackage1";
-                var packageVersion1 = "1.0.0";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName1, packageVersion1);
 
-                var packageName2 = "TestPackage2";
-                var packageVersion2 = "1.2.3";
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName1, packageVersion1);
                 Utils.CreatePackageInSource(testContext.PackageSource, packageName2, packageVersion2);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1).Should().BeTrue("Install-Package 1");
-                nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2).Should().BeTrue("Install-Package 2");
+                nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
+                nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName1, packageVersion1);
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName2, packageVersion2);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName1, packageVersion1);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName2, packageVersion2);
 
-                VisualStudio.AssertNoErrors();
-
-                nugetConsole.UninstallPackageFromPMC(packageName1).Should().BeTrue("Uninstall package 1");
-                nugetConsole.UninstallPackageFromPMC(packageName2).Should().BeTrue("Uninstall package 2");
+                nugetConsole.UninstallPackageFromPMC(packageName1);
+                nugetConsole.UninstallPackageFromPMC(packageName2);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, packageName1);
-                GetNuGetTestService().Verify.PackageIsNotInstalled(testContext.Project.UniqueName, packageName2);
+                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), testContext.Project, packageName1, packageVersion1);
+                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), testContext.Project, packageName2, packageVersion2);
             }
         }
 
@@ -203,26 +188,27 @@ namespace NuGet.Tests.Apex
         {
             // Arrange
             EnsureVisualStudioHost();
+            var packageName = "TestPackage";
+            var packageVersion1 = "1.0.0";
+            var packageVersion2 = "2.0.0";
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-                var packageName = "TestPackage";
-                var packageVersion1 = "1.0.0";
-                var packageVersion2 = "2.0.0";
                 Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
                 Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion2).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion2);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion2);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion2);
 
-                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion1).Should().BeTrue("Update-Package");
+
+                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion1);
                 testContext.Project.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(testContext.Project.UniqueName, packageName, packageVersion1);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);
             }
         }
 
@@ -255,24 +241,80 @@ namespace NuGet.Tests.Apex
                 var packageVersion = "9.0.1";
                 Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
 
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion).Should().BeTrue("Install-Package");
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
                 testContext.Project.Build();
                 project2.Build();
                 project3.Build();
                 projectX.Build();
                 testContext.SolutionService.Build();
 
-                GetNuGetTestService().Verify.PackageIsInstalled(project3.UniqueName, packageName);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), project3, packageName, packageVersion);
 
                 // Verify install from project.assets.json
-                var inAssetsFile = Utils.IsPackageInstalledInAssetsFile(nugetConsole, testContext.Project.FullPath, packageName, packageVersion);
-                inAssetsFile.Should().BeTrue("package was installed");
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion);
+                Utils.AssertPackageIsInstalled(GetNuGetTestService(), project2, packageName, packageVersion);
+                Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), projectX, packageName, packageVersion);
+            }
+        }
 
-                var inAssetsFile2 = Utils.IsPackageInstalledInAssetsFile(nugetConsole, project2.FullPath, packageName, packageVersion);
-                inAssetsFile2.Should().BeTrue("package 2 was installed");
+        [NuGetWpfTheory]
+        [InlineData(ProjectTemplate.ClassLibrary, false, false)]
+        [InlineData(ProjectTemplate.NetCoreConsoleApp, true, true)]
+        [InlineData(ProjectTemplate.NetStandardClassLib, true, true)]
+        public void InstallAndUpdatePackageWithSourceParameterWarns(ProjectTemplate projectTemplate, bool warns, bool installationStatus)
+        {
+            EnsureVisualStudioHost();
+            var packageName = "TestPackage";
+            var packageVersion1 = "1.0.0";
+            var packageVersion2 = "2.0.0";
+            var source = "https://api.nuget.org/v3/index.json";
 
-                var inAssetsFileX = Utils.IsPackageInstalledInAssetsFile(nugetConsole, projectX.FullPath, packageName, packageVersion);
-                inAssetsFileX.Should().BeFalse("package X was installed");
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            {
+                // Arrange
+                var solutionService = VisualStudio.Get<SolutionService>();
+                testContext.Project.Build();
+
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
+                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
+
+                var nugetTestService = GetNuGetTestService();
+                var nugetConsole = GetConsole(testContext.Project);
+                Assert.True(nugetTestService.EnsurePackageManagerConsoleIsOpen());
+
+                // Act
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion1, source);
+                testContext.Project.Build();
+
+                // Assert
+                var expectedMessage = $"The 'Source' parameter is not respected for the transitive package management based project(s) {Path.GetFileNameWithoutExtension(testContext.Project.UniqueName)}. The enabled sources in your NuGet configuration will be used";
+                Assert.True(warns == nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
+                if (installationStatus)
+                { 
+                    Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);
+                }
+                VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+
+                // setup again
+                nugetConsole.Clear();
+
+                // Act
+                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2, source);
+                testContext.Project.Build();
+
+                // Assert
+                if (installationStatus)
+                { 
+                    Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion2);
+                    Utils.AssertPackageIsNotInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);
+                }
+                Assert.True(warns == nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
+                VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+
+                nugetConsole.Clear();
+                solutionService.Save();
             }
         }
 

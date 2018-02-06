@@ -6,6 +6,23 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Test.Utility.Signing
 {
+    public static class TrustedTestCert
+    {
+        public static TrustedTestCert<X509Certificate2> Create(
+            X509Certificate2 cert,
+            StoreName storeName = StoreName.TrustedPeople,
+            StoreLocation storeLocation = StoreLocation.CurrentUser,
+            TimeSpan? maximumValidityPeriod = null)
+        {
+            return new TrustedTestCert<X509Certificate2>(
+                cert,
+                x => x,
+                storeName,
+                storeLocation,
+                maximumValidityPeriod);
+        }
+    }
+
     /// <summary>
     /// Give a certificate full trust for the life of the object.
     /// </summary>
