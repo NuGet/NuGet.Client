@@ -73,6 +73,11 @@ namespace NuGet.Configuration
             throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetNestedValues)));
         }
 
+        public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
+        {
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetNestedValues)));
+        }
+
         public bool DeleteValue(string section, string key)
         {
             throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(DeleteValue)));

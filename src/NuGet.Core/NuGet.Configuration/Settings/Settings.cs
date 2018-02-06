@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -714,7 +715,12 @@ namespace NuGet.Configuration
             }
         }
 
-        public void SetNestedValues(string section, string key, IList<KeyValuePair<string, string>> values)
+        public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values)
+        {
+            SetNestedSettingValues(section, subsection, values.Select(kvp => new SettingValue(kvp.Key, kvp.Value, isMachineWide: false)).AsList());
+        }
+
+        public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
         {
             // machine wide settings cannot be changed.
             if (IsMachineWideSettings)
@@ -724,7 +730,7 @@ namespace NuGet.Configuration
                     throw new InvalidOperationException(Resources.Error_NoWritableConfig);
                 }
 
-                _next.SetNestedValues(section, key, values);
+                _next.SetNestedSettingValues(section, subsection, values);
                 return;
             }
 
@@ -732,18 +738,20 @@ namespace NuGet.Configuration
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
+
             if (values == null)
             {
                 throw new ArgumentNullException("values");
             }
 
             var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
-            var element = GetOrCreateSection(sectionElement, key);
+            var element = GetOrCreateSection(sectionElement, subsection);
 
-            foreach (var kvp in values)
+            foreach (var value in values)
             {
-                SetValueInternal(element, kvp.Key, kvp.Value, attributes: null);
+                SetValueInternal(element, value.Key, value.Value, attributes: value.AdditionalData);
             }
+
             Save();
         }
 
