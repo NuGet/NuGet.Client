@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 using NuGet.Common;
+using NuGet.Configuration;
 
 namespace NuGet.Commands
 {
@@ -44,5 +43,10 @@ namespace NuGet.Commands
         /// If not empty, signer certificate fingerprint must match one in this list
         /// </summary>
         public IEnumerable<string> CertificateFingerprint { get; set; }
+
+        /// <summary>
+        /// Settings read from the config file provided by the user. Defaults to settings from %AppData%\NuGet\NuGet.config
+        /// </summary>
+        public ISettings Settings { get; set; }
     }
 }
