@@ -52,6 +52,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(NoBuild)' != 'true' ">
     <GenerateNuspecDependsOn>Build;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(NuspecFile)' == '' ">
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn); _GenerateNuspecUsingProjectFile;_GenerateNuspecCommon</GenerateNuspecDependsOn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(NuspecFile)' != '' ">
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn); _GenerateNuspecUsingNuspecFile;_GenerateNuspecCommon</GenerateNuspecDependsOn>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectCapability Include="Pack"/>
   </ItemGroup>
@@ -192,8 +198,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
-  <Target Name="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn);_CalculateInputsOutputsForPack;_GetProjectReferenceVersions" Condition="$(IsPackable) == 'true'"
-          Inputs="@(NuGetPackInput)" Outputs="@(NuGetPackOutput)">
+  <Target Name="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn)" />
+
+  <Target Name="_GenerateNuspecCommon"
+          DependsOnTargets="_CalculateInputsOutputsForPack;_GetProjectReferenceVersions"
+          Condition="'$(RunNuspecPackTask)' == 'true'">
     <!-- Call Pack -->
     <PackTask PackItem="$(PackProjectInputFile)"
               PackageFiles="@(_PackageFiles)"
@@ -246,6 +255,22 @@ Copyright (c) .NET Foundation. All rights reserved.
               TreatWarningsAsErrors="$(TreatWarningsAsErrors)"/>
   </Target>
 
+  <Target Name="_GenerateNuspecUsingProjectFile"
+          DependsOnTargets="_CalculateInputsOutputsForPack;_GetProjectReferenceVersions"
+          Condition="'$(IsPackable)' == 'true'"
+          Inputs="@(NuGetPackInput)" Outputs="@(NuGetPackOutput)">
+    <CreateProperty Value="true">
+      <Output PropertyName="RunNuspecPackTask" TaskParameter="ValueSetByTask" />
+    </CreateProperty>
+  </Target>
+
+  <Target Name="_GenerateNuspecUsingNuspecFile"
+          Condition="'$(IsPackable)' == 'true'">
+    <CreateProperty Value="true">
+      <Output PropertyName="RunNuspecPackTask" TaskParameter="ValueSetByTask" />
+    </CreateProperty>
+  </Target>
+
   <!--
     ============================================================
     _LoadPackGraphEntryPoints
@@ -258,7 +283,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <PackProjectInputFile>$(MSBuildProjectFullPath)</PackProjectInputFile>
     </PropertyGroup>
   </Target>
-  
+
   <Target Name="_GetProjectReferenceVersions" DependsOnTargets="_CalculateInputsOutputsForPack;$(GetPackageVersionDependsOn)">
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
