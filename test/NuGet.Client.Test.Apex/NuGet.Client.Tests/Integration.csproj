@@ -1,0 +1,266 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\xunit.runner.visualstudio.2.3.1\build\net20\xunit.runner.visualstudio.props" Condition="Exists('..\packages\xunit.runner.visualstudio.2.3.1\build\net20\xunit.runner.visualstudio.props')" />
+  <Import Project="..\packages\xunit.core.2.3.1\build\xunit.core.props" Condition="Exists('..\packages\xunit.core.2.3.1\build\xunit.core.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{CCB6F813-89E3-455A-BC4E-0B6380AE5E32}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NuGetClient.Test.Integration</RootNamespace>
+    <AssemblyName>NuGetClient.Test.Integration</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\out\binaries\x86chk\bin\i386\NuGet\Test\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CodemarkerListener.Interop, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\CodemarkerListener.Interop.dll</HintPath>
+    </Reference>
+    <Reference Include="FluentAssertions, Version=4.19.4.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentAssertions.4.19.4\lib\net45\FluentAssertions.dll</HintPath>
+    </Reference>
+    <Reference Include="FluentAssertions.Core, Version=4.19.4.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentAssertions.4.19.4\lib\net45\FluentAssertions.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Build, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Build.15.3.409\lib\net46\Microsoft.Build.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Build.Framework, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Build.Framework.15.3.409\lib\net46\Microsoft.Build.Framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.ApplicationDeployment, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.ApplicationDeployment.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.ApplicationDeployment.Hosting, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.ApplicationDeployment.Hosting.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.ApplicationDeployment.MSBuildStressHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.ApplicationDeployment.MSBuildStressHost.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.ApplicationDeployment.MSTestIntegration, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.ApplicationDeployment.MSTestIntegration.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.ApplicationDeployment.RemoteBuildTestService, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.ApplicationDeployment.RemoteBuildTestService.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.Burn, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.Burn.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.Burn.Hosting, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.Burn.Hosting.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.Framework, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.Fuzzing, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.Fuzzing.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.MSTestIntegration, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.MSTestIntegration.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.Office, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.Office.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.OsIntegration, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.OsIntegration.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.RemoteCodeInjector, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=x86">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.RemoteCodeInjector.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.SourceControlIntegration, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.SourceControlIntegration.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.TeamFoundation, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.TeamFoundation.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.VisualStudio, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.VisualStudio.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.VisualStudio.Hosting, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.VisualStudio.Hosting.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.VSIXGenerator, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.VSIXGenerator.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.Apex.XDesProc, Version=0.0.0.0, Culture=neutral, PublicKeyToken=198e318fda3dceac, processorArchitecture=x86">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.Apex.XDesProc.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.ConnectedIde, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.ConnectedIde.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.DDConfig, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=x86">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.DDConfig.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Test.ProductKeyDialog, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.Test.ProductKeyDialog.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.AppxPackage.TestContracts, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.VisualStudio.AppxPackage.TestContracts.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.DesignTools.XamlDesigner.TestContracts, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=x86">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.VisualStudio.DesignTools.XamlDesigner.TestContracts.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.TestContracts, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.VisualStudio.Shell.TestContracts.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.WindowsAzure.CommonAzureTools.TestContracts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d1485cc6d3d61b8d, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.VisualStudio.WindowsAzure.CommonAzureTools.TestContracts.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.WindowsAzure.Services.TestContracts, Version=0.0.0.0, Culture=neutral, PublicKeyToken=d1485cc6d3d61b8d, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.VisualStudio.WindowsAzure.Services.TestContracts.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.XamlDiagnostics.TestContracts, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.VisualStudio.XamlDiagnostics.TestContracts.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VSSDK.TestHostFramework, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Microsoft.VSSDK.TestHostFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Omni.Common, Version=15.0.0.0, Culture=neutral, PublicKeyToken=0825ed996f7f8b30, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Omni.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Omni.Common.VS, Version=15.0.0.0, Culture=neutral, PublicKeyToken=0825ed996f7f8b30, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Omni.Common.VS.dll</HintPath>
+    </Reference>
+    <Reference Include="Omni.Log, Version=15.0.0.0, Culture=neutral, PublicKeyToken=0825ed996f7f8b30, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Omni.Log.dll</HintPath>
+    </Reference>
+    <Reference Include="Omni.Log.Interop, Version=15.0.0.0, Culture=neutral, PublicKeyToken=0825ed996f7f8b30, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Omni.Log.Interop.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Omni.Logging.Extended, Version=15.0.0.0, Culture=neutral, PublicKeyToken=0825ed996f7f8b30, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Omni.Logging.Extended.dll</HintPath>
+    </Reference>
+    <Reference Include="Prism.Monitor.Communication, Version=2.0.0.0, Culture=neutral, PublicKeyToken=245be02fb0ef1c2d, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\lib\net45\Prism.Monitor.Communication.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.4.1.0\lib\net462\System.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.InteropServices, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.4.1.0\lib\net462\System.Runtime.InteropServices.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Thread, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Thread.4.0.0\lib\net46\System.Threading.Thread.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\packages\xunit.abstractions.2.0.1\lib\net35\xunit.abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.assert, Version=2.3.1.3858, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\packages\xunit.assert.2.3.1\lib\netstandard1.1\xunit.assert.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.core, Version=2.3.1.3858, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\packages\xunit.extensibility.core.2.3.1\lib\netstandard1.1\xunit.core.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.execution.desktop, Version=2.3.1.3858, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\packages\xunit.extensibility.execution.2.3.1\lib\net452\xunit.execution.desktop.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Apex\ApexBaseTestClass.cs" />
+    <Compile Include="Apex\IntegrationNuGetTestClass.cs" />
+    <Compile Include="Apex\NuGetTestOperationConfiguration.cs" />
+    <Compile Include="Apex\NuGetTypeConstraint.cs" />
+    <Compile Include="Fixtures\ApexTestRequirementsFixture.cs" />
+    <Compile Include="Fixtures\CollectCrashDumpFixture.cs" />
+    <Compile Include="Fixtures\IContextFixtureFactory.cs" />
+    <Compile Include="Fixtures\ProductContextFixtureFactory.cs" />
+    <Compile Include="Fixtures\TestRequirementFile.cs" />
+    <Compile Include="Fixtures\VisualStudioHostFixture.cs" />
+    <Compile Include="Fixtures\VisualStudioOperationsFixture.cs" />
+    <Compile Include="Platform\CodeLanguageExtensions.cs" />
+    <Compile Include="Platform\ContextExtesions.cs" />
+    <Compile Include="Platform\ContextImplementation.cs" />
+    <Compile Include="Platform\PlatformContextCapability.cs" />
+    <Compile Include="Platform\PlatformContextDetailsBase.cs" />
+    <Compile Include="Platform\UWPPlatformContextDetails.cs" />
+    <Compile Include="Platform\UWPProjectTargetPlatformVersionDetails.cs" />
+    <Compile Include="Platform\WindowsImmersivePlatformContextDetails.cs" />
+    <Compile Include="Platform\WpfPlatformContextDetails.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Support\CompositeTypeConstraint.cs" />
+    <Compile Include="Tests\E2E\AbuseLinkTests.cs" />
+    <Compile Include="Util\TestRequirementFiles.cs" />
+    <Compile Include="Util\UAPSDKVersionHelper.cs" />
+    <Compile Include="Util\VisualStudioInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\xunit.analyzers.0.7.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Apex.NuGetClient\Apex.NuGetClient.csproj">
+      <Project>{1516e913-3ef7-4531-adc2-a6563f27c69b}</Project>
+      <Name>Apex.NuGetClient</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Foundation\Foundation.csproj">
+      <Project>{0b5439a2-0a22-4bc9-8e08-66ea8ffe24fb}</Project>
+      <Name>Foundation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGetClientTestContracts\NuGetClientTestContracts.csproj">
+      <Project>{5ad5c10a-4f0d-4c08-ba6d-71f9c555cf3c}</Project>
+      <Name>NuGetClientTestContracts</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\xunit.core.2.3.1\build\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.core.2.3.1\build\xunit.core.props'))" />
+    <Error Condition="!Exists('..\packages\xunit.core.2.3.1\build\xunit.core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.core.2.3.1\build\xunit.core.targets'))" />
+    <Error Condition="!Exists('..\packages\xunit.runner.visualstudio.2.3.1\build\net20\xunit.runner.visualstudio.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.runner.visualstudio.2.3.1\build\net20\xunit.runner.visualstudio.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\build\Microsoft.Test.Apex-d15rel.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\build\Microsoft.Test.Apex-d15rel.targets'))" />
+  </Target>
+  <Import Project="..\packages\xunit.core.2.3.1\build\xunit.core.targets" Condition="Exists('..\packages\xunit.core.2.3.1\build\xunit.core.targets')" />
+  <Import Project="..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\build\Microsoft.Test.Apex-d15rel.targets" Condition="Exists('..\packages\Microsoft.Test.Apex-d15rel.15.0.27006.00\build\Microsoft.Test.Apex-d15rel.targets')" />
+</Project>
