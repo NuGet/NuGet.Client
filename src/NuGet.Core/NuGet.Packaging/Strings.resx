@@ -518,4 +518,7 @@ Valid from:</comment>
   <data name="TimestampMessageImprintUnsupportedHashAlgorithm" xml:space="preserve">
     <value>The timestamp's message imprint uses an unsupported hash algorithm.</value>
   </data>
+  <data name="Error_NotOneRepositoryCounterSignature" xml:space="preserve">
+    <value>The package signature contains multiple repository countersignatures.</value>
+  </data>
 </root>

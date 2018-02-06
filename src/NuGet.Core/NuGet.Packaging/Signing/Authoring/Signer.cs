@@ -55,7 +55,7 @@ namespace NuGet.Packaging.Signing
 
             var zipArchiveHash = await _package.GetArchiveHashAsync(request.SignatureHashAlgorithm, token);
             var signatureContent = GenerateSignatureContent(request.SignatureHashAlgorithm, zipArchiveHash);
-            var signature = await _signatureProvider.CreateSignatureAsync(request, signatureContent, logger, token);
+            var signature = await _signatureProvider.CreatePrimarySignatureAsync(request, signatureContent, logger, token);
 
             using (var stream = new MemoryStream(signature.GetBytes()))
             {

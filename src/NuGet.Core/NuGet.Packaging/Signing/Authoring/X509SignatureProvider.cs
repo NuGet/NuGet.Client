@@ -34,7 +34,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Sign the package stream hash with an X509Certificate2.
         /// </summary>
-        public Task<Signature> CreateSignatureAsync(SignPackageRequest request, SignatureContent signatureContent, ILogger logger, CancellationToken token)
+        public Task<PrimarySignature> CreatePrimarySignatureAsync(SignPackageRequest request, SignatureContent signatureContent, ILogger logger, CancellationToken token)
         {
             if (request == null)
             {
@@ -51,7 +51,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            var signature = CreateSignature(request, signatureContent, logger);
+            var signature = CreatePrimarySignature(request, signatureContent, logger);
 
             if (_timestampProvider == null)
             {
@@ -59,18 +59,18 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                return TimestampSignature(request, logger, signature, token);
+                return TimestampPrimarySignature(request, logger, signature, token);
             }
         }
 
 #if IS_DESKTOP
-        private Signature CreateSignature(SignPackageRequest request, SignatureContent signatureContent, ILogger logger)
+        private PrimarySignature CreatePrimarySignature(SignPackageRequest request, SignatureContent signatureContent, ILogger logger)
         {
             var cmsSigner = CreateCmsSigner(request, logger);
 
             if (request.PrivateKey != null)
             {
-                return CreateSignature(cmsSigner, signatureContent, request.PrivateKey);
+                return CreatePrimarySignature(cmsSigner, signatureContent, request.PrivateKey);
             }
 
             var contentInfo = new ContentInfo(signatureContent.GetBytes());
@@ -89,7 +89,7 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(NuGetLogCode.NU3001, exceptionBuilder.ToString());
             }
 
-            return Signature.Load(cms);
+            return PrimarySignature.Load(cms);
         }
 
         private static CmsSigner CreateCmsSigner(SignPackageRequest request, ILogger logger)
@@ -133,14 +133,14 @@ namespace NuGet.Packaging.Signing
             return signer;
         }
 
-        private Signature CreateSignature(CmsSigner cmsSigner, SignatureContent signatureContent, CngKey privateKey)
+        private PrimarySignature CreatePrimarySignature(CmsSigner cmsSigner, SignatureContent signatureContent, CngKey privateKey)
         {
             var cms = NativeUtilities.NativeSign(cmsSigner, signatureContent.GetBytes(), privateKey);
 
-            return Signature.Load(cms);
+            return PrimarySignature.Load(cms);
         }
 
-        private Task<Signature> TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
+        private Task<PrimarySignature> TimestampPrimarySignature(SignPackageRequest request, ILogger logger, PrimarySignature signature, CancellationToken token)
         {
             var timestampRequest = new TimestampRequest
             {
@@ -149,16 +149,16 @@ namespace NuGet.Packaging.Signing
                 TimestampHashAlgorithm = request.TimestampHashAlgorithm
             };
 
-            return _timestampProvider.TimestampSignatureAsync(timestampRequest, logger, token);
+            return _timestampProvider.TimestampPrimarySignatureAsync(timestampRequest, logger, token);
         }
 
 #else
-        private Signature CreateSignature(SignPackageRequest request, SignatureContent signatureContent, ILogger logger)
+        private PrimarySignature CreatePrimarySignature(SignPackageRequest request, SignatureContent signatureContent, ILogger logger)
         {
             throw new NotSupportedException();
         }
 
-        private Task<Signature> TimestampSignature(SignPackageRequest request, ILogger logger, Signature signature, CancellationToken token)
+        private Task<PrimarySignature> TimestampPrimarySignature(SignPackageRequest request, ILogger logger, PrimarySignature signature, CancellationToken token)
         {
             throw new NotSupportedException();
         }

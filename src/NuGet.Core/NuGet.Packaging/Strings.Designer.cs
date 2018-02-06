@@ -197,6 +197,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package signature contains multiple repository countersignatures..
+        /// </summary>
+        internal static string Error_NotOneRepositoryCounterSignature {
+            get {
+                return ResourceManager.GetString("Error_NotOneRepositoryCounterSignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Byte signature not found in package archive:  0x{0}.
         /// </summary>
         internal static string ErrorByteSignatureNotFound {

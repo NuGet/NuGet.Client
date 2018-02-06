@@ -15,6 +15,6 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Check if <paramref name="signature" /> is trusted by the provider.
         /// </summary>
-        Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings, CancellationToken token);
+        Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings, CancellationToken token);
     }
 }

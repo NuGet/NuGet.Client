@@ -23,7 +23,7 @@ namespace NuGet.Packaging.Signing
             _fingerprintAlgorithm = HashAlgorithmName.SHA256;
         }
 
-        public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings, CancellationToken token)
+        public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -32,7 +32,7 @@ namespace NuGet.Packaging.Signing
         }
 
 #if IS_DESKTOP
-        private PackageVerificationResult VerifyValidityAndTrust(Signature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifyValidityAndTrust(PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             var issues = new List<SignatureLog>
             {
@@ -67,7 +67,7 @@ namespace NuGet.Packaging.Signing
         }
 
         private Timestamp GetValidTimestamp(
-            Signature signature,
+            PrimarySignature signature,
             bool allowMultipleTimestamps,
             bool allowIgnoreTimestamp,
             bool allowNoTimestamp,
@@ -134,7 +134,7 @@ namespace NuGet.Packaging.Signing
         }
 
         private SignatureVerificationStatus VerifySignature(
-            Signature signature,
+            PrimarySignature signature,
             Timestamp timestamp,
             bool allowUntrusted,
             bool allowUntrustedSelfSignedCertificate,
@@ -367,7 +367,7 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 #else
-        private PackageVerificationResult VerifyValidityAndTrust(Signature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifyValidityAndTrust(PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             throw new NotSupportedException();
         }

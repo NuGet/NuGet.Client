@@ -41,7 +41,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void GetPrimarySignatureCertificates_WithAuthorSignature_ReturnsCertificates()
         {
-            var signature = Signature.Load(SignTestUtility.GetResourceBytes("SignatureWithTimestamp.p7s"));
+            var signature = PrimarySignature.Load(SignTestUtility.GetResourceBytes("SignatureWithTimestamp.p7s"));
 
             var certificates = SignatureUtility.GetPrimarySignatureCertificates(signature);
 
@@ -66,7 +66,7 @@ namespace NuGet.Packaging.Test
 
                 using (var packageReader = new PackageArchiveReader(signedPackageFile.FullName))
                 {
-                    var signature = await packageReader.GetSignatureAsync(CancellationToken.None);
+                    var signature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
 
                     var certificates = SignatureUtility.GetPrimarySignatureCertificates(signature);
 
@@ -80,7 +80,7 @@ namespace NuGet.Packaging.Test
         public void GetPrimarySignatureTimestampSignatureCertificates_WhenSignatureNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => SignatureUtility.GetPrimarySignatureTimestampSignatureCertificates(signature: null));
+                () => SignatureUtility.GetPrimarySignatureTimestampCertificates(signature: null));
 
             Assert.Equal("signature", exception.ParamName);
         }
@@ -88,9 +88,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void GetPrimarySignatureTimestampSignatureCertificates_WithValidTimestamp_ReturnsCertificates()
         {
-            var signature = Signature.Load(SignTestUtility.GetResourceBytes("SignatureWithTimestamp.p7s"));
+            var signature = PrimarySignature.Load(SignTestUtility.GetResourceBytes("SignatureWithTimestamp.p7s"));
 
-            var certificates = SignatureUtility.GetPrimarySignatureTimestampSignatureCertificates(signature);
+            var certificates = SignatureUtility.GetPrimarySignatureTimestampCertificates(signature);
 
             Assert.Equal(3, certificates.Count);
             Assert.Equal("ff162bef155cb3d5b5962bbe084b21fc4d740001", certificates[0].Thumbprint, StringComparer.OrdinalIgnoreCase);
@@ -98,7 +98,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("3b1efd3a66ea28b16697394703a72ca340a05bd5", certificates[2].Thumbprint, StringComparer.OrdinalIgnoreCase);
         }
 
-        private static Signature GenerateSignatureWithNoCertificates(Signature signature)
+        private static PrimarySignature GeneratePrimarySignatureWithNoCertificates(PrimarySignature signature)
         {
             var certificateStore = X509StoreFactory.Create(
                 "Certificate/Collection",
@@ -118,7 +118,7 @@ namespace NuGet.Packaging.Test
                     certificateStore,
                     writeStream);
 
-                return Signature.Load(writeStream.ToArray());
+                return PrimarySignature.Load(writeStream.ToArray());
             }
         }
     }

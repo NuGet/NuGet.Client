@@ -220,9 +220,9 @@ namespace NuGet.Packaging
             // do nothing here
         }
 
-        public override Task<Signature> GetSignatureAsync(CancellationToken token)
+        public override Task<PrimarySignature> GetPrimarySignatureAsync(CancellationToken token)
         {
-            return Task.FromResult<Signature>(null);
+            return Task.FromResult<PrimarySignature>(null);
         }
 
         public override Task<bool> IsSignedAsync(CancellationToken token)

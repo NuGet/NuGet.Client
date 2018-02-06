@@ -58,7 +58,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var stream = File.OpenRead(signedPackagePath))
                 using (var reader = new PackageArchiveReader(stream))
                 {
-                    var signature = await reader.GetSignatureAsync(CancellationToken.None);
+                    var signature = await reader.GetPrimarySignatureAsync(CancellationToken.None);
 
                     signature.Should().NotBeNull();
                     signature.Timestamps.Should().NotBeEmpty();
@@ -82,7 +82,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var stream = File.OpenRead(signedPackagePath))
                 using (var reader = new PackageArchiveReader(stream))
                 {
-                    var signature = await reader.GetSignatureAsync(CancellationToken.None);
+                    var signature = await reader.GetPrimarySignatureAsync(CancellationToken.None);
 
                     signature.Should().NotBeNull();
                     signature.Timestamps.Should().BeEmpty();
@@ -131,7 +131,7 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Empty(signedCms.Certificates);
 
                 var exception = Assert.Throws<SignatureException>(
-                    () => Signature.Load(signedCms));
+                    () => PrimarySignature.Load(signedCms));
 
                 Assert.Equal(NuGetLogCode.NU3010, exception.Code);
                 Assert.Equal("The primary signature does not have a signing certificate.", exception.Message);
@@ -155,7 +155,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageReader = new PackageArchiveReader(packageFilePath))
                 {
-                    var signature = (await packageReader.GetSignatureAsync(CancellationToken.None));
+                    var signature = (await packageReader.GetPrimarySignatureAsync(CancellationToken.None));
 
                     var certificateStore = X509StoreFactory.Create(
                         "Certificate/Collection",
@@ -180,7 +180,7 @@ namespace NuGet.Packaging.FuncTest
                             writeStream);
 
                         var exception = Assert.Throws<SignatureException>(
-                            () => Signature.Load(writeStream.ToArray()));
+                            () => PrimarySignature.Load(writeStream.ToArray()));
 
                         Assert.Equal(NuGetLogCode.NU3011, exception.Code);
                         Assert.Equal("A certificate referenced by the signing-certificate-v2 attribute could not be found.", exception.Message);

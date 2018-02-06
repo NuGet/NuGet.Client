@@ -29,7 +29,7 @@ namespace NuGet.Packaging.Test
         public void Load_WhenDataNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => Signature.Load(data: null));
+                () => PrimarySignature.Load(data: null));
 
             Assert.Equal("data", exception.ParamName);
         }
@@ -53,7 +53,7 @@ namespace NuGet.Packaging.Test
                 signedCms.ComputeSignature(cmsSigner);
 
                 var exception = Assert.Throws<SignatureException>(
-                    () => Signature.Load(signedCms.Encode()));
+                    () => PrimarySignature.Load(signedCms.Encode()));
 
                 Assert.Equal(NuGetLogCode.NU3009, exception.Code);
                 Assert.Equal("The package signature contains multiple primary signatures.", exception.Message);
@@ -72,7 +72,7 @@ namespace NuGet.Packaging.Test
                 test.SignedCms.ComputeSignature(test.CmsSigner);
 
                 var exception = Assert.Throws<SignatureException>(
-                    () => Signature.Load(test.SignedCms.Encode()));
+                    () => PrimarySignature.Load(test.SignedCms.Encode()));
 
                 Assert.Equal(NuGetLogCode.NU3011, exception.Code);
                 Assert.Equal("Exactly one signing-certificate-v2 attribute is required.", exception.Message);
@@ -97,7 +97,7 @@ namespace NuGet.Packaging.Test
                 test.SignedCms.ComputeSignature(test.CmsSigner);
 
                 var exception = Assert.Throws<SignatureException>(
-                    () => Signature.Load(test.SignedCms.Encode()));
+                    () => PrimarySignature.Load(test.SignedCms.Encode()));
 
                 Assert.Equal(NuGetLogCode.NU3011, exception.Code);
                 Assert.Equal("The signing-certificate-v2 attribute must have exactly one attribute value.", exception.Message);
@@ -117,7 +117,7 @@ namespace NuGet.Packaging.Test
                 test.SignedCms.ComputeSignature(test.CmsSigner);
 
                 var exception = Assert.Throws<SignatureException>(
-                    () => Signature.Load(test.SignedCms.Encode()));
+                    () => PrimarySignature.Load(test.SignedCms.Encode()));
 
                 Assert.Equal(NuGetLogCode.NU3011, exception.Code);
                 Assert.Equal("The primary signature is invalid.", exception.Message);
@@ -137,7 +137,7 @@ namespace NuGet.Packaging.Test
 
                 test.SignedCms.ComputeSignature(test.CmsSigner);
 
-                var signature = Signature.Load(test.SignedCms.Encode());
+                var signature = PrimarySignature.Load(test.SignedCms.Encode());
 
                 Assert.Equal(SignatureType.Author, signature.Type);
             }
@@ -150,7 +150,7 @@ namespace NuGet.Packaging.Test
             {
                 test.SignedCms.ComputeSignature(test.CmsSigner);
 
-                var signature = Signature.Load(test.SignedCms.Encode());
+                var signature = PrimarySignature.Load(test.SignedCms.Encode());
 
                 Assert.Equal(SignatureType.Unknown, signature.Type);
             }

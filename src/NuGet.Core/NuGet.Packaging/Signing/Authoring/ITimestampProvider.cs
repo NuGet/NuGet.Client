@@ -10,6 +10,6 @@ namespace NuGet.Packaging.Signing
     public interface ITimestampProvider
     {
         // Add timestamp to signature
-        Task<Signature> TimestampSignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token);
+        Task<PrimarySignature> TimestampPrimarySignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token);
     }
 }

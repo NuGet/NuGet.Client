@@ -336,8 +336,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageReader = new PackageArchiveReader(packageFilePath))
                 {
-                    var signature = await packageReader.GetSignatureAsync(CancellationToken.None);
-                    var invalidSignature = SignedArchiveTestUtility.GenerateInvalidSignature(signature);
+                    var signature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    var invalidSignature = SignedArchiveTestUtility.GenerateInvalidPrimarySignature(signature);
                     var provider = new SignatureTrustAndValidityVerificationProvider();
 
                     var result = await provider.GetTrustResultAsync(
@@ -445,7 +445,7 @@ namespace NuGet.Packaging.FuncTest
             using (var package = new PackageArchiveReader(nupkgStream, leaveStreamOpen: false))
             {
                 // Read a signature that is valid in every way except that the CRL information is unavailable.
-                var signature = await package.GetSignatureAsync(CancellationToken.None);
+                var signature = await package.GetPrimarySignatureAsync(CancellationToken.None);
                 var rootCertificate = SignatureUtility.GetPrimarySignatureCertificates(signature).Last();
 
                 // Trust the root CA of the signing certificate.
@@ -492,9 +492,9 @@ namespace NuGet.Packaging.FuncTest
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             using (var signatureRequest = new AuthorSignPackageRequest(testCertificate, HashAlgorithmName.SHA256))
             {
-                var signature = await SignedArchiveTestUtility.CreateSignatureForPackageAsync(signatureProvider, package, signatureRequest, testLogger);
-                var timestampedSignature = await SignedArchiveTestUtility.TimestampSignature(timestampProvider, signatureRequest, signature, testLogger);
-                var reTimestampedSignature = await SignedArchiveTestUtility.TimestampSignature(timestampProvider, signatureRequest, timestampedSignature, testLogger);
+                var signature = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(signatureProvider, package, signatureRequest, testLogger);
+                var timestampedSignature = await SignedArchiveTestUtility.TimestampPrimarySignature(timestampProvider, signatureRequest, signature, testLogger);
+                var reTimestampedSignature = await SignedArchiveTestUtility.TimestampPrimarySignature(timestampProvider, signatureRequest, timestampedSignature, testLogger);
 
                 timestampedSignature.Timestamps.Count.Should().Be(1);
                 reTimestampedSignature.Timestamps.Count.Should().Be(2);
@@ -524,7 +524,7 @@ namespace NuGet.Packaging.FuncTest
 
             using (var test = await GetTrustResultAsyncTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
-                var result = await test.Provider.GetTrustResultAsync(test.Package, test.Signature, settings, CancellationToken.None);
+                var result = await test.Provider.GetTrustResultAsync(test.Package, test.PrimarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Untrusted, result.Trust);
                 Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Error));
@@ -549,7 +549,7 @@ namespace NuGet.Packaging.FuncTest
 
             using (var test = await GetTrustResultAsyncTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
-                var result = await test.Provider.GetTrustResultAsync(test.Package, test.Signature, settings, CancellationToken.None);
+                var result = await test.Provider.GetTrustResultAsync(test.Package, test.PrimarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Trusted, result.Trust);
                 Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Error));
@@ -574,7 +574,7 @@ namespace NuGet.Packaging.FuncTest
 
             using (var test = await GetTrustResultAsyncTest.CreateAsync(settings, _trustedTestCert.Source.Cert))
             {
-                var result = await test.Provider.GetTrustResultAsync(test.Package, test.Signature, settings, CancellationToken.None);
+                var result = await test.Provider.GetTrustResultAsync(test.Package, test.PrimarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Trusted, result.Trust);
                 Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Error));
@@ -632,17 +632,17 @@ namespace NuGet.Packaging.FuncTest
             internal SignedPackageArchive Package { get; }
             internal SignatureTrustAndValidityVerificationProvider Provider { get; }
             internal SignedPackageVerifierSettings Settings { get; }
-            internal Signature Signature { get; }
+            internal PrimarySignature PrimarySignature { get; }
 
             private GetTrustResultAsyncTest(
                 TestDirectory directory,
                 SignedPackageArchive package,
-                Signature signature,
+                PrimarySignature primarySignature,
                 SignedPackageVerifierSettings settings)
             {
                 _directory = directory;
                 Package = package;
-                Signature = signature;
+                PrimarySignature = primarySignature;
                 Settings = settings;
                 Provider = new SignatureTrustAndValidityVerificationProvider();
             }
@@ -672,9 +672,9 @@ namespace NuGet.Packaging.FuncTest
                         unsignedPackageFile,
                         certificateClone);
                     var package = new SignedPackageArchive(signedPackageFile.OpenRead(), new MemoryStream());
-                    var signature = await package.GetSignatureAsync(CancellationToken.None);
+                    var primarySignature = await package.GetPrimarySignatureAsync(CancellationToken.None);
 
-                    return new GetTrustResultAsyncTest(directory, package, signature, settings);
+                    return new GetTrustResultAsyncTest(directory, package, primarySignature, settings);
                 }
             }
         }

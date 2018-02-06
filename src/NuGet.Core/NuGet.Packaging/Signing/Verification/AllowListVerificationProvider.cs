@@ -22,13 +22,13 @@ namespace NuGet.Packaging.Signing
             _allowList = allowList;
         }
 
-        public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings, CancellationToken token)
+        public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
             return Task.FromResult(VerifyAllowList(package, signature, settings));
         }
 
 #if IS_DESKTOP
-        private PackageVerificationResult VerifyAllowList(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifyAllowList(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             var status = SignatureVerificationStatus.Trusted;
             var issues = new List<SignatureLog>();
@@ -42,7 +42,7 @@ namespace NuGet.Packaging.Signing
             return new SignedPackageVerificationResult(status, signature, issues);
         }
 
-        private bool IsSignatureAllowed(Signature signature)
+        private bool IsSignatureAllowed(PrimarySignature signature)
         {
             // Get information needed for allow list verification
             var primarySignatureCertificateFingerprint = CertificateUtility.GetHash(signature.SignerInfo.Certificate, _fingerprintAlgorithm);
@@ -66,7 +66,7 @@ namespace NuGet.Packaging.Signing
         }
 
 #else
-        private PackageVerificationResult VerifyAllowList(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifyAllowList(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             throw new NotSupportedException();
         }

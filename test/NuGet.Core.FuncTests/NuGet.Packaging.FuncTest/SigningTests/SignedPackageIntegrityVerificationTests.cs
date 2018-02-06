@@ -213,7 +213,7 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = nupkg.CreateAsStream())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signarture = await SignedArchiveTestUtility.CreateSignatureForPackageAsync(testCertificate, packageStream);
+                var signarture = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(testCertificate, packageStream);
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath);
@@ -251,7 +251,7 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = nupkg.CreateAsStream())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signarture = await SignedArchiveTestUtility.CreateSignatureForPackageAsync(testCertificate, packageStream);
+                var signarture = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(testCertificate, packageStream);
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath);
@@ -277,7 +277,7 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = nupkg.CreateAsStream())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signarture = await SignedArchiveTestUtility.CreateSignatureForPackageAsync(testCertificate, packageStream);
+                var signarture = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(testCertificate, packageStream);
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath, CompressionLevel.Optimal);
@@ -315,7 +315,7 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = nupkg.CreateAsStream())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signarture = await SignedArchiveTestUtility.CreateSignatureForPackageAsync(testCertificate, packageStream);
+                var signarture = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(testCertificate, packageStream);
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath, CompressionLevel.Optimal);

@@ -51,10 +51,10 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamps data present in the TimestampRequest.
         /// </summary>
-        public Task<Signature> TimestampSignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token)
+        public Task<PrimarySignature> TimestampPrimarySignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token)
         {
             var timestampedSignature = TimestampData(request, logger, token);
-            return Task.FromResult(Signature.Load(timestampedSignature));
+            return Task.FromResult(PrimarySignature.Load(timestampedSignature));
         }
 
         /// <summary>
@@ -208,7 +208,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamp a signature.
         /// </summary>
-        public Task<Signature> TimestampSignatureAsync(TimestampRequest timestampRequest, ILogger logger, CancellationToken token)
+        public Task<PrimarySignature> TimestampPrimarySignatureAsync(TimestampRequest timestampRequest, ILogger logger, CancellationToken token)
         {
             throw new NotImplementedException();
         }

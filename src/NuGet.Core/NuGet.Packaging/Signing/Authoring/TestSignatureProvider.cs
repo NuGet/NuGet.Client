@@ -10,14 +10,14 @@ namespace NuGet.Packaging.Signing
 {
     public class TestSignatureProvider : ISignatureProvider
     {
-        private readonly Signature _signature;
+        private readonly PrimarySignature _signature;
 
-        public TestSignatureProvider(Signature signature)
+        public TestSignatureProvider(PrimarySignature signature)
         {
             _signature = signature ?? throw new ArgumentNullException(nameof(signature));
         }
 
-        public Task<Signature> CreateSignatureAsync(SignPackageRequest request, SignatureContent signatureContent, ILogger logger, CancellationToken token)
+        public Task<PrimarySignature> CreatePrimarySignatureAsync(SignPackageRequest request, SignatureContent signatureContent, ILogger logger, CancellationToken token)
         {
             return Task.FromResult(_signature);
         }
