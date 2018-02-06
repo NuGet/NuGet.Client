@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1.X509;
@@ -230,30 +231,106 @@ namespace NuGet.Packaging.FuncTest
 
             certificateAuthority.Revoke(timestampService.Certificate, CrlReason.KeyCompromise, DateTimeOffset.UtcNow);
 
-            using (testServer.RegisterResponder(timestampService))
-            {
-                var logger = new TestLogger();
-                var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
-                var data = "Test data to be signed and timestamped";
-
-                using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
+            VerifyTimestampData(
+                testServer,
+                timestampService,
+                (timestampProvider, request) =>
                 {
-                    var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
-                    var signatureValue = signedCms.Encode();
-
-                    var request = new TimestampRequest
-                    {
-                        SigningSpec = SigningSpecifications.V1,
-                        TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
-                        SignatureValue = signatureValue
-                    };
-
                     var exception = Assert.Throws<TimestampException>(
-                        () => timestampProvider.TimestampData(request, logger, CancellationToken.None));
+                        () => timestampProvider.TimestampData(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal(
                         "The timestamp service's certificate chain could not be built: The certificate is revoked.",
                         exception.Message);
+                });
+        }
+
+        [CIOnlyFact]
+        public async Task TimestampData_WithFailureReponse_Throws()
+        {
+            var testServer = await _testFixture.GetSigningTestServerAsync();
+            var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
+            var options = new TimestampServiceOptions() { ReturnFailure = true };
+            var timestampService = TimestampService.Create(certificateAuthority, options);
+
+            VerifyTimestampData(
+                testServer,
+                timestampService,
+                (timestampProvider, request) =>
+                {
+                    var exception = Assert.Throws<CryptographicException>(
+                        () => timestampProvider.TimestampData(request, NullLogger.Instance, CancellationToken.None));
+
+                    Assert.StartsWith(
+                        "The timestamp signature and/or certificate could not be verified or is malformed.",
+                        exception.Message);
+                });
+        }
+
+        [CIOnlyFact]
+        public async Task TimestampData_WhenSigningCertificateNotReturned_Throws()
+        {
+            var testServer = await _testFixture.GetSigningTestServerAsync();
+            var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
+            var options = new TimestampServiceOptions() { ReturnSigningCertificate = false };
+            var timestampService = TimestampService.Create(certificateAuthority, options);
+
+            VerifyTimestampData(
+                testServer,
+                timestampService,
+                (timestampProvider, request) =>
+                {
+                    var exception = Assert.Throws<CryptographicException>(
+                        () => timestampProvider.TimestampData(request, NullLogger.Instance, CancellationToken.None));
+
+                    Assert.StartsWith("Cannot find object or property.", exception.Message);
+                });
+        }
+
+        [CIOnlyFact]
+        public async Task TimestampData_WhenSignatureHashAlgorithmIsSha1_Throws()
+        {
+            var testServer = await _testFixture.GetSigningTestServerAsync();
+            var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
+            var options = new TimestampServiceOptions() { SignatureHashAlgorithm = new Oid(Oids.Sha1) };
+            var timestampService = TimestampService.Create(certificateAuthority, options);
+
+            VerifyTimestampData(
+                testServer,
+                timestampService,
+                (timestampProvider, request) =>
+                {
+                    var exception = Assert.Throws<TimestampException>(
+                        () => timestampProvider.TimestampData(request, NullLogger.Instance, CancellationToken.None));
+
+                    Assert.Equal(
+                        "The timestamp certificate has an unsupported signature algorithm.",
+                        exception.Message);
+                });
+        }
+
+        private void VerifyTimestampData(
+            ISigningTestServer testServer,
+            TimestampService timestampService,
+            Action<Rfc3161TimestampProvider, TimestampRequest> verifyTimestampData)
+        {
+            using (testServer.RegisterResponder(timestampService))
+            {
+                var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
+
+                using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+                {
+                    var content = Encoding.UTF8.GetBytes("peach");
+                    var signedCms = SigningTestUtility.GenerateSignedCms(certificate, content);
+
+                    var request = new TimestampRequest()
+                    {
+                        SigningSpec = SigningSpecifications.V1,
+                        TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
+                        SignatureValue = signedCms.Encode()
+                    };
+
+                    verifyTimestampData(timestampProvider, request);
                 }
             }
         }

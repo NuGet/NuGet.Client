@@ -63,35 +63,18 @@ namespace Test.Utility.Signing
             _ocspResponder = new Lazy<OcspResponder>(() => new OcspResponder(this, OcspResponderUri));
         }
 
-        public X509Certificate IssueCertificate(
-            AsymmetricKeyParameter publicKey,
-            X509Name subjectName,
-            Action<X509V3CertificateGenerator> customizeCertificate = null,
-            DateTime? notBefore = null,
-            DateTime? notAfter = null)
+        public X509Certificate IssueCertificate(IssueCertificateOptions options)
         {
-            if (publicKey == null)
+            if (options == null)
             {
-                throw new ArgumentNullException(nameof(publicKey));
-            }
-
-            if (subjectName == null)
-            {
-                throw new ArgumentNullException(nameof(subjectName));
+                throw new ArgumentNullException(nameof(options));
             }
 
             var serialNumber = _nextSerialNumber;
             var issuerName = PrincipalUtilities.GetSubjectX509Principal(Certificate);
-            var notBeforeValue = notBefore ?? DateTime.UtcNow;
-            var notAfterValue = notAfter ?? notBeforeValue.AddHours(2);
+            Action<X509V3CertificateGenerator> customizeCertificate;
 
-            // An issued certificate should not have a validity period beyond the issuer's validity period.
-            if (notAfterValue > Certificate.NotAfter)
-            {
-                notAfterValue = Certificate.NotAfter;
-            }
-
-            if (customizeCertificate == null)
+            if (options.CustomizeCertificate == null)
             {
                 customizeCertificate = generator =>
                 {
@@ -110,22 +93,34 @@ namespace Test.Utility.Signing
                     generator.AddExtension(
                         X509Extensions.SubjectKeyIdentifier,
                         critical: false,
-                        extensionValue: new SubjectKeyIdentifierStructure(publicKey));
+                        extensionValue: new SubjectKeyIdentifierStructure(options.PublicKey));
                     generator.AddExtension(
                         X509Extensions.BasicConstraints,
                         critical: true,
                         extensionValue: new BasicConstraints(cA: false));
                 };
             }
+            else
+            {
+                customizeCertificate = options.CustomizeCertificate;
+            }
+
+            var notAfter = options.NotAfter.UtcDateTime;
+
+            // An issued certificate should not have a validity period beyond the issuer's validity period.
+            if (notAfter > Certificate.NotAfter)
+            {
+                notAfter = Certificate.NotAfter;
+            }
 
             var certificate = CreateCertificate(
-                publicKey,
+                options.PublicKey,
                 KeyPair.Private,
                 serialNumber,
                 issuerName,
-                subjectName,
-                notBeforeValue,
-                notAfterValue,
+                options.SubjectName,
+                options.NotBefore.UtcDateTime,
+                notAfter,
                 customizeCertificate);
 
             _nextSerialNumber = _nextSerialNumber.Add(BigInteger.One);
@@ -303,7 +298,13 @@ namespace Test.Utility.Signing
                 };
             }
 
-            return IssueCertificate(publicKey, subjectName, customizeCertificate);
+            var options = new IssueCertificateOptions(publicKey)
+                {
+                    SubjectName = subjectName,
+                    CustomizeCertificate = customizeCertificate
+                };
+
+            return IssueCertificate(options);
         }
 
         private static X509Certificate CreateCertificate(
