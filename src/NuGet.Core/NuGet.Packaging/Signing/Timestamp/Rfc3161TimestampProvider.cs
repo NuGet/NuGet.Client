@@ -108,7 +108,7 @@ namespace NuGet.Packaging.Signing
                 // Some timestamp services include all certificates except the root in the
                 // SignedData.certificates collection.
                 var signerInfo = timestampCms.SignerInfos[0];
-                var chain = CertificateChainUtility.GetCertificateChainForSigning(
+                var chain = CertificateChainUtility.GetCertificateChain(
                     signerInfo.Certificate,
                     timestampCms.Certificates,
                     logger,

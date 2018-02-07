@@ -27,10 +27,10 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetCertificateChainForSigning_WhenCertificateNull_Throws()
+        public void GetCertificateChain_WhenCertificateNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => CertificateChainUtility.GetCertificateChainForSigning(
+                () => CertificateChainUtility.GetCertificateChain(
                     certificate: null,
                     extraStore: new X509Certificate2Collection(),
                     logger: NullLogger.Instance,
@@ -40,10 +40,10 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetCertificateChainForSigning_WhenExtraStoreNull_Throws()
+        public void GetCertificateChain_WhenExtraStoreNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => CertificateChainUtility.GetCertificateChainForSigning(
+                () => CertificateChainUtility.GetCertificateChain(
                     new X509Certificate2(),
                     extraStore: null,
                     logger: NullLogger.Instance,
@@ -53,10 +53,10 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetCertificateChainForSigning_WhenLoggerNull_Throws()
+        public void GetCertificateChain_WhenLoggerNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => CertificateChainUtility.GetCertificateChainForSigning(
+                () => CertificateChainUtility.GetCertificateChain(
                     new X509Certificate2(),
                     new X509Certificate2Collection(),
                     logger: null,
@@ -66,10 +66,10 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetCertificateChainForSigning_WhenCertificateTypeUndefined_Throws()
+        public void GetCertificateChain_WhenCertificateTypeUndefined_Throws()
         {
             var exception = Assert.Throws<ArgumentException>(
-                () => CertificateChainUtility.GetCertificateChainForSigning(
+                () => CertificateChainUtility.GetCertificateChain(
                     new X509Certificate2(),
                     new X509Certificate2Collection(),
                     NullLogger.Instance,
@@ -79,7 +79,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetCertificateChainForSigning_WithUntrustedRoot_Throws()
+        public void GetCertificateChain_WithUntrustedRoot_Throws()
         {
             using (var chainHolder = new X509ChainHolder())
             using (var rootCertificate = SignTestUtility.GetCertificate("root.crt"))
@@ -91,7 +91,7 @@ namespace NuGet.Packaging.Test
                 var logger = new TestLogger();
 
                 var exception = Assert.Throws<SignatureException>(
-                    () => CertificateChainUtility.GetCertificateChainForSigning(
+                    () => CertificateChainUtility.GetCertificateChain(
                         leafCertificate,
                         extraStore,
                         logger,
@@ -114,13 +114,13 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetCertificateChainForSigning_WithUntrustedSelfSignedCertificate_ReturnsChain()
+        public void GetCertificateChain_WithUntrustedSelfSignedCertificate_ReturnsChain()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             {
                 var logger = new TestLogger();
 
-                var chain = CertificateChainUtility.GetCertificateChainForSigning(
+                var chain = CertificateChainUtility.GetCertificateChain(
                     certificate,
                     new X509Certificate2Collection(),
                     logger,

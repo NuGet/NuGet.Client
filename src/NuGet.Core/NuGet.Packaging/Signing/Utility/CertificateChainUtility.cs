@@ -20,11 +20,13 @@ namespace NuGet.Packaging.Signing
         /// for chain building.</param>
         /// <param name="logger">A logger.</param>
         /// <param name="certificateType">The certificate type.</param>
+        /// <remarks>This is intended to be used only during signing and timestamping operations,
+        /// not verification.</remarks>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="extraStore" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="certificateType" /> is undefined.</exception>
-        public static IReadOnlyList<X509Certificate2> GetCertificateChainForSigning(
+        public static IReadOnlyList<X509Certificate2> GetCertificateChain(
             X509Certificate2 certificate,
             X509Certificate2Collection extraStore,
             ILogger logger,
@@ -68,7 +70,7 @@ namespace NuGet.Packaging.Signing
                 X509ChainStatusFlags errorStatusFlags;
                 X509ChainStatusFlags warningStatusFlags;
 
-                GetChainStatusFlagsForSigning(certificate, certificateType, out errorStatusFlags, out warningStatusFlags);
+                GetChainStatusFlags(certificate, certificateType, out errorStatusFlags, out warningStatusFlags);
 
                 var fatalStatuses = new List<X509ChainStatus>();
                 var logCode = certificateType == CertificateType.Timestamp ? NuGetLogCode.NU3028 : NuGetLogCode.NU3018;
@@ -125,7 +127,7 @@ namespace NuGet.Packaging.Signing
             return certs;
         }
 
-        private static void GetChainStatusFlagsForSigning(
+        private static void GetChainStatusFlags(
             X509Certificate2 certificate,
             CertificateType certificateType,
             out X509ChainStatusFlags errorStatusFlags,
