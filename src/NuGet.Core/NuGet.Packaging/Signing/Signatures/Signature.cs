@@ -46,7 +46,10 @@ namespace NuGet.Packaging.Signing
 
             _timestamps = new Lazy<IReadOnlyList<Timestamp>>(() => GetTimestamps(SignerInfo));
 
-            VerifySigningTimeAttribute(SignerInfo);
+            if (Type != SignatureType.Unknown)
+            {
+                VerifySigningTimeAttribute(SignerInfo);
+            }
         }
 
         protected abstract void ThrowForInvalidSignature();
