@@ -61,16 +61,18 @@ namespace Test.Utility.Signing
         /// Generates a signed copy of a package and returns the path to that package
         /// This method timestamps a package and should only be used with tests marked with [CIOnlyFact]
         /// </summary>
-        /// <param name="testCert">Certificate to be used while signing the package</param>
+        /// <param name="certificate">Certificate to be used while signing the package</param>
         /// <param name="nupkg">Package to be signed</param>
         /// <param name="dir">Directory for placing the signed package</param>
         /// <param name="timestampService">RFC 3161 timestamp service URL.</param>
+        /// <param name="request">An author signing request.</param>
         /// <returns>Path to the signed copy of the package</returns>
         public static async Task<string> CreateSignedAndTimeStampedPackageAsync(
-            X509Certificate2 testCert,
+            X509Certificate2 certificate,
             SimpleTestPackageContext nupkg,
             string dir,
-            Uri timestampService)
+            Uri timestampService,
+            SignPackageRequest request = null)
         {
             var testLogger = new TestLogger();
 
@@ -81,8 +83,10 @@ namespace Test.Utility.Signing
 
                 using (var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
                 {
+                    request = request ?? new SignPackageRequest(certificate, HashAlgorithmName.SHA256);
+
                     // Sign the package
-                    await SignAndTimeStampPackageAsync(testLogger, testCert, signPackage, timestampService);
+                    await SignAndTimeStampPackageAsync(testLogger, certificate, signPackage, timestampService, request);
                 }
 
                 zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
@@ -140,11 +144,11 @@ namespace Test.Utility.Signing
             TestLogger testLogger,
             X509Certificate2 certificate,
             SignedPackageArchive signPackage,
-            Uri timestampService)
+            Uri timestampService,
+            SignPackageRequest request)
         {
             var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(timestampService));
             var signer = new Signer(signPackage, testSignatureProvider);
-            var request = new SignPackageRequest(certificate, signatureHashAlgorithm: HashAlgorithmName.SHA256);
 
             await signer.SignAsync(request, testLogger, CancellationToken.None);
         }

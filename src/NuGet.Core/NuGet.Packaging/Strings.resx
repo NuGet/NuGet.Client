@@ -498,4 +498,7 @@ Valid from:</comment>
   <data name="CertificateChainValidationFailed" xml:space="preserve">
     <value>Certificate chain validation failed.</value>
   </data>
+  <data name="TimestampMessageImprintUnsupportedHashAlgorithm" xml:space="preserve">
+    <value>The timestamp's message imprint uses an unsupported hash algorithm.</value>
+  </data>
 </root>
