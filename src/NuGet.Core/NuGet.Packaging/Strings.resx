@@ -501,4 +501,7 @@ Valid from:</comment>
   <data name="TimestampMessageImprintUnsupportedHashAlgorithm" xml:space="preserve">
     <value>The timestamp's message imprint uses an unsupported hash algorithm.</value>
   </data>
+  <data name="InvalidArgument" xml:space="preserve">
+    <value>The argument is invalid.</value>
+  </data>
 </root>

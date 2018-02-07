@@ -422,6 +422,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The argument is invalid..
+        /// </summary>
+        internal static string InvalidArgument {
+            get {
+                return ResourceManager.GetString("InvalidArgument", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The ASN.1 data is invalid..
         /// </summary>
         internal static string InvalidAsn1 {
