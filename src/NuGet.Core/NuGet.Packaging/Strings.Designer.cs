@@ -611,6 +611,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to nuget-package-owners: {0}.
+        /// </summary>
+        internal static string NuGetPackageOwners {
+            get {
+                return ResourceManager.GetString("NuGetPackageOwners", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The nuget-package-owners attribute is invalid..
         /// </summary>
         internal static string NuGetPackageOwnersInvalid {
@@ -625,6 +634,15 @@ namespace NuGet.Packaging {
         internal static string NuGetPackageOwnersInvalidValue {
             get {
                 return ResourceManager.GetString("NuGetPackageOwnersInvalidValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget-v3-service-index-url: {0}.
+        /// </summary>
+        internal static string NuGetV3ServiceIndexUrl {
+            get {
+                return ResourceManager.GetString("NuGetV3ServiceIndexUrl", resourceCulture);
             }
         }
         

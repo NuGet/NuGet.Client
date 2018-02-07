@@ -28,7 +28,7 @@ namespace NuGet.Packaging.Signing
         public static string X509Certificate2ToString(X509Certificate2 cert, HashAlgorithmName fingerprintAlgorithm)
         {
             var certStringBuilder = new StringBuilder();
-            X509Certificate2ToString(cert, certStringBuilder, fingerprintAlgorithm, indentation: "");
+            X509Certificate2ToString(cert, certStringBuilder, fingerprintAlgorithm, indentation: "  ");
             return certStringBuilder.ToString();
         }
 
@@ -69,7 +69,7 @@ namespace NuGet.Packaging.Signing
             for (var i = 0; i < Math.Min(_limit, certCollection.Count); i++)
             {
                 var cert = certCollection[i];
-                X509Certificate2ToString(cert, collectionStringBuilder, fingerprintAlgorithm, indentation: "");
+                X509Certificate2ToString(cert, collectionStringBuilder, fingerprintAlgorithm, indentation: "  ");
                 collectionStringBuilder.AppendLine();
             }
 
@@ -84,7 +84,7 @@ namespace NuGet.Packaging.Signing
         public static string X509ChainToString(X509Chain chain, HashAlgorithmName fingerprintAlgorithm)
         {
             var collectionStringBuilder = new StringBuilder();
-            var indentationLevel = "    ";
+            var indentationLevel = "      ";
             var indentation = indentationLevel;
 
             var chainElementsCount = chain.ChainElements.Count;

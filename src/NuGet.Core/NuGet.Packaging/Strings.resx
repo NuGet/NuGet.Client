@@ -521,4 +521,12 @@ Valid from:</comment>
   <data name="Error_NotOneRepositoryCounterSignature" xml:space="preserve">
     <value>The package signature contains multiple repository countersignatures.</value>
   </data>
+  <data name="NuGetPackageOwners" xml:space="preserve">
+    <value>nuget-package-owners: {0}</value>
+    <comment>0 - The nuget-package-owners value</comment>
+  </data>
+  <data name="NuGetV3ServiceIndexUrl" xml:space="preserve">
+    <value>nuget-v3-service-index-url: {0}</value>
+    <comment>0- The nuget-v3-service-index-url value</comment>
+  </data>
 </root>

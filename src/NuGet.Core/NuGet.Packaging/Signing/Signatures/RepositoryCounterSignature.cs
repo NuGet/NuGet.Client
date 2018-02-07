@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
+using System.Security.Cryptography.X509Certificates;
 #endif
 using NuGet.Common;
 
@@ -67,6 +69,29 @@ namespace NuGet.Packaging.Signing
             return new RepositoryCounterSignature(respoSignature, lastFoundNuGetV3ServiceIndexUrl);
         }
 
+        public override byte[] GetSignatureHashValue(HashAlgorithmName hashAlgorithm)
+        {
+            // TODO: figure out how to get the signature hash value for a countersignature
+            return new byte[] { };
+        }
+
+        internal override SignatureVerificationStatus Verify(
+            Timestamp timestamp,
+            bool allowUntrusted,
+            bool allowUntrustedSelfSignedCertificate,
+            bool allowUnknownRevocation,
+            HashAlgorithmName fingerprintAlgorithm,
+            X509Certificate2Collection certificateExtraStore,
+            List<SignatureLog> issues)
+        {
+            issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
+            issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, _nuGetV3ServiceIndexUrl.ToString())));
+            if (_nuGetPackageOwners != null)
+            {
+                issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetPackageOwners, string.Join(", ", _nuGetPackageOwners))));
+            }
+            return base.Verify(timestamp, allowUntrusted, allowUntrustedSelfSignedCertificate, allowUnknownRevocation, fingerprintAlgorithm, certificateExtraStore, issues);
+        }
 #else
         public static RepositoryCounterSignature GetRepositoryCounterSignature(PrimarySignature primarySignature)
         {
