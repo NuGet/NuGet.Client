@@ -3,19 +3,23 @@
 
 using System.Security.Cryptography;
 using NuGet.Packaging.Signing;
+using Org.BouncyCastle.Asn1;
+using BcAccuracy = Org.BouncyCastle.Asn1.Tsp.Accuracy;
 
 namespace Test.Utility.Signing
 {
     public sealed class TimestampServiceOptions
     {
-        public int AccuracyInSeconds { get; set; }
+        public BcAccuracy Accuracy { get; set; }
+        public Oid Policy { get; set; }
         public bool ReturnFailure { get; set; }
         public bool ReturnSigningCertificate { get; set; }
         public Oid SignatureHashAlgorithm { get; set; }
 
         public TimestampServiceOptions()
         {
-            AccuracyInSeconds = 1;
+            Accuracy = new BcAccuracy(seconds: new DerInteger(1), micros: null, millis: null);
+            Policy = new Oid("2.999");
             ReturnSigningCertificate = true;
             SignatureHashAlgorithm = new Oid(Oids.Sha256);
         }
