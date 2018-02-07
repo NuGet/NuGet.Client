@@ -485,15 +485,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package {0} signature is invalid..
-        /// </summary>
-        internal static string InvalidPackageSignature {
-            get {
-                return ResourceManager.GetString("InvalidPackageSignature", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The package signature file entry is invalid..
         /// </summary>
         internal static string InvalidPackageSignatureFileEntry {
