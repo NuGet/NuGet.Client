@@ -241,10 +241,6 @@
   <data name="TimestampSignatureValidationFailed" xml:space="preserve">
     <value>Timestamp signature validation failed.</value>
   </data>
-  <data name="TimestampCertificateChainBuildFailure" xml:space="preserve">
-    <value>The timestamp service's certificate chain could not be built: {0}</value>
-    <comment>0 -  chain status messages</comment>
-  </data>
   <data name="SignedPackageUnableToAccessSignature" xml:space="preserve">
     <value>The package was not opened correctly to perform signature operations. Please use a Stream-based constructor to have access to signature attributes of the package.</value>
   </data>
