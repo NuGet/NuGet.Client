@@ -94,9 +94,10 @@ namespace NuGet.Packaging.Signing
             var timestamp = timestamps.FirstOrDefault();
             if (timestamp != null)
             {
-                using (var authorSignatureNativeCms = NativeCms.Decode(signature.SignedCms.Encode(), detached: false))
+                using (var primarySignatureNativeCms = NativeCms.Decode(signature.SignedCms.Encode(), detached: false))
                 {
-                    var signatureHash = NativeCms.GetSignatureValueHash(signature.SignatureContent.HashAlgorithm, authorSignatureNativeCms);
+                    var timestampHashAlgorithmName = CryptoHashUtility.OidToHashAlgorithmName(timestamp.TstInfo.HashAlgorithmId.Value);
+                    var signatureHash = NativeCms.GetSignatureValueHash(timestampHashAlgorithmName, primarySignatureNativeCms);
 
                     if (!IsTimestampValid(timestamp, signatureHash, allowIgnoreTimestamp, allowUnknownRevocation, issues) && !allowIgnoreTimestamp)
                     {
