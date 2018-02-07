@@ -13,66 +13,61 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
-    public class RepositoryCounterSignature : Signature, IRepositorySignature
+    public sealed class RepositoryCounterSignature : Signature, IRepositorySignature
     {
 #if IS_DESKTOP
-        private readonly Uri _nuGetV3ServiceIndexUrl;
-        public Uri NuGetV3ServiceIndexUrl => _nuGetV3ServiceIndexUrl;
-
-        private readonly IReadOnlyList<string> _nuGetPackageOwners;
-        public IReadOnlyList<string> NuGetPackageOwners => _nuGetPackageOwners;
-
+        public Uri NuGetV3ServiceIndexUrl { get; }
+        public IReadOnlyList<string> NuGetPackageOwners { get; }
 
         private RepositoryCounterSignature(SignerInfo counterSignerInfo, Uri nuGetV3ServiceIndexUrl)
             : base(counterSignerInfo, SignatureType.Repository)
         {
-            _nuGetV3ServiceIndexUrl = nuGetV3ServiceIndexUrl;
-            _nuGetPackageOwners = AttributeUtility.GetNuGetPackageOwners(SignerInfo.SignedAttributes);
+            NuGetV3ServiceIndexUrl = nuGetV3ServiceIndexUrl;
+            NuGetPackageOwners = AttributeUtility.GetNuGetPackageOwners(SignerInfo.SignedAttributes);
         }
 
         public static RepositoryCounterSignature GetRepositoryCounterSignature(PrimarySignature primarySignature)
         {
+            if (primarySignature.Type == SignatureType.Repository)
+            {
+                throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureShouldNotHaveARepositoryCountersignature);
+            }
+
             var counterSignatures = primarySignature.SignerInfo.CounterSignerInfos;
-            var repositoryCounterSignatures = new List<SignerInfo>();
-            Uri potentialNuGetV3ServiceIndexUrl = null;
-            Uri lastFoundNuGetV3ServiceIndexUrl = null;
+            RepositoryCounterSignature repositoryCountersignature = null;
 
             // We only care about the repository countersignatures, not any kind of counter signature
             foreach (var counterSignature in counterSignatures)
             {
-                potentialNuGetV3ServiceIndexUrl = null;
-                try
+                var countersignatureType = AttributeUtility.GetSignatureType(counterSignature.SignedAttributes);
+                if (countersignatureType == SignatureType.Repository)
                 {
-                    potentialNuGetV3ServiceIndexUrl = AttributeUtility.GetNuGetV3ServiceIndexUrl(counterSignature.SignedAttributes);
-                }
-                // This counter signature is not a valid repository countersignature
-                catch (SignatureException) { }
-
-                if (potentialNuGetV3ServiceIndexUrl != null)
-                {
-                    repositoryCounterSignatures.Add(counterSignature);
-                    lastFoundNuGetV3ServiceIndexUrl = potentialNuGetV3ServiceIndexUrl;
+                    if (repositoryCountersignature != null)
+                    {
+                        throw new SignatureException(NuGetLogCode.NU3032, Strings.Error_NotOneRepositoryCounterSignature);
+                    }
+                    var nuGetV3ServiceIndexUrl = AttributeUtility.GetNuGetV3ServiceIndexUrl(counterSignature.SignedAttributes);
+                    repositoryCountersignature = new RepositoryCounterSignature(counterSignature, nuGetV3ServiceIndexUrl);
                 }
             }
 
-            if (repositoryCounterSignatures.Count > 1)
-            {
-                throw new SignatureException(NuGetLogCode.NU3030, Strings.Error_NotOneRepositoryCounterSignature);
-            }
-
-            var respoSignature = repositoryCounterSignatures.FirstOrDefault();
-            if (respoSignature == null)
-            {
-                return null;
-            }
-
-            return new RepositoryCounterSignature(respoSignature, lastFoundNuGetV3ServiceIndexUrl);
+            return repositoryCountersignature;
         }
 
         public override byte[] GetSignatureHashValue(HashAlgorithmName hashAlgorithm)
         {
             // TODO: figure out how to get the signature hash value for a countersignature
             return new byte[] { };
+        }
+
+        protected override void ThrowForInvalidSignature()
+        {
+            ThrowForInvalidRepositoryCounterSignature();
+        }
+
+        private static void ThrowForInvalidRepositoryCounterSignature()
+        {
+            throw new SignatureException(NuGetLogCode.NU3031, Strings.InvalidRepositoryCounterSignature);
         }
 
         internal override SignatureVerificationStatus Verify(
@@ -85,10 +80,10 @@ namespace NuGet.Packaging.Signing
             List<SignatureLog> issues)
         {
             issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
-            issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, _nuGetV3ServiceIndexUrl.ToString())));
-            if (_nuGetPackageOwners != null)
+            issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, NuGetV3ServiceIndexUrl.ToString())));
+            if (NuGetPackageOwners != null)
             {
-                issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetPackageOwners, string.Join(", ", _nuGetPackageOwners))));
+                issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetPackageOwners, string.Join(", ", NuGetPackageOwners))));
             }
             return base.Verify(timestamp, allowUntrusted, allowUntrustedSelfSignedCertificate, allowUnknownRevocation, fingerprintAlgorithm, certificateExtraStore, issues);
         }

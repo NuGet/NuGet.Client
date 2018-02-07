@@ -60,11 +60,9 @@ namespace NuGet.Packaging.Signing
             }
 
             var signerInfo = cms.SignerInfos[0];
-            var signatureType = AttributeUtility.GetSignatureType(signerInfo.SignedAttributes);
-
             VerifySigningCertificate(cms, signerInfo, SigningSpecifications.V1);
 
-            return PrimarySignatureFactory.CreateSignature(cms, signatureType);
+            return PrimarySignatureFactory.CreateSignature(cms);
         }
 
         /// <summary>
@@ -112,13 +110,18 @@ namespace NuGet.Packaging.Signing
         }
 
         protected PrimarySignature(SignedCms signedCms, SignatureType signatureType)
-            : base(GetSignerInfoIfSignedCmsNotNull(signedCms), signatureType)
+            : base(GetSignerInfo(signedCms), signatureType)
         {
             SignedCms = signedCms;
             SignatureContent = SignatureContent.Load(SignedCms.ContentInfo.Content, SigningSpecifications.V1);
         }
 
-        protected static void ThrowForInvalidAuthorSignature()
+        protected override void ThrowForInvalidSignature()
+        {
+            ThrowForInvalidPrimarySignature();
+        }
+
+        protected static void ThrowForInvalidPrimarySignature()
         {
             throw new SignatureException(NuGetLogCode.NU3011, Strings.InvalidPrimarySignature);
         }
@@ -135,11 +138,11 @@ namespace NuGet.Packaging.Signing
 
             if (certificates == null || certificates.Count == 0)
             {
-                ThrowForInvalidAuthorSignature();
+                ThrowForInvalidPrimarySignature();
             }
         }
 
-        private static SignerInfo GetSignerInfoIfSignedCmsNotNull(SignedCms signedCms)
+        private static SignerInfo GetSignerInfo(SignedCms signedCms)
         {
             if (signedCms == null)
             {

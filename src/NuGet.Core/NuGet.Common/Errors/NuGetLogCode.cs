@@ -370,9 +370,19 @@ namespace NuGet.Common
         NU3030 = 3030,
 
         /// <summary>
-        /// The package signature cointains multiple repository countersignatures.
+        /// The repository countersignature is invalid.
         /// </summary>
         NU3031 = 3031,
+
+        /// <summary>
+        /// The package signature contains multiple repository countersignatures.
+        /// </summary>
+        NU3032 = 3032,
+
+        /// <summary>
+        /// A repository primary signature should not have a repository countersignatures.
+        /// </summary>
+        NU3033 = 3033,
 
         /// <summary>
         /// Undefined Package Error.

@@ -7,7 +7,7 @@ using System.Security.Cryptography.Pkcs;
 
 namespace NuGet.Packaging.Signing
 {
-    public class UnknownPrimarySignature : PrimarySignature
+    public sealed class UnknownPrimarySignature : PrimarySignature
     {
 #if IS_DESKTOP
         public UnknownPrimarySignature(SignedCms signedCms)

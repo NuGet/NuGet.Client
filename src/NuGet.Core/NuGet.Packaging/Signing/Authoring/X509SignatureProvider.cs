@@ -59,7 +59,7 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                return TimestampPrimarySignature(request, logger, signature, token);
+                return TimestampPrimarySignatureAsync(request, logger, signature, token);
             }
         }
 
@@ -140,7 +140,7 @@ namespace NuGet.Packaging.Signing
             return PrimarySignature.Load(cms);
         }
 
-        private Task<PrimarySignature> TimestampPrimarySignature(SignPackageRequest request, ILogger logger, PrimarySignature signature, CancellationToken token)
+        private Task<PrimarySignature> TimestampPrimarySignatureAsync(SignPackageRequest request, ILogger logger, PrimarySignature signature, CancellationToken token)
         {
             var timestampRequest = new TimestampRequest
             {
@@ -158,7 +158,7 @@ namespace NuGet.Packaging.Signing
             throw new NotSupportedException();
         }
 
-        private Task<PrimarySignature> TimestampPrimarySignature(SignPackageRequest request, ILogger logger, PrimarySignature signature, CancellationToken token)
+        private Task<PrimarySignature> TimestampPrimarySignatureAsync(SignPackageRequest request, ILogger logger, PrimarySignature signature, CancellationToken token)
         {
             throw new NotSupportedException();
         }

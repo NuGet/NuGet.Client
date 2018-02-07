@@ -45,7 +45,11 @@ namespace NuGet.Packaging.Signing
             Type = type;
 
             _timestamps = new Lazy<IReadOnlyList<Timestamp>>(() => GetTimestamps(SignerInfo));
+
+            VerifySigningTimeAttribute(SignerInfo);
         }
+
+        protected abstract void ThrowForInvalidSignature();
 
         /// <summary>
         /// 
@@ -147,7 +151,7 @@ namespace NuGet.Packaging.Signing
                         // These flags should only be set for verification scenarios not signing
                         chain.ChainPolicy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
 
-                        CertificateChainUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestamp.UpperLimit.LocalDateTime, NuGetVerificationCertificateType.Signature);
+                        CertificateChainUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestamp.UpperLimit.LocalDateTime, CertificateType.Signature);
                         var chainBuildingSucceed = CertificateChainUtility.BuildCertificateChain(chain, certificate, out var chainStatuses);
 
                         issues?.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain, fingerprintAlgorithm)));
@@ -235,6 +239,16 @@ namespace NuGet.Packaging.Signing
             }
 
             return SignatureVerificationStatus.Untrusted;
+        }
+
+        private void VerifySigningTimeAttribute(SignerInfo signerInfo)
+        {
+            var attribute = signerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningTime);
+
+            if (attribute == null)
+            {
+                ThrowForInvalidSignature();
+            }
         }
 
         /// <summary>

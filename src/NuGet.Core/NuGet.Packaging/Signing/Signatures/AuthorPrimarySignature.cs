@@ -11,24 +11,13 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
-    public class AuthorPrimarySignature : PrimarySignature
+    public sealed class AuthorPrimarySignature : PrimarySignature
     {
 #if IS_DESKTOP
 
         public AuthorPrimarySignature(SignedCms signedCms)
             : base(signedCms, SignatureType.Author)
         {
-            VerifySigningTimeAttribute(SignerInfo);
-        }
-
-        private static void VerifySigningTimeAttribute(SignerInfo signerInfo)
-        {
-            var attribute = signerInfo.SignedAttributes.GetAttributeOrDefault(Oids.SigningTime);
-
-            if (attribute == null)
-            {
-                ThrowForInvalidAuthorSignature();
-            }
         }
 
         internal override SignatureVerificationStatus Verify(

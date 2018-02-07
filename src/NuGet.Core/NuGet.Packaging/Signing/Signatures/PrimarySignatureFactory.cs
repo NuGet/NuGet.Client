@@ -10,9 +10,11 @@ namespace NuGet.Packaging.Signing
     public static class PrimarySignatureFactory
     {
 #if IS_DESKTOP
-        public static PrimarySignature CreateSignature(SignedCms signedCms, SignatureType type)
+        public static PrimarySignature CreateSignature(SignedCms signedCms)
         {
-            switch(type)
+            var signatureType = AttributeUtility.GetSignatureType(signedCms.SignerInfos[0].SignedAttributes);
+
+            switch (signatureType)
             {
                 case SignatureType.Author:
                     return new AuthorPrimarySignature(signedCms);

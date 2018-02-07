@@ -529,4 +529,10 @@ Valid from:</comment>
     <value>nuget-v3-service-index-url: {0}</value>
     <comment>0- The nuget-v3-service-index-url value</comment>
   </data>
+  <data name="Error_RepositorySignatureShouldNotHaveARepositoryCountersignature" xml:space="preserve">
+    <value>A repository primary signature should not have a repository countersignatures.</value>
+  </data>
+  <data name="InvalidRepositoryCounterSignature" xml:space="preserve">
+    <value>The repository countersignature is invalid.</value>
+  </data>
 </root>
