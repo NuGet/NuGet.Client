@@ -94,9 +94,21 @@ namespace NuGet.Packaging.Signing
             var timestamp = timestamps.FirstOrDefault();
             if (timestamp != null)
             {
-                using (var authorSignatureNativeCms = NativeCms.Decode(signature.SignedCms.Encode(), detached: false))
+                using (var primarySignatureNativeCms = NativeCms.Decode(signature.SignedCms.Encode(), detached: false))
                 {
-                    var signatureHash = NativeCms.GetSignatureValueHash(signature.SignatureContent.HashAlgorithm, authorSignatureNativeCms);
+                    var timestampHashAlgorithmName = GetTimestampMessageImprintHashAlgorithmName(timestamp);
+                    if (timestampHashAlgorithmName == HashAlgorithmName.Unknown)
+                    {
+                        issues.Add(
+                            SignatureLog.Issue(
+                                !allowNoTimestamp,
+                                NuGetLogCode.NU3030,
+                                Strings.TimestampMessageImprintUnsupportedHashAlgorithm));
+
+                        return null;
+                    }
+
+                    var signatureHash = NativeCms.GetSignatureValueHash(timestampHashAlgorithmName, primarySignatureNativeCms);
 
                     if (!IsTimestampValid(timestamp, signatureHash, allowIgnoreTimestamp, allowUnknownRevocation, issues) && !allowIgnoreTimestamp)
                     {
@@ -106,6 +118,19 @@ namespace NuGet.Packaging.Signing
             }
 
             return timestamp;
+        }
+
+        private static HashAlgorithmName GetTimestampMessageImprintHashAlgorithmName(Timestamp timestamp)
+        {
+            try
+            {
+                return CryptoHashUtility.OidToHashAlgorithmName(timestamp.TstInfo.HashAlgorithmId.Value);
+            }
+            catch (ArgumentException)
+            {
+            }
+
+            return HashAlgorithmName.Unknown;
         }
 
         private SignatureVerificationStatus VerifySignature(

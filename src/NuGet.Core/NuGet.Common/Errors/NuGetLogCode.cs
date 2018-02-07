@@ -335,7 +335,7 @@ namespace NuGet.Common
         NU3023 = 3023,
 
         /// <summary>
-        /// The timestamp uses as unsupported hash algorithm.
+        /// The timestamp signing certificate has an unsupported signature algorithm.
         /// </summary>
         NU3024 = 3024,
 
@@ -363,6 +363,11 @@ namespace NuGet.Common
         /// The timestamp signature is invalid.
         /// </summary>
         NU3029 = 3029,
+
+        /// <summary>
+        /// The timestamp's message imprint uses an unsupported hash algorithm.
+        /// </summary>
+        NU3030 = 3030,
 
         /// <summary>
         /// Undefined Package Error.

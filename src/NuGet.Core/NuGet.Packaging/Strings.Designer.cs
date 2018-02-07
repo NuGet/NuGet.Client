@@ -989,6 +989,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The timestamp&apos;s message imprint uses an unsupported hash algorithm..
+        /// </summary>
+        internal static string TimestampMessageImprintUnsupportedHashAlgorithm {
+            get {
+                return ResourceManager.GetString("TimestampMessageImprintUnsupportedHashAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The timestamp signature does not have a signing certificate..
         /// </summary>
         internal static string TimestampNoCertificate {
