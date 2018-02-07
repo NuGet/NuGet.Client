@@ -111,10 +111,11 @@ namespace NuGet.Packaging.Signing
         {
             if (Chain == null)
             {
-                Chain = CertificateChainUtility.GetCertificateChainForSigning(
+                Chain = CertificateChainUtility.GetCertificateChain(
                     Certificate,
                     AdditionalCertificates,
-                    logger);
+                    logger,
+                    CertificateType.Signature);
             }
         }
     }

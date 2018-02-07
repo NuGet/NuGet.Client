@@ -18,7 +18,7 @@ namespace NuGet.Packaging.FuncTest
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
-        private TrustedTestCert<X509Certificate2> _trustedTimestampRoot;
+        private TrustedTestCert<X509Certificate2> _trustedServerRoot;
         private TestCertificate _untrustedTestCert;
         private IReadOnlyList<TrustedTestCert<TestCertificate>> _trustedTestCertificateWithReissuedCertificate;
         private IList<ISignatureVerificationProvider> _trustProviders;
@@ -180,7 +180,7 @@ namespace NuGet.Packaging.FuncTest
             var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
             var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
 
-            _trustedTimestampRoot = TrustedTestCert.Create(
+            _trustedServerRoot = TrustedTestCert.Create(
                 rootCertificate,
                 StoreName.Root,
                 StoreLocation.LocalMachine);
@@ -214,7 +214,7 @@ namespace NuGet.Packaging.FuncTest
             _trustedTestCert?.Dispose();
             _trustedTestCertExpired?.Dispose();
             _trustedTestCertNotYetValid?.Dispose();
-            _trustedTimestampRoot?.Dispose();
+            _trustedServerRoot?.Dispose();
             _responders.Dispose();
 
             if (_trustedTestCertificateWithReissuedCertificate != null)
