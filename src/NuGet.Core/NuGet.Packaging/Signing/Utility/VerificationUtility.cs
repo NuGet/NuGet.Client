@@ -13,29 +13,33 @@ namespace NuGet.Packaging.Signing
     {
         internal static bool IsSigningCertificateValid(X509Certificate2 certificate, bool treatIssuesAsErrors, List<SignatureLog> issues)
         {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
             var isValid = true;
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(certificate))
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3013, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm));
+                issues?.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3013, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm));
                 isValid = false;
             }
 
             if (!CertificateUtility.IsCertificatePublicKeyValid(certificate))
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement));
+                issues?.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement));
                 isValid = false;
             }
 
             if (CertificateUtility.HasExtendedKeyUsage(certificate, Oids.LifetimeSigningEku))
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSigningEKU));
+                issues?.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSigningEKU));
                 isValid = false;
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate))
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3017, Strings.SignatureNotYetValid));
+                issues?.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3017, Strings.SignatureNotYetValid));
                 isValid = false;
             }
 
@@ -45,6 +49,18 @@ namespace NuGet.Packaging.Signing
 #if IS_DESKTOP
         internal static bool IsTimestampValid(Timestamp timestamp, Signature signature, bool treatIssuesAsErrors, List<SignatureLog> issues, SigningSpecifications spec)
         {
+            if (timestamp == null)
+            {
+                throw new ArgumentNullException(nameof(timestamp));
+            }
+            if (signature == null)
+            {
+                throw new ArgumentNullException(nameof(signature));
+            }
+
+            // Default to specification v1
+            spec = spec ?? SigningSpecifications.V1;
+
             var isValid = true;
             var signerInfo = timestamp.SignerInfo;
 
@@ -56,45 +72,54 @@ namespace NuGet.Packaging.Signing
                 }
                 catch (Exception e)
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3021, Strings.TimestampSignatureValidationFailed));
-                    issues.Add(SignatureLog.DebugLog(e.ToString()));
+                    issues?.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3021, Strings.TimestampSignatureValidationFailed));
+                    issues?.Add(SignatureLog.DebugLog(e.ToString()));
                     isValid = false;
                 }
 
                 if (!CertificateUtility.IsSignatureAlgorithmSupported(signerInfo.Certificate))
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3022, Strings.TimestampUnsupportedSignatureAlgorithm));
+                    issues?.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3022, Strings.TimestampUnsupportedSignatureAlgorithm));
                     isValid = false;
                 }
 
                 if (!CertificateUtility.IsCertificatePublicKeyValid(signerInfo.Certificate))
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3023, Strings.TimestampCertificateFailsPublicKeyLengthRequirement));
+                    issues?.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3023, Strings.TimestampCertificateFailsPublicKeyLengthRequirement));
                     isValid = false;
                 }
 
                 if (!spec.AllowedHashAlgorithmOids.Contains(signerInfo.DigestAlgorithm.Value))
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3024, Strings.TimestampUnsupportedSignatureAlgorithm));
+                    issues?.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3024, Strings.TimestampUnsupportedSignatureAlgorithm));
                     isValid = false;
                 }
 
-                var hashAlgorithm = CryptoHashUtility.OidToHashAlgorithmName(signerInfo.DigestAlgorithm.Value);
-                if (!timestamp.TstInfo.HasMessageHash(signature.GetSignatureHashValue(hashAlgorithm)))
+                try
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed));
+                    var hashAlgorithm = CryptoHashUtility.OidToHashAlgorithmName(timestamp.TstInfo.HashAlgorithmId.Value);
+                    if (!timestamp.TstInfo.HasMessageHash(signature.GetSignatureHashValue(hashAlgorithm)))
+                    {
+                        issues?.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed));
+                        isValid = false;
+                    }
+                }
+                catch
+                {
+                    // If the hash algorithm is not supported OidToHashAlgorithmName will throw
+                    issues?.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3030, Strings.TimestampMessageImprintUnsupportedHashAlgorithm));
                     isValid = false;
                 }
 
                 if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(signerInfo.Certificate))
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3025, Strings.TimestampNotYetValid));
+                    issues?.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3025, Strings.TimestampNotYetValid));
                     isValid = false;
                 }
             }
             else
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3020, Strings.TimestampNoCertificate));
+                issues?.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3020, Strings.TimestampNoCertificate));
                 isValid = false;
             }
 

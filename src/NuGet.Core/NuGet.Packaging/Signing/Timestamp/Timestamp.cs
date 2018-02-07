@@ -91,13 +91,13 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// 
+        /// Verify if the timestamp object meets the specification requirements.
         /// </summary>
-        /// <param name="signature"></param>
-        /// <param name="allowIgnoreTimestamp"></param>
-        /// <param name="allowUnknownRevocation"></param>
-        /// <param name="issues"></param>
-        /// <returns></returns>
+        /// <param name="signature">Signature which this timestamp is for.</param>
+        /// <param name="allowIgnoreTimestamp">Setting that tells if a timestamp can be ignored if it doesn't meet the requirements. Used to know if warnings or errors should be logged for an issue.</param>
+        /// <param name="allowUnknownRevocation">Setting that tells if unkown revocation is valid when building the chain.</param>
+        /// <param name="issues">List of log messages.</param>
+        /// <returns>true if the timestamp meets the requierements, false otherwise.</returns>
         internal bool Verify(
             Signature signature,
             bool allowIgnoreTimestamp,
@@ -105,6 +105,11 @@ namespace NuGet.Packaging.Signing
             HashAlgorithmName fingerprintAlgorithm,
             List<SignatureLog> issues)
         {
+            if (signature == null)
+            {
+                throw new ArgumentNullException(nameof(signature));
+            }
+
             var treatIssueAsError = !allowIgnoreTimestamp;
             var timestamperCertificate = SignerInfo.Certificate;
             if (timestamperCertificate == null)

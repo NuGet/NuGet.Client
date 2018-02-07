@@ -91,16 +91,16 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// 
+        /// Verify if the signature object meets the specification trust and validity requirements.
         /// </summary>
-        /// <param name="timestamp"></param>
-        /// <param name="allowUntrusted"></param>
-        /// <param name="allowUntrustedSelfSignedCertificate"></param>
-        /// <param name="allowUnknownRevocation"></param>
-        /// <param name="fingerprintAlgorithm"></param>
-        /// <param name="certificateExtraStore"></param>
-        /// <param name="issues"></param>
-        /// <returns></returns>
+        /// <param name="timestamp">Timestamp for this signature, if signature is not timestamped it can be null.</param>
+        /// <param name="allowUntrusted">Setting that tells if a signature that does not meet any soft failure requirements can still be allowed. Used to know if warnings or errors should be logged for an issue.</param>
+        /// <param name="allowUnknownRevocation">Setting that tells if unkown revocation is valid when building the chain.</param>
+        /// <param name="allowUntrustedSelfSignedCertificate">Setting that tells if an untrusted self-signed certificate should be allowed as the signing certificate.</param>
+        /// <param name="fingerprintAlgorithm">Algorithm used to calculate and display the certificate's fingerprint.</param>
+        /// <param name="certificateExtraStore">Collection of certificates to help the chain building engine as an extra store.</param>
+        /// <param name="issues">List of log messages.</param>
+        /// <returns>Status of trust for signature.</returns>
         internal virtual SignatureVerificationStatus Verify(
             Timestamp timestamp,
             bool allowUntrusted,
