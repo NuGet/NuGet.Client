@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
-namespace NuGet.Commands
+namespace NuGet.Common
 {
     public static class MSBuildStringUtility
     {
@@ -81,6 +82,22 @@ namespace NuGet.Commands
         public static bool IsTrueOrEmpty(string value)
         {
             return TrimAndGetNullForEmpty(value) == null || IsTrue(value);
+        }
+
+        /// <summary>
+        /// Splits and parses a ; or , delimited list of log codes.
+        /// Ignores codes that are unknown.
+        /// </summary>
+        public static IEnumerable<NuGetLogCode> GetNuGetLogCodes(string s)
+        {
+            foreach (var item in MSBuildStringUtility.Split(s, ';', ','))
+            {
+                if (item.StartsWith("NU", StringComparison.OrdinalIgnoreCase) &&
+                    Enum.TryParse<NuGetLogCode>(value: item, ignoreCase: true, result: out var result))
+                {
+                    yield return result;
+                }
+            }
         }
     }
 }

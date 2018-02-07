@@ -2255,7 +2255,7 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreUtility_GetNuGetLogCodes_ParsesPropertyWithOneCode(string property)
         {
             // Arrange && Act
-            var codes = MSBuildRestoreUtility.GetNuGetLogCodes(property);
+            var codes = MSBuildStringUtility.GetNuGetLogCodes(property);
 
             // Assert
             codes.Should().NotBeNull();
@@ -2305,7 +2305,7 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreUtility_GetNuGetLogCodes_ParsesPropertyWithMultipleCodes(string property)
         {
             // Arrange && Act
-            var codes = MSBuildRestoreUtility.GetNuGetLogCodes(property);
+            var codes = MSBuildStringUtility.GetNuGetLogCodes(property);
 
             // Assert
             codes.Should().NotBeNull();
@@ -2328,7 +2328,7 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreUtility_GetNuGetLogCodes_DoesNotParseInvalidCodes(string property)
         {
             // Arrange && Act
-            var codes = MSBuildRestoreUtility.GetNuGetLogCodes(property);
+            var codes = MSBuildStringUtility.GetNuGetLogCodes(property);
 
             // Assert
             codes.Should().NotBeNull();

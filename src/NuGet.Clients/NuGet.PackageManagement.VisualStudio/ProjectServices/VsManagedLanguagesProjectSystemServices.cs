@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectManagement;
@@ -208,7 +209,7 @@ namespace NuGet.PackageManagement.VisualStudio
             dependency.AutoReferenced = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.IsImplicitlyDefined));
 
             // Add warning suppressions
-            foreach (var code in MSBuildRestoreUtility.GetNuGetLogCodes(GetReferenceMetadataValue(reference, ProjectItemProperties.NoWarn)))
+            foreach (var code in MSBuildStringUtility.GetNuGetLogCodes(GetReferenceMetadataValue(reference, ProjectItemProperties.NoWarn)))
             {
                 dependency.NoWarn.Add(code);
             }

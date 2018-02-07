@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Frameworks;
 
 namespace NuGet.Test.Utility

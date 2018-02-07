@@ -585,7 +585,7 @@ namespace NuGet.Commands
                 dependency.AutoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined");
 
                 // Add warning suppressions
-                foreach (var code in GetNuGetLogCodes(item.GetProperty("NoWarn")))
+                foreach (var code in MSBuildStringUtility.GetNuGetLogCodes(item.GetProperty("NoWarn")))
                 {
                     dependency.NoWarn.Add(code);
                 }
@@ -818,26 +818,10 @@ namespace NuGet.Commands
 
         private static WarningProperties GetWarningProperties(IMSBuildItem specItem)
         {
-            return GetWarningProperties(
+            return WarningProperties.GetWarningProperties(
                 treatWarningsAsErrors: specItem.GetProperty("TreatWarningsAsErrors"),
                 warningsAsErrors: specItem.GetProperty("WarningsAsErrors"),
                 noWarn: specItem.GetProperty("NoWarn"));
-        }
-
-        /// <summary>
-        /// Create warning properties from the msbuild property strings.
-        /// </summary>
-        public static WarningProperties GetWarningProperties(string treatWarningsAsErrors, string warningsAsErrors, string noWarn)
-        {
-            var props = new WarningProperties()
-            {
-                AllWarningsAsErrors = MSBuildStringUtility.IsTrue(treatWarningsAsErrors)
-            };
-
-            props.WarningsAsErrors.UnionWith(GetNuGetLogCodes(warningsAsErrors));
-            props.NoWarn.UnionWith(GetNuGetLogCodes(noWarn));
-
-            return props;
         }
 
         /// <summary>
@@ -899,22 +883,6 @@ namespace NuGet.Commands
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Splits and parses a ; or , delimited list of log codes.
-        /// Ignores codes that are unknown.
-        /// </summary>
-        public static IEnumerable<NuGetLogCode> GetNuGetLogCodes(string s)
-        {
-            foreach (var item in MSBuildStringUtility.Split(s, ';', ','))
-            {
-                if (item.StartsWith("NU", StringComparison.OrdinalIgnoreCase) && 
-                    Enum.TryParse<NuGetLogCode>(value: item, ignoreCase: true , result: out var result))
-                {
-                    yield return result;
-                }
-            }
         }
 
         /// <summary>

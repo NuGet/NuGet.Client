@@ -357,7 +357,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     Sources = GetSources(settings),
                     FallbackFolders = GetFallbackFolders(settings),
                     ConfigFilePaths = GetConfigFilePaths(settings),
-                    ProjectWideWarningProperties = MSBuildRestoreUtility.GetWarningProperties(
+                    ProjectWideWarningProperties = WarningProperties.GetWarningProperties(
                         treatWarningsAsErrors: _vsProjectAdapter.TreatWarningsAsErrors, 
                         noWarn: _vsProjectAdapter.NoWarn,
                         warningsAsErrors: _vsProjectAdapter.WarningsAsErrors)

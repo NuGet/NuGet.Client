@@ -382,11 +382,11 @@ namespace NuGet.Commands.Test
             string expectedNoWarn)
         {
             // Arrange
-            var first = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstNoWarn));
+            var first = new HashSet<NuGetLogCode>(MSBuildStringUtility.GetNuGetLogCodes(firstNoWarn));
 
-            var second = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondNoWarn));
+            var second = new HashSet<NuGetLogCode>(MSBuildStringUtility.GetNuGetLogCodes(secondNoWarn));
 
-            var expected = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(expectedNoWarn));
+            var expected = new HashSet<NuGetLogCode>(MSBuildStringUtility.GetNuGetLogCodes(expectedNoWarn));
 
             // Act
             var merged = TransitiveNoWarnUtils.MergeCodes(first, second);
@@ -795,14 +795,14 @@ namespace NuGet.Commands.Test
             var packageId2 = "test_id2";
 
             // Arrange
-            var firstProjectWideNoWarn = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(firstNoWarn));
+            var firstProjectWideNoWarn = new HashSet<NuGetLogCode>(MSBuildStringUtility.GetNuGetLogCodes(firstNoWarn));
             var firstPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
             {
                     {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1108 }},
                     {packageId2, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1701 }}
             };
 
-            var secondProjectWideNoWarn = new HashSet<NuGetLogCode>(MSBuildRestoreUtility.GetNuGetLogCodes(secondNoWarn));
+            var secondProjectWideNoWarn = new HashSet<NuGetLogCode>(MSBuildStringUtility.GetNuGetLogCodes(secondNoWarn));
             var secondPackageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>
             {
                     {packageId1, new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1108 }},
