@@ -131,14 +131,13 @@ namespace Test.Utility.Signing
                 return;
             }
 
-            var policyId = _options.AccuracyInSeconds == 1 ? NuGet.Packaging.Signing.Oids.BaselineTimestampPolicy : "1.2.3.4.5";
             var bytes = ReadRequestBody(context.Request);
             var request = new TimeStampRequest(bytes);
             var tokenGenerator = new TimeStampTokenGenerator(
                 _keyPair.Private,
                 Certificate,
                 _options.SignatureHashAlgorithm.Value,
-                policyId);
+                _options.Policy.Value);
 
             if (_options.ReturnSigningCertificate)
             {
@@ -149,7 +148,7 @@ namespace Test.Utility.Signing
                 tokenGenerator.SetCertificates(certificates);
             }
 
-            tokenGenerator.SetAccuracySeconds(_options.AccuracyInSeconds);
+            SetAccuracy(tokenGenerator);
 
             var responseGenerator = new TimeStampResponseGenerator(tokenGenerator, TspAlgorithms.Allowed);
             TimeStampResponse response;
@@ -172,6 +171,27 @@ namespace Test.Utility.Signing
             context.Response.ContentType = ResponseContentType;
 
             WriteResponseBody(context.Response, response.GetEncoded());
+        }
+
+        private void SetAccuracy(TimeStampTokenGenerator tokenGenerator)
+        {
+            if (_options.Accuracy != null)
+            {
+                if (_options.Accuracy.Seconds != null)
+                {
+                    tokenGenerator.SetAccuracySeconds(_options.Accuracy.Seconds.Value.IntValue);
+                }
+
+                if (_options.Accuracy.Millis != null)
+                {
+                    tokenGenerator.SetAccuracyMillis(_options.Accuracy.Millis.Value.IntValue);
+                }
+
+                if (_options.Accuracy.Micros != null)
+                {
+                    tokenGenerator.SetAccuracyMicros(_options.Accuracy.Micros.Value.IntValue);
+                }
+            }
         }
 #endif
     }

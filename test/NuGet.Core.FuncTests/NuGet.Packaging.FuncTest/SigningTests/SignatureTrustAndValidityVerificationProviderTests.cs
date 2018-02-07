@@ -14,11 +14,13 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 using Test.Utility.Signing;
 using Xunit;
+using BcAccuracy = Org.BouncyCastle.Asn1.Tsp.Accuracy;
 
 namespace NuGet.Packaging.FuncTest
 {
@@ -147,13 +149,13 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact(Skip = "https://github.com/NuGet/Home/issues/6519")]
+        [CIOnlyFact]
         public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestampWithTooLargeRange_Fails()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
-            var accuracyInSeconds = 30;
-            var serviceOptions = new TimestampServiceOptions() { AccuracyInSeconds = accuracyInSeconds };
+            var accuracy = new BcAccuracy(seconds: new DerInteger(30), millis: null, micros: null);
+            var serviceOptions = new TimestampServiceOptions() { Accuracy = accuracy };
             var timestampService = TimestampService.Create(ca, serviceOptions);
             var keyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
             var now = DateTimeOffset.UtcNow;
@@ -192,10 +194,18 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
-                    var exception = await Assert.ThrowsAsync<Signing.SignatureException>(
-                        () => verifier.VerifySignaturesAsync(packageReader, CancellationToken.None));
+                    var results = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = results.Results.Single();
 
-                    Assert.Equal("Certificate chain validation failed with error(s): A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.", exception.Message);
+                    Assert.False(results.Valid);
+                    Assert.Equal(SignatureVerificationStatus.Untrusted, result.Trust);
+                    Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Error));
+                    Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
+
+                    Assert.Contains(result.Issues, issue =>
+                        issue.Code == NuGetLogCode.NU3011 &&
+                        issue.Level == LogLevel.Error &&
+                        issue.Message == "The primary signature validity period has expired.");
                 }
             }
         }
