@@ -430,7 +430,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
         {
             EatTag(DerTag.GeneralizedTime);
 
-            const int minimumValidLength = 15; // YYYYMMDDhhmmssZ
+            var minimumValidLength = 15; // YYYYMMDDhhmmssZ
 
             var contentLength = EatLength();
 
@@ -490,9 +490,18 @@ namespace NuGet.Packaging.Signing.DerEncoding
             // Still, we need to verify that the DER-encoded GeneralizedTime value is correct (per RFC 3161).
             if (decodedTime[14] == '.')
             {
+                // YYYYMMDDhhmmss.sZ
+                minimumValidLength = 17;
+
+                // Disallow YYYYMMDDhhmmss.Z
+                if (decodedTime.Length < minimumValidLength)
+                {
+                    throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
+                }
+
                 var hasTrailingZero = false;
 
-                // Skip trailing 'Z'
+                // Skip trailing 'Z'.  It was checked earlier.
                 for (var i = 15; i < contentLength - 2; ++i)
                 {
                     var c = decodedTime[i];
