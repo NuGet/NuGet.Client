@@ -564,134 +564,133 @@ phases:
     condition: "succeededOrFailed()"
 
 
-- phase: Apex_Tests_On_Windows
-  dependsOn: Build_and_UnitTest
-  condition: "succeeded()"
-  variables:
-    BuildNumber: $[dependencies.Build_and_UnitTest.outputs['RTM.configuration.BuildNumber']]
-  condition: "succeeded()"
-  queue:
-    name: DDNuGet-Windows
-    timeoutInMinutes: 75
-    demands: DotNetFramework
+# - phase: Apex_Tests_On_Windows
+#   dependsOn: Build_and_UnitTest
+#   condition: "succeeded()"
+#   variables:
+#     BuildNumber: $[dependencies.Build_and_UnitTest.outputs['RTM.configuration.BuildNumber']]
+#   condition: "succeeded()"
+#   queue:
+#     name: DDNuGet-Windows
+#     timeoutInMinutes: 75
+#     demands: DotNetFramework
 
-  steps:
-  - task: PowerShell@1
-    displayName: "Print Environment Variables"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: "gci env:* | sort-object name;
-      Write-Host \"##vso[build.updatebuildnumber]$env:BuildNumber\""
+#   steps:
+#   - task: PowerShell@1
+#     displayName: "Print Environment Variables"
+#     inputs:
+#       scriptType: "inlineScript"
+#       inlineScript: "gci env:* | sort-object name;
+#       Write-Host \"##vso[build.updatebuildnumber]$env:BuildNumber\""
 
-  - task: NuGetToolInstaller@0
-    displayName: "Use NuGet 4.5.0"
-    inputs:
-      versionSpec: "4.5.0"
+#   - task: NuGetToolInstaller@0
+#     displayName: "Use NuGet 4.5.0"
+#     inputs:
+#       versionSpec: "4.5.0"
 
-  - task: NuGetCommand@2
-    displayName: "Download packages.config packages"
-    inputs:
-      restoreSolution: ".nuget/packages.config"
-      feedsToUse: "config"
-      nugetConfigPath: "NuGet.Config"
-      restoreDirectory: "$(System.DefaultWorkingDirectory)/packages"
+#   - task: NuGetCommand@2
+#     displayName: "Download packages.config packages"
+#     inputs:
+#       restoreSolution: ".nuget/packages.config"
+#       feedsToUse: "config"
+#       nugetConfigPath: "NuGet.Config"
+#       restoreDirectory: "$(System.DefaultWorkingDirectory)/packages"
 
-  - task: CopyFiles@2
-    displayName: "Copy Public Key Files"
-    inputs:
-      SourceFolder: "$(NuGetSharePublicKeys)"
-      Contents: "*.snk"
-      TargetFolder: "$(Build.Repository.LocalPath)\\keys"
-      CleanTargetFolder: "true"
-      OverWrite: "true"
-      flattenFolders: "true"
+#   - task: CopyFiles@2
+#     displayName: "Copy Public Key Files"
+#     inputs:
+#       SourceFolder: "$(NuGetSharePublicKeys)"
+#       Contents: "*.snk"
+#       TargetFolder: "$(Build.Repository.LocalPath)\\keys"
+#       CleanTargetFolder: "true"
+#       OverWrite: "true"
+#       flattenFolders: "true"
 
-  - task: PowerShell@1
-    displayName: "Bootstrap.ps1"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/Bootstrap.ps1"
-      arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
+#   - task: PowerShell@1
+#     displayName: "Bootstrap.ps1"
+#     inputs:
+#       scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/Bootstrap.ps1"
+#       arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
 
-  - task: PowerShell@1
-    displayName: "SetupFunctionalTests.ps1"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
-      arguments: "-VSVersion 15.0"
+#   - task: PowerShell@1
+#     displayName: "SetupFunctionalTests.ps1"
+#     inputs:
+#       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
+#       arguments: "-VSVersion 15.0"
 
-  - task: PowerShell@1
-    displayName: "CopyToolsAndSetupMachine.ps1"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\CopyToolsAndSetupMachine.ps1"
-      arguments: " -NuGetCIToolsFolder $(NuGetCIToolsFolder) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts"
+#   - task: PowerShell@1
+#     displayName: "CopyToolsAndSetupMachine.ps1"
+#     inputs:
+#       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\CopyToolsAndSetupMachine.ps1"
+#       arguments: " -NuGetCIToolsFolder $(NuGetCIToolsFolder) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts"
 
-  - task: PowerShell@1
-    displayName: "InstallNuGetVSIX.ps1"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
-      arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
-      failOnStandardError: "false"
+#   - task: PowerShell@1
+#     displayName: "InstallNuGetVSIX.ps1"
+#     inputs:
+#       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
+#       arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
+#       failOnStandardError: "false"
 
-  - task: PowerShell@1
-    displayName: "Collect VS Logs"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\NuGet.Client\\VSCollect.exe
-        if(-not (Test-Path $(EndToEndResultsDropPath)))
-          {
-            New-Item -Path $(EndToEndResultsDropPath) -ItemType Directory -Force
-          }
-        $(System.DefaultWorkingDirectory)\\NuGet.Client\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\apex-collectlogs.zip
-    condition: "failed()"
+#   - task: PowerShell@1
+#     displayName: "Collect VS Logs"
+#     inputs:
+#       scriptType: "inlineScript"
+#       inlineScript: |
+#         Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\NuGet.Client\\VSCollect.exe
+#         if(-not (Test-Path $(EndToEndResultsDropPath)))
+#           {
+#             New-Item -Path $(EndToEndResultsDropPath) -ItemType Directory -Force
+#           }
+#         $(System.DefaultWorkingDirectory)\\NuGet.Client\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\apex-collectlogs.zip
+#     condition: "failed()"
 
-  - task: MSBuild@1
-    displayName: "Restore for VS2017"
-    inputs:
-      solution: "build\\build.proj"
-      msbuildVersion: "15.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(Build.BuildNumber)"
+#   - task: MSBuild@1
+#     displayName: "Restore for VS2017"
+#     inputs:
+#       solution: "build\\build.proj"
+#       msbuildVersion: "15.0"
+#       configuration: "$(BuildConfiguration)"
+#       msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(Build.BuildNumber)"
       
-  - task: NuGetCommand@2
-    displayName: "Add Apex Feed Source"
-    inputs:
-      command: "custom"
-      arguments: "sources add -Name ApexFeed -Source $(ApexPackageFeedUrl) -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
+#   - task: NuGetCommand@2
+#     displayName: "Add Apex Feed Source"
+#     inputs:
+#       command: "custom"
+#       arguments: "sources add -Name ApexFeed -Source $(ApexPackageFeedUrl) -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
 
-  - task: MSBuild@1
-    displayName: "Restore Apex Tests"
-    inputs:
-      solution: "build\\build.proj"
-      msbuildVersion: "15.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(Build.BuildNumber)"
+#   - task: MSBuild@1
+#     displayName: "Restore Apex Tests"
+#     inputs:
+#       solution: "build\\build.proj"
+#       msbuildVersion: "15.0"
+#       configuration: "$(BuildConfiguration)"
+#       msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(Build.BuildNumber)"
 
-  - task: MSBuild@1
-    displayName: "Run Apex Tests"
-    continueOnError: "true"
-    inputs:
-      solution: "build\\build.proj"
-      msbuildVersion: "15.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml  /p:NUGET_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\35MSSharedLib1024.snk /p:BuildNumber=$(Build.BuildNumber)"
+#   - task: MSBuild@1
+#     displayName: "Run Apex Tests"
+#     continueOnError: "true"
+#     inputs:
+#       solution: "build\\build.proj"
+#       msbuildVersion: "15.0"
+#       configuration: "$(BuildConfiguration)"
+#       msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml  /p:NUGET_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\35MSSharedLib1024.snk /p:BuildNumber=$(Build.BuildNumber)"
 
-  - task: PowerShell@1
-    displayName: "Initialize Git Commit Status on GitHub"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Apex Tests On Windows"
-    condition: "always()"
+#   - task: PowerShell@1
+#     displayName: "Initialize Git Commit Status on GitHub"
+#     inputs:
+#       scriptType: "inlineScript"
+#       inlineScript: |
+#         . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+#         SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Apex Tests On Windows"
+#     condition: "always()"
 
-  - task: PublishTestResults@2
-    displayName: "Publish Test Results"
-    inputs:
-      testRunner: "XUnit"
-      testResultsFiles: "*.xml"
-      searchFolder: "$(System.DefaultWorkingDirectory)\\artifacts\\testresults"
-      mergeTestResults: "true"
-      testRunTitle: "NuGet.Client Apex Tests"
-    condition: "succeededOrFailed()"
-    
+#   - task: PublishTestResults@2
+#     displayName: "Publish Test Results"
+#     inputs:
+#       testRunner: "XUnit"
+#       testResultsFiles: "*.xml"
+#       searchFolder: "$(System.DefaultWorkingDirectory)\\artifacts\\testresults"
+#       mergeTestResults: "true"
+#       testRunTitle: "NuGet.Client Apex Tests"
+#     condition: "succeededOrFailed()"   
     
