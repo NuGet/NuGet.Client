@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Test.Utility;
@@ -18,15 +17,15 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var config = $@"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""Packages"" />
+        <add key='nuget.org' value='https://nuget.org' />
+        <add key='test.org' value='Packages' />
     </packageSources>
     <trustedSources>
         <nuget.org>
-            <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+            <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA256' />
         </nuget.org>
     </trustedSources>
 </configuration>
@@ -58,16 +57,16 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var config = $@"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""Packages"" />
+        <add key='nuget.org' value='https://nuget.org' />
+        <add key='test.org' value='Packages' />
     </packageSources>
     <trustedSources>
         <nuget.org>
-            <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
-            <add key=""HASH2"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA512"" />
+            <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA256' />
+            <add key='HASH2' value='SUBJECT_NAME' fingerprintAlgorithm='SHA512' />
         </nuget.org>
     </trustedSources>
 </configuration>
@@ -96,19 +95,62 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void ReturnsTrustedSourceWithDedupedMultipleCertificatesForPackageSourceIfPresent()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <packageSources>
+        <add key='nuget.org' value='https://nuget.org' />
+        <add key='test.org' value='Packages' />
+    </packageSources>
+    <trustedSources>
+        <nuget.org>
+            <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA256' />
+            <add key='HASH' value='SUBJECT_NAME2' fingerprintAlgorithm='SHA384' />
+            <add key='HASH2' value='SUBJECT_NAME2' fingerprintAlgorithm='SHA512' />
+        </nuget.org>
+    </trustedSources>
+</configuration>
+";
+            var expectedValues = new List<CertificateTrustEntry>
+            {
+                new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256),
+                new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512)
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+
+                // Act
+                var trustedSource = trustedSourceProvider.LoadTrustedSource("nuget.org");
+
+                // Assert
+                trustedSource.Should().NotBeNull();
+                trustedSource.SourceName.Should().Be("nuget.org");
+                trustedSource.ServiceIndex.Should().BeNull();
+                trustedSource.Certificates.Should().BeEquivalentTo(expectedValues);
+            }
+        }
+
+        [Fact]
         public void ReturnsNullTrustedSourceForPackageSourceIfAbsent()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var config = $@"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""Packages"" />
+        <add key='nuget.org' value='https://nuget.org' />
+        <add key='test.org' value='Packages' />
     </packageSources>
     <trustedSources>
         <nuget.org>
-            <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+            <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA256' />
         </nuget.org>
     </trustedSources>
 </configuration>
@@ -132,10 +174,10 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var config = $@"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
+        <add key='nuget.org' value='https://nuget.org' />
     </packageSources>
     <trustedSources>
         <nuget.org>
@@ -162,14 +204,14 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var config = $@"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
+        <add key='nuget.org' value='https://nuget.org' />
     </packageSources>
     <trustedSources>
         <nuget.org>
-            <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+            <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA256' />
             <clear />
         </nuget.org>
     </trustedSources>
@@ -194,19 +236,19 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var config = $@"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""Packages"" />
+        <add key='nuget.org' value='https://nuget.org' />
+        <add key='test.org' value='Packages' />
     </packageSources>
     <trustedSources>
         <nuget.org>
-            <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
-            <add key=""HASH512"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA512"" />
+            <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA256' />
+            <add key='HASH512' value='SUBJECT_NAME' fingerprintAlgorithm='SHA512' />
         </nuget.org>
         <test.org>
-            <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA512"" />
+            <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA512' />
         </test.org>
     </trustedSources>
 </configuration>

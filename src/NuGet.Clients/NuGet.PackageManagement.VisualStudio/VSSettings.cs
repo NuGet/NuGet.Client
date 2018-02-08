@@ -121,6 +121,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return SolutionSettings.GetValue(section, key, isPath);
         }
 
+        public IList<string> GetAllSubsections(string section)
+        {
+            return SolutionSettings.GetAllSubsections(section);
+        }
+
         public string Root => SolutionSettings.Root;
 
         public string FileName => SolutionSettings.FileName;

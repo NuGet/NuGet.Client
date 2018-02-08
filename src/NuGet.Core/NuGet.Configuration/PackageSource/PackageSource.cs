@@ -96,6 +96,11 @@ namespace NuGet.Configuration
         /// </summary>
         public ISettings Origin { get; set; }
 
+        /// <summary>
+        /// Corresponding trusted source details. Null if the package source does not have trusted sources information.
+        /// </summary>
+        public TrustedSource TrustedSource { get; set; }
+
         public PackageSource(string source)
             : this(source, source, isEnabled: true)
         {
@@ -162,9 +167,10 @@ namespace NuGet.Configuration
             return new PackageSource(Source, Name, IsEnabled, IsOfficial, IsPersistable)
             {
                 Description = Description,
-                Credentials = Credentials,
+                Credentials = Credentials?.Clone(),
                 IsMachineWide = IsMachineWide,
-                ProtocolVersion = ProtocolVersion
+                ProtocolVersion = ProtocolVersion,
+                TrustedSource = TrustedSource?.Clone()
             };
         }
     }

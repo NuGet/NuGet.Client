@@ -88,33 +88,5 @@ namespace NuGet.Configuration.Test
 
             entry1.Equals(entry2).Should().BeFalse();
         }
-
-        [Fact]
-        public void EqualsReturnsFalseForDifferentSubjectNames()
-        {
-            var fingerprint = "hash";
-            var subjectName1 = "subjectname";
-            var subjectName2 = "other subjectname";
-            var algorithm = HashAlgorithmName.SHA256;
-
-            var entry1 = new CertificateTrustEntry(fingerprint, subjectName1, algorithm);
-            var entry2 = new CertificateTrustEntry(fingerprint, subjectName2, algorithm);
-
-            entry1.Equals(entry2).Should().BeFalse();
-        }
-
-        [Fact]
-        public void EqualsReturnsFalseForDifferentAlgorithms()
-        {
-            var fingerprint = "hash";
-            var subjectName = "subjectname";
-            var algorithm1 = HashAlgorithmName.SHA256;
-            var algorithm2 = HashAlgorithmName.SHA512;
-
-            var entry1 = new CertificateTrustEntry(fingerprint, subjectName, algorithm1);
-            var entry2 = new CertificateTrustEntry(fingerprint, subjectName, algorithm2);
-
-            entry1.Equals(entry2).Should().BeFalse();
-        }
     }
 }

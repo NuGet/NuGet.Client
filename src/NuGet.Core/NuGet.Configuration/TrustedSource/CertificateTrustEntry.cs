@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Shared;
 
@@ -44,16 +43,15 @@ namespace NuGet.Configuration
                 return true;
             }
 
-            return FingerprintAlgorithm == other.FingerprintAlgorithm &&
-                string.Equals(Fingerprint, other.Fingerprint, StringComparison.Ordinal) &&
-                string.Equals(SubjectName, other.SubjectName, StringComparison.OrdinalIgnoreCase);
+            // If two fingerperints are same, then the entries represent the same certificate
+            return string.Equals(Fingerprint, other.Fingerprint, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
 
-            // certificate fingerprint is a good quick check for inequality
+            // certificate fingerprint is a good check for equality
             hashCode.AddObject(Fingerprint);
 
             return hashCode.CombinedHash;

@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
-    public class TrustedSource
+    public class TrustedSource : IEquatable<TrustedSource>
     {
         /// <summary>
         /// Name of the associated package source.
@@ -27,6 +28,52 @@ namespace NuGet.Configuration
         {
             SourceName = source ?? throw new ArgumentNullException(nameof(source));
             Certificates = new HashSet<CertificateTrustEntry>();
+        }
+
+        internal TrustedSource Clone()
+        {
+            var cloned = new TrustedSource(SourceName)
+            {
+                ServiceIndex = ServiceIndex
+            };
+
+            foreach (var entry in Certificates)
+            {
+                cloned.Certificates.Add(new CertificateTrustEntry(entry.Fingerprint, entry.SubjectName, entry.FingerprintAlgorithm));
+            }
+
+            return cloned;
+        }
+
+        public override int GetHashCode()
+        {
+            var combiner = new HashCodeCombiner();
+
+            combiner.AddObject(SourceName);
+
+            return combiner.GetHashCode();
+        }
+
+        public override bool Equals(object other)
+        {
+            return Equals(other as TrustedSource);
+        }
+
+        public bool Equals(TrustedSource other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return string.Equals(SourceName, other.SourceName, StringComparison.CurrentCultureIgnoreCase) &&
+                EqualityUtility.EqualsWithNullCheck(ServiceIndex, other.ServiceIndex, StringComparer.OrdinalIgnoreCase) &&
+                EqualityUtility.SetEqualsWithNullCheck(Certificates, other.Certificates);
         }
     }
 }

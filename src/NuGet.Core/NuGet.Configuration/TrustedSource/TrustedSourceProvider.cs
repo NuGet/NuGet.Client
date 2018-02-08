@@ -40,7 +40,7 @@ namespace NuGet.Configuration
             TrustedSource trustedSource = null;
             var settingValues = _settings.GetNestedSettingValues(ConfigurationConstants.TrustedSources, packageSourceName);
 
-            if (settingValues.Count > 0)
+            if (settingValues?.Count > 0)
             {
                 trustedSource = new TrustedSource(packageSourceName);
                 foreach (var settingValue in settingValues)

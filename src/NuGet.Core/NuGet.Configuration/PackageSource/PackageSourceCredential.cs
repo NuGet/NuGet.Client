@@ -124,5 +124,10 @@ namespace NuGet.Configuration
                     string.Format(CultureInfo.CurrentCulture, Resources.UnsupportedEncryptPassword, source), e);
             }
         }
+
+        internal PackageSourceCredential Clone()
+        {
+            return new PackageSourceCredential(Source, Username, PasswordText, IsPasswordClearText);
+        }
     }
 }

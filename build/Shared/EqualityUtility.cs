@@ -152,6 +152,17 @@ namespace NuGet.Shared
             return self.Equals(other);
         }
 
+        internal static bool EqualsWithNullCheck<T>(T self, T other, IEqualityComparer<T> comparer)
+        {
+            bool identityEquals;
+            if (TryIdentityEquals(self, other, out identityEquals))
+            {
+                return identityEquals;
+            }
+
+            return comparer.Equals(self, other);
+        }
+
         private static bool TryIdentityEquals<T>(T self, T other, out bool equals)
         {
             // Are they the same instance? This handles the case where both are null.
