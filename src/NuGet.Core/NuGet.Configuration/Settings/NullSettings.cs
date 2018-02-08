@@ -53,6 +53,11 @@ namespace NuGet.Configuration
             return new List<SettingValue>().AsReadOnly();
         }
 
+        public IList<string> GetAllSubsections(string section)
+        {
+            return new List<string>().AsReadOnly();
+        }
+
         public void SetValue(string section, string key, string value)
         {
             throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetValue)));

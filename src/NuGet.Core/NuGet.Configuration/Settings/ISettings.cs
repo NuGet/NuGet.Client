@@ -38,6 +38,13 @@ namespace NuGet.Configuration
         string GetValue(string section, string key, bool isPath = false);
 
         /// <summary>
+        /// Gets all subsection element names under section as a List of string.
+        /// </summary>
+        /// <param name="section">Name of the section.</param>
+        /// <returns>List of string containing subsection element names.</returns>
+        IList<string> GetAllSubsections(string section);
+
+        /// <summary>
         /// Gets all the values under section
         /// </summary>
         IList<SettingValue> GetSettingValues(string section, bool isPath = false);

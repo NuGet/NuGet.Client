@@ -511,6 +511,47 @@ namespace NuGet.Configuration
             return settingValues.AsReadOnly();
         }
 
+        public IList<string> GetAllSubsections(string section)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            var settingValues = new List<string>();
+            var curr = this;
+            while (curr != null)
+            {
+                settingValues.AddRange(curr.GetSubsections(section));
+                curr = curr._next;
+            }
+
+            return settingValues.AsReadOnly();
+        }
+
+        private IList<string> GetSubsections(string section)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            var subsections = new List<string>();
+            var sectionElement = GetSection(ConfigXDocument.Root, section);
+
+            if (sectionElement != null)
+            {
+                var subsectionElements = GetAllSections(sectionElement);
+
+                foreach (var element in subsectionElements)
+                {
+                    subsections.Add(element.Name.LocalName);
+                }
+            }
+
+            return subsections;
+        }
+
         public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
         {
             var values = GetNestedSettingValues(section, subSection);
@@ -839,6 +880,11 @@ namespace NuGet.Configuration
         {
             section = XmlConvert.EncodeLocalName(section);
             return parentElement.Element(section);
+        }
+
+        private static IEnumerable<XElement> GetAllSections(XElement parentElement)
+        {
+            return parentElement.Elements();
         }
 
         private static XElement GetOrCreateSection(XElement parentElement, string sectionName)
