@@ -125,11 +125,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal(test.HashAlgorithm.Value, tstInfo.MessageImprint.HashAlgorithm.Algorithm.Value);
             Assert.Equal(test.Hash, tstInfo.MessageImprint.HashedMessage);
             Assert.Equal(test.SerialNumber, tstInfo.SerialNumber);
-
-            // BouncyCastle does not preserve fractional seconds in the TSTInfo so adjust expectations.
-            var expectedGeneralizedTime = GetExpectedGeneralizedTime(test.GenTime);
-
-            Assert.Equal(expectedGeneralizedTime, tstInfo.GenTime);
+            Assert.Equal(test.GenTime, tstInfo.GenTime);
             Assert.Equal(test.Accuracy == null, tstInfo.Accuracy == null);
 
             if (test.Accuracy != null)
@@ -253,19 +249,6 @@ namespace NuGet.Packaging.Test
             return new BcAccuracy(derSeconds, derMilliseconds, derMicroseconds);
         }
 
-        private static DateTime GetExpectedGeneralizedTime(DateTime dateTime)
-        {
-            return new DateTime(
-                dateTime.Year,
-                dateTime.Month,
-                dateTime.Day,
-                dateTime.Hour,
-                dateTime.Minute,
-                dateTime.Second,
-                millisecond: 0,
-                kind: dateTime.Kind);
-        }
-
         private static DerInteger GetOptionalInteger(long? value)
         {
             if (value == null)
@@ -315,6 +298,17 @@ namespace NuGet.Packaging.Test
                 Hash = Common.HashAlgorithmName.SHA256.ComputeHash(data);
                 SerialNumber = GetRandomInteger().ToByteArray();
                 GenTime = DateTime.UtcNow;
+
+                // Round to milliseconds
+                GenTime = new DateTime(
+                    GenTime.Year,
+                    GenTime.Month,
+                    GenTime.Day,
+                    GenTime.Hour,
+                    GenTime.Minute,
+                    GenTime.Second,
+                    GenTime.Millisecond,
+                    DateTimeKind.Utc);
             }
 
             internal BcTstInfo CreateBcTstInfo()
@@ -329,7 +323,7 @@ namespace NuGet.Packaging.Test
                     new DerObjectIdentifier(Policy),
                     bcMessageImprint,
                     new DerInteger(serialNumber),
-                    new DerGeneralizedTime(GenTime),
+                    GetGenTime(),
                     Accuracy,
                     ordering,
                     nonce,
@@ -337,6 +331,24 @@ namespace NuGet.Packaging.Test
                     Extensions);
 
                 return bcTstInfo;
+            }
+
+            private DerGeneralizedTime GetGenTime()
+            {
+                var genTime = new StringBuilder();
+
+                genTime.Append(GenTime.ToString("yyyyMMddHHmmss"));
+
+                if (GenTime.Millisecond > 0)
+                {
+                    var milliseconds = GenTime.Millisecond.ToString().PadLeft(3, '0').TrimEnd('0');
+
+                    genTime.Append($".{milliseconds}");
+                }
+
+                genTime.Append("Z");
+
+                return new DerGeneralizedTime(genTime.ToString());
             }
 
             private DerBoolean GetOrdering()
