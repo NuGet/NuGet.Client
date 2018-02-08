@@ -59,7 +59,9 @@ namespace NuGet.Build.Tasks.Pack
         public string NuspecBasePath { get; set; }
         public string[] AllowedOutputExtensionsInPackageBuildOutputFolder { get; set; }
         public string[] AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder { get; set; }
-
+        public string NoWarn { get; set; }
+        public string TreatWarningsAsErrors { get; set; }
+        public string WarningsAsErrors { get; set; }
         public ILogger Logger => new MSBuildLogger(Log);
 
         private IPackTaskLogic _packTaskLogic;
@@ -186,7 +188,10 @@ namespace NuGet.Build.Tasks.Pack
                 Tags = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Tags),
                 TargetFrameworks = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetFrameworks),
                 TargetPathsToSymbols = MSBuildUtility.WrapMSBuildItem(TargetPathsToSymbols),
-                Title = MSBuildStringUtility.TrimAndGetNullForEmpty(Title)
+                Title = MSBuildStringUtility.TrimAndGetNullForEmpty(Title),
+                TreatWarningsAsErrors = MSBuildStringUtility.TrimAndGetNullForEmpty(TreatWarningsAsErrors),
+                NoWarn = MSBuildStringUtility.TrimAndGetNullForEmpty(NoWarn),
+                WarningsAsErrors = MSBuildStringUtility.TrimAndGetNullForEmpty(WarningsAsErrors)
             };
         }
     }

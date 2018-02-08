@@ -31,6 +31,7 @@ namespace NuGet.Build.Tasks.Pack
                 Symbols = request.IncludeSymbols,
                 BasePath = request.NuspecBasePath,
                 NoPackageAnalysis = request.NoPackageAnalysis,
+                WarningProperties = WarningProperties.GetWarningProperties(request.TreatWarningsAsErrors, request.WarningsAsErrors, request.NoWarn),
                 PackTargetArgs = new MSBuildPackTargetArgs
                 {
                     AllowedOutputExtensionsInPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInPackageBuildOutputFolder),

@@ -779,6 +779,11 @@ namespace NuGet.Commands
                 _packArgs.Properties["version"] = _packArgs.Version;
             }
 
+            _packArgs.WarningProperties = WarningProperties.GetWarningProperties(
+                treatWarningsAsErrors: _packArgs.GetPropertyValue("TreatWarningsAsErrors") ?? string.Empty,
+                warningsAsErrors: _packArgs.GetPropertyValue("WarningsAsErrors") ?? string.Empty,
+                noWarn: _packArgs.GetPropertyValue("NoWarn") ?? string.Empty);
+
             if (String.IsNullOrEmpty(_packArgs.BasePath))
             {
                 return new PackageBuilder(path, _packArgs.GetPropertyValue, !_packArgs.ExcludeEmptyDirectories);
@@ -788,13 +793,17 @@ namespace NuGet.Commands
 
         private PackageArchiveReader BuildFromProjectFile(string path)
         {
+            // PackTargetArgs is only set for dotnet.exe pack code path, hence the check.
             if ((String.IsNullOrEmpty(_packArgs.MsBuildDirectory?.Value) || _createProjectFactory == null) && _packArgs.PackTargetArgs == null)
             {
-                _packArgs.Logger.LogError(Strings.Error_CannotFindMsbuild);
-                return null;
+                throw new PackagingException(NuGetLogCode.NU5009, string.Format(CultureInfo.CurrentCulture, Strings.Error_CannotFindMsbuild));
             }
 
             var factory = _createProjectFactory.Invoke(_packArgs, path);
+            if(_packArgs.WarningProperties == null && _packArgs.PackTargetArgs == null)
+            {
+                _packArgs.WarningProperties = factory.GetWarningPropertiesForProject();
+            }
 
             // Add the additional Properties to the properties of the Project Factory
             foreach (var property in _packArgs.Properties)

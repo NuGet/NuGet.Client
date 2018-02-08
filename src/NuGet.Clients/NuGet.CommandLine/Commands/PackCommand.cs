@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 
 namespace NuGet.CommandLine
@@ -153,7 +154,7 @@ namespace NuGet.CommandLine
                 NuGetVersion version;
                 if (!NuGetVersion.TryParse(Version, out version))
                 {
-                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, NuGetResources.InstallCommandPackageReferenceInvalidVersion, Version));
+                    throw new PackagingException(NuGetLogCode.NU5010, String.Format(CultureInfo.CurrentCulture, NuGetResources.InstallCommandPackageReferenceInvalidVersion, Version));
                 }
                 packArgs.Version = version.ToFullString();
             }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -264,6 +265,11 @@ namespace NuGet.Commands
         private static bool IsContentFile(string contentFileTargetPath)
         {
             return contentFileTargetPath != null && contentFileTargetPath.StartsWith("contentFiles", StringComparison.Ordinal);
+        }
+
+        public WarningProperties GetWarningPropertiesForProject()
+        {
+            return PackArgs.WarningProperties;
         }
     }
 }

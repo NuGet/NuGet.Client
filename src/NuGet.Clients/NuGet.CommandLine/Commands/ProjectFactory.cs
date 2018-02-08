@@ -1,4 +1,4 @@
-﻿extern alias CoreV2; 
+extern alias CoreV2; 
 
 using System;
 using System.Collections.Generic;
@@ -19,6 +19,7 @@ using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -73,7 +74,7 @@ namespace NuGet.CommandLine
                 Logger = packArgs.Logger,
                 MachineWideSettings = packArgs.MachineWideSettings,
                 Build = packArgs.Build,
-                IncludeReferencedProjects = packArgs.IncludeReferencedProjects
+                IncludeReferencedProjects = packArgs.IncludeReferencedProjects 
             };
         }
 
@@ -123,7 +124,6 @@ namespace NuGet.CommandLine
             _project = project;
             ProjectProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             AddSolutionDir();
-
             // Get the target framework of the project
             string targetFrameworkMoniker = _project.GetPropertyValue("TargetFrameworkMoniker");
             if (!String.IsNullOrEmpty(targetFrameworkMoniker))
@@ -152,6 +152,14 @@ namespace NuGet.CommandLine
             }
         }
 
+        public WarningProperties GetWarningPropertiesForProject()
+        {
+            var treatWarningsAsErrors = GetPropertyValue("TreatWarningsAsErrors");
+            return WarningProperties.GetWarningProperties(treatWarningsAsErrors: string.IsNullOrEmpty(treatWarningsAsErrors) ? "false" : treatWarningsAsErrors,
+                warningsAsErrors: GetPropertyValue("WarningsAsErrors"),
+                noWarn: GetPropertyValue("NoWarn"));
+        }
+
         private string TargetPath
         {
             get;
@@ -168,10 +176,9 @@ namespace NuGet.CommandLine
         {
             IncludeSymbols = includeSymbols;
         }
-        public bool IncludeSymbols { get; set; }
+        public bool IncludeSymbols { get; set; } 
 
         public bool IncludeReferencedProjects { get; set; }
-
         public bool Build { get; set; }
 
         public Dictionary<string, string> GetProjectProperties()

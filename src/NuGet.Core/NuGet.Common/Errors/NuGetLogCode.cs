@@ -430,6 +430,16 @@ namespace NuGet.Common
         NU5008 = 5008,
 
         /// <summary>
+        /// Error_CannotFindMsbuild
+        /// </summary>
+        NU5009 = 5009,
+
+        /// <summary>
+        /// InvalidVersionInPackage
+        /// </summary>
+        NU5010 = 5010,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,
