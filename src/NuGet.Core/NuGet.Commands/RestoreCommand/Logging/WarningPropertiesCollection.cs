@@ -55,7 +55,7 @@ namespace NuGet.Commands
         /// If not then the param message sould have been mutated to an error</returns>
         public bool ApplyWarningProperties(IRestoreLogMessage message)
         {
-            if (ApplyProjectWideNoWarnProperties(message) || ApplyPackageSpecificNoWarnProperties(message))
+            if (ApplyProjectWideNoWarnProperties(message, ProjectWideWarningProperties) || ApplyPackageSpecificNoWarnProperties(message))
             {
                 return true;
             }
@@ -74,7 +74,7 @@ namespace NuGet.Commands
         /// <returns>Bool indicating is the warning should be suppressed or not.</returns>
         public bool ApplyNoWarnProperties(IRestoreLogMessage message)
         {
-            return ApplyProjectWideNoWarnProperties(message) || ApplyPackageSpecificNoWarnProperties(message);
+            return ApplyProjectWideNoWarnProperties(message, ProjectWideWarningProperties) || ApplyPackageSpecificNoWarnProperties(message);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace NuGet.Commands
         /// <param name="message">Message which should be upgraded to error if needed.</param>
         public void ApplyWarningAsErrorProperties(IRestoreLogMessage message)
         {
-            ApplyProjectWideWarningsAsErrorProperties(message);
+            ApplyProjectWideWarningsAsErrorProperties(message, ProjectWideWarningProperties);
         }
 
         /// <summary>
@@ -134,11 +134,11 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="message">Message to be checked for no warn.</param>
         /// <returns>bool indicating if the ILogMessage should be suppressed or not.</returns>
-        private bool ApplyProjectWideNoWarnProperties(ILogMessage message)
+        public static bool ApplyProjectWideNoWarnProperties(ILogMessage message, WarningProperties warningProperties)
         {
-            if (message.Level == LogLevel.Warning && ProjectWideWarningProperties != null)
+            if (message.Level == LogLevel.Warning && warningProperties != null)
             {
-                if (ProjectWideWarningProperties.NoWarn.Contains(message.Code))
+                if (warningProperties.NoWarn.Contains(message.Code))
                 {
                     // If the project wide NoWarn contains the message code then suppress it.
                     return true;
@@ -153,12 +153,12 @@ namespace NuGet.Commands
         /// Method is used to check is a warning should be treated as an error.
         /// </summary>
         /// <param name="message">Message which should be upgraded to error if needed.</param>
-        private void ApplyProjectWideWarningsAsErrorProperties(ILogMessage message)
+        public static void ApplyProjectWideWarningsAsErrorProperties(ILogMessage message, WarningProperties warningProperties)
         {
-            if (message.Level == LogLevel.Warning && ProjectWideWarningProperties != null)
+            if (message.Level == LogLevel.Warning && warningProperties != null)
             {
-                if ((ProjectWideWarningProperties.AllWarningsAsErrors && message.Code > NuGetLogCode.Undefined) || 
-                    ProjectWideWarningProperties.WarningsAsErrors.Contains(message.Code))
+                if ((warningProperties.AllWarningsAsErrors && message.Code > NuGetLogCode.Undefined) || 
+                    warningProperties.WarningsAsErrors.Contains(message.Code))
                 {
                     // If the project wide AllWarningsAsErrors is true and the message has a valid code or
                     // Project wide WarningsAsErrors contains the message code then upgrade to error.
