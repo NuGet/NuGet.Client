@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using NuGet.Packaging;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
@@ -16,7 +16,7 @@ namespace NuGet.Packaging.Rules
         private const string ContentDirectory = "content";
         private const string ContentFilesDirectory = "contentFiles";
 
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
         {
             foreach (IPackageFile file in builder.Files)
             {
@@ -40,13 +40,13 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackageIssue CreatePackageIssueForMisplacedContent(string path)
+        private static PackageIssueLogMessage CreatePackageIssueForMisplacedContent(string path)
         {
-            return new PackageIssue(
-                AnalysisResources.MisplacedTransformFileTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.MisplacedTransformFileDescription, path),
-                AnalysisResources.MisplacedTransformFileSolution
-            );
+            return new PackageIssueLogMessage(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.MisplacedTransformFileWarning, path),
+                NuGetLogCode.NU5108,
+                WarningLevel.Default,
+                LogLevel.Warning);
         }
     }
 }

@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using NuGet.Packaging;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Rules
         private static string[] Prefixes = new string[]
             { "content\\winrt45\\", "lib\\winrt45\\", "tools\\winrt45\\", "content\\winrt\\", "lib\\winrt\\", "tools\\winrt\\" };
 
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
         {
             foreach (var file in builder.Files)
             {
@@ -27,12 +27,13 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackageIssue CreateIssue(IPackageFile file)
+        private static PackageIssueLogMessage CreateIssue(IPackageFile file)
         {
-            return new PackageIssue(
-                AnalysisResources.WinRTObsoleteTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.WinRTObsoleteDescription, file.Path),
-                AnalysisResources.WinRTObsoleteSolution);
+            return new PackageIssueLogMessage(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.WinRTObsoleteWarning, file.Path),
+                NuGetLogCode.NU5106,
+                WarningLevel.Default,
+                LogLevel.Warning);
         }
     }
 }

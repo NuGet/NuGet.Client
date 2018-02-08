@@ -117,121 +117,43 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AssemblyOutsideLibDescription" xml:space="preserve">
-    <value>The assembly '{0}' is not inside the 'lib' folder and hence it won't be added as reference when the package is installed into a project.</value>
+  <data name="AssemblyDirectlyUnderLibWarning" xml:space="preserve">
+    <value>The assembly '{0}' is placed directly under 'lib' folder. It is recommended that assemblies be placed inside a framework-specific folder. Move it into a framework-specific folder.</value>
   </data>
-  <data name="AssemblyOutsideLibSolution" xml:space="preserve">
-    <value>Move it into the 'lib' folder if it should be referenced.</value>
+  <data name="AssemblyOutsideLibWarning" xml:space="preserve">
+    <value>The assembly '{0}' is not inside the 'lib' folder and hence it won't be added as a reference when the package is installed into a project. Move it into the 'lib' folder if it needs to be referenced.</value>
   </data>
-  <data name="AssemblyOutsideLibTitle" xml:space="preserve">
-    <value>Assembly outside lib folder.</value>
+  <data name="DefaultSpecValueWarning" xml:space="preserve">
+    <value>The value "{0}" for {1} is a sample value and should be removed. Replace it with an appropriate value or remove it and rebuild your package.</value>
   </data>
-  <data name="AssemblyUnderLibDescription" xml:space="preserve">
-    <value>The assembly '{0}' is placed directly under 'lib' folder. It is recommended that assemblies be placed inside a framework-specific folder.</value>
+  <data name="InvalidFrameworkWarning" xml:space="preserve">
+    <value>The folder '{0}' under 'lib' is not recognized as a valid framework name or a supported culture identifier. Rename it to a valid framework name or culture identifier.</value>
   </data>
-  <data name="AssemblyUnderLibSolution" xml:space="preserve">
-    <value>Move it into a framework-specific folder. If this assembly is targeted for multiple frameworks, ignore this warning.</value>
+  <data name="InvalidPrereleaseDependencyWarning" xml:space="preserve">
+    <value>A stable release of a package should not have a prerelease dependency. Either modify the version spec of dependency "{0}" or update the version field in the nuspec.</value>
   </data>
-  <data name="AssemblyUnderLibTitle" xml:space="preserve">
-    <value>Assembly not inside a framework folder.</value>
+  <data name="LegacyVersionWarning" xml:space="preserve">
+    <value>The package version '{0}' uses SemVer 2.0.0 or components of SemVer 1.0.0 that are not supported on legacy clients. Change the package version to a SemVer 1.0.0 string. If the version contains a release label it must start with a letter. This message can be ignored if the package is not intended for older clients.</value>
   </data>
-  <data name="DefaultSpecValue" xml:space="preserve">
-    <value>The value "{0}" for {1} is a sample value and should be removed.</value>
+  <data name="MisplacedInitScriptWarning" xml:space="preserve">
+    <value>The file '{0}' will be ignored by NuGet because it is not directly under 'tools' folder. Place the file directly under 'tools' folder.</value>
   </data>
-  <data name="DefaultSpecValueSolution" xml:space="preserve">
-    <value>Replace it with an appropriate value or remove it and rebuild your package.</value>
+  <data name="MisplacedTransformFileWarning" xml:space="preserve">
+    <value>The transform file '{0}' is outside the 'content' folder and hence will not be transformed during installation of this package. Move it into the 'content' folder.</value>
   </data>
-  <data name="DefaultSpecValueTitle" xml:space="preserve">
-    <value>Remove sample nuspec values.</value>
-  </data>
-  <data name="InvalidFrameworkDescription" xml:space="preserve">
-    <value>The folder '{0}' under 'lib' is not recognized as a valid framework name or a supported culture identifier.</value>
-  </data>
-  <data name="InvalidFrameworkSolution" xml:space="preserve">
-    <value>Rename it to a valid framework name.</value>
-  </data>
-  <data name="InvalidFrameworkTitle" xml:space="preserve">
-    <value>Invalid framework folder.</value>
-  </data>
-  <data name="InvalidPrereleaseDependency_Description" xml:space="preserve">
-    <value>A stable release of a package should not have a prerelease dependency.</value>
-  </data>
-  <data name="InvalidPrereleaseDependency_Solution" xml:space="preserve">
-    <value>Either modify the version spec of dependency "{0}" or update the version field in the nuspec.</value>
-  </data>
-  <data name="InvalidPrereleaseDependency_Title" xml:space="preserve">
-    <value>Prerelease dependency in stable package.</value>
-  </data>
-  <data name="LegacyVersionDescription" xml:space="preserve">
-    <value>The package version '{0}' uses SemVer 2.0.0 or components of SemVer 1.0.0 that are not supported on legacy clients. This message can be ignored if the package is not intended for older clients.</value>
-  </data>
-  <data name="LegacyVersionSolution" xml:space="preserve">
-    <value>Change the package version to a SemVer 1.0.0 string. If the version contains a release label it must start with a letter.</value>
-  </data>
-  <data name="LegacyVersionTitle" xml:space="preserve">
-    <value>Package version not supported on legacy clients.</value>
-  </data>
-  <data name="MisplacedInitScriptDescription" xml:space="preserve">
-    <value>The file '{0}' will be ignored by NuGet because it is not directly under 'tools' folder.</value>
-  </data>
-  <data name="MisplacedInitScriptSolution" xml:space="preserve">
-    <value>Place the file directly under 'tools' folder.</value>
-  </data>
-  <data name="MisplacedInitScriptTitle" xml:space="preserve">
-    <value>Init.ps1 script will be ignored.</value>
-  </data>
-  <data name="MisplacedTransformFileDescription" xml:space="preserve">
-    <value>The transform file '{0}' is outside the 'content' folder and hence will not be transformed during installation of this package.</value>
-  </data>
-  <data name="MisplacedTransformFileSolution" xml:space="preserve">
-    <value>Move it into the 'content' folder.</value>
-  </data>
-  <data name="MisplacedTransformFileTitle" xml:space="preserve">
-    <value>Transform file outside content folder.</value>
-  </data>
-  <data name="PlaceholderFileInPackageDescription" xml:space="preserve">
+  <data name="PlaceholderFileInPackageWarning" xml:space="preserve">
     <value>An empty folder placeholder file '{0}' is in a non-empty folder and should be removed.</value>
   </data>
-  <data name="PlaceholderFileInPackageSolution" xml:space="preserve">
-    <value>Remove the file from the project.</value>
+  <data name="ScriptOutsideToolsWarning" xml:space="preserve">
+    <value>The script file '{0}' is outside the 'tools' folder and hence will not be executed during installation of this package. Move it into the 'tools' folder.</value>
   </data>
-  <data name="PlaceholderFileInPackageTitle" xml:space="preserve">
-    <value>Placeholder file in non-empty folder.</value>
+  <data name="UnrecognizedScriptWarning" xml:space="preserve">
+    <value>The script file '{0}' is not recognized by NuGet and hence will not be executed during installation of this package. Rename it to install.ps1, uninstall.ps1 or init.ps1 and place it directly under 'tools'.</value>
   </data>
-  <data name="ScriptOutsideToolsDescription" xml:space="preserve">
-    <value>The script file '{0}' is outside the 'tools' folder and hence will not be executed during installation of this package.</value>
+  <data name="UnspecifiedDependencyVersionWarning" xml:space="preserve">
+    <value>The version of dependency '{0}' is not specified. Specify the version of dependency and rebuild your package.</value>
   </data>
-  <data name="ScriptOutsideToolsSolution" xml:space="preserve">
-    <value>Move it into the 'tools' folder.</value>
-  </data>
-  <data name="ScriptOutsideToolsTitle" xml:space="preserve">
-    <value>PowerShell file outside tools folder.</value>
-  </data>
-  <data name="UnrecognizedScriptDescription" xml:space="preserve">
-    <value>The script file '{0}' is not recognized by NuGet and hence will not be executed during installation of this package.</value>
-  </data>
-  <data name="UnrecognizedScriptSolution" xml:space="preserve">
-    <value>Rename it to install.ps1, uninstall.ps1 or init.ps1 and place it directly under 'tools'.</value>
-  </data>
-  <data name="UnrecognizedScriptTitle" xml:space="preserve">
-    <value>Unrecognized PowerShell file.</value>
-  </data>
-  <data name="UnspecifiedDependencyVersion" xml:space="preserve">
-    <value>The version of dependency '{0}' is not specified.</value>
-  </data>
-  <data name="UnspecifiedDependencyVersionSolution" xml:space="preserve">
-    <value>Specify the version of dependency and rebuild your package.</value>
-  </data>
-  <data name="UnspecifiedDependencyVersionTitle" xml:space="preserve">
-    <value>Specify version of dependencies.</value>
-  </data>
-  <data name="WinRTObsoleteDescription" xml:space="preserve">
-    <value>The file at '{0}' uses the obsolete 'WinRT' as the framework folder.</value>
-  </data>
-  <data name="WinRTObsoleteSolution" xml:space="preserve">
-    <value>Replace 'WinRT' or 'WinRT45' with 'NetCore45'.</value>
-  </data>
-  <data name="WinRTObsoleteTitle" xml:space="preserve">
-    <value>The framework name 'WinRT' is obsolete.</value>
+  <data name="WinRTObsoleteWarning" xml:space="preserve">
+    <value>The file at '{0}' uses the obsolete 'WinRT' as the framework folder. Replace 'WinRT' or 'WinRT45' with 'NetCore45'.</value>
   </data>
 </root>

@@ -1611,29 +1611,11 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version &quot;{0}&quot; does not follow semantic versioning guidelines..
+        ///   Looks up a localized string similar to Version &quot;{0}&quot; does not follow semantic versioning guidelines. Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org..
         /// </summary>
         internal static string Warning_SemanticVersion {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org..
-        /// </summary>
-        internal static string Warning_SemanticVersionSolution {
-            get {
-                return ResourceManager.GetString("Warning_SemanticVersionSolution", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use semantic versioning.
-        /// </summary>
-        internal static string Warning_SemanticVersionTitle {
-            get {
-                return ResourceManager.GetString("Warning_SemanticVersionTitle", resourceCulture);
             }
         }
         

@@ -22,6 +22,7 @@ namespace NuGet.Common
     /// Groups:
     /// 1000-1999 - Restore
     /// 3000-3999 - Signing
+    /// 5000-5999 - Packaging
     ///
     /// Sub groups for Restore:
     /// error/warning - Reason
@@ -435,9 +436,79 @@ namespace NuGet.Common
         NU5009 = 5009,
 
         /// <summary>
-        /// InvalidVersionInPackage
+        /// Error_InvalidVersionInPackage
         /// </summary>
         NU5010 = 5010,
+
+        /// <summary>
+        /// AssemblyOutsideLibWarning
+        /// </summary>
+        NU5100 = 5100,
+
+        /// <summary>
+        /// AssemblyDirectlyUnderLibWarning
+        /// </summary>
+        NU5101 = 5101,
+
+        /// <summary>
+        /// DefaultSpecValueWarning
+        /// </summary>
+        NU5102 = 5102,
+
+        /// <summary>
+        /// InvalidFrameworkWarning
+        /// </summary>
+        NU5103 = 5103,
+
+        /// <summary>
+        /// InvalidPrereleaseDependencyWarning
+        /// </summary>
+        NU5104 = 5104,
+
+        /// <summary>
+        /// LegacyVersionWarning
+        /// </summary>
+        NU5105 = 5105,
+
+        /// <summary>
+        /// WinRTObsoleteWarning
+        /// </summary>
+        NU5106 = 5106,
+
+        /// <summary>
+        /// MisplacedInitScriptWarning
+        /// </summary>
+        NU5107 = 5107,
+
+        /// <summary>
+        /// MisplacedTransformFileWarning
+        /// </summary>
+        NU5108 = 5108,
+
+        /// <summary>
+        /// PlaceholderFileInPackageWarning
+        /// </summary>
+        NU5109 = 5109,
+
+        /// <summary>
+        /// ScriptOutsideToolsWarning
+        /// </summary>
+        NU5110 = 5110,
+
+        /// <summary>
+        /// UnrecognizedScriptWarning
+        /// </summary>
+        NU5111 = 5111,
+
+        /// <summary>
+        /// UnspecifiedDependencyVersionWarning
+        /// </summary>
+        NU5112 = 5112,
+
+        /// <summary>
+        /// Warning_SemanticVersion
+        /// </summary>
+        NU5113 = 5113,
 
         /// <summary>
         /// Undefined package warning

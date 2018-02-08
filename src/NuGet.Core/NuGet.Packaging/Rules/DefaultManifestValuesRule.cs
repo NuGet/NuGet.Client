@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using NuGet.Packaging;
+using NuGet.Common;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging.Rules
@@ -21,7 +21,7 @@ namespace NuGet.Packaging.Rules
         internal static readonly string SampleManifestDependencyId = "SampleDependency";
         internal static readonly string SampleManifestDependencyVersion = "1.0";
 
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
         {
             if (builder.ProjectUrl != null && builder.ProjectUrl.OriginalString.Equals(SampleProjectUrl, StringComparison.Ordinal))
             {
@@ -59,23 +59,25 @@ namespace NuGet.Packaging.Rules
 
             if (dependency != null && dependency.VersionRange == VersionRange.All)
             {
-                var message = String.Format(
+                var issue = new PackageIssueLogMessage(
+                    String.Format(
                     CultureInfo.CurrentCulture,
-                    AnalysisResources.UnspecifiedDependencyVersion,
-                    dependency.Id);
-                var issue = new PackageIssue(
-                    AnalysisResources.UnspecifiedDependencyVersionTitle,
-                    message,
-                    AnalysisResources.UnspecifiedDependencyVersionSolution);
+                    AnalysisResources.UnspecifiedDependencyVersionWarning,
+                    dependency.Id),
+                    NuGetLogCode.NU5112,
+                    WarningLevel.Default,
+                    LogLevel.Warning);
                 yield return issue;
             }
         }
 
-        private static PackageIssue CreateIssueFor(string field, string value)
+        private static PackageIssueLogMessage CreateIssueFor(string field, string value)
         {
-            return new PackageIssue(AnalysisResources.DefaultSpecValueTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.DefaultSpecValue, value, field),
-                AnalysisResources.DefaultSpecValueSolution);
+            return new PackageIssueLogMessage(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.DefaultSpecValueWarning, value, field),
+                NuGetLogCode.NU5102,
+                WarningLevel.Default,
+                LogLevel.Warning);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,14 +7,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging.Rules
 {
     internal class InvalidPlaceholderFileRule : IPackageRule
     {
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
         {
             foreach (IPackageFile file in builder.Files)
             {
@@ -30,13 +29,13 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackageIssue CreatePackageIssueForPlaceholderFile(string target)
+        private static PackageIssueLogMessage CreatePackageIssueForPlaceholderFile(string target)
         {
-            return new PackageIssue(
-                AnalysisResources.PlaceholderFileInPackageTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.PlaceholderFileInPackageDescription, target),
-                AnalysisResources.PlaceholderFileInPackageSolution
-            );
+            return new PackageIssueLogMessage(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.PlaceholderFileInPackageWarning, target),
+                NuGetLogCode.NU5109,
+                WarningLevel.Default,
+                LogLevel.Warning);
         }
     }
 }

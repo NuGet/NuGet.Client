@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using NuGet.Packaging;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
     internal class MisplacedAssemblyRule : IPackageRule
     {
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
         {
             foreach (IPackageFile file in builder.Files)
             {
@@ -40,22 +40,22 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackageIssue CreatePackageIssueForAssembliesUnderLib(string target)
+        private static PackageIssueLogMessage CreatePackageIssueForAssembliesUnderLib(string target)
         {
-            return new PackageIssue(
-                AnalysisResources.AssemblyUnderLibTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyUnderLibDescription, target),
-                AnalysisResources.AssemblyUnderLibSolution
-            );
+            return new PackageIssueLogMessage(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyDirectlyUnderLibWarning, target),
+                NuGetLogCode.NU5101,
+                WarningLevel.Default,
+                LogLevel.Warning);
         }
 
-        private static PackageIssue CreatePackageIssueForAssembliesOutsideLib(string target)
+        private static PackageIssueLogMessage CreatePackageIssueForAssembliesOutsideLib(string target)
         {
-            return new PackageIssue(
-                AnalysisResources.AssemblyOutsideLibTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyOutsideLibDescription, target),
-                AnalysisResources.AssemblyOutsideLibSolution
-            );
+            return new PackageIssueLogMessage(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyOutsideLibWarning, target),
+                NuGetLogCode.NU5100,
+                WarningLevel.Default,
+                LogLevel.Warning);
         }
 
         /// <summary>

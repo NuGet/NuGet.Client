@@ -1019,19 +1019,21 @@ namespace NuGet.Commands
         internal void AnalyzePackage(PackageArchiveReader package, PackageBuilder builder)
         {
             IEnumerable<IPackageRule> packageRules = Rules;
-            IList<PackageIssue> issues = new List<PackageIssue>();
+            IList<PackageIssueLogMessage> issues = new List<PackageIssueLogMessage>();
             NuGetVersion version;
 
             if (!NuGetVersion.TryParseStrict(package.GetIdentity().Version.ToString(), out version))
             {
-                issues.Add(new PackageIssue(Strings.Warning_SemanticVersionTitle,
+                issues.Add(new PackageIssueLogMessage(
                     String.Format(CultureInfo.CurrentCulture, Strings.Warning_SemanticVersion, package.GetIdentity().Version),
-                    Strings.Warning_SemanticVersionSolution));
+                    NuGetLogCode.NU5113,
+                    WarningLevel.Default,
+                    LogLevel.Warning));
             }
 
             foreach (var rule in packageRules)
             {
-                issues.AddRange(rule.Validate(builder).OrderBy(p => p.Title, StringComparer.CurrentCulture));
+                issues.AddRange(rule.Validate(builder).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
             }
 
             if (issues.Count > 0)
@@ -1045,16 +1047,16 @@ namespace NuGet.Commands
             }
         }
 
-        private void PrintPackageIssue(PackageIssue issue)
+        private void PrintPackageIssue(PackageIssueLogMessage issue)
         {
-            WriteLine(String.Empty);
-            _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueTitle, issue.Title));
-            _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueDescription, issue.Description));
+            //WriteLine(String.Empty);
+            //_packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueTitle, issue.Title));
+            //_packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueDescription, issue.Description));
 
-            if (!String.IsNullOrEmpty(issue.Solution))
-            {
-                _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueSolution, issue.Solution));
-            }
+            //if (!String.IsNullOrEmpty(issue.Solution))
+            //{
+            //    _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueSolution, issue.Solution));
+            //}
         }
 
         internal static void ExcludeFilesForLibPackage(ICollection<IPackageFile> files)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
-using NuGet.Packaging;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Rules
     {
         private const string LibDirectory = "lib";
 
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var file in builder.Files)
@@ -62,13 +62,13 @@ namespace NuGet.Packaging.Rules
             return name.Equals(builder.Language, StringComparison.OrdinalIgnoreCase);
         }
 
-        private PackageIssue CreatePackageIssue(string target)
+        private PackageIssueLogMessage CreatePackageIssue(string target)
         {
-            return new PackageIssue(
-                AnalysisResources.InvalidFrameworkTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.InvalidFrameworkDescription, target),
-                AnalysisResources.InvalidFrameworkSolution
-            );
+            return new PackageIssueLogMessage(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.InvalidFrameworkWarning, target),
+                NuGetLogCode.NU5103,
+                WarningLevel.Default,
+                LogLevel.Warning);
         }
     }
 }

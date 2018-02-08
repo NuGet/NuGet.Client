@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using NuGet.Packaging;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
@@ -14,7 +14,7 @@ namespace NuGet.Packaging.Rules
         private const string ScriptExtension = ".ps1";
         private const string ToolsDirectory = "tools";
 
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
         {
             foreach (IPackageFile file in builder.Files)
             {
@@ -41,22 +41,22 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackageIssue CreatePackageIssueForMisplacedScript(string target)
+        private static PackageIssueLogMessage CreatePackageIssueForMisplacedScript(string target)
         {
-            return new PackageIssue(
-                AnalysisResources.ScriptOutsideToolsTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.ScriptOutsideToolsDescription, target),
-                AnalysisResources.ScriptOutsideToolsSolution
-            );
+            return new PackageIssueLogMessage(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.ScriptOutsideToolsWarning, target),
+                NuGetLogCode.NU5110,
+                WarningLevel.Default,
+                LogLevel.Warning);
         }
 
-        private static PackageIssue CreatePackageIssueForUnrecognizedScripts(string target)
+        private static PackageIssueLogMessage CreatePackageIssueForUnrecognizedScripts(string target)
         {
-            return new PackageIssue(
-                AnalysisResources.UnrecognizedScriptTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.UnrecognizedScriptDescription, target),
-                AnalysisResources.UnrecognizedScriptSolution
-            );
+            return new PackageIssueLogMessage(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.UnrecognizedScriptWarning, target),
+                NuGetLogCode.NU5111,
+                WarningLevel.Default,
+                LogLevel.Warning);
         }
     }
 }

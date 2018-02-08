@@ -1,19 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using NuGet.Packaging;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging.Rules
 {
     internal class InvalidPrereleaseDependencyRule : IPackageRule
     {
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
         {
             if (builder?.DependencyGroups == null)
             {
@@ -38,14 +37,13 @@ namespace NuGet.Packaging.Rules
                    dependency.VersionRange.MaxVersion?.IsPrerelease == true;
         }
 
-        private static PackageIssue CreatePackageIssueForPrereleaseDependency(string dependency)
+        private static PackageIssueLogMessage CreatePackageIssueForPrereleaseDependency(string dependency)
         {
-            return new PackageIssue(
-                AnalysisResources.InvalidPrereleaseDependency_Title,
-                AnalysisResources.InvalidPrereleaseDependency_Description,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.InvalidPrereleaseDependency_Solution, dependency)
-                
-            );
+            return new PackageIssueLogMessage(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.InvalidPrereleaseDependencyWarning, dependency),
+                NuGetLogCode.NU5104,
+                WarningLevel.Default,
+                LogLevel.Warning);
         }
     }
 }

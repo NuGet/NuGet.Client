@@ -1,17 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using NuGet.Packaging;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
     internal class InitScriptNotUnderToolsRule : IPackageRule
     {
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
         {
             foreach (var file in builder.Files)
             {
@@ -23,12 +23,13 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackageIssue CreatePackageIssue(IPackageFile file)
+        private static PackageIssueLogMessage CreatePackageIssue(IPackageFile file)
         {
-            return new PackageIssue(
-                AnalysisResources.MisplacedInitScriptTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.MisplacedInitScriptDescription, file.Path),
-                AnalysisResources.MisplacedInitScriptSolution);
+            return new PackageIssueLogMessage(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.MisplacedInitScriptWarning, file.Path),
+                NuGetLogCode.NU5107,
+                WarningLevel.Default,
+                LogLevel.Warning);
         }
     }
 }

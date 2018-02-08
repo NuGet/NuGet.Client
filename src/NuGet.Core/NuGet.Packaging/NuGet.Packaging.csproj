@@ -60,6 +60,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Update="Rules\AnalysisResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AnalysisResources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -70,6 +75,10 @@
     <EmbeddedResource Update="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Rules\AnalysisResoruces.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>AnalysisResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   
