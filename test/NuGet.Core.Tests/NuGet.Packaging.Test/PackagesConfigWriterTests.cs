@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -24,7 +22,7 @@ namespace NuGet.Packaging.Test
             var stream = new MemoryStream();
 
             // Act
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, true))
+            using (var writer = new PackagesConfigWriter(stream, true))
             {
                 writer.WriteMinClientVersion(NuGetVersion.Parse("3.0.1"));
 
@@ -40,7 +38,7 @@ namespace NuGet.Packaging.Test
             // Assert
             Assert.Equal("utf-8", xml.Declaration.Encoding);
 
-            PackagesConfigReader reader = new PackagesConfigReader(xml);
+            var reader = new PackagesConfigReader(xml);
 
             Assert.Equal("3.0.1", reader.GetMinClientVersion().ToNormalizedString());
 
@@ -58,45 +56,57 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackagesConfigWriter_BasicWithDifferentCulture()
         {
-            var calendar = new CultureInfo("he-IL");
-            calendar.DateTimeFormat.Calendar = new HebrewCalendar();
-            CultureInfo.CurrentCulture = calendar;
-            CultureInfo.CurrentUICulture = calendar;
+            var currentCulture = CultureInfo.CurrentCulture;
+            var currentUICulture = CultureInfo.CurrentUICulture;
 
-            // Arrange
-            using (var testFolder = TestDirectory.Create())
+            try
             {
-                var path = Path.Combine(testFolder + "packages.config");
+                var calendar = new CultureInfo("he-IL");
+                calendar.DateTimeFormat.Calendar = new HebrewCalendar();
 
-                // Act
-                using (var writer = new PackagesConfigWriter(path, true))
+                CultureInfo.CurrentCulture = calendar;
+                CultureInfo.CurrentUICulture = calendar;
+
+                // Arrange
+                using (var testFolder = TestDirectory.Create())
                 {
-                    writer.WriteMinClientVersion(NuGetVersion.Parse("3.0.1"));
+                    var path = Path.Combine(testFolder + "packages.config");
 
-                    writer.AddPackageEntry("packageB", NuGetVersion.Parse("2.0.0"), NuGetFramework.Parse("portable-net45+win8"));
+                    // Act
+                    using (var writer = new PackagesConfigWriter(path, true))
+                    {
+                        writer.WriteMinClientVersion(NuGetVersion.Parse("3.0.1"));
 
-                    writer.AddPackageEntry("packageA", NuGetVersion.Parse("1.0.1"), NuGetFramework.Parse("net45"));
+                        writer.AddPackageEntry("packageB", NuGetVersion.Parse("2.0.0"), NuGetFramework.Parse("portable-net45+win8"));
+
+                        writer.AddPackageEntry("packageA", NuGetVersion.Parse("1.0.1"), NuGetFramework.Parse("net45"));
+                    }
+
+                    // Assert
+                    var xml = XDocument.Load(path);
+
+                    // Assert
+                    Assert.Equal("utf-8", xml.Declaration.Encoding);
+
+                    var reader = new PackagesConfigReader(xml);
+
+                    Assert.Equal("3.0.1", reader.GetMinClientVersion().ToNormalizedString());
+
+                    var packages = reader.GetPackages().ToArray();
+                    Assert.Equal("packageA", packages[0].PackageIdentity.Id);
+                    Assert.Equal("packageB", packages[1].PackageIdentity.Id);
+
+                    Assert.Equal("1.0.1", packages[0].PackageIdentity.Version.ToNormalizedString());
+                    Assert.Equal("2.0.0", packages[1].PackageIdentity.Version.ToNormalizedString());
+
+                    Assert.Equal("net45", packages[0].TargetFramework.GetShortFolderName());
+                    Assert.Equal("portable-net45+win8", packages[1].TargetFramework.GetShortFolderName());
                 }
-
-                // Assert
-                var xml = XDocument.Load(path);
-
-                // Assert
-                Assert.Equal("utf-8", xml.Declaration.Encoding);
-
-                PackagesConfigReader reader = new PackagesConfigReader(xml);
-
-                Assert.Equal("3.0.1", reader.GetMinClientVersion().ToNormalizedString());
-
-                var packages = reader.GetPackages().ToArray();
-                Assert.Equal("packageA", packages[0].PackageIdentity.Id);
-                Assert.Equal("packageB", packages[1].PackageIdentity.Id);
-
-                Assert.Equal("1.0.1", packages[0].PackageIdentity.Version.ToNormalizedString());
-                Assert.Equal("2.0.0", packages[1].PackageIdentity.Version.ToNormalizedString());
-
-                Assert.Equal("net45", packages[0].TargetFramework.GetShortFolderName());
-                Assert.Equal("portable-net45+win8", packages[1].TargetFramework.GetShortFolderName());
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = currentCulture;
+                CultureInfo.CurrentUICulture = currentUICulture;
             }
         }
 
@@ -107,7 +117,7 @@ namespace NuGet.Packaging.Test
             var stream = new MemoryStream();
 
             // Act
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, true))
+            using (var writer = new PackagesConfigWriter(stream, true))
             {
                 var packageIdentityA = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.1"));
                 var packageReferenceA = new PackageReference(packageIdentityA, NuGetFramework.Parse("net45"));
@@ -127,7 +137,7 @@ namespace NuGet.Packaging.Test
             // Assert
             Assert.Equal("utf-8", xml.Declaration.Encoding);
 
-            PackagesConfigReader reader = new PackagesConfigReader(xml);
+            var reader = new PackagesConfigReader(xml);
 
             var packages = reader.GetPackages().ToArray();
             Assert.Equal("1", packages.Count().ToString());
@@ -143,7 +153,7 @@ namespace NuGet.Packaging.Test
             var stream = new MemoryStream();
 
             // Act
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, true))
+            using (var writer = new PackagesConfigWriter(stream, true))
             {
                 var vensionRange = new VersionRange(NuGetVersion.Parse("0.5.0"));
                 var packageIdentityA = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.1"));
@@ -166,7 +176,7 @@ namespace NuGet.Packaging.Test
             // Assert
             Assert.Equal("utf-8", xml.Declaration.Encoding);
 
-            PackagesConfigReader reader = new PackagesConfigReader(xml);
+            var reader = new PackagesConfigReader(xml);
 
             var packages = reader.GetPackages().ToArray();
             Assert.Equal("1", packages.Count().ToString());
@@ -189,7 +199,7 @@ namespace NuGet.Packaging.Test
             var stream2 = new MemoryStream();
 
             // Act
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, true))
+            using (var writer = new PackagesConfigWriter(stream, true))
             {
                 var vensionRange = new VersionRange(NuGetVersion.Parse("0.5.0"));
                 var packageIdentityA = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.1"));
@@ -206,7 +216,7 @@ namespace NuGet.Packaging.Test
             var packageReferenceB = new PackageReference(packageIdentityB, NuGetFramework.Parse("dnxcore50"),
                 userInstalled: false, developmentDependency: false, requireReinstallation: false);
 
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream2, true))
+            using (var writer = new PackagesConfigWriter(stream2, true))
             {
                 writer.UpdateOrAddPackageEntry(xml, packageReferenceB);
             }
@@ -237,7 +247,7 @@ namespace NuGet.Packaging.Test
             var stream = new MemoryStream();
 
             // Act
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, true))
+            using (var writer = new PackagesConfigWriter(stream, true))
             {
                 var packageIdentityA = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.1"));
                 var packageReferenceA = new PackageReference(packageIdentityA, NuGetFramework.Parse("net45"));
@@ -262,7 +272,7 @@ namespace NuGet.Packaging.Test
             var stream = new MemoryStream();
 
             // Act
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, true))
+            using (var writer = new PackagesConfigWriter(stream, true))
             {
                 writer.AddPackageEntry("packageB", NuGetVersion.Parse("2.0.0"), NuGetFramework.Parse("portable-net45+win8"));
 
@@ -278,7 +288,7 @@ namespace NuGet.Packaging.Test
             // Assert
             Assert.Equal("utf-8", xml.Declaration.Encoding);
 
-            PackagesConfigReader reader = new PackagesConfigReader(xml);
+            var reader = new PackagesConfigReader(xml);
 
             var packages = reader.GetPackages().ToArray();
             Assert.Equal("1", packages.Count().ToString());
@@ -294,7 +304,7 @@ namespace NuGet.Packaging.Test
             var stream = new MemoryStream();
 
             // Act
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, true))
+            using (var writer = new PackagesConfigWriter(stream, true))
             {
                 writer.AddPackageEntry("packageB", NuGetVersion.Parse("2.0.0"), NuGetFramework.Parse("portable-net45+win8"));
 
@@ -310,7 +320,7 @@ namespace NuGet.Packaging.Test
             var stream = new MemoryStream();
 
             // Act
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, true))
+            using (var writer = new PackagesConfigWriter(stream, true))
             {
                 writer.AddPackageEntry("packageA", NuGetVersion.Parse("1.0.1"), NuGetFramework.Parse("net45"));
 
@@ -352,7 +362,7 @@ namespace NuGet.Packaging.Test
                 {
                     using (var fileWriter = new StreamWriter(fileStream))
                     {
-                        string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        var content = @"<?xml version=""1.0"" encoding=""utf-8""?>
     <packages>
             <package id = ""packageA"" version = ""1.0.0"" targetFramework = ""win81"" userInstalled = ""true"" protocolVersion = ""V2"" />
             <package id = ""Microsoft.ApplicationInsights.PersistenceChannel"" version = ""0.14.3-build00177"" targetFramework = ""win81"" />
@@ -367,7 +377,7 @@ namespace NuGet.Packaging.Test
 
                 var stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite);
 
-                using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, false))
+                using (var writer = new PackagesConfigWriter(stream, false))
                 {
                     // Act
                     var packageIdentityA1 = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
@@ -405,7 +415,7 @@ namespace NuGet.Packaging.Test
                 {
                     using (var fileWriter = new StreamWriter(fileStream))
                     {
-                        string content = @"<?xml version=""1.0"" encoding=""utf-8""?>";
+                        var content = @"<?xml version=""1.0"" encoding=""utf-8""?>";
 
                         fileWriter.Write(content);
                     }
@@ -427,7 +437,7 @@ namespace NuGet.Packaging.Test
                 {
                     using (var fileWriter = new StreamWriter(fileStream))
                     {
-                        string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        var content = @"<?xml version=""1.0"" encoding=""utf-8""?>
     <configuration>
     </configuration> ";
 
@@ -435,7 +445,7 @@ namespace NuGet.Packaging.Test
                     }
                 }
 
-                using (PackagesConfigWriter writer = new PackagesConfigWriter(filePath, false))
+                using (var writer = new PackagesConfigWriter(filePath, false))
                 {
                     // Assert
                     Assert.Throws<PackagesConfigWriterException>(() => writer.AddPackageEntry("packageA", NuGetVersion.Parse("2.0.1"), NuGetFramework.Parse("net4")));
@@ -456,7 +466,7 @@ namespace NuGet.Packaging.Test
                 {
                     using (var fileWriter = new StreamWriter(fileStream))
                     {
-                        string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        var content = @"<?xml version=""1.0"" encoding=""utf-8""?>
     <packages>
             <package id = ""packageA"" version = ""1.0.0"" targetFramework = ""win81"" userInstalled = ""true"" protocolVersion = ""V2"" />
     </packages>";
@@ -465,7 +475,7 @@ namespace NuGet.Packaging.Test
                     }
                 }
 
-                using (PackagesConfigWriter writer = new PackagesConfigWriter(filePath, false))
+                using (var writer = new PackagesConfigWriter(filePath, false))
                 {
                     // Act
                     writer.AddPackageEntry("packageB", NuGetVersion.Parse("2.0.1"), NuGetFramework.Parse("net4"));
