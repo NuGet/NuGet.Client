@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
 
   <PropertyGroup>
@@ -10,7 +10,8 @@
 
   <!-- Include internal DER encoding helpers for use in tests -->
   <ItemGroup>
-    <Compile Include="$(NuGetCoreSrcDirectory)NuGet.Packaging\Signing\DerEncoding\*.cs" />
+    <Compile Include="$(NuGetCoreSrcDirectory)NuGet.Packaging\Signing\DerEncoding\*.cs"
+             Exclude="$(NuGetCoreSrcDirectory)NuGet.Packaging\Signing\DerEncoding\DerGeneralizedTime.cs"/>
   </ItemGroup>
 
   <ItemGroup>

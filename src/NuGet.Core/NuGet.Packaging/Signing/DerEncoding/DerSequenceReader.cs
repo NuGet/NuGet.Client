@@ -415,119 +415,15 @@ namespace NuGet.Packaging.Signing.DerEncoding
 
         internal DateTime ReadGeneralizedTime()
         {
-            // Currently only supports reading times with no fractional seconds or time differentials
-            // as RFC 2630 doesn't allow these. In case this is done, the format string has to be parsed
-            // to follow rules on X.680 and X.690.
-            return ReadTime(DerTag.GeneralizedTime, "yyyyMMddHHmmss'Z'");
-        }
-
-        // This is NOT a general purpose GeneralizedTime reader.
-        // It is special-cased for RFC 3161 (https://tools.ietf.org/html/rfc3161#section-2.4.2).
-        //
-        //      YYYYMMDDhhmmss[.s...]Z
-        //
-        internal DateTime ReadRfc3161GeneralizedTime()
-        {
             EatTag(DerTag.GeneralizedTime);
 
-            var minimumValidLength = 15; // YYYYMMDDhhmmssZ
-
             var contentLength = EatLength();
-
-            if (contentLength < minimumValidLength)
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
-
             var decodedTime = Encoding.ASCII.GetString(_data, _position, contentLength);
+            var generalizedTime = DerGeneralizedTime.Read(decodedTime);
 
             _position += contentLength;
 
-            if (decodedTime[decodedTime.Length - 1] != 'Z')
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
-
-            int year;
-            if (!int.TryParse(decodedTime.Substring(0, 4), out year))
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
-
-            int month;
-            if (!int.TryParse(decodedTime.Substring(4, 2), out month))
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
-
-            int day;
-            if (!int.TryParse(decodedTime.Substring(6, 2), out day))
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
-
-            int hour;
-            if (!int.TryParse(decodedTime.Substring(8, 2), out hour))
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
-
-            int minute;
-            if (!int.TryParse(decodedTime.Substring(10, 2), out minute))
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
-
-            int second;
-            if (!int.TryParse(decodedTime.Substring(12, 2), out second))
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
-
-            // Millisecond accuracy should be enough.
-            var milliseconds = 0;
-
-            // Still, we need to verify that the DER-encoded GeneralizedTime value is correct (per RFC 3161).
-            if (decodedTime[14] == '.')
-            {
-                // YYYYMMDDhhmmss.sZ
-                minimumValidLength = 17;
-
-                // Disallow YYYYMMDDhhmmss.Z
-                if (decodedTime.Length < minimumValidLength)
-                {
-                    throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-                }
-
-                var hasTrailingZero = false;
-
-                // Skip trailing 'Z'.  It was checked earlier.
-                for (var i = 15; i < contentLength - 2; ++i)
-                {
-                    var c = decodedTime[i];
-
-                    if (!char.IsNumber(c))
-                    {
-                        throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-                    }
-
-                    if (c == '0')
-                    {
-                        hasTrailingZero = true;
-                    }
-                }
-
-                if (hasTrailingZero)
-                {
-                    throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-                }
-
-                var fraction = decodedTime.Substring(15, Math.Max(3, (contentLength - 2) - decodedTime.Length));
-
-                milliseconds = int.Parse(fraction);
-            }
-
-            return new DateTime(year, month, day, hour, minute, second, milliseconds, DateTimeKind.Utc);
+            return generalizedTime.DateTime;
         }
 
         internal string ReadBMPString()
