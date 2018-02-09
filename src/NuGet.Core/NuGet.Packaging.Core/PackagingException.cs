@@ -13,25 +13,25 @@ namespace NuGet.Packaging.Core
         public PackagingException(string message)
             : base(message)
         {
-            _logMessage = PackLogMessage.CreateError(NuGetLogCode.NU5000, message);
+            _logMessage = PackLogMessage.CreateError(message, NuGetLogCode.NU5000);
         }
 
         public PackagingException(NuGetLogCode logCode, string message)
             : base(message)
         {
-            _logMessage = PackLogMessage.CreateError(logCode, message);
+            _logMessage = PackLogMessage.CreateError(message, logCode);
         }
 
         public PackagingException(NuGetLogCode logCode, string message, Exception innerException)
             : base(message, innerException)
         {
-            _logMessage = PackLogMessage.CreateError(logCode, message);
+            _logMessage = PackLogMessage.CreateError(message, logCode);
         }
 
         public PackagingException(string message, Exception innerException)
             : base(message, innerException)
         {
-            _logMessage = PackLogMessage.CreateError(NuGetLogCode.NU5000, message);
+            _logMessage = PackLogMessage.CreateError(message, NuGetLogCode.NU5000);
         }
 
         public virtual ILogMessage AsLogMessage()

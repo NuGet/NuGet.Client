@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Rules
         private static string[] Prefixes = new string[]
             { "content\\winrt45\\", "lib\\winrt45\\", "tools\\winrt45\\", "content\\winrt\\", "lib\\winrt\\", "tools\\winrt\\" };
 
-        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
         {
             foreach (var file in builder.Files)
             {
@@ -27,13 +27,11 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackageIssueLogMessage CreateIssue(IPackageFile file)
+        private static PackLogMessage CreateIssue(IPackageFile file)
         {
-            return new PackageIssueLogMessage(
+            return PackLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, AnalysisResources.WinRTObsoleteWarning, file.Path),
-                NuGetLogCode.NU5106,
-                WarningLevel.Default,
-                LogLevel.Warning);
+                NuGetLogCode.NU5106);
         }
     }
 }

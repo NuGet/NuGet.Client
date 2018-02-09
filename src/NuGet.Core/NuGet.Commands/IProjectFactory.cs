@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -14,6 +15,7 @@ namespace NuGet.Commands
         WarningProperties GetWarningPropertiesForProject();
         Dictionary<string, string> GetProjectProperties();
         void SetIncludeSymbols(bool includeSymbols);
+        ILogger Logger { get; set; }
         PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded, PackageBuilder builder = null);
     }
 }

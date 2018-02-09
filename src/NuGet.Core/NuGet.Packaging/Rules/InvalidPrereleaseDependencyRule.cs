@@ -12,7 +12,7 @@ namespace NuGet.Packaging.Rules
 {
     internal class InvalidPrereleaseDependencyRule : IPackageRule
     {
-        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
         {
             if (builder?.DependencyGroups == null)
             {
@@ -37,13 +37,11 @@ namespace NuGet.Packaging.Rules
                    dependency.VersionRange.MaxVersion?.IsPrerelease == true;
         }
 
-        private static PackageIssueLogMessage CreatePackageIssueForPrereleaseDependency(string dependency)
+        private static PackLogMessage CreatePackageIssueForPrereleaseDependency(string dependency)
         {
-            return new PackageIssueLogMessage(
+            return PackLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, AnalysisResources.InvalidPrereleaseDependencyWarning, dependency),
-                NuGetLogCode.NU5104,
-                WarningLevel.Default,
-                LogLevel.Warning);
+                NuGetLogCode.NU5104);
         }
     }
 }

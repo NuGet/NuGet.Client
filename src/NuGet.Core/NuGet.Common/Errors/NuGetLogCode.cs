@@ -441,6 +441,31 @@ namespace NuGet.Common
         NU5010 = 5010,
 
         /// <summary>
+        /// Error_UnableToExtractAssemblyMetadata
+        /// </summary>
+        NU5011 = 5011,
+
+        /// <summary>
+        /// Error_UnableToFindBuildOutput
+        /// </summary>
+        NU5012 = 5012,
+
+        /// <summary>
+        /// Error_FailedToBuildProject
+        /// </summary>
+        NU5013 = 5013,
+
+        /// <summary>
+        /// Error_ProcessingNuspecFile
+        /// </summary>
+        NU5014 = 5014,
+
+        /// <summary>
+        /// Error_MultipleTargetFrameworks
+        /// </summary>
+        NU5015 = 5015,
+
+        /// <summary>
         /// AssemblyOutsideLibWarning
         /// </summary>
         NU5100 = 5100,
@@ -509,6 +534,31 @@ namespace NuGet.Common
         /// Warning_SemanticVersion
         /// </summary>
         NU5113 = 5113,
+
+        /// <summary>
+        /// Warning_DuplicatePropertyKey
+        /// </summary>
+        NU5114 = 5114,
+
+        /// <summary>
+        /// Warning_UnspecifiedField
+        /// </summary>
+        NU5115 = 5115,
+
+        /// <summary>
+        /// Warning_FileDoesNotExist
+        /// </summary>
+        NU5116 = 5116,
+
+        /// <summary>
+        /// Warning_UnresolvedFilePath
+        /// </summary>
+        NU5117 = 5117,
+
+        /// <summary>
+        /// Warning_FileNotAddedToPackage
+        /// </summary>
+        NU5118 = 5118,
 
         /// <summary>
         /// Undefined package warning

@@ -11,7 +11,7 @@ namespace NuGet.Packaging.Rules
 {
     internal class InitScriptNotUnderToolsRule : IPackageRule
     {
-        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
         {
             foreach (var file in builder.Files)
             {
@@ -23,13 +23,11 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackageIssueLogMessage CreatePackageIssue(IPackageFile file)
+        private static PackLogMessage CreatePackageIssue(IPackageFile file)
         {
-            return new PackageIssueLogMessage(
+            return PackLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, AnalysisResources.MisplacedInitScriptWarning, file.Path),
-                NuGetLogCode.NU5107,
-                WarningLevel.Default,
-                LogLevel.Warning);
+                NuGetLogCode.NU5107);
         }
     }
 }

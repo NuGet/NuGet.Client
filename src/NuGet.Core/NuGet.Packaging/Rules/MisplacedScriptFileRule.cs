@@ -14,7 +14,7 @@ namespace NuGet.Packaging.Rules
         private const string ScriptExtension = ".ps1";
         private const string ToolsDirectory = "tools";
 
-        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
         {
             foreach (IPackageFile file in builder.Files)
             {
@@ -41,22 +41,18 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackageIssueLogMessage CreatePackageIssueForMisplacedScript(string target)
+        private static PackLogMessage CreatePackageIssueForMisplacedScript(string target)
         {
-            return new PackageIssueLogMessage(
+            return PackLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, AnalysisResources.ScriptOutsideToolsWarning, target),
-                NuGetLogCode.NU5110,
-                WarningLevel.Default,
-                LogLevel.Warning);
+                NuGetLogCode.NU5110);
         }
 
-        private static PackageIssueLogMessage CreatePackageIssueForUnrecognizedScripts(string target)
+        private static PackLogMessage CreatePackageIssueForUnrecognizedScripts(string target)
         {
-            return new PackageIssueLogMessage(
+            return PackLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, AnalysisResources.UnrecognizedScriptWarning, target),
-                NuGetLogCode.NU5111,
-                WarningLevel.Default,
-                LogLevel.Warning);
+                NuGetLogCode.NU5111);
         }
     }
 }

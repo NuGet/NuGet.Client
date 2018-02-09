@@ -122,17 +122,17 @@ namespace NuGet.CommandLine
             {
                 case Verbosity.Detailed:
                 {
-                    packArgs.LogLevel = Common.LogLevel.Verbose;
+                    packArgs.LogLevel = LogLevel.Verbose;
                     break;
                 }
                 case Verbosity.Normal:
                 {
-                    packArgs.LogLevel = Common.LogLevel.Information;
+                    packArgs.LogLevel = LogLevel.Information;
                     break;
                 }
                 case Verbosity.Quiet:
                 {
-                    packArgs.LogLevel = Common.LogLevel.Minimal;
+                    packArgs.LogLevel = LogLevel.Minimal;
                     break;
                 }
             }

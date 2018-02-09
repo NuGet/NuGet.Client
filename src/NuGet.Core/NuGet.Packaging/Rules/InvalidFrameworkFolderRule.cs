@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Rules
     {
         private const string LibDirectory = "lib";
 
-        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var file in builder.Files)
@@ -62,13 +62,11 @@ namespace NuGet.Packaging.Rules
             return name.Equals(builder.Language, StringComparison.OrdinalIgnoreCase);
         }
 
-        private PackageIssueLogMessage CreatePackageIssue(string target)
+        private PackLogMessage CreatePackageIssue(string target)
         {
-            return new PackageIssueLogMessage(
+            return PackLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, AnalysisResources.InvalidFrameworkWarning, target),
-                NuGetLogCode.NU5103,
-                WarningLevel.Default,
-                LogLevel.Warning);
+                NuGetLogCode.NU5103);
         }
     }
 }

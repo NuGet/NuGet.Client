@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
     public interface IPackageRule
     {
-        IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder);
+        IEnumerable<PackLogMessage> Validate(PackageBuilder builder);
     }
 }

@@ -3282,9 +3282,7 @@ namespace Proj1
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                Assert.Contains("Issue: Specify version of dependencies.", r.Item2);
-                Assert.Contains("Description: The version of dependency 'json' is not specified.", r.Item2);
-                Assert.Contains("Solution: Specify the version of dependency and rebuild your package.", r.Item2);
+                Assert.Contains("The version of dependency 'json' is not specified. Specify the version of dependency and rebuild your package.", r.Item2);
             }
         }
 

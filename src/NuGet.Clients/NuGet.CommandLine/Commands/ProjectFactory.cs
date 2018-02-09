@@ -131,6 +131,7 @@ namespace NuGet.CommandLine
                 TargetFramework = new FrameworkName(targetFrameworkMoniker);
             }
 
+            // This happens before we obtain warning properties, so this Logger is still IConsole.
             IConsole console = Logger as IConsole;
             switch (LogLevel)
             {
@@ -191,7 +192,7 @@ namespace NuGet.CommandLine
 
         public LogLevel LogLevel { get; set; }
 
-        public Common.ILogger Logger
+        public ILogger Logger
         {
             get
             {
@@ -213,11 +214,10 @@ namespace NuGet.CommandLine
 
             if (!string.IsNullOrEmpty(TargetPath))
             {
-                Logger.LogMinimal(
-                    string.Format(
+                Logger.Log(PackLogMessage.CreateMessage(string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("PackagingFilesFromOutputPath"),
-                        Path.GetFullPath(Path.GetDirectoryName(TargetPath))));
+                        Path.GetFullPath(Path.GetDirectoryName(TargetPath))), LogLevel.Minimal));
             }
 
             builder = new Packaging.PackageBuilder();
@@ -228,20 +228,17 @@ namespace NuGet.CommandLine
             }
             catch (Exception ex)
             {
-                Logger.LogError(
-                    string.Format(
+                Logger.Log(PackLogMessage.CreateError(string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("UnableToExtractAssemblyMetadata"),
-                        Path.GetFileName(TargetPath)));
-
-                IConsole console = Logger as IConsole;
-                if (console != null && console.Verbosity == Verbosity.Detailed)
+                        Path.GetFileName(TargetPath)), NuGetLogCode.NU5011));
+                if (LogLevel == LogLevel.Verbose)
                 {
-                    Logger.LogError(ex.ToString());
+                    Logger.Log(PackLogMessage.CreateError(ex.ToString(), NuGetLogCode.NU5011));
                 }
                 else
                 {
-                    Logger.LogError(ex.Message);
+                    Logger.Log(PackLogMessage.CreateError(ex.Message, NuGetLogCode.NU5011));
                 }
 
                 return null;
@@ -314,23 +311,21 @@ namespace NuGet.CommandLine
             if (String.IsNullOrEmpty(builder.Description))
             {
                 builder.Description = "Description";
-                Logger.LogWarning(
-                    string.Format(
+                Logger.Log(PackLogMessage.CreateWarning(string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("Warning_UnspecifiedField"),
                         "Description",
-                        "Description"));
+                        "Description"), NuGetLogCode.NU5115));
             }
 
             if (!builder.Authors.Any())
             {
                 builder.Authors.Add(Environment.UserName);
-                Logger.LogWarning(
-                    string.Format(
+                Logger.Log(PackLogMessage.CreateWarning(string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("Warning_UnspecifiedField"),
                         "Author",
-                        Environment.UserName));
+                        Environment.UserName), NuGetLogCode.NU5115));
             }
 
             return builder;
@@ -404,12 +399,11 @@ namespace NuGet.CommandLine
             {
                 if (TargetFramework != null)
                 {
-                    Logger.LogMinimal(
-                        string.Format(
+                    Logger.Log(PackLogMessage.CreateMessage(string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("BuildingProjectTargetingFramework"),
                             _project.FullPath,
-                            TargetFramework));
+                            TargetFramework), LogLevel.Minimal));
                 }
 
                 BuildProjectWithMsbuild();
@@ -421,7 +415,7 @@ namespace NuGet.CommandLine
                 // Make if the target path doesn't exist, fail
                 if (!Directory.Exists(TargetPath) && !File.Exists(TargetPath))
                 {
-                    throw new CommandLineException(LocalizedResourceManager.GetString("UnableToFindBuildOutput"), TargetPath);
+                    throw new PackagingException(NuGetLogCode.NU5012, String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("UnableToFindBuildOutput"), TargetPath));
                 }
             }
         }
@@ -440,7 +434,8 @@ namespace NuGet.CommandLine
             if (0 != result) // 0 is msbuild.exe success code
             {
                 // If the build fails, report the error
-                throw new CommandLineException(LocalizedResourceManager.GetString("FailedToBuildProject"), Path.GetFileName(_project.FullPath));
+                var error = String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("FailedToBuildProject"), Path.GetFileName(_project.FullPath));
+                throw new PackagingException(NuGetLogCode.NU5013, error);
             }
 
             TargetPath = ResolveTargetPath();
@@ -737,7 +732,7 @@ namespace NuGet.CommandLine
                     LocalizedResourceManager.GetString("Error_ProcessingNuspecFile"),
                     project.FullPath,
                     ex.Message);
-                throw new CommandLineException(message, ex);
+                throw new PackagingException(NuGetLogCode.NU5014, message, ex);
             }
         }
 
@@ -777,7 +772,7 @@ namespace NuGet.CommandLine
                     var message = string.Format(
                     CultureInfo.CurrentCulture,
                     LocalizedResourceManager.GetString("Error_MultipleTargetFrameworks"));
-                    throw new CommandLineException(message);
+                    throw new PackagingException(NuGetLogCode.NU5015, message);
                 }
                 nugetFramework = builder.TargetFrameworks.First();
             }
@@ -984,7 +979,7 @@ namespace NuGet.CommandLine
             {
                 return;
             }
-            Logger.LogMinimal(LocalizedResourceManager.GetString("UsingPackagesConfigForDependencies"));
+            Logger.Log(PackLogMessage.CreateMessage(LocalizedResourceManager.GetString("UsingPackagesConfigForDependencies"), LogLevel.Minimal));
 
             var references = packagesProject.GetInstalledPackagesAsync(CancellationToken.None).Result;
 
@@ -1142,11 +1137,10 @@ namespace NuGet.CommandLine
             {
                 if (ProjectProperties.ContainsKey("SolutionDir"))
                 {
-                    Logger.LogWarning(
-                        string.Format(
+                    Logger.Log(PackLogMessage.CreateWarning(string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("Warning_DuplicatePropertyKey"),
-                            "SolutionDir"));
+                            "SolutionDir"), NuGetLogCode.NU5114));
                 }
 
                 ProjectProperties["SolutionDir"] = solutionDir;
@@ -1167,11 +1161,10 @@ namespace NuGet.CommandLine
                 return null;
             }
 
-            Logger.LogMinimal(
-                string.Format(
+            Logger.Log(PackLogMessage.CreateMessage(string.Format(
                     CultureInfo.CurrentCulture,
                     LocalizedResourceManager.GetString("UsingNuspecForMetadata"),
-                    Path.GetFileName(nuspecFile)));
+                    Path.GetFileName(nuspecFile)), LogLevel.Minimal));
 
             using (Stream stream = File.OpenRead(nuspecFile))
             {
@@ -1250,11 +1243,10 @@ namespace NuGet.CommandLine
 
                 if (!File.Exists(fullPath))
                 {
-                    Logger.LogMinimal(
-                        string.Format(
+                    Logger.Log(PackLogMessage.CreateWarning(string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("Warning_FileDoesNotExist"),
-                            targetFilePath));
+                            targetFilePath), NuGetLogCode.NU5116));
                     continue;
                 }
 
@@ -1262,11 +1254,10 @@ namespace NuGet.CommandLine
                 // These are show up in shared files found in universal apps.
                 if (targetFilePath.IndexOf("$(MSBuild", StringComparison.OrdinalIgnoreCase) > -1)
                 {
-                    Logger.LogWarning(
-                        string.Format(
+                    Logger.Log(PackLogMessage.CreateWarning(string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("Warning_UnresolvedFilePath"),
-                            targetFilePath));
+                            targetFilePath), NuGetLogCode.NU5117));
                     continue;
                 }
 
@@ -1284,22 +1275,20 @@ namespace NuGet.CommandLine
                     var isEqual = ContentEquals(targetFile, fullPath);
                     if (isEqual)
                     {
-                        Logger.LogMinimal(
-                            string.Format(
+                        Logger.Log(PackLogMessage.CreateMessage(string.Format(
                                 CultureInfo.CurrentCulture,
                                 LocalizedResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged"),
-                                targetFilePath));
+                                targetFilePath), LogLevel.Minimal));
                         continue;
                     }
 
-                    Logger.LogMinimal(
-                        string.Format(
+                    Logger.Log(PackLogMessage.CreateMessage(string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("PackageCommandFileFromDependencyIsChanged"),
-                            targetFilePath));
+                            targetFilePath), LogLevel.Minimal));
                 }
 
-                var packageFile = new Packaging.PhysicalPackageFile
+                var packageFile = new PhysicalPackageFile
                 {
                     SourcePath = fullPath,
                     TargetPath = targetPath
@@ -1308,7 +1297,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private void AddFileToBuilder(Packaging.PackageBuilder builder, Packaging.PhysicalPackageFile packageFile)
+        private void AddFileToBuilder(PackageBuilder builder, PhysicalPackageFile packageFile)
         {
             if (!builder.Files.Any(p => packageFile.Path.Equals(p.Path, StringComparison.OrdinalIgnoreCase)))
             {
@@ -1317,21 +1306,19 @@ namespace NuGet.CommandLine
             }
             else
             {
-                _logger.LogWarning(
-                    string.Format(
+                Logger.Log(PackLogMessage.CreateWarning(string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("FileNotAddedToPackage"),
                         packageFile.SourcePath,
-                        packageFile.TargetPath));
+                        packageFile.TargetPath), NuGetLogCode.NU5118));
             }
         }
 
         private void WriteDetail(string format, params object[] args)
         {
-            var console = _logger as Console;
-            if (console != null && console.Verbosity == Verbosity.Detailed)
+            if (LogLevel == LogLevel.Verbose)
             {
-                console.WriteLine(format, args);
+                Logger.Log(PackLogMessage.CreateMessage(string.Format(format, args), LogLevel.Verbose));
             }
         }
 

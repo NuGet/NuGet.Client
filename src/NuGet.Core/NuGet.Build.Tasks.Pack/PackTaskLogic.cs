@@ -24,7 +24,6 @@ namespace NuGet.Build.Tasks.Pack
         {
             var packArgs = new PackArgs
             {
-                Logger = request.Logger,
                 OutputDirectory = request.PackageOutputPath,
                 Serviceable = request.Serviceable,
                 Tool = request.IsTool,
@@ -44,6 +43,8 @@ namespace NuGet.Build.Tasks.Pack
                     TargetFrameworks = ParseFrameworks(request)
                 }
             };
+
+            packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties);
 
             if (request.MinClientVersion != null)
             {

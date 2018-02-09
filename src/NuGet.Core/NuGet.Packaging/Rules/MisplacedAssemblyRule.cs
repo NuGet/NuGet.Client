@@ -12,7 +12,7 @@ namespace NuGet.Packaging.Rules
 {
     internal class MisplacedAssemblyRule : IPackageRule
     {
-        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
         {
             foreach (IPackageFile file in builder.Files)
             {
@@ -40,22 +40,18 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackageIssueLogMessage CreatePackageIssueForAssembliesUnderLib(string target)
+        private static PackLogMessage CreatePackageIssueForAssembliesUnderLib(string target)
         {
-            return new PackageIssueLogMessage(
+            return PackLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyDirectlyUnderLibWarning, target),
-                NuGetLogCode.NU5101,
-                WarningLevel.Default,
-                LogLevel.Warning);
+                NuGetLogCode.NU5101);
         }
 
-        private static PackageIssueLogMessage CreatePackageIssueForAssembliesOutsideLib(string target)
+        private static PackLogMessage CreatePackageIssueForAssembliesOutsideLib(string target)
         {
-            return new PackageIssueLogMessage(
+            return PackLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyOutsideLibWarning, target),
-                NuGetLogCode.NU5100,
-                WarningLevel.Default,
-                LogLevel.Warning);
+                NuGetLogCode.NU5100);
         }
 
         /// <summary>

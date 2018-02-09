@@ -133,12 +133,12 @@ namespace NuGet.Commands
 
             if (_packArgs.InstallPackageToOutputPath)
             {
-                _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "Package", outputPath));
+                _packArgs.Logger.Log(PackLogMessage.CreateMessage(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "Package", outputPath), LogLevel.Minimal));
                 WriteResolvedNuSpecToPackageOutputDirectory(builder);
                 WriteSHA512PackageHash(builder);
             }
 
-            _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath));
+            _packArgs.Logger.Log(PackLogMessage.CreateMessage(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath), LogLevel.Minimal));
             return new PackageArchiveReader(outputPath);
         }
 
@@ -155,7 +155,7 @@ namespace NuGet.Commands
                 Path.GetDirectoryName(outputPath), 
                 new VersionFolderPathResolver(outputPath).GetManifestFileName(builder.Id, builder.Version));
 
-            _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "NuSpec", resolvedNuSpecOutputPath));
+            _packArgs.Logger.Log(PackLogMessage.CreateMessage(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "NuSpec", resolvedNuSpecOutputPath), LogLevel.Minimal));
 
             if (string.Equals(_packArgs.Path, resolvedNuSpecOutputPath, StringComparison.OrdinalIgnoreCase))
             {
@@ -187,7 +187,7 @@ namespace NuGet.Commands
             // We must use the Path.GetTempPath() which NuGetFolderPath.Temp uses as a root because writing temp files to the package directory with a guid would break some build tools caching
             var tempOutputPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetFileName(sha512OutputPath));
 
-            _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "SHA512", sha512OutputPath));
+            _packArgs.Logger.Log(PackLogMessage.CreateMessage(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "SHA512", sha512OutputPath), LogLevel.Minimal));
 
             byte[] sha512hash;
             var cryptoHashProvider = new CryptoHashProvider("SHA512");
@@ -783,6 +783,7 @@ namespace NuGet.Commands
                 treatWarningsAsErrors: _packArgs.GetPropertyValue("TreatWarningsAsErrors") ?? string.Empty,
                 warningsAsErrors: _packArgs.GetPropertyValue("WarningsAsErrors") ?? string.Empty,
                 noWarn: _packArgs.GetPropertyValue("NoWarn") ?? string.Empty);
+            _packArgs.Logger = new PackCollectorLogger(_packArgs.Logger, _packArgs.WarningProperties);
 
             if (String.IsNullOrEmpty(_packArgs.BasePath))
             {
@@ -803,6 +804,9 @@ namespace NuGet.Commands
             if(_packArgs.WarningProperties == null && _packArgs.PackTargetArgs == null)
             {
                 _packArgs.WarningProperties = factory.GetWarningPropertiesForProject();
+                // Reinitialize the logger with Console as the inner logger and the obtained warning properties
+                _packArgs.Logger = new PackCollectorLogger(_packArgs.Logger, _packArgs.WarningProperties);
+                factory.Logger = _packArgs.Logger;
             }
 
             // Add the additional Properties to the properties of the Project Factory
@@ -810,7 +814,9 @@ namespace NuGet.Commands
             {
                 if (factory.GetProjectProperties().ContainsKey(property.Key))
                 {
-                    _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_DuplicatePropertyKey, property.Key));
+                    _packArgs.Logger.Log(PackLogMessage.CreateWarning(
+                        String.Format(CultureInfo.CurrentCulture, Strings.Warning_DuplicatePropertyKey, property.Key),
+                        NuGetLogCode.NU5114));
                 }
                 factory.GetProjectProperties()[property.Key] = property.Value;
             }
@@ -1019,16 +1025,14 @@ namespace NuGet.Commands
         internal void AnalyzePackage(PackageArchiveReader package, PackageBuilder builder)
         {
             IEnumerable<IPackageRule> packageRules = Rules;
-            IList<PackageIssueLogMessage> issues = new List<PackageIssueLogMessage>();
+            IList<PackLogMessage> issues = new List<PackLogMessage>();
             NuGetVersion version;
 
             if (!NuGetVersion.TryParseStrict(package.GetIdentity().Version.ToString(), out version))
             {
-                issues.Add(new PackageIssueLogMessage(
+                issues.Add(PackLogMessage.CreateWarning(
                     String.Format(CultureInfo.CurrentCulture, Strings.Warning_SemanticVersion, package.GetIdentity().Version),
-                    NuGetLogCode.NU5113,
-                    WarningLevel.Default,
-                    LogLevel.Warning));
+                    NuGetLogCode.NU5113));
             }
 
             foreach (var rule in packageRules)
@@ -1038,8 +1042,6 @@ namespace NuGet.Commands
 
             if (issues.Count > 0)
             {
-                _packArgs.Logger.LogWarning(
-                    String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandPackageIssueSummary, builder.Id));
                 foreach (var issue in issues)
                 {
                     PrintPackageIssue(issue);
@@ -1047,16 +1049,12 @@ namespace NuGet.Commands
             }
         }
 
-        private void PrintPackageIssue(PackageIssueLogMessage issue)
+        private void PrintPackageIssue(PackLogMessage issue)
         {
-            //WriteLine(String.Empty);
-            //_packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueTitle, issue.Title));
-            //_packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueDescription, issue.Description));
-
-            //if (!String.IsNullOrEmpty(issue.Solution))
-            //{
-            //    _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueSolution, issue.Solution));
-            //}
+            if (!String.IsNullOrEmpty(issue.Message))
+            {
+                _packArgs.Logger.Log(issue);
+            }
         }
 
         internal static void ExcludeFilesForLibPackage(ICollection<IPackageFile> files)
@@ -1212,7 +1210,7 @@ namespace NuGet.Commands
 
         private void WriteLine(string message, object arg = null)
         {
-            _packArgs.Logger.LogInformation(String.Format(CultureInfo.CurrentCulture, message, arg?.ToString()));
+            _packArgs.Logger.Log(PackLogMessage.CreateMessage(String.Format(CultureInfo.CurrentCulture, message, arg?.ToString()), LogLevel.Information));
         }
 
         public static void AddLibraryDependency(LibraryDependency dependency, ISet<LibraryDependency> list)

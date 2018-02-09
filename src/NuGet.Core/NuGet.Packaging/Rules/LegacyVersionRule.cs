@@ -17,17 +17,15 @@ namespace NuGet.Packaging.Rules
         // NuGet 2.12 regex for version parsing.
         private const string LegacyRegex = @"^(?<Version>\d+(\s*\.\s*\d+){0,3})(?<Release>-[a-z][0-9a-z-]*)?$";
 
-        public IEnumerable<PackageIssueLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
         {
             var regex = new Regex(LegacyRegex, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
 
             if (!regex.IsMatch(builder.Version.ToFullString()))
             {
-                yield return new PackageIssueLogMessage(
+                yield return PackLogMessage.CreateWarning(
                     string.Format(CultureInfo.CurrentCulture, AnalysisResources.LegacyVersionWarning, builder.Version.ToFullString()),
-                    NuGetLogCode.NU5105,
-                    WarningLevel.Default,
-                    LogLevel.Warning);
+                    NuGetLogCode.NU5105);
             }
         }
     }
