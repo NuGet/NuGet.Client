@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -37,7 +36,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public SignerInfo SignerInfo { get; }
 
-        public abstract byte[] GetSignatureHashValue(HashAlgorithmName hashAlgorithm);
+        public abstract byte[] GetSignatureValue();
 
         protected Signature(SignerInfo signerInfo, SignatureType type)
         {

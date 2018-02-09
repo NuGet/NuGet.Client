@@ -250,7 +250,7 @@ namespace Test.Utility.Signing
         {
             var timestampRequest = new TimestampRequest
             {
-                SignatureValue = signature.GetBytes(),
+                Signature = signature.GetBytes(),
                 SigningSpec = SigningSpecifications.V1,
                 TimestampHashAlgorithm = signatureRequest.TimestampHashAlgorithm
             };

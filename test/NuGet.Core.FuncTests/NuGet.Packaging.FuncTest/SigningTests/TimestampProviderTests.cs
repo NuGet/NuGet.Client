@@ -55,7 +55,7 @@ namespace NuGet.Packaging.FuncTest
                 {
                     SigningSpec = SigningSpecifications.V1,
                     TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
-                    SignatureValue = signatureValue
+                    Signature = signatureValue
                 };
 
                 // Act
@@ -153,7 +153,7 @@ namespace NuGet.Packaging.FuncTest
                 {
                     SigningSpec = SigningSpecifications.V1,
                     TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
-                    SignatureValue = signatureValue
+                    Signature = signatureValue
                 };
 
                 // Act
@@ -181,7 +181,7 @@ namespace NuGet.Packaging.FuncTest
                 {
                     SigningSpec = SigningSpecifications.V1,
                     TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
-                    SignatureValue = signatureValue
+                    Signature = signatureValue
                 };
 
                 // Act
@@ -210,7 +210,7 @@ namespace NuGet.Packaging.FuncTest
                 {
                     SigningSpec = SigningSpecifications.V1,
                     TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
-                    SignatureValue = signatureValue
+                    Signature = signatureValue
                 };
 
                 // Act
@@ -355,7 +355,7 @@ namespace NuGet.Packaging.FuncTest
                     {
                         SigningSpec = SigningSpecifications.V1,
                         TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
-                        SignatureValue = signedCms.Encode()
+                        Signature = signedCms.Encode()
                     };
 
                     verifyTimestampData(timestampProvider, request);

@@ -75,16 +75,15 @@ namespace NuGet.Packaging.Signing
             }
 
             // Get the signatureValue from the signerInfo object
-            using (var signatureNativeCms = NativeCms.Decode(request.SignatureValue, detached: false))
+            using (var nativeCms = NativeCms.Decode(request.Signature, detached: false))
             {
-                var signatureValueHashByteArray = NativeCms.GetSignatureValueHash(
-                    request.TimestampHashAlgorithm,
-                    signatureNativeCms);
+                var signatureValue = nativeCms.GetPrimarySignatureSignatureValue();
+                var messageHash = request.TimestampHashAlgorithm.ComputeHash(signatureValue);
 
                 // Allows us to track the request.
                 var nonce = GenerateNonce();
                 var rfc3161TimestampRequest = new Rfc3161TimestampRequest(
-                    signatureValueHashByteArray,
+                    messageHash,
                     request.TimestampHashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(),
                     nonce: nonce,
                     requestSignerCertificates: true);
@@ -96,7 +95,7 @@ namespace NuGet.Packaging.Signing
                     TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
 
                 // quick check for response validity
-                ValidateTimestampResponse(nonce, signatureValueHashByteArray, timestampToken);
+                ValidateTimestampResponse(nonce, messageHash, timestampToken);
 
                 var timestampCms = timestampToken.AsSignedCms();
                 ValidateTimestampCms(request.SigningSpec, timestampCms);
@@ -117,9 +116,9 @@ namespace NuGet.Packaging.Signing
                 var timestampCmsWithChainCertificates = EnsureCertificatesInCertificatesCollection(timestampCms, chain);
                 var bytes = timestampCmsWithChainCertificates.Encode();
 
-                signatureNativeCms.AddTimestamp(bytes);
+                nativeCms.AddTimestamp(bytes);
 
-                return signatureNativeCms.Encode();
+                return nativeCms.Encode();
             }
         }
 
@@ -180,14 +179,14 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private static void ValidateTimestampResponse(byte[] nonce, byte[] data, Rfc3161TimestampToken timestampToken)
+        private static void ValidateTimestampResponse(byte[] nonce, byte[] messageHash, Rfc3161TimestampToken timestampToken)
         {
             if (!nonce.SequenceEqual(timestampToken.TokenInfo.GetNonce()))
             {
                 throw new TimestampException(NuGetLogCode.NU3026, Strings.TimestampFailureNonceMismatch);
             }
 
-            if (!timestampToken.TokenInfo.HasMessageHash(data))
+            if (!timestampToken.TokenInfo.HasMessageHash(messageHash))
             {
                 throw new TimestampException(NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed);
             }

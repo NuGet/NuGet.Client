@@ -259,7 +259,7 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(4, attributes.Count);
 
-                VerifyAttributesRepository(attributes, request, v3ServiceIndexUrl, packageOwners);
+                VerifyAttributesRepository(attributes, request);
             }
         }
 
@@ -276,7 +276,7 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(4, attributes.Count);
 
-                VerifyAttributesRepository(attributes, request, v3ServiceIndexUrl, packageOwners);
+                VerifyAttributesRepository(attributes, request);
             }
         }
 
@@ -293,10 +293,69 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(5, attributes.Count);
 
-                VerifyAttributesRepository(attributes, request, v3ServiceIndexUrl, packageOwners);
+                VerifyAttributesRepository(attributes, request);
             }
         }
 
+        [Fact]
+        public void CreateCmsSigner_WhenRequestNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => SigningUtility.CreateCmsSigner(request: null, logger: NullLogger.Instance));
+
+            Assert.Equal("request", exception.ParamName);
+        }
+
+        [Fact]
+        public void CreateCmsSigner_WhenLoggerNull_Throws()
+        {
+            using (var request = new AuthorSignPackageRequest(new X509Certificate2(), Common.HashAlgorithmName.SHA256))
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => SigningUtility.CreateCmsSigner(request, logger: null));
+
+                Assert.Equal("logger", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public void CreateCmsSigner_WithAuthorSignPackageRequest_ReturnsInstance()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            using (var request = new AuthorSignPackageRequest(certificate, Common.HashAlgorithmName.SHA256))
+            {
+                var signer = SigningUtility.CreateCmsSigner(request, NullLogger.Instance);
+
+                Assert.Equal(request.Certificate, signer.Certificate);
+                Assert.Equal(request.SignatureHashAlgorithm.ConvertToOidString(), signer.DigestAlgorithm.Value);
+
+                VerifyAttributes(signer.SignedAttributes, request);
+            }
+        }
+
+        [Fact]
+        public void CreateCmsSigner_WithRepositorySignPackageRequest_ReturnsInstance()
+        {
+            var v3ServiceIndexUrl = new Uri("https://test.test", UriKind.Absolute);
+            var packageOwners = new[] { "a", "b", "c" };
+
+            using (var certificate = _fixture.GetDefaultCertificate())
+            using (var request = new RepositorySignPackageRequest(
+                certificate,
+                Common.HashAlgorithmName.SHA256,
+                Common.HashAlgorithmName.SHA256,
+                SignaturePlacement.PrimarySignature,
+                v3ServiceIndexUrl,
+                packageOwners))
+            {
+                var signer = SigningUtility.CreateCmsSigner(request, NullLogger.Instance);
+
+                Assert.Equal(request.Certificate, signer.Certificate);
+                Assert.Equal(request.SignatureHashAlgorithm.ConvertToOidString(), signer.DigestAlgorithm.Value);
+
+                VerifyAttributesRepository(signer.SignedAttributes, request);
+            }
+        }
 
         private static void VerifyAttributes(
             CryptographicAttributeObjectCollection attributes,
@@ -352,9 +411,7 @@ namespace NuGet.Packaging.Test
 
         private static void VerifyAttributesRepository(
             CryptographicAttributeObjectCollection attributes,
-            SignPackageRequest request,
-            Uri v3ServiceIndexUrl,
-            IReadOnlyList<string> packageOwners)
+            RepositorySignPackageRequest request)
         {
             VerifyAttributes(attributes, request);
 
@@ -371,7 +428,7 @@ namespace NuGet.Packaging.Test
                         var nugetV3ServiceIndexUrl = NuGetV3ServiceIndexUrl.Read(attribute.Values[0].RawData);
 
                         Assert.True(nugetV3ServiceIndexUrl.V3ServiceIndexUrl.IsAbsoluteUri);
-                        Assert.Equal(v3ServiceIndexUrl.OriginalString, nugetV3ServiceIndexUrl.V3ServiceIndexUrl.OriginalString);
+                        Assert.Equal(request.V3ServiceIndexUrl.OriginalString, nugetV3ServiceIndexUrl.V3ServiceIndexUrl.OriginalString);
 
                         nugetV3ServiceIndexUrlAttributeFound = true;
                         break;
@@ -379,7 +436,7 @@ namespace NuGet.Packaging.Test
                     case Oids.NuGetPackageOwners:
                         var nugetPackageOwners = NuGetPackageOwners.Read(attribute.Values[0].RawData);
 
-                        Assert.Equal(packageOwners, nugetPackageOwners.PackageOwners);
+                        Assert.Equal(request.PackageOwners, nugetPackageOwners.PackageOwners);
 
                         nugetPackageOwnersAttributeFound = true;
                         break;
@@ -387,7 +444,7 @@ namespace NuGet.Packaging.Test
             }
 
             Assert.True(nugetV3ServiceIndexUrlAttributeFound);
-            Assert.Equal(packageOwners != null && packageOwners.Count > 0, nugetPackageOwnersAttributeFound);
+            Assert.Equal(request.PackageOwners != null && request.PackageOwners.Count > 0, nugetPackageOwnersAttributeFound);
         }
 #endif
 

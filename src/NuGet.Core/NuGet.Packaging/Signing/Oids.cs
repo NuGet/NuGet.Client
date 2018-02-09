@@ -8,6 +8,9 @@ namespace NuGet.Packaging.Signing
         // RFC 5652 "signing-time" attribute https://tools.ietf.org/html/rfc5652#section-11.3
         public const string SigningTime = "1.2.840.113549.1.9.5";
 
+        // RFC 5652 "countersignature" attribute https://tools.ietf.org/html/rfc5652#section-11.4
+        public const string Countersignature = "1.2.840.113549.1.9.6";
+
         // RFC 3161 appendix A (https://tools.ietf.org/html/rfc3161#page-20)
         public const string SignatureTimeStampTokenAttribute = "1.2.840.113549.1.9.16.2.14";
 
