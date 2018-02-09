@@ -64,32 +64,30 @@ namespace NuGet.Packaging.Signing
         /// <param name="issues"></param>
         /// <returns></returns>
         internal Timestamp GetValidTimestamp(
-            bool allowMultipleTimestamps,
-            bool allowIgnoreTimestamp,
-            bool allowNoTimestamp,
-            bool allowUnknownRevocation,
+            SignedPackageVerifierSettings settings,
             HashAlgorithmName fingerprintAlgorithm,
             List<SignatureLog> issues)
         {
             var timestamps = Timestamps;
+            settings = settings ?? SignedPackageVerifierSettings.Default;
 
             if (timestamps.Count == 0)
             {
-                issues?.Add(SignatureLog.Issue(!allowNoTimestamp, NuGetLogCode.NU3027, Strings.ErrorNoTimestamp));
-                if (!allowNoTimestamp)
+                issues?.Add(SignatureLog.Issue(!settings.AllowNoTimestamp, NuGetLogCode.NU3027, Strings.ErrorNoTimestamp));
+                if (!settings.AllowNoTimestamp)
                 {
                     throw new TimestampException(Strings.TimestampInvalid);
                 }
             }
 
-            if (timestamps.Count > 1 && !allowMultipleTimestamps)
+            if (timestamps.Count > 1 && !settings.AllowMultipleTimestamps)
             {
                 issues?.Add(SignatureLog.Issue(true, NuGetLogCode.NU3000, Strings.ErrorMultipleTimestamps));
                 throw new TimestampException(Strings.TimestampInvalid);
             }
 
             var timestamp = timestamps.FirstOrDefault();
-            if (timestamp != null && !timestamp.Verify(this, allowIgnoreTimestamp, allowUnknownRevocation, fingerprintAlgorithm, issues) && !allowIgnoreTimestamp)
+            if (timestamp != null && !timestamp.Verify(this, settings, fingerprintAlgorithm, issues) && !settings.AllowIgnoreTimestamp)
             {
                 throw new TimestampException(Strings.TimestampInvalid);
             }
@@ -110,14 +108,14 @@ namespace NuGet.Packaging.Signing
         /// <returns>Status of trust for signature.</returns>
         internal virtual SignatureVerificationStatus Verify(
             Timestamp timestamp,
-            bool allowUntrusted,
-            bool allowUntrustedSelfSignedCertificate,
-            bool allowUnknownRevocation,
+            SignedPackageVerifierSettings settings,
             HashAlgorithmName fingerprintAlgorithm,
             X509Certificate2Collection certificateExtraStore,
             List<SignatureLog> issues)
         {
-            var treatIssueAsError = !allowUntrusted;
+            settings = settings ?? SignedPackageVerifierSettings.Default;
+
+            var treatIssueAsError = !settings.AllowUntrusted;
             var certificate = SignerInfo.Certificate;
             if (certificate == null)
             {
@@ -200,9 +198,9 @@ namespace NuGet.Packaging.Signing
                         if (isSelfSignedCertificate &&
                             CertificateChainUtility.TryGetStatusMessage(chainStatuses, X509ChainStatusFlags.UntrustedRoot, out messages))
                         {
-                            issues?.Add(SignatureLog.Issue(!allowUntrustedSelfSignedCertificate, NuGetLogCode.NU3018, messages.First()));
+                            issues?.Add(SignatureLog.Issue(!settings.AllowUntrustedSelfIssuedCertificate, NuGetLogCode.NU3018, messages.First()));
 
-                            if (!chainBuildingHasIssues && allowUntrustedSelfSignedCertificate)
+                            if (!chainBuildingHasIssues && settings.AllowUntrustedSelfIssuedCertificate)
                             {
                                 return SignatureVerificationStatus.Trusted;
                             }
@@ -215,11 +213,11 @@ namespace NuGet.Packaging.Signing
                             {
                                 foreach (var message in messages)
                                 {
-                                    issues?.Add(SignatureLog.Issue(!allowUnknownRevocation, NuGetLogCode.NU3018, message));
+                                    issues?.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3018, message));
                                 }
                             }
 
-                            if (!chainBuildingHasIssues && allowUnknownRevocation)
+                            if (!chainBuildingHasIssues && settings.AllowUnknownRevocation)
                             {
                                 return SignatureVerificationStatus.Trusted;
                             }

@@ -15,32 +15,32 @@ namespace NuGet.Packaging.Signing
     public sealed class RepositoryPrimarySignature : PrimarySignature, IRepositorySignature
     {
 #if IS_DESKTOP
-        public Uri NuGetV3ServiceIndexUrl { get; }
-        public IReadOnlyList<string> NuGetPackageOwners { get; }
+        public Uri V3ServiceIndexUrl { get; }
+        public IReadOnlyList<string> PackageOwners { get; }
 
         public RepositoryPrimarySignature(SignedCms signedCms)
             : base(signedCms, SignatureType.Repository)
         {
-            NuGetV3ServiceIndexUrl = AttributeUtility.GetNuGetV3ServiceIndexUrl(SignerInfo.SignedAttributes);
-            NuGetPackageOwners = AttributeUtility.GetNuGetPackageOwners(SignerInfo.SignedAttributes);
+            V3ServiceIndexUrl = AttributeUtility.GetNuGetV3ServiceIndexUrl(SignerInfo.SignedAttributes);
+            PackageOwners = AttributeUtility.GetNuGetPackageOwners(SignerInfo.SignedAttributes);
         }
 
         internal override SignatureVerificationStatus Verify(
             Timestamp timestamp,
-            bool allowUntrusted,
-            bool allowUntrustedSelfSignedCertificate,
-            bool allowUnknownRevocation,
+            SignedPackageVerifierSettings settings,
             HashAlgorithmName fingerprintAlgorithm,
             X509Certificate2Collection certificateExtraStore,
             List<SignatureLog> issues)
         {
+            settings = settings ?? SignedPackageVerifierSettings.Default;
+
             issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
-            issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, NuGetV3ServiceIndexUrl.ToString())));
-            if (NuGetPackageOwners != null)
+            issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, V3ServiceIndexUrl.ToString())));
+            if (PackageOwners != null)
             {
-                issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetPackageOwners, string.Join(", ", NuGetPackageOwners))));
+                issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetPackageOwners, string.Join(", ", PackageOwners))));
             }
-            return base.Verify(timestamp, allowUntrusted, allowUntrustedSelfSignedCertificate, allowUnknownRevocation, fingerprintAlgorithm, certificateExtraStore, issues);
+            return base.Verify(timestamp, settings, fingerprintAlgorithm, certificateExtraStore, issues);
         }
 #endif
     }

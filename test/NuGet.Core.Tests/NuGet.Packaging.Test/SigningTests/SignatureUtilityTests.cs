@@ -77,7 +77,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetPrimarySignatureTimestampSignatureCertificates_WhenSignatureNull_Throws()
+        public void GetPrimarySignatureTimestampCertificates_WhenSignatureNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => SignatureUtility.GetPrimarySignatureTimestampCertificates(signature: null));
@@ -86,7 +86,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetPrimarySignatureTimestampSignatureCertificates_WithValidTimestamp_ReturnsCertificates()
+        public void GetPrimarySignatureTimestampCertificates_WithValidTimestamp_ReturnsCertificates()
         {
             var signature = PrimarySignature.Load(SignTestUtility.GetResourceBytes("SignatureWithTimestamp.p7s"));
 

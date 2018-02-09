@@ -23,14 +23,14 @@ using Xunit;
 namespace NuGet.Packaging.FuncTest
 {
     [Collection("Signing Functional Test Collection")]
-    public class SignatureTests
+    public class PrimarySignatureTests
     {
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
 
-        public SignatureTests(SigningTestFixture fixture)
+        public PrimarySignatureTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedTestCert = _testFixture.TrustedTestCertificate;

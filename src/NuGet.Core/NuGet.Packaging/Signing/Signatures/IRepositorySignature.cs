@@ -9,9 +9,9 @@ namespace NuGet.Packaging.Signing
     public interface IRepositorySignature
     {
 #if IS_DESKTOP
-        Uri NuGetV3ServiceIndexUrl { get; }
+        Uri V3ServiceIndexUrl { get; }
 
-        IReadOnlyList<string> NuGetPackageOwners { get; }
+        IReadOnlyList<string> PackageOwners { get; }
 #endif
     }
 }

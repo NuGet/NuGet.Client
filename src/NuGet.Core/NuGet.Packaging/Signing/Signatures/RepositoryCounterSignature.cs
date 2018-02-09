@@ -13,20 +13,20 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
-    public sealed class RepositoryCounterSignature : Signature, IRepositorySignature
+    public sealed class RepositoryCountersignature : Signature, IRepositorySignature
     {
 #if IS_DESKTOP
-        public Uri NuGetV3ServiceIndexUrl { get; }
-        public IReadOnlyList<string> NuGetPackageOwners { get; }
+        public Uri V3ServiceIndexUrl { get; }
+        public IReadOnlyList<string> PackageOwners { get; }
 
-        private RepositoryCounterSignature(SignerInfo counterSignerInfo, Uri nuGetV3ServiceIndexUrl)
+        private RepositoryCountersignature(SignerInfo counterSignerInfo, Uri v3ServiceIndexUrl, IReadOnlyList<string> packageOwners)
             : base(counterSignerInfo, SignatureType.Repository)
         {
-            NuGetV3ServiceIndexUrl = nuGetV3ServiceIndexUrl;
-            NuGetPackageOwners = AttributeUtility.GetNuGetPackageOwners(SignerInfo.SignedAttributes);
+            V3ServiceIndexUrl = v3ServiceIndexUrl;
+            PackageOwners = packageOwners;
         }
 
-        public static RepositoryCounterSignature GetRepositoryCounterSignature(PrimarySignature primarySignature)
+        public static RepositoryCountersignature GetRepositoryCounterSignature(PrimarySignature primarySignature)
         {
             if (primarySignature.Type == SignatureType.Repository)
             {
@@ -34,7 +34,7 @@ namespace NuGet.Packaging.Signing
             }
 
             var counterSignatures = primarySignature.SignerInfo.CounterSignerInfos;
-            RepositoryCounterSignature repositoryCountersignature = null;
+            RepositoryCountersignature repositoryCountersignature = null;
 
             // We only care about the repository countersignatures, not any kind of counter signature
             foreach (var counterSignature in counterSignatures)
@@ -46,8 +46,9 @@ namespace NuGet.Packaging.Signing
                     {
                         throw new SignatureException(NuGetLogCode.NU3032, Strings.Error_NotOneRepositoryCounterSignature);
                     }
-                    var nuGetV3ServiceIndexUrl = AttributeUtility.GetNuGetV3ServiceIndexUrl(counterSignature.SignedAttributes);
-                    repositoryCountersignature = new RepositoryCounterSignature(counterSignature, nuGetV3ServiceIndexUrl);
+                    var v3ServiceIndexUrl = AttributeUtility.GetNuGetV3ServiceIndexUrl(counterSignature.SignedAttributes);
+                    var packageOwners = AttributeUtility.GetNuGetPackageOwners(counterSignature.SignedAttributes);
+                    repositoryCountersignature = new RepositoryCountersignature(counterSignature, v3ServiceIndexUrl, packageOwners);
                 }
             }
 
@@ -72,23 +73,23 @@ namespace NuGet.Packaging.Signing
 
         internal override SignatureVerificationStatus Verify(
             Timestamp timestamp,
-            bool allowUntrusted,
-            bool allowUntrustedSelfSignedCertificate,
-            bool allowUnknownRevocation,
+            SignedPackageVerifierSettings settings,
             HashAlgorithmName fingerprintAlgorithm,
             X509Certificate2Collection certificateExtraStore,
             List<SignatureLog> issues)
         {
+            settings = settings ?? SignedPackageVerifierSettings.Default;
+
             issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
-            issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, NuGetV3ServiceIndexUrl.ToString())));
-            if (NuGetPackageOwners != null)
+            issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, V3ServiceIndexUrl.ToString())));
+            if (PackageOwners != null)
             {
-                issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetPackageOwners, string.Join(", ", NuGetPackageOwners))));
+                issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetPackageOwners, string.Join(", ", PackageOwners))));
             }
-            return base.Verify(timestamp, allowUntrusted, allowUntrustedSelfSignedCertificate, allowUnknownRevocation, fingerprintAlgorithm, certificateExtraStore, issues);
+            return base.Verify(timestamp, settings, fingerprintAlgorithm, certificateExtraStore, issues);
         }
 #else
-        public static RepositoryCounterSignature GetRepositoryCounterSignature(PrimarySignature primarySignature)
+        public static RepositoryCountersignature GetRepositoryCounterSignature(PrimarySignature primarySignature)
         {
             return null;
         }

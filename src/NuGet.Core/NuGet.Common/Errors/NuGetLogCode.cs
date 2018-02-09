@@ -380,7 +380,7 @@ namespace NuGet.Common
         NU3032 = 3032,
 
         /// <summary>
-        /// A repository primary signature should not have a repository countersignatures.
+        /// A repository primary signature must not have a repository countersignature.
         /// </summary>
         NU3033 = 3033,
 

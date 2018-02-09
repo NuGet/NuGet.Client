@@ -22,15 +22,15 @@ namespace NuGet.Packaging.Signing
 
         internal override SignatureVerificationStatus Verify(
             Timestamp timestamp,
-            bool allowUntrusted,
-            bool allowUntrustedSelfSignedCertificate,
-            bool allowUnknownRevocation,
+            SignedPackageVerifierSettings settings,
             HashAlgorithmName fingerprintAlgorithm,
             X509Certificate2Collection certificateExtraStore,
             List<SignatureLog> issues)
         {
+            settings = settings ?? SignedPackageVerifierSettings.Default;
+
             issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
-            return base.Verify(timestamp, allowUntrusted, allowUntrustedSelfSignedCertificate, allowUnknownRevocation, fingerprintAlgorithm, certificateExtraStore, issues);
+            return base.Verify(timestamp, settings, fingerprintAlgorithm, certificateExtraStore, issues);
         }
 #endif
     }

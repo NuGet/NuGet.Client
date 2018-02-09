@@ -40,10 +40,7 @@ namespace NuGet.Packaging.Signing
             try
             {
                 validTimestamp = signature.GetValidTimestamp(
-                    settings.AllowMultipleTimestamps,
-                    settings.AllowIgnoreTimestamp,
-                    settings.AllowNoTimestamp,
-                    settings.AllowUnknownRevocation,
+                    settings,
                     _fingerprintAlgorithm,
                     timestampIssues);
             }
@@ -57,9 +54,7 @@ namespace NuGet.Packaging.Signing
 
             var status = signature.Verify(
                 validTimestamp,
-                settings.AllowUntrusted,
-                settings.AllowUntrustedSelfSignedCertificate,
-                settings.AllowUnknownRevocation,
+                settings,
                 _fingerprintAlgorithm,
                 certificateExtraStore,
                 signatureIssues);

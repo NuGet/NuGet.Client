@@ -11,11 +11,11 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class SignatureTests : IClassFixture<CertificatesFixture>
+    public class PrimarySignatureTests : IClassFixture<CertificatesFixture>
     {
         private readonly CertificatesFixture _fixture;
 
-        public SignatureTests(CertificatesFixture fixture)
+        public PrimarySignatureTests(CertificatesFixture fixture)
         {
             if (fixture == null)
             {

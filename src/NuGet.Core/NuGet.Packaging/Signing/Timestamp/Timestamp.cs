@@ -100,17 +100,18 @@ namespace NuGet.Packaging.Signing
         /// <returns>true if the timestamp meets the requierements, false otherwise.</returns>
         internal bool Verify(
             Signature signature,
-            bool allowIgnoreTimestamp,
-            bool allowUnknownRevocation,
+            SignedPackageVerifierSettings settings,
             HashAlgorithmName fingerprintAlgorithm,
             List<SignatureLog> issues)
         {
+            settings = settings ?? SignedPackageVerifierSettings.Default;
+
             if (signature == null)
             {
                 throw new ArgumentNullException(nameof(signature));
             }
 
-            var treatIssueAsError = !allowIgnoreTimestamp;
+            var treatIssueAsError = !settings.AllowIgnoreTimestamp;
             var timestamperCertificate = SignerInfo.Certificate;
             if (timestamperCertificate == null)
             {
@@ -175,11 +176,11 @@ namespace NuGet.Packaging.Signing
                         {
                             foreach (var message in messages)
                             {
-                                issues?.Add(SignatureLog.Issue(!allowUnknownRevocation, NuGetLogCode.NU3028, message));
+                                issues?.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3028, message));
                             }
                         }
 
-                        if (!chainBuildingHasIssues && (allowIgnoreTimestamp || allowUnknownRevocation))
+                        if (!chainBuildingHasIssues && (settings.AllowIgnoreTimestamp || settings.AllowUnknownRevocation))
                         {
                             return true;
                         }
