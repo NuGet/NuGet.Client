@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public bool AllowUntrusted { get; }
 
-        public bool AllowUntrustedSelfSignedCertificate { get; }
+        public bool AllowUntrustedSelfIssuedCertificate { get; }
 
         public bool AllowIgnoreTimestamp { get; }
 
@@ -42,7 +42,7 @@ namespace NuGet.Packaging.Signing
         {
             AllowUnsigned = allowUnsigned;
             AllowUntrusted = allowUntrusted;
-            AllowUntrustedSelfSignedCertificate = allowUntrustedSelfSignedCertificate;
+            AllowUntrustedSelfIssuedCertificate = allowUntrustedSelfSignedCertificate;
             AllowIgnoreTimestamp = allowIgnoreTimestamp;
             AllowMultipleTimestamps = allowMultipleTimestamps;
             AllowNoTimestamp = allowNoTimestamp;

@@ -37,7 +37,7 @@ namespace NuGet.Packaging.Signing
                 {
                     try
                     {
-                        var signature = await package.GetSignatureAsync(token);
+                        var signature = await package.GetPrimarySignatureAsync(token);
 
                         if (signature != null)
                         {

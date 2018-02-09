@@ -518,4 +518,21 @@ Valid from:</comment>
   <data name="TimestampMessageImprintUnsupportedHashAlgorithm" xml:space="preserve">
     <value>The timestamp's message imprint uses an unsupported hash algorithm.</value>
   </data>
+  <data name="Error_NotOneRepositoryCounterSignature" xml:space="preserve">
+    <value>The package signature contains multiple repository countersignatures.</value>
+  </data>
+  <data name="NuGetPackageOwners" xml:space="preserve">
+    <value>nuget-package-owners: {0}</value>
+    <comment>0 - The nuget-package-owners value</comment>
+  </data>
+  <data name="NuGetV3ServiceIndexUrl" xml:space="preserve">
+    <value>nuget-v3-service-index-url: {0}</value>
+    <comment>0- The nuget-v3-service-index-url value</comment>
+  </data>
+  <data name="Error_RepositorySignatureShouldNotHaveARepositoryCountersignature" xml:space="preserve">
+    <value>A repository primary signature should not have a repository countersignatures.</value>
+  </data>
+  <data name="InvalidRepositoryCounterSignature" xml:space="preserve">
+    <value>The repository countersignature is invalid.</value>
+  </data>
 </root>

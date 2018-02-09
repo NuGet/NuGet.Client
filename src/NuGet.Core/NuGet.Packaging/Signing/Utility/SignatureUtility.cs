@@ -34,7 +34,7 @@ namespace NuGet.Packaging.Signing
         /// <remarks>
         /// WARNING:  This method does not perform revocation, trust, or certificate validity checking.
         /// </remarks>
-        public static IReadOnlyList<X509Certificate2> GetPrimarySignatureCertificates(Signature signature)
+        public static IReadOnlyList<X509Certificate2> GetPrimarySignatureCertificates(PrimarySignature signature)
         {
             if (signature == null)
             {
@@ -48,7 +48,7 @@ namespace NuGet.Packaging.Signing
                 includeChain: true);
         }
 
-        internal static IReadOnlyList<X509Certificate2> GetPrimarySignatureSigningCertificate(
+        internal static IReadOnlyList<X509Certificate2> GetPrimarySignatureCertificates(
             SignedCms signedCms,
             SignerInfo signerInfo,
             SigningSpecifications signingSpecifications)
@@ -115,8 +115,8 @@ namespace NuGet.Packaging.Signing
         /// <remarks>
         /// WARNING:  This method does not perform revocation, trust, or certificate validity checking.
         /// </remarks>
-        public static IReadOnlyList<X509Certificate2> GetPrimarySignatureTimestampSignatureCertificates(
-            Signature signature)
+        public static IReadOnlyList<X509Certificate2> GetPrimarySignatureTimestampCertificates(
+            PrimarySignature signature)
         {
             if (signature == null)
             {
@@ -130,23 +130,23 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(NuGetLogCode.NU3029, Strings.PrimarySignatureHasNoTimestamp);
             }
 
-            return GetTimestampSignatureSigningCertificates(
+            return GetTimestampCertificates(
                 timestamp.SignedCms,
                 SigningSpecifications.V1,
                 includeChain: true);
         }
 
-        internal static IReadOnlyList<X509Certificate2> GetTimestampSignatureSigningCertificate(
+        internal static IReadOnlyList<X509Certificate2> GetTimestampCertificates(
             SignedCms signedCms,
             SigningSpecifications signingSpecifications)
         {
-            return GetTimestampSignatureSigningCertificates(
+            return GetTimestampCertificates(
               signedCms,
               signingSpecifications,
               includeChain: false);
         }
 
-        internal static IReadOnlyList<X509Certificate2> GetTimestampSignatureSigningCertificates(
+        internal static IReadOnlyList<X509Certificate2> GetTimestampCertificates(
             SignedCms signedCms,
             SigningSpecifications signingSpecifications,
             bool includeChain)

@@ -17,7 +17,7 @@ namespace NuGet.Packaging.Signing
         /// Get package signature.
         /// </summary>
         /// <remarks>Returns a null if the package is unsigned.</remarks>
-        Task<Signature> GetSignatureAsync(CancellationToken token);
+        Task<PrimarySignature> GetPrimarySignatureAsync(CancellationToken token);
 
         /// <summary>
         /// Check if a package contains signing information.

@@ -197,6 +197,24 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package signature contains multiple repository countersignatures..
+        /// </summary>
+        internal static string Error_NotOneRepositoryCounterSignature {
+            get {
+                return ResourceManager.GetString("Error_NotOneRepositoryCounterSignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A repository primary signature should not have a repository countersignatures..
+        /// </summary>
+        internal static string Error_RepositorySignatureShouldNotHaveARepositoryCountersignature {
+            get {
+                return ResourceManager.GetString("Error_RepositorySignatureShouldNotHaveARepositoryCountersignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Byte signature not found in package archive:  0x{0}.
         /// </summary>
         internal static string ErrorByteSignatureNotFound {
@@ -485,6 +503,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package {0} signature is invalid..
+        /// </summary>
+        internal static string InvalidPackageSignature {
+            get {
+                return ResourceManager.GetString("InvalidPackageSignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package signature file entry is invalid..
         /// </summary>
         internal static string InvalidPackageSignatureFileEntry {
@@ -517,6 +544,15 @@ namespace NuGet.Packaging {
         internal static string InvalidPrimarySignature {
             get {
                 return ResourceManager.GetString("InvalidPrimarySignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The repository countersignature is invalid..
+        /// </summary>
+        internal static string InvalidRepositoryCounterSignature {
+            get {
+                return ResourceManager.GetString("InvalidRepositoryCounterSignature", resourceCulture);
             }
         }
         
@@ -602,6 +638,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to nuget-package-owners: {0}.
+        /// </summary>
+        internal static string NuGetPackageOwners {
+            get {
+                return ResourceManager.GetString("NuGetPackageOwners", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The nuget-package-owners attribute is invalid..
         /// </summary>
         internal static string NuGetPackageOwnersInvalid {
@@ -616,6 +661,15 @@ namespace NuGet.Packaging {
         internal static string NuGetPackageOwnersInvalidValue {
             get {
                 return ResourceManager.GetString("NuGetPackageOwnersInvalidValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget-v3-service-index-url: {0}.
+        /// </summary>
+        internal static string NuGetV3ServiceIndexUrl {
+            get {
+                return ResourceManager.GetString("NuGetV3ServiceIndexUrl", resourceCulture);
             }
         }
         

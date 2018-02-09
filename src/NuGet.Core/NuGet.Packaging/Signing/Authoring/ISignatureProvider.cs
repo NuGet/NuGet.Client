@@ -21,6 +21,6 @@ namespace NuGet.Packaging.Signing
         /// <param name="logger">Logger</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>A signature for the package.</returns>
-        Task<Signature> CreateSignatureAsync(SignPackageRequest request, SignatureContent signatureContent, ILogger logger, CancellationToken token);
+        Task<PrimarySignature> CreatePrimarySignatureAsync(SignPackageRequest request, SignatureContent signatureContent, ILogger logger, CancellationToken token);
     }
 }

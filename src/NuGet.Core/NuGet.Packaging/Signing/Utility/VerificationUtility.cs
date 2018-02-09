@@ -13,6 +13,14 @@ namespace NuGet.Packaging.Signing
     {
         internal static bool IsSigningCertificateValid(X509Certificate2 certificate, bool treatIssuesAsErrors, List<SignatureLog> issues)
         {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+            if (issues == null)
+            {
+                throw new ArgumentNullException(nameof(issues));
+            }
             var isValid = true;
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(certificate))
@@ -43,16 +51,26 @@ namespace NuGet.Packaging.Signing
         }
 
 #if IS_DESKTOP
-        internal static bool IsTimestampValid(Timestamp timestamp, byte[] data, bool treatIssuesAsErrors, List<SignatureLog> issues, SigningSpecifications spec)
+        internal static bool IsTimestampValid(Timestamp timestamp, Signature signature, bool treatIssuesAsErrors, List<SignatureLog> issues, SigningSpecifications spec)
         {
+            if (timestamp == null)
+            {
+                throw new ArgumentNullException(nameof(timestamp));
+            }
+            if (signature == null)
+            {
+                throw new ArgumentNullException(nameof(signature));
+            }
+            if (issues == null)
+            {
+                throw new ArgumentNullException(nameof(issues));
+            }
+
+            // Default to specification v1
+            spec = spec ?? SigningSpecifications.V1;
+
             var isValid = true;
             var signerInfo = timestamp.SignerInfo;
-
-            if (!timestamp.TstInfo.HasMessageHash(data))
-            {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed));
-                isValid = false;
-            }
 
             if (timestamp.SignerInfo.Certificate != null)
             {
@@ -82,6 +100,22 @@ namespace NuGet.Packaging.Signing
                 if (!spec.AllowedHashAlgorithmOids.Contains(signerInfo.DigestAlgorithm.Value))
                 {
                     issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3024, Strings.TimestampUnsupportedSignatureAlgorithm));
+                    isValid = false;
+                }
+
+                try
+                {
+                    var hashAlgorithm = CryptoHashUtility.OidToHashAlgorithmName(timestamp.TstInfo.HashAlgorithmId.Value);
+                    if (!timestamp.TstInfo.HasMessageHash(signature.GetSignatureHashValue(hashAlgorithm)))
+                    {
+                        issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed));
+                        isValid = false;
+                    }
+                }
+                catch
+                {
+                    // If the hash algorithm is not supported OidToHashAlgorithmName will throw
+                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3030, Strings.TimestampMessageImprintUnsupportedHashAlgorithm));
                     isValid = false;
                 }
 

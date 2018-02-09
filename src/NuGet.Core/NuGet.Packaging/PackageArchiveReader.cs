@@ -227,7 +227,7 @@ namespace NuGet.Packaging
             }
         }
 
-        public override async Task<Signature> GetSignatureAsync(CancellationToken token)
+        public override async Task<PrimarySignature> GetPrimarySignatureAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -236,7 +236,7 @@ namespace NuGet.Packaging
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
 
-            Signature signature = null;
+            PrimarySignature signature = null;
 
             if (await IsSignedAsync(token))
             {
@@ -246,7 +246,7 @@ namespace NuGet.Packaging
                     using (var signatureEntryStream = signatureEntry.Open())
                     {
 #if IS_DESKTOP
-                        signature = Signature.Load(signatureEntryStream);
+                        signature = PrimarySignature.Load(signatureEntryStream);
 #endif
                     }
                 }

@@ -546,7 +546,7 @@ namespace NuGet.Packaging
             throw new NotImplementedException();
         }
 
-        public abstract Task<Signature> GetSignatureAsync(CancellationToken token);
+        public abstract Task<PrimarySignature> GetPrimarySignatureAsync(CancellationToken token);
 
         public abstract Task<bool> IsSignedAsync(CancellationToken token);
 

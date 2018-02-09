@@ -13,13 +13,13 @@ namespace NuGet.Packaging.Signing
 {
     public class IntegrityVerificationProvider : ISignatureVerificationProvider
     {
-        public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings, CancellationToken token)
+        public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
             return VerifyPackageIntegrityAsync(package, signature, settings);
         }
 
 #if IS_DESKTOP
-        private async Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings)
+        private async Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             var status = SignatureVerificationStatus.Untrusted;
             var issues = new List<SignatureLog>();
@@ -51,7 +51,7 @@ namespace NuGet.Packaging.Signing
             return new SignedPackageVerificationResult(status, signature, issues);
         }
 #else
-        private Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, Signature signature, SignedPackageVerifierSettings settings)
+        private Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             throw new NotSupportedException();
         }
