@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,13 +24,35 @@ namespace NuGet.Packaging.Signing
         public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-
-            var result = VerifyValidityAndTrust(signature, settings);
+            var result = VerifySignatureAndCounterSignature(signature, settings);
             return Task.FromResult(result);
         }
 
 #if IS_DESKTOP
-        private PackageVerificationResult VerifyValidityAndTrust(PrimarySignature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifySignatureAndCounterSignature(
+            PrimarySignature signature,
+            SignedPackageVerifierSettings settings)
+        {
+            var issues = new List<SignatureLog>();
+            var certificateExtraStore = signature.SignedCms.Certificates;
+
+            var primarySignatureStatus = VerifyValidityAndTrust(signature, settings, certificateExtraStore, issues);
+
+            var counterSignatureStatus = SignatureVerificationStatus.Trusted;
+            var counterSignature = RepositoryCountersignature.GetRepositoryCountersignature(signature);
+            if (counterSignature != null)
+            {
+                counterSignatureStatus = VerifyValidityAndTrust(counterSignature, settings, certificateExtraStore, issues);
+            }
+
+            return new SignedPackageVerificationResult((SignatureVerificationStatus)Math.Min((int)primarySignatureStatus, (int)counterSignatureStatus), signature, issues);
+        }
+
+        private SignatureVerificationStatus VerifyValidityAndTrust(
+            Signature signature,
+            SignedPackageVerifierSettings settings,
+            X509Certificate2Collection certificateExtraStore,
+            List<SignatureLog> issues)
         {
             var timestampIssues = new List<SignatureLog>();
 
@@ -46,25 +66,25 @@ namespace NuGet.Packaging.Signing
             }
             catch (TimestampException)
             {
-                return new SignedPackageVerificationResult(SignatureVerificationStatus.Illegal, signature, timestampIssues);
+                issues.AddRange(timestampIssues);
+                return SignatureVerificationStatus.Illegal;
             }
-
-            var certificateExtraStore = signature.SignedCms.Certificates;
-            var signatureIssues = new List<SignatureLog>();
 
             var status = signature.Verify(
                 validTimestamp,
                 settings,
                 _fingerprintAlgorithm,
                 certificateExtraStore,
-                signatureIssues);
+                issues);
 
-            signatureIssues.AddRange(timestampIssues);
+            issues.AddRange(timestampIssues);
 
-            return new SignedPackageVerificationResult(status, signature, signatureIssues);
+            return status;
         }
 #else
-        private PackageVerificationResult VerifyValidityAndTrust(PrimarySignature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifySignatureAndCounterSignature(
+            PrimarySignature signature,
+            SignedPackageVerifierSettings settings)
         {
             throw new NotSupportedException();
         }
