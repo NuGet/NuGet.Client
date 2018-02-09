@@ -17,10 +17,12 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(certificate));
             }
+
             if (issues == null)
             {
                 throw new ArgumentNullException(nameof(issues));
             }
+
             var isValid = true;
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(certificate))
@@ -106,7 +108,10 @@ namespace NuGet.Packaging.Signing
                 try
                 {
                     var hashAlgorithm = CryptoHashUtility.OidToHashAlgorithmName(timestamp.TstInfo.HashAlgorithmId.Value);
-                    if (!timestamp.TstInfo.HasMessageHash(signature.GetSignatureHashValue(hashAlgorithm)))
+                    var signatureValue = signature.GetSignatureValue();
+                    var messageHash = hashAlgorithm.ComputeHash(signatureValue);
+
+                    if (!timestamp.TstInfo.HasMessageHash(messageHash))
                     {
                         issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed));
                         isValid = false;

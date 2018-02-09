@@ -1,10 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
@@ -17,7 +13,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Signature that needs to be timestamped.
         /// </summary>
-        public byte[] SignatureValue { get; set; }
+        public byte[] Signature { get; set; }
 
         /// <summary>
         /// Hash algorithm to be used for timestamping.

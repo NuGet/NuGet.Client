@@ -108,6 +108,66 @@ namespace NuGet.Packaging.Signing
 
             return attributes;
         }
+
+        public static CmsSigner CreateCmsSigner(SignPackageRequest request, ILogger logger)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            // Subject Key Identifier (SKI) is smaller and less prone to accidental matching than issuer and serial
+            // number.  However, to ensure cross-platform verification, SKI should only be used if the certificate
+            // has the SKI extension attribute.
+            CmsSigner signer;
+
+            if (request.Certificate.Extensions[Oids.SubjectKeyIdentifier] == null)
+            {
+                signer = new CmsSigner(SubjectIdentifierType.IssuerAndSerialNumber, request.Certificate);
+            }
+            else
+            {
+                signer = new CmsSigner(SubjectIdentifierType.SubjectKeyIdentifier, request.Certificate);
+            }
+
+            request.BuildSigningCertificateChainOnce(logger);
+
+            var chain = request.Chain;
+
+            foreach (var certificate in chain)
+            {
+                signer.Certificates.Add(certificate);
+            }
+
+            CryptographicAttributeObjectCollection attributes;
+
+            if (request.SignatureType == SignatureType.Repository)
+            {
+                attributes = CreateSignedAttributes((RepositorySignPackageRequest)request, chain);
+            }
+            else
+            {
+                attributes = CreateSignedAttributes(request, chain);
+            }
+
+            foreach (var attribute in attributes)
+            {
+                signer.SignedAttributes.Add(attribute);
+            }
+
+            // We built the chain ourselves and added certificates.
+            // Passing any other value here would trigger another chain build
+            // and possibly add duplicate certs to the collection.
+            signer.IncludeOption = X509IncludeOption.None;
+            signer.DigestAlgorithm = request.SignatureHashAlgorithm.ConvertToOid();
+
+            return signer;
+        }
 #endif
     }
 }

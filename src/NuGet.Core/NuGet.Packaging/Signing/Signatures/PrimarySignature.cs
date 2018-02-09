@@ -101,11 +101,11 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        public override byte[] GetSignatureHashValue(HashAlgorithmName hashAlgorithm)
+        public override byte[] GetSignatureValue()
         {
-            using (var authorSignatureNativeCms = NativeCms.Decode(SignedCms.Encode(), detached: false))
+            using (var nativeCms = NativeCms.Decode(SignedCms.Encode(), detached: false))
             {
-                return NativeCms.GetSignatureValueHash(hashAlgorithm, authorSignatureNativeCms);
+                return nativeCms.GetPrimarySignatureSignatureValue();
             }
         }
 
