@@ -466,6 +466,76 @@ namespace NuGet.Common
         NU5015 = 5015,
 
         /// <summary>
+        /// Error_InvalidDependencyVersionConstraints
+        /// </summary>
+        NU5016 = 5016,
+
+        /// <summary>
+        /// Error_CannotCreateEmptyPackage
+        /// </summary>
+        NU5017 = 5017,
+
+        /// <summary>
+        /// Error_Manifest_InvalidReference
+        /// </summary>
+        NU5018 = 5018,
+
+        /// <summary>
+        /// Error_PackageAuthoring_FileNotFound
+        /// </summary>
+        NU5019 = 5019,
+
+        /// <summary>
+        /// Error_EmptySourceFilePath
+        /// </summary>
+        NU5020 = 5020,
+
+        /// <summary>
+        /// Error_EmptySourceFileProjectDirectory
+        /// </summary>
+        NU5021 = 5021,
+
+        /// <summary>
+        /// Error_InvalidMinClientVersion
+        /// </summary>
+        NU5022 = 5022,
+
+        /// <summary>
+        /// Error_AssetsFileNotFound
+        /// </summary>
+        NU5023 = 5023,
+
+        /// <summary>
+        /// Error_InvalidPackageVersion
+        /// </summary>
+        NU5024 = 5024,
+
+        /// <summary>
+        /// Error_AssetsFileDoesNotHaveValidPackageSpec
+        /// </summary>
+        NU5025 = 5025,
+
+        /// <summary>
+        /// Error_FileNotFound
+        /// </summary>
+        NU5026 = 5026,
+
+        /// <summary>
+        /// Error_InvalidTargetFramework
+        /// </summary>
+        NU5027 = 5027,
+
+        /// <summary>
+        /// Error_NoPackItemProvided
+        /// </summary>
+        NU5028 = 5028,
+
+        /// <summary>
+        /// Error_InvalidNuspecProperties
+        /// </summary>
+        NU5029 = 5029,
+
+        /// <summary>
         /// AssemblyOutsideLibWarning
         /// </summary>
         NU5100 = 5100,

@@ -329,7 +329,7 @@ namespace NuGet.Packaging
             // Throw if the package doesn't contain any dependencies nor content
             if (!Files.Any() && !DependencyGroups.SelectMany(d => d.Packages).Any() && !FrameworkReferences.Any())
             {
-                throw new InvalidOperationException(NuGetResources.CannotCreateEmptyPackage);
+                throw new PackagingException(NuGetLogCode.NU5017, NuGetResources.CannotCreateEmptyPackage);
             }
 
             ValidateDependencies(Version, DependencyGroups);
@@ -471,7 +471,7 @@ namespace NuGet.Packaging
                     !libFiles.Contains(reference + ".exe") &&
                     !libFiles.Contains(reference + ".winmd"))
                 {
-                    throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReference, reference));
+                    throw new PackagingException(NuGetLogCode.NU5018, String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReference, reference));
                 }
             }
         }
@@ -615,7 +615,7 @@ namespace NuGet.Packaging
             // project.json ends up calling this one file at a time where some may be filtered out.
             if (!PathResolver.IsWildcardSearch(source) && !PathResolver.IsDirectoryPath(source) && !searchFiles.Any() && string.IsNullOrEmpty(exclude))
             {
-                throw new FileNotFoundException(
+                throw new PackagingException(NuGetLogCode.NU5019,
                     String.Format(CultureInfo.CurrentCulture, NuGetResources.PackageAuthoring_FileNotFound, source));
             }
 

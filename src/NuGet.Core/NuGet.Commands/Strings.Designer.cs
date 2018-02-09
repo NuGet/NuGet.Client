@@ -170,6 +170,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package version constraints for &apos;{0}&apos; return a version range that is empty..
+        /// </summary>
+        internal static string Error_InvalidDependencyVersionConstraints {
+            get {
+                return ResourceManager.GetString("Error_InvalidDependencyVersionConstraints", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid project-package combination for {0} {1}. DotnetToolReference project style can only contain references of the DotnetTool type.
         /// </summary>
         internal static string Error_InvalidProjectPackageCombo {

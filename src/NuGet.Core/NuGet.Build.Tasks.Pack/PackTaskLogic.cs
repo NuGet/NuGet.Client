@@ -51,7 +51,7 @@ namespace NuGet.Build.Tasks.Pack
                 Version version;
                 if (!Version.TryParse(request.MinClientVersion, out version))
                 {
-                    throw new ArgumentException(string.Format(
+                    throw new PackagingException(NuGetLogCode.NU5022, string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.InvalidMinClientVersion,
                         request.MinClientVersion));
@@ -92,7 +92,7 @@ namespace NuGet.Build.Tasks.Pack
             var assetsFilePath = Path.Combine(request.RestoreOutputPath, LockFileFormat.AssetsFileName);
             if (!File.Exists(assetsFilePath))
             {
-                throw new InvalidOperationException(string.Format(
+                throw new PackagingException(NuGetLogCode.NU5023, string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.AssetsFileNotFound,
                     assetsFilePath));
@@ -119,7 +119,7 @@ namespace NuGet.Build.Tasks.Pack
                 NuGetVersion version;
                 if (!NuGetVersion.TryParse(request.PackageVersion, out version))
                 {
-                    throw new ArgumentException(string.Format(
+                    throw new PackagingException(NuGetLogCode.NU5024, string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.InvalidPackageVersion,
                         request.PackageVersion));
@@ -163,7 +163,7 @@ namespace NuGet.Build.Tasks.Pack
                 Version version;
                 if (!Version.TryParse(request.MinClientVersion, out version))
                 {
-                    throw new ArgumentException(string.Format(
+                    throw new PackagingException(NuGetLogCode.NU5022, string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.InvalidMinClientVersion,
                         request.MinClientVersion));
@@ -179,7 +179,7 @@ namespace NuGet.Build.Tasks.Pack
 
             if (assetsFile.PackageSpec == null)
             {
-                throw new InvalidOperationException(string.Format(
+                throw new PackagingException(NuGetLogCode.NU5025, string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.AssetsFileDoesNotHaveValidPackageSpec,
                     assetsFilePath));
@@ -274,7 +274,7 @@ namespace NuGet.Build.Tasks.Pack
 
                 if (!File.Exists(finalOutputPath))
                 {
-                    throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FileNotFound, finalOutputPath));
+                    throw new PackagingException(NuGetLogCode.NU5026, string.Format(CultureInfo.CurrentCulture, Strings.Error_FileNotFound, finalOutputPath));
                 }
 
                 // If target path is not set, default it to the file name. Only satellite DLLs have a special target path
@@ -287,7 +287,7 @@ namespace NuGet.Build.Tasks.Pack
 
                 if (string.IsNullOrEmpty(targetFramework) || NuGetFramework.Parse(targetFramework).IsSpecificFramework == false)
                 {
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidTargetFramework, finalOutputPath));
+                    throw new PackagingException(NuGetLogCode.NU5027, string.Format(CultureInfo.CurrentCulture, Strings.InvalidTargetFramework, finalOutputPath));
                 }
 
                 assemblies.Add(new OutputLibFile()
@@ -337,7 +337,7 @@ namespace NuGet.Build.Tasks.Pack
         {
             if (request.PackItem == null)
             {
-                throw new InvalidOperationException(Strings.NoPackItemProvided);
+                throw new PackagingException(NuGetLogCode.NU5028, Strings.NoPackItemProvided);
             }
 
             packArgs.CurrentDirectory = Path.Combine(
@@ -741,7 +741,7 @@ namespace NuGet.Build.Tasks.Pack
                 }
                 else
                 {
-                    throw new InvalidOperationException(Strings.InvalidNuspecProperties);
+                    throw new PackagingException(NuGetLogCode.NU5029, Strings.InvalidNuspecProperties);
                 }
             }
 

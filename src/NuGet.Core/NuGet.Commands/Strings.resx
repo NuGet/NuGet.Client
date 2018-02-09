@@ -688,4 +688,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Error_ToolsPackageWithExtraPackageTypes" xml:space="preserve">
     <value>Invalid tools package {0} {1}. Tools packages cannot contain more than one PackageType.</value>
   </data>
+  <data name="Error_InvalidDependencyVersionConstraints" xml:space="preserve">
+    <value>Package version constraints for '{0}' return a version range that is empty.</value>
+  </data>
 </root>
