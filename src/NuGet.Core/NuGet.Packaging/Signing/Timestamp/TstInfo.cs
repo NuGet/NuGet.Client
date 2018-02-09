@@ -89,7 +89,7 @@ namespace NuGet.Packaging.Signing
                 throw new CryptographicException(Strings.InvalidAsn1);
             }
 
-            var genTime = tstInfoReader.ReadRfc3161GeneralizedTime();
+            var genTime = tstInfoReader.ReadGeneralizedTime();
 
             Accuracy accuracy = null;
 
