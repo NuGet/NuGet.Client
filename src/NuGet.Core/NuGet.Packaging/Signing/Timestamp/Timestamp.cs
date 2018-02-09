@@ -110,20 +110,24 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(signature));
             }
+            if (issues == null)
+            {
+                throw new ArgumentNullException(nameof(issues));
+            }
 
             var treatIssueAsError = !settings.AllowIgnoreTimestamp;
             var timestamperCertificate = SignerInfo.Certificate;
             if (timestamperCertificate == null)
             {
-                issues?.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3020, Strings.TimestampNoCertificate));
+                issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3020, Strings.TimestampNoCertificate));
                 return false;
             }
 
             if (VerificationUtility.IsTimestampValid(this, signature, treatIssueAsError, issues, SigningSpecifications.V1))
             {
-                issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.TimestampValue, GeneralizedTime.LocalDateTime.ToString()) + Environment.NewLine));
+                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.TimestampValue, GeneralizedTime.LocalDateTime.ToString()) + Environment.NewLine));
 
-                issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
+                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
                     Strings.VerificationTimestamperCertDisplay,
                     $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate, fingerprintAlgorithm)}")));
 
@@ -140,7 +144,7 @@ namespace NuGet.Packaging.Signing
 
                     var chainBuildSucceed = CertificateChainUtility.BuildCertificateChain(chain, timestamperCertificate, out var chainStatusList);
 
-                    issues?.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain, fingerprintAlgorithm)));
+                    issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain, fingerprintAlgorithm)));
 
                     if (chainBuildSucceed)
                     {
@@ -159,7 +163,7 @@ namespace NuGet.Packaging.Signing
                     {
                         foreach (var message in messages)
                         {
-                            issues?.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3028, message));
+                            issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3028, message));
                         }
 
                         chainBuildingHasIssues = true;
@@ -176,7 +180,7 @@ namespace NuGet.Packaging.Signing
                         {
                             foreach (var message in messages)
                             {
-                                issues?.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3028, message));
+                                issues.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3028, message));
                             }
                         }
 
@@ -189,7 +193,7 @@ namespace NuGet.Packaging.Signing
                     }
 
                     // Debug log any errors
-                    issues?.Add(
+                    issues.Add(
                         SignatureLog.DebugLog(
                             string.Format(
                                 CultureInfo.CurrentCulture,

@@ -32,13 +32,17 @@ namespace NuGet.Packaging.Signing
             X509Certificate2Collection certificateExtraStore,
             List<SignatureLog> issues)
         {
+            if (issues == null)
+            {
+                throw new ArgumentNullException(nameof(issues));
+            }
             settings = settings ?? SignedPackageVerifierSettings.Default;
 
-            issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
-            issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, V3ServiceIndexUrl.ToString())));
+            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
+            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, V3ServiceIndexUrl.ToString())));
             if (PackageOwners != null)
             {
-                issues?.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetPackageOwners, string.Join(", ", PackageOwners))));
+                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetPackageOwners, string.Join(", ", PackageOwners))));
             }
             return base.Verify(timestamp, settings, fingerprintAlgorithm, certificateExtraStore, issues);
         }
