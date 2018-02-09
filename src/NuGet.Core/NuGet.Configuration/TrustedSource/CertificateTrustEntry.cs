@@ -24,11 +24,23 @@ namespace NuGet.Configuration
         /// </summary>
         public HashAlgorithmName FingerprintAlgorithm { get; }
 
+        /// <summary>
+        /// The priority of this certificate entry in the nuget.config hierarchy. Same as SettingValue.Priority.
+        /// Should be used only if the CertificateTrustEntry is read from a config file.
+        /// </summary>
+        public int Priority { get; }
+
         public CertificateTrustEntry(string fingerprint, string subjectName, HashAlgorithmName algorithm)
+            : this(fingerprint, subjectName, algorithm, priority: 0)
+        {
+        }
+
+        public CertificateTrustEntry(string fingerprint, string subjectName, HashAlgorithmName algorithm, int priority)
         {
             Fingerprint = fingerprint ?? throw new ArgumentNullException(nameof(fingerprint));
             SubjectName = subjectName ?? throw new ArgumentNullException(nameof(subjectName));
             FingerprintAlgorithm = algorithm;
+            Priority = priority;
         }
 
         public bool Equals(CertificateTrustEntry other)
@@ -60,6 +72,11 @@ namespace NuGet.Configuration
         public override bool Equals(object other)
         {
             return Equals(other as CertificateTrustEntry);
+        }
+
+        internal CertificateTrustEntry Clone()
+        {
+            return new CertificateTrustEntry(Fingerprint, SubjectName, FingerprintAlgorithm, Priority);
         }
     }
 }

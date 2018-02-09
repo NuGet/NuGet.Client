@@ -39,7 +39,7 @@ namespace NuGet.Configuration
 
             foreach (var entry in Certificates)
             {
-                cloned.Certificates.Add(new CertificateTrustEntry(entry.Fingerprint, entry.SubjectName, entry.FingerprintAlgorithm));
+                cloned.Certificates.Add(entry.Clone());
             }
 
             return cloned;

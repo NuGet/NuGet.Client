@@ -518,15 +518,15 @@ namespace NuGet.Configuration
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
-            var settingValues = new List<string>();
+            var subsections = new List<string>();
             var curr = this;
             while (curr != null)
             {
-                settingValues.AddRange(curr.GetSubsections(section));
+                subsections.AddRange(curr.GetSubsections(section));
                 curr = curr._next;
             }
 
-            return settingValues.AsReadOnly();
+            return subsections.AsReadOnly();
         }
 
         private IList<string> GetSubsections(string section)
@@ -636,6 +636,54 @@ namespace NuGet.Configuration
             Save();
         }
 
+        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
+        {
+            // machine wide settings cannot be changed.
+            if (IsMachineWideSettings ||
+                ((section == ConfigurationConstants.PackageSources || section == ConfigurationConstants.DisabledPackageSources) && Cleared))
+            {
+                if (_next == null)
+                {
+                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
+                }
+
+                _next.UpdateSubsections(section, subsection, values);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+
+            if (string.IsNullOrEmpty(subsection))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subsection));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            var valuesToWrite = _next == null ? values : values.Where(v => v.Priority < _next._priority);
+
+            var sectionElement = GetSection(ConfigXDocument.Root, section);
+            if (sectionElement == null && valuesToWrite.Any())
+            {
+                sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
+            }
+
+            UpdateSection(sectionElement, subsection, valuesToWrite);
+            Save();
+
+            if (_next != null)
+            {
+                _next.UpdateSubsections(section, subsection, values.Where(v => v.Priority >= _next._priority).ToList());
+            }
+        }
+
         public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
         {
             // machine wide settings cannot be changed.
@@ -663,23 +711,7 @@ namespace NuGet.Configuration
 
             var valuesToWrite = _next == null ? values : values.Where(v => v.Priority < _next._priority);
 
-            var sectionElement = GetSection(ConfigXDocument.Root, section);
-
-            if (sectionElement == null && valuesToWrite.Any())
-            {
-                sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
-            }
-
-            // When updating attempt to preserve the clear tag (and any sources that appear prior to it)
-            // to avoid creating extra diffs in the source.
-            RemoveElementAfterClearTag(sectionElement);
-
-            foreach (var value in valuesToWrite)
-            {
-                var element = new XElement("add");
-                SetElementValues(element, value.Key, value.OriginalValue, value.AdditionalData);
-                XElementUtility.AddIndented(sectionElement, element);
-            }
+            UpdateSection(ConfigXDocument.Root, section, valuesToWrite);
 
             Save();
 
@@ -689,7 +721,38 @@ namespace NuGet.Configuration
             }
         }
 
-        private static void RemoveElementAfterClearTag(XElement sectionElement)
+        /// <summary>
+        /// Adds or Updates a section in the root element with the values.
+        /// </summary>
+        /// <param name="root">Root element.</param>
+        /// <param name="section">Name of the section.</param>
+        /// <param name="valuesToWrite">Values to be added or updated in the section.</param>
+        private void UpdateSection(XElement root, string section, IEnumerable<SettingValue> valuesToWrite)
+        {
+            var sectionElement = GetSection(root, section);
+
+            if (sectionElement == null && valuesToWrite.Any())
+            {
+                sectionElement = GetOrCreateSection(root, section);
+            }
+
+            // When updating attempt to preserve the clear tag (and any sources that appear prior to it)
+            // to avoid creating extra diffs in the source.
+            RemoveElementBeforeClearTag(sectionElement);
+
+            foreach (var value in valuesToWrite)
+            {
+                var element = new XElement("add");
+                SetElementValues(element, value.Key, value.OriginalValue, value.AdditionalData);
+                XElementUtility.AddIndented(sectionElement, element);
+            }
+        }
+
+        /// <summary>
+        /// Removes all element nodes in the sectionElement which appear before a clear element.
+        /// </summary>
+        /// <param name="sectionElement">XElement section.</param>
+        private static void RemoveElementBeforeClearTag(XElement sectionElement)
         {
             if (sectionElement == null)
             {
@@ -782,15 +845,15 @@ namespace NuGet.Configuration
 
             if (values == null)
             {
-                throw new ArgumentNullException("values");
+                throw new ArgumentNullException(nameof(values));
             }
 
             var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
-            var element = GetOrCreateSection(sectionElement, subsection);
+            var subsectionElement = GetOrCreateSection(sectionElement, subsection);
 
             foreach (var value in values)
             {
-                SetValueInternal(element, value.Key, value.Value, attributes: value.AdditionalData);
+                SetValueInternal(subsectionElement, value.Key, value.Value, attributes: value.AdditionalData);
             }
 
             Save();

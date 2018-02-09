@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using NuGet.Common;
 
 namespace NuGet.Configuration
@@ -61,7 +61,7 @@ namespace NuGet.Configuration
                             algorithm = CryptoHashUtility.GetHashAlgorithmName(algorithmString);
                         }
 
-                        trustedSource.Certificates.Add(new CertificateTrustEntry(fingerprint, subjectName, algorithm));
+                        trustedSource.Certificates.Add(new CertificateTrustEntry(fingerprint, subjectName, algorithm, settingValue.Priority));
                     }
                 }
             }
@@ -71,12 +71,36 @@ namespace NuGet.Configuration
 
         public void SaveTrustedSources(IEnumerable<TrustedSource> sources)
         {
-            throw new NotImplementedException();
+            foreach (var source in sources)
+            {
+                SaveTrustedSource(source);
+            }
         }
 
-        public void SaveTrustedSource(TrustedSource trustedSource)
+        public void SaveTrustedSource(TrustedSource source)
         {
-            throw new NotImplementedException();
+            var matchingSource = LoadTrustedSources()
+                .Where(s => string.Equals(s.SourceName, source.SourceName, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+
+            var settingValues = new List<SettingValue>();
+
+            foreach(var cert in source.Certificates)
+            {
+                var settingValue = new SettingValue(cert.Fingerprint, cert.SubjectName, isMachineWide: false, priority: cert.Priority);
+                settingValue.AdditionalData.Add(ConfigurationConstants.FingerprintAlgorithm, cert.FingerprintAlgorithm.ToString());
+
+                settingValues.Add(settingValue);
+            }
+
+            if (matchingSource != null)
+            {
+                _settings.UpdateSubsections(ConfigurationConstants.TrustedSources, source.SourceName, settingValues);
+            }
+            else
+            {
+                _settings.SetNestedSettingValues(ConfigurationConstants.TrustedSources, source.SourceName, settingValues);
+            }
         }
     }
 }

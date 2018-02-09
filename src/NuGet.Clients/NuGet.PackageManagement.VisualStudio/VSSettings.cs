@@ -172,6 +172,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
+        {
+            if (CanChangeSettings)
+            {
+                SolutionSettings.UpdateSubsections(section, subsection, values);
+            }
+        }
+
         // The value for SolutionSettings can't possibly be null, but it could be a read-only instance
         private bool CanChangeSettings => !ReferenceEquals(SolutionSettings, NullSettings.Instance);
     }

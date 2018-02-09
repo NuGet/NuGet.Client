@@ -92,5 +92,10 @@ namespace NuGet.Configuration
         {
             throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(DeleteSection)));
         }
+
+        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
+        {
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(DeleteValue)));
+        }
     }
 }
