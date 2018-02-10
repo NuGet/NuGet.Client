@@ -69,7 +69,7 @@
 
   <ItemGroup>
     <EmbeddedResource Update="Rules\AnalysisResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>AnalysisResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Signing\DerEncoding\SR.resx">

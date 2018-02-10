@@ -28,19 +28,19 @@ namespace NuGet.Packaging.Rules
                 throw new ArgumentNullException(nameof(builder));
             }
             var nuspecReader = builder.NuspecReader;
-            if (nuspecReader.GetProjectUrl().Equals(SampleProjectUrl, StringComparison.Ordinal))
+            if (SampleProjectUrl.Equals(nuspecReader.GetProjectUrl(), StringComparison.Ordinal))
             {
                 yield return CreateIssueFor("ProjectUrl", nuspecReader.GetProjectUrl());
             }
-            if (nuspecReader.GetLicenseUrl().Equals(SampleLicenseUrl, StringComparison.Ordinal))
+            if (SampleLicenseUrl.Equals(nuspecReader.GetLicenseUrl(), StringComparison.Ordinal))
             {
                 yield return CreateIssueFor("LicenseUrl", nuspecReader.GetLicenseUrl());
             }
-            if (nuspecReader.GetIconUrl().Equals(SampleIconUrl, StringComparison.Ordinal))
+            if (SampleIconUrl.Equals(nuspecReader.GetIconUrl(), StringComparison.Ordinal))
             {
                 yield return CreateIssueFor("IconUrl", nuspecReader.GetIconUrl());
             }
-            if (nuspecReader.GetTags().Equals(SampleTags))
+            if (SampleTags.Equals(nuspecReader.GetTags()))
             {
                 yield return CreateIssueFor("Tags", SampleTags);
             }
