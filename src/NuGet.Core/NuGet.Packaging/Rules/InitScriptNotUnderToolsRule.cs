@@ -11,22 +11,23 @@ namespace NuGet.Packaging.Rules
 {
     internal class InitScriptNotUnderToolsRule : IPackageRule
     {
-        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            foreach (var file in builder.Files)
+            foreach (var file in builder.GetFiles())
             {
-                string name = Path.GetFileName(file.Path);
-                if (file.TargetFramework != null && name.Equals("init.ps1", StringComparison.OrdinalIgnoreCase))
+                string name = Path.GetFileName(file);
+                string dirName = Path.GetFileName(Path.GetDirectoryName(file));
+                if (name.Equals("init.ps1", StringComparison.OrdinalIgnoreCase) && !dirName.Equals(PackagingConstants.Folders.Tools, StringComparison.OrdinalIgnoreCase))
                 {
                     yield return CreatePackageIssue(file);
                 }
             }
         }
 
-        private static PackLogMessage CreatePackageIssue(IPackageFile file)
+        private static PackLogMessage CreatePackageIssue(string file)
         {
             return PackLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.MisplacedInitScriptWarning, file.Path),
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.MisplacedInitScriptWarning, file),
                 NuGetLogCode.NU5107);
         }
     }

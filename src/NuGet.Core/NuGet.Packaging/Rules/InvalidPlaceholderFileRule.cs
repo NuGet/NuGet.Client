@@ -13,17 +13,16 @@ namespace NuGet.Packaging.Rules
 {
     internal class InvalidPlaceholderFileRule : IPackageRule
     {
-        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            foreach (IPackageFile file in builder.Files)
+            foreach (var file in builder.GetFiles())
             {
-                string path = file.Path;
-                if (Path.GetFileName(path).Equals(PackagingCoreConstants.EmptyFolder, StringComparison.Ordinal))
+                if (Path.GetFileName(file).Equals(PackagingCoreConstants.EmptyFolder, StringComparison.Ordinal))
                 {
-                    string directory = PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(path));
-                    if (builder.Files.Count(f => PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(f.Path)).StartsWith(directory, StringComparison.OrdinalIgnoreCase)) > 1)
+                    var directory = PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(file));
+                    if (builder.GetFiles().Count(f => PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(f)).StartsWith(directory, StringComparison.OrdinalIgnoreCase)) > 1)
                     {
-                        yield return CreatePackageIssueForPlaceholderFile(path);
+                        yield return CreatePackageIssueForPlaceholderFile(file);
                     }
                 }
             }

@@ -12,30 +12,29 @@ namespace NuGet.Packaging.Rules
     internal class MisplacedScriptFileRule : IPackageRule
     {
         private const string ScriptExtension = ".ps1";
-        private const string ToolsDirectory = "tools";
+        private static readonly string ToolsDirectory = PackagingConstants.Folders.Tools;
 
-        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            foreach (IPackageFile file in builder.Files)
+            foreach (var file in builder.GetFiles())
             {
-                string path = file.Path;
-                if (!path.EndsWith(ScriptExtension, StringComparison.OrdinalIgnoreCase))
+                if (!file.EndsWith(ScriptExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                if (!path.StartsWith(ToolsDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                if (!file.StartsWith(ToolsDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return CreatePackageIssueForMisplacedScript(path);
+                    yield return CreatePackageIssueForMisplacedScript(file);
                 }
                 else
                 {
-                    string name = Path.GetFileNameWithoutExtension(path);
+                    string name = Path.GetFileNameWithoutExtension(file);
                     if (!name.Equals("install", StringComparison.OrdinalIgnoreCase) &&
                         !name.Equals("uninstall", StringComparison.OrdinalIgnoreCase) &&
                         !name.Equals("init", StringComparison.OrdinalIgnoreCase))
                     {
-                        yield return CreatePackageIssueForUnrecognizedScripts(path);
+                        yield return CreatePackageIssueForUnrecognizedScripts(file);
                     }
                 }
             }

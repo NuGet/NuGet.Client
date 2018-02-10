@@ -8,6 +8,6 @@ namespace NuGet.Packaging.Rules
 {
     public interface IPackageRule
     {
-        IEnumerable<PackLogMessage> Validate(PackageBuilder builder);
+        IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder);
     }
 }

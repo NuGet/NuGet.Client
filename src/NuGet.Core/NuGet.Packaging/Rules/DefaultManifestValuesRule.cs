@@ -21,34 +21,39 @@ namespace NuGet.Packaging.Rules
         internal static readonly string SampleManifestDependencyId = "SampleDependency";
         internal static readonly string SampleManifestDependencyVersion = "1.0";
 
-        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            if (builder.ProjectUrl != null && builder.ProjectUrl.OriginalString.Equals(SampleProjectUrl, StringComparison.Ordinal))
+            if(builder == null)
             {
-                yield return CreateIssueFor("ProjectUrl", builder.ProjectUrl.OriginalString);
+                throw new ArgumentNullException(nameof(builder));
             }
-            if (builder.LicenseUrl != null && builder.LicenseUrl.OriginalString.Equals(SampleLicenseUrl, StringComparison.Ordinal))
+            var nuspecReader = builder.NuspecReader;
+            if (nuspecReader.GetProjectUrl().Equals(SampleProjectUrl, StringComparison.Ordinal))
             {
-                yield return CreateIssueFor("LicenseUrl", builder.LicenseUrl.OriginalString);
+                yield return CreateIssueFor("ProjectUrl", nuspecReader.GetProjectUrl());
             }
-            if (builder.IconUrl != null && builder.IconUrl.OriginalString.Equals(SampleIconUrl, StringComparison.Ordinal))
+            if (nuspecReader.GetLicenseUrl().Equals(SampleLicenseUrl, StringComparison.Ordinal))
             {
-                yield return CreateIssueFor("IconUrl", builder.IconUrl.OriginalString);
+                yield return CreateIssueFor("LicenseUrl", nuspecReader.GetLicenseUrl());
             }
-            if (builder.Tags.Count() == 2 && string.Join(" ", builder.Tags).Equals(SampleTags))
+            if (nuspecReader.GetIconUrl().Equals(SampleIconUrl, StringComparison.Ordinal))
+            {
+                yield return CreateIssueFor("IconUrl", nuspecReader.GetIconUrl());
+            }
+            if (nuspecReader.GetTags().Equals(SampleTags))
             {
                 yield return CreateIssueFor("Tags", SampleTags);
             }
-            if (SampleReleaseNotes.Equals(builder.ReleaseNotes, StringComparison.Ordinal))
+            if (SampleReleaseNotes.Equals(nuspecReader.GetReleaseNotes(), StringComparison.Ordinal))
             {
                 yield return CreateIssueFor("ReleaseNotes", SampleReleaseNotes);
             }
-            if (SampleDescription.Equals(builder.Description, StringComparison.Ordinal))
+            if (SampleDescription.Equals(nuspecReader.GetDescription(), StringComparison.Ordinal))
             {
                 yield return CreateIssueFor("Description", SampleDescription);
             }
 
-            var dependency = builder.DependencyGroups.SelectMany(d => d.Packages).FirstOrDefault();
+            var dependency = nuspecReader.GetDependencyGroups().SelectMany(d => d.Packages).FirstOrDefault();
             if (dependency != null &&
                 dependency.Id.Equals(SampleManifestDependencyId, StringComparison.Ordinal) &&
                 dependency.VersionRange != null &&

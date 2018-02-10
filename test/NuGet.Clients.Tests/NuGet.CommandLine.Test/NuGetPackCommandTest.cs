@@ -3073,7 +3073,7 @@ namespace Proj1
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                Assert.Contains(AnalysisResources.UnspecifiedDependencyVersionWarning, r.AllOutput);
+                Assert.Contains(string.Format(AnalysisResources.UnspecifiedDependencyVersionWarning, "json"), r.AllOutput);
             }
         }
 

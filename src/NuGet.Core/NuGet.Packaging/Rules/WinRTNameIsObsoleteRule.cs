@@ -13,13 +13,13 @@ namespace NuGet.Packaging.Rules
         private static string[] Prefixes = new string[]
             { "content\\winrt45\\", "lib\\winrt45\\", "tools\\winrt45\\", "content\\winrt\\", "lib\\winrt\\", "tools\\winrt\\" };
 
-        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            foreach (var file in builder.Files)
+            foreach (var file in builder.GetFiles())
             {
                 foreach (string prefix in Prefixes)
                 {
-                    if (file.Path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    if (file.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                     {
                         yield return CreateIssue(file);
                     }
@@ -27,10 +27,10 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackLogMessage CreateIssue(IPackageFile file)
+        private static PackLogMessage CreateIssue(string file)
         {
             return PackLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.WinRTObsoleteWarning, file.Path),
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.WinRTObsoleteWarning, file),
                 NuGetLogCode.NU5106);
         }
     }

@@ -16,26 +16,24 @@ namespace NuGet.Packaging.Rules
         private const string ContentDirectory = "content";
         private const string ContentFilesDirectory = "contentFiles";
 
-        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            foreach (IPackageFile file in builder.Files)
+            foreach (var file in builder.GetFiles())
             {
-                string path = file.Path;
-
                 // if not a .transform file, ignore
-                if (!path.EndsWith(CodeTransformExtension, StringComparison.OrdinalIgnoreCase) &&
-                    !path.EndsWith(ConfigTransformExtension, StringComparison.OrdinalIgnoreCase))
+                if (!file.EndsWith(CodeTransformExtension, StringComparison.OrdinalIgnoreCase) &&
+                    !file.EndsWith(ConfigTransformExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
                 // if not inside 'content' folder, warn
-                if (!path.StartsWith(ContentDirectory + Path.DirectorySeparatorChar,
+                if (!file.StartsWith(ContentDirectory + Path.DirectorySeparatorChar,
                     StringComparison.OrdinalIgnoreCase)
-                    && !path.StartsWith(ContentFilesDirectory + Path.DirectorySeparatorChar,
+                    && !file.StartsWith(ContentFilesDirectory + Path.DirectorySeparatorChar,
                     StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return CreatePackageIssueForMisplacedContent(path);
+                    yield return CreatePackageIssueForMisplacedContent(file);
                 }
             }
         }

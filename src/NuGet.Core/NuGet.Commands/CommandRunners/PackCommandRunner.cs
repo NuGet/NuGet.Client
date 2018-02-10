@@ -668,7 +668,7 @@ namespace NuGet.Commands
 
             if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
             {
-                AnalyzePackage(packageArchiveReader, packageBuilder);
+                AnalyzePackage(packageArchiveReader);
             }
 
             return packageArchiveReader;
@@ -760,7 +760,7 @@ namespace NuGet.Commands
 
                 if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
                 {
-                    AnalyzePackage(packageArchiveReader, mainPackageBuilder);
+                    AnalyzePackage(packageArchiveReader);
                 }
 
                 // If we're excluding symbols then do nothing else
@@ -929,7 +929,7 @@ namespace NuGet.Commands
             BuildPackage(symbolsBuilder, outputPath);
         }
 
-        internal void AnalyzePackage(PackageArchiveReader package, PackageBuilder builder)
+        internal void AnalyzePackage(PackageArchiveReader package)
         {
             IEnumerable<IPackageRule> packageRules = Rules;
             IList<PackLogMessage> issues = new List<PackLogMessage>();
@@ -944,7 +944,7 @@ namespace NuGet.Commands
 
             foreach (var rule in packageRules)
             {
-                issues.AddRange(rule.Validate(builder).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
+                issues.AddRange(rule.Validate(package).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
             }
 
             if (issues.Count > 0)

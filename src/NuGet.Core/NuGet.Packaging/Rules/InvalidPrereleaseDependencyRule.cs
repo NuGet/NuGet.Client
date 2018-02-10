@@ -12,18 +12,19 @@ namespace NuGet.Packaging.Rules
 {
     internal class InvalidPrereleaseDependencyRule : IPackageRule
     {
-        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            if (builder?.DependencyGroups == null)
+            var nuspecReader = builder?.NuspecReader;
+            if (nuspecReader.GetDependencyGroups() == null)
             {
                 // We have independent validation for null-versions.
                 yield break;
             }
 
-            if (!builder.Version.IsPrerelease)
+            if (nuspecReader.GetVersion().IsPrerelease)
             {
                 // If we are creating a production package, do not allow any of the dependencies to be a prerelease version.
-                var prereleaseDependency = builder.DependencyGroups.SelectMany(set => set.Packages).FirstOrDefault(IsPrereleaseDependency);
+                var prereleaseDependency = nuspecReader.GetDependencyGroups().SelectMany(set => set.Packages).FirstOrDefault(IsPrereleaseDependency);
                 if (prereleaseDependency != null)
                 {
                     yield return CreatePackageIssueForPrereleaseDependency(prereleaseDependency.ToString());

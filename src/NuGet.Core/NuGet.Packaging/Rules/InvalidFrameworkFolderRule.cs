@@ -15,16 +15,15 @@ namespace NuGet.Packaging.Rules
     {
         private const string LibDirectory = "lib";
 
-        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var file in builder.Files)
+            foreach (var file in builder.GetFiles())
             {
-                string path = file.Path;
-                string[] parts = path.Split(Path.DirectorySeparatorChar);
+                string[] parts = file.Split(Path.DirectorySeparatorChar);
                 if (parts.Length >= 3 && parts[0].Equals(LibDirectory, StringComparison.OrdinalIgnoreCase))
                 {
-                    set.Add(path);
+                    set.Add(file);
                 }
             }
 
@@ -48,18 +47,18 @@ namespace NuGet.Packaging.Rules
             return fx != null;
         }
 
-        private static bool IsValidCultureName(PackageBuilder builder, string name)
+        private static bool IsValidCultureName(PackageArchiveReader builder, string name)
         {
             // starting from NuGet 1.8, we support localized packages, which
             // can have a culture folder under lib, e.g. lib\fr-FR\strings.resources.dll
-
-            if (String.IsNullOrEmpty(builder.Language))
+            var nuspecReader = builder.NuspecReader;
+            if (String.IsNullOrEmpty(nuspecReader.GetLanguage()))
             {
                 return false;
             }
 
             // the folder name is considered valid if it matches the package's Language property.
-            return name.Equals(builder.Language, StringComparison.OrdinalIgnoreCase);
+            return name.Equals(nuspecReader.GetLanguage(), StringComparison.OrdinalIgnoreCase);
         }
 
         private PackLogMessage CreatePackageIssue(string target)

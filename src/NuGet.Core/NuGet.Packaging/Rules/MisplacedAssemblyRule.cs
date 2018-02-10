@@ -12,29 +12,28 @@ namespace NuGet.Packaging.Rules
 {
     internal class MisplacedAssemblyRule : IPackageRule
     {
-        public IEnumerable<PackLogMessage> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            foreach (IPackageFile file in builder.Files)
+            foreach (var file in builder.GetFiles())
             {
-                string path = file.Path;
-                string directory = Path.GetDirectoryName(path);
+                var directory = Path.GetDirectoryName(file);
 
                 // if under 'lib' directly
                 if (directory.Equals(PackagingConstants.Folders.Lib, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (PackageHelper.IsAssembly(path))
+                    if (PackageHelper.IsAssembly(file))
                     {
-                        yield return CreatePackageIssueForAssembliesUnderLib(path);
+                        yield return CreatePackageIssueForAssembliesUnderLib(file);
                     }
                 }
-                else if (!ValidFolders.Any(folder => path.StartsWith(folder, StringComparison.OrdinalIgnoreCase)))
+                else if (!ValidFolders.Any(folder => file.StartsWith(folder, StringComparison.OrdinalIgnoreCase)))
                 {
                     // when checking for assemblies outside 'lib' folder, only check .dll files.
                     // .exe files are often legitimate outside 'lib'.
-                    if (path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
-                        path.EndsWith(".winmd", StringComparison.OrdinalIgnoreCase))
+                    if (file.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                        file.EndsWith(".winmd", StringComparison.OrdinalIgnoreCase))
                     {
-                        yield return CreatePackageIssueForAssembliesOutsideLib(path);
+                        yield return CreatePackageIssueForAssembliesOutsideLib(file);
                     }
                 }
             }
