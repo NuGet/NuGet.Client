@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -20,7 +21,9 @@ namespace NuGet.Configuration
         public IEnumerable<TrustedSource> LoadTrustedSources()
         {
             var trustedSources = new List<TrustedSource>();
-            var trustedSourceNames = _settings.GetAllSubsections(ConfigurationConstants.TrustedSources);
+            var trustedSourceNames = new HashSet<string>();
+            _settings.GetAllSubsections(ConfigurationConstants.TrustedSources)
+                .ForEach(s => trustedSourceNames.Add(s));
 
             foreach (var trustedSourceName in trustedSourceNames)
             {
@@ -87,9 +90,13 @@ namespace NuGet.Configuration
 
             foreach(var cert in source.Certificates)
             {
-                var settingValue = new SettingValue(cert.Fingerprint, cert.SubjectName, isMachineWide: false, priority: cert.Priority);
-                settingValue.AdditionalData.Add(ConfigurationConstants.FingerprintAlgorithm, cert.FingerprintAlgorithm.ToString());
+                // use existing priority if present
+                var priority = matchingSource?.Certificates.FirstOrDefault(c => c.Fingerprint == cert.Fingerprint)?.Priority ?? cert.Priority;
 
+                // cant save to machine wide settings
+                var settingValue = new SettingValue(cert.Fingerprint, cert.SubjectName, isMachineWide: false, priority: priority);
+
+                settingValue.AdditionalData.Add(ConfigurationConstants.FingerprintAlgorithm, cert.FingerprintAlgorithm.ToString());
                 settingValues.Add(settingValue);
             }
 
