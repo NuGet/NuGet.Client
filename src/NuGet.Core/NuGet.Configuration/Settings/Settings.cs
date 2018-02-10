@@ -119,10 +119,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Full path to the ConfigFile corresponding to this Settings object
         /// </summary>
-        public string ConfigFilePath
-        {
-            get { return Path.GetFullPath(Path.Combine(Root, FileName)); }
-        }
+        public string ConfigFilePath => Path.GetFullPath(Path.Combine(Root, FileName));
 
         /// <summary>
         /// Load default settings based on a directory.
@@ -676,6 +673,12 @@ namespace NuGet.Configuration
             }
 
             UpdateSection(sectionElement, subsection, valuesToWrite);
+
+            if (!sectionElement.HasElements)
+            {
+                DeleteSectionFromRoot(ConfigXDocument.Root, section);
+            }
+
             Save();
 
             if (_next != null)
@@ -740,11 +743,18 @@ namespace NuGet.Configuration
             // to avoid creating extra diffs in the source.
             RemoveElementBeforeClearTag(sectionElement);
 
-            foreach (var value in valuesToWrite)
+            if (valuesToWrite.Any())
             {
-                var element = new XElement("add");
-                SetElementValues(element, value.Key, value.OriginalValue, value.AdditionalData);
-                XElementUtility.AddIndented(sectionElement, element);
+                foreach (var value in valuesToWrite)
+                {
+                    var element = new XElement("add");
+                    SetElementValues(element, value.Key, value.OriginalValue, value.AdditionalData);
+                    XElementUtility.AddIndented(sectionElement, element);
+                }
+            }
+            else
+            {
+                DeleteSectionFromRoot(root, section);
             }
         }
 
@@ -899,6 +909,15 @@ namespace NuGet.Configuration
 
         public bool DeleteSection(string section)
         {
+            var result = DeleteSectionFromRoot(ConfigXDocument.Root, section);
+
+            Save();
+
+            return result;
+        }
+
+        private bool DeleteSectionFromRoot(XElement root, string section)
+        {
             // machine wide settings cannot be changed.
             if (IsMachineWideSettings)
             {
@@ -915,14 +934,14 @@ namespace NuGet.Configuration
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
-            var sectionElement = GetSection(ConfigXDocument.Root, section);
+            var sectionElement = GetSection(root, section);
             if (sectionElement == null)
             {
                 return false;
             }
 
             XElementUtility.RemoveIndented(sectionElement);
-            Save();
+
             return true;
         }
 

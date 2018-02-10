@@ -74,21 +74,28 @@ namespace NuGet.Configuration
 
         public void SaveTrustedSources(IEnumerable<TrustedSource> sources)
         {
+            var existingSources = LoadTrustedSources();
             foreach (var source in sources)
             {
-                SaveTrustedSource(source);
+                SaveTrustedSource(source, existingSources);
             }
         }
 
         public void SaveTrustedSource(TrustedSource source)
         {
-            var matchingSource = LoadTrustedSources()
+            var existingSources = LoadTrustedSources();
+            SaveTrustedSource(source, existingSources);
+        }
+
+        private void SaveTrustedSource(TrustedSource source, IEnumerable<TrustedSource> existingSources)
+        {
+            var matchingSource = existingSources
                 .Where(s => string.Equals(s.SourceName, source.SourceName, StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
 
             var settingValues = new List<SettingValue>();
 
-            foreach(var cert in source.Certificates)
+            foreach (var cert in source.Certificates)
             {
                 // use existing priority if present
                 var priority = matchingSource?.Certificates.FirstOrDefault(c => c.Fingerprint == cert.Fingerprint)?.Priority ?? cert.Priority;
@@ -108,6 +115,12 @@ namespace NuGet.Configuration
             {
                 _settings.SetNestedSettingValues(ConfigurationConstants.TrustedSources, source.SourceName, settingValues);
             }
+        }
+
+        public void DeleteTrustedSource(string sourceName)
+        {
+            // Passing an empty list of values will clear the existing sections
+            _settings.UpdateSubsections(ConfigurationConstants.TrustedSources, sourceName, Enumerable.Empty<SettingValue>().AsList());
         }
     }
 }

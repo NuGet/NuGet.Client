@@ -152,14 +152,14 @@ namespace NuGet.Configuration.Test
                 var trustedSourceProvider = new TrustedSourceProvider(settings);
 
                 // Act
-                var trustedSources = trustedSourceProvider.LoadTrustedSources().ToList();
+                var trustedSources = trustedSourceProvider.LoadTrustedSources();
 
                 // Assert
                 trustedSources.Should().NotBeNull();
-                trustedSources.Count.Should().Be(1);
-                trustedSources[0].SourceName.Should().Be("nuget.org");
-                trustedSources[0].ServiceIndex.Should().BeNull();
-                trustedSources[0].Certificates.Should().BeEquivalentTo(expectedValues);
+                trustedSources.Count().Should().Be(1);
+                trustedSources.First().SourceName.Should().Be("nuget.org");
+                trustedSources.First().ServiceIndex.Should().BeNull();
+                trustedSources.First().Certificates.Should().BeEquivalentTo(expectedValues);
             }
         }
 
@@ -798,12 +798,6 @@ namespace NuGet.Configuration.Test
 <configuration>
 </configuration>";
 
-            var expectedValues = new List<CertificateTrustEntry>
-            {
-                new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256),
-                new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512)
-            };
-
             using (var mockBaseDirectory = TestDirectory.Create())
             using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
             {
@@ -855,12 +849,6 @@ namespace NuGet.Configuration.Test
     </trustedSources>
 </configuration>";
 
-            var expectedValues = new List<CertificateTrustEntry>
-            {
-                new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256),
-                new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512)
-            };
-
             using (var mockBaseDirectory = TestDirectory.Create())
             using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
             {
@@ -881,6 +869,458 @@ namespace NuGet.Configuration.Test
                 var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
                 actualTrustedSources.Count().Should().Be(1);
                 actualTrustedSources.Should().Contain(trustedSource);
+            }
+        }
+
+        [Fact]
+        public void SavesUpdatedTrustedSourceIntoNestedSettingsRemovingOldEntries()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <packageSources>
+        <add key='nuget.org' value='https://nuget.org' />
+        <add key='test.org' value='Packages' />
+    </packageSources>
+    <trustedSources>
+        <nuget.org>
+            <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA256' />
+        </nuget.org>
+    </trustedSources>
+</configuration>";
+
+            var config2 = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <trustedSources>
+        <nuget.org>
+            <add key='HASH2' value='SUBJECT_NAME2' fingerprintAlgorithm='SHA512' />
+        </nuget.org>
+    </trustedSources>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+                var trustedSource = new TrustedSource("nuget.org");
+                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
+
+                // Act
+                trustedSourceProvider.SaveTrustedSource(trustedSource);
+
+                // Assert
+                var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
+                actualTrustedSources.Count().Should().Be(1);
+                actualTrustedSources.Should().Contain(trustedSource);
+            }
+        }
+
+        [Fact]
+        public void DeletesTrustedSource()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <packageSources>
+    <add key='nuget.org' value='https://nuget.org' />
+  </packageSources>
+  <trustedSources>
+    <nuget.org>
+      <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA256' />
+    </nuget.org>
+  </trustedSources>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+
+                // Act
+                trustedSourceProvider.DeleteTrustedSource("nuget.org");
+
+                // Assert
+                var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
+                actualTrustedSources.Should().NotBeNull();
+                actualTrustedSources.Count().Should().Be(0);
+            }
+        }
+
+        [Fact]
+        public void DeletesTrustedSourceInConfigFile()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://nuget.org"" />
+  </packageSources>
+  <trustedSources>
+    <nuget.org>
+      <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+    </nuget.org>
+  </trustedSources>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+
+                // Act
+                trustedSourceProvider.DeleteTrustedSource("nuget.org");
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://nuget.org"" />
+  </packageSources>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void DeletesTrustedSourceButLeavesOthers()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <packageSources>
+    <add key='nuget.org' value='https://nuget.org' />
+    <add key='temp.org' value='https://temp.org' />
+  </packageSources>
+  <trustedSources>
+    <nuget.org>
+      <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA256' />
+    </nuget.org>
+    <temp.org>
+      <add key='HASH2' value='SUBJECT_NAME2' fingerprintAlgorithm='SHA256' />
+    </temp.org>
+  </trustedSources>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+                var trustedSource = new TrustedSource("nuget.org");
+                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
+
+                // Act
+                trustedSourceProvider.DeleteTrustedSource("temp.org");
+
+                // Assert
+                var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
+                actualTrustedSources.Should().NotBeNull();
+                actualTrustedSources.Count().Should().Be(1);
+                actualTrustedSources.First().ShouldBeEquivalentTo(trustedSource);
+            }
+        }
+
+        [Fact]
+        public void DeletesTrustedSourceButLeavesOthersInConfigFile()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://nuget.org"" />
+    <add key=""temp.org"" value=""https://temp.org"" />
+  </packageSources>
+  <trustedSources>
+    <nuget.org>
+      <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+    </nuget.org>
+    <temp.org>
+      <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA256"" />
+    </temp.org>
+  </trustedSources>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+                var trustedSource = new TrustedSource("nuget.org");
+                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
+
+                // Act
+                trustedSourceProvider.DeleteTrustedSource("temp.org");
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://nuget.org"" />
+    <add key=""temp.org"" value=""https://temp.org"" />
+  </packageSources>
+  <trustedSources>
+    <nuget.org>
+      <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+    </nuget.org>
+  </trustedSources>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void DeletesTrustedSourceFromNestedSettings()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <packageSources>
+        <add key='nuget.org' value='https://nuget.org' />
+        <add key='test.org' value='Packages' />
+    </packageSources>
+    <trustedSources>
+        <nuget.org>
+            <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA256' />
+        </nuget.org>
+    </trustedSources>
+</configuration>";
+
+            var config2 = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <trustedSources>
+        <nuget.org>
+            <add key='HASH2' value='SUBJECT_NAME2' fingerprintAlgorithm='SHA512' />
+        </nuget.org>
+    </trustedSources>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+
+                // Act
+                trustedSourceProvider.DeleteTrustedSource("nuget.org");
+
+                // Assert
+                var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
+                actualTrustedSources.Should().NotBeNull();
+                actualTrustedSources.Count().Should().Be(0);
+            }
+        }
+
+        [Fact]
+        public void DeletesTrustedSourceFromNestedSettingsInConfigFiles()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""nuget.org"" value=""https://nuget.org"" />
+        <add key=""test.org"" value=""Packages"" />
+    </packageSources>
+    <trustedSources>
+        <nuget.org>
+            <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+        </nuget.org>
+    </trustedSources>
+</configuration>";
+
+            var config2 = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <trustedSources>
+        <nuget.org>
+            <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA512"" />
+        </nuget.org>
+    </trustedSources>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+
+                // Act
+                trustedSourceProvider.DeleteTrustedSource("nuget.org");
+
+                // Assert
+                var result1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""nuget.org"" value=""https://nuget.org"" />
+        <add key=""test.org"" value=""Packages"" />
+    </packageSources>
+</configuration>";
+
+                var result2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+                Assert.Equal(result1.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result2.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockChildDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void DeletesTrustedSourceFromNestedSettingsButLeavesOthers()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <packageSources>
+        <add key='nuget.org' value='https://nuget.org' />
+        <add key='test.org' value='Packages' />
+    </packageSources>
+    <trustedSources>
+        <nuget.org>
+            <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA256' />
+        </nuget.org>
+        <temp.org>
+            <add key='HASH3' value='SUBJECT_NAME3' fingerprintAlgorithm='SHA256' />
+        </temp.org>
+    </trustedSources>
+</configuration>";
+
+            var config2 = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <trustedSources>
+        <nuget.org>
+            <add key='HASH2' value='SUBJECT_NAME2' fingerprintAlgorithm='SHA512' />
+        </nuget.org>
+        <temp.org>
+            <add key='HASH4' value='SUBJECT_NAME4' fingerprintAlgorithm='SHA256' />
+        </temp.org>
+    </trustedSources>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+                var trustedSource = new TrustedSource("nuget.org");
+                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256, 1));
+                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512, 2));
+
+                // Act
+                trustedSourceProvider.DeleteTrustedSource("temp.org");
+
+                // Assert
+                var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
+                actualTrustedSources.Should().NotBeNull();
+                actualTrustedSources.Count().Should().Be(1);
+                actualTrustedSources.First().ShouldBeEquivalentTo(trustedSource);
+            }
+        }
+
+        [Fact]
+        public void DeletesTrustedSourceFromNestedSettingsButLeavesOthersInConfigFile()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""nuget.org"" value=""https://nuget.org"" />
+        <add key=""test.org"" value=""Packages"" />
+    </packageSources>
+    <trustedSources>
+        <nuget.org>
+            <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+        </nuget.org>
+        <temp.org>
+            <add key=""HASH3"" value=""SUBJECT_NAME3"" fingerprintAlgorithm=""SHA256"" />
+        </temp.org>
+    </trustedSources>
+</configuration>";
+
+            var config2 = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <trustedSources>
+        <nuget.org>
+            <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA512"" />
+        </nuget.org>
+        <temp.org>
+            <add key=""HASH4"" value=""SUBJECT_NAME4"" fingerprintAlgorithm=""SHA256"" />
+        </temp.org>
+    </trustedSources>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+
+                // Act
+                trustedSourceProvider.DeleteTrustedSource("temp.org");
+
+                // Assert
+                var result1 = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""nuget.org"" value=""https://nuget.org"" />
+        <add key=""test.org"" value=""Packages"" />
+    </packageSources>
+    <trustedSources>
+        <nuget.org>
+            <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+        </nuget.org>
+    </trustedSources>
+</configuration>";
+
+                var result2 = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <trustedSources>
+        <nuget.org>
+            <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA512"" />
+        </nuget.org>
+    </trustedSources>
+</configuration>";
+
+                Assert.Equal(result1.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result2.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockChildDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
             }
         }
     }
