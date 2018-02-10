@@ -245,6 +245,11 @@ namespace NuGet.SolutionRestoreManager
                 duration);
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
+
+            var sources = _sourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().ToList();
+            var sourceEvent = SourceTelemetry.GetSourceSummaryEvent(_nuGetProjectContext.OperationId, sources);
+
+            TelemetryActivity.EmitTelemetryEvent(sourceEvent);
         }
 
         private async Task RestorePackageSpecProjectsAsync(
@@ -398,7 +403,7 @@ namespace NuGet.SolutionRestoreManager
                 _status = NuGetOperationStatus.Failed;
 
                 _logger.Do((l, _) =>
-                { 
+                {
                     foreach (var projectName in args.ProjectNames)
                     {
                         var exceptionMessage =
