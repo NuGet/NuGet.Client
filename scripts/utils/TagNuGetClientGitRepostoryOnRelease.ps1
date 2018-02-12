@@ -37,6 +37,7 @@ $NuGetExePath = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'ar
 Write-Host $NuGetExePath
 
 $TagName = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).FileVersion
+$AttemptNum = ${env:RELEASE_ATTEMPTNUMBER}
 $ProductVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).ProductVersion
 $Date = Get-Date
 $Message = "Insert $ProductVersion into $VsTargetBranch on $Date"
@@ -61,20 +62,38 @@ $Headers= @{
     Authorization='Basic {0}' -f $Base64Token;
 }
 
-$Body = @{
-tag = $TagName;
-object = $CommitHash;
-type = 'commit';
-message= $TagMessage;
-} | ConvertTo-Json;
+try {
+    $Body = @{
+        tag = $TagName;
+        object = $CommitHash;
+        type = 'commit';
+        message= $TagMessage;
+        } | ConvertTo-Json;
+        
+        Write-Host $Body
+        
+    $tagObject = "refs/tags/$TagName"
+    $r1 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/NuGet/$NuGetRepository/git/tags" -Body $Body
+    Write-Host $r1    
+}
+catch {
+    # The above would fail if the tag already existed, in which case we would append the attempt number to the tag name to make it unique
+    Write-Host "Tagging failed, appending attempt number...."
+    $TagName = "$TagName-$AttemptNum"
+    $Body = @{
+        tag = $TagName;
+        object = $CommitHash;
+        type = 'commit';
+        message= $TagMessage;
+        } | ConvertTo-Json;
+        
+        Write-Host $Body
+        
+    $tagObject = "refs/tags/$TagName"
+    $r1 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/NuGet/$NuGetRepository/git/tags" -Body $Body
+    Write-Host $r1
+}
 
-Write-Host $Body
-
-$tagObject = "refs/tags/$TagName"
-
-$r1 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/NuGet/$NuGetRepository/git/tags" -Body $Body
-
-Write-Host $r1
 
 $Body2 = @{
 ref = $tagObject;
