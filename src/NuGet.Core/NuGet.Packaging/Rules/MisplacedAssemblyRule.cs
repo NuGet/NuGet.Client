@@ -14,8 +14,9 @@ namespace NuGet.Packaging.Rules
     {
         public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            foreach (var file in builder.GetFiles())
+            foreach (var packageFile in builder.GetFiles())
             {
+                var file = PathUtility.GetPathWithDirectorySeparator(packageFile);
                 var directory = Path.GetDirectoryName(file);
 
                 // if under 'lib' directly
