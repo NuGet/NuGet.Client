@@ -265,6 +265,7 @@ phases:
       solution: "build\\symbols.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/p:IsSymbolBuild=true"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
     
   - task: CopyFiles@2

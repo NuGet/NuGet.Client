@@ -103,8 +103,8 @@
   <Import Project="$(BuildCommonDirectory)common.targets" />
   
   <PropertyGroup>
-    <SignTargetsForRealSigning>GetIlmergeBuildOutput</SignTargetsForRealSigning>
-    <SymbolTargetsToGetPdbs>GetIlmergeSymbolOutput</SymbolTargetsToGetPdbs>
+    <SignTargetsForRealSigning Condition="'$(IsSymbolsBuild)' != 'true'">GetIlmergeBuildOutput</SignTargetsForRealSigning>
+    <SymbolTargetsToGetPdbs>GetIlmergeSymbolOutput;GetFinalBuildOutput</SymbolTargetsToGetPdbs>
   </PropertyGroup>
   
   <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
@@ -127,6 +127,12 @@
   <Target Name="GetIlmergeSymbolOutput" Returns="@(SymbolsToIndex)">
     <ItemGroup>
       <SymbolsToIndex Include="$(OutputPath)ilmerge\*.pdb" KeepDuplicates="false" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetFinalBuildOutput" Returns="@(DllsToIndex)">
+    <ItemGroup>
+      <DllsToIndex Include="$(OutputPath)ilmerge\NuGet.Build.Tasks.Pack.dll"/>
     </ItemGroup>
   </Target>
 
