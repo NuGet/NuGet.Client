@@ -24,25 +24,15 @@ namespace NuGet.Configuration
         /// </summary>
         public ISet<CertificateTrustEntry> Certificates { get; }
 
+        /// <summary>
+        /// Bool indicating if this trusted source has a corresponding package source.
+        /// </summary>
+        public bool HasPackageSource => !string.IsNullOrEmpty(ServiceIndex);
+
         public TrustedSource(string source)
         {
             SourceName = source ?? throw new ArgumentNullException(nameof(source));
             Certificates = new HashSet<CertificateTrustEntry>();
-        }
-
-        internal TrustedSource Clone()
-        {
-            var cloned = new TrustedSource(SourceName)
-            {
-                ServiceIndex = ServiceIndex
-            };
-
-            foreach (var entry in Certificates)
-            {
-                cloned.Certificates.Add(entry.Clone());
-            }
-
-            return cloned;
         }
 
         public override int GetHashCode()
@@ -74,6 +64,21 @@ namespace NuGet.Configuration
             return string.Equals(SourceName, other.SourceName, StringComparison.CurrentCultureIgnoreCase) &&
                 EqualityUtility.EqualsWithNullCheck(ServiceIndex, other.ServiceIndex, StringComparer.OrdinalIgnoreCase) &&
                 EqualityUtility.SetEqualsWithNullCheck(Certificates, other.Certificates);
+        }
+
+        internal TrustedSource Clone()
+        {
+            var cloned = new TrustedSource(SourceName)
+            {
+                ServiceIndex = ServiceIndex
+            };
+
+            foreach (var entry in Certificates)
+            {
+                cloned.Certificates.Add(entry.Clone());
+            }
+
+            return cloned;
         }
     }
 }

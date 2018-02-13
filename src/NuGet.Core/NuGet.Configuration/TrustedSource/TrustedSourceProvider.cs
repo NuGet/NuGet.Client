@@ -107,6 +107,13 @@ namespace NuGet.Configuration
                 settingValues.Add(settingValue);
             }
 
+            if (!string.IsNullOrEmpty(source.ServiceIndex))
+            {
+                // TODO pass priority
+                var settingValue = new SettingValue(ConfigurationConstants.ServiceIndex, source.ServiceIndex, isMachineWide: false);
+                settingValues.Add(settingValue);
+            }
+
             if (matchingSource != null)
             {
                 _settings.UpdateSubsections(ConfigurationConstants.TrustedSources, source.SourceName, settingValues);

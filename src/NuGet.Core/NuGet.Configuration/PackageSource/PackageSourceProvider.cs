@@ -447,6 +447,17 @@ namespace NuGet.Configuration
                     GetCredentialValues(source.Credentials));
             }
 
+            // Update/Add trusted sources
+            // Deletion of a trusted shource should be done separately using TrustedSourceProvider.DeleteSource()
+            var trustedSources = sources
+                .Where(s => s.TrustedSource != null)
+                .Select(s => s.TrustedSource);
+
+            if (trustedSources.Any())
+            {
+                _trustedSourceProvider.SaveTrustedSources(trustedSources);
+            }
+
             OnPackageSourcesChanged();
         }
 
