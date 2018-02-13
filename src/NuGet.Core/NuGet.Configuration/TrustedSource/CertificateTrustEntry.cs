@@ -7,7 +7,7 @@ using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
-    public class CertificateTrustEntry : IEquatable<CertificateTrustEntry>
+    public class CertificateTrustEntry : ITrustEntry, IEquatable<CertificateTrustEntry>
     {
         /// <summary>
         /// Certificate fingerprint.

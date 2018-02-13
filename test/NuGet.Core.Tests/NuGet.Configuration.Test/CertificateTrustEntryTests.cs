@@ -8,7 +8,7 @@ using Xunit;
 
 namespace NuGet.Configuration.Test
 {
-    public class TrustedCertificateEntryTests
+    public class CertificateTrustEntryTests
     {
         [Fact]
         public void EqualsReturnsTrueForSameObject()

@@ -226,12 +226,12 @@ namespace NuGet.Configuration
         public static ISettings LoadSettingsGivenConfigPaths(IList<string> configFilePaths)
         {
             var settings = new List<Settings>();
-            if(configFilePaths == null || configFilePaths.Count == 0)
+            if (configFilePaths == null || configFilePaths.Count == 0)
             {
                 return NullSettings.Instance;
             }
 
-            foreach(var configFile in configFilePaths)
+            foreach (var configFile in configFilePaths)
             {
                 settings.Add(LoadSettings(configFile));
             }
@@ -752,8 +752,9 @@ namespace NuGet.Configuration
                     XElementUtility.AddIndented(sectionElement, element);
                 }
             }
-            else
+            else if (!ContainsClearTag(sectionElement))
             {
+                // Delete the section if it does not have values and a clear tag
                 DeleteSectionFromRoot(root, section);
             }
         }
@@ -800,6 +801,24 @@ namespace NuGet.Configuration
                     element.Remove();
                 }
             }
+        }
+
+        /// <summary>
+        /// Checks if a section contains clear tag.
+        /// </summary>
+        /// <param name="section">XElement section.</param>
+        private static bool ContainsClearTag(XElement section)
+        {
+            if (section == null)
+            {
+                return false;
+            }
+
+            return section
+                .Nodes()
+                .Where(n => n.NodeType == XmlNodeType.Element)
+                .Select(n => (XElement)n)
+                .Any(e => string.Equals(e.Name.LocalName, "clear", StringComparison.OrdinalIgnoreCase));
         }
 
         private static void SetElementValues(XElement element, string key, string value, IDictionary<string, string> attributes)

@@ -1700,9 +1700,12 @@ namespace NuGet.Configuration.Test
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
                 var settings = new Settings(mockBaseDirectory);
                 var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                sources[0].TrustedSource = new TrustedSource(sources[0].Name);
+                sources[0].TrustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512));
 
                 // Act
-                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                packageSourceProvider.SavePackageSources(sources);
 
                 // Assert
                 var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -1714,6 +1717,104 @@ namespace NuGet.Configuration.Test
   <trustedSources>
     <NuGet.org>
       <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA512"" />
+    </NuGet.org>
+  </trustedSources>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigFilePath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void SavePackageSources_UpdatesTrustedSource()
+        {
+            // Arrange
+            var nugetConfigFilePath = "NuGet.Config";
+            var configContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""NuGet.org"" value=""https://nuget.org/api/v2/"" />
+    <add key=""temp.org"" value=""https://temp.org/api/v2/"" />
+  </packageSources>
+</configuration>";
+
+            var expectedValue = new TrustedSource("NuGet.org");
+            expectedValue.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512));
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
+                var settings = new Settings(mockBaseDirectory);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                sources[0].TrustedSource = new TrustedSource(sources[0].Name);
+                sources[0].TrustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512));
+
+                // Act
+                packageSourceProvider.SavePackageSources(sources);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""NuGet.org"" value=""https://nuget.org/api/v2/"" />
+    <add key=""temp.org"" value=""https://temp.org/api/v2/"" />
+  </packageSources>
+  <trustedSources>
+    <NuGet.org>
+      <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA512"" />
+    </NuGet.org>
+  </trustedSources>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigFilePath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void SavePackageSources_DoesNotRemoveTrustedSource()
+        {
+            // Arrange
+            var nugetConfigFilePath = "NuGet.Config";
+            var configContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""NuGet.org"" value=""https://nuget.org/api/v2/"" />
+    <add key=""temp.org"" value=""https://temp.org/api/v2/"" />
+  </packageSources>
+  <trustedSources>
+    <NuGet.org>
+      <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA512"" />
+    </NuGet.org>
+  </trustedSources>
+</configuration>";
+
+            var expectedValue = new TrustedSource("NuGet.org");
+            expectedValue.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512));
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
+                var settings = new Settings(mockBaseDirectory);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                sources[0].TrustedSource = null;
+
+                // Act
+                packageSourceProvider.SavePackageSources(sources);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""NuGet.org"" value=""https://nuget.org/api/v2/"" />
+    <add key=""temp.org"" value=""https://temp.org/api/v2/"" />
+  </packageSources>
+  <trustedSources>
+    <NuGet.org>
+      <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA512"" />
     </NuGet.org>
   </trustedSources>
 </configuration>";

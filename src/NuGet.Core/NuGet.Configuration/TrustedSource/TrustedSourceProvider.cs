@@ -50,7 +50,7 @@ namespace NuGet.Configuration
                 {
                     if (string.Equals(settingValue.Key, ConfigurationConstants.ServiceIndex, StringComparison.OrdinalIgnoreCase))
                     {
-                        trustedSource.ServiceIndex = settingValue.Value;
+                        trustedSource.ServiceIndex = new ServiceIndexTrustEntry(settingValue.Value, settingValue.Priority);
                     }
                     else
                     {
@@ -95,6 +95,15 @@ namespace NuGet.Configuration
 
             var settingValues = new List<SettingValue>();
 
+            if (source.ServiceIndex != null)
+            {
+                // use existing priority if present
+                var priority = matchingSource?.ServiceIndex?.Priority ?? source.ServiceIndex.Priority;
+
+                var settingValue = new SettingValue(ConfigurationConstants.ServiceIndex, source.ServiceIndex.Value, isMachineWide: false, priority: priority);
+                settingValues.Add(settingValue);
+            }
+
             foreach (var cert in source.Certificates)
             {
                 // use existing priority if present
@@ -104,13 +113,6 @@ namespace NuGet.Configuration
                 var settingValue = new SettingValue(cert.Fingerprint, cert.SubjectName, isMachineWide: false, priority: priority);
 
                 settingValue.AdditionalData.Add(ConfigurationConstants.FingerprintAlgorithm, cert.FingerprintAlgorithm.ToString());
-                settingValues.Add(settingValue);
-            }
-
-            if (!string.IsNullOrEmpty(source.ServiceIndex))
-            {
-                // TODO pass priority
-                var settingValue = new SettingValue(ConfigurationConstants.ServiceIndex, source.ServiceIndex, isMachineWide: false);
                 settingValues.Add(settingValue);
             }
 

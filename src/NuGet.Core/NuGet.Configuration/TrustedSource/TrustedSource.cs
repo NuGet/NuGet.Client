@@ -17,17 +17,12 @@ namespace NuGet.Configuration
         /// <summary>
         /// Service index of the source.
         /// </summary>
-        public string ServiceIndex { get; set; }
+        public ServiceIndexTrustEntry ServiceIndex { get; set; }
 
         /// <summary>
         /// List of trusted certificates.
         /// </summary>
         public ISet<CertificateTrustEntry> Certificates { get; }
-
-        /// <summary>
-        /// Bool indicating if this trusted source has a corresponding package source.
-        /// </summary>
-        public bool HasPackageSource => !string.IsNullOrEmpty(ServiceIndex);
 
         public TrustedSource(string source)
         {
@@ -62,7 +57,7 @@ namespace NuGet.Configuration
             }
 
             return string.Equals(SourceName, other.SourceName, StringComparison.CurrentCultureIgnoreCase) &&
-                EqualityUtility.EqualsWithNullCheck(ServiceIndex, other.ServiceIndex, StringComparer.OrdinalIgnoreCase) &&
+                EqualityUtility.EqualsWithNullCheck(ServiceIndex, other.ServiceIndex) &&
                 EqualityUtility.SetEqualsWithNullCheck(Certificates, other.Certificates);
         }
 

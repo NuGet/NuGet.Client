@@ -19,7 +19,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -59,7 +59,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config1 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config1 = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -72,7 +72,7 @@ namespace NuGet.Configuration.Test
     </trustedSources>
 </configuration>";
 
-            var config2 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config2 = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <trustedSources>
         <nuget.org>
@@ -113,7 +113,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config1 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config1 = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -126,7 +126,7 @@ namespace NuGet.Configuration.Test
     </trustedSources>
 </configuration>";
 
-            var config2 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config2 = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <trustedSources>
         <nuget.org>
@@ -168,7 +168,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -210,7 +210,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -253,7 +253,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -285,7 +285,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -315,7 +315,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -347,7 +347,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -388,7 +388,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -437,11 +437,8 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
-  <packageSources>
-    <add key=""nuget.org"" value=""https://nuget.org"" />
-  </packageSources>
 </configuration>";
 
             using (var mockBaseDirectory = TestDirectory.Create())
@@ -451,18 +448,16 @@ namespace NuGet.Configuration.Test
                 var trustedSourceProvider = new TrustedSourceProvider(settings);
                 var trustedSource = new TrustedSource("nuget.org");
                 trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
-
+                trustedSource.ServiceIndex = new ServiceIndexTrustEntry(@"https://nuget.org");
                 // Act
                 trustedSourceProvider.SaveTrustedSource(trustedSource);
 
                 // Assert
                 var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-  <packageSources>
-    <add key=""nuget.org"" value=""https://nuget.org"" />
-  </packageSources>
   <trustedSources>
     <nuget.org>
+      <add key=""serviceIndex"" value=""https://nuget.org"" />
       <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
     </nuget.org>
   </trustedSources>
@@ -478,7 +473,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <packageSources>
     <add key=""nuget.org"" value=""https://nuget.org"" />
@@ -510,6 +505,49 @@ namespace NuGet.Configuration.Test
   <trustedSources>
     <nuget.org>
       <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA384"" />
+    </nuget.org>
+  </trustedSources>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void WritesUpdatedTrustedSourceWithReplacedServiceIndex()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <trustedSources>
+    <nuget.org>
+      <add key=""serviceIndex"" value=""SERVICE_INDEX"" />
+      <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+    </nuget.org>
+  </trustedSources>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+                var trustedSource = new TrustedSource("nuget.org");
+                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA384));
+                trustedSource.ServiceIndex = new ServiceIndexTrustEntry("SERVICE_INDEX2");
+
+                // Act
+                trustedSourceProvider.SaveTrustedSource(trustedSource);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <trustedSources>
+    <nuget.org>
+      <add key=""serviceIndex"" value=""SERVICE_INDEX2"" />
+      <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA384"" />
     </nuget.org>
   </trustedSources>
 </configuration>";
@@ -524,7 +562,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <packageSources>
     <add key=""nuget.org"" value=""https://nuget.org"" />
@@ -568,63 +606,113 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void WritesUpdatedTrustedSourceWithAddedServiceIndex()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <trustedSources>
+    <nuget.org>
+      <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+    </nuget.org>
+  </trustedSources>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+                var trustedSource = new TrustedSource("nuget.org");
+                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
+                trustedSource.ServiceIndex = new ServiceIndexTrustEntry("SERVICE_INDEX");
+
+                // Act
+                trustedSourceProvider.SaveTrustedSource(trustedSource);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <trustedSources>
+    <nuget.org>
+      <add key=""serviceIndex"" value=""SERVICE_INDEX"" />
+      <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+    </nuget.org>
+  </trustedSources>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
         public void SavesNewTrustedSourceWithOneCertificate()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <packageSources>
     <add key=""nuget.org"" value=""https://nuget.org"" />
   </packageSources>
 </configuration>";
 
+            var trustedSource = new TrustedSource("nuget.org");
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
+            trustedSource.ServiceIndex = new ServiceIndexTrustEntry("SERVICE_INDEX");
+
+            var expectedTrustedSources = new List<TrustedSource>()
+            {
+                trustedSource
+            };
+
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settings = new Settings(mockBaseDirectory);
                 var trustedSourceProvider = new TrustedSourceProvider(settings);
-                var trustedSource = new TrustedSource("nuget.org");
-                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
+
 
                 // Act
                 trustedSourceProvider.SaveTrustedSource(trustedSource);
 
                 // Assert
-                var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
-                actualTrustedSources.Count().Should().Be(1);
-                actualTrustedSources.Should().Contain(trustedSource);
+                AssertTrustedSources(trustedSourceProvider.LoadTrustedSources(), expectedTrustedSources);
             }
         }
 
         [Fact]
-        public void SavesNewTrustedSourceWithMultipleCertificate()
+        public void SavesNewTrustedSourceWithMultipleCertificatesAndServiceIndex()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
-  <packageSources>
-    <add key='nuget.org' value='https://nuget.org' />
-  </packageSources>
 </configuration>";
+
+            var trustedSource = new TrustedSource("nuget.org");
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384));
+            trustedSource.ServiceIndex = new ServiceIndexTrustEntry("SERVICE_INDEX");
+
+            var expectedTrustedSources = new List<TrustedSource>()
+            {
+                trustedSource
+            };
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settings = new Settings(mockBaseDirectory);
                 var trustedSourceProvider = new TrustedSourceProvider(settings);
-                var trustedSource = new TrustedSource("nuget.org");
-                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
-                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384));
 
                 // Act
                 trustedSourceProvider.SaveTrustedSource(trustedSource);
 
                 // Assert
-                var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
-                actualTrustedSources.Count().Should().Be(1);
-                actualTrustedSources.Should().Contain(trustedSource);
+                AssertTrustedSources(trustedSourceProvider.LoadTrustedSources(), expectedTrustedSources);
             }
         }
 
@@ -633,7 +721,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <packageSources>
     <add key='nuget.org' value='https://nuget.org' />
@@ -645,21 +733,25 @@ namespace NuGet.Configuration.Test
   </trustedSources>
 </configuration>";
 
+            var trustedSource = new TrustedSource("nuget.org");
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384));
+
+            var expectedTrustedSources = new List<TrustedSource>()
+            {
+                trustedSource
+            };
+
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settings = new Settings(mockBaseDirectory);
                 var trustedSourceProvider = new TrustedSourceProvider(settings);
-                var trustedSource = new TrustedSource("nuget.org");
-                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384));
 
                 // Act
                 trustedSourceProvider.SaveTrustedSource(trustedSource);
 
                 // Assert
-                var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
-                actualTrustedSources.Count().Should().Be(1);
-                actualTrustedSources.Should().Contain(trustedSource);
+                AssertTrustedSources(trustedSourceProvider.LoadTrustedSources(), expectedTrustedSources);
             }
         }
 
@@ -668,7 +760,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <packageSources>
     <add key='nuget.org' value='https://nuget.org' />
@@ -680,22 +772,26 @@ namespace NuGet.Configuration.Test
   </trustedSources>
 </configuration>";
 
+            var trustedSource = new TrustedSource("nuget.org");
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384));
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH3", "SUBJECT_NAME3", HashAlgorithmName.SHA512));
+
+            var expectedTrustedSources = new List<TrustedSource>()
+            {
+                trustedSource
+            };
+
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settings = new Settings(mockBaseDirectory);
                 var trustedSourceProvider = new TrustedSourceProvider(settings);
-                var trustedSource = new TrustedSource("nuget.org");
-                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384));
-                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH3", "SUBJECT_NAME3", HashAlgorithmName.SHA512));
 
                 // Act
                 trustedSourceProvider.SaveTrustedSource(trustedSource);
 
                 // Assert
-                var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
-                actualTrustedSources.Count().Should().Be(1);
-                actualTrustedSources.Should().Contain(trustedSource);
+                AssertTrustedSources(trustedSourceProvider.LoadTrustedSources(), expectedTrustedSources);
             }
         }
 
@@ -704,7 +800,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <packageSources>
     <add key=""nuget.org"" value=""https://nuget.org"" />
@@ -740,11 +836,11 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SavesMultpleTrustedSourcesWithMultipleCertificate()
+        public void SavesMultpleTrustedSourcesWithMultipleCertificates()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <packageSources>
     <add key=""nuget.org"" value=""https://nuget.org"" />
@@ -760,6 +856,7 @@ namespace NuGet.Configuration.Test
                 var trustedSource1 = new TrustedSource("nuget.org");
                 trustedSource1.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
                 trustedSource1.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512));
+                trustedSource1.ServiceIndex = new ServiceIndexTrustEntry("SERVICE_INDEX");
 
                 var trustedSource2 = new TrustedSource("temp.org");
                 trustedSource2.Certificates.Add(new CertificateTrustEntry("HASH3", "SUBJECT_NAME3", HashAlgorithmName.SHA384));
@@ -786,7 +883,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config1 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config1 = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -794,9 +891,19 @@ namespace NuGet.Configuration.Test
     </packageSources>
 </configuration>";
 
-            var config2 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config2 = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
 </configuration>";
+
+            var trustedSource = new TrustedSource("nuget.org");
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384));
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH3", "SUBJECT_NAME3", HashAlgorithmName.SHA512));
+            trustedSource.ServiceIndex = new ServiceIndexTrustEntry("SERVICE_INDEX");
+
+            var expectedTrustedSources = new List<TrustedSource>
+            {
+                trustedSource
+            };
 
             using (var mockBaseDirectory = TestDirectory.Create())
             using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
@@ -807,17 +914,74 @@ namespace NuGet.Configuration.Test
                 var configPaths = new List<string> { Path.Combine(mockBaseDirectory, nugetConfigPath), Path.Combine(mockChildDirectory, nugetConfigPath) };
                 var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
                 var trustedSourceProvider = new TrustedSourceProvider(settings);
-                var trustedSource = new TrustedSource("nuget.org");
-                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384));
-                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH3", "SUBJECT_NAME3", HashAlgorithmName.SHA512));
 
                 // Act
                 trustedSourceProvider.SaveTrustedSource(trustedSource);
 
                 // Assert
-                var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
-                actualTrustedSources.Count().Should().Be(1);
-                actualTrustedSources.Should().Contain(trustedSource);
+                AssertTrustedSources(trustedSourceProvider.LoadTrustedSources(), expectedTrustedSources);
+            }
+        }
+
+        [Fact]
+        public void SavesNewTrustedSourceIntoConfigFiles()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://nuget.org"" />
+    <add key=""test.org"" value=""Packages"" />
+  </packageSources>
+</configuration>";
+
+            var config2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+            var trustedSource = new TrustedSource("nuget.org");
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384));
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH3", "SUBJECT_NAME3", HashAlgorithmName.SHA512));
+            trustedSource.ServiceIndex = new ServiceIndexTrustEntry("SERVICE_INDEX");
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+
+                // Act
+                trustedSourceProvider.SaveTrustedSource(trustedSource);
+
+                // Assert
+                var result1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://nuget.org"" />
+    <add key=""test.org"" value=""Packages"" />
+  </packageSources>
+  <trustedSources>
+    <nuget.org>
+      <add key=""serviceIndex"" value=""SERVICE_INDEX"" />
+      <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA384"" />
+      <add key=""HASH3"" value=""SUBJECT_NAME3"" fingerprintAlgorithm=""SHA512"" />
+    </nuget.org>
+  </trustedSources>
+</configuration>";
+
+                var result2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+                Assert.Equal(result1.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result2.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockChildDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
             }
         }
 
@@ -827,27 +991,38 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config1 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageSources>
-        <add key='nuget.org' value='https://nuget.org' />
-        <add key='test.org' value='Packages' />
-    </packageSources>
-    <trustedSources>
-        <nuget.org>
-            <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA256' />
-        </nuget.org>
-    </trustedSources>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://nuget.org"" />
+    <add key=""test.org"" value=""Packages"" />
+  </packageSources>
+  <trustedSources>
+    <nuget.org>
+      <add key=""serviceIndex"" value=""SERVICE_INDEX"" />
+      <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+    </nuget.org>
+  </trustedSources>
 </configuration>";
 
-            var config2 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <trustedSources>
-        <nuget.org>
-            <add key='HASH2' value='SUBJECT_NAME2' fingerprintAlgorithm='SHA512' />
-        </nuget.org>
-    </trustedSources>
+  <trustedSources>
+    <nuget.org>
+      <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA512"" />
+    </nuget.org>
+  </trustedSources>
 </configuration>";
+
+            var trustedSource = new TrustedSource("nuget.org");
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512));
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH3", "SUBJECT_NAME3", HashAlgorithmName.SHA512));
+            trustedSource.ServiceIndex = new ServiceIndexTrustEntry("SERVICE_INDEX2");
+
+            var expectedTrustedSources = new List<TrustedSource>
+            {
+                trustedSource
+            };
 
             using (var mockBaseDirectory = TestDirectory.Create())
             using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
@@ -858,17 +1033,96 @@ namespace NuGet.Configuration.Test
                 var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
                 var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
                 var trustedSourceProvider = new TrustedSourceProvider(settings);
-                var trustedSource = new TrustedSource("nuget.org");
-                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512));
-                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH3", "SUBJECT_NAME3", HashAlgorithmName.SHA512));
+
 
                 // Act
                 trustedSourceProvider.SaveTrustedSource(trustedSource);
 
                 // Assert
-                var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
-                actualTrustedSources.Count().Should().Be(1);
-                actualTrustedSources.Should().Contain(trustedSource);
+                AssertTrustedSources(trustedSourceProvider.LoadTrustedSources(), expectedTrustedSources);
+            }
+        }
+
+        [Fact]
+        public void SavesUpdatedTrustedSourceIntoConfigFiles()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://nuget.org"" />
+    <add key=""test.org"" value=""Packages"" />
+  </packageSources>
+  <trustedSources>
+    <nuget.org>
+      <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA256"" />
+    </nuget.org>
+  </trustedSources>
+</configuration>";
+
+            var config2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <trustedSources>
+    <nuget.org>
+      <add key=""serviceIndex"" value=""SERVICE_INDEX"" />
+      <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA512"" />
+    </nuget.org>
+  </trustedSources>
+</configuration>";
+
+            var trustedSource = new TrustedSource("nuget.org");
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512));
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH3", "SUBJECT_NAME3", HashAlgorithmName.SHA512));
+            trustedSource.ServiceIndex = new ServiceIndexTrustEntry("SERVICE_INDEX2");
+
+            var expectedTrustedSources = new List<TrustedSource>
+            {
+                trustedSource
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+                var trustedSourceProvider = new TrustedSourceProvider(settings);
+
+
+                // Act
+                trustedSourceProvider.SaveTrustedSource(trustedSource);
+
+                // Assert
+                var result1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://nuget.org"" />
+    <add key=""test.org"" value=""Packages"" />
+  </packageSources>
+  <trustedSources>
+    <nuget.org>
+      <add key=""HASH3"" value=""SUBJECT_NAME3"" fingerprintAlgorithm=""SHA512"" />
+    </nuget.org>
+  </trustedSources>
+</configuration>";
+
+                var result2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <trustedSources>
+    <nuget.org>
+      <add key=""serviceIndex"" value=""SERVICE_INDEX2"" />
+      <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA512"" />
+    </nuget.org>
+  </trustedSources>
+</configuration>";
+
+                Assert.Equal(result1.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result2.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockChildDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
             }
         }
 
@@ -877,7 +1131,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config1 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config1 = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -890,7 +1144,7 @@ namespace NuGet.Configuration.Test
     </trustedSources>
 </configuration>";
 
-            var config2 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config2 = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <trustedSources>
         <nuget.org>
@@ -898,6 +1152,14 @@ namespace NuGet.Configuration.Test
         </nuget.org>
     </trustedSources>
 </configuration>";
+
+            var trustedSource = new TrustedSource("nuget.org");
+            trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
+
+            var expectedTrustedSources = new List<TrustedSource>
+            {
+                trustedSource
+            };
 
             using (var mockBaseDirectory = TestDirectory.Create())
             using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
@@ -908,16 +1170,12 @@ namespace NuGet.Configuration.Test
                 var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
                 var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
                 var trustedSourceProvider = new TrustedSourceProvider(settings);
-                var trustedSource = new TrustedSource("nuget.org");
-                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
 
                 // Act
                 trustedSourceProvider.SaveTrustedSource(trustedSource);
 
                 // Assert
-                var actualTrustedSources = trustedSourceProvider.LoadTrustedSources();
-                actualTrustedSources.Count().Should().Be(1);
-                actualTrustedSources.Should().Contain(trustedSource);
+                AssertTrustedSources(trustedSourceProvider.LoadTrustedSources(), expectedTrustedSources);
             }
         }
 
@@ -926,7 +1184,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <packageSources>
     <add key='nuget.org' value='https://nuget.org' />
@@ -959,7 +1217,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
     <add key=""nuget.org"" value=""https://nuget.org"" />
@@ -998,7 +1256,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <packageSources>
     <add key='nuget.org' value='https://nuget.org' />
@@ -1038,7 +1296,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
     <add key=""nuget.org"" value=""https://nuget.org"" />
@@ -1089,7 +1347,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config1 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config1 = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -1102,7 +1360,7 @@ namespace NuGet.Configuration.Test
     </trustedSources>
 </configuration>";
 
-            var config2 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config2 = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <trustedSources>
         <nuget.org>
@@ -1136,7 +1394,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config1 = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://nuget.org"" />
@@ -1149,7 +1407,7 @@ namespace NuGet.Configuration.Test
     </trustedSources>
 </configuration>";
 
-            var config2 = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var config2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <trustedSources>
         <nuget.org>
@@ -1196,7 +1454,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config1 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config1 = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
         <add key='nuget.org' value='https://nuget.org' />
@@ -1212,7 +1470,7 @@ namespace NuGet.Configuration.Test
     </trustedSources>
 </configuration>";
 
-            var config2 = $@"<?xml version='1.0' encoding='utf-8'?>
+            var config2 = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <trustedSources>
         <nuget.org>
@@ -1253,7 +1511,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            var config1 = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://nuget.org"" />
@@ -1269,7 +1527,7 @@ namespace NuGet.Configuration.Test
     </trustedSources>
 </configuration>";
 
-            var config2 = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var config2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <trustedSources>
         <nuget.org>
@@ -1295,7 +1553,7 @@ namespace NuGet.Configuration.Test
                 trustedSourceProvider.DeleteTrustedSource("temp.org");
 
                 // Assert
-                var result1 = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var result1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://nuget.org"" />
@@ -1308,7 +1566,7 @@ namespace NuGet.Configuration.Test
     </trustedSources>
 </configuration>";
 
-                var result2 = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var result2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <trustedSources>
         <nuget.org>
@@ -1321,6 +1579,35 @@ namespace NuGet.Configuration.Test
                     File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
                 Assert.Equal(result2.Replace("\r\n", "\n"),
                     File.ReadAllText(Path.Combine(mockChildDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        private void AssertTrustedSources(IEnumerable<TrustedSource> actual, IEnumerable<TrustedSource> expected)
+        {
+            actual.Should().NotBeNull();
+            expected.Should().NotBeNull();
+            actual.Count().Should().Be(expected.Count());
+
+            var expectedLookUp = expected.ToLookup(s => s.SourceName, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var source in actual)
+            {
+                var matchingValues = expectedLookUp[source.SourceName];
+                matchingValues.Count().Should().Be(1);
+
+                var matchingValue = matchingValues.FirstOrDefault();
+                matchingValue.Should().NotBeNull();
+
+                if (matchingValue.ServiceIndex != null)
+                {
+                    source.ServiceIndex.Should().NotBeNull();
+                    string.Equals(source.ServiceIndex.Value, matchingValue.ServiceIndex.Value, StringComparison.OrdinalIgnoreCase).Should().BeTrue();
+                }
+
+                foreach (var cert in source.Certificates)
+                {
+                    matchingValue.Certificates.Should().Contain(cert);
+                }
             }
         }
     }
