@@ -123,8 +123,8 @@ namespace NuGet.Configuration
             bool isOfficial,
             bool isPersistable = true)
         {
-            Name = name ?? throw new ArgumentNullException("name");
-            Source = source ?? throw new ArgumentNullException("source");
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Source = source ?? throw new ArgumentNullException(nameof(source));
             IsEnabled = isEnabled;
             IsOfficial = isOfficial;
             IsPersistable = isPersistable;

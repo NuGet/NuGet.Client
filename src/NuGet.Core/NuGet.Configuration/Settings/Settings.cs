@@ -18,6 +18,10 @@ namespace NuGet.Configuration
     /// </summary>
     public class Settings : ISettings
     {
+        private const string CLEAR = "clear";
+        private const string ADD = "add";
+        private const string CONFIGURATION = "configuration";
+
         /// <summary>
         /// Default file name for a settings file is 'NuGet.config'
         /// Also, the machine level setting file at '%APPDATA%\NuGet' always uses this name
@@ -747,7 +751,7 @@ namespace NuGet.Configuration
             {
                 foreach (var value in valuesToWrite)
                 {
-                    var element = new XElement("add");
+                    var element = new XElement(ADD);
                     SetElementValues(element, value.Key, value.OriginalValue, value.AdditionalData);
                     XElementUtility.AddIndented(sectionElement, element);
                 }
@@ -781,7 +785,7 @@ namespace NuGet.Configuration
 
                 var element = (XElement)node;
 
-                if (element.Name.LocalName.Equals("clear", StringComparison.OrdinalIgnoreCase))
+                if (HasName(element, CLEAR))
                 {
                     nodesToRemove.Clear();
                 }
@@ -816,9 +820,28 @@ namespace NuGet.Configuration
 
             return section
                 .Nodes()
-                .Where(n => n.NodeType == XmlNodeType.Element)
-                .Select(n => (XElement)n)
-                .Any(e => string.Equals(e.Name.LocalName, "clear", StringComparison.OrdinalIgnoreCase));
+                .Any(n => IsElement(n) && HasName((XElement)n, CLEAR));
+        }
+
+        /// <summary>
+        /// Checks if an XNode is an XElement.
+        /// </summary>
+        /// <param name="node">XNode</param>
+        /// <returns>Bool indicating if the node is an element.</returns>
+        private static bool IsElement(XNode node)
+        {
+            return node.NodeType == XmlNodeType.Element;
+        }
+
+        /// <summary>
+        /// Checks if an XElement has a specific local name. Performs an OrdinalIgnoreCase comparison.
+        /// </summary>
+        /// <param name="element">XElement to be matched</param>
+        /// <param name="name">name to be matched</param>
+        /// <returns>Bool indicating if the element and has the same local name as the name parameter.</returns>
+        private static bool HasName(XElement element, string name)
+        {
+            return string.Equals(element.Name.LocalName, name, StringComparison.OrdinalIgnoreCase);
         }
 
         private static void SetElementValues(XElement element, string key, string value, IDictionary<string, string> attributes)
@@ -1005,13 +1028,11 @@ namespace NuGet.Configuration
             var result = curr;
             foreach (var element in sectionElement.Elements())
             {
-                var elementName = element.Name.LocalName;
-                if (elementName.Equals("clear", StringComparison.OrdinalIgnoreCase))
+                if (HasName(element, CLEAR))
                 {
                     result = null;
                 }
-                else if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase)
-                         &&
+                else if (HasName(element, ADD) &&
                          XElementUtility.GetOptionalAttributeValue(element, ConfigurationConstants.KeyAttribute).Equals(key, StringComparison.OrdinalIgnoreCase))
                 {
                     result = element;
@@ -1088,12 +1109,11 @@ namespace NuGet.Configuration
 
             foreach (var element in elements)
             {
-                var elementName = element.Name.LocalName;
-                if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase))
+                if (HasName(element, ADD))
                 {
                     values.Add(ReadSettingsValue(element, isPath));
                 }
-                else if (elementName.Equals("clear", StringComparison.OrdinalIgnoreCase))
+                else if (HasName(element, CLEAR))
                 {
                     values.Clear();
                 }
@@ -1162,7 +1182,7 @@ namespace NuGet.Configuration
             }
             else
             {
-                element = new XElement("add");
+                element = new XElement(ADD);
                 SetElementValues(element, key, value, attributes);
                 XElementUtility.AddIndented(sectionElement, element);
             }
@@ -1299,9 +1319,9 @@ namespace NuGet.Configuration
 
         private static XDocument CreateDefaultConfig()
         {
-            return new XDocument(new XElement("configuration",
+            return new XDocument(new XElement(CONFIGURATION,
                                  new XElement(ConfigurationConstants.PackageSources,
-                                 new XElement("add",
+                                 new XElement(ADD,
                                  new XAttribute(ConfigurationConstants.KeyAttribute, NuGetConstants.FeedName),
                                  new XAttribute(ConfigurationConstants.ValueAttribute, NuGetConstants.V3FeedUrl),
                                  new XAttribute(ConfigurationConstants.ProtocolVersionAttribute, "3")))));
@@ -1332,7 +1352,7 @@ namespace NuGet.Configuration
             {
                 foreach (var element in sectionElement.Elements())
                 {
-                    if (element.Name.LocalName.Equals("clear", StringComparison.OrdinalIgnoreCase))
+                    if (HasName(element, CLEAR))
                     {
                         return true;
                     }
@@ -1344,7 +1364,7 @@ namespace NuGet.Configuration
         // this method will check NuGet.Config file, if the root is not configuration, it will throw.
         private void CheckConfigRoot()
         {
-            if (ConfigXDocument.Root.Name != "configuration")
+            if (ConfigXDocument.Root.Name != CONFIGURATION)
             {
                 throw new NuGetConfigurationException(
                          string.Format(Resources.ShowError_ConfigRootInvalid, ConfigFilePath));

@@ -448,7 +448,7 @@ namespace NuGet.Configuration
             }
 
             // Update/Add trusted sources
-            // Deletion of a trusted shource should be done separately using TrustedSourceProvider.DeleteSource()
+            // Deletion of a trusted source should be done separately using TrustedSourceProvider.DeleteSource()
             var trustedSources = sources
                 .Where(s => s.TrustedSource != null)
                 .Select(s => s.TrustedSource);
