@@ -953,7 +953,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server using Plugin credential provider
-        [Fact]
+        [SkipMono]
         public void PushCommand_PushToServer_GetCredentialFromPlugin()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -1021,7 +1021,7 @@ namespace NuGet.CommandLine.Test
 
         // Test push command to a server, plugin provider does not provide credentials
         // so fallback to console provider
-        [Fact]
+        [SkipMono]
         public void PushCommand_PushToServer_WhenPluginReturnsNoCredentials_FallBackToConsoleProvider()
         {
             var nugetexe = Util.GetNuGetExePath();
