@@ -192,15 +192,33 @@ namespace NuGet.Build.Tasks.Pack
                     .ToDictionary(msbuildItem => msbuildItem.Identity,
                     msbuildItem => msbuildItem.GetProperty("ProjectVersion"), PathUtility.GetStringComparerBasedOnOS());
             }
+            var nuGetFrameworkComparer = new NuGetFrameworkFullComparer();
+            var frameworksWithSuppressedDependencies = new HashSet<NuGetFramework>(nuGetFrameworkComparer);
+            var frameworksWithSuppressedAssemblyReferences = new HashSet<NuGetFramework>(nuGetFrameworkComparer);
+            if (request.FrameworksWithSuppressedDependencies != null && request.FrameworksWithSuppressedDependencies.Any())
+            {
+                frameworksWithSuppressedDependencies =
+                    new HashSet<NuGetFramework>(request.FrameworksWithSuppressedDependencies
+                    .Select(t => NuGetFramework.Parse(t.Identity)).ToList(), nuGetFrameworkComparer);
+            }
+
+            if (request.FrameworksWithSuppressedAssemblyReferences != null && request.FrameworksWithSuppressedAssemblyReferences.Any())
+            {
+                frameworksWithSuppressedAssemblyReferences =
+                    new HashSet<NuGetFramework>(request.FrameworksWithSuppressedAssemblyReferences
+                    .Select(t => NuGetFramework.Parse(t.Identity)).ToList(), nuGetFrameworkComparer);
+            }
 
             PopulateProjectAndPackageReferences(builder,
                 assetsFile,
-                projectRefToVersionMap);
-            PopulateFrameworkAssemblyReferences(builder, request);
+                projectRefToVersionMap,
+                frameworksWithSuppressedDependencies);
+            PopulateFrameworkAssemblyReferences(builder, request, frameworksWithSuppressedAssemblyReferences);
             return builder;
         }
 
-        private void PopulateFrameworkAssemblyReferences(PackageBuilder builder, IPackTaskRequest<IMSBuildItem> request)
+        private void PopulateFrameworkAssemblyReferences(PackageBuilder builder, IPackTaskRequest<IMSBuildItem> request,
+            ISet<NuGetFramework> frameworksWithSuppressedAssemblyReferences)
         {
             // First add all the assembly references which are not specific to a certain TFM.
             var tfmSpecificRefs = new Dictionary<string, IList<string>>(StringComparer.OrdinalIgnoreCase);
@@ -208,6 +226,10 @@ namespace NuGet.Build.Tasks.Pack
             foreach (var tfmRef in request.FrameworkAssemblyReferences)
             {
                 var targetFramework = tfmRef.GetProperty("TargetFramework");
+                if(frameworksWithSuppressedAssemblyReferences.Contains(NuGetFramework.Parse(targetFramework)))
+                {
+                    continue;
+                }
 
                 if (tfmSpecificRefs.ContainsKey(tfmRef.Identity))
                 {
@@ -585,12 +607,13 @@ namespace NuGet.Build.Tasks.Pack
         }
 
         private void PopulateProjectAndPackageReferences(PackageBuilder packageBuilder, LockFile assetsFile,
-            IDictionary<string, string> projectRefToVersionMap)
+            IDictionary<string, string> projectRefToVersionMap,
+            ISet<NuGetFramework> frameworksWithSuppressedDependencies)
         {
             var dependenciesByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
 
-            InitializeProjectDependencies(assetsFile, dependenciesByFramework, projectRefToVersionMap);
-            InitializePackageDependencies(assetsFile, dependenciesByFramework);
+            InitializeProjectDependencies(assetsFile, dependenciesByFramework, projectRefToVersionMap, frameworksWithSuppressedDependencies);
+            InitializePackageDependencies(assetsFile, dependenciesByFramework, frameworksWithSuppressedDependencies);
 
             foreach (var pair in dependenciesByFramework)
             {
@@ -601,7 +624,8 @@ namespace NuGet.Build.Tasks.Pack
         private static void InitializeProjectDependencies(
             LockFile assetsFile,
             IDictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework,
-            IDictionary<string, string> projectRefToVersionMap)
+            IDictionary<string, string> projectRefToVersionMap,
+            ISet<NuGetFramework> frameworkWithSuppressedDependencies)
         {
             // From the package spec, all we know is each absolute path to the project reference the the target
             // framework that project reference applies to.
@@ -625,7 +649,7 @@ namespace NuGet.Build.Tasks.Pack
             foreach (var framework in assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks)
             {
                 var target = assetsFile.GetTarget(framework.FrameworkName, runtimeIdentifier: null);
-                if (target == null)
+                if (target == null || frameworkWithSuppressedDependencies.Contains(framework.FrameworkName))
                 {
                     continue;
                 }
@@ -684,11 +708,17 @@ namespace NuGet.Build.Tasks.Pack
 
         private static void InitializePackageDependencies(
             LockFile assetsFile,
-            Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework)
+            Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework,
+            ISet<NuGetFramework> frameworkWithSuppressedDependencies)
         {
             // From the package spec, we know the direct package dependencies of this project.
             foreach (var framework in assetsFile.PackageSpec.TargetFrameworks)
             {
+                if(frameworkWithSuppressedDependencies.Contains(framework.FrameworkName))
+                {
+                    continue;
+                }
+
                 // First, add each of the generic package dependencies to the framework-specific list.
                 var packageDependencies = assetsFile
                     .PackageSpec

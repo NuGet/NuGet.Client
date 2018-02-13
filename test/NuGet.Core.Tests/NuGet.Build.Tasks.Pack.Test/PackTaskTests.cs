@@ -346,8 +346,10 @@ namespace NuGet.Build.Tasks.Pack.Test
                 Tags = new string[0],
                 TargetFrameworks = new string[0],
                 BuildOutputInPackage = new ITaskItem[0],
-                TargetPathsToSymbols = new ITaskItem[0]
-            };
+                TargetPathsToSymbols = new ITaskItem[0],
+                FrameworksWithSuppressedAssemblyReferences = new ITaskItem[0],
+                FrameworksWithSuppressedDependencies = new ITaskItem[0]
+    };
 
             var settings = new JsonSerializerSettings
             {

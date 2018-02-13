@@ -37,6 +37,8 @@ namespace NuGet.Build.Tasks.Pack
         public string[] Tags { get; set; }
         public string ReleaseNotes { get; set; }
         public ITaskItem[] TargetPathsToSymbols { get; set; }
+        public ITaskItem[] FrameworksWithSuppressedAssemblyReferences { get; set; }
+        public ITaskItem[] FrameworksWithSuppressedDependencies { get; set; }
         public string AssemblyName { get; set; }
         public string PackageOutputPath { get; set; }
         public bool IsTool { get; set; }
@@ -154,6 +156,8 @@ namespace NuGet.Build.Tasks.Pack
                 Description = MSBuildStringUtility.TrimAndGetNullForEmpty(Description),
                 DevelopmentDependency = DevelopmentDependency,
                 FrameworkAssemblyReferences = MSBuildUtility.WrapMSBuildItem(FrameworkAssemblyReferences),
+                FrameworksWithSuppressedAssemblyReferences = MSBuildUtility.WrapMSBuildItem(FrameworksWithSuppressedAssemblyReferences),
+                FrameworksWithSuppressedDependencies = MSBuildUtility.WrapMSBuildItem(FrameworksWithSuppressedDependencies),
                 IconUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(IconUrl),
                 IncludeBuildOutput = IncludeBuildOutput,
                 IncludeSource = IncludeSource,
