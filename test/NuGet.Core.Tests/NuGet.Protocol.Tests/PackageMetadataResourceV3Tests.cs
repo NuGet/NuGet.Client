@@ -51,6 +51,30 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(result.Description, result.Summary);
                 Assert.Equal(string.Join(", ", "deepequal", "deep", "equal"), result.Tags);
                 Assert.Equal("DeepEqual", result.Title);
+                Assert.True(result.IsListed);
+            }
+        }
+
+        [Fact]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_Unlisted()
+        {
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
+            responses.Add("https://api.nuget.org/v3/registration0/unlistedpackagea/index.json", JsonData.UnlistedPackageARegistration);
+
+            var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
+
+            var resource = await repo.GetResourceAsync<PackageMetadataResource>();
+
+            var package = new PackageIdentity("unlistedpackagea", NuGetVersion.Parse("1.0.0"));
+
+            // Act
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var result = (PackageSearchMetadataRegistration)await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
+
+                // Assert
+                Assert.False(result.IsListed);
             }
         }
 

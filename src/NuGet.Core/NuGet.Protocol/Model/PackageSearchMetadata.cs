@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -103,7 +103,7 @@ namespace NuGet.Protocol
 
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions);
 
-        // The V3 source currently does not return a listed property
-        public bool IsListed => true;
+        [JsonProperty(PropertyName = JsonProperties.Listed)]
+        public bool IsListed { get; private set; } = true;
     }
 }
