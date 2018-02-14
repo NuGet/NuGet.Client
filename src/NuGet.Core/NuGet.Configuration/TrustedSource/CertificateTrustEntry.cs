@@ -26,19 +26,29 @@ namespace NuGet.Configuration
 
         /// <summary>
         /// The priority of this certificate entry in the nuget.config hierarchy. Same as SettingValue.Priority.
-        /// Should be used only if the CertificateTrustEntry is read from a config file.
+        /// Null if this entry is not read from a config file.
         /// </summary>
-        public int Priority { get; }
+        public int? Priority { get; }
 
         public CertificateTrustEntry(string fingerprint, string subjectName, HashAlgorithmName algorithm)
-            : this(fingerprint, subjectName, algorithm, priority: 0)
+            : this(fingerprint, subjectName, algorithm, priority: null)
         {
         }
 
-        public CertificateTrustEntry(string fingerprint, string subjectName, HashAlgorithmName algorithm, int priority)
+        public CertificateTrustEntry(string fingerprint, string subjectName, HashAlgorithmName algorithm, int? priority)
         {
-            Fingerprint = fingerprint ?? throw new ArgumentNullException(nameof(fingerprint));
-            SubjectName = subjectName ?? throw new ArgumentNullException(nameof(subjectName));
+            if (string.IsNullOrEmpty(fingerprint))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(fingerprint));
+            }
+
+            if (string.IsNullOrEmpty(subjectName))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subjectName));
+            }
+
+            Fingerprint = fingerprint;
+            SubjectName = subjectName;
             FingerprintAlgorithm = algorithm;
             Priority = priority;
         }

@@ -48,12 +48,12 @@ namespace NuGet.Configuration
             return new List<KeyValuePair<string, string>>().AsReadOnly();
         }
 
-        public IList<SettingValue> GetNestedSettingValues(string section, string subSection)
+        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
         {
             return new List<SettingValue>().AsReadOnly();
         }
 
-        public IList<string> GetAllSubsections(string section)
+        public IReadOnlyList<string> GetAllSubsections(string section)
         {
             return new List<string>().AsReadOnly();
         }

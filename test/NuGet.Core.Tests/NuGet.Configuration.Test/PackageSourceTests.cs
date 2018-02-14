@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using FluentAssertions;
 using Xunit;
 
 namespace NuGet.Configuration
@@ -22,11 +23,18 @@ namespace NuGet.Configuration
             var result = source.Clone();
 
             // Assert
+
+            // source data
             Assert.Equal(source.Source, result.Source);
             Assert.Equal(source.Name, result.Name);
             Assert.Equal(source.IsEnabled, result.IsEnabled);
             Assert.Equal(source.ProtocolVersion, result.ProtocolVersion);
-            Assert.Same(source.Credentials, result.Credentials);
+
+            // source credential
+            result.Credentials.Should().NotBeNull();
+            result.Credentials.Source.ShouldBeEquivalentTo(source.Credentials.Source);
+            result.Credentials.Username.ShouldBeEquivalentTo(source.Credentials.Username);
+            result.Credentials.IsPasswordClearText.ShouldBeEquivalentTo(source.Credentials.IsPasswordClearText);
         }
     }
 }

@@ -98,7 +98,7 @@ namespace NuGet.Configuration
             if (source.ServiceIndex != null)
             {
                 // use existing priority if present
-                var priority = matchingSource?.ServiceIndex?.Priority ?? source.ServiceIndex.Priority;
+                var priority = matchingSource?.ServiceIndex?.Priority ?? source.ServiceIndex.Priority ?? 0;
 
                 var settingValue = new SettingValue(ConfigurationConstants.ServiceIndex, source.ServiceIndex.Value, isMachineWide: false, priority: priority);
                 settingValues.Add(settingValue);
@@ -107,7 +107,7 @@ namespace NuGet.Configuration
             foreach (var cert in source.Certificates)
             {
                 // use existing priority if present
-                var priority = matchingSource?.Certificates.FirstOrDefault(c => c.Fingerprint == cert.Fingerprint)?.Priority ?? cert.Priority;
+                var priority = matchingSource?.Certificates.FirstOrDefault(c => c.Fingerprint == cert.Fingerprint)?.Priority ?? cert.Priority ?? 0;
 
                 // cant save to machine wide settings
                 var settingValue = new SettingValue(cert.Fingerprint, cert.SubjectName, isMachineWide: false, priority: priority);

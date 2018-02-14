@@ -15,18 +15,23 @@ namespace NuGet.Configuration
 
         /// <summary>
         /// The priority of this entry in the nuget.config hierarchy. Same as SettingValue.Priority.
-        /// Should be used only if the ServiceIndexTrustEntry is read from a config file.
+        /// Null if this entry is not read from a config file.
         /// </summary>
-        public int Priority { get; }
+        public int? Priority { get; }
 
         public ServiceIndexTrustEntry(string serviceIndex)
-            : this(serviceIndex, priority: 0)
+            : this(serviceIndex, priority: null)
         {
         }
 
-        public ServiceIndexTrustEntry(string serviceIndex, int priority)
+        public ServiceIndexTrustEntry(string serviceIndex, int? priority)
         {
-            Value = serviceIndex ?? throw new ArgumentNullException(nameof(serviceIndex));
+            if (string.IsNullOrEmpty(serviceIndex))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(serviceIndex));
+            }
+
+            Value = serviceIndex;
             Priority = priority;
         }
 

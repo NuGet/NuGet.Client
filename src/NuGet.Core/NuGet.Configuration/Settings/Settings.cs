@@ -512,7 +512,7 @@ namespace NuGet.Configuration
             return settingValues.AsReadOnly();
         }
 
-        public IList<string> GetAllSubsections(string section)
+        public IReadOnlyList<string> GetAllSubsections(string section)
         {
             if (string.IsNullOrEmpty(section))
             {
@@ -530,7 +530,7 @@ namespace NuGet.Configuration
             return subsections.AsReadOnly();
         }
 
-        private IList<string> GetSubsections(string section)
+        private IReadOnlyList<string> GetSubsections(string section)
         {
             if (string.IsNullOrEmpty(section))
             {
@@ -542,7 +542,7 @@ namespace NuGet.Configuration
 
             if (sectionElement != null)
             {
-                var subsectionElements = GetAllSections(sectionElement);
+                var subsectionElements = sectionElement.Elements();
 
                 foreach (var element in subsectionElements)
                 {
@@ -550,7 +550,7 @@ namespace NuGet.Configuration
                 }
             }
 
-            return subsections;
+            return subsections.AsReadOnly();
         }
 
         public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
@@ -560,7 +560,7 @@ namespace NuGet.Configuration
             return values.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)).ToList().AsReadOnly();
         }
 
-        public IList<SettingValue> GetNestedSettingValues(string section, string subSection)
+        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
         {
             if (string.IsNullOrEmpty(section))
             {
@@ -951,11 +951,13 @@ namespace NuGet.Configuration
 
         public bool DeleteSection(string section)
         {
-            var result = DeleteSectionFromRoot(ConfigXDocument.Root, section);
+            if (DeleteSectionFromRoot(ConfigXDocument.Root, section))
+            {
+                Save();
+                return true;
+            }
 
-            Save();
-
-            return result;
+            return false;
         }
 
         private bool DeleteSectionFromRoot(XElement root, string section)
@@ -1004,11 +1006,6 @@ namespace NuGet.Configuration
         {
             section = XmlConvert.EncodeLocalName(section);
             return parentElement.Element(section);
-        }
-
-        private static IEnumerable<XElement> GetAllSections(XElement parentElement)
-        {
-            return parentElement.Elements();
         }
 
         private static XElement GetOrCreateSection(XElement parentElement, string sectionName)

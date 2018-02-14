@@ -406,10 +406,10 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var trustedSource1 = new TrustedSource("nuget.org");
-            trustedSource1.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
-            trustedSource1.Certificates.Add(new CertificateTrustEntry("HASH512", "SUBJECT_NAME", HashAlgorithmName.SHA512));
+            trustedSource1.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256, priority: 0));
+            trustedSource1.Certificates.Add(new CertificateTrustEntry("HASH512", "SUBJECT_NAME", HashAlgorithmName.SHA512, priority: 0));
             var trustedSource2 = new TrustedSource("test.org");
-            trustedSource2.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512));
+            trustedSource2.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512, priority: 0));
 
             var expectedValues = new List<TrustedSource>
             {
@@ -814,10 +814,10 @@ namespace NuGet.Configuration.Test
                 var trustedSourceProvider = new TrustedSourceProvider(settings);
 
                 var trustedSource1 = new TrustedSource("nuget.org");
-                trustedSource1.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
+                trustedSource1.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256, priority: 0));
 
                 var trustedSource2 = new TrustedSource("temp.org");
-                trustedSource2.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384));
+                trustedSource2.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384, priority: 0));
 
                 var trustedSources = new List<TrustedSource>
                 {
@@ -854,13 +854,13 @@ namespace NuGet.Configuration.Test
                 var trustedSourceProvider = new TrustedSourceProvider(settings);
 
                 var trustedSource1 = new TrustedSource("nuget.org");
-                trustedSource1.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
-                trustedSource1.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512));
-                trustedSource1.ServiceIndex = new ServiceIndexTrustEntry("SERVICE_INDEX");
+                trustedSource1.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256, priority: 0));
+                trustedSource1.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512, priority: 0));
+                trustedSource1.ServiceIndex = new ServiceIndexTrustEntry("SERVICE_INDEX", priority: 0);
 
                 var trustedSource2 = new TrustedSource("temp.org");
-                trustedSource2.Certificates.Add(new CertificateTrustEntry("HASH3", "SUBJECT_NAME3", HashAlgorithmName.SHA384));
-                trustedSource2.Certificates.Add(new CertificateTrustEntry("HASH4", "SUBJECT_NAME4", HashAlgorithmName.SHA512));
+                trustedSource2.Certificates.Add(new CertificateTrustEntry("HASH3", "SUBJECT_NAME3", HashAlgorithmName.SHA384, priority: 0));
+                trustedSource2.Certificates.Add(new CertificateTrustEntry("HASH4", "SUBJECT_NAME4", HashAlgorithmName.SHA512, priority: 0));
 
                 var trustedSources = new List<TrustedSource>
                 {
@@ -1278,7 +1278,7 @@ namespace NuGet.Configuration.Test
                 var settings = new Settings(mockBaseDirectory);
                 var trustedSourceProvider = new TrustedSourceProvider(settings);
                 var trustedSource = new TrustedSource("nuget.org");
-                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256));
+                trustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA256, priority: 0));
 
                 // Act
                 trustedSourceProvider.DeleteTrustedSource("temp.org");

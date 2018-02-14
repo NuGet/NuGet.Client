@@ -42,7 +42,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="section">Name of the section.</param>
         /// <returns>List of string containing subsection element names.</returns>
-        IList<string> GetAllSubsections(string section);
+        IReadOnlyList<string> GetAllSubsections(string section);
 
         /// <summary>
         /// Gets all the values under section
@@ -57,7 +57,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Gets all the values under section as List of SettingValue
         /// </summary>
-        IList<SettingValue> GetNestedSettingValues(string section, string subSection);
+        IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection);
 
         /// <summary>
         /// Sets the value under the specified <paramref name="section" />.

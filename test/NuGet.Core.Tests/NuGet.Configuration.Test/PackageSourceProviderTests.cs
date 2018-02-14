@@ -183,7 +183,7 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var expectedValue = new TrustedSource("NuGet.org");
-            expectedValue.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512));
+            expectedValue.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512, priority: 0));
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
@@ -257,7 +257,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void LoadPackageSources_LoadsTrustedSourceAndCredentails()
+        public void LoadPackageSources_LoadsTrustedSourceAndCredentials()
         {
             // Arrange
             var nugetConfigFilePath = "NuGet.Config";
@@ -321,11 +321,11 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var expectedValue1 = new TrustedSource("NuGet.org");
-            expectedValue1.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512));
-            expectedValue1.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA256));
+            expectedValue1.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512, priority: 0));
+            expectedValue1.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA256, priority: 0));
 
             var expectedValue2 = new TrustedSource("CompanyFeed");
-            expectedValue2.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384));
+            expectedValue2.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384, priority: 0));
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
