@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private IVsProjectBuildSystem _buildSystem;
 
-        protected IVsProjectAdapter VsProjectAdapter { get; }
+        public IVsProjectAdapter VsProjectAdapter { get; }
 
         public INuGetProjectContext NuGetProjectContext { get; set; }
 

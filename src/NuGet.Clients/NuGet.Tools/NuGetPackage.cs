@@ -46,6 +46,16 @@ namespace NuGetVSExtension
     [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)]
     [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
     [ProvideBindingPath] // Definition dll needs to be on VS binding path
+    // UI Context rule for a project that could be upgraded to packages.config being loaded (and experimental features turned on).
+    [ProvideUIContextRule(GuidList.guidUpgradeableProjectLoadedString,
+        "UpgradeableProjectLoaded",
+        "SolutionExistsAndFullyLoaded & (CSProject | VBProject) & !UnsupportedProjectCapabilities",
+        new[] { "SolutionExistsAndFullyLoaded", "CSProject", "VBProject", "UnsupportedProjectCapabilities" },
+        new[] { VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string,
+            "ActiveProjectFlavor:" + VsProjectTypes.CsharpProjectTypeGuid,
+            "ActiveProjectFlavor:" + VsProjectTypes.VbProjectTypeGuid,
+            "ActiveProjectCapability:SharedAssetsProject"})]
+    [ProvideAutoLoad(GuidList.guidUpgradeableProjectLoadedString)]
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOrProjectUpgrading_string)]
@@ -223,6 +233,18 @@ namespace NuGetVSExtension
             _mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (null != _mcs)
             {
+                // menu command for upgrading packages.config files to project.json - Project menu, Project context menu, References context menu
+                var upgradeNuGetProjectCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpgradeNuGetProject);
+                var upgradeNuGetProjectCommand = new OleMenuCommand(ExecuteUpgradeNuGetProjectCommandAsync, null,
+                    BeforeQueryStatusForUpgradeNuGetProject, upgradeNuGetProjectCommandID);
+                _mcs.AddCommand(upgradeNuGetProjectCommand);
+
+                // menu command for upgrading packages.config files to project.json - packages.config context menu
+                var upgradePackagesConfigCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpgradePackagesConfig);
+                var upgradePackagesConfigCommand = new OleMenuCommand(ExecuteUpgradeNuGetProjectCommandAsync, null,
+                    BeforeQueryStatusForUpgradePackagesConfig, upgradePackagesConfigCommandID);
+                _mcs.AddCommand(upgradePackagesConfigCommand);
+
                 // menu command for opening Package Manager Console
                 var toolwndCommandID = new CommandID(GuidList.guidNuGetConsoleCmdSet, PkgCmdIDList.cmdidPowerConsole);
                 var powerConsoleExecuteCommand = new OleMenuCommand(ExecutePowerConsoleCommand, null, BeforeQueryStatusForPowerConsole, toolwndCommandID);
@@ -502,6 +524,43 @@ namespace NuGetVSExtension
             return windowFrame;
         }
 
+        private async void ExecuteUpgradeNuGetProjectCommandAsync(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            await ThreadHelper.JoinableTaskFactory.RunAsync(ExecuteUpgradeNuGetProjectCommandImplAsync);
+        }
+
+        private async Task ExecuteUpgradeNuGetProjectCommandImplAsync()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+            var uniqueName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
+            // Close NuGet Package Manager if it is open for this project
+            var windowFrame = FindExistingWindowFrame(project);
+            windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
+
+            var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
+            var uiController = ServiceLocator.GetInstance<INuGetUIFactory>().Create(nuGetProject);
+            var settings = uiController.UIContext.UserSettingsManager.GetSettings(GetProjectSettingsKey(nuGetProject));
+            var collapseDependencies = settings.NuGetProjectUpgradeCollapseDependencies;
+
+            collapseDependencies = await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject,
+                collapseDependencies);
+
+            settings.NuGetProjectUpgradeCollapseDependencies = collapseDependencies;
+            uiController.UIContext.UserSettingsManager.PersistSettings();
+        }
+
+        private static string GetProjectSettingsKey(NuGetProject nuGetProject)
+        {
+            string projectName;
+            if (!nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.Name, out projectName))
+            {
+                projectName = "unknown";
+            }
+            return "project:" + projectName;
+        }
+
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
@@ -763,6 +822,57 @@ namespace NuGetVSExtension
             }
         }
 
+        private void BeforeQueryStatusForUpgradeNuGetProject(object sender, EventArgs args)
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                if (ShouldMEFBeInitialized())
+                {
+                  await InitializeMEFAsync();
+                }
+
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var command = (OleMenuCommand)sender;
+                
+
+                command.Visible = IsSolutionOpen && await IsProjectUpgradeableAsync();
+                command.Enabled = !ConsoleStatus.Value.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
+            });
+        }
+
+        private void BeforeQueryStatusForUpgradePackagesConfig(object sender, EventArgs args)
+        {
+            // Check whether to show context menu item on packages.config
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                if (ShouldMEFBeInitialized())
+                {
+                    await InitializeMEFAsync();
+                }
+
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var command = (OleMenuCommand)sender;
+                
+                command.Visible = IsSolutionOpen && await IsProjectUpgradeableAsync() && IsPackagesConfigSelected();
+                command.Enabled = !ConsoleStatus.Value.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
+            });
+
+        }
+
+        private bool IsSolutionOpen => _dte?.Solution != null && _dte.Solution.IsOpen;
+
+        private async  Task<bool> IsProjectUpgradeableAsync()
+        {
+            return await NuGetProjectUpgradeHelper.IsNuGetProjectUpgradeableAsync(null, EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection));
+        }
+
+        private bool IsPackagesConfigSelected()
+        {
+            return NuGetProjectUpgradeHelper.IsPackagesConfigSelected(VsMonitorSelection);
+        }
+
         private void BeforeQueryStatusForAddPackageDialog(object sender, EventArgs args)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
@@ -781,7 +891,7 @@ namespace NuGetVSExtension
                 // This is actually true. All the menu commands under the 'Project Menu' do go away when no solution is open.
                 // If 'Manage NuGet Packages' is disabled but visible, 'Project' menu shows up just because 1 menu command is visible, even though, it is disabled
                 // So, make it invisible when no solution is open
-                command.Visible = (_dte != null && _dte.Solution != null && _dte.Solution.IsOpen);
+                command.Visible = IsSolutionOpen;
 
                 // Enable the 'Manage NuGet Packages' dialog menu
                 // - if the solution exists and not debugging and not building AND

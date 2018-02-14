@@ -558,7 +558,7 @@ Packages installed into Website projects will not be restored during build. Cons
     <value>Following versions are unavailable due to additional constraints in the project or packages.config</value>
   </data>
   <data name="Warning_ProjectJson" xml:space="preserve">
-    <value>These options are not applicable to projects managing their dependencies through project.json.</value>
+    <value>These options are not applicable to projects managing their dependencies through project.json or PackageReference</value>
     <comment>To be displayed for the VS UI opened through a solution. bug #2665</comment>
   </data>
   <data name="WindowTitle_DeprecatedFramework" xml:space="preserve">
@@ -686,5 +686,110 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="ShowError_ApplySettingFailed" xml:space="preserve">
     <value>Applying setting failed.</value>
+  </data>
+  <data name="NuGetUpgrade_Progress_Installing" xml:space="preserve">
+    <value>Installing required packages</value>
+  </data>
+  <data name="NuGetUpgrade_Progress_Uninstalling" xml:space="preserve">
+    <value>Uninstalling packages from packages.config</value>
+  </data>
+  <data name="NuGetUpgrade_WaitMessage" xml:space="preserve">
+    <value>Upgrading Project</value>
+  </data>
+  <data name="NuGetUpgrade_PackageDependencyOf" xml:space="preserve">
+    <value>(dependency of {0})</value>
+  </data>
+  <data name="Text_ConvertPackagesConfigIntroText1" xml:space="preserve">
+    <value>This tool will switch your project from using packages.config to using project.json to maintain your NuGet packages.</value>
+  </data>
+  <data name="Text_ConvertPackagesConfigIntroText2" xml:space="preserve">
+    <value>By default, dependencies will be collapsed (packages that are included as dependencies of other packages won't be included in the resulting project.json file). Deselect this option to include all packages.</value>
+  </data>
+  <data name="Text_UpgradeOptions" xml:space="preserve">
+    <value>Upgrade Options:</value>
+  </data>
+  <data name="Text_NuGetUpgradeIssues" xml:space="preserve">
+    <value>Issues:</value>
+  </data>
+  <data name="Text_NuGetUpgradeNoIssuesFound" xml:space="preserve">
+    <value>No issues were found.</value>
+  </data>
+  <data name="Text_NuGetUpgradeResolveErrorsBeforeUpgrading" xml:space="preserve">
+    <value>You must resolve any errors before upgrading.</value>
+  </data>
+  <data name="NuGetUpgradeError_CannotFindPackage" xml:space="preserve">
+    <value>{0} cannot be found.</value>
+  </data>
+  <data name="NuGetUpgradeWarning_HasContentFiles" xml:space="preserve">
+    <value>{0} contains content files and may not work after upgrading.</value>
+  </data>
+  <data name="NuGetUpgradeWarning_HasInstallScript" xml:space="preserve">
+    <value>{0} contains an install.ps1 script that will not be applied after upgrading.</value>
+  </data>
+  <data name="Text_UpgraderHeader" xml:space="preserve">
+    <value>Packages as PackageReference:</value>
+  </data>
+  <data name="Text_BeforeUpgradeConsiderations" xml:space="preserve">
+    <value>Things to consider before upgrading to project.json.</value>
+  </data>
+  <data name="Text_ProjectAnalysisResults" xml:space="preserve">
+    <value>Project Analysis Results</value>
+  </data>
+  <data name="Text_UpgradeComplete" xml:space="preserve">
+    <value>Upgrade Complete</value>
+  </data>
+  <data name="Text_UpgradeCompletePleaseBuild" xml:space="preserve">
+    <value>Please build and run your solution to verify that all packages are available.</value>
+  </data>
+  <data name="Text_UpgradeCompleteResolveProblemsBackup" xml:space="preserve">
+    <value>If you run into any issues and would like to revert, we have backed up changed files to the following location:</value>
+  </data>
+  <data name="Text_UpgradeCompleteResolveProblemsDirections" xml:space="preserve">
+    <value>Follow the directions described in the following document to revert changes:</value>
+  </data>
+  <data name="Link_RevertNuGetProjectUpgrade" xml:space="preserve">
+    <value>Reverting NuGet Project Upgrade</value>
+  </data>
+  <data name="Text_ChangesForProject" xml:space="preserve">
+    <value>Changes for {0}</value>
+  </data>
+  <data name="WindowTitle_NuGetUpgrader" xml:space="preserve">
+    <value>NuGet Upgrader</value>
+  </data>
+  <data name="WindowTitle_ConvertPackagesConfigIntro" xml:space="preserve">
+    <value>Convert</value>
+  </data>
+  <data name="UpgradeLogger_BackupPathMustBeValid" xml:space="preserve">
+    <value>Must be a valid path.</value>
+  </data>
+  <data name="Error_ProjectNotInCache" xml:space="preserve">
+    <value>Project {0} does not exist in the project system cache.</value>
+  </data>
+  <data name="Radio_CollapseDependencies" xml:space="preserve">
+    <value>Collapse dependencies (recommended)</value>
+  </data>
+  <data name="Radio_FlattenDependencies" xml:space="preserve">
+    <value>Flatten dependencies</value>
+  </data>
+  <data name="Button_Upgrade" xml:space="preserve">
+    <value>Upgrade</value>
+  </data>
+  <data name="Text_UpgradeNuGetProjectDescription" xml:space="preserve">
+    <value>Upgrade this project from packages.config to PackageReference format.</value>
+  </data>
+  <data name="Upgrade_InstallFailed" xml:space="preserve">
+    <value>NuGet upgrade failed to install packages as PackageReference. Changed files are backed up at {0}</value>
+  </data>
+  <data name="Upgrade_RevertSteps" xml:space="preserve">
+    <value>Please follow simple instructions from {0} to go back to previous state.</value>
+  </data>
+  <data name="Upgrade_UninstallFailed" xml:space="preserve">
+    <value>NuGet upgrade failed to uninstall packages from packages.config so rolled back to previous state.</value>
+  </data>
+  <data name="Text_DirectDependencies" xml:space="preserve">
+    <value>Top-level Dependencies</value>
+  </data>
+  <data name="Text_TransitiveDependencies" xml:space="preserve">
+    <value>Transitive Dependencies</value>
   </data>
 </root>

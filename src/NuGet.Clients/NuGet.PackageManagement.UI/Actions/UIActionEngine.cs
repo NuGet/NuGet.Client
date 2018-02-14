@@ -15,6 +15,10 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -26,6 +30,9 @@ namespace NuGet.PackageManagement.UI
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly NuGetPackageManager _packageManager;
         private readonly INuGetLockService _lockService;
+
+        private const __VSCREATEWEBBROWSER CreateWebBrowserFlags = __VSCREATEWEBBROWSER.VSCWB_StartCustom | __VSCREATEWEBBROWSER.VSCWB_ReuseExisting | __VSCREATEWEBBROWSER.VSCWB_AutoShow;
+        private const string CreateWebBrowserOwnerGuidString = "192D4A62-3273-4C4F-9EB4-B53DAAFFCBFB";
 
         /// <summary>
         /// Create a UIActionEngine to perform installs/uninstalls
@@ -107,6 +114,90 @@ namespace NuGet.PackageManagement.UI
                 },
                 operationType,
                 token);
+        }
+
+        public async Task<bool> UpgradeNuGetProjectAsync(INuGetUI uiService, NuGetProject nuGetProject, bool collapseDependencies)
+        {
+            var context = uiService.UIContext;
+            // Restore the project before proceeding
+            var solutionDirectory = context.SolutionManager.SolutionDirectory;
+
+            await context.PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, uiService.ProjectContext, CancellationToken.None);
+
+            var packagesDependencyInfo = await context.PackageManager.GetInstalledPackagesDependencyInfo(nuGetProject, CancellationToken.None, includeUnresolved: true);
+            var upgradeInformationWindowModel = new NuGetProjectUpgradeWindowModel(nuGetProject, packagesDependencyInfo.ToList(), collapseDependencies);
+
+            var result = uiService.ShowNuGetUpgradeWindow(upgradeInformationWindowModel);
+            if (!result)
+            {
+                return collapseDependencies;
+            }
+
+            collapseDependencies = upgradeInformationWindowModel.CollapseDependencies;
+
+            var progressDialogData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage);
+            string backupPath;
+
+            using (var progressDialogSession = context.StartModalProgressDialog(Resources.WindowTitle_NuGetUpgrader, progressDialogData, uiService))
+            {
+                backupPath = await PackagesConfigToPackageReferenceMigrator.DoUpgradeAsync(
+                    context,
+                    uiService,
+                    nuGetProject,
+                    upgradeInformationWindowModel.UpgradeDependencyItems,
+                    upgradeInformationWindowModel.NotFoundPackages,
+                    collapseDependencies,
+                    progressDialogSession.Progress,
+                    progressDialogSession.UserCancellationToken);
+            }
+
+            if (!string.IsNullOrEmpty(backupPath))
+            {
+                var htmlLogFile = GenerateUpgradeReport(nuGetProject, backupPath, upgradeInformationWindowModel);
+
+                OpenUrlInInternalWebBrowser(htmlLogFile);
+            }
+
+            return collapseDependencies;
+        }
+
+        private static void OpenUrlInInternalWebBrowser(string url)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var webBrowsingService = Package.GetGlobalService(typeof(SVsWebBrowsingService)) as IVsWebBrowsingService;
+            if (webBrowsingService == null)
+            {
+                return;
+            }
+
+            var createWebBrowserOwnerGuid = new Guid(CreateWebBrowserOwnerGuidString);
+
+            IVsWindowFrame frame;
+            IVsWebBrowser browser;
+            webBrowsingService.CreateWebBrowser((uint)CreateWebBrowserFlags, ref createWebBrowserOwnerGuid, null, url, null, out browser, out frame);
+        }
+
+        private static string GenerateUpgradeReport(NuGetProject nuGetProject, string backupPath, NuGetProjectUpgradeWindowModel upgradeInformationWindowModel)
+        {
+            var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
+            var upgradeLogger = new UpgradeLogger(projectName, backupPath);
+            foreach (var error in upgradeInformationWindowModel.Errors)
+            {
+                upgradeLogger.LogIssue(projectName, UpgradeLogger.ErrorLevel.Error, error);
+            }
+            foreach (var warning in upgradeInformationWindowModel.Warnings)
+            {
+                upgradeLogger.LogIssue(projectName, UpgradeLogger.ErrorLevel.Warning, warning);
+            }
+            foreach (var package in upgradeInformationWindowModel.DirectDependencies)
+            {
+                upgradeLogger.RegisterPackage(projectName, package, true);
+            }
+            foreach (var package in upgradeInformationWindowModel.TransiviteDependencies)
+            {
+                upgradeLogger.RegisterPackage(projectName, package, false);
+            }
+            return upgradeLogger.Flush();
         }
 
         /// <summary>

@@ -122,5 +122,27 @@ namespace NuGet.PackageManagement.Telemetry
                 return null;
             }
         }
+
+        public static TelemetryEvent GetUpgradeTelemetryEvent(
+            IEnumerable<NuGetProject> projects,
+            NuGetOperationStatus status,
+            int packageCount)
+        {
+            var eventName = "UpgradeInformation";
+
+            var sortedProjects = projects.OrderBy(
+                project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
+
+            var projectIds = sortedProjects.Select(
+                project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)).ToArray();
+
+            var telemetryEvent = new TelemetryEvent(eventName);
+
+            telemetryEvent["ProjectIds"] = string.Join(",", projectIds);
+            telemetryEvent["Status"] = status;
+            telemetryEvent["PackageCount"] = packageCount;
+
+            return telemetryEvent;
+        }
     }
 }

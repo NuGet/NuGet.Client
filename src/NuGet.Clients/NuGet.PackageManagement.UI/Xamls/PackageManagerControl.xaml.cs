@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -53,6 +54,10 @@ namespace NuGet.PackageManagement.UI
         private readonly Dispatcher _uiDispatcher;
 
         private bool _missingPackageStatus;
+
+        // Initial to true so change detection logic is simple (since UI defaults to shown).
+        private bool _shouldShowUpgradeProject = true;
+        private bool _nuGetProjectUpgradeCollapseDependencies;
 
         private readonly INuGetUILogger _uiLogger;
 
@@ -162,6 +167,9 @@ namespace NuGet.PackageManagement.UI
             solutionManager.AfterNuGetCacheUpdated += SolutionManager_CacheUpdated;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
+
+            UpdateUpgradeProjectVisibility();
+            Unloaded += PackageManagerUnloaded;
 
             if (IsUILegalDisclaimerSuppressed())
             {
@@ -277,6 +285,46 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void UpdateUpgradeProjectVisibility()
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var newValue = await ShouldShowUpgradeProjectAsync();
+                if (newValue != _shouldShowUpgradeProject)
+                {
+                    _shouldShowUpgradeProject = newValue;
+                    _upgradeNuGetProject.Visibility = newValue ? Visibility.Visible : Visibility.Collapsed;
+                }
+            });
+        }
+
+        private async Task<bool> ShouldShowUpgradeProjectAsync()
+        {
+
+            // If user has turned it off, don't show
+            if (RegistrySettingUtility.GetBooleanSetting(Constants.SuppressUpgradePackagesConfigName))
+            {
+                return false;
+            }
+
+            // We don't currently support converting an entire solution
+            if (Model.IsSolution)
+            {
+                return false;
+            }
+
+            // We only support a single project
+            var projects = Model.Context.Projects.ToList();
+            return (projects.Count == 1) && await Model.Context.IsNuGetProjectUpgradeable(projects[0]);
+        }
+
+        private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
+        {
+            Unloaded -= PackageManagerUnloaded;
+        }
+
         private static bool IsUILegalDisclaimerSuppressed()
         {
             return RegistrySettingUtility.GetBooleanSetting(Constants.SuppressUIDisclaimerRegistryName);
@@ -330,6 +378,8 @@ namespace NuGet.PackageManagement.UI
                 SetSelectedDepencyBehavior(dependencySetting ?? DependencyBehavior.Lowest);
                 return;
             }
+
+            _nuGetProjectUpgradeCollapseDependencies = settings.NuGetProjectUpgradeCollapseDependencies;
 
             _detailModel.Options.ShowPreviewWindow = settings.ShowPreviewWindow;
             _detailModel.Options.ShowDeprecatedFrameworkWindow = settings.ShowDeprecatedFrameworkWindow;
@@ -401,6 +451,7 @@ namespace NuGet.PackageManagement.UI
         {
             var settings = new UserSettings
             {
+                NuGetProjectUpgradeCollapseDependencies = _nuGetProjectUpgradeCollapseDependencies,
                 SourceRepository = SelectedSource?.SourceName,
                 ShowPreviewWindow = _detailModel.Options.ShowPreviewWindow,
                 ShowDeprecatedFrameworkWindow = _detailModel.Options.ShowDeprecatedFrameworkWindow,
@@ -845,6 +896,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             RefreshConsolidatablePackagesCount();
+            UpdateUpgradeProjectVisibility();
 
             _packageDetail?.Refresh();
         }
@@ -1145,6 +1197,16 @@ namespace NuGet.PackageManagement.UI
                         CancellationToken.None);
                 },
                nugetUi => SetOptions(nugetUi, NuGetActionType.Update));
+        }
+
+        private async void UpgradeButton_Click(object sender, RoutedEventArgs e)
+        {
+            var project = Model.Context.Projects.FirstOrDefault();
+            Debug.Assert(project != null);
+
+            _nuGetProjectUpgradeCollapseDependencies = await
+                     Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, project,
+                    _nuGetProjectUpgradeCollapseDependencies);
         }
     }
 }
