@@ -1,30 +1,30 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using NuGet.Packaging;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     internal class InvalidPrereleaseDependencyRule : IPackageRule
     {
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            if (builder?.DependencyGroups == null)
+            var nuspecReader = builder?.NuspecReader;
+            if (nuspecReader.GetDependencyGroups() == null)
             {
                 // We have independent validation for null-versions.
                 yield break;
             }
 
-            if (!builder.Version.IsPrerelease)
+            if (nuspecReader.GetVersion().IsPrerelease)
             {
                 // If we are creating a production package, do not allow any of the dependencies to be a prerelease version.
-                var prereleaseDependency = builder.DependencyGroups.SelectMany(set => set.Packages).FirstOrDefault(IsPrereleaseDependency);
+                var prereleaseDependency = nuspecReader.GetDependencyGroups().SelectMany(set => set.Packages).FirstOrDefault(IsPrereleaseDependency);
                 if (prereleaseDependency != null)
                 {
                     yield return CreatePackageIssueForPrereleaseDependency(prereleaseDependency.ToString());
@@ -38,14 +38,11 @@ namespace NuGet.Commands.Rules
                    dependency.VersionRange.MaxVersion?.IsPrerelease == true;
         }
 
-        private static PackageIssue CreatePackageIssueForPrereleaseDependency(string dependency)
+        private static PackLogMessage CreatePackageIssueForPrereleaseDependency(string dependency)
         {
-            return new PackageIssue(
-                AnalysisResources.InvalidPrereleaseDependency_Title,
-                AnalysisResources.InvalidPrereleaseDependency_Description,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.InvalidPrereleaseDependency_Solution, dependency)
-                
-            );
+            return PackLogMessage.CreateWarning(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.InvalidPrereleaseDependencyWarning, dependency),
+                NuGetLogCode.NU5104);
         }
     }
 }

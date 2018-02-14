@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -279,7 +280,7 @@ namespace NuGet.SolutionRestoreManager
                     Sources = GetRestoreSources(projectRestoreInfo.TargetFrameworks)
                                     .Select(e => new PackageSource(e))
                                     .ToList(),
-                    ProjectWideWarningProperties = MSBuildRestoreUtility.GetWarningProperties(
+                    ProjectWideWarningProperties = WarningProperties.GetWarningProperties(
                         treatWarningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, TreatWarningsAsErrors, e => e),
                         warningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, WarningsAsErrors, e => e),
                         noWarn: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, NoWarn, e => e)),
@@ -480,7 +481,7 @@ namespace NuGet.SolutionRestoreManager
             };
 
             // Add warning suppressions
-            foreach (var code in MSBuildRestoreUtility.GetNuGetLogCodes(GetPropertyValueOrNull(item, NoWarn)))
+            foreach (var code in MSBuildStringUtility.GetNuGetLogCodes(GetPropertyValueOrNull(item, NoWarn)))
             {
                 dependency.NoWarn.Add(code);
             }

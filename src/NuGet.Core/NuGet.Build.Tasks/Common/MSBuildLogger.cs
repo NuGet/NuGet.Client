@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -61,7 +61,7 @@ namespace NuGet.Build
                 }
                 else
                 {
-                    var logMessage = message as IRestoreLogMessage;
+                    var logMessage = message as INuGetLogMessage;
 
                     if (logMessage == null)
                     {
@@ -79,7 +79,7 @@ namespace NuGet.Build
         /// <summary>
         /// Log using with metadata for non mono platforms.
         /// </summary>
-        private void LogForNonMono(IRestoreLogMessage message)
+        private void LogForNonMono(INuGetLogMessage message)
         {
             switch (message.Level)
             {
@@ -142,7 +142,7 @@ namespace NuGet.Build
             return;
         }
 
-        private void LogMessage(IRestoreLogMessage logMessage,
+        private void LogMessage(INuGetLogMessage logMessage,
             MessageImportance importance,
             LogMessageWithDetails logWithDetails,
             LogMessageAsString logAsString)
@@ -167,7 +167,7 @@ namespace NuGet.Build
             }
         }
 
-        private void LogError(IRestoreLogMessage logMessage,
+        private void LogError(INuGetLogMessage logMessage,
             LogErrorWithDetails logWithDetails,
             LogErrorAsString logAsString)
         {

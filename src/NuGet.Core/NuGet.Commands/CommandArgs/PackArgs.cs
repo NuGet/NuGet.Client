@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using NuGet.Configuration;
 using NuGet.Common;
+using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
@@ -36,6 +37,7 @@ namespace NuGet.Commands
         public bool Symbols { get; set; }
         public bool Tool { get; set; }
         public string Version { get; set; }
+        public WarningProperties WarningProperties { get; set; }
         public MSBuildPackTargetArgs PackTargetArgs { get; set; }
         public Dictionary<string, string> Properties
         {
@@ -64,6 +66,7 @@ namespace NuGet.Commands
             {
                 return value;
             }
+
             return null;
         }
     }

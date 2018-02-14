@@ -1285,7 +1285,7 @@ namespace NuGet.Packaging.Test
             builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\Foo.dll" });
             builder.PackageAssemblyReferences = new[] { new PackageReferenceSet(NuGetFramework.AnyFramework, new string[] { "Bar.dll" }) };
 
-            ExceptionAssert.Throws<InvalidDataException>(() => builder.Save(new MemoryStream()),
+            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()),
                 "Invalid assembly reference 'Bar.dll'. Ensure that a file named 'Bar.dll' exists in the lib directory.");
         }
 
@@ -1338,7 +1338,7 @@ Description is required.");
             builder.Description = "Description";
 
             // Act & Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => builder.Save(new MemoryStream()), "Cannot create a package that has no dependencies nor content.");
+            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()), "Cannot create a package that has no dependencies nor content.");
         }
 
         [Fact]
@@ -2029,7 +2029,7 @@ Description is required.");
             var packageAssemblyReferences = new PackageReferenceSet(NuGetFramework.Parse("Silverlight, Version=1.0"), new string[] { "foo.dll", "bar", "baz" });
 
             // Act and Assert
-            ExceptionAssert.Throws<InvalidDataException>(() => PackageBuilder.ValidateReferenceAssemblies(files, new[] { packageAssemblyReferences }),
+            ExceptionAssert.Throws<PackagingException>(() => PackageBuilder.ValidateReferenceAssemblies(files, new[] { packageAssemblyReferences }),
                 "Invalid assembly reference 'baz'. Ensure that a file named 'baz' exists in the lib directory.");
         }
 

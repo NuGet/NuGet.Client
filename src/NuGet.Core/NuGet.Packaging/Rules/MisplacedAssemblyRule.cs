@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,56 +6,52 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using NuGet.Packaging;
+using NuGet.Common;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     internal class MisplacedAssemblyRule : IPackageRule
     {
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            foreach (IPackageFile file in builder.Files)
+            foreach (var packageFile in builder.GetFiles())
             {
-                string path = file.Path;
-                string directory = Path.GetDirectoryName(path);
+                var file = PathUtility.GetPathWithDirectorySeparator(packageFile);
+                var directory = Path.GetDirectoryName(file);
 
                 // if under 'lib' directly
                 if (directory.Equals(PackagingConstants.Folders.Lib, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (PackageHelper.IsAssembly(path))
+                    if (PackageHelper.IsAssembly(file))
                     {
-                        yield return CreatePackageIssueForAssembliesUnderLib(path);
+                        yield return CreatePackageIssueForAssembliesUnderLib(file);
                     }
                 }
-                else if (!ValidFolders.Any(folder => path.StartsWith(folder, StringComparison.OrdinalIgnoreCase)))
+                else if (!ValidFolders.Any(folder => file.StartsWith(folder, StringComparison.OrdinalIgnoreCase)))
                 {
                     // when checking for assemblies outside 'lib' folder, only check .dll files.
                     // .exe files are often legitimate outside 'lib'.
-                    if (path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
-                        path.EndsWith(".winmd", StringComparison.OrdinalIgnoreCase))
+                    if (file.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                        file.EndsWith(".winmd", StringComparison.OrdinalIgnoreCase))
                     {
-                        yield return CreatePackageIssueForAssembliesOutsideLib(path);
+                        yield return CreatePackageIssueForAssembliesOutsideLib(file);
                     }
                 }
             }
         }
 
-        private static PackageIssue CreatePackageIssueForAssembliesUnderLib(string target)
+        private static PackLogMessage CreatePackageIssueForAssembliesUnderLib(string target)
         {
-            return new PackageIssue(
-                AnalysisResources.AssemblyUnderLibTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyUnderLibDescription, target),
-                AnalysisResources.AssemblyUnderLibSolution
-            );
+            return PackLogMessage.CreateWarning(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyDirectlyUnderLibWarning, target),
+                NuGetLogCode.NU5101);
         }
 
-        private static PackageIssue CreatePackageIssueForAssembliesOutsideLib(string target)
+        private static PackLogMessage CreatePackageIssueForAssembliesOutsideLib(string target)
         {
-            return new PackageIssue(
-                AnalysisResources.AssemblyOutsideLibTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyOutsideLibDescription, target),
-                AnalysisResources.AssemblyOutsideLibSolution
-            );
+            return PackLogMessage.CreateWarning(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyOutsideLibWarning, target),
+                NuGetLogCode.NU5100);
         }
 
         /// <summary>

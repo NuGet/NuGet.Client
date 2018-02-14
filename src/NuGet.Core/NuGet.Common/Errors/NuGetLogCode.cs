@@ -22,6 +22,7 @@ namespace NuGet.Common
     /// Groups:
     /// 1000-1999 - Restore
     /// 3000-3999 - Signing
+    /// 5000-5999 - Packaging
     ///
     /// Sub groups for Restore:
     /// error/warning - Reason
@@ -428,6 +429,206 @@ namespace NuGet.Common
         /// ErrorManifestFileNotFound
         /// </summary>
         NU5008 = 5008,
+
+        /// <summary>
+        /// Error_CannotFindMsbuild
+        /// </summary>
+        NU5009 = 5009,
+
+        /// <summary>
+        /// Error_InvalidVersionInPackage
+        /// </summary>
+        NU5010 = 5010,
+
+        /// <summary>
+        /// Error_UnableToExtractAssemblyMetadata
+        /// </summary>
+        NU5011 = 5011,
+
+        /// <summary>
+        /// Error_UnableToFindBuildOutput
+        /// </summary>
+        NU5012 = 5012,
+
+        /// <summary>
+        /// Error_FailedToBuildProject
+        /// </summary>
+        NU5013 = 5013,
+
+        /// <summary>
+        /// Error_ProcessingNuspecFile
+        /// </summary>
+        NU5014 = 5014,
+
+        /// <summary>
+        /// Error_MultipleTargetFrameworks
+        /// </summary>
+        NU5015 = 5015,
+
+        /// <summary>
+        /// Error_InvalidDependencyVersionConstraints
+        /// </summary>
+        NU5016 = 5016,
+
+        /// <summary>
+        /// Error_CannotCreateEmptyPackage
+        /// </summary>
+        NU5017 = 5017,
+
+        /// <summary>
+        /// Error_Manifest_InvalidReference
+        /// </summary>
+        NU5018 = 5018,
+
+        /// <summary>
+        /// Error_PackageAuthoring_FileNotFound
+        /// </summary>
+        NU5019 = 5019,
+
+        /// <summary>
+        /// Error_EmptySourceFilePath
+        /// </summary>
+        NU5020 = 5020,
+
+        /// <summary>
+        /// Error_EmptySourceFileProjectDirectory
+        /// </summary>
+        NU5021 = 5021,
+
+        /// <summary>
+        /// Error_InvalidMinClientVersion
+        /// </summary>
+        NU5022 = 5022,
+
+        /// <summary>
+        /// Error_AssetsFileNotFound
+        /// </summary>
+        NU5023 = 5023,
+
+        /// <summary>
+        /// Error_InvalidPackageVersion
+        /// </summary>
+        NU5024 = 5024,
+
+        /// <summary>
+        /// Error_AssetsFileDoesNotHaveValidPackageSpec
+        /// </summary>
+        NU5025 = 5025,
+
+        /// <summary>
+        /// Error_FileNotFound
+        /// </summary>
+        NU5026 = 5026,
+
+        /// <summary>
+        /// Error_InvalidTargetFramework
+        /// </summary>
+        NU5027 = 5027,
+
+        /// <summary>
+        /// Error_NoPackItemProvided
+        /// </summary>
+        NU5028 = 5028,
+
+        /// <summary>
+        /// Error_InvalidNuspecProperties
+        /// </summary>
+        NU5029 = 5029,
+
+        /// <summary>
+        /// AssemblyOutsideLibWarning
+        /// </summary>
+        NU5100 = 5100,
+
+        /// <summary>
+        /// AssemblyDirectlyUnderLibWarning
+        /// </summary>
+        NU5101 = 5101,
+
+        /// <summary>
+        /// DefaultSpecValueWarning
+        /// </summary>
+        NU5102 = 5102,
+
+        /// <summary>
+        /// InvalidFrameworkWarning
+        /// </summary>
+        NU5103 = 5103,
+
+        /// <summary>
+        /// InvalidPrereleaseDependencyWarning
+        /// </summary>
+        NU5104 = 5104,
+
+        /// <summary>
+        /// LegacyVersionWarning
+        /// </summary>
+        NU5105 = 5105,
+
+        /// <summary>
+        /// WinRTObsoleteWarning
+        /// </summary>
+        NU5106 = 5106,
+
+        /// <summary>
+        /// MisplacedInitScriptWarning
+        /// </summary>
+        NU5107 = 5107,
+
+        /// <summary>
+        /// MisplacedTransformFileWarning
+        /// </summary>
+        NU5108 = 5108,
+
+        /// <summary>
+        /// PlaceholderFileInPackageWarning
+        /// </summary>
+        NU5109 = 5109,
+
+        /// <summary>
+        /// ScriptOutsideToolsWarning
+        /// </summary>
+        NU5110 = 5110,
+
+        /// <summary>
+        /// UnrecognizedScriptWarning
+        /// </summary>
+        NU5111 = 5111,
+
+        /// <summary>
+        /// UnspecifiedDependencyVersionWarning
+        /// </summary>
+        NU5112 = 5112,
+
+        /// <summary>
+        /// Warning_SemanticVersion
+        /// </summary>
+        NU5113 = 5113,
+
+        /// <summary>
+        /// Warning_DuplicatePropertyKey
+        /// </summary>
+        NU5114 = 5114,
+
+        /// <summary>
+        /// Warning_UnspecifiedField
+        /// </summary>
+        NU5115 = 5115,
+
+        /// <summary>
+        /// Warning_FileDoesNotExist
+        /// </summary>
+        NU5116 = 5116,
+
+        /// <summary>
+        /// Warning_UnresolvedFilePath
+        /// </summary>
+        NU5117 = 5117,
+
+        /// <summary>
+        /// Warning_FileNotAddedToPackage
+        /// </summary>
+        NU5118 = 5118,
 
         /// <summary>
         /// Undefined package warning

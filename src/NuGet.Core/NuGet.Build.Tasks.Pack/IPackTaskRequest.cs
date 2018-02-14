@@ -36,6 +36,7 @@ namespace NuGet.Build.Tasks.Pack
         ILogger Logger { get; }
         string MinClientVersion { get; }
         bool NoPackageAnalysis { get; }
+        string NoWarn { get; }
         string NuspecBasePath { get; }
         string NuspecFile { get; }
         string[] NuspecProperties { get; }
@@ -60,5 +61,7 @@ namespace NuGet.Build.Tasks.Pack
         string[] TargetFrameworks { get; }
         TItem[] TargetPathsToSymbols { get; }
         string Title { get; }
+        string TreatWarningsAsErrors { get; }
+        string WarningsAsErrors { get; }
     }
 }

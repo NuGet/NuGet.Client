@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Frameworks;
 
 namespace NuGet.Build.Tasks

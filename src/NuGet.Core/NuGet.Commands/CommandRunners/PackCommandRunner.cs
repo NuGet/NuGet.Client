@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using NuGet.Commands.Rules;
+using NuGet.Packaging.Rules;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -87,12 +87,7 @@ namespace NuGet.Commands
         private PackageArchiveReader BuildPackage(string path)
         {
             string extension = Path.GetExtension(path);
-
-            if (ProjectJsonPathUtilities.IsProjectConfig(path))
-            {
-                return BuildFromProjectJson(path);
-            }
-            else if (extension.Equals(NuGetConstants.ManifestExtension, StringComparison.OrdinalIgnoreCase))
+            if (extension.Equals(NuGetConstants.ManifestExtension, StringComparison.OrdinalIgnoreCase))
             {
                 return BuildFromNuspec(path);
             }
@@ -133,12 +128,12 @@ namespace NuGet.Commands
 
             if (_packArgs.InstallPackageToOutputPath)
             {
-                _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "Package", outputPath));
+                _packArgs.Logger.Log(PackLogMessage.CreateMessage(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "Package", outputPath), LogLevel.Minimal));
                 WriteResolvedNuSpecToPackageOutputDirectory(builder);
                 WriteSHA512PackageHash(builder);
             }
 
-            _packArgs.Logger.LogMinimal(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath));
+            _packArgs.Logger.Log(PackLogMessage.CreateMessage(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath), LogLevel.Minimal));
             return new PackageArchiveReader(outputPath);
         }
 
@@ -155,7 +150,7 @@ namespace NuGet.Commands
                 Path.GetDirectoryName(outputPath), 
                 new VersionFolderPathResolver(outputPath).GetManifestFileName(builder.Id, builder.Version));
 
-            _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "NuSpec", resolvedNuSpecOutputPath));
+            _packArgs.Logger.Log(PackLogMessage.CreateMessage(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "NuSpec", resolvedNuSpecOutputPath), LogLevel.Minimal));
 
             if (string.Equals(_packArgs.Path, resolvedNuSpecOutputPath, StringComparison.OrdinalIgnoreCase))
             {
@@ -187,7 +182,7 @@ namespace NuGet.Commands
             // We must use the Path.GetTempPath() which NuGetFolderPath.Temp uses as a root because writing temp files to the package directory with a guid would break some build tools caching
             var tempOutputPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetFileName(sha512OutputPath));
 
-            _packArgs.Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "SHA512", sha512OutputPath));
+            _packArgs.Logger.Log(PackLogMessage.CreateMessage(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "SHA512", sha512OutputPath), LogLevel.Minimal));
 
             byte[] sha512hash;
             var cryptoHashProvider = new CryptoHashProvider("SHA512");
@@ -228,98 +223,6 @@ namespace NuGet.Commands
             CheckForUnsupportedFrameworks(builder);
 
             ExcludeFiles(builder.Files);
-        }
-
-        private PackageArchiveReader BuildFromProjectJson(string path)
-        {
-            PackageBuilder packageBuilder = CreatePackageBuilderFromProjectJson(path, _packArgs.GetPropertyValue);
-
-            if (_packArgs.Build)
-            {
-                BuildProjectWithDotNet();
-            }
-
-            // Add output files
-            AddOutputFiles(packageBuilder, includeSymbols: false);
-
-            if (_packArgs.Symbols)
-            {
-                // remove source related files when building the lib package
-                ExcludeFilesForLibPackage(packageBuilder.Files);
-
-                if (!packageBuilder.Files.Any())
-                {
-                    throw new PackagingException(NuGetLogCode.NU5004, string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForLibPackage, path, Strings.NuGetDocs));
-                }
-            }
-
-            InitCommonPackageBuilderProperties(packageBuilder);
-
-            PackageArchiveReader package = BuildPackage(packageBuilder);
-
-            if (_packArgs.Symbols)
-            {
-                BuildSymbolsPackage(path);
-            }
-
-            if (package != null && !_packArgs.NoPackageAnalysis)
-            {
-                AnalyzePackage(package, packageBuilder);
-            }
-
-            return package;
-        }
-
-        private void BuildProjectWithDotNet()
-        {
-            string properties = string.Empty;
-            if (_packArgs.Properties.Any())
-            {
-                foreach (var property in _packArgs.Properties)
-                {
-                    if (property.Key.Equals(Configuration, StringComparison.OrdinalIgnoreCase))
-                    {
-                        properties = $"-c {property.Value}";
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(_packArgs.BasePath))
-            {
-                string basePath = Path.GetFullPath(_packArgs.BasePath)  ;
-                properties += $" -b \"{basePath}\"";
-            }
-
-            if (!string.IsNullOrEmpty(_packArgs.Suffix))
-            {
-                properties += $" --version-suffix {_packArgs.Suffix}";
-            }
-
-            string dotnetLocation = NuGetEnvironment.GetDotNetLocation();
-
-            var processStartInfo = new ProcessStartInfo
-            {
-                UseShellExecute = false,
-                FileName = dotnetLocation,
-                Arguments = $"build {properties}",
-                WorkingDirectory = _packArgs.CurrentDirectory,
-                RedirectStandardOutput = false,
-                RedirectStandardError = false
-            };
-
-            int result;
-            using (var process = Process.Start(processStartInfo))
-            {
-                process.WaitForExit();
-
-                result = process.ExitCode;
-            }
-
-            if (0 != result)
-            {
-                // If the build fails, report the error
-                throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_BuildFailed, processStartInfo.FileName, processStartInfo.Arguments));
-            }
         }
 
         private void AddOutputFiles(PackageBuilder builder, bool includeSymbols)
@@ -765,7 +668,7 @@ namespace NuGet.Commands
 
             if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
             {
-                AnalyzePackage(packageArchiveReader, packageBuilder);
+                AnalyzePackage(packageArchiveReader);
             }
 
             return packageArchiveReader;
@@ -779,6 +682,16 @@ namespace NuGet.Commands
                 _packArgs.Properties["version"] = _packArgs.Version;
             }
 
+            // If a nuspec file is being set via dotnet.exe then the warning properties and logger has already been initialized via PackTask.
+            if(_packArgs.WarningProperties == null)
+            {
+                _packArgs.WarningProperties = WarningProperties.GetWarningProperties(
+                treatWarningsAsErrors: _packArgs.GetPropertyValue("TreatWarningsAsErrors") ?? string.Empty,
+                warningsAsErrors: _packArgs.GetPropertyValue("WarningsAsErrors") ?? string.Empty,
+                noWarn: _packArgs.GetPropertyValue("NoWarn") ?? string.Empty);
+                _packArgs.Logger = new PackCollectorLogger(_packArgs.Logger, _packArgs.WarningProperties);
+            }            
+
             if (String.IsNullOrEmpty(_packArgs.BasePath))
             {
                 return new PackageBuilder(path, _packArgs.GetPropertyValue, !_packArgs.ExcludeEmptyDirectories);
@@ -788,20 +701,29 @@ namespace NuGet.Commands
 
         private PackageArchiveReader BuildFromProjectFile(string path)
         {
+            // PackTargetArgs is only set for dotnet.exe pack code path, hence the check.
             if ((String.IsNullOrEmpty(_packArgs.MsBuildDirectory?.Value) || _createProjectFactory == null) && _packArgs.PackTargetArgs == null)
             {
-                _packArgs.Logger.LogError(Strings.Error_CannotFindMsbuild);
-                return null;
+                throw new PackagingException(NuGetLogCode.NU5009, string.Format(CultureInfo.CurrentCulture, Strings.Error_CannotFindMsbuild));
             }
 
             var factory = _createProjectFactory.Invoke(_packArgs, path);
+            if(_packArgs.WarningProperties == null && _packArgs.PackTargetArgs == null)
+            {
+                _packArgs.WarningProperties = factory.GetWarningPropertiesForProject();
+                // Reinitialize the logger with Console as the inner logger and the obtained warning properties
+                _packArgs.Logger = new PackCollectorLogger(_packArgs.Logger, _packArgs.WarningProperties);
+                factory.Logger = _packArgs.Logger;
+            }
 
             // Add the additional Properties to the properties of the Project Factory
             foreach (var property in _packArgs.Properties)
             {
                 if (factory.GetProjectProperties().ContainsKey(property.Key))
                 {
-                    _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_DuplicatePropertyKey, property.Key));
+                    _packArgs.Logger.Log(PackLogMessage.CreateWarning(
+                        String.Format(CultureInfo.CurrentCulture, Strings.Warning_DuplicatePropertyKey, property.Key),
+                        NuGetLogCode.NU5114));
                 }
                 factory.GetProjectProperties()[property.Key] = property.Value;
             }
@@ -838,7 +760,7 @@ namespace NuGet.Commands
 
                 if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
                 {
-                    AnalyzePackage(packageArchiveReader, mainPackageBuilder);
+                    AnalyzePackage(packageArchiveReader);
                 }
 
                 // If we're excluding symbols then do nothing else
@@ -1007,28 +929,26 @@ namespace NuGet.Commands
             BuildPackage(symbolsBuilder, outputPath);
         }
 
-        internal void AnalyzePackage(PackageArchiveReader package, PackageBuilder builder)
+        internal void AnalyzePackage(PackageArchiveReader package)
         {
             IEnumerable<IPackageRule> packageRules = Rules;
-            IList<PackageIssue> issues = new List<PackageIssue>();
+            IList<PackLogMessage> issues = new List<PackLogMessage>();
             NuGetVersion version;
 
             if (!NuGetVersion.TryParseStrict(package.GetIdentity().Version.ToString(), out version))
             {
-                issues.Add(new PackageIssue(Strings.Warning_SemanticVersionTitle,
+                issues.Add(PackLogMessage.CreateWarning(
                     String.Format(CultureInfo.CurrentCulture, Strings.Warning_SemanticVersion, package.GetIdentity().Version),
-                    Strings.Warning_SemanticVersionSolution));
+                    NuGetLogCode.NU5113));
             }
 
             foreach (var rule in packageRules)
             {
-                issues.AddRange(rule.Validate(builder).OrderBy(p => p.Title, StringComparer.CurrentCulture));
+                issues.AddRange(rule.Validate(package).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
             }
 
             if (issues.Count > 0)
             {
-                _packArgs.Logger.LogWarning(
-                    String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandPackageIssueSummary, builder.Id));
                 foreach (var issue in issues)
                 {
                     PrintPackageIssue(issue);
@@ -1036,15 +956,11 @@ namespace NuGet.Commands
             }
         }
 
-        private void PrintPackageIssue(PackageIssue issue)
+        private void PrintPackageIssue(PackLogMessage issue)
         {
-            WriteLine(String.Empty);
-            _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueTitle, issue.Title));
-            _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueDescription, issue.Description));
-
-            if (!String.IsNullOrEmpty(issue.Solution))
+            if (!String.IsNullOrEmpty(issue.Message))
             {
-                _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueSolution, issue.Solution));
+                _packArgs.Logger.Log(issue);
             }
         }
 
@@ -1201,7 +1117,7 @@ namespace NuGet.Commands
 
         private void WriteLine(string message, object arg = null)
         {
-            _packArgs.Logger.LogInformation(String.Format(CultureInfo.CurrentCulture, message, arg?.ToString()));
+            _packArgs.Logger.Log(PackLogMessage.CreateMessage(String.Format(CultureInfo.CurrentCulture, message, arg?.ToString()), LogLevel.Information));
         }
 
         public static void AddLibraryDependency(LibraryDependency dependency, ISet<LibraryDependency> list)
@@ -1226,7 +1142,7 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Package version constraints for {dependency.Name} return a version range that is empty.");
+                    throw new PackagingException(NuGetLogCode.NU5016, string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidDependencyVersionConstraints, dependency.Name));
                 }
             }
             else
@@ -1242,7 +1158,7 @@ namespace NuGet.Commands
             {
                 VersionRange newVersionRange = VersionRange.CommonSubSet(new VersionRange[]
                 {
-                            matchingDependency.VersionRange, dependency.VersionRange
+                    matchingDependency.VersionRange, dependency.VersionRange
                 });
                 if (!newVersionRange.Equals(VersionRange.None))
                 {
@@ -1251,7 +1167,7 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Package version constraints for {dependency.Id} return a version range that is empty.");
+                    throw new PackagingException(NuGetLogCode.NU5016, string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidDependencyVersionConstraints, dependency.Id));
                 }
             }
             else

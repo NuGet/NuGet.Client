@@ -3,5 +3,5 @@
 
 namespace NuGet.Common
 {
-    public interface IPackLogMessage : INuGetLogMessage  { }
+    public interface INuGetLogMessage : ILogMessage, ILogFileContext { }
 }

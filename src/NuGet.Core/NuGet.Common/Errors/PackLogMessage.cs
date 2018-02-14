@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,7 +25,7 @@ namespace NuGet.Common
         /// <param name="logLevel">The log level</param>
         /// <param name="logCode">The NuGet log code</param>
         /// <param name="message">The log message</param>
-        public PackLogMessage(LogLevel logLevel, NuGetLogCode logCode, string message)
+        private PackLogMessage(LogLevel logLevel, NuGetLogCode logCode, string message)
         {
             Level = logLevel;
             Code = logCode;
@@ -33,14 +33,32 @@ namespace NuGet.Common
             Time = DateTimeOffset.UtcNow;
         }
 
+        private PackLogMessage(LogLevel logLevel, string message)
+        {
+            Message = message;
+            Code = NuGetLogCode.Undefined;
+            Level = logLevel;
+            Time = DateTimeOffset.Now;
+        }
+
         /// <summary>
         /// Create an error log message.
         /// </summary>
         /// <param name="code">The logging code</param>
         /// <param name="message">The log message</param>
-        public static PackLogMessage CreateError(NuGetLogCode code, string message)
+        public static PackLogMessage CreateError(string message, NuGetLogCode code)
         {
             return new PackLogMessage(LogLevel.Error, code, message);
+        }
+
+        public static PackLogMessage CreateWarning(string message, NuGetLogCode code)
+        {
+            return new PackLogMessage(LogLevel.Warning, code, message);
+        }
+
+        public static PackLogMessage CreateMessage(string message, LogLevel logLevel)
+        {
+            return new PackLogMessage(logLevel, message);
         }
 
         /// <summary>

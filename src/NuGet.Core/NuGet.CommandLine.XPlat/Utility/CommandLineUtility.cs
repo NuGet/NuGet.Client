@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using NuGet.Commands;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
 {

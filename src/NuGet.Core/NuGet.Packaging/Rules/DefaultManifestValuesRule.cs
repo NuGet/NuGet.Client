@@ -1,14 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using NuGet.Packaging;
+using NuGet.Common;
 using NuGet.Versioning;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     public class DefaultManifestValuesRule : IPackageRule
     {
@@ -21,34 +21,39 @@ namespace NuGet.Commands.Rules
         internal static readonly string SampleManifestDependencyId = "SampleDependency";
         internal static readonly string SampleManifestDependencyVersion = "1.0";
 
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            if (builder.ProjectUrl != null && builder.ProjectUrl.OriginalString.Equals(SampleProjectUrl, StringComparison.Ordinal))
+            if(builder == null)
             {
-                yield return CreateIssueFor("ProjectUrl", builder.ProjectUrl.OriginalString);
+                throw new ArgumentNullException(nameof(builder));
             }
-            if (builder.LicenseUrl != null && builder.LicenseUrl.OriginalString.Equals(SampleLicenseUrl, StringComparison.Ordinal))
+            var nuspecReader = builder.NuspecReader;
+            if (SampleProjectUrl.Equals(nuspecReader.GetProjectUrl(), StringComparison.Ordinal))
             {
-                yield return CreateIssueFor("LicenseUrl", builder.LicenseUrl.OriginalString);
+                yield return CreateIssueFor("ProjectUrl", nuspecReader.GetProjectUrl());
             }
-            if (builder.IconUrl != null && builder.IconUrl.OriginalString.Equals(SampleIconUrl, StringComparison.Ordinal))
+            if (SampleLicenseUrl.Equals(nuspecReader.GetLicenseUrl(), StringComparison.Ordinal))
             {
-                yield return CreateIssueFor("IconUrl", builder.IconUrl.OriginalString);
+                yield return CreateIssueFor("LicenseUrl", nuspecReader.GetLicenseUrl());
             }
-            if (builder.Tags.Count() == 2 && string.Join(" ", builder.Tags).Equals(SampleTags))
+            if (SampleIconUrl.Equals(nuspecReader.GetIconUrl(), StringComparison.Ordinal))
+            {
+                yield return CreateIssueFor("IconUrl", nuspecReader.GetIconUrl());
+            }
+            if (SampleTags.Equals(nuspecReader.GetTags()))
             {
                 yield return CreateIssueFor("Tags", SampleTags);
             }
-            if (SampleReleaseNotes.Equals(builder.ReleaseNotes, StringComparison.Ordinal))
+            if (SampleReleaseNotes.Equals(nuspecReader.GetReleaseNotes(), StringComparison.Ordinal))
             {
                 yield return CreateIssueFor("ReleaseNotes", SampleReleaseNotes);
             }
-            if (SampleDescription.Equals(builder.Description, StringComparison.Ordinal))
+            if (SampleDescription.Equals(nuspecReader.GetDescription(), StringComparison.Ordinal))
             {
                 yield return CreateIssueFor("Description", SampleDescription);
             }
 
-            var dependency = builder.DependencyGroups.SelectMany(d => d.Packages).FirstOrDefault();
+            var dependency = nuspecReader.GetDependencyGroups().SelectMany(d => d.Packages).FirstOrDefault();
             if (dependency != null &&
                 dependency.Id.Equals(SampleManifestDependencyId, StringComparison.Ordinal) &&
                 dependency.VersionRange != null &&
@@ -59,23 +64,20 @@ namespace NuGet.Commands.Rules
 
             if (dependency != null && dependency.VersionRange == VersionRange.All)
             {
-                var message = String.Format(
+                var issue = PackLogMessage.CreateWarning(String.Format(
                     CultureInfo.CurrentCulture,
-                    AnalysisResources.UnspecifiedDependencyVersion,
-                    dependency.Id);
-                var issue = new PackageIssue(
-                    AnalysisResources.UnspecifiedDependencyVersionTitle,
-                    message,
-                    AnalysisResources.UnspecifiedDependencyVersionSolution);
+                    AnalysisResources.UnspecifiedDependencyVersionWarning,
+                    dependency.Id),
+                    NuGetLogCode.NU5112);
                 yield return issue;
             }
         }
 
-        private static PackageIssue CreateIssueFor(string field, string value)
+        private static PackLogMessage CreateIssueFor(string field, string value)
         {
-            return new PackageIssue(AnalysisResources.DefaultSpecValueTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.DefaultSpecValue, value, field),
-                AnalysisResources.DefaultSpecValueSolution);
+            return PackLogMessage.CreateWarning(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.DefaultSpecValueWarning, value, field),
+                NuGetLogCode.NU5102);
         }
     }
 }

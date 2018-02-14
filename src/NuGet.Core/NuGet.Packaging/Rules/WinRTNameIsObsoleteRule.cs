@@ -1,25 +1,25 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using NuGet.Packaging;
+using NuGet.Common;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     internal class WinRTNameIsObsoleteRule : IPackageRule
     {
         private static string[] Prefixes = new string[]
             { "content\\winrt45\\", "lib\\winrt45\\", "tools\\winrt45\\", "content\\winrt\\", "lib\\winrt\\", "tools\\winrt\\" };
 
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            foreach (var file in builder.Files)
+            foreach (var file in builder.GetFiles())
             {
                 foreach (string prefix in Prefixes)
                 {
-                    if (file.Path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    if (file.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                     {
                         yield return CreateIssue(file);
                     }
@@ -27,12 +27,11 @@ namespace NuGet.Commands.Rules
             }
         }
 
-        private static PackageIssue CreateIssue(IPackageFile file)
+        private static PackLogMessage CreateIssue(string file)
         {
-            return new PackageIssue(
-                AnalysisResources.WinRTObsoleteTitle,
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.WinRTObsoleteDescription, file.Path),
-                AnalysisResources.WinRTObsoleteSolution);
+            return PackLogMessage.CreateWarning(
+                String.Format(CultureInfo.CurrentCulture, AnalysisResources.WinRTObsoleteWarning, file),
+                NuGetLogCode.NU5106);
         }
     }
 }

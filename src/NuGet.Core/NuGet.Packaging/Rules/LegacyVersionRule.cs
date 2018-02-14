@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using NuGet.Packaging;
+using NuGet.Common;
 
-namespace NuGet.Commands.Rules
+namespace NuGet.Packaging.Rules
 {
     /// <summary>
     /// Warn if the version is not parsable by older nuget clients.
@@ -17,16 +17,15 @@ namespace NuGet.Commands.Rules
         // NuGet 2.12 regex for version parsing.
         private const string LegacyRegex = @"^(?<Version>\d+(\s*\.\s*\d+){0,3})(?<Release>-[a-z][0-9a-z-]*)?$";
 
-        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
+        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
             var regex = new Regex(LegacyRegex, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
-
-            if (!regex.IsMatch(builder.Version.ToFullString()))
+            var nuspecReader = builder.NuspecReader;
+            if (!regex.IsMatch(nuspecReader.GetVersion().ToFullString()))
             {
-                yield return new PackageIssue(
-                    AnalysisResources.LegacyVersionTitle,
-                    string.Format(CultureInfo.CurrentCulture, AnalysisResources.LegacyVersionDescription, builder.Version.ToFullString()),
-                    AnalysisResources.LegacyVersionSolution);
+                yield return PackLogMessage.CreateWarning(
+                    string.Format(CultureInfo.CurrentCulture, AnalysisResources.LegacyVersionWarning, nuspecReader.GetVersion().ToFullString()),
+                    NuGetLogCode.NU5105);
             }
         }
     }

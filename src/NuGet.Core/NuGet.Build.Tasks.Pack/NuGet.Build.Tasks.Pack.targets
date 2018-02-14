@@ -238,7 +238,10 @@ Copyright (c) .NET Foundation. All rights reserved.
               NuspecBasePath="$(NuspecBasePath)"
               NuspecProperties="$(NuspecProperties)"
               AllowedOutputExtensionsInPackageBuildOutputFolder="$(AllowedOutputExtensionsInPackageBuildOutputFolder)"
-              AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder="$(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder)"/>
+              AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder="$(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder)"
+              NoWarn="$(NoWarn)"
+              WarningsAsErrors="$(WarningsAsErrors)"
+              TreatWarningsAsErrors="$(TreatWarningsAsErrors)"/>
   </Target>
 
   <!--

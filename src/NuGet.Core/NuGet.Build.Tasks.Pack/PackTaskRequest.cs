@@ -54,5 +54,8 @@ namespace NuGet.Build.Tasks.Pack
         public string[] TargetFrameworks { get; set; }
         public IMSBuildItem[] TargetPathsToSymbols { get; set; }
         public string Title { get; set; }
+        public string NoWarn { get; set; }
+        public string TreatWarningsAsErrors { get; set; }
+        public string WarningsAsErrors { get; set; }
     }
 }

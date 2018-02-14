@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,8 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -154,12 +156,11 @@ namespace NuGet.Commands
             }
             else
             {
-                _logger.LogWarning(
-                    string.Format(
+                Logger.Log(PackLogMessage.CreateWarning(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.FileNotAddedToPackage,
                         packageFile.Source,
-                        packageFile.Target));
+                        packageFile.Target), NuGetLogCode.NU5118));
             }
         }
 
@@ -226,12 +227,12 @@ namespace NuGet.Commands
         {
             if(string.IsNullOrEmpty(sourcePath))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourceFilePath));
+                throw new PackagingException(NuGetLogCode.NU5020, string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourceFilePath));
             }
 
             if (string.IsNullOrEmpty(projectDirectory))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourceFileProjectDirectory, sourcePath));
+                throw new PackagingException(NuGetLogCode.NU5021, string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourceFileProjectDirectory, sourcePath));
             }
 
             if (PathUtility.HasTrailingDirectorySeparator(projectDirectory))
@@ -264,6 +265,11 @@ namespace NuGet.Commands
         private static bool IsContentFile(string contentFileTargetPath)
         {
             return contentFileTargetPath != null && contentFileTargetPath.StartsWith("contentFiles", StringComparison.Ordinal);
+        }
+
+        public WarningProperties GetWarningPropertiesForProject()
+        {
+            return PackArgs.WarningProperties;
         }
     }
 }
