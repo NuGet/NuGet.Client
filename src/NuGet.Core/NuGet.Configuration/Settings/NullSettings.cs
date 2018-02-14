@@ -48,9 +48,14 @@ namespace NuGet.Configuration
             return new List<KeyValuePair<string, string>>().AsReadOnly();
         }
 
-        public IList<SettingValue> GetNestedSettingValues(string section, string subSection)
+        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
         {
             return new List<SettingValue>().AsReadOnly();
+        }
+
+        public IReadOnlyList<string> GetAllSubsections(string section)
+        {
+            return new List<string>().AsReadOnly();
         }
 
         public void SetValue(string section, string key, string value)
@@ -75,7 +80,7 @@ namespace NuGet.Configuration
 
         public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
         {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetNestedValues)));
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetNestedSettingValues)));
         }
 
         public bool DeleteValue(string section, string key)
@@ -86,6 +91,11 @@ namespace NuGet.Configuration
         public bool DeleteSection(string section)
         {
             throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(DeleteSection)));
+        }
+
+        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
+        {
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(UpdateSubsections)));
         }
     }
 }

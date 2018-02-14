@@ -38,6 +38,13 @@ namespace NuGet.Configuration
         string GetValue(string section, string key, bool isPath = false);
 
         /// <summary>
+        /// Gets all subsection element names under section as a List of string.
+        /// </summary>
+        /// <param name="section">Name of the section.</param>
+        /// <returns>List of string containing subsection element names.</returns>
+        IReadOnlyList<string> GetAllSubsections(string section);
+
+        /// <summary>
         /// Gets all the values under section
         /// </summary>
         IList<SettingValue> GetSettingValues(string section, bool isPath = false);
@@ -50,7 +57,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Gets all the values under section as List of SettingValue
         /// </summary>
-        IList<SettingValue> GetNestedSettingValues(string section, string subSection);
+        IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection);
 
         /// <summary>
         /// Sets the value under the specified <paramref name="section" />.
@@ -74,6 +81,15 @@ namespace NuGet.Configuration
         /// <param name="section">The name of the section.</param>
         /// <param name="values">The values to set.</param>
         void UpdateSections(string section, IReadOnlyList<SettingValue> values);
+
+        /// <summary>
+        /// Updates nested <paramref name="values" /> across multiple <see cref="ISettings" /> instances in the hierarchy.
+        /// Values are updated in the <see cref="ISettings" /> with the nearest priority.
+        /// </summary>
+        /// <param name="section">The name of the section.</param>
+        /// <param name="subsection">The name of the subsection.</param>
+        /// <param name="values">The values to set.</param>
+        void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values);
 
         /// <summary>
         /// Sets the values under the specified <paramref name="section" /> and <paramref name="subsection" />.

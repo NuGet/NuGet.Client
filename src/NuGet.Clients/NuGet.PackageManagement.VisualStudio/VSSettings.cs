@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return SolutionSettings.GetNestedValues(section, subSection);
         }
 
-        public IList<SettingValue> GetNestedSettingValues(string section, string subSection)
+        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
         {
             return SolutionSettings.GetNestedSettingValues(section, subSection);
         }
@@ -119,6 +119,11 @@ namespace NuGet.PackageManagement.VisualStudio
         public string GetValue(string section, string key, bool isPath = false)
         {
             return SolutionSettings.GetValue(section, key, isPath);
+        }
+
+        public IReadOnlyList<string> GetAllSubsections(string section)
+        {
+            return SolutionSettings.GetAllSubsections(section);
         }
 
         public string Root => SolutionSettings.Root;
@@ -164,6 +169,14 @@ namespace NuGet.PackageManagement.VisualStudio
             if (CanChangeSettings)
             {
                 SolutionSettings.UpdateSections(section, values);
+            }
+        }
+
+        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
+        {
+            if (CanChangeSettings)
+            {
+                SolutionSettings.UpdateSubsections(section, subsection, values);
             }
         }
 

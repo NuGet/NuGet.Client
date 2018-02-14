@@ -54,7 +54,7 @@ namespace NuGet.Test.Utility
             return Create(root);
         }
 
-        private static TestDirectory Create(string root)
+        public static TestDirectory Create(string root)
         {
             string parentPath = null;
 

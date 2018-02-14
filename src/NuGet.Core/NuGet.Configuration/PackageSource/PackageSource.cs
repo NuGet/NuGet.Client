@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,18 +25,12 @@ namespace NuGet.Configuration
         /// <summary>
         /// Returns null if Source is an invalid URI
         /// </summary>
-        public Uri TrySourceAsUri
-        {
-            get { return UriUtility.TryCreateSourceUri(Source, UriKind.Absolute); }
-        }
+        public Uri TrySourceAsUri => UriUtility.TryCreateSourceUri(Source, UriKind.Absolute);
 
         /// <summary>
         /// Throws if Source is an invalid URI
         /// </summary>
-        public Uri SourceUri
-        {
-            get { return UriUtility.CreateSourceUri(Source, UriKind.Absolute); }
-        }
+        public Uri SourceUri => UriUtility.CreateSourceUri(Source, UriKind.Absolute);
 
         /// <summary>
         /// This does not represent just the NuGet Official Feed alone
@@ -82,7 +76,7 @@ namespace NuGet.Configuration
             {
                 if (!_isLocal.HasValue)
                 {
-                    Uri uri = TrySourceAsUri;
+                    var uri = TrySourceAsUri;
                     if (uri != null)
                     {
                         _isLocal = uri.IsFile;
@@ -102,15 +96,18 @@ namespace NuGet.Configuration
         /// </summary>
         public ISettings Origin { get; set; }
 
+        /// <summary>
+        /// Corresponding trusted source details. Null if the package source does not have trusted sources information.
+        /// </summary>
+        public TrustedSource TrustedSource { get; set; }
+
         public PackageSource(string source)
-            :
-                this(source, source, isEnabled: true)
+            : this(source, source, isEnabled: true)
         {
         }
 
         public PackageSource(string source, string name)
-            :
-                this(source, name, isEnabled: true)
+            : this(source, name, isEnabled: true)
         {
         }
 
@@ -126,18 +123,8 @@ namespace NuGet.Configuration
             bool isOfficial,
             bool isPersistable = true)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
-
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            Name = name;
-            Source = source;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Source = source ?? throw new ArgumentNullException(nameof(source));
             IsEnabled = isEnabled;
             IsOfficial = isOfficial;
             IsPersistable = isPersistable;
@@ -180,9 +167,10 @@ namespace NuGet.Configuration
             return new PackageSource(Source, Name, IsEnabled, IsOfficial, IsPersistable)
             {
                 Description = Description,
-                Credentials = Credentials,
+                Credentials = Credentials?.Clone(),
                 IsMachineWide = IsMachineWide,
-                ProtocolVersion = ProtocolVersion
+                ProtocolVersion = ProtocolVersion,
+                TrustedSource = TrustedSource?.Clone()
             };
         }
     }

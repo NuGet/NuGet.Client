@@ -72,18 +72,8 @@ namespace NuGet.Configuration
         /// <param name="isPasswordClearText">Hints if password provided in clear text</param>
         public PackageSourceCredential(string source, string username, string passwordText, bool isPasswordClearText)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            if (username == null)
-            {
-                throw new ArgumentNullException(nameof(username));
-            }
-
-            Source = source;
-            Username = username;
+            Source = source ?? throw new ArgumentNullException(nameof(source));
+            Username = username ?? throw new ArgumentNullException(nameof(username));
             PasswordText = passwordText;
             IsPasswordClearText = isPasswordClearText;
         }
@@ -123,6 +113,11 @@ namespace NuGet.Configuration
                 throw new NuGetConfigurationException(
                     string.Format(CultureInfo.CurrentCulture, Resources.UnsupportedEncryptPassword, source), e);
             }
+        }
+
+        internal PackageSourceCredential Clone()
+        {
+            return new PackageSourceCredential(Source, Username, PasswordText, IsPasswordClearText);
         }
     }
 }

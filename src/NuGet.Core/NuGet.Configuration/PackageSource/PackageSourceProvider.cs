@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,6 +15,8 @@ namespace NuGet.Configuration
 {
     public class PackageSourceProvider : IPackageSourceProvider
     {
+        private ITrustedSourceProvider _trustedSourceProvider;
+
         public ISettings Settings { get; private set; }
 
         private const int MaxSupportedProtocolVersion = 3;
@@ -41,15 +43,11 @@ namespace NuGet.Configuration
             IEnumerable<PackageSource> configurationDefaultSources
             )
         {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            Settings = settings;
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             Settings.SettingsChanged += (_, __) => { OnPackageSourcesChanged(); };
             _migratePackageSources = migratePackageSources;
             _configurationDefaultSources = LoadConfigurationDefaultSources(configurationDefaultSources);
+            _trustedSourceProvider = new TrustedSourceProvider(Settings);
         }
 
         private IEnumerable<PackageSource> LoadConfigurationDefaultSources(IEnumerable<PackageSource> configurationDefaultSources)
@@ -145,8 +143,8 @@ namespace NuGet.Configuration
 
             foreach (var packageSource in _configurationDefaultSources)
             {
-                bool sourceMatching = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.CurrentCultureIgnoreCase));
-                bool feedNameMatching = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase));
+                var sourceMatching = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.CurrentCultureIgnoreCase));
+                var feedNameMatching = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase));
 
                 if (!sourceMatching && !feedNameMatching)
                 {
@@ -176,6 +174,12 @@ namespace NuGet.Configuration
             if (credentials != null)
             {
                 packageSource.Credentials = credentials;
+            }
+
+            var trustedSource = ReadTrustedSource(name);
+            if (trustedSource != null)
+            {
+                packageSource.TrustedSource = trustedSource;
             }
 
             packageSource.ProtocolVersion = ReadProtocolVersion(setting);
@@ -223,6 +227,11 @@ namespace NuGet.Configuration
             return packageIndex;
         }
 
+        private TrustedSource ReadTrustedSource(string name)
+        {
+            return _trustedSourceProvider.LoadTrustedSource(name);
+        }
+
         private PackageSourceCredential ReadCredential(string sourceName)
         {
             var environmentCredentials = ReadCredentialFromEnvironment(sourceName);
@@ -238,16 +247,16 @@ namespace NuGet.Configuration
             {
                 var userName = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.UsernameToken, StringComparison.OrdinalIgnoreCase)).Value;
 
-                if (!String.IsNullOrEmpty(userName))
+                if (!string.IsNullOrEmpty(userName))
                 {
                     var encryptedPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase)).Value;
-                    if (!String.IsNullOrEmpty(encryptedPassword))
+                    if (!string.IsNullOrEmpty(encryptedPassword))
                     {
                         return new PackageSourceCredential(sourceName, userName, encryptedPassword, isPasswordClearText: false);
                     }
 
                     var clearTextPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.ClearTextPasswordToken, StringComparison.Ordinal)).Value;
-                    if (!String.IsNullOrEmpty(clearTextPassword))
+                    if (!string.IsNullOrEmpty(clearTextPassword))
                     {
                         return new PackageSourceCredential(sourceName, userName, clearTextPassword, isPasswordClearText: true);
                     }
@@ -438,6 +447,17 @@ namespace NuGet.Configuration
                     GetCredentialValues(source.Credentials));
             }
 
+            // Update/Add trusted sources
+            // Deletion of a trusted source should be done separately using TrustedSourceProvider.DeleteSource()
+            var trustedSources = sources
+                .Where(s => s.TrustedSource != null)
+                .Select(s => s.TrustedSource);
+
+            if (trustedSources.Any())
+            {
+                _trustedSourceProvider.SaveTrustedSources(trustedSources);
+            }
+
             OnPackageSourcesChanged();
         }
 
@@ -446,10 +466,7 @@ namespace NuGet.Configuration
         /// </summary>
         private void OnPackageSourcesChanged()
         {
-            if (PackageSourcesChanged != null)
-            {
-                PackageSourcesChanged(this, EventArgs.Empty);
-            }
+            PackageSourcesChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private static KeyValuePair<string, string>[] GetCredentialValues(PackageSourceCredential credentials)
@@ -469,7 +486,7 @@ namespace NuGet.Configuration
         {
             get
             {
-                string source = SettingsUtility.GetDefaultPushSource(Settings);
+                var source = SettingsUtility.GetDefaultPushSource(Settings);
 
                 if (string.IsNullOrEmpty(source))
                 {
@@ -501,7 +518,7 @@ namespace NuGet.Configuration
 
             // It doesn't matter what value it is.
             // As long as the package source name is persisted in the <disabledPackageSources> section, the source is disabled.
-            return String.IsNullOrEmpty(value);
+            return string.IsNullOrEmpty(value);
         }
 
         /// <summary>
