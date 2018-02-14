@@ -75,7 +75,7 @@ namespace NuGet.Packaging.Signing
             }
 
             // Get the signatureValue from the signerInfo object
-            using (var nativeCms = NativeCms.Decode(request.Signature, detached: false))
+            using (var nativeCms = NativeCms.Decode(request.Signature))
             {
                 var signatureValue = nativeCms.GetPrimarySignatureSignatureValue();
                 var messageHash = request.TimestampHashAlgorithm.ComputeHash(signatureValue);
@@ -126,7 +126,7 @@ namespace NuGet.Packaging.Signing
             SignedCms timestampCms,
             IReadOnlyList<X509Certificate2> chain)
         {
-            using (var timestampNativeCms = NativeCms.Decode(timestampCms.Encode(), detached: false))
+            using (var timestampNativeCms = NativeCms.Decode(timestampCms.Encode()))
             {
                 timestampNativeCms.AddCertificates(
                     chain.Where(certificate => !timestampCms.Certificates.Contains(certificate))
