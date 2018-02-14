@@ -1557,6 +1557,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; was not added to the package. Files and folders starting with &apos;.&apos; or ending with &apos;.nupkg&apos; are excluded by default. To include this file, use -NoDefaultExcludes from the commandline.
+        /// </summary>
+        internal static string Warning_FileExcludedByDefault {
+            get {
+                return ResourceManager.GetString("Warning_FileExcludedByDefault", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} depends on {1} but {2} was not found. An approximate best match of {3} was resolved..
         /// </summary>
         internal static string Warning_MinVersionDoesNotExist {
