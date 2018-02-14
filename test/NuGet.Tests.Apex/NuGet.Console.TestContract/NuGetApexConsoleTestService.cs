@@ -5,8 +5,10 @@ using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.VisualStudio;
 using NuGetConsole;
 using NuGetConsole.Implementation;
@@ -17,11 +19,12 @@ namespace NuGet.Console.TestContract
     [Export(typeof(NuGetApexConsoleTestService))]
     public class NuGetApexConsoleTestService
     {
-        private Lazy<IWpfConsole> _wpfConsole => new Lazy<IWpfConsole>(GetWpfConsole);
-        private static readonly TimeSpan _timeout = TimeSpan.FromMinutes(10);
+        private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(90);
 
-        private IWpfConsole GetWpfConsole()
+        private async Task<IWpfConsole> GetWpfConsole()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             PowerConsoleWindow powershellConsole = null;
             var timer = Stopwatch.StartNew();
 
@@ -39,7 +42,7 @@ namespace NuGet.Console.TestContract
                 }
             }
 
-            return powershellConsole.ActiveHostInfo.WpfConsole;
+            return powershellConsole?.ActiveHostInfo?.WpfConsole;
         }
 
         public NuGetApexConsoleTestService()
@@ -48,30 +51,35 @@ namespace NuGet.Console.TestContract
 
         public ApexTestConsole GetApexTestConsole()
         {
-            var consoleWindow = GetPowershellConsole();
+            var consoleWindow = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => GetPowershellConsole());
+            var wpfConsole = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => GetWpfConsole());
 
             if (consoleWindow == null)
             {
                 throw new InvalidOperationException("Unable to get powershell window");
             }
 
-            return new ApexTestConsole(_wpfConsole.Value, consoleWindow);
+            if (wpfConsole == null)
+            {
+                throw new InvalidOperationException("Unable to get wpfConsole");
+            }
+
+            return new ApexTestConsole(wpfConsole, consoleWindow);
         }
 
-        private PowerConsoleToolWindow GetPowershellConsole()
+        private async Task<PowerConsoleToolWindow> GetPowershellConsole()
         {
             IVsWindowFrame window = null;
             PowerConsoleToolWindow powerConsole = null;
             var powerConsoleToolWindowGUID = new Guid("0AD07096-BBA9-4900-A651-0598D26F6D24");
             var stopwatch = Stopwatch.StartNew();
-            var timeout = TimeSpan.FromMinutes(5);
 
             var uiShell = ServiceLocator.GetInstance<IVsUIShell>();
 
             // Open PMC in VS
             do
             {
-                if (VSConstants.S_OK  == uiShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fForceCreate, powerConsoleToolWindowGUID, out window))
+                if (VSConstants.S_OK == uiShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fForceCreate, powerConsoleToolWindowGUID, out window))
                 {
                     window.Show();
                 }
@@ -80,7 +88,7 @@ namespace NuGet.Console.TestContract
                     Thread.Sleep(100);
                 }
             }
-            while (stopwatch.Elapsed < timeout && window == null);
+            while (stopwatch.Elapsed < _timeout && window == null);
 
             // Get PowerConsoleToolWindow from the VS frame
             if (window != null)
@@ -88,12 +96,29 @@ namespace NuGet.Console.TestContract
                 if (VSConstants.S_OK == window.GetProperty((int)__VSFPROPID.VSFPROPID_DocView, out var toolPane))
                 {
                     powerConsole = (PowerConsoleToolWindow)toolPane;
-                    while (!powerConsole.IsLoaded && stopwatch.Elapsed < timeout)
+                    while (!powerConsole.IsLoaded && stopwatch.Elapsed < _timeout)
                     {
                         Thread.Sleep(100);
                     }
-                    powerConsole.StartDispatcher();
-                    while (!powerConsole.IsHostSuccessfullyInitialized() && stopwatch.Elapsed < timeout)
+
+                    var dispatcherStarted = false;
+
+                    while (!dispatcherStarted && stopwatch.Elapsed < _timeout)
+                    {
+                        try
+                        {
+                            powerConsole.StartDispatcher();
+                            dispatcherStarted = true;
+                        }
+                        catch
+                        {
+                            // Ignore MEF cache exceptions here and retry. It is unclear why this happens
+                            // but when running outside of Apex tests the same VSIX works fine.
+                            Thread.Sleep(100);
+                        }
+                    }
+
+                    while (!powerConsole.IsHostSuccessfullyInitialized() && stopwatch.Elapsed < _timeout)
                     {
                         Thread.Sleep(100);
                     }

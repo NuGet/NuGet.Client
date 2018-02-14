@@ -72,23 +72,6 @@ namespace NuGet.PackageManagement.UI.TestContract
             UIInvoke(() => _packageManagerControl.UpdatePackage(packages));
         }
 
-        public bool IsPackageInstalled(PackageIdentity package)
-        {
-            var nugetProject = _packageManagerControl._detailModel.NuGetProjects.FirstOrDefault();
-
-            if (nugetProject == null)
-            {
-                return false;
-            }
-
-            var installedPackage = NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                return await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
-            });
-
-            return installedPackage.Any(p => p.PackageIdentity.Equals(package));
-        }
-
         public bool WaitForActionComplete(Action action, TimeSpan timeout)
         {
             var taskCompletionSource = new TaskCompletionSource<bool>();
