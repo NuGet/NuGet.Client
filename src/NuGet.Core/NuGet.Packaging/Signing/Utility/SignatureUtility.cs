@@ -480,10 +480,10 @@ namespace NuGet.Packaging.Signing
 
                 chain.Build(certificate);
 
-                if (chain.ChainStatus.Length > 0 &&
-                    (chain.ChainStatus[0].Status.HasFlag(X509ChainStatusFlags.Cyclic) ||
-                     chain.ChainStatus[0].Status.HasFlag(X509ChainStatusFlags.PartialChain) ||
-                     chain.ChainStatus[0].Status.HasFlag(X509ChainStatusFlags.NotSignatureValid)))
+                if (chain.ChainStatus.Any(chainStatus =>
+                    chainStatus.Status.HasFlag(X509ChainStatusFlags.Cyclic) ||
+                    chainStatus.Status.HasFlag(X509ChainStatusFlags.PartialChain) ||
+                    chainStatus.Status.HasFlag(X509ChainStatusFlags.NotSignatureValid)))
                 {
                     return null;
                 }
