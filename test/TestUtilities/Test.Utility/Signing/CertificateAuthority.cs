@@ -154,7 +154,7 @@ namespace Test.Utility.Signing
                 throw new ArgumentException("Certificate already revoked.", nameof(certificate));
             }
 
-            _revokedCertificates.Add(certificate.SerialNumber, new RevocationInfo(certificate.SerialNumber, revocationDate.UtcDateTime, reason));
+            _revokedCertificates.Add(certificate.SerialNumber, new RevocationInfo(certificate.SerialNumber, revocationDate, reason));
         }
 
 #if IS_DESKTOP
@@ -240,7 +240,11 @@ namespace Test.Utility.Signing
                     return CertificateStatus.Good;
                 }
 
-                var revocationDate = new DerGeneralizedTime(revocationInfo.RevocationDate);
+                var datetimeString = DerGeneralizedTimeUtility.ToDerGeneralizedTimeString(revocationInfo.RevocationDate);
+
+                // The DateTime constructor truncates fractional seconds;
+                // however, the string constructor preserves full accuracy.
+                var revocationDate = new DerGeneralizedTime(datetimeString);
                 var reason = new CrlReason(revocationInfo.Reason);
                 var revokedInfo = new RevokedInfo(revocationDate, reason);
 
@@ -336,10 +340,10 @@ namespace Test.Utility.Signing
         private sealed class RevocationInfo
         {
             internal BigInteger SerialNumber { get; }
-            internal DateTime RevocationDate { get; }
+            internal DateTimeOffset RevocationDate { get; }
             internal int Reason { get; }
 
-            internal RevocationInfo(BigInteger serialNumber, DateTime revocationDate, int reason)
+            internal RevocationInfo(BigInteger serialNumber, DateTimeOffset revocationDate, int reason)
             {
                 SerialNumber = serialNumber;
                 RevocationDate = revocationDate;

@@ -4,6 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using NuGet.Packaging.Signing.DerEncoding;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -92,11 +93,22 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Read_WithMicroseconds_ReturnsInstanceWithMicrosecondsIgnored()
+        public void Read_WithFullDateTimePrecision_ReturnsInstance()
         {
-            var time = DerGeneralizedTime.Read("20180208142637.123456Z");
+            var utcNow = DateTimeOffset.UtcNow;
+            var input = DerGeneralizedTimeUtility.ToDerGeneralizedTimeString(utcNow);
 
-            Assert.Equal(new DateTime(2018, 2, 8, 14, 26, 37, 123, DateTimeKind.Utc), time.DateTime);
+            var time = DerGeneralizedTime.Read(input);
+
+            Assert.Equal(utcNow.UtcDateTime, time.DateTime);
+        }
+
+        [Fact]
+        public void Read_WithNanoseconds_ReturnsInstanceWithSomeFractionalDigitsIgnored()
+        {
+            var time = DerGeneralizedTime.Read("20180208142637.123456789Z");
+
+            Assert.Equal(new DateTime(ticks: 636536967971234567, kind: DateTimeKind.Utc), time.DateTime);
         }
     }
 }
