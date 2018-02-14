@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,9 +11,14 @@ namespace NuGet.Protocol
     {
         private readonly SemaphoreSlim _semaphore;
 
+        /// <summary>
+        /// The number of remaining threads that can enter the semaphore.
+        /// </summary>
+        public int CurrentCount => _semaphore.CurrentCount;
+
         public SemaphoreSlimThrottle(SemaphoreSlim semaphore)
         {
-            _semaphore = semaphore;
+            _semaphore = semaphore ?? throw new ArgumentNullException(nameof(semaphore));
         }
 
         public async Task WaitAsync()

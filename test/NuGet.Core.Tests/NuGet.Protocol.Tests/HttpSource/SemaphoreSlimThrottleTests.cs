@@ -1,7 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -11,7 +10,7 @@ namespace NuGet.Protocol.Tests
     public class SemaphoreSlimThrottleTests
     {
         [Fact]
-        public async Task SemaphoreSlimThrottle_RespectsInnerSemaphore()
+        public async Task SemaphoreSlimThrottle_RespectsInnerSemaphoreAsync()
         {
             // Arrange
             var semaphoreSlim = new SemaphoreSlim(2);
@@ -19,13 +18,13 @@ namespace NuGet.Protocol.Tests
 
             // Act
             await target.WaitAsync();
-            var countA = semaphoreSlim.CurrentCount;
+            var countA = target.CurrentCount;
             await target.WaitAsync();
-            var countB = semaphoreSlim.CurrentCount;
+            var countB = target.CurrentCount;
             target.Release();
-            var countC = semaphoreSlim.CurrentCount;
+            var countC = target.CurrentCount;
             target.Release();
-            var countD = semaphoreSlim.CurrentCount;
+            var countD = target.CurrentCount;
 
             // Assert
             Assert.Equal(1, countA);
@@ -35,21 +34,22 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task SemaphoreSlimThrottle_CreateBinarySemaphore_HasInitialCountOfOne()
+        public async Task SemaphoreSlimThrottle_CreateBinarySemaphore_HasInitialCountOfOneAsync()
         {
             // Arrange
             var target = SemaphoreSlimThrottle.CreateBinarySemaphore();
-            await target.WaitAsync();
 
             // Act
-            var task = Task.Run(target.WaitAsync);
-            var acquiredBeforeRelease = task.Wait(TimeSpan.FromMilliseconds(10));
+            var beforeAcquiringCount = target.CurrentCount;
+            await target.WaitAsync();
+            var afterAcquiringCount = target.CurrentCount;
             target.Release();
-            var acquiredAfterRelease = task.Wait(TimeSpan.FromSeconds(10));
+            var afterReleaseCount = target.CurrentCount;
 
             // Assert
-            Assert.False(acquiredBeforeRelease, "The binary semaphore should only allow a count of one.");
-            Assert.True(acquiredAfterRelease, "The binary semaphore should have released back to a count of one.");
+            Assert.True(beforeAcquiringCount == 1, "The binary semaphore should only allow a count of one.");
+            Assert.True(afterAcquiringCount == 0, "The binary semaphore should not allow more than one thread to enter.");
+            Assert.True(afterReleaseCount == 1, "The binary semaphore should have released back to a count of one.");
         }
     }
 }
