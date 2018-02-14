@@ -23,6 +23,11 @@ namespace NuGet.VisualStudio
         bool IsBusy { get; }
 
         /// <summary>
+        /// Returns true when restore is running or additional restores are pending.
+        /// </summary>
+        bool IsRunning { get; }
+
+        /// <summary>
         /// Joinable task factory to synchronize with the worker.
         /// </summary>
         JoinableTaskFactory JoinableTaskFactory { get; }

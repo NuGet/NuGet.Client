@@ -57,6 +57,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly JoinableTaskCollection _joinableCollection;
         private readonly JoinableTaskFactory _joinableFactory;
         private readonly AsyncManualResetEvent _solutionLoadedEvent;
+        private readonly AsyncManualResetEvent _isCompleteEvent;
 
         private IVsSolutionManager SolutionManager => _solutionManager.Value;
 
@@ -66,7 +67,15 @@ namespace NuGet.SolutionRestoreManager
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
+        /// <summary>
+        /// True if a restore is currently running.
+        /// </summary>
         public bool IsBusy => !_activeRestoreTask.IsCompleted;
+
+        /// <summary>
+        /// True if any operation is running, pending, or waiting.
+        /// </summary>
+        public bool IsRunning => !_isCompleteEvent.IsSet;
 
         public JoinableTaskFactory JoinableTaskFactory => _joinableFactory;
 
@@ -122,6 +131,7 @@ namespace NuGet.SolutionRestoreManager
                 },
                 _joinableFactory);
             _solutionLoadedEvent = new AsyncManualResetEvent();
+            _isCompleteEvent = new AsyncManualResetEvent();
 
             Reset();
         }
@@ -225,6 +235,9 @@ namespace NuGet.SolutionRestoreManager
                 _pendingRestore = new BackgroundRestoreOperation();
                 _activeRestoreTask = Task.FromResult(true);
                 _restoreJobContext = new SolutionRestoreJobContext();
+
+                // Set to signaled, restore is no longer busy
+                _isCompleteEvent.Set();
             }
         }
 
@@ -253,59 +266,71 @@ namespace NuGet.SolutionRestoreManager
                 return false;
             }
 
-            // Initialize if not already done.
-            await InitializeAsync();
-
-            var pendingRestore = _pendingRestore;
-            var shouldStartNewBGJobRunner = true;
-
-            // lock _pendingRequests to figure out if we need to start a new background job for restore
-            // or if there is already one running which will also take care of current request.
-            lock (_lockPendingRequestsObj)
-            {
-                // check if there are already pending restore request or active restore task
-                // then don't initiate a new background job runner.
-                if (_pendingRequests.Value.Count > 0 || IsBusy)
-                {
-                    shouldStartNewBGJobRunner = false;
-                }
-
-                // on-board request onto pending restore operation
-                _pendingRequests.Value.TryAdd(request);
-            }
+            // Reset to signal that a restore is in progress.
+            // This sets IsBusy to true
+            _isCompleteEvent.Reset();
 
             try
             {
-                using (_joinableCollection.Join())
+                // Initialize if not already done.
+                await InitializeAsync();
+
+                var pendingRestore = _pendingRestore;
+                var shouldStartNewBGJobRunner = true;
+
+                // lock _pendingRequests to figure out if we need to start a new background job for restore
+                // or if there is already one running which will also take care of current request.
+                lock (_lockPendingRequestsObj)
                 {
-                    // when there is no current background restore job running, then it will start a new one.
-                    // else, current requrest will also await the existing job to be completed.
-                    if (shouldStartNewBGJobRunner)
+                    // check if there are already pending restore request or active restore task
+                    // then don't initiate a new background job runner.
+                    if (_pendingRequests.Value.Count > 0 || IsBusy)
                     {
-                        _backgroundJobRunner = new AsyncLazy<bool>(
-                           () => StartBackgroundJobRunnerAsync(_workerCts.Token),
-                           _joinableFactory);
+                        shouldStartNewBGJobRunner = false;
                     }
 
-                    // Await completion of the requested restore operation or
-                    // completion of the current job runner.
-                    // The caller will be unblocked immediately upon
-                    // cancellation request via provided token.
-                    return await await Task
-                            .WhenAny(
-                                pendingRestore.Task,
-                                _backgroundJobRunner.GetValueAsync())
-                            .WithCancellation(token);
+                    // on-board request onto pending restore operation
+                    _pendingRequests.Value.TryAdd(request);
+                }
+
+                try
+                {
+                    using (_joinableCollection.Join())
+                    {
+                        // when there is no current background restore job running, then it will start a new one.
+                        // else, current requrest will also await the existing job to be completed.
+                        if (shouldStartNewBGJobRunner)
+                        {
+                            _backgroundJobRunner = new AsyncLazy<bool>(
+                               () => StartBackgroundJobRunnerAsync(_workerCts.Token),
+                               _joinableFactory);
+                        }
+
+                        // Await completion of the requested restore operation or
+                        // completion of the current job runner.
+                        // The caller will be unblocked immediately upon
+                        // cancellation request via provided token.
+                        return await await Task
+                                .WhenAny(
+                                    pendingRestore.Task,
+                                    _backgroundJobRunner.GetValueAsync())
+                                .WithCancellation(token);
+                    }
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                {
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError(e.ToString());
+                    return false;
                 }
             }
-            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            finally
             {
-                return false;
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e.ToString());
-                return false;
+                // Signal that all pending operations are complete.
+                _isCompleteEvent.Set();
             }
         }
 
