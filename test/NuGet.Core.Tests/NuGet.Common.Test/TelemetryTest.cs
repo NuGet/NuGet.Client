@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using FluentAssertions;
 using Moq;
 using Xunit;
 
@@ -106,6 +107,7 @@ namespace NuGet.Common.Test
         public void TelemetryTest_TelemetryActivityWithIntervalMeasure()
         {
             // Arrange
+            var secondsToWait = 5;
             var telemetryService = new Mock<INuGetTelemetryService>();
             TelemetryEvent telemetryEvent = null;
             telemetryService.Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
@@ -117,12 +119,15 @@ namespace NuGet.Common.Test
             {
                 telemetry.TelemetryEvent = new TelemetryEvent("testEvent", new Dictionary<string, object>());
                 telemetry.StartIntervalMeasure();
-                Thread.Sleep(5000);
+                Thread.Sleep(secondsToWait * 1000);
                 telemetry.EndIntervalMeasure("testInterval");
             }
 
             // Assert
-            Assert.Equal(5, Convert.ToInt32(telemetryEvent["testInterval"]));
+            var value = telemetryEvent["testInterval"];
+            value.Should().NotBeNull();
+            var actualCount = Convert.ToInt32(value);
+            Assert.True(actualCount >= secondsToWait, $"The telemetry duration count should atleaset be {secondsToWait}");
         }
 
         [Fact]
