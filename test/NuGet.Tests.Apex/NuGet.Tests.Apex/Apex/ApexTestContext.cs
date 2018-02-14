@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
+using NuGet.Common;
 using NuGet.Test.Utility;
 
 namespace NuGet.Tests.Apex
@@ -12,15 +13,18 @@ namespace NuGet.Tests.Apex
     {
 
         private VisualStudioHost _visualStudio;
+        private readonly ILogger _logger;
         private SimpleTestPathContext _pathContext;
-        private bool _noAutoRestore;
 
         public SolutionService SolutionService { get; }
         public ProjectTestExtension Project { get; }
         public string PackageSource => _pathContext.PackageSource;
 
-        public ApexTestContext(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, bool noAutoRestore = false)
+        public NuGetApexTestService NuGetApexTestService { get; }
+
+        public ApexTestContext(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, ILogger logger, bool noAutoRestore = false)
         {
+            logger.LogInformation("Creating test context");
             _pathContext = new SimpleTestPathContext();
 
             if (noAutoRestore)
@@ -29,13 +33,18 @@ namespace NuGet.Tests.Apex
             }
 
             _visualStudio = visualStudio;
+            _logger = logger;
             SolutionService = _visualStudio.Get<SolutionService>();
+            NuGetApexTestService = _visualStudio.Get<NuGetApexTestService>();
 
-            Project = Utils.CreateAndInitProject(projectTemplate, _pathContext, SolutionService);
+            Project = Utils.CreateAndInitProject(projectTemplate, _pathContext, SolutionService, logger);
+
+            NuGetApexTestService.WaitForAutoRestore();
         }
 
         public void Dispose()
         {
+            _logger.LogInformation("Test complete, closing solution.");
             SolutionService.Save();
             SolutionService.Close();
 

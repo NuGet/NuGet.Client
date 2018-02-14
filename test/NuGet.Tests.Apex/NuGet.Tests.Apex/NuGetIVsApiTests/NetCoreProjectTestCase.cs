@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.StaFact;
-using NuGet.Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.Tests.Apex
 {
     public class NetCoreProjectTestCase : SharedVisualStudioHostTestClass, IClassFixture<VisualStudioHostFixtureFactory>
     {
-        public NetCoreProjectTestCase(VisualStudioHostFixtureFactory visualStudioHostFixtureFactory)
-            : base(visualStudioHostFixtureFactory)
+        public NetCoreProjectTestCase(VisualStudioHostFixtureFactory visualStudioHostFixtureFactory, ITestOutputHelper output)
+            : base(visualStudioHostFixtureFactory, output)
         {
         }
 
@@ -21,7 +21,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
                 VisualStudio.AssertNoErrors();
             }
@@ -35,7 +35,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
                 var project2 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject2");
                 project2.Build();
@@ -44,9 +44,9 @@ namespace NuGet.Tests.Apex
                 testContext.SolutionService.SaveAll();
 
                 testContext.SolutionService.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
 
-                Assert.True(testContext.Project.References.TryFindReferenceByName("TestProject2", out var result));
-                VisualStudio.AssertNoErrors();
+                Utils.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "TestProject2", "1.0.0", XunitLogger);
             }
         }
 

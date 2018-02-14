@@ -3,13 +3,14 @@
 
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.Tests.Apex
 {
     public class IVsPackageInstallerTestCase : SharedVisualStudioHostTestClass, IClassFixture<VisualStudioHostFixtureFactory>
     {
-        public IVsPackageInstallerTestCase(VisualStudioHostFixtureFactory visualStudioHostFixtureFactory) 
-            : base(visualStudioHostFixtureFactory)
+        public IVsPackageInstallerTestCase(VisualStudioHostFixtureFactory visualStudioHostFixtureFactory, ITestOutputHelper output)
+            : base(visualStudioHostFixtureFactory, output)
         {
         }
 
@@ -23,7 +24,7 @@ namespace NuGet.Tests.Apex
             var nugetTestService = GetNuGetTestService();
 
             solutionService.CreateEmptySolution();
-            solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject"); 
+            var projExt = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
 
             var project = dte.Solution.Projects.Item(1);
 
@@ -31,7 +32,7 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, "newtonsoft.json");
 
             // Assert
-            nugetTestService.Verify.PackageIsInstalled(project.UniqueName, "newtonsoft.json");
+            Utils.AssetPackageInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", XunitLogger);
         }
 
         [StaFact]
@@ -42,17 +43,16 @@ namespace NuGet.Tests.Apex
             var solutionService = VisualStudio.Get<SolutionService>();
             var nugetTestService = GetNuGetTestService();
             solutionService.CreateEmptySolution();
-            solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary,ProjectTargetFramework.V46, "TestProject");
+            var projExt = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             var dte = VisualStudio.Dte;
             var project = dte.Solution.Projects.Item(1);
-
-            // Act & Assert
             nugetTestService.InstallPackage(project.UniqueName, "newtonsoft.json");
-            nugetTestService.Verify.PackageIsInstalled(project.UniqueName, "newtonsoft.json");
 
-            // Act & Assert
+            // Act
             nugetTestService.UninstallPackage(project.UniqueName, "newtonsoft.json");
-            nugetTestService.Verify.PackageIsNotInstalled(project.UniqueName, "newtonsoft.json");
+
+            // Assert
+            Utils.AssetPackageNotInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", XunitLogger);
         }
     }
 }

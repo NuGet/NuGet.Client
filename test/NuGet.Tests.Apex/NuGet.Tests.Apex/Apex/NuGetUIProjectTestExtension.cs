@@ -60,10 +60,5 @@ namespace NuGet.Tests.Apex
             _uiproject.ActiveFilter = ItemFilter.UpdatesAvailable;
         }
 
-        public bool IsPackageInstalled(string packageId, string version)
-        {
-            return _uiproject.IsPackageInstalled(new PackageIdentity(packageId, NuGetVersion.Parse(version)));
-        }
-
     }
 }
