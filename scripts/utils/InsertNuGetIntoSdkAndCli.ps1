@@ -55,6 +55,8 @@ $Release = ${env:RELEASE_RELEASENAME}
 $NuGetExePath = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'artifacts', 'VS15', "NuGet.exe")
 
 $ProductVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).ProductVersion
+$index = $ProductVersion.LastIndexOf('+')
+$ProductVersion = $ProductVersion.Substring(0,$index).Trim()
 $CreatedBranchName = "$Release-$AttemptNum"
 
 Function UpdateNuGetVersionInXmlFile {
