@@ -12,11 +12,11 @@ namespace Test.Utility.Signing
 {
     internal static class CertificateUtilities
     {
-        internal static AsymmetricCipherKeyPair CreateKeyPair()
+        internal static AsymmetricCipherKeyPair CreateKeyPair(int strength = 2048)
         {
             var generator = new RsaKeyPairGenerator();
 
-            generator.Init(new KeyGenerationParameters(new SecureRandom(), strength: 2048));
+            generator.Init(new KeyGenerationParameters(new SecureRandom(), strength));
 
             return generator.GenerateKeyPair();
         }
@@ -29,6 +29,11 @@ namespace Test.Utility.Signing
 
                 return BitConverter.ToString(hash).Replace("-", "");
             }
+        }
+
+        internal static string GenerateRandomId()
+        {
+            return Guid.NewGuid().ToString();
         }
     }
 }

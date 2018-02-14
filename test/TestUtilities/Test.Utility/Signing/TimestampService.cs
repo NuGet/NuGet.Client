@@ -105,8 +105,9 @@ namespace Test.Utility.Signing
                     extensionValue: ExtendedKeyUsage.GetInstance(new DerSequence(KeyPurposeID.IdKPTimeStamping)));
             };
 
-            var issueOptions = new IssueCertificateOptions(keyPair.Public)
+            var issueOptions = new IssueCertificateOptions()
                 {
+                    KeyPair = keyPair,
                     SubjectName = subjectName,
                     CustomizeCertificate = customizeCertificate
                 };
