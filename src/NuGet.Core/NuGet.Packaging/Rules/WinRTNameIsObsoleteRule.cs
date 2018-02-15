@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
@@ -15,11 +16,11 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            foreach (var file in builder.GetFiles())
+            foreach (var file in builder.GetFiles().Select(t => PathUtility.GetPathWithDirectorySeparator(t)))
             {
-                foreach (string prefix in Prefixes)
+                foreach (var prefix in Prefixes)
                 {
-                    if (file.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    if (file.StartsWith(PathUtility.GetPathWithDirectorySeparator(prefix), StringComparison.OrdinalIgnoreCase))
                     {
                         yield return CreateIssue(file);
                     }
