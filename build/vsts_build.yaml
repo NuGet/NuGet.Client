@@ -510,7 +510,6 @@ phases:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
   queue:
     name: DDNuGet-Windows
-    timeoutInMinutes: 75
     demands: DotNetFramework
 
   steps:
@@ -561,7 +560,8 @@ phases:
     condition: "failed()"
 
   - task: PowerShell@1
-    displayName: "RunFunctionalTests.ps1"
+    displayName: "RunFunctionalTests.ps1"    
+    timeoutInMinutes: 75
     continueOnError: "true"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
@@ -605,7 +605,6 @@ phases:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
   queue:
     name: DDNuGet-Windows
-    timeoutInMinutes: 75
     demands: DotNetFramework
 
   steps:
@@ -702,6 +701,7 @@ phases:
 
   - task: MSBuild@1
     displayName: "Run Apex Tests"
+    timeoutInMinutes: 45
     continueOnError: "true"
     inputs:
       solution: "build\\build.proj"
