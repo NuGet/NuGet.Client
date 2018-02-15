@@ -13,22 +13,67 @@ namespace Test.Utility.Signing
         public Action<X509V3CertificateGenerator> CustomizeCertificate { get; set; }
         public DateTimeOffset NotAfter { get; set; }
         public DateTimeOffset NotBefore { get; set; }
-        public AsymmetricKeyParameter PublicKey { get; }
+
+        /// <summary>
+        /// Gets or sets the private key for signing the new certificate.
+        /// </summary>
+        /// <remarks>
+        /// Typically:
+        ///
+        ///     *  If the issue certificate request is for a self-signed root certificate, <see cref="IssuerPrivateKey" />
+        ///        should be the private key of <see cref="KeyPair" />.
+        ///     *  If the issue certificate request is for any other (non-root) certificate, <see cref="IssuerPrivateKey" />
+        ///        should be null, indicating that the private key for the issuing certificate authority should be used.
+        /// </remarks>
+        public AsymmetricKeyParameter IssuerPrivateKey { get; set; }
+
+        public AsymmetricCipherKeyPair KeyPair { get; set; }
         public X509Name SubjectName { get; set; }
 
-        public IssueCertificateOptions(AsymmetricKeyParameter publicKey)
+        public IssueCertificateOptions()
         {
-            if (publicKey == null)
-            {
-                throw new ArgumentNullException(nameof(publicKey));
-            }
-
             NotBefore = DateTimeOffset.UtcNow;
             NotAfter = NotBefore.AddHours(2);
-            PublicKey = publicKey;
+        }
 
-            var id = Guid.NewGuid().ToString();
-            SubjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Root Certificate Authority ({id})");
+        public static IssueCertificateOptions CreateDefaultForRootCertificateAuthority()
+        {
+            var keyPair = CertificateUtilities.CreateKeyPair();
+            var id = CertificateUtilities.GenerateRandomId();
+            var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Root Certificate Authority ({id})");
+
+            return new IssueCertificateOptions()
+            {
+                KeyPair = keyPair,
+                IssuerPrivateKey = keyPair.Private,
+                SubjectName = subjectName
+            };
+        }
+
+        public static IssueCertificateOptions CreateDefaultForIntermediateCertificateAuthority()
+        {
+            var keyPair = CertificateUtilities.CreateKeyPair();
+            var id = CertificateUtilities.GenerateRandomId();
+            var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Intermediate Certificate Authority ({id})");
+
+            return new IssueCertificateOptions()
+            {
+                KeyPair = keyPair,
+                SubjectName = subjectName
+            };
+        }
+
+        public static IssueCertificateOptions CreateDefaultForEndCertificate()
+        {
+            var keyPair = CertificateUtilities.CreateKeyPair();
+            var id = CertificateUtilities.GenerateRandomId();
+            var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Certificate ({id})");
+
+            return new IssueCertificateOptions()
+            {
+                KeyPair = keyPair,
+                SubjectName = subjectName
+            };
         }
     }
 }

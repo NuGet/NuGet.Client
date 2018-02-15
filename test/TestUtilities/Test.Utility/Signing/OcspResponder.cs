@@ -18,24 +18,31 @@ namespace Test.Utility.Signing
         private const string RequestContentType = "application/ocsp-request";
         private const string ResponseContentType = "application/ocsp-response";
 
+        private readonly OcspResponderOptions _options;
+
         public override Uri Url { get; }
 
         internal CertificateAuthority CertificateAuthority { get; }
 
-        internal OcspResponder(CertificateAuthority certificateAuthority, Uri uri)
+        private OcspResponder(CertificateAuthority certificateAuthority, OcspResponderOptions options)
+        {
+            CertificateAuthority = certificateAuthority;
+            Url = certificateAuthority.OcspResponderUri;
+            _options = options;
+        }
+
+        public static OcspResponder Create(
+            CertificateAuthority certificateAuthority,
+            OcspResponderOptions options = null)
         {
             if (certificateAuthority == null)
             {
                 throw new ArgumentNullException(nameof(certificateAuthority));
             }
 
-            if (uri == null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
+            options = options ?? new OcspResponderOptions();
 
-            CertificateAuthority = certificateAuthority;
-            Url = uri;
+            return new OcspResponder(certificateAuthority, options);
         }
 
 #if IS_DESKTOP
@@ -77,8 +84,10 @@ namespace Test.Utility.Signing
             {
                 var certificateId = request.GetCertID();
                 var certificateStatus = CertificateAuthority.GetStatus(certificateId);
+                var thisUpdate = _options.ThisUpdate?.UtcDateTime ?? now;
+                var nextUpdate = _options.NextUpdate?.UtcDateTime ?? now.AddSeconds(1);
 
-                basicOcspRespGenerator.AddResponse(certificateId, certificateStatus, thisUpdate: now, nextUpdate: now.AddSeconds(1), singleExtensions: null);
+                basicOcspRespGenerator.AddResponse(certificateId, certificateStatus, thisUpdate, nextUpdate, singleExtensions: null);
             }
 
             var certificateChain = GetCertificateChain();

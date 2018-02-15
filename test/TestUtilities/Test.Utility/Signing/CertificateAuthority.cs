@@ -60,7 +60,7 @@ namespace Test.Utility.Signing
             _nextSerialNumber = certificate.SerialNumber.Add(BigInteger.One);
             _issuedCertificates = new Dictionary<BigInteger, X509Certificate>();
             _revokedCertificates = new Dictionary<BigInteger, RevocationInfo>();
-            _ocspResponder = new Lazy<OcspResponder>(() => new OcspResponder(this, OcspResponderUri));
+            _ocspResponder = new Lazy<OcspResponder>(() => OcspResponder.Create(this));
         }
 
         public X509Certificate IssueCertificate(IssueCertificateOptions options)
@@ -70,13 +70,7 @@ namespace Test.Utility.Signing
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var serialNumber = _nextSerialNumber;
-            var issuerName = PrincipalUtilities.GetSubjectX509Principal(Certificate);
-            Action<X509V3CertificateGenerator> customizeCertificate;
-
-            if (options.CustomizeCertificate == null)
-            {
-                customizeCertificate = generator =>
+            Action<X509V3CertificateGenerator> customizeCertificate = generator =>
                 {
                     generator.AddExtension(
                         X509Extensions.AuthorityInfoAccess,
@@ -93,48 +87,47 @@ namespace Test.Utility.Signing
                     generator.AddExtension(
                         X509Extensions.SubjectKeyIdentifier,
                         critical: false,
-                        extensionValue: new SubjectKeyIdentifierStructure(options.PublicKey));
+                        extensionValue: new SubjectKeyIdentifierStructure(options.KeyPair.Public));
                     generator.AddExtension(
                         X509Extensions.BasicConstraints,
                         critical: true,
                         extensionValue: new BasicConstraints(cA: false));
                 };
-            }
-            else
-            {
-                customizeCertificate = options.CustomizeCertificate;
-            }
 
-            var notAfter = options.NotAfter.UtcDateTime;
-
-            // An issued certificate should not have a validity period beyond the issuer's validity period.
-            if (notAfter > Certificate.NotAfter)
-            {
-                notAfter = Certificate.NotAfter;
-            }
-
-            var certificate = CreateCertificate(
-                options.PublicKey,
-                KeyPair.Private,
-                serialNumber,
-                issuerName,
-                options.SubjectName,
-                options.NotBefore.UtcDateTime,
-                notAfter,
-                customizeCertificate);
-
-            _nextSerialNumber = _nextSerialNumber.Add(BigInteger.One);
-            _issuedCertificates.Add(certificate.SerialNumber, certificate);
-
-            return certificate;
+            return IssueCertificate(options, customizeCertificate);
         }
 
-        public CertificateAuthority CreateIntermediateCertificateAuthority()
+        public CertificateAuthority CreateIntermediateCertificateAuthority(IssueCertificateOptions options = null)
         {
-            var keyPair = CertificateUtilities.CreateKeyPair();
-            var certificate = IssueCaCertificate(keyPair.Public);
+            options = options ?? IssueCertificateOptions.CreateDefaultForIntermediateCertificateAuthority();
 
-            return new CertificateAuthority(certificate, keyPair, SharedUri, parentCa: this);
+            Action<X509V3CertificateGenerator> customizeCertificate = generator =>
+                {
+                    generator.AddExtension(
+                        X509Extensions.AuthorityInfoAccess,
+                        critical: false,
+                        extensionValue: new DerSequence(
+                            new AccessDescription(AccessDescription.IdADOcsp,
+                                new GeneralName(GeneralName.UniformResourceIdentifier, OcspResponderUri.OriginalString)),
+                            new AccessDescription(AccessDescription.IdADCAIssuers,
+                                new GeneralName(GeneralName.UniformResourceIdentifier, CertificateUri.OriginalString))));
+                    generator.AddExtension(
+                        X509Extensions.AuthorityKeyIdentifier,
+                        critical: false,
+                        extensionValue: new AuthorityKeyIdentifierStructure(Certificate));
+                    generator.AddExtension(
+                        X509Extensions.SubjectKeyIdentifier,
+                        critical: false,
+                        extensionValue: new SubjectKeyIdentifierStructure(options.KeyPair.Public));
+                    generator.AddExtension(
+                        X509Extensions.BasicConstraints,
+                        critical: true,
+                        extensionValue: new BasicConstraints(cA: true));
+                };
+
+            var certificate = IssueCertificate(options, customizeCertificate);
+
+            return new CertificateAuthority(certificate, options.KeyPair, SharedUri, parentCa: this);
         }
 
         public void Revoke(X509Certificate certificate, int reason, DateTimeOffset revocationDate)
@@ -177,7 +170,7 @@ namespace Test.Utility.Signing
         }
 #endif
 
-        public static CertificateAuthority Create(Uri sharedUri)
+        public static CertificateAuthority Create(Uri sharedUri, IssueCertificateOptions options = null)
         {
             if (sharedUri == null)
             {
@@ -189,38 +182,35 @@ namespace Test.Utility.Signing
                 sharedUri = new Uri($"{sharedUri.AbsoluteUri}/");
             }
 
-            var keyPair = CertificateUtilities.CreateKeyPair();
-            var id = Guid.NewGuid().ToString();
-            var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Root Certificate Authority ({id})");
-            var now = DateTime.UtcNow;
+            options = options ?? IssueCertificateOptions.CreateDefaultForRootCertificateAuthority();
 
-            void customizeCertificate(X509V3CertificateGenerator generator)
-            {
-                generator.AddExtension(
-                    X509Extensions.SubjectKeyIdentifier,
-                    critical: false,
-                    extensionValue: new SubjectKeyIdentifierStructure(keyPair.Public));
-                generator.AddExtension(
-                    X509Extensions.BasicConstraints,
-                    critical: true,
-                    extensionValue: new BasicConstraints(cA: true));
-                generator.AddExtension(
-                    X509Extensions.KeyUsage,
-                    critical: true,
-                    extensionValue: new KeyUsage(KeyUsage.DigitalSignature | KeyUsage.KeyCertSign | KeyUsage.CrlSign));
-            }
+            Action<X509V3CertificateGenerator> customizeCertificate = generator =>
+                {
+                    generator.AddExtension(
+                        X509Extensions.SubjectKeyIdentifier,
+                        critical: false,
+                        extensionValue: new SubjectKeyIdentifierStructure(options.KeyPair.Public));
+                    generator.AddExtension(
+                        X509Extensions.BasicConstraints,
+                        critical: true,
+                        extensionValue: new BasicConstraints(cA: true));
+                    generator.AddExtension(
+                        X509Extensions.KeyUsage,
+                        critical: true,
+                        extensionValue: new KeyUsage(KeyUsage.DigitalSignature | KeyUsage.KeyCertSign | KeyUsage.CrlSign));
+                };
 
             var certificate = CreateCertificate(
-                keyPair.Public,
-                keyPair.Private,
+                options.KeyPair.Public,
+                options.IssuerPrivateKey,
                 BigInteger.One,
-                subjectName,
-                subjectName,
-                now,
-                now.AddHours(2),
-                customizeCertificate);
+                options.SubjectName,
+                options.SubjectName,
+                options.NotBefore,
+                options.NotAfter,
+                options.CustomizeCertificate ?? customizeCertificate);
 
-            return new CertificateAuthority(certificate, keyPair, sharedUri, parentCa: null);
+            return new CertificateAuthority(certificate, options.KeyPair, sharedUri, parentCa: null);
         }
 
         internal CertificateStatus GetStatus(CertificateID certificateId)
@@ -264,47 +254,34 @@ namespace Test.Utility.Signing
             }
         }
 
-        private X509Certificate IssueCaCertificate(
-            AsymmetricKeyParameter publicKey,
-            Action<X509V3CertificateGenerator> customizeCertificate = null)
+        private X509Certificate IssueCertificate(
+            IssueCertificateOptions options,
+            Action<X509V3CertificateGenerator> customizeCertificate)
         {
-            var id = Guid.NewGuid().ToString();
-            var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Intermediate Certificate Authority ({id})");
+            var serialNumber = _nextSerialNumber;
+            var issuerName = PrincipalUtilities.GetSubjectX509Principal(Certificate);
+            var notAfter = options.NotAfter.UtcDateTime;
 
-            if (customizeCertificate == null)
+            // An issued certificate should not have a validity period beyond the issuer's validity period.
+            if (notAfter > Certificate.NotAfter)
             {
-                customizeCertificate = generator =>
-                {
-                    generator.AddExtension(
-                        X509Extensions.AuthorityInfoAccess,
-                        critical: false,
-                        extensionValue: new DerSequence(
-                            new AccessDescription(AccessDescription.IdADOcsp,
-                                new GeneralName(GeneralName.UniformResourceIdentifier, OcspResponderUri.OriginalString)),
-                            new AccessDescription(AccessDescription.IdADCAIssuers,
-                                new GeneralName(GeneralName.UniformResourceIdentifier, CertificateUri.OriginalString))));
-                    generator.AddExtension(
-                        X509Extensions.AuthorityKeyIdentifier,
-                        critical: false,
-                        extensionValue: new AuthorityKeyIdentifierStructure(Certificate));
-                    generator.AddExtension(
-                        X509Extensions.SubjectKeyIdentifier,
-                        critical: false,
-                        extensionValue: new SubjectKeyIdentifierStructure(publicKey));
-                    generator.AddExtension(
-                        X509Extensions.BasicConstraints,
-                        critical: true,
-                        extensionValue: new BasicConstraints(cA: true));
-                };
+                notAfter = Certificate.NotAfter;
             }
 
-            var options = new IssueCertificateOptions(publicKey)
-                {
-                    SubjectName = subjectName,
-                    CustomizeCertificate = customizeCertificate
-                };
+            var certificate = CreateCertificate(
+                options.KeyPair.Public,
+                options.IssuerPrivateKey ?? KeyPair.Private,
+                serialNumber,
+                issuerName,
+                options.SubjectName,
+                options.NotBefore.UtcDateTime,
+                notAfter,
+                options.CustomizeCertificate ?? customizeCertificate);
 
-            return IssueCertificate(options);
+            _nextSerialNumber = _nextSerialNumber.Add(BigInteger.One);
+            _issuedCertificates.Add(certificate.SerialNumber, certificate);
+
+            return certificate;
         }
 
         private static X509Certificate CreateCertificate(
@@ -313,16 +290,16 @@ namespace Test.Utility.Signing
             BigInteger serialNumber,
             X509Name issuerName,
             X509Name subjectName,
-            DateTime notBefore,
-            DateTime notAfter,
+            DateTimeOffset notBefore,
+            DateTimeOffset notAfter,
             Action<X509V3CertificateGenerator> customizeCertificate)
         {
             var generator = new X509V3CertificateGenerator();
 
             generator.SetSerialNumber(serialNumber);
             generator.SetIssuerDN(issuerName);
-            generator.SetNotBefore(notBefore);
-            generator.SetNotAfter(notAfter);
+            generator.SetNotBefore(notBefore.UtcDateTime);
+            generator.SetNotAfter(notAfter.UtcDateTime);
             generator.SetSubjectDN(subjectName);
             generator.SetPublicKey(certificatePublicKey);
 
