@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
@@ -18,7 +19,7 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
-            foreach (var file in builder.GetFiles())
+            foreach (var file in builder.GetFiles().Select(t => PathUtility.GetPathWithDirectorySeparator(t)))
             {
                 // if not a .transform file, ignore
                 if (!file.EndsWith(CodeTransformExtension, StringComparison.OrdinalIgnoreCase) &&

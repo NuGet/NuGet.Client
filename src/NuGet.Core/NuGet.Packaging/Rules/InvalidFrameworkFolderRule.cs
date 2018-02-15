@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Rules
         public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var file in builder.GetFiles())
+            foreach (var file in builder.GetFiles().Select(t => PathUtility.GetPathWithDirectorySeparator(t)))
             {
                 string[] parts = file.Split(Path.DirectorySeparatorChar);
                 if (parts.Length >= 3 && parts[0].Equals(LibDirectory, StringComparison.OrdinalIgnoreCase))
