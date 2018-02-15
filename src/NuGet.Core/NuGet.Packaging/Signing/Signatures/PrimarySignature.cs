@@ -103,7 +103,7 @@ namespace NuGet.Packaging.Signing
 
         public override byte[] GetSignatureValue()
         {
-            using (var nativeCms = NativeCms.Decode(SignedCms.Encode(), detached: false))
+            using (var nativeCms = NativeCms.Decode(SignedCms.Encode()))
             {
                 return nativeCms.GetPrimarySignatureSignatureValue();
             }

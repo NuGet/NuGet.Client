@@ -8,8 +8,6 @@ namespace NuGet.Packaging.Signing
 {
     internal static class NativeMethods
     {
-        internal const uint PKCS_7_ASN_ENCODING = 0x10000;
-        internal const uint X509_ASN_ENCODING = 0x1;
         internal const uint PKCS_ATTRIBUTE = 22;
         internal const uint PKCS7_SIGNER_INFO = 500;
         internal const int ERROR_MORE_DATA = 234;
@@ -19,7 +17,7 @@ namespace NuGet.Packaging.Signing
 
         [DllImport("crypt32.dll", SetLastError = true)]
         public static extern SafeCryptMsgHandle CryptMsgOpenToEncode(
-            uint dwMsgEncodingType,
+            CMSG_ENCODING dwMsgEncodingType,
             uint dwFlags,
             uint dwMsgType,
             ref CMSG_SIGNED_ENCODE_INFO pvMsgEncodeInfo,
@@ -68,7 +66,7 @@ namespace NuGet.Packaging.Signing
 
         [DllImport("crypt32.dll", SetLastError = true)]
         internal static extern bool CryptDecodeObject(
-            uint dwCertEncodingType,
+            CMSG_ENCODING dwCertEncodingType,
             IntPtr lpszStructType,
             IntPtr pbEncoded,
             uint cbEncoded,
@@ -87,7 +85,7 @@ namespace NuGet.Packaging.Signing
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa379922(v=vs.85).aspx
         [DllImport("crypt32.dll", SetLastError = true)]
         internal static extern bool CryptEncodeObjectEx(
-            uint dwCertEncodingType,
+            CMSG_ENCODING dwCertEncodingType,
             IntPtr lpszStructType,
             IntPtr pvStructInfo,
             uint dwFlags,
@@ -237,8 +235,8 @@ namespace NuGet.Packaging.Signing
     {
         // Source: wincrypt.h
         X509_ASN_ENCODING = 0x00000001,
-        PKCS_7_NDR_ENCODING = 0x00010000,
-        Any = X509_ASN_ENCODING | PKCS_7_NDR_ENCODING
+        PKCS_7_ASN_ENCODING = 0x00010000,
+        Any = X509_ASN_ENCODING | PKCS_7_ASN_ENCODING
     }
 
     internal enum CMSG_CONTROL_TYPE : uint

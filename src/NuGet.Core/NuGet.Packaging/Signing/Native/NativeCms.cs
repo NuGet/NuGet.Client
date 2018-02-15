@@ -9,13 +9,11 @@ namespace NuGet.Packaging.Signing
 {
     internal class NativeCms : IDisposable
     {
-        private SafeCryptMsgHandle _handle;
-        private bool _detached;
+        private readonly SafeCryptMsgHandle _handle;
 
-        private NativeCms(SafeCryptMsgHandle handle, bool detached)
+        private NativeCms(SafeCryptMsgHandle handle)
         {
             _handle = handle;
-            _detached = detached;
         }
 
         internal byte[] GetPrimarySignatureSignatureValue()
@@ -116,7 +114,7 @@ namespace NuGet.Packaging.Signing
                         uint cbSignerInfo = 0;
 
                         NativeUtilities.ThrowIfFailed(NativeMethods.CryptDecodeObject(
-                            NativeMethods.X509_ASN_ENCODING | NativeMethods.PKCS_7_ASN_ENCODING,
+                            CMSG_ENCODING.Any,
                             new IntPtr(NativeMethods.PKCS7_SIGNER_INFO),
                             attributeValue.pbData,
                             attributeValue.cbData,
@@ -127,7 +125,7 @@ namespace NuGet.Packaging.Signing
                         var counterSignerInfoPointer = retainer.Alloc((int)cbSignerInfo);
 
                         NativeUtilities.ThrowIfFailed(NativeMethods.CryptDecodeObject(
-                            NativeMethods.X509_ASN_ENCODING | NativeMethods.PKCS_7_ASN_ENCODING,
+                            CMSG_ENCODING.Any,
                             new IntPtr(NativeMethods.PKCS7_SIGNER_INFO),
                             attributeValue.pbData,
                             attributeValue.cbData,
@@ -193,15 +191,16 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-        internal static NativeCms Decode(byte[] input, bool detached)
+        internal static NativeCms Decode(byte[] input)
         {
             var handle = NativeMethods.CryptMsgOpenToDecode(
                 CMSG_ENCODING.Any,
-                detached ? CMSG_OPENTODECODE_FLAGS.CMSG_DETACHED_FLAG : CMSG_OPENTODECODE_FLAGS.None,
-                0u,
+                CMSG_OPENTODECODE_FLAGS.None,
+                0U,
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
+
             if (handle.IsInvalid)
             {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
@@ -212,7 +211,7 @@ namespace NuGet.Packaging.Signing
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
 
-            return new NativeCms(handle, detached);
+            return new NativeCms(handle);
         }
 
         internal void AddCertificates(IEnumerable<byte[]> encodedCertificates)
@@ -269,7 +268,7 @@ namespace NuGet.Packaging.Signing
 
                 uint encodedLength = 0;
                 if (!NativeMethods.CryptEncodeObjectEx(
-                    dwCertEncodingType: NativeMethods.X509_ASN_ENCODING | NativeMethods.PKCS_7_ASN_ENCODING,
+                    CMSG_ENCODING.Any,
                     lpszStructType: new IntPtr(NativeMethods.PKCS_ATTRIBUTE),
                     pvStructInfo: unmanagedAttr,
                     dwFlags: 0,
@@ -286,7 +285,7 @@ namespace NuGet.Packaging.Signing
 
                 var unmanagedEncoded = hb.Alloc((int)encodedLength);
                 if (!NativeMethods.CryptEncodeObjectEx(
-                    dwCertEncodingType: NativeMethods.X509_ASN_ENCODING | NativeMethods.PKCS_7_ASN_ENCODING,
+                   CMSG_ENCODING.Any,
                     lpszStructType: new IntPtr(NativeMethods.PKCS_ATTRIBUTE),
                     pvStructInfo: unmanagedAttr,
                     dwFlags: 0,

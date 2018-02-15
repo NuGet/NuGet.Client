@@ -75,7 +75,7 @@ namespace NuGet.Packaging.Signing
 
         public override byte[] GetSignatureValue()
         {
-            using (var nativeCms = NativeCms.Decode(_primarySignature.SignedCms.Encode(), detached: false))
+            using (var nativeCms = NativeCms.Decode(_primarySignature.SignedCms.Encode()))
             {
                 return nativeCms.GetRepositoryCountersignatureSignatureValue();
             }
