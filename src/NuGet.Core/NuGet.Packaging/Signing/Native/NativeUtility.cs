@@ -27,6 +27,7 @@ namespace NuGet.Packaging.Signing
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
         }
+
 #if IS_DESKTOP
         internal static SignedCms NativeSign(CmsSigner cmsSigner, byte[] data, CngKey privateKey)
         {
@@ -66,7 +67,7 @@ namespace NuGet.Packaging.Signing
                         signedInfo.rgCertEncoded = certificatesHandle.DangerousGetHandle();
 
                         var hMsg = NativeMethods.CryptMsgOpenToEncode(
-                            NativeMethods.X509_ASN_ENCODING | NativeMethods.PKCS_7_ASN_ENCODING,
+                            CMSG_ENCODING.Any,
                             dwFlags: 0,
                             dwMsgType: NativeMethods.CMSG_SIGNED,
                             pvMsgEncodeInfo: ref signedInfo,

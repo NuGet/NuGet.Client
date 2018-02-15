@@ -114,7 +114,7 @@ namespace NuGet.Packaging.Signing
                         uint cbSignerInfo = 0;
 
                         NativeUtilities.ThrowIfFailed(NativeMethods.CryptDecodeObject(
-                            NativeMethods.X509_ASN_ENCODING | NativeMethods.PKCS_7_ASN_ENCODING,
+                            CMSG_ENCODING.Any,
                             new IntPtr(NativeMethods.PKCS7_SIGNER_INFO),
                             attributeValue.pbData,
                             attributeValue.cbData,
@@ -125,7 +125,7 @@ namespace NuGet.Packaging.Signing
                         var counterSignerInfoPointer = retainer.Alloc((int)cbSignerInfo);
 
                         NativeUtilities.ThrowIfFailed(NativeMethods.CryptDecodeObject(
-                            NativeMethods.X509_ASN_ENCODING | NativeMethods.PKCS_7_ASN_ENCODING,
+                            CMSG_ENCODING.Any,
                             new IntPtr(NativeMethods.PKCS7_SIGNER_INFO),
                             attributeValue.pbData,
                             attributeValue.cbData,
@@ -196,7 +196,7 @@ namespace NuGet.Packaging.Signing
             var handle = NativeMethods.CryptMsgOpenToDecode(
                 CMSG_ENCODING.Any,
                 CMSG_OPENTODECODE_FLAGS.None,
-                NativeMethods.CMSG_SIGNED,
+                0U,
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
@@ -268,7 +268,7 @@ namespace NuGet.Packaging.Signing
 
                 uint encodedLength = 0;
                 if (!NativeMethods.CryptEncodeObjectEx(
-                    dwCertEncodingType: NativeMethods.X509_ASN_ENCODING | NativeMethods.PKCS_7_ASN_ENCODING,
+                    CMSG_ENCODING.Any,
                     lpszStructType: new IntPtr(NativeMethods.PKCS_ATTRIBUTE),
                     pvStructInfo: unmanagedAttr,
                     dwFlags: 0,
@@ -285,7 +285,7 @@ namespace NuGet.Packaging.Signing
 
                 var unmanagedEncoded = hb.Alloc((int)encodedLength);
                 if (!NativeMethods.CryptEncodeObjectEx(
-                    dwCertEncodingType: NativeMethods.X509_ASN_ENCODING | NativeMethods.PKCS_7_ASN_ENCODING,
+                   CMSG_ENCODING.Any,
                     lpszStructType: new IntPtr(NativeMethods.PKCS_ATTRIBUTE),
                     pvStructInfo: unmanagedAttr,
                     dwFlags: 0,
