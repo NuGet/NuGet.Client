@@ -61,8 +61,12 @@ namespace NuGet.Packaging.Signing.DerEncoding
                 if (fractionalSecondDigits > 7)
                 {
                     // DateTime is precise to 1 ten-millionth of a second or 7 digits after the decimal.
-                    // If precision is greater than what DateTime parsing can handle, ignore some digits.
-                    stringToParse = decodedTime.Substring(0, "yyyyMMddHHmmss.1234567".Length) + "Z";
+                    // If decodedTime precision is greater than this, ignore the trailing digits.
+                    // The length of the maximum format string minus the trailing "Z" is 22 characters:
+                    //
+                    //     20180214095812.3456789Z
+                    //     ^--------------------^
+                    stringToParse = $"{decodedTime.Substring(0, 22)}Z";
                     fractionalSecondDigits = 7;
                 }
 
