@@ -10,6 +10,7 @@ using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
@@ -301,8 +302,9 @@ namespace NuGet.ProjectManagement.Projects
                 return FileUtility.SafeRead(JsonConfigPath, (stream, filePath) =>
                 {
                     using (var reader = new StreamReader(stream))
+                    using (var jsonReader = new JsonTextReader(reader))
                     {
-                        return JObject.Parse(reader.ReadToEnd());
+                        return JObject.Load(jsonReader);
                     }
                 });
             }
@@ -321,7 +323,7 @@ namespace NuGet.ProjectManagement.Projects
                 {
                     using (var reader = new StreamReader(stream))
                     {
-                        return JObject.Parse(await reader.ReadToEndAsync());
+                        return JObject.Parse(reader.ReadToEnd());
                     }
                 });
             }
