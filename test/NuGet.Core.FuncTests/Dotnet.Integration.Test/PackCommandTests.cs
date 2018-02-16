@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using FluentAssertions;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -2208,6 +2209,49 @@ namespace ClassLibrary
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 Assert.Equal(result.AllOutput.Contains(string.Format("error " + NuGetLogCode.NU5105 + ": " + NuGet.Packaging.Rules.AnalysisResources.LegacyVersionWarning, semver2Version)), expectToError);
 
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackWithRepositoryVerifyNuspec()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "RepositoryType", "git");
+                    ProjectFileUtils.AddProperty(xml, "RepositoryUrl", "https://github.com/NuGet/NuGet.Client.git");
+                    ProjectFileUtils.AddProperty(xml, "RepositoryBranch", "dev");
+                    ProjectFileUtils.AddProperty(xml, "RepositoryCommit", "e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3");
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the output .nuspec.
+                    nuspecReader.GetRepositoryMetadata().Type.Should().Be("git");
+                    nuspecReader.GetRepositoryMetadata().Url.Should().Be("https://github.com/NuGet/NuGet.Client.git");
+                    nuspecReader.GetRepositoryMetadata().Branch.Should().Be("dev");
+                    nuspecReader.GetRepositoryMetadata().Commit.Should().Be("e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3");
+                }
             }
         }
     }

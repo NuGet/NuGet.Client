@@ -53,6 +53,8 @@ namespace NuGet.Build.Tasks.Pack
         string ReleaseNotes { get; }
         string RepositoryType { get; }
         string RepositoryUrl { get; }
+        string RepositoryBranch { get; }
+        string RepositoryCommit { get; }
         bool RequireLicenseAcceptance { get; }
         string RestoreOutputPath { get; }
         bool Serviceable { get; }

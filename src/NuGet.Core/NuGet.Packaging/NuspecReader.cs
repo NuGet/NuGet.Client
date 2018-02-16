@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -38,6 +38,7 @@ namespace NuGet.Packaging
         private const string IncludeFlags = "include";
         private const string ExcludeFlags = "exclude";
         private const string LicenseUrl = "licenseUrl";
+        private const string Repository = "repository";
         private static readonly char[] CommaArray = new char[] { ',' };
         private readonly IFrameworkNameProvider _frameworkProvider;
 
@@ -389,6 +390,25 @@ namespace NuGet.Packaging
         public string GetCopyright()
         {
             return GetMetadataValue("copyright");
+        }
+
+        /// <summary>
+        /// Source control repository information.
+        /// </summary>
+        public RepositoryMetadata GetRepositoryMetadata()
+        {
+            var repository = new RepositoryMetadata();
+            var node = MetadataNode.Elements(XName.Get(Repository, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
+
+            if (node != null)
+            {
+                repository.Type = GetAttributeValue(node, "type") ?? string.Empty;
+                repository.Url = GetAttributeValue(node, "url") ?? string.Empty;
+                repository.Branch = GetAttributeValue(node, "branch") ?? string.Empty;
+                repository.Commit = GetAttributeValue(node, "commit") ?? string.Empty;
+            }
+
+            return repository;
         }
 
         /// <summary>

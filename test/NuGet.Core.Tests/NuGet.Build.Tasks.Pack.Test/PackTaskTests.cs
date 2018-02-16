@@ -119,7 +119,9 @@ namespace NuGet.Build.Tasks.Pack.Test
                 ProjectUrl = " ProjectUrl \t ",
                 ReleaseNotes = " ReleaseNotes \t ",
                 RepositoryType = " RepositoryType \t ",
-                RepositoryUrl = " RepositoryUrl \t "
+                RepositoryUrl = " RepositoryUrl \t ",
+                RepositoryCommit = " RepositoryCommit \t ",
+                RepositoryBranch = " RepositoryBranch \t "
             };
 
             // Act
@@ -141,6 +143,8 @@ namespace NuGet.Build.Tasks.Pack.Test
             Assert.Equal("ReleaseNotes", actual.ReleaseNotes);
             Assert.Equal("RepositoryType", actual.RepositoryType);
             Assert.Equal("RepositoryUrl", actual.RepositoryUrl);
+            Assert.Equal("RepositoryCommit", actual.RepositoryCommit);
+            Assert.Equal("RepositoryBranch", actual.RepositoryBranch);
         }
 
         [Fact]
@@ -164,6 +168,8 @@ namespace NuGet.Build.Tasks.Pack.Test
                 ReleaseNotes = " \t ",
                 RepositoryType = " \t ",
                 RepositoryUrl = " \t ",
+                RepositoryCommit = " \t ",
+                RepositoryBranch = " \t ",
             };
 
             // Act
@@ -185,6 +191,8 @@ namespace NuGet.Build.Tasks.Pack.Test
             Assert.Null(actual.ReleaseNotes);
             Assert.Null(actual.RepositoryType);
             Assert.Null(actual.RepositoryUrl);
+            Assert.Null(actual.RepositoryCommit);
+            Assert.Null(actual.RepositoryBranch);
         }
 
         [Fact]
@@ -340,6 +348,8 @@ namespace NuGet.Build.Tasks.Pack.Test
                 ReleaseNotes = "ReleaseNotes",
                 RepositoryType = "RepositoryType",
                 RepositoryUrl = "RepositoryUrl",
+                RepositoryCommit = "RepositoryCommit",
+                RepositoryBranch = "RepositoryBranch",
                 RequireLicenseAcceptance = true,
                 Serviceable = true,
                 SourceFiles = new ITaskItem[0],

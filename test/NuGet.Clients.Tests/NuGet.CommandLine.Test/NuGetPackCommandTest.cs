@@ -1956,6 +1956,7 @@ public class B
     <description>the description</description>
     <copyright>Copyright (C) Microsoft 2013</copyright>
     <tags>Microsoft,Sample,$tagVar$</tags>
+    <repository type=""git"" url=""https://github.com/NuGet/NuGet.Client.git"" branch=""dev"" commit=""e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3"" />
     <frameworkAssemblies>
       <frameworkAssembly assemblyName=""System"" />
     </frameworkAssemblies>
@@ -2013,6 +2014,10 @@ public class B
                     Assert.Equal("the description", nuspecReader.GetDescription());
                     Assert.Equal("Copyright (C) Microsoft 2013", nuspecReader.GetCopyright());
                     Assert.Equal("Microsoft,Sample,CustomTag", nuspecReader.GetTags());
+                    Assert.Equal("git", nuspecReader.GetRepositoryMetadata().Type);
+                    Assert.Equal("https://github.com/NuGet/NuGet.Client.git", nuspecReader.GetRepositoryMetadata().Url);
+                    Assert.Equal("dev", nuspecReader.GetRepositoryMetadata().Branch);
+                    Assert.Equal("e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3", nuspecReader.GetRepositoryMetadata().Commit);
                 }
 
                 // Verify the package directory has the resolved nuspec

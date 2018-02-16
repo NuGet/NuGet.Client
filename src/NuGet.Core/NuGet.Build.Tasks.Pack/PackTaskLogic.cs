@@ -156,7 +156,11 @@ namespace NuGet.Build.Tasks.Pack
             }
             if (!string.IsNullOrEmpty(request.RepositoryUrl) || !string.IsNullOrEmpty(request.RepositoryType))
             {
-                builder.Repository = new RepositoryMetadata(request.RepositoryType, request.RepositoryUrl);
+                builder.Repository = new RepositoryMetadata(
+                    request.RepositoryType,
+                    request.RepositoryUrl,
+                    request.RepositoryBranch,
+                    request.RepositoryCommit);
             }
             if (request.MinClientVersion != null)
             {
