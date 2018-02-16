@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,6 +24,8 @@ namespace NuGet.Packaging.Core
         public static readonly string Repository = "repository";
         public static readonly string RepositoryType = "type";
         public static readonly string RepositoryUrl = "url";
+        public static readonly string RepositoryBranch = "branch";
+        public static readonly string RepositoryCommit = "commit";
 
         /// <summary>
         /// Gets the package types from a .nuspec metadata XML element.

@@ -46,6 +46,8 @@ namespace NuGet.Build.Tasks.Pack
         public string ReleaseNotes { get; set; }
         public string RepositoryType { get; set; }
         public string RepositoryUrl { get; set; }
+        public string RepositoryBranch { get; set; }
+        public string RepositoryCommit { get; set; }
         public bool RequireLicenseAcceptance { get; set; }
         public string RestoreOutputPath { get; set; }
         public bool Serviceable { get; set; }

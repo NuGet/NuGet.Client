@@ -44,6 +44,8 @@ namespace NuGet.Build.Tasks.Pack
         public bool IncludeSource { get; set; }
         public string RepositoryUrl { get; set; }
         public string RepositoryType { get; set; }
+        public string RepositoryBranch { get; set; }
+        public string RepositoryCommit { get; set; }
         public ITaskItem[] SourceFiles { get; set; }
         public bool NoPackageAnalysis { get; set; }
         public string NuspecFile { get; set; }
@@ -181,6 +183,8 @@ namespace NuGet.Build.Tasks.Pack
                 ReleaseNotes = MSBuildStringUtility.TrimAndGetNullForEmpty(ReleaseNotes),
                 RepositoryType = MSBuildStringUtility.TrimAndGetNullForEmpty(RepositoryType),
                 RepositoryUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(RepositoryUrl),
+                RepositoryBranch = MSBuildStringUtility.TrimAndGetNullForEmpty(RepositoryBranch),
+                RepositoryCommit = MSBuildStringUtility.TrimAndGetNullForEmpty(RepositoryCommit),
                 RequireLicenseAcceptance = RequireLicenseAcceptance,
                 RestoreOutputPath = MSBuildStringUtility.TrimAndGetNullForEmpty(RestoreOutputPath),
                 Serviceable = Serviceable,

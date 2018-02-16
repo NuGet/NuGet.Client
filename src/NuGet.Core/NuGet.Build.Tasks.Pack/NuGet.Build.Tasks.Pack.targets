@@ -223,6 +223,8 @@ Copyright (c) .NET Foundation. All rights reserved.
               IsTool="$(IsTool)"
               RepositoryUrl="$(RepositoryUrl)"
               RepositoryType="$(RepositoryType)"
+              RepositoryBranch="$(RepositoryBranch)"
+              RepositoryCommit="$(RepositoryCommit)"
               SourceFiles="@(_SourceFiles->Distinct())"
               NoPackageAnalysis="$(NoPackageAnalysis)"
               MinClientVersion="$(MinClientVersion)"

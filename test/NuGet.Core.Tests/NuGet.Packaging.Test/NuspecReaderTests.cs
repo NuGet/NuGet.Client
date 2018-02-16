@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,7 @@ using Xunit;
 using NuGet.Packaging.Core;
 using System.Collections.Generic;
 using NuGet.Versioning;
+using FluentAssertions;
 
 namespace NuGet.Packaging.Test
 {
@@ -270,6 +271,32 @@ namespace NuGet.Packaging.Test
                     <dependencies>
                       <dependency id=""PackageB"" version=""{0}"" />
                     </dependencies>
+                  </metadata>
+                </package>";
+
+        private const string RepositoryBasic = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                    <repository type=""git"" url=""https://github.com/NuGet/NuGet.Client.git"" />
+                  </metadata>
+                </package>";
+
+        private const string RepositoryComplete = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                    <repository type=""git"" url=""https://github.com/NuGet/NuGet.Client.git"" branch=""dev"" commit=""e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3"" />
                   </metadata>
                 </package>";
 
@@ -639,6 +666,54 @@ namespace NuGet.Packaging.Test
 
             // Assert
             Assert.True(actual);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_RepositoryVerifyBlank()
+        {
+            // Arrange
+            var reader = GetReader(ServiceablePackageTypesElement);
+
+            // Act
+            var repo = reader.GetRepositoryMetadata();
+
+            // Assert
+            repo.Branch.Should().BeEmpty();
+            repo.Type.Should().BeEmpty();
+            repo.Url.Should().BeEmpty();
+            repo.Commit.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void NuspecReaderTests_RepositoryComplete()
+        {
+            // Arrange
+            var reader = GetReader(RepositoryComplete);
+
+            // Act
+            var repo = reader.GetRepositoryMetadata();
+
+            // Assert
+            repo.Branch.Should().Be("dev");
+            repo.Type.Should().Be("git");
+            repo.Url.Should().Be("https://github.com/NuGet/NuGet.Client.git");
+            repo.Commit.Should().Be("e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3");
+        }
+
+        [Fact]
+        public void NuspecReaderTests_RepositoryBasic()
+        {
+            // Arrange
+            var reader = GetReader(RepositoryBasic);
+
+            // Act
+            var repo = reader.GetRepositoryMetadata();
+
+            // Assert
+            repo.Type.Should().Be("git");
+            repo.Url.Should().Be("https://github.com/NuGet/NuGet.Client.git");
+            repo.Branch.Should().BeEmpty();
+            repo.Commit.Should().BeEmpty();
         }
 
         private static NuspecReader GetReader(string nuspec)
