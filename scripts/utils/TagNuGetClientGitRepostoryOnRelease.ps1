@@ -40,7 +40,11 @@ $TagName = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).F
 $AttemptNum = ${env:RELEASE_ATTEMPTNUMBER}
 $ProductVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).ProductVersion
 $index = $ProductVersion.LastIndexOf('+')
-$ProductVersion = $ProductVersion.Substring(0,$index).Trim()
+if($index -ne '-1')
+{
+    $ProductVersion = $ProductVersion.Substring(0,$index).Trim()
+}
+
 $Date = Get-Date
 $Message = "Insert $ProductVersion into $VsTargetBranch on $Date"
 $BuildInfoJsonFile = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'buildinfo.json')
