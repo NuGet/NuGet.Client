@@ -18,7 +18,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection("Signing Functional Test Collection")]
+    [Collection(SigningTestCollection.Name)]
     public class AllowListVerificationProviderTests
     {
         private const string _noCertInAllowList = "No certificate matching";

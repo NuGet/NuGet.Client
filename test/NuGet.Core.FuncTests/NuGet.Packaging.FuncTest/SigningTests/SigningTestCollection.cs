@@ -5,9 +5,11 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [CollectionDefinition("Signing Functional Test Collection")]
+    [CollectionDefinition(Name)]
     public class SigningTestCollection : ICollectionFixture<SigningTestFixture>
     {
+        public const string Name = "Signing Functional Test Collection";
+
         // This class has no code, and is never created. Its purpose is simply
         // to be the place to apply [CollectionDefinition] and all the
         // ICollectionFixture<> interfaces.

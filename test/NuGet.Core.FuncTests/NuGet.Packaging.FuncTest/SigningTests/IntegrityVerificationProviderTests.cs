@@ -21,7 +21,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection("Signing Functional Test Collection")]
+    [Collection(SigningTestCollection.Name)]
     public class IntegrityVerificationProviderTests
     {
         private const string _packageTamperedError = "The package integrity check failed.";

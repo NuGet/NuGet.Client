@@ -24,7 +24,7 @@ using BcAccuracy = Org.BouncyCastle.Asn1.Tsp.Accuracy;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection("Signing Functional Test Collection")]
+    [Collection(SigningTestCollection.Name)]
     public class SignatureTrustAndValidityVerificationProviderTests
     {
         private SigningSpecifications _specification => SigningSpecifications.V1;

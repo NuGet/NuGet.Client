@@ -17,7 +17,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     /// Tests Sign command
     /// These tests require admin privilege as the certs need to be added to the root store location
     /// </summary>
-    [Collection("Sign Command Test Collection")]
+    [Collection(SignCommandTestCollection.Name)]
     public class SignCommandTests
     {
         private const string _packageAlreadySignedError = "NU3001: The package already contains a signature. Please remove the existing signature before adding a new signature.";

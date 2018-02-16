@@ -16,14 +16,13 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
-using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.X509;
 using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection("Signing Functional Test Collection")]
+    [Collection(SigningTestCollection.Name)]
     public class TimestampProviderTests
     {
         private const string _argumentNullExceptionMessage = "Value cannot be null.\r\nParameter name: {0}";
@@ -259,7 +258,10 @@ namespace NuGet.Packaging.FuncTest
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
             var timestampService = TimestampService.Create(certificateAuthority);
 
-            certificateAuthority.Revoke(timestampService.Certificate, CrlReason.KeyCompromise, DateTimeOffset.UtcNow);
+            certificateAuthority.Revoke(
+                timestampService.Certificate,
+                RevocationReason.KeyCompromise,
+                DateTimeOffset.UtcNow);
 
             VerifyTimestampData(
                 testServer,
