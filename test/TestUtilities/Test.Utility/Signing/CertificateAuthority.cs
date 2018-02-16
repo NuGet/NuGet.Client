@@ -130,7 +130,7 @@ namespace Test.Utility.Signing
             return new CertificateAuthority(certificate, options.KeyPair, SharedUri, parentCa: this);
         }
 
-        public void Revoke(X509Certificate certificate, int reason, DateTimeOffset revocationDate)
+        public void Revoke(X509Certificate certificate, RevocationReason reason, DateTimeOffset revocationDate)
         {
             if (certificate == null)
             {
@@ -147,7 +147,9 @@ namespace Test.Utility.Signing
                 throw new ArgumentException("Certificate already revoked.", nameof(certificate));
             }
 
-            _revokedCertificates.Add(certificate.SerialNumber, new RevocationInfo(certificate.SerialNumber, revocationDate, reason));
+            _revokedCertificates.Add(
+                certificate.SerialNumber,
+                new RevocationInfo(certificate.SerialNumber, revocationDate, reason));
         }
 
 #if IS_DESKTOP
@@ -235,7 +237,7 @@ namespace Test.Utility.Signing
                 // The DateTime constructor truncates fractional seconds;
                 // however, the string constructor preserves full accuracy.
                 var revocationDate = new DerGeneralizedTime(datetimeString);
-                var reason = new CrlReason(revocationInfo.Reason);
+                var reason = new CrlReason((int)revocationInfo.Reason);
                 var revokedInfo = new RevokedInfo(revocationDate, reason);
 
                 return new RevokedStatus(revokedInfo);
@@ -318,9 +320,9 @@ namespace Test.Utility.Signing
         {
             internal BigInteger SerialNumber { get; }
             internal DateTimeOffset RevocationDate { get; }
-            internal int Reason { get; }
+            internal RevocationReason Reason { get; }
 
-            internal RevocationInfo(BigInteger serialNumber, DateTimeOffset revocationDate, int reason)
+            internal RevocationInfo(BigInteger serialNumber, DateTimeOffset revocationDate, RevocationReason reason)
             {
                 SerialNumber = serialNumber;
                 RevocationDate = revocationDate;

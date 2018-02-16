@@ -17,7 +17,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     /// Tests Sign command
     /// These tests require admin privilege as the certs need to be added to the root store location
     /// </summary>
-    [Collection("Sign Command Test Collection")]
+    [Collection(SignCommandTestCollection.Name)]
     public class VerifyCommandTests
     {
         private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3027.ToString();

@@ -20,7 +20,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection("Signing Functional Test Collection")]
+    [Collection(SigningTestCollection.Name)]
     public class SignedPackageIntegrityVerificationTests
     {
         private SigningSpecifications _specification => SigningSpecifications.V1;
