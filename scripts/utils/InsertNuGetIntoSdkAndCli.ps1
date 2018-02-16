@@ -56,7 +56,11 @@ $NuGetExePath = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'ar
 
 $ProductVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).ProductVersion
 $index = $ProductVersion.LastIndexOf('+')
-$ProductVersion = $ProductVersion.Substring(0,$index).Trim()
+if($index -ne '-1')
+{
+    $ProductVersion = $ProductVersion.Substring(0,$index).Trim()
+}
+
 $CreatedBranchName = "$Release-$AttemptNum"
 
 Function UpdateNuGetVersionInXmlFile {
