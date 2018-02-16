@@ -344,10 +344,6 @@ namespace NuGet.Packaging
             if (!string.IsNullOrEmpty(repositoryUrl?.Value))
             {
                 repository.Url = repositoryUrl.Value;
-            }
-
-            if (!string.IsNullOrEmpty(repository.Type))
-            {
                 repository.Branch = repositoryBranch?.Value;
                 repository.Commit = repositoryCommit?.Value;
             }
