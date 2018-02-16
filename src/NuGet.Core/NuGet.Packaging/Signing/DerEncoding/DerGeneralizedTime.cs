@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Security.Cryptography;
 
 namespace NuGet.Packaging.Signing.DerEncoding
@@ -11,9 +12,9 @@ namespace NuGet.Packaging.Signing.DerEncoding
     {
         public DateTime DateTime { get; }
 
-        private DerGeneralizedTime(DateTime dateTime)
+        private DerGeneralizedTime(DateTime datetime)
         {
-            DateTime = dateTime;
+            DateTime = datetime;
         }
 
         public static DerGeneralizedTime Read(string decodedTime)
@@ -31,97 +32,60 @@ namespace NuGet.Packaging.Signing.DerEncoding
                 throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
             }
 
-            int year;
-            if (!int.TryParse(decodedTime.Substring(0, 4), out year))
+            var decimalIndex = decodedTime.IndexOf('.');
+            var stringToParse = decodedTime;
+            string format;
+
+            if (decimalIndex == -1)
             {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
+                format = "yyyyMMddHHmmssZ";
             }
-
-            int month;
-            if (!int.TryParse(decodedTime.Substring(4, 2), out month))
+            else
             {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
+                // 20180214095812.3456789Z
+                //                ^-----^
+                var fractionalSecondDigits = decodedTime.Length - 2 - decimalIndex;
 
-            int day;
-            if (!int.TryParse(decodedTime.Substring(6, 2), out day))
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
-
-            int hour;
-            if (!int.TryParse(decodedTime.Substring(8, 2), out hour))
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
-
-            int minute;
-            if (!int.TryParse(decodedTime.Substring(10, 2), out minute))
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
-
-            int second;
-            if (!int.TryParse(decodedTime.Substring(12, 2), out second))
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-            }
-
-            // Millisecond accuracy should be enough.
-            var milliseconds = 0;
-
-            // Still, we need to verify that the DER-encoded GeneralizedTime value is correct (per RFC 3161).
-            if (decodedTime[14] == '.')
-            {
-                // YYYYMMDDhhmmss.sZ
-                minimumValidLength = 17;
-
-                // Disallow YYYYMMDDhhmmss.Z
-                if (decodedTime.Length < minimumValidLength)
+                // Disallow decimal with no following digits
+                if (fractionalSecondDigits < 1)
                 {
                     throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
                 }
 
-                var hasTrailingZero = false;
-
-                // Skip trailing 'Z'.  It was checked earlier.
-                for (var i = 15; i < decodedTime.Length - 1; ++i)
-                {
-                    var c = decodedTime[i];
-
-                    if (!char.IsNumber(c))
-                    {
-                        throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
-                    }
-
-                    hasTrailingZero = c == '0';
-                }
-
-                if (hasTrailingZero)
+                // Disallow trailing zero
+                if (decodedTime[decodedTime.Length - 2] == '0')
                 {
                     throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
                 }
 
-                // Since we're only reading milliseconds, the maximum number of digits to read is 3.
-                // The minimum number of digits to read is the count of digits from position 15 to before the 'Z'.
-                var digitsToRead = Math.Min(3, decodedTime.Length - 1 - 15);
-                var fraction = decodedTime.Substring(15, digitsToRead).PadRight(3, '0');
+                if (fractionalSecondDigits > 7)
+                {
+                    // DateTime is precise to 1 ten-millionth of a second or 7 digits after the decimal.
+                    // If decodedTime precision is greater than this, ignore the trailing digits.
+                    // The length of the maximum format string minus the trailing "Z" is 22 characters:
+                    //
+                    //     20180214095812.3456789Z
+                    //     ^--------------------^
+                    stringToParse = $"{decodedTime.Substring(0, 22)}Z";
+                    fractionalSecondDigits = 7;
+                }
 
-                milliseconds = int.Parse(fraction);
+                format = $"yyyyMMddHHmmss.{new string('F', fractionalSecondDigits)}Z";
             }
 
-            DateTime dateTime;
+            DateTime datetime;
 
-            try
+            if (DateTime.TryParseExact(
+                stringToParse,
+                format,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out datetime))
             {
-                dateTime = new DateTime(year, month, day, hour, minute, second, milliseconds, DateTimeKind.Utc);
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
+                return new DerGeneralizedTime(datetime);
             }
 
-            return new DerGeneralizedTime(dateTime);
+            throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
         }
     }
 }
