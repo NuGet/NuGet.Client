@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,9 +19,10 @@ namespace NuGet.Versioning
         /// Creates a NuGetVersion using NuGetVersion.Parse(string)
         /// </summary>
         /// <param name="version">Version string</param>
-        public NuGetVersion(string version)
+        public NuGetVersion(string version, FloatRange floatRange = null)
             : this(Parse(version))
         {
+            FloatRange = floatRange;
         }
 
         /// <summary>
@@ -200,5 +201,7 @@ namespace NuGet.Versioning
         /// Returns the original, non-normalized version string.
         /// </summary>
         public string OriginalVersion => _originalString;
+
+        public FloatRange FloatRange { get; }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -73,7 +73,7 @@ namespace NuGet.Packaging.Xml
             elem.Add(GetXElementFromGroupableItemSets(
                 ns,
                 metadata.DependencyGroups,
-                set => set.TargetFramework.IsSpecificFramework || 
+                set => set.TargetFramework.IsSpecificFramework ||
                        set.Packages.Any(dependency => dependency.Exclude.Count > 0 || dependency.Include.Count > 0),
                 set => set.TargetFramework.IsSpecificFramework ? set.TargetFramework.GetFrameworkString() : null,
                 set => set.Packages,
@@ -171,7 +171,7 @@ namespace NuGet.Packaging.Xml
 
             if (dependency.VersionRange != null && dependency.VersionRange != VersionRange.All)
             {
-                attributes.Add(new XAttribute("version", dependency.VersionRange.ToLegacyShortString()));
+                attributes.Add(new XAttribute("version", dependency.FloatRange != null ? dependency.FloatRange.ToString() : dependency.VersionRange.ToLegacyShortString()));
             }
 
             if (dependency.Include != null && dependency.Include.Any())

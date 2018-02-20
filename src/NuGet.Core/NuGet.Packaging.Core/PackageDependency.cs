@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,21 +39,25 @@ namespace NuGet.Packaging.Core
             get { return _versionRange; }
         }
 
+        public FloatRange FloatRange { get; }
+
         public PackageDependency(string id)
             : this(id, VersionRange.All)
         {
         }
 
-        public PackageDependency(string id, VersionRange versionRange)
+        public PackageDependency(string id, VersionRange versionRange, FloatRange floatRange = null)
             : this(id, versionRange, include: null, exclude: null)
         {
+            FloatRange = floatRange;
         }
 
         public PackageDependency(
             string id,
             VersionRange versionRange,
             IReadOnlyList<string> include,
-            IReadOnlyList<string> exclude)
+            IReadOnlyList<string> exclude,
+            FloatRange floatRange = null)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -64,6 +68,7 @@ namespace NuGet.Packaging.Core
             _versionRange = versionRange ?? VersionRange.All;
             Include = include ?? EmptyList;
             Exclude = exclude ?? EmptyList;
+            FloatRange = floatRange;
         }
 
         public bool Equals(PackageDependency other)
