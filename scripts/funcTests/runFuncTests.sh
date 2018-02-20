@@ -71,6 +71,12 @@ fi
 # Unit tests
 echo "$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
 $DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+
+if [ $? -ne 0 ]; then
+	echo "CoreUnitTests failed!!"
+	RESULTCODE=1
+fi
+
 RESULTFILE="build/TestResults/TestResults.xml"
 
 echo "Checking if result file exists at $DIR$RESULTFILE"
@@ -82,14 +88,15 @@ else
 	echo "$DIR$RESULTFILE not found."
 fi
 
-if [ $? -ne 0 ]; then
-	echo "CoreUnitTests failed!!"
-	RESULTCODE=1
-fi
-
 # Func tests
 echo "$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
 $DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+
+if [ $? -ne 0 ]; then
+	RESULTCODE='1'
+	echo "CoreFuncTests failed!!"
+fi
+
 echo "Checking if result file exists at $DIR$RESULTFILE"
 if [ -f  "$DIR$RESULTFILE" ]
 then
@@ -97,11 +104,6 @@ then
 	mv "$RESULTFILE" "$DIR/build/TestResults/TestResults.$(date +%H%M%S).xml"
 else
 	echo "$DIR$RESULTFILE not found."
-fi
-
-if [ $? -ne 0 ]; then
-	RESULTCODE='1'
-	echo "CoreFuncTests failed!!"
 fi
 
 if [ -z "$CI" ]; then
