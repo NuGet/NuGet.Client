@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -51,6 +51,7 @@ namespace NuGet.Protocol.Tests
                     packageVersion: "1.4.0.1-rc",
                     getApiKey: _ => apiKey,
                     confirm: _ => true,
+                    noServiceEndpoint: false,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -98,6 +99,7 @@ namespace NuGet.Protocol.Tests
                     packageVersion: "1.4.0.1-rc",
                     getApiKey: _ => apiKey,
                     confirm: _ => true,
+                    noServiceEndpoint: false,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -148,6 +150,7 @@ namespace NuGet.Protocol.Tests
                     disableBuffering: false,
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => null,
+                    noServiceEndpoint: false,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -199,6 +202,7 @@ namespace NuGet.Protocol.Tests
                     disableBuffering: false,
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => null,
+                    noServiceEndpoint: false,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -284,6 +288,7 @@ namespace NuGet.Protocol.Tests
                     disableBuffering: false,
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => apiKey,
+                    noServiceEndpoint: false,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -347,6 +352,7 @@ namespace NuGet.Protocol.Tests
                     disableBuffering: false,
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => apiKey,
+                    noServiceEndpoint: false,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -418,6 +424,7 @@ namespace NuGet.Protocol.Tests
                     disableBuffering: false,
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => apiKey,
+                    noServiceEndpoint: false,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -490,6 +497,7 @@ namespace NuGet.Protocol.Tests
                     disableBuffering: false,
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => null,
+                    noServiceEndpoint: false,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -500,6 +508,102 @@ namespace NuGet.Protocol.Tests
 
                 Assert.Equal("tempkey", apiValues.First());
                 Assert.NotNull(symbolClientVersionValues.First());
+            }
+        }
+
+        [Fact]
+        public async Task PackageUpdateResource_NoServiceEndpointOnCustomServer()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "https://nuget.customsrc.net/";
+
+                HttpRequestMessage sourceRequest = null;
+                var apiKey = "serverapikey";
+
+                var packageInfo = SimpleTestPackageUtility.CreateFullPackage(workingDir, "test", "1.0.0");
+
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://nuget.customsrc.net/",
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    }
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+                UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+
+                // Act
+                await resource.Push(
+                    packagePath: packageInfo.FullName,
+                    symbolSource: null,
+                    timeoutInSecond: 5,
+                    disableBuffering: false,
+                    getApiKey: _ => apiKey,
+                    getSymbolApiKey: _ => null,
+                    noServiceEndpoint: true,
+                    log: NullLogger.Instance);
+
+                // Assert
+                Assert.NotNull(sourceRequest);
+                Assert.Equal(HttpMethod.Put, sourceRequest.Method);
+                Assert.Equal(source, sourceRequest.RequestUri.AbsoluteUri);
+
+            }
+        }
+
+        [Fact]
+        public async Task PackageUpdateResource_NoServiceEndpointOnCustomServer_ShouldAddEndpoint()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "https://nuget.customsrc.net/";
+
+                HttpRequestMessage sourceRequest = null;
+                var apiKey = "serverapikey";
+
+                var packageInfo = SimpleTestPackageUtility.CreateFullPackage(workingDir, "test", "1.0.0");
+
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://nuget.customsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    }
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+                UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+
+                // Act
+                await resource.Push(
+                    packagePath: packageInfo.FullName,
+                    symbolSource: null,
+                    timeoutInSecond: 5,
+                    disableBuffering: false,
+                    getApiKey: _ => apiKey,
+                    getSymbolApiKey: _ => null,
+                    noServiceEndpoint: false,
+                    log: NullLogger.Instance);
+
+                // Assert
+                Assert.NotNull(sourceRequest);
+                Assert.Equal(HttpMethod.Put, sourceRequest.Method);
+                Assert.Equal(source+"api/v2/package/", sourceRequest.RequestUri.AbsoluteUri);
+
             }
         }
 
@@ -552,6 +656,7 @@ namespace NuGet.Protocol.Tests
                     disableBuffering: false,
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => null,
+                    noServiceEndpoint: false,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -621,6 +726,7 @@ namespace NuGet.Protocol.Tests
                         disableBuffering: false,
                         getApiKey: _ => apiKey,
                         getSymbolApiKey: _ => apiKey,
+                        noServiceEndpoint: false,
                         log: NullLogger.Instance));
 
                 // Assert
@@ -684,6 +790,7 @@ namespace NuGet.Protocol.Tests
                     disableBuffering: false,
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => null,
+                    noServiceEndpoint: false,
                     log: NullLogger.Instance);
 
                 // Assert

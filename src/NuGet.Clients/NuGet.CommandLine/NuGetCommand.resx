@@ -5470,4 +5470,10 @@ This option should be used when specifying the certificate via -CertificateSubje
   <data name="VerifyCommandAllDescription" xml:space="preserve">
     <value>Specifies that all verifications possible should be performed to the package(s).</value>
   </data>
+  <data name="PushCommandNoServiceEndpointDescription" xml:space="preserve">
+    <value>Does not append "api/v2/packages" to the source url</value>
+  </data>
+  <data name="DeleteCommandNoServiceEndpointDescription" xml:space="preserve">
+    <value>Does not append "api/v2/packages" to the source url</value>
+  </data>
 </root>

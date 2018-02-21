@@ -1805,6 +1805,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Does not append &quot;api/v2/packages&quot; to the source url.
+        /// </summary>
+        internal static string DeleteCommandNoServiceEndpointDescription {
+            get {
+                return ResourceManager.GetString("DeleteCommandNoServiceEndpointDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the server URL..
         /// </summary>
         internal static string DeleteCommandSourceDescription {
@@ -8948,6 +8957,15 @@ namespace NuGet.CommandLine {
         internal static string PushCommandDisableBufferingDescription {
             get {
                 return ResourceManager.GetString("PushCommandDisableBufferingDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Does not append &quot;api/v2/packages&quot; to the source url.
+        /// </summary>
+        internal static string PushCommandNoServiceEndpointDescription {
+            get {
+                return ResourceManager.GetString("PushCommandNoServiceEndpointDescription", resourceCulture);
             }
         }
         

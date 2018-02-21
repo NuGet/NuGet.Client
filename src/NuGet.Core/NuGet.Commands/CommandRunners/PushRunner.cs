@@ -24,6 +24,7 @@ namespace NuGet.Commands
             int timeoutSeconds,
             bool disableBuffering,
             bool noSymbols,
+            bool noServiceEndpoint,
             ILogger logger)
         {
             source = CommandRunnerUtility.ResolveSource(sourceProvider, source);
@@ -43,6 +44,7 @@ namespace NuGet.Commands
                 disableBuffering,
                 endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source, defaultApiKey: null, isSymbolApiKey: false),
                 symbolsEndpoint => symbolApiKey ?? CommandRunnerUtility.GetApiKey(settings, symbolsEndpoint, symbolSource, apiKey, isSymbolApiKey: true),
+                noServiceEndpoint,
                 logger);
         }
     }

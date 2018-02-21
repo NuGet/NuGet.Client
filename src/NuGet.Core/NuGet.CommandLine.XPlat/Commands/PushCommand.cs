@@ -65,6 +65,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Push_Package_ApiKey_Description,
                     multipleValues: true);
 
+                var noServiceEndpointDescription = push.Option(
+                    "--no-service-endpoint",
+                    Strings.NoServiceEndpoint_Description,
+                    CommandOptionType.NoValue);
+
                 push.OnExecute(async () =>
                 {
                     if (arguments.Values.Count < 1)
@@ -79,6 +84,7 @@ namespace NuGet.CommandLine.XPlat
                     string symbolApiKeyValue = symbolApiKey.Value();
                     bool disableBufferingValue = disableBuffering.HasValue();
                     bool noSymbolsValue = noSymbols.HasValue();
+                    bool noServiceEndpoint = noServiceEndpointDescription.HasValue();
                     int timeoutSeconds = 0;
 
                     if (timeout.HasValue() && !int.TryParse(timeout.Value(), out timeoutSeconds))
@@ -101,6 +107,7 @@ namespace NuGet.CommandLine.XPlat
                             timeoutSeconds,
                             disableBufferingValue,
                             noSymbolsValue,
+                            noServiceEndpoint,
                             getLogger());
                     }
                     catch (TaskCanceledException ex)

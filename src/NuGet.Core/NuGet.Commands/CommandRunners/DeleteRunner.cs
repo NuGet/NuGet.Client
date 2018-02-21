@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,6 +22,7 @@ namespace NuGet.Commands
             string source,
             string apiKey,
             bool nonInteractive,
+            bool noServiceEndpoint,
             Func<string, bool> confirmFunc,
             ILogger logger)
         {
@@ -34,6 +35,7 @@ namespace NuGet.Commands
                 packageVersion,
                 endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source, defaultApiKey: null, isSymbolApiKey: false),
                 desc => nonInteractive || confirmFunc(desc),
+                noServiceEndpoint,
                 logger);
         }
     }
