@@ -188,7 +188,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature contains multiple primary signatures..
+        ///   Looks up a localized string similar to The package signature file does not contain exactly one primary signature..
         /// </summary>
         internal static string Error_NotOnePrimarySignature {
             get {
@@ -634,6 +634,15 @@ namespace NuGet.Packaging {
         internal static string MustContainAbsolutePath {
             get {
                 return ResourceManager.GetString("MustContainAbsolutePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package does not contain exactly one valid package signature file..
+        /// </summary>
+        internal static string NotExactlyOnePackageSignatureFileFound {
+            get {
+                return ResourceManager.GetString("NotExactlyOnePackageSignatureFileFound", resourceCulture);
             }
         }
         

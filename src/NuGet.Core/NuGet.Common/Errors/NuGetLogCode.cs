@@ -261,7 +261,7 @@ namespace NuGet.Common
         NU3008 = 3008,
 
         /// <summary>
-        /// The package signature contains multiple primary signatures.
+        /// The package signature file does not contain exactly one primary signature.
         /// </summary>
         NU3009 = 3009,
 

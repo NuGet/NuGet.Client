@@ -240,15 +240,12 @@ namespace NuGet.Packaging
 
             if (await IsSignedAsync(token))
             {
-                using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
+                using (var reader = new BinaryReader(ZipReadStream, new UTF8Encoding(), leaveOpen: true))
+                using (var stream = SignedPackageArchiveUtility.OpenPackageSignatureFileStream(reader))
                 {
-                    var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
-                    using (var signatureEntryStream = signatureEntry.Open())
-                    {
 #if IS_DESKTOP
-                        signature = PrimarySignature.Load(signatureEntryStream);
+                    signature = PrimarySignature.Load(stream);
 #endif
-                    }
                 }
             }
 

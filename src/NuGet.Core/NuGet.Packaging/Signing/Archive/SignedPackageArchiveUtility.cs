@@ -66,6 +66,77 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
+        /// <summary>
+        /// Opens a read-only stream for the package signature file.
+        /// </summary>
+        /// <remarks>Callers should first verify that a package is signed before calling this method.</remarks>
+        /// <param name="reader">A binary reader for a signed package.</param>
+        /// <returns>A readable stream.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader" /> is <c>null</c>.</exception>
+        /// <exception cref="SignatureException">Thrown if a package signature file is invalid or missing.</exception>
+        public static Stream OpenPackageSignatureFileStream(BinaryReader reader)
+        {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            SignedPackageArchiveMetadata metadata;
+            CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader;
+
+            ReadSignedPackage(reader, out metadata, out signatureCentralDirectoryHeader);
+
+            return GetPackageSignatureFile(reader, signatureCentralDirectoryHeader);
+        }
+
+        private static Stream GetPackageSignatureFile(
+            BinaryReader reader,
+            CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader)
+        {
+            var localFileHeader = ReadPackageSignatureFileLocalFileHeader(reader, signatureCentralDirectoryHeader);
+            var offsetToData = signatureCentralDirectoryHeader.OffsetToFileHeader +
+                LocalFileHeader.SizeInBytesOfFixedLengthFields +
+                localFileHeader.FileNameLength +
+                localFileHeader.ExtraFieldLength;
+
+            var buffer = new byte[localFileHeader.UncompressedSize];
+
+            reader.BaseStream.Seek(offsetToData, SeekOrigin.Begin);
+            reader.BaseStream.Read(buffer, offset: 0, count: buffer.Length);
+
+            return new MemoryStream(buffer, writable: false);
+        }
+
+        private static void ReadSignedPackage(
+            BinaryReader reader,
+            out SignedPackageArchiveMetadata metadata,
+            out CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader)
+        {
+            metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+
+            SignedPackageArchiveIOUtility.AssertExactlyOnePrimarySignatureAndUpdateMetadata(metadata);
+
+            signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
+
+            SignedPackageArchiveIOUtility.AssertSignatureEntryMetadata(reader, signatureCentralDirectoryHeader);
+        }
+
+        private static LocalFileHeader ReadPackageSignatureFileLocalFileHeader(
+            BinaryReader reader,
+            CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader)
+        {
+            reader.BaseStream.Seek(signatureCentralDirectoryHeader.OffsetToFileHeader, SeekOrigin.Begin);
+
+            LocalFileHeader header;
+
+            if (!LocalFileHeader.TryRead(reader, out header))
+            {
+                throw new SignatureException(NuGetLogCode.NU3005, Strings.NotExactlyOnePackageSignatureFileFound);
+            }
+
+            return header;
+        }
+
         internal static bool IsPackageSignatureFileEntry(byte[] fileName, ushort generalPurposeBitFlag)
         {
             if (fileName == null || IsUtf8(generalPurposeBitFlag))
@@ -210,15 +281,10 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(NuGetLogCode.NU3003, Strings.SignedPackageNotSignedOnVerify);
             }
 
-            var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+            SignedPackageArchiveMetadata metadata;
+            CentralDirectoryHeaderMetadata signatureCentralDirectoryHeader;
 
-            // Assert exactly one primary signature
-            SignedPackageArchiveIOUtility.AssertExactlyOnePrimarySignatureAndUpdateMetadata(metadata);
-
-            var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
-
-            // Assert signature entry metadata
-            SignedPackageArchiveIOUtility.AssertSignatureEntryMetadata(reader, signatureCentralDirectoryHeader);
+            ReadSignedPackage(reader, out metadata, out signatureCentralDirectoryHeader);
 
             var centralDirectoryRecordsWithoutSignature = RemoveSignatureAndOrderByOffset(metadata);
 

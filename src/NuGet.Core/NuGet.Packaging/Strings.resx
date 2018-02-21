@@ -349,7 +349,7 @@ Valid from:</comment>
     <value>Signed Zip64 packages are not supported.</value>
   </data>
   <data name="Error_NotOnePrimarySignature" xml:space="preserve">
-    <value>The package signature contains multiple primary signatures.</value>
+    <value>The package signature file does not contain exactly one primary signature.</value>
   </data>
   <data name="TimestampCertificateInvalid" xml:space="preserve">
     <value>The timestamp service's certificate has a valid time in the future: {0}</value>
@@ -534,5 +534,8 @@ Valid from:</comment>
   </data>
   <data name="InvalidRepositoryCounterSignature" xml:space="preserve">
     <value>The repository countersignature is invalid.</value>
+  </data>
+  <data name="NotExactlyOnePackageSignatureFileFound" xml:space="preserve">
+    <value>The package does not contain exactly one valid package signature file.</value>
   </data>
 </root>

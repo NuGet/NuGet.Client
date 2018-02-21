@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Xunit;
@@ -13,6 +14,69 @@ namespace NuGet.Packaging.Test
 {
     public class SignedPackageArchiveUtilityTests
     {
+        [Fact]
+        public void OpenPackageSignatureFileStream_WhenReaderIsNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => SignedPackageArchiveUtility.OpenPackageSignatureFileStream(reader: null));
+
+            Assert.Equal("reader", exception.ParamName);
+        }
+
+        [Fact]
+        public void OpenPackageSignatureFileStream_WithEmptyZip_Throws()
+        {
+            using (var test = new Test(GetEmptyZip()))
+            {
+                Assert.Throws<InvalidDataException>(
+                    () => SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader));
+            }
+        }
+
+        [Fact]
+        public void OpenPackageSignatureFileStream_WithIncorrectSignatureFileName_Throws()
+        {
+            using (var test = new Test(GetResource("SignatureFileWithUppercaseFileName.zip")))
+            {
+                var exception = Assert.Throws<SignatureException>(
+                    () => SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader));
+
+                Assert.Equal("The package does not contain exactly one valid package signature file.", exception.Message);
+                Assert.Equal(NuGetLogCode.NU3005, exception.Code);
+            }
+        }
+
+        [Fact]
+        public void OpenPackageSignatureFileStream_WithCompressedSignatureFileEntry_Throws()
+        {
+            using (var test = new Test(GetResource("SignatureFileWithDeflateCompressionMethodAndDefaultCompressionLevel.zip")))
+            {
+                var exception = Assert.Throws<SignatureException>(
+                    () => SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader));
+
+                Assert.Equal("The package signature file entry is invalid.", exception.Message);
+                Assert.Equal(NuGetLogCode.NU3005, exception.Code);
+            }
+        }
+
+        [Fact]
+        public void OpenPackageSignatureFileStream_WithFakeContent_ReturnsContent()
+        {
+            using (var test = new Test(GetResource("SignatureFileWithFakeContent.zip")))
+            using (var stream = SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader))
+            {
+                Assert.False(stream.CanWrite);
+
+                using (var reader = new BinaryReader(stream))
+                {
+                    var expectedBytes = Encoding.ASCII.GetBytes("content");
+                    var actualBytes = reader.ReadBytes((int)reader.BaseStream.Length);
+
+                    Assert.Equal(expectedBytes, actualBytes);
+                }
+            }
+        }
+
         [Fact]
         public void IsSigned_WhenReaderIsNull_Throws()
         {
