@@ -478,8 +478,13 @@ namespace NuGet.VisualStudio
 
                 var packageManager = CreatePackageManager(repoProvider);
 
+                // await for any outstanding initialization task
+                if (_solutionManager.InitializationTask != null)
+                {
+                    await _solutionManager.InitializationTask;
+                }
+
                 // find the project
-                await _solutionManager.InitializationTask;
                 var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);
 
                 // install the package
