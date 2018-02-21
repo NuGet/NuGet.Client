@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             _jtf = fixture.JoinableTaskFactory;
 
-            _lockService = new NuGetLockService();
+            _lockService = new NuGetLockService(fixture.JoinableTaskFactory.Context);
             Assert.False(_lockService.IsLockHeld);
         }
 

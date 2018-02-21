@@ -18,6 +18,7 @@ using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
@@ -40,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         private static readonly string VSNuGetClientName = "NuGet VS VSIX";
 
-        private readonly INuGetLockService _initLock = new NuGetLockService();
+        private readonly INuGetLockService _initLock;
 
         private SolutionEvents _solutionEvents;
         private CommandEvents _solutionSaveEvent;
@@ -128,7 +129,8 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectAdapterProvider vsProjectAdapterProvider,
             [Import("VisualStudioActivityLogger")]
             Common.ILogger logger,
-            Lazy<ISettings> settings)
+            Lazy<ISettings> settings,
+            JoinableTaskContext joinableTaskContext)
         {
             Assumes.Present(serviceProvider);
             Assumes.Present(projectSystemCache);
@@ -137,6 +139,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(vsProjectAdapterProvider);
             Assumes.Present(logger);
             Assumes.Present(settings);
+            Assumes.Present(joinableTaskContext);
 
             _serviceProvider = serviceProvider;
             _projectSystemCache = projectSystemCache;
@@ -145,6 +148,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsProjectAdapterProvider = vsProjectAdapterProvider;
             _logger = logger;
             _settings = settings;
+            _initLock = new NuGetLockService(joinableTaskContext);
         }
 
         private async Task InitializeAsync()
