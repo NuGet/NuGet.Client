@@ -41,6 +41,9 @@ param
     [string]$BuildOutputPath
 )
 
+# set security protocol for Invoke-RestMethod
+. "$PSScriptRoot\SetSecurityProtocol.ps1"
+
 $repoOwner = "dotnet"
 $Base64Token = [System.Convert]::ToBase64String([char[]]$PersonalAccessToken)
 
