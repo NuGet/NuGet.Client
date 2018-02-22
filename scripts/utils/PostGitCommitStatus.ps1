@@ -6,6 +6,9 @@ https://developer.github.com/v3/repos/statuses/
 .DESCRIPTION
 Uses the Personal Access Token of NuGetLurker to post status of tests and build to GitHub.
 #>
+# set security protocol for Invoke-RestMethod
+. "$PSScriptRoot\SetSecurityProtocol.ps1"
+
 Function Update-GitCommitStatus {
     param(
         [Parameter(Mandatory = $True)]
@@ -39,7 +42,6 @@ Function Update-GitCommitStatus {
     } | ConvertTo-Json;
 
     Write-Host $Body
-
     $r1 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/nuget/nuget.client/statuses/$CommitSha" -Body $Body
 
     Write-Host $r1
@@ -120,6 +122,7 @@ function Get-TestRun {
     $Headers = @{
         Authorization = 'Basic {0}' -f $Base64Token;
     }
+    
     $testRuns = Invoke-RestMethod -Uri $url -Method GET -Headers $Headers
     Write-Host $testRuns
     $matchingRun = $testRuns.value | where { $_.name -ieq $TestName }
