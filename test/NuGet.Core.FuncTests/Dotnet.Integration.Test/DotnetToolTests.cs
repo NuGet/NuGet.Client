@@ -566,6 +566,113 @@ namespace Dotnet.Integration.Test
                 Assert.Equal(1, ridTargets.Count());
                 Assert.Equal(2, ridTargets.First().Libraries.Count);
                 Assert.DoesNotContain("NU12", result.AllOutput); // Output has no errors
+                Assert.DoesNotContain("NU11", result.AllOutput);
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        public void DotnetToolTests_AutoreferencedDependencyRegularDependencyAndToolPackagToolRestore_Throws(string tfm)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ToolRestoreProject";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var localSource = Path.Combine(testDirectory, "packageSource");
+                var source = "https://api.nuget.org/v3/index.json" + ";" + localSource;
+                var rid = "win-x64";
+                var packageName = string.Join("ToolPackage-", tfm, rid);
+                var autoReferencePackageName = "Microsoft.NETCore.Platforms";
+                var packageVersion = NuGetVersion.Parse("1.0.0");
+
+                var package = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
+                package.Files.Clear();
+                package.AddFile($"tools/{tfm}/{rid}/a.dll");
+                package.AddFile($"tools/{tfm}/{rid}/Settings.json");
+
+                package.PackageType = PackageType.DotnetTool;
+                package.UseDefaultRuntimeAssemblies = false;
+                package.PackageTypes.Add(PackageType.DotnetTool);
+                SimpleTestPackageUtility.CreatePackages(localSource, package);
+
+                var packages = new List<PackageIdentity>() {
+                    new PackageIdentity(packageName, packageVersion),
+                    new PackageIdentity(autoReferencePackageName, NuGetVersion.Parse("2.0.1")),
+                    new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("4.3.0"))
+                };
+
+                _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
+                    projectName: projectName, targetFramework: tfm, rid: rid,
+                    source: source, packages: packages);
+
+                var fullProjectPath = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                MakePackageReferenceImplicitlyDefined(fullProjectPath, autoReferencePackageName);
+
+                // Act
+                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+
+                // Assert
+                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
+                Assert.NotNull(lockFile);
+                Assert.Equal(2, lockFile.Targets.Count);
+                var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(rid, StringComparison.CurrentCultureIgnoreCase) : false);
+                Assert.Equal(1, ridTargets.Count());
+                Assert.Contains("NU12", result.AllOutput); // Output errors because nuget versioning is not autoreferenced
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("net461")]
+        [InlineData("netcoreapp1.0")]
+        public void DotnetToolTests_ToolPackageAndPlatformsPackageAnyRID_Succeeds(string tfm)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ToolRestoreProject";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var localSource = Path.Combine(testDirectory, "packageSource");
+                var source = "https://api.nuget.org/v3/index.json" + ";" + localSource;
+                var rid = "any";
+                var packageRid = "win-x64";
+                var packageName = string.Join("ToolPackage-", tfm, rid);
+                var autoReferencePackageName = "Microsoft.NETCore.Platforms";
+                var packageVersion = NuGetVersion.Parse("1.0.0");
+
+                var package = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
+                package.Files.Clear();
+                package.AddFile($"tools/{tfm}/{packageRid}/a.dll");
+                package.AddFile($"tools/{tfm}/{packageRid}/Settings.json");
+
+                package.PackageType = PackageType.DotnetTool;
+                package.UseDefaultRuntimeAssemblies = false;
+                package.PackageTypes.Add(PackageType.DotnetTool);
+                SimpleTestPackageUtility.CreatePackages(localSource, package);
+
+                var packages = new List<PackageIdentity>() {
+                    new PackageIdentity(packageName, packageVersion),
+                    new PackageIdentity(autoReferencePackageName, NuGetVersion.Parse("2.0.1")),
+                };
+
+                _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
+                    projectName: projectName, targetFramework: tfm, rid: rid,
+                    source: source, packages: packages);
+
+                var fullProjectPath = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                MakePackageReferenceImplicitlyDefined(fullProjectPath, autoReferencePackageName);
+
+                // Act
+                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+
+                // Assert
+                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
+                Assert.NotNull(lockFile);
+                Assert.Equal(2, lockFile.Targets.Count);
+                var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(rid, StringComparison.CurrentCultureIgnoreCase) : false);
+                Assert.Equal(1, ridTargets.Count());
+                Assert.Equal(2, ridTargets.First().Libraries.Count);
+                Assert.DoesNotContain("NU12", result.AllOutput);
+                Assert.DoesNotContain("NU11", result.AllOutput);
             }
         }
 
