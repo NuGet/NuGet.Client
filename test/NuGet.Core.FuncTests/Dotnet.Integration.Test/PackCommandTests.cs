@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -613,6 +613,55 @@ namespace Dotnet.Integration.Test
                     Assert.Equal("CoreCLR/abc.txt", libItems[0]);
                 }
 
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackProject_PacksFromNuspec_InstallPackageToOutputPath()
+        {
+            var nuspecFileContent = @"<?xml version=""1.0""?>
+<package>
+  <metadata>
+    <id>PackedFromNuspec</id>
+    <version>1.2.1</version>
+    <authors>Microsoft</authors>
+    <owners>NuGet</owners>
+    <description>This was packed from nuspec</description>
+  </metadata>
+</package>";
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
+
+                msbuildFixture.PackProject(
+                    workingDirectory, 
+                    projectName,
+                    $"-o {workingDirectory} /p:NuspecFile=input.nuspec /p:OutputFileNamesWithoutVersion=true /p:InstallPackageToOutputPath=true");
+
+                var nuspecFilePath = Path.Combine(workingDirectory, "PackedFromNuspec.nuspec");
+                var nupackageFilePath = Path.Combine(workingDirectory, "PackedFromNuspec.nupkg");
+                var nupackageSha512FilePath = Path.Combine(workingDirectory, "PackedFromNuspec.sha512");
+                Assert.True(File.Exists(nuspecFilePath), "The output .nuspec is not in the expected place: " + nuspecFilePath);
+                Assert.True(File.Exists(nupackageFilePath), "The output .nupkg is not in the expected place: " + nupackageFilePath);
+                Assert.True(File.Exists(nupackageSha512FilePath), "The output .sha512 is not in the expected place: " + nupackageSha512FilePath);
+
+                using (var nupkgReader = new PackageArchiveReader(nupackageFilePath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the .nuspec.
+                    Assert.Equal("PackedFromNuspec", nuspecReader.GetId());
+                    Assert.Equal("1.2.1", nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal("Microsoft", nuspecReader.GetAuthors());
+                    Assert.Equal("NuGet", nuspecReader.GetOwners());
+                    Assert.Equal("This was packed from nuspec", nuspecReader.GetDescription());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+                }
             }
         }
 

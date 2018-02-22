@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,6 +25,7 @@ namespace NuGet.Build.Tasks.Pack
         public bool IncludeBuildOutput { get; set; }
         public bool IncludeSource { get; set; }
         public bool IncludeSymbols { get; set; }
+        public bool InstallPackageToOutputPath { get; set; }
         public bool IsTool { get; set; }
         public string LicenseUrl { get; set; }
         public ILogger Logger { get; set; }
@@ -43,6 +44,7 @@ namespace NuGet.Build.Tasks.Pack
         public string ProjectUrl { get; set; }
         public string NuspecBasePath { get; set; }
         public string[] NuspecProperties { get; set; }
+        public bool OutputFileNamesWithoutVersion { get; set; }
         public string ReleaseNotes { get; set; }
         public string RepositoryType { get; set; }
         public string RepositoryUrl { get; set; }

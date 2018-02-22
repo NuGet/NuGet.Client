@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -42,6 +42,8 @@ namespace NuGet.Build.Tasks.Pack
         public bool IsTool { get; set; }
         public bool IncludeSymbols { get; set; }
         public bool IncludeSource { get; set; }
+        public bool InstallPackageToOutputPath { get; set; }
+        public bool OutputFileNamesWithoutVersion { get; set; }
         public string RepositoryUrl { get; set; }
         public string RepositoryType { get; set; }
         public string RepositoryBranch { get; set; }
@@ -162,6 +164,7 @@ namespace NuGet.Build.Tasks.Pack
                 IncludeBuildOutput = IncludeBuildOutput,
                 IncludeSource = IncludeSource,
                 IncludeSymbols = IncludeSymbols,
+                InstallPackageToOutputPath = InstallPackageToOutputPath,
                 IsTool = IsTool,
                 LicenseUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(LicenseUrl),
                 Logger = Logger,
@@ -171,6 +174,7 @@ namespace NuGet.Build.Tasks.Pack
                 NuspecFile = MSBuildStringUtility.TrimAndGetNullForEmpty(NuspecFile),
                 NuspecOutputPath = MSBuildStringUtility.TrimAndGetNullForEmpty(NuspecOutputPath),
                 NuspecProperties = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(NuspecProperties),
+                OutputFileNamesWithoutVersion = OutputFileNamesWithoutVersion,
                 PackageFiles = MSBuildUtility.WrapMSBuildItem(PackageFiles),
                 PackageFilesToExclude = MSBuildUtility.WrapMSBuildItem(PackageFilesToExclude),
                 PackageId = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageId),
