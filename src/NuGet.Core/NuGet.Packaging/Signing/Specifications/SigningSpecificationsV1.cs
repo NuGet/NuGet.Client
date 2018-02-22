@@ -11,7 +11,7 @@ namespace NuGet.Packaging.Signing
     {
         private const string _signaturePath = ".signature.p7s";
         private const int _rsaPublicKeyMinLength = 2048;
-        private static readonly Encoding _encoding = Encoding.UTF8;
+        private static readonly Encoding _encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
         /// <summary>
         /// Allowed digest algorithms for signature and timestamp hashing.
@@ -42,7 +42,7 @@ namespace NuGet.Packaging.Signing
         public override int RSAPublicKeyMinLength => _rsaPublicKeyMinLength;
 
         public override Encoding Encoding => _encoding;
-        
+
         public SigningSpecificationsV1()
             : base()
         {

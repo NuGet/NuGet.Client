@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace NuGet.Packaging.Signing
@@ -14,14 +15,19 @@ namespace NuGet.Packaging.Signing
 
         private readonly StreamReader _reader;
 
-        public KeyPairFileReader(Stream stream)
+        public KeyPairFileReader(Stream stream, Encoding encoding)
         {
             if (stream == null)
             {
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            _reader = new StreamReader(stream, KeyPairFileUtility.Encoding, detectEncodingFromByteOrderMarks: false);
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
+            _reader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: false);
         }
 
         /// <summary>
