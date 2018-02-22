@@ -26,7 +26,8 @@ param
     [string]$BuildOutputPath
 )
 
-
+# set security protocol for Invoke-RestMethod
+. "$PSScriptRoot\SetSecurityProtocol.ps1"
 
 # These environment variables are set on the VSTS Release Definition agents.
 $Branch = ${env:BUILD_SOURCEBRANCHNAME}

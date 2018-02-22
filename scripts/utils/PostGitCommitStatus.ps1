@@ -6,6 +6,10 @@ https://developer.github.com/v3/repos/statuses/
 .DESCRIPTION
 Uses the Personal Access Token of NuGetLurker to automate the tagging process.
 #>
+
+# set security protocol for Invoke-RestMethod
+. "$PSScriptRoot\SetSecurityProtocol.ps1"
+
 Function Update-GitCommitStatus {
     param(
         [Parameter(Mandatory = $True)]
@@ -39,7 +43,6 @@ Function Update-GitCommitStatus {
     } | ConvertTo-Json;
 
     Write-Host $Body
-
     $r1 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/nuget/nuget.client/statuses/$CommitSha" -Body $Body
 
     Write-Host $r1
