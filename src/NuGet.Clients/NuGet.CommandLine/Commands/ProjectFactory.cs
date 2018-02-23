@@ -1,4 +1,4 @@
-extern alias CoreV2; 
+extern alias CoreV2;
 
 using System;
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace NuGet.CommandLine
 {
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    public class ProjectFactory : MSBuildUser, IProjectFactory, CoreV2.NuGet.IPropertyProvider 
+    public class ProjectFactory : MSBuildUser, IProjectFactory, CoreV2.NuGet.IPropertyProvider
     {
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
@@ -58,6 +58,7 @@ namespace NuGet.CommandLine
 
         private const string ContentItemType = "Content";
         private const string ProjectReferenceItemType = "ProjectReference";
+        private const string PackageReferenceItemType = "PackageReference";
         private const string ReferenceOutputAssembly = "ReferenceOutputAssembly";
         private const string PackagesFolder = "packages";
         private const string TransformFileExtension = ".transform";
@@ -74,7 +75,7 @@ namespace NuGet.CommandLine
                 Logger = packArgs.Logger,
                 MachineWideSettings = packArgs.MachineWideSettings,
                 Build = packArgs.Build,
-                IncludeReferencedProjects = packArgs.IncludeReferencedProjects 
+                IncludeReferencedProjects = packArgs.IncludeReferencedProjects
             };
         }
 
@@ -136,20 +137,20 @@ namespace NuGet.CommandLine
             switch (LogLevel)
             {
                 case LogLevel.Verbose:
-                {
-                    console.Verbosity = Verbosity.Detailed;
-                    break;
-                }
+                    {
+                        console.Verbosity = Verbosity.Detailed;
+                        break;
+                    }
                 case LogLevel.Information:
-                {
-                    console.Verbosity = Verbosity.Normal;
-                    break;
-                }
+                    {
+                        console.Verbosity = Verbosity.Normal;
+                        break;
+                    }
                 case LogLevel.Minimal:
-                {
-                    console.Verbosity = Verbosity.Quiet;
-                    break;
-                }
+                    {
+                        console.Verbosity = Verbosity.Quiet;
+                        break;
+                    }
             }
         }
 
@@ -177,7 +178,7 @@ namespace NuGet.CommandLine
         {
             IncludeSymbols = includeSymbols;
         }
-        public bool IncludeSymbols { get; set; } 
+        public bool IncludeSymbols { get; set; }
 
         public bool IncludeReferencedProjects { get; set; }
         public bool Build { get; set; }
@@ -955,6 +956,31 @@ namespace NuGet.CommandLine
             return !found;
         }
 
+        private void AddReferences(dynamic item, NuGetVersion version, List<PackageReference> list)
+        {
+            var packageReference = new PackageReference(
+
+                new PackageIdentity(item.UnevaluatedInclude, version),
+                new NuGetFramework (
+
+                    TargetFramework.Identifier,
+                    TargetFramework.Version));
+
+            list.Add(packageReference);
+        }
+
+        private NuGetVersion GetStisfiedVersion(string packagesFolder, string packageIdentity, FloatRange range)
+        {
+            /*
+             * Even if the floating version is used, it's need to
+             * find any local package that satisfies it's range,
+             * because each dependency will validate to another
+             * dependencies.
+             */
+
+            return (Directory.GetDirectories(Path.Combine(packagesFolder, packageIdentity)) as string[]).OrderByDescending(v => v).Select(v => new NuGetVersion(new DirectoryInfo(v).Name, range)).FirstOrDefault(v => range.Satisfies(v));
+        }
+
         private void AddDependencies(Dictionary<String, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
         {
             Dictionary<string, object> props = new Dictionary<string, object>();
@@ -975,14 +1001,6 @@ namespace NuGet.CommandLine
 
             PackagesConfigNuGetProject packagesProject = new PackagesConfigNuGetProject(_project.DirectoryPath, props);
 
-            if (!packagesProject.PackagesConfigExists())
-            {
-                return;
-            }
-            Logger.Log(PackLogMessage.CreateMessage(LocalizedResourceManager.GetString("UsingPackagesConfigForDependencies"), LogLevel.Minimal));
-
-            var references = packagesProject.GetInstalledPackagesAsync(CancellationToken.None).Result;
-
             var solutionDir = GetSolutionDir();
             string packagesFolderPath;
             if (solutionDir == null)
@@ -993,6 +1011,74 @@ namespace NuGet.CommandLine
             {
                 packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDir, ReadSettings(solutionDir));
             }
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////////////////////
+            ///// Implemented the dependency section from .csproj that migrated on PackageReference. //////
+            ///////////////////////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////////////////////
+
+            var references = new List<PackageReference>();
+
+            NuGetVersion version = null;
+
+            /*
+             * If Packages.config doesn't exists, then the function attempts
+             * to extract "PackageReference" from the project. This feature
+             * is assumed for the legacies structure of projects only.
+             */
+
+            if (!packagesProject.PackagesConfigExists())
+            {
+                foreach (var item in _project.GetItems(PackageReferenceItemType))
+                {
+                    FloatRange range = FloatRange.Parse(item.GetMetadataValue("Version"));
+
+                    /*
+                     * If an exception is thrown, than the
+                     * version isn't precise. Need to use
+                     * the floating notation.
+                     */
+
+                    try
+                    {
+                        version = NuGetVersion.Parse(item.GetMetadataValue("Version"));
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        if (range == null)
+                        {
+                            /*
+                             * Supports only floating version
+                             * in asterisk wildcards notation.
+                             */
+
+                            throw new ArgumentNullException(string.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidArguments, item.GetMetadataValue("Version")));
+                        }
+
+                        version = GetStisfiedVersion(packagesFolderPath, item.UnevaluatedInclude, range) ?? throw new PackagingException(NuGetLogCode.NU5012, string.Format(CultureInfo.CurrentCulture, NuGetResources.UnableToFindBuildOutput, $"{item.UnevaluatedInclude}.nupkg"));
+                    }
+
+                    AddReferences(item, version, references);
+                }
+            }
+            else
+            {
+                references = packagesProject.GetInstalledPackagesAsync(CancellationToken.None).Result.ToList();
+            }
+
+            if (!references.Any())
+            {
+                return;
+            }
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////////////////////
+            ///// Implemented the dependency section from .csproj that migrated on PackageReference. //////
+            ///////////////////////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////////////////////
+
+            Logger.Log(PackLogMessage.CreateMessage(LocalizedResourceManager.GetString("UsingPackagesConfigForDependencies"), LogLevel.Minimal));
 
             var findLocalPackagesResource = Repository
                 .Factory
@@ -1012,6 +1098,7 @@ namespace NuGet.CommandLine
                 if (packageReference != null && !packagesAndDependencies.ContainsKey(packageReference.PackageIdentity.Id))
                 {
                     VersionRange range;
+                    FloatRange floatRange = packageReference.PackageIdentity.Version.FloatRange;
                     if (packageReference.HasAllowedVersions)
                     {
                         range = packageReference.AllowedVersions;
@@ -1031,7 +1118,7 @@ namespace NuGet.CommandLine
                     {
                         try
                         {
-                            var dependency = new PackageDependency(packageReference.PackageIdentity.Id, range);
+                            var dependency = new PackageDependency(packageReference.PackageIdentity.Id, range, floatRange);
                             packagesAndDependencies.Add(packageReference.PackageIdentity.Id, Tuple.Create<PackageReaderBase, PackageDependency>(reader, dependency));
                         }
                         catch (Exception)
@@ -1064,15 +1151,15 @@ namespace NuGet.CommandLine
 
         private ISettings ReadSettings(string solutionDirectory)
         {
-                // Read the solution-level settings
-                var solutionSettingsFile = Path.Combine(
-                    solutionDirectory,
-                    NuGetConstants.NuGetSolutionSettingsFolder);
+            // Read the solution-level settings
+            var solutionSettingsFile = Path.Combine(
+                solutionDirectory,
+                NuGetConstants.NuGetSolutionSettingsFolder);
 
-                return Settings.LoadDefaultSettings(
-                    solutionSettingsFile,
-                    configFileName: null,
-                    machineWideSettings: MachineWideSettings);
+            return Settings.LoadDefaultSettings(
+                solutionSettingsFile,
+                configFileName: null,
+                machineWideSettings: MachineWideSettings);
         }
 
         private static void ProcessTransformFiles(PackageBuilder builder, IEnumerable<IPackageFile> transformFiles)
