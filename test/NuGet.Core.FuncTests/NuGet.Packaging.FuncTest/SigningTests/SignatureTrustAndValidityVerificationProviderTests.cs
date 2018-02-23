@@ -134,12 +134,12 @@ namespace NuGet.Packaging.FuncTest
             var keyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
             var now = DateTimeOffset.UtcNow;
             var issueOptions = new IssueCertificateOptions()
-                {
-                    KeyPair = keyPair,
-                    NotAfter = now.AddSeconds(10),
-                    NotBefore = now.AddSeconds(-2),
-                    SubjectName = new X509Name("CN=NuGet Test Expired Certificate")
-                };
+            {
+                KeyPair = keyPair,
+                NotAfter = now.AddSeconds(10),
+                NotBefore = now.AddSeconds(-2),
+                SubjectName = new X509Name("CN=NuGet Test Expired Certificate")
+            };
             var bcCertificate = ca.IssueCertificate(issueOptions);
 
             using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
@@ -248,7 +248,7 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowUntrusted: false,
-                allowUntrustedSelfSignedCertificate: false,
+                allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
@@ -294,7 +294,7 @@ namespace NuGet.Packaging.FuncTest
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowUntrusted: false,
-                allowUntrustedSelfSignedCertificate: false,
+                allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: false,
@@ -396,7 +396,7 @@ namespace NuGet.Packaging.FuncTest
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowUntrusted: true,
-                allowUntrustedSelfSignedCertificate: false,
+                allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
@@ -418,7 +418,7 @@ namespace NuGet.Packaging.FuncTest
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowUntrusted: false,
-                allowUntrustedSelfSignedCertificate: false,
+                allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
@@ -481,7 +481,7 @@ namespace NuGet.Packaging.FuncTest
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowUntrusted: false,
-                allowUntrustedSelfSignedCertificate: false,
+                allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
@@ -518,7 +518,7 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowUntrusted: false,
-                allowUntrustedSelfSignedCertificate: false,
+                allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: true,
@@ -543,7 +543,7 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowUntrusted: false,
-                allowUntrustedSelfSignedCertificate: true,
+                allowUntrustedSelfIssuedCertificate: true,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: true,
@@ -568,7 +568,7 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignedPackageVerifierSettings(
                allowUnsigned: false,
                allowUntrusted: false,
-               allowUntrustedSelfSignedCertificate: false,
+               allowUntrustedSelfIssuedCertificate: false,
                allowIgnoreTimestamp: false,
                allowMultipleTimestamps: false,
                allowNoTimestamp: true,

@@ -41,7 +41,7 @@ namespace NuGet.Packaging.Test
                 var exception = Assert.Throws<SignatureException>(
                     () => SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader));
 
-                Assert.Equal("The package does not contain exactly one valid package signature file.", exception.Message);
+                Assert.Equal("The package does not contain a valid package signature file.", exception.Message);
                 Assert.Equal(NuGetLogCode.NU3005, exception.Code);
             }
         }

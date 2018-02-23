@@ -295,24 +295,6 @@ namespace Test.Utility.Signing
             File.Copy(copiedSignedPackagePath, signedPackagePath, overwrite: true);
         }
 
-        public static int GetSignatureCentralDirectoryIndex(SignedPackageArchiveMetadata metadata, SigningSpecifications signingSpecification)
-        {
-            var centralDirectoryRecords = metadata.CentralDirectoryHeaders;
-            var centralDirectoryRecordsCount = centralDirectoryRecords.Count;
-
-            for (var centralDirectoryRecordIndex = 0; centralDirectoryRecordIndex < centralDirectoryRecordsCount; centralDirectoryRecordIndex++)
-            {
-                var record = centralDirectoryRecords[centralDirectoryRecordIndex];
-
-                if (record.IsPackageSignatureFile)
-                {
-                    return centralDirectoryRecordIndex;
-                }
-            }
-
-            return -1;
-        }
-
         public static void TamperWithPackage(string signedPackagePath)
         {
             using (var stream = File.Open(signedPackagePath, FileMode.Open))
@@ -336,7 +318,7 @@ namespace Test.Utility.Signing
         }
 #endif
 
-        private static byte[] FindAndReplaceSequence(byte[] bytes, byte[] find, byte[] replace)
+        public static byte[] FindAndReplaceSequence(byte[] bytes, byte[] find, byte[] replace)
         {
             var found = false;
             var from = -1;
@@ -373,30 +355,26 @@ namespace Test.Utility.Signing
 
         private static Task ShiftSignatureMetadata(SigningSpecifications spec, BinaryReader reader, BinaryWriter writer, int centralDirectoryIndex, int fileHeaderIndex)
         {
-            // Read metadata
             var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-
-            // Update central directory records by excluding the signature entry
-            SignedPackageArchiveIOUtility.UpdateSignedPackageArchiveMetadata(reader, metadata);
 
             // Calculate new central directory record metadata with the the signature record and entry shifted
             var shiftedCdr = ShiftMetadata(spec, metadata, newSignatureFileEntryIndex: fileHeaderIndex, newSignatureCentralDirectoryRecordIndex: centralDirectoryIndex);
 
             // Order records by shifted ofset (new offset = old offset + change in offset).
             // This is the order they will appear in the new shifted package, but not necesarily the same order they were in the old package
-            shiftedCdr.Sort((x, y) => (x.OffsetToFileHeader + x.ChangeInOffset).CompareTo(y.OffsetToFileHeader + y.ChangeInOffset));
+            shiftedCdr.Sort((x, y) => (x.OffsetToLocalFileHeader + x.ChangeInOffset).CompareTo(y.OffsetToLocalFileHeader + y.ChangeInOffset));
 
             // Write data from start of file to first file entry
             reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
-            SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, metadata.StartOfFileHeaders);
+            SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, metadata.StartOfLocalFileHeaders);
 
             // Write all file entries in the new order
             foreach (var entry in shiftedCdr)
             {
                 // We need to read each entry from their position in the old package and write them sequencially to the new package
                 // The order in which they will appear in the new shited package is defined by the sorting done before starting to write
-                reader.BaseStream.Seek(offset: entry.OffsetToFileHeader, origin: SeekOrigin.Begin);
-                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, entry.OffsetToFileHeader + entry.FileEntryTotalSize);
+                reader.BaseStream.Seek(offset: entry.OffsetToLocalFileHeader, origin: SeekOrigin.Begin);
+                SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, entry.OffsetToLocalFileHeader + entry.FileEntryTotalSize);
             }
 
             // Write all central directory records with updated offsets
@@ -431,7 +409,7 @@ namespace Test.Utility.Signing
             var shiftedCdr = new List<CentralDirectoryHeaderMetadata>(metadata.CentralDirectoryHeaders);
 
             // Sort Central Directory records in the order the file entries appear  in the original archive
-            shiftedCdr.Sort((x, y) => x.OffsetToFileHeader.CompareTo(y.OffsetToFileHeader));
+            shiftedCdr.Sort((x, y) => x.OffsetToLocalFileHeader.CompareTo(y.OffsetToLocalFileHeader));
 
             // Shift Central Directory records to the desired position.
             // Because we sorted in the file entry order this will shift
@@ -442,9 +420,9 @@ namespace Test.Utility.Signing
             var lastEntryEnd = 0L;
             foreach (var cdr in shiftedCdr)
             {
-                cdr.ChangeInOffset = lastEntryEnd - cdr.OffsetToFileHeader;
+                cdr.ChangeInOffset = lastEntryEnd - cdr.OffsetToLocalFileHeader;
 
-                lastEntryEnd = cdr.OffsetToFileHeader + cdr.FileEntryTotalSize + cdr.ChangeInOffset;
+                lastEntryEnd = cdr.OffsetToLocalFileHeader + cdr.FileEntryTotalSize + cdr.ChangeInOffset;
             }
 
             // Now we sort the central directory records in the order thecentral directory records appear in the original archive
