@@ -676,6 +676,63 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void DotnetToolTests_IncompatibleAutorefPackageAndToolsPackage()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var tfm = "netcoreapp1.0";
+                var incompatibletfm = "netcoreapp2.0";
+                var rid = "win-x64";
+                var projectName = "ToolRestoreProject";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var localSource = Path.Combine(testDirectory, "packageSource");
+                var source = "https://api.nuget.org/v3/index.json" + ";" + localSource;
+                var packageName = string.Join("ToolPackage-", tfm, rid);
+                var autoReferencePackageName = "Microsoft.NETCore.Platforms";
+                var packageVersion = NuGetVersion.Parse("1.0.0");
+
+                var package = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
+                package.Files.Clear();
+                package.AddFile($"tools/{tfm}/{rid}/a.dll");
+                package.AddFile($"tools/{tfm}/{rid}/Settings.json");
+                package.PackageType = PackageType.DotnetTool;
+                package.UseDefaultRuntimeAssemblies = false;
+                package.PackageTypes.Add(PackageType.DotnetTool);
+
+                var autorefPackage = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
+                autorefPackage.Files.Clear();
+                autorefPackage.AddFile($"lib/{incompatibletfm}/b.dll");
+                autorefPackage.UseDefaultRuntimeAssemblies = false;
+
+                SimpleTestPackageUtility.CreatePackages(localSource, package, autorefPackage);
+
+                var packages = new List<PackageIdentity>() {
+                    new PackageIdentity(packageName, packageVersion),
+                    new PackageIdentity(autoReferencePackageName, packageVersion)
+                };
+
+                _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
+                    projectName: projectName, targetFramework: tfm, rid: rid,
+                    source: source, packages: packages);
+
+                var fullProjectPath = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                MakePackageReferenceImplicitlyDefined(fullProjectPath, autoReferencePackageName);
+
+                // Act
+                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+
+                // Assert
+                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
+                Assert.NotNull(lockFile);
+                Assert.Equal(2, lockFile.Targets.Count);
+                var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(rid, StringComparison.CurrentCultureIgnoreCase) : false);
+                Assert.Equal(1, ridTargets.Count());
+                Assert.Equal(2, ridTargets.First().Libraries.Count);
+                Assert.Contains("NU12", result.AllOutput);
+            }
+        }
+
         private static void MakePackageReferenceImplicitlyDefined(string fullProjectPath, string packageName)
         {
             var searchString = $"\"{packageName}\" ";
