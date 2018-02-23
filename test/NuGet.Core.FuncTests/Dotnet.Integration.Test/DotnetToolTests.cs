@@ -633,9 +633,9 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var localSource = Path.Combine(testDirectory, "packageSource");
                 var source = "https://api.nuget.org/v3/index.json" + ";" + localSource;
-                var rid = "any";
-                var packageRid = "win-x64";
-                var packageName = string.Join("ToolPackage-", tfm, rid);
+                var rid = "win-x64";
+                var packageRid = "any";
+                var packageName = string.Join("ToolPackage-", tfm, packageRid);
                 var autoReferencePackageName = "Microsoft.NETCore.Platforms";
                 var packageVersion = NuGetVersion.Parse("1.0.0");
 
