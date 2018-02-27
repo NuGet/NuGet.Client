@@ -487,7 +487,6 @@ namespace NuGet.Protocol
                         cacheKey = $"list_{relativeUri}_page{page}";
                         docRequest = LoadXmlAsync(nextUri, cacheKey, ignoreNotFounds, sourceCacheContext, log, token);
                     }
-
                 }
             }
 
