@@ -441,7 +441,7 @@ namespace NuGet.Protocol
             var page = 1;
 
             // http cache key
-            var cacheKey = $"list_{relativeUri}_page{page}";
+            var cacheKey = GetCacheKey(relativeUri, page);
 
             // first request
             Task<XDocument> docRequest = LoadXmlAsync(uri, cacheKey, ignoreNotFounds, sourceCacheContext, log, token);
@@ -484,7 +484,7 @@ namespace NuGet.Protocol
                                 nextUri));
                         }
                         page++;
-                        cacheKey = $"list_{relativeUri}_page{page}";
+                        cacheKey = GetCacheKey(relativeUri, page);
                         docRequest = LoadXmlAsync(nextUri, cacheKey, ignoreNotFounds, sourceCacheContext, log, token);
                     }
                 }
@@ -499,6 +499,11 @@ namespace NuGet.Protocol
             return new V2FeedPage(
                 results,
                 string.IsNullOrEmpty(nextUri) ? null : nextUri);
+        }
+
+        private string GetCacheKey(string relativeUri, int page)
+        {
+            return $"list_{relativeUri}_page{page}";
         }
 
         internal async Task<XDocument> LoadXmlAsync(
