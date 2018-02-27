@@ -139,8 +139,7 @@ namespace NuGet.Commands
             await signer.SignAsync(logger, token);
 
             // Overwrite the file in the output path with the file we created for the signed file and delete the temp file
-            File.Copy(signerRequest.OutputPath, packageOutputPath, overwrite: true);
-            FileUtility.Delete(signerRequest.OutputPath);
+            FileUtility.Replace(signerRequest.OutputPath, packageOutputPath);
 
             return 0;
         }
