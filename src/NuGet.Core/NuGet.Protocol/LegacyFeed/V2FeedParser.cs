@@ -433,10 +433,12 @@ namespace NuGet.Protocol
             var metadataCache = new MetadataReferenceCache();
             var results = new List<V2FeedPackageInfo>();
             var uris = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var page = 1;
 
             var uri = string.Format("{0}{1}", _baseAddress, relativeUri);
             uris.Add(uri);
+
+            // page 
+            var page = 1;
 
             // http cache key
             var cacheKey = $"list_{relativeUri}_page{page}";
