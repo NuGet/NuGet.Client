@@ -465,7 +465,6 @@ namespace NuGet.Protocol
                 docRequest = null;
                 if (max < 0 || results.Count < max)
                 {
-                    
                     // Request the next url in parallel to parsing the current page
                     if (!string.IsNullOrEmpty(nextUri))
                     {
