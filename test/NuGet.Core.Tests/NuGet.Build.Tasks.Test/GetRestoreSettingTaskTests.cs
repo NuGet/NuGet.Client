@@ -42,7 +42,7 @@ namespace NuGet.Build.Tasks.Test
             RestoreSettingsUtils.GetValue(
                 () => null,
                 () => null,
-                () => new string[0]).ShouldBeEquivalentTo(new string[0]);
+                () => Array.Empty<string>()).ShouldBeEquivalentTo(Array.Empty<string>());
         }
 
         [Fact]

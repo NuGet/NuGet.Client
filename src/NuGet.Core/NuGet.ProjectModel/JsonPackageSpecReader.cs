@@ -346,8 +346,8 @@ namespace NuGet.ProjectModel
             }
             var owners = rawPackOptions["owners"];
             var tags = rawPackOptions["tags"];
-            packageSpec.Owners = owners == null ? new string[0] { } : owners.ValueAsArray<string>();
-            packageSpec.Tags = tags == null ? new string[0] { } : tags.ValueAsArray<string>();
+            packageSpec.Owners = owners == null ? Array.Empty<string>() : owners.ValueAsArray<string>();
+            packageSpec.Tags = tags == null ? Array.Empty<string>() : tags.ValueAsArray<string>();
             packageSpec.ProjectUrl = rawPackOptions.GetValue<string>("projectUrl");
             packageSpec.IconUrl = rawPackOptions.GetValue<string>("iconUrl");
             packageSpec.Summary = rawPackOptions.GetValue<string>("summary");

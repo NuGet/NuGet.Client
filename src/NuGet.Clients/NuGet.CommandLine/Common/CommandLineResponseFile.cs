@@ -126,13 +126,13 @@ namespace NuGet.Common
         {
             if (string.IsNullOrWhiteSpace(unsplitArguments))
             {
-                return new string[0];
+                return Array.Empty<string>();
             }
 
             var ptrToSplitArgs = CommandLineToArgvW(unsplitArguments, out int numberOfArgs);
             if (ptrToSplitArgs == IntPtr.Zero)
             {
-                return new string[0];
+                return Array.Empty<string>();
             }
 
             try
