@@ -278,7 +278,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     return new string[] { _projectTypeGuid };
                 }
 
-                return new string[0];
+                return Array.Empty<string>();
             }
         }
 

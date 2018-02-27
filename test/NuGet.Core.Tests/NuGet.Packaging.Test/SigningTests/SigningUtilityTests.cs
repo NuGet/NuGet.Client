@@ -267,7 +267,7 @@ namespace NuGet.Packaging.Test
         public void CreateSignedAttributes_RepositorySignPackageRequest_WhenPackageOwnersEmpty_ReturnsAttributes()
         {
             var v3ServiceIndexUrl = new Uri("https://test.test", UriKind.Absolute);
-            var packageOwners = new string[0];
+            var packageOwners = Array.Empty<string>();
 
             using (var certificate = _fixture.GetDefaultCertificate())
             using (var request = CreateRequestRepository(certificate, v3ServiceIndexUrl, packageOwners))

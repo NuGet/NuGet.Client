@@ -238,7 +238,7 @@ namespace Test.Utility
 
         public static FileInfo GetInvalidPackage(string path, string packageId, string packageVersion)
         {
-            return GeneratePackage(path, packageId, packageVersion, new string[0]);
+            return GeneratePackage(path, packageId, packageVersion, Array.Empty<string>());
         }
 
         public static FileInfo GetEmptyPackageWithDependencies(string path, string packageId, string packageVersion)
