@@ -433,15 +433,13 @@ namespace NuGet.Protocol
             var metadataCache = new MetadataReferenceCache();
             var results = new List<V2FeedPackageInfo>();
             var uris = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var page = 1;
 
             var uri = string.Format("{0}{1}", _baseAddress, relativeUri);
             uris.Add(uri);
 
-            // page 
-            var page = 1;
-
             // http cache key
-            var cacheKey = GetCacheKey(relativeUri, page);
+            var cacheKey = $"list_{relativeUri}_page{page}";
 
             // first request
             Task<XDocument> docRequest = LoadXmlAsync(uri, cacheKey, ignoreNotFounds, sourceCacheContext, log, token);
@@ -467,7 +465,6 @@ namespace NuGet.Protocol
                 docRequest = null;
                 if (max < 0 || results.Count < max)
                 {
-                    
                     // Request the next url in parallel to parsing the current page
                     if (!string.IsNullOrEmpty(nextUri))
                     {
@@ -484,7 +481,7 @@ namespace NuGet.Protocol
                                 nextUri));
                         }
                         page++;
-                        cacheKey = GetCacheKey(relativeUri, page);
+                        cacheKey = $"list_{relativeUri}_page{page}";
                         docRequest = LoadXmlAsync(nextUri, cacheKey, ignoreNotFounds, sourceCacheContext, log, token);
                     }
                 }
@@ -499,11 +496,6 @@ namespace NuGet.Protocol
             return new V2FeedPage(
                 results,
                 string.IsNullOrEmpty(nextUri) ? null : nextUri);
-        }
-
-        private string GetCacheKey(string relativeUri, int page)
-        {
-            return $"list_{relativeUri}_page{page}";
         }
 
         internal async Task<XDocument> LoadXmlAsync(
