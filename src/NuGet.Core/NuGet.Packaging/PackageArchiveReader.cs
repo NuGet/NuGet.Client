@@ -296,7 +296,7 @@ namespace NuGet.Packaging
             }
 
 #if IS_DESKTOP
-            using (var reader = new BinaryReader(ZipReadStream, SigningSpecifications.Encoding, leaveOpen: true))
+            using (var reader = new BinaryReader(ZipReadStream, new UTF8Encoding(), leaveOpen: true))
             using (var hashAlgorithm = signatureContent.HashAlgorithm.GetHashProvider())
             {
                 var expectedHash = Convert.FromBase64String(signatureContent.HashValue);

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 
 namespace NuGet.Packaging.Signing
 {
@@ -10,14 +11,19 @@ namespace NuGet.Packaging.Signing
     {
         private readonly StreamWriter _writer;
 
-        public KeyPairFileWriter(Stream stream, bool leaveOpen)
+        public KeyPairFileWriter(Stream stream, Encoding encoding, bool leaveOpen)
         {
             if (stream == null)
             {
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            _writer = new StreamWriter(stream, KeyPairFileUtility.Encoding, bufferSize: 8192, leaveOpen: leaveOpen);
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
+            _writer = new StreamWriter(stream, encoding, bufferSize: 8192, leaveOpen: leaveOpen);
         }
 
         /// <summary>

@@ -9,6 +9,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -23,6 +24,9 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class SignedPackageIntegrityVerificationTests
     {
+        private readonly UTF8Encoding _readerEncoding = new UTF8Encoding();
+        private readonly UTF8Encoding _writerEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
         private SigningSpecifications _specification => SigningSpecifications.V1;
 
         private SigningTestFixture _testFixture;
@@ -343,8 +347,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageStream, _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageStream, _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -374,8 +378,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -419,8 +423,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -452,8 +456,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -485,8 +489,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -530,8 +534,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -563,8 +567,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -608,8 +612,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -641,8 +645,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -686,8 +690,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -719,8 +723,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -764,8 +768,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -797,8 +801,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -842,8 +846,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -875,8 +879,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -922,8 +926,8 @@ namespace NuGet.Packaging.FuncTest
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
                 using (var packageWriteStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
-                    using (var writer = new BinaryWriter(packageWriteStream, encoding: _specification.Encoding, leaveOpen: true))
+                    using (var reader = new BinaryReader(packageWriteStream, _readerEncoding, leaveOpen: true))
+                    using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                         metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
@@ -944,7 +948,7 @@ namespace NuGet.Packaging.FuncTest
 
         private void AssertSignatureEntryMetadataThrowsException(Stream packageStream)
         {
-            using (var reader = new BinaryReader(packageStream, encoding: _specification.Encoding, leaveOpen: true))
+            using (var reader = new BinaryReader(packageStream, _readerEncoding, leaveOpen: true))
             {
                 var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
                 metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
