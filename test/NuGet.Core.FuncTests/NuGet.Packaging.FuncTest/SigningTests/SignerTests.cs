@@ -76,9 +76,10 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(NuGetLogCode.NU3018, exception.Code);
                 Assert.Contains("Certificate chain validation failed.", exception.Message);
 
-                var isSigned = await IsSignedAsync(test.Request.OutputPath);
-
+                var isSigned = await IsSignedAsync(test.Request.PackagePath);
                 Assert.False(isSigned);
+
+                Assert.False(File.Exists(test.Request.OutputPath));
             }
         }
 
@@ -93,9 +94,11 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(NuGetLogCode.NU3017, exception.Code);
                 Assert.Contains("The signing certificate is not yet valid", exception.Message);
 
-                var isSigned = await IsSignedAsync(test.Request.OutputPath);
-
+                var isSigned = await IsSignedAsync(test.Request.PackagePath);
                 Assert.False(isSigned);
+
+                Assert.False(File.Exists(test.Request.OutputPath));
+
             }
         }
 
