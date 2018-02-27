@@ -74,11 +74,6 @@ namespace NuGet.Packaging.Signing
             ZipReadStream.Position = 0;
             ZipReadStream.CopyTo(ZipWriteStream);
 
-            if (ZipWriteStream == null)
-            {
-                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
-            }
-
             if (!await IsSignedAsync(token))
             {
                 throw new SignatureException(Strings.SignedPackageNotSignedOnRemove);

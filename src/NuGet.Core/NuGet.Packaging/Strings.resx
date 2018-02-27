@@ -545,6 +545,8 @@ Valid from:</comment>
     <value>The package does not contain a valid package signature file.</value>
   </data>
   <data name="SigningCannotBeDoneInPlace" xml:space="preserve">
-    <value>PackagePath and OutputPath should be different. Package signing cannot be done in place.</value>
+    <value>{0} and {1} should be different. Package signing cannot be done in place.</value>
+    <comment>0 - PackageFilePath attribute name
+1 - OutputFilePath attribute name</comment>
   </data>
 </root>

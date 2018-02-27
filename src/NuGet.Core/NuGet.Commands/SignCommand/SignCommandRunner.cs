@@ -97,8 +97,10 @@ namespace NuGet.Commands
 
                         // Set the output of the signing operation to a temp package because signing is cannot be done in place
                         var tempPackagePath = Path.GetTempFileName();
-                        var signerRequest = new SignerRequest(packagePath, tempPackagePath, overwrite, signatureProvider, signPackageRequest);
-                        await SignPackageAsync(signerRequest, outputPath, logger, token);
+                        using (var signerRequest = new SignerOptions(packagePath, tempPackagePath, overwrite, signatureProvider, signPackageRequest, logger))
+                        {
+                            await SignPackageAsync(signerRequest, outputPath, token);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -129,17 +131,23 @@ namespace NuGet.Commands
         }
 
         private async Task<int> SignPackageAsync(
-            SignerRequest signerRequest,
+            SignerOptions signerOptions,
             string packageOutputPath,
-            ILogger logger,
             CancellationToken token)
         {
-            var signer = new Signer(signerRequest);
+            try
+            {
+                var signer = new Signer(signerOptions);
 
-            await signer.SignAsync(logger, token);
-
-            // Overwrite the file in the output path with the file we created for the signed file and delete the temp file
-            FileUtility.Replace(signerRequest.OutputPath, packageOutputPath);
+                await signer.SignAsync(token);
+            }
+            finally
+            {
+                if (File.Exists(signerOptions.OutputFilePath))
+                {
+                    FileUtility.Replace(signerOptions.OutputFilePath, packageOutputPath);
+                }
+            }
 
             return 0;
         }

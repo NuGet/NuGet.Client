@@ -237,8 +237,10 @@ namespace NuGet.Test.Utility
             {
                 using (var signPackage = new SignedPackageArchive(tempStream, stream))
                 {
-                    var request = new AuthorSignPackageRequest(packageContext.AuthorSignatureCertificate, HashAlgorithmName.SHA256);
-                    AddSignatureToPackageAsync(signPackage, request, testLogger).Wait();
+                    using (var request = new AuthorSignPackageRequest(packageContext.AuthorSignatureCertificate, HashAlgorithmName.SHA256))
+                    {
+                        AddSignatureToPackageAsync(signPackage, request, testLogger).Wait();
+                    }
                 }
 
                 tempStream.Dispose();

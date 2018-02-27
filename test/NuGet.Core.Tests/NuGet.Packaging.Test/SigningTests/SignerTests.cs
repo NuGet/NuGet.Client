@@ -35,23 +35,9 @@ namespace NuGet.Packaging.Test
         public void Constructor_WhenRequestIsNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Signer(request: null));
+                () => new Signer(options: null));
 
             Assert.Equal("request", exception.ParamName);
-        }
-
-        [Fact]
-        public async Task SignAsync_WhenLoggerIsNull_Throws()
-        {
-            using (var test = SignTest.Create(new X509Certificate2(), HashAlgorithmName.SHA256))
-            {
-                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                    () => test.Signer.SignAsync(
-                        logger: null,
-                        token: CancellationToken.None));
-
-                Assert.Equal("logger", exception.ParamName);
-            }
         }
 
         [Fact]
@@ -61,7 +47,6 @@ namespace NuGet.Packaging.Test
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => test.Signer.SignAsync(
-                        Mock.Of<ILogger>(),
                         new CancellationToken(canceled: true)));
             }
         }
@@ -77,7 +62,6 @@ namespace NuGet.Packaging.Test
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
                     () => test.Signer.SignAsync(
-                        Mock.Of<ILogger>(),
                         CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3013, exception.Code);
@@ -96,7 +80,6 @@ namespace NuGet.Packaging.Test
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
                     () => test.Signer.SignAsync(
-                        Mock.Of<ILogger>(),
                         CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3014, exception.Code);
@@ -114,7 +97,6 @@ namespace NuGet.Packaging.Test
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
                     () => test.Signer.SignAsync(
-                        Mock.Of<ILogger>(),
                         CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3006, exception.Code);
@@ -132,21 +114,19 @@ namespace NuGet.Packaging.Test
                 packageStream.ToArray(),
                 new X509SignatureProvider(timestampProvider: null)))
             {
-                var logger = new TestLogger();
-
                 var exception = await Assert.ThrowsAsync<SignatureException>(
-                    () => test.Signer.SignAsync(logger, CancellationToken.None));
+                    () => test.Signer.SignAsync(CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3018, exception.Code);
                 Assert.Equal("Certificate chain validation failed.", exception.Message);
 
-                Assert.Equal(1, logger.Errors);
-                Assert.Equal(1, logger.Warnings);
-                Assert.Contains(logger.LogMessages, message =>
+                Assert.Equal(1, test.Logger.Errors);
+                Assert.Equal(1, test.Logger.Warnings);
+                Assert.Contains(test.Logger.LogMessages, message =>
                     message.Code == NuGetLogCode.NU3018 &&
                     message.Level == LogLevel.Error &&
                     message.Message == "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.");
-                Assert.Contains(logger.LogMessages, message =>
+                Assert.Contains(test.Logger.LogMessages, message =>
                     message.Code == NuGetLogCode.NU3018 &&
                     message.Level == LogLevel.Warning &&
                     message.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
@@ -163,16 +143,14 @@ namespace NuGet.Packaging.Test
                 packageStream.ToArray(),
                 new X509SignatureProvider(timestampProvider: null)))
             {
-                var logger = new TestLogger();
-
-                await test.Signer.SignAsync(logger, CancellationToken.None);
+                await test.Signer.SignAsync(CancellationToken.None);
 
                 Assert.True(await test.IsSignedAsync());
 
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(1, logger.Warnings);
-                Assert.Equal(1, logger.Messages.Count());
-                Assert.True(logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
+                Assert.Equal(0, test.Logger.Errors);
+                Assert.Equal(1, test.Logger.Warnings);
+                Assert.Equal(1, test.Logger.Messages.Count());
+                Assert.True(test.Logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
             }
         }
 
@@ -188,15 +166,18 @@ namespace NuGet.Packaging.Test
             private bool _isDisposed = false;
             private readonly TestDirectory _directory;
 
-            internal SignerRequest Request { get; }
+            internal SignerOptions Options { get; }
             internal Signer Signer { get; }
+            internal TestLogger Logger { get; }
 
             private SignTest(Signer signer,
                 TestDirectory directory,
-                SignerRequest request)
+                SignerOptions options,
+                TestLogger logger)
             {
                 Signer = signer;
-                Request = request;
+                Options = options;
+                Logger = logger;
                 _directory = directory;
             }
 
@@ -204,7 +185,7 @@ namespace NuGet.Packaging.Test
             {
                 if (!_isDisposed)
                 {
-                    Request.SignRequest.Dispose();
+                    Options?.Dispose();
                     _directory?.Dispose();
 
                     GC.SuppressFinalize(this);
@@ -232,20 +213,22 @@ namespace NuGet.Packaging.Test
                 }
 
                 signatureProvider = signatureProvider ?? Mock.Of<ISignatureProvider>();
+                var logger = new TestLogger();
                 var request = new AuthorSignPackageRequest(certificate, hashAlgorithm);
-                var signerRequest = new SignerRequest(signedPackagePath, outputPackagePath, false, signatureProvider, request);
-                var signer = new Signer(signerRequest);
+                var signerOptions = new SignerOptions(signedPackagePath, outputPackagePath, false, signatureProvider, request, logger);
+                var signer = new Signer(signerOptions);
 
                 return new SignTest(
                     signer,
                     directory,
-                    signerRequest);
+                    signerOptions,
+                    logger);
             }
 
             internal Task<bool> IsSignedAsync()
             {
                 using (var unused = new MemoryStream())
-                using (var outputStream = File.OpenRead(Request.OutputPath))
+                using (var outputStream = File.OpenRead(Options.OutputFilePath))
                 using (var signedPackage = new SignedPackageArchive(outputStream, unused))
                 {
                     return signedPackage.IsSignedAsync(CancellationToken.None);

@@ -124,10 +124,12 @@ namespace Test.Utility.Signing
         {
             var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
             var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256);
-            var signerRequest = new SignerRequest(inputPackagePath, outputPackagePath, false, testSignatureProvider, request);
-            var signer = new Signer(signerRequest);
+            using (var signerRequest = new SignerOptions(inputPackagePath, outputPackagePath, false, testSignatureProvider, request, testLogger))
+            {
+                var signer = new Signer(signerRequest);
 
-            await signer.SignAsync(testLogger, CancellationToken.None);
+                await signer.SignAsync(CancellationToken.None);
+            }
         }
 
         /// <summary>
@@ -143,10 +145,10 @@ namespace Test.Utility.Signing
             AuthorSignPackageRequest request)
         {
             var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(timestampService));
-            var signerRequest = new SignerRequest(inputPackagePath, outputPackagePath, false, testSignatureProvider, request);
+            var signerRequest = new SignerOptions(inputPackagePath, outputPackagePath, false, testSignatureProvider, request, testLogger);
             var signer = new Signer(signerRequest);
 
-            await signer.SignAsync(testLogger, CancellationToken.None);
+            await signer.SignAsync(CancellationToken.None);
         }
 
         public static async Task<VerifySignaturesResult> VerifySignatureAsync(SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)

@@ -15,76 +15,76 @@ namespace NuGet.Packaging.Signing
     public sealed class Signer
     {
         private readonly SigningSpecificationsV1 _specifications = SigningSpecifications.V1;
-        private readonly SignerRequest _request;
+        private readonly SignerOptions _options;
 
         /// <summary>
         /// Creates a signer for a specific package.
         /// </summary>
-        /// <param name="package">Package to sign or modify.</param>
-        public Signer(SignerRequest request)
+        /// <param name="options">Signer options to specify how to perform signer actions</param>
+        public Signer(SignerOptions options)
         {
-            _request = request ?? throw new ArgumentNullException(nameof(request));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
 #if IS_DESKTOP
         /// <summary>
         /// Add a signature to a package.
         /// </summary>
-        public async Task SignAsync(ILogger logger, CancellationToken token)
+        public async Task SignAsync(CancellationToken token)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             token.ThrowIfCancellationRequested();
 
-            SigningUtility.Verify(_request.SignRequest, logger);
+            SigningUtility.Verify(_options.SignRequest, _options.Logger);
 
-            var inputPackagePath = _request.PackagePath;
+            var inputPackagePath = _options.PackageFilePath;
             var tempPackagePath = Path.GetTempFileName();
 
-            using (var packageReadStream = File.OpenRead(inputPackagePath))
-            using (var packageWriteStream = File.Open(tempPackagePath, FileMode.OpenOrCreate))
-            using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
+            try
             {
-                var primarySignature = await package.GetPrimarySignatureAsync(token);
-
-                if (_request.Overwrite && primarySignature != null)
+                using (var packageReadStream = File.OpenRead(inputPackagePath))
+                using (var packageWriteStream = File.Open(tempPackagePath, FileMode.OpenOrCreate))
+                using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
                 {
-                    await package.RemoveSignatureAsync(token);
-                    inputPackagePath = tempPackagePath;
+                    var primarySignature = await package.GetPrimarySignatureAsync(token);
+
+                    if (_options.Overwrite && primarySignature != null)
+                    {
+                        await package.RemoveSignatureAsync(token);
+                        inputPackagePath = tempPackagePath;
+                    }
+                }
+
+                using (var packageReadStream = File.OpenRead(inputPackagePath))
+                using (var packageWriteStream = File.Open(_options.OutputFilePath, FileMode.OpenOrCreate))
+                using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
+                {
+                    if (await package.IsZip64Async(token))
+                    {
+                        throw new SignatureException(NuGetLogCode.NU3006, Strings.ErrorZip64NotSupported);
+                    }
+
+                    var hashAlgorithm = _options.SignRequest.SignatureHashAlgorithm;
+
+                    var zipArchiveHash = await package.GetArchiveHashAsync(hashAlgorithm, token);
+                    var signatureContent = GenerateSignatureContent(hashAlgorithm, zipArchiveHash);
+                    var signature = await _options.SignatureProvider.CreatePrimarySignatureAsync(_options.SignRequest, signatureContent, _options.Logger, token);
+
+                    using (var stream = new MemoryStream(signature.GetBytes()))
+                    {
+                        await package.AddSignatureAsync(stream, token);
+                    }
                 }
             }
-
-            using (var packageReadStream = File.OpenRead(inputPackagePath))
-            using (var packageWriteStream = File.Open(_request.OutputPath, FileMode.OpenOrCreate))
-            using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
+            finally
             {
-                if (await package.IsZip64Async(token))
-                {
-                    throw new SignatureException(NuGetLogCode.NU3006, Strings.ErrorZip64NotSupported);
-                }
-
-                var hashAlgorithm = _request.SignRequest.SignatureHashAlgorithm;
-
-                var zipArchiveHash = await package.GetArchiveHashAsync(hashAlgorithm, token);
-                var signatureContent = GenerateSignatureContent(hashAlgorithm, zipArchiveHash);
-                var signature = await _request.SignatureProvider.CreatePrimarySignatureAsync(_request.SignRequest, signatureContent, logger, token);
-
-                using (var stream = new MemoryStream(signature.GetBytes()))
-                {
-                    await package.AddSignatureAsync(stream, token);
-                }
+                FileUtility.Delete(tempPackagePath);
             }
-
-            FileUtility.Delete(tempPackagePath);
         }
 
-        public async Task RemoveSignatureAsync(ILogger logger, CancellationToken token)
+        public async Task RemoveSignatureAsync(CancellationToken token)
         {
-            using (var packageReadStream = File.OpenRead(_request.PackagePath))
-            using (var packageWriteStream = File.Open(_request.OutputPath, FileMode.OpenOrCreate))
+            using (var packageReadStream = File.OpenRead(_options.PackageFilePath))
+            using (var packageWriteStream = File.Open(_options.OutputFilePath, FileMode.OpenOrCreate))
             using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
             {
                 await package.RemoveSignatureAsync(token);
@@ -101,12 +101,12 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Add a signature to a package.
         /// </summary>
-        public Task SignAsync(ILogger logger, CancellationToken token) => throw new NotImplementedException();
+        public Task SignAsync(CancellationToken token) => throw new NotImplementedException();
 
         /// <summary>
         /// Remove the primary signature from a package.
         /// </summary>
-        public Task RemoveSignatureAsync(ILogger logger, CancellationToken token) => throw new NotImplementedException();
+        public Task RemoveSignatureAsync(CancellationToken token) => throw new NotImplementedException();
 #endif
     }
 }
