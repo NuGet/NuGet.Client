@@ -465,6 +465,7 @@ namespace NuGet.Protocol
                 docRequest = null;
                 if (max < 0 || results.Count < max)
                 {
+                    
                     // Request the next url in parallel to parsing the current page
                     if (!string.IsNullOrEmpty(nextUri))
                     {
@@ -480,12 +481,11 @@ namespace NuGet.Protocol
                                 Strings.Protocol_duplicateUri,
                                 nextUri));
                         }
-
+                        page++;
                         cacheKey = $"list_{relativeUri}_page{page}";
                         docRequest = LoadXmlAsync(nextUri, cacheKey, ignoreNotFounds, sourceCacheContext, log, token);
                     }
 
-                    page++;
                 }
             }
 
