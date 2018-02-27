@@ -44,14 +44,14 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public ILogger Logger { get; }
 
-        public SignerOptions(string packagePath, string outputPath, bool overwrite, ISignatureProvider signatureProvider, SignPackageRequest signRequest, ILogger logger)
+        public SignerOptions(string packageFilePath, string outputFilePath, bool overwrite, ISignatureProvider signatureProvider, SignPackageRequest signRequest, ILogger logger)
         {
-            PackageFilePath = packagePath ?? throw new ArgumentNullException(nameof(packagePath));
-            OutputFilePath = outputPath ?? throw new ArgumentNullException(nameof(outputPath));
+            PackageFilePath = packageFilePath ?? throw new ArgumentNullException(nameof(packageFilePath));
+            OutputFilePath = outputFilePath ?? throw new ArgumentNullException(nameof(outputFilePath));
 
-            if (StringComparer.OrdinalIgnoreCase.Equals(NormalizeFilePath(packagePath), NormalizeFilePath(outputPath)))
+            if (StringComparer.OrdinalIgnoreCase.Equals(NormalizeFilePath(packageFilePath), NormalizeFilePath(outputFilePath)))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.SigningCannotBeDoneInPlace, nameof(PackageFilePath), nameof(OutputFilePath)));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.SigningCannotBeDoneInPlace, nameof(packageFilePath), nameof(outputFilePath)));
             }
 
             SignatureProvider = signatureProvider ?? throw new ArgumentNullException(nameof(signatureProvider));

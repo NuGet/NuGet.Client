@@ -105,9 +105,8 @@ namespace NuGet.Packaging.FuncTest
         private static async Task<bool> IsSignedAsync(string packagePath)
         {
             using (var package = File.OpenRead(packagePath))
+            using (var reader = new PackageArchiveReader(package, leaveStreamOpen: true))
             {
-                var reader = new PackageArchiveReader(package, leaveStreamOpen: true);
-
                 var isSigned = await reader.IsSignedAsync(CancellationToken.None);
 
                 return isSigned;
@@ -138,7 +137,7 @@ namespace NuGet.Packaging.FuncTest
                 var signatureProvider = new X509SignatureProvider(timestampProvider: null);
 
                 var request = new AuthorSignPackageRequest(_certificate, HashAlgorithmName.SHA256);
-                Options = new SignerOptions(packagePath: package.FullName, outputPath: outputPath, overwrite: true, signatureProvider: signatureProvider, signRequest: request, logger: NullLogger.Instance);
+                Options = new SignerOptions(packageFilePath: package.FullName, outputFilePath: outputPath, overwrite: true, signatureProvider: signatureProvider, signRequest: request, logger: NullLogger.Instance);
 
                 Signer = new Signer(Options);
             }
@@ -153,7 +152,7 @@ namespace NuGet.Packaging.FuncTest
                 var signatureProvider = new X509SignatureProvider(timestampProvider: null);
 
                 var request = new AuthorSignPackageRequest(_certificate, HashAlgorithmName.SHA256);
-                Options = new SignerOptions(packagePath: packagePath, outputPath: outputPath, overwrite: true, signatureProvider: signatureProvider, signRequest: request, logger: NullLogger.Instance);
+                Options = new SignerOptions(packageFilePath: packagePath, outputFilePath: outputPath, overwrite: true, signatureProvider: signatureProvider, signRequest: request, logger: NullLogger.Instance);
 
                 Signer = new Signer(Options);
             }

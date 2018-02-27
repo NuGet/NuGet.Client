@@ -546,7 +546,7 @@ Valid from:</comment>
   </data>
   <data name="SigningCannotBeDoneInPlace" xml:space="preserve">
     <value>{0} and {1} should be different. Package signing cannot be done in place.</value>
-    <comment>0 - PackageFilePath attribute name
-1 - OutputFilePath attribute name</comment>
+    <comment>0 - PackageFilePath parameter name
+1 - OutputFilePath parameter name</comment>
   </data>
 </root>

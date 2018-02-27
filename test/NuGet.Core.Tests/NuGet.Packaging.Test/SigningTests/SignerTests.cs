@@ -37,7 +37,7 @@ namespace NuGet.Packaging.Test
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new Signer(options: null));
 
-            Assert.Equal("request", exception.ParamName);
+            Assert.Equal("options", exception.ParamName);
         }
 
         [Fact]

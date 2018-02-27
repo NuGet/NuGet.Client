@@ -97,9 +97,9 @@ namespace NuGet.Commands
 
                         // Set the output of the signing operation to a temp package because signing is cannot be done in place
                         var tempPackagePath = Path.GetTempFileName();
-                        using (var signerRequest = new SignerOptions(packagePath, tempPackagePath, overwrite, signatureProvider, signPackageRequest, logger))
+                        using (var signerOptions = new SignerOptions(packagePath, tempPackagePath, overwrite, signatureProvider, signPackageRequest, logger))
                         {
-                            await SignPackageAsync(signerRequest, outputPath, token);
+                            await SignPackageAsync(signerOptions, outputPath, token);
                         }
                     }
                     catch (Exception e)
