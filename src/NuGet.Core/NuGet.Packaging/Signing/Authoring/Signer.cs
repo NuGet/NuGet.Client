@@ -14,31 +14,24 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public sealed class Signer
     {
-        private readonly ISignedPackage _package;
         private readonly SigningSpecificationsV1 _specifications = SigningSpecifications.V1;
-        private readonly ISignatureProvider _signatureProvider;
+        private readonly SignerRequest _request;
 
         /// <summary>
         /// Creates a signer for a specific package.
         /// </summary>
         /// <param name="package">Package to sign or modify.</param>
-        public Signer(ISignedPackage package, ISignatureProvider signatureProvider)
+        public Signer(SignerRequest request)
         {
-            _package = package ?? throw new ArgumentNullException(nameof(package));
-            _signatureProvider = signatureProvider ?? throw new ArgumentNullException(nameof(signatureProvider));
+            _request = request ?? throw new ArgumentNullException(nameof(request));
         }
 
 #if IS_DESKTOP
         /// <summary>
         /// Add a signature to a package.
         /// </summary>
-        public async Task SignAsync(SignPackageRequest request, ILogger logger, CancellationToken token)
+        public async Task SignAsync(ILogger logger, CancellationToken token)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -46,31 +39,55 @@ namespace NuGet.Packaging.Signing
 
             token.ThrowIfCancellationRequested();
 
-            if (await _package.IsZip64Async(token))
+            SigningUtility.Verify(_request.SignRequest, logger);
+
+            var inputPackagePath = _request.PackagePath;
+            var tempPackagePath = Path.GetTempFileName();
+
+            using (var packageReadStream = File.OpenRead(inputPackagePath))
+            using (var packageWriteStream = File.Open(tempPackagePath, FileMode.OpenOrCreate))
+            using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
             {
-                throw new SignatureException(NuGetLogCode.NU3006, Strings.ErrorZip64NotSupported);
+                var primarySignature = await package.GetPrimarySignatureAsync(token);
+
+                if (_request.Overwrite && primarySignature != null)
+                {
+                    await package.RemoveSignatureAsync(token);
+                    inputPackagePath = tempPackagePath;
+                }
             }
 
-            SigningUtility.Verify(request, logger);
-
-            var zipArchiveHash = await _package.GetArchiveHashAsync(request.SignatureHashAlgorithm, token);
-            var signatureContent = GenerateSignatureContent(request.SignatureHashAlgorithm, zipArchiveHash);
-            var signature = await _signatureProvider.CreatePrimarySignatureAsync(request, signatureContent, logger, token);
-
-            using (var stream = new MemoryStream(signature.GetBytes()))
+            using (var packageReadStream = File.OpenRead(inputPackagePath))
+            using (var packageWriteStream = File.Open(_request.OutputPath, FileMode.OpenOrCreate))
+            using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
             {
-                await _package.AddSignatureAsync(stream, token);
+                if (await package.IsZip64Async(token))
+                {
+                    throw new SignatureException(NuGetLogCode.NU3006, Strings.ErrorZip64NotSupported);
+                }
+
+                var hashAlgorithm = _request.SignRequest.SignatureHashAlgorithm;
+
+                var zipArchiveHash = await package.GetArchiveHashAsync(hashAlgorithm, token);
+                var signatureContent = GenerateSignatureContent(hashAlgorithm, zipArchiveHash);
+                var signature = await _request.SignatureProvider.CreatePrimarySignatureAsync(_request.SignRequest, signatureContent, logger, token);
+
+                using (var stream = new MemoryStream(signature.GetBytes()))
+                {
+                    await package.AddSignatureAsync(stream, token);
+                }
             }
+
+            FileUtility.Delete(tempPackagePath);
         }
 
-        /// <summary>
-        /// Remove all signatures from a package.
-        /// </summary>
-        public async Task RemoveSignaturesAsync(ILogger logger, CancellationToken token)
+        public async Task RemoveSignatureAsync(ILogger logger, CancellationToken token)
         {
-            if (await _package.IsSignedAsync(token))
+            using (var packageReadStream = File.OpenRead(_request.PackagePath))
+            using (var packageWriteStream = File.Open(_request.OutputPath, FileMode.OpenOrCreate))
+            using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
             {
-                await _package.RemoveSignatureAsync(token);
+                await package.RemoveSignatureAsync(token);
             }
         }
 
@@ -80,17 +97,16 @@ namespace NuGet.Packaging.Signing
 
             return new SignatureContent(_specifications, hashAlgorithmName, base64ZipArchiveHash);
         }
-
 #else
         /// <summary>
         /// Add a signature to a package.
         /// </summary>
-        public Task SignAsync(SignPackageRequest request, ILogger logger, CancellationToken token) => throw new NotImplementedException();
+        public Task SignAsync(ILogger logger, CancellationToken token) => throw new NotImplementedException();
 
         /// <summary>
-        /// Remove all signatures from a package.
+        /// Remove the primary signature from a package.
         /// </summary>
-        public Task RemoveSignaturesAsync(ILogger logger, CancellationToken token) => throw new NotImplementedException();
+        public Task RemoveSignatureAsync(ILogger logger, CancellationToken token) => throw new NotImplementedException();
 #endif
     }
 }

@@ -544,4 +544,7 @@ Valid from:</comment>
   <data name="NoPackageSignatureFile" xml:space="preserve">
     <value>The package does not contain a valid package signature file.</value>
   </data>
+  <data name="SigningCannotBeDoneInPlace" xml:space="preserve">
+    <value>PackagePath and OutputPath should be different. Package signing cannot be done in place.</value>
+  </data>
 </root>

@@ -37,27 +37,20 @@ namespace Test.Utility.Signing
         public static async Task<string> CreateSignedPackageAsync(X509Certificate2 testCert, SimpleTestPackageContext nupkg, string dir, string name = null)
         {
             var testLogger = new TestLogger();
+            var signedPackagePath = Path.Combine(dir, name ?? Guid.NewGuid().ToString());
+            var tempPath = Path.GetTempFileName();
 
-            using (var zipReadStream = nupkg.CreateAsStream())
-            using (var zipWriteStream = nupkg.CreateAsStream())
+            using (var packageStream = nupkg.CreateAsStream())
+            using (Stream fileStream = File.OpenWrite(tempPath))
             {
-                var signedPackagePath = Path.Combine(dir, name ?? Guid.NewGuid().ToString());
-
-                using (var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
-                {
-                    // Sign the package
-                    await SignPackageAsync(testLogger, testCert, signPackage);
-                }
-
-                zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (Stream fileStream = File.OpenWrite(signedPackagePath))
-                {
-                    zipWriteStream.CopyTo(fileStream);
-                }
-
-                return signedPackagePath;
+                packageStream.CopyTo(fileStream);
             }
+
+            await SignPackageAsync(testLogger, testCert, tempPath, signedPackagePath);
+
+            FileUtility.Delete(tempPath);
+
+            return signedPackagePath;
         }
 
         /// <summary>
@@ -78,29 +71,22 @@ namespace Test.Utility.Signing
             AuthorSignPackageRequest request = null)
         {
             var testLogger = new TestLogger();
+            var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+            var tempPath = Path.GetTempFileName();
 
-            using (var zipReadStream = nupkg.CreateAsStream())
-            using (var zipWriteStream = nupkg.CreateAsStream())
+            using (var packageStream = nupkg.CreateAsStream())
+            using (Stream fileStream = File.OpenWrite(tempPath))
             {
-                var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
-
-                using (var signPackage = new SignedPackageArchive(zipReadStream, zipWriteStream))
-                {
-                    request = request ?? new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256);
-
-                    // Sign the package
-                    await SignAndTimeStampPackageAsync(testLogger, certificate, signPackage, timestampService, request);
-                }
-
-                zipWriteStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (Stream fileStream = File.OpenWrite(signedPackagePath))
-                {
-                    zipWriteStream.CopyTo(fileStream);
-                }
-
-                return signedPackagePath;
+                packageStream.CopyTo(fileStream);
             }
+
+            request = request ?? new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256);
+
+            await SignAndTimeStampPackageAsync(testLogger, certificate, tempPath, signedPackagePath, timestampService, request);
+
+            FileUtility.Delete(tempPath);
+
+            return signedPackagePath;
         }
 
         /// <summary>
@@ -134,13 +120,14 @@ namespace Test.Utility.Signing
         /// Sign a package for test purposes.
         /// This does not timestamp a signature and can be used outside corp network.
         /// </summary>
-        private static async Task SignPackageAsync(TestLogger testLogger, X509Certificate2 certificate, SignedPackageArchive signPackage)
+        private static async Task SignPackageAsync(TestLogger testLogger, X509Certificate2 certificate, string inputPackagePath, string outputPackagePath)
         {
             var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
-            var signer = new Signer(signPackage, testSignatureProvider);
             var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256);
+            var signerRequest = new SignerRequest(inputPackagePath, outputPackagePath, false, testSignatureProvider, request);
+            var signer = new Signer(signerRequest);
 
-            await signer.SignAsync(request, testLogger, CancellationToken.None);
+            await signer.SignAsync(testLogger, CancellationToken.None);
         }
 
         /// <summary>
@@ -150,14 +137,16 @@ namespace Test.Utility.Signing
         private static async Task SignAndTimeStampPackageAsync(
             TestLogger testLogger,
             X509Certificate2 certificate,
-            SignedPackageArchive signPackage,
+            string inputPackagePath,
+            string outputPackagePath,
             Uri timestampService,
             AuthorSignPackageRequest request)
         {
             var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(timestampService));
-            var signer = new Signer(signPackage, testSignatureProvider);
+            var signerRequest = new SignerRequest(inputPackagePath, outputPackagePath, false, testSignatureProvider, request);
+            var signer = new Signer(signerRequest);
 
-            await signer.SignAsync(request, testLogger, CancellationToken.None);
+            await signer.SignAsync(testLogger, CancellationToken.None);
         }
 
         public static async Task<VerifySignaturesResult> VerifySignatureAsync(SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)

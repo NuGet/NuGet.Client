@@ -237,11 +237,8 @@ namespace NuGet.Test.Utility
             {
                 using (var signPackage = new SignedPackageArchive(tempStream, stream))
                 {
-                    var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
-                    var signer = new Signer(signPackage, testSignatureProvider);
-                    var request = new AuthorSignPackageRequest(packageContext.AuthorSignatureCertificate, hashAlgorithm: HashAlgorithmName.SHA256);
-
-                    signer.SignAsync(request, testLogger, CancellationToken.None).Wait();
+                    var request = new AuthorSignPackageRequest(packageContext.AuthorSignatureCertificate, HashAlgorithmName.SHA256);
+                    AddSignatureToPackageAsync(signPackage, request, testLogger).Wait();
                 }
 
                 tempStream.Dispose();
@@ -249,6 +246,24 @@ namespace NuGet.Test.Utility
 
             // Reset position
             stream.Position = 0;
+        }
+
+        private static async Task AddSignatureToPackageAsync(ISignedPackage package, SignPackageRequest request, ILogger logger)
+        {
+            var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
+
+            var zipArchiveHash = await package.GetArchiveHashAsync(request.SignatureHashAlgorithm, CancellationToken.None);
+            var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
+            var signatureContent = new SignatureContent(SigningSpecifications.V1, request.SignatureHashAlgorithm, base64ZipArchiveHash);
+
+            var signature = await testSignatureProvider.CreatePrimarySignatureAsync(request, signatureContent, logger, CancellationToken.None);
+
+            using (var stream = new MemoryStream(signature.GetBytes()))
+            {
+#if IS_DESKTOP
+                await package.AddSignatureAsync(stream, CancellationToken.None);
+#endif
+            }
         }
 
         /// <summary>
