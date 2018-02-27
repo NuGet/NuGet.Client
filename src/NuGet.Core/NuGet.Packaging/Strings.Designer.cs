@@ -188,7 +188,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature contains multiple primary signatures..
+        ///   Looks up a localized string similar to The package signature file does not contain exactly one primary signature..
         /// </summary>
         internal static string Error_NotOnePrimarySignature {
             get {
@@ -512,6 +512,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package contains an invalid package signature file..
+        /// </summary>
+        internal static string InvalidPackageSignatureFile {
+            get {
+                return ResourceManager.GetString("InvalidPackageSignatureFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package signature file entry is invalid..
         /// </summary>
         internal static string InvalidPackageSignatureFileEntry {
@@ -629,11 +638,29 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package contains multiple package signature files..
+        /// </summary>
+        internal static string MultiplePackageSignatureFiles {
+            get {
+                return ResourceManager.GetString("MultiplePackageSignatureFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; must contain an absolute path &apos;{1}&apos;..
         /// </summary>
         internal static string MustContainAbsolutePath {
             get {
                 return ResourceManager.GetString("MustContainAbsolutePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package does not contain a valid package signature file..
+        /// </summary>
+        internal static string NoPackageSignatureFile {
+            get {
+                return ResourceManager.GetString("NoPackageSignatureFile", resourceCulture);
             }
         }
         

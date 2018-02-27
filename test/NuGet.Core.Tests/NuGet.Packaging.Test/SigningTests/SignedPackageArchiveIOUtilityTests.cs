@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Xunit;
@@ -555,56 +556,71 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void ReadSignedArchiveMetadata_WithNonEmptyZip_ReturnsMetadata()
+        public void ReadSignedArchiveMetadata_WithUnsignedPackage_Throws()
         {
-            using (var stream = new MemoryStream(GetResource("3Entries.zip")))
+            using (var stream = new MemoryStream(GetNonEmptyZip()))
             using (var reader = new BinaryReader(stream))
             {
-                var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+                var exception = Assert.Throws<SignatureException>(
+                    () => SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader));
 
-                Assert.Equal(0, metadata.StartOfFileHeaders);
-                Assert.Equal(0x84, metadata.EndOfFileHeaders);
-
-                Assert.Equal(3, metadata.CentralDirectoryHeaders.Count);
-                Assert.Equal(0x11d, metadata.EndOfCentralDirectory);
-                Assert.Equal(0x11d, metadata.EndOfCentralDirectoryRecordPosition);
-
-                Assert.Equal(0, metadata.SignatureCentralDirectoryHeaderIndex);
-
-                var header = metadata.CentralDirectoryHeaders[0];
-
-                Assert.Equal(0x84, header.Position);
-                Assert.Equal(0, header.OffsetToFileHeader);
-                Assert.Equal(0x2a, header.FileEntryTotalSize);
-                Assert.False(header.IsPackageSignatureFile);
-                Assert.Equal(0x33, header.HeaderSize);
-                Assert.Equal(0, header.ChangeInOffset);
-                Assert.Equal(0, header.IndexInHeaders);
-
-                header = metadata.CentralDirectoryHeaders[1];
-
-                Assert.Equal(0xb7, header.Position);
-                Assert.Equal(0x2a, header.OffsetToFileHeader);
-                Assert.Equal(0x2f, header.FileEntryTotalSize);
-                Assert.False(header.IsPackageSignatureFile);
-                Assert.Equal(0x33, header.HeaderSize);
-                Assert.Equal(0, header.ChangeInOffset);
-                Assert.Equal(1, header.IndexInHeaders);
-
-                header = metadata.CentralDirectoryHeaders[2];
-
-                Assert.Equal(0xea, header.Position);
-                Assert.Equal(0x59, header.OffsetToFileHeader);
-                Assert.Equal(0x2b, header.FileEntryTotalSize);
-                Assert.False(header.IsPackageSignatureFile);
-                Assert.Equal(0x33, header.HeaderSize);
-                Assert.Equal(0, header.ChangeInOffset);
-                Assert.Equal(2, header.IndexInHeaders);
+                Assert.Equal(NuGetLogCode.NU3005, exception.Code);
+                Assert.Equal("The package does not contain a valid package signature file.", exception.Message);
             }
         }
 
         [Fact]
-        public void ReadSignedArchiveMetadata_WithPackageSignatureEntry_ReturnsMetadata()
+        public void ReadSignedArchiveMetadata_WithSignedPackage_ReturnsMetadata()
+        {
+            using (var stream = new MemoryStream(GetResource("SignedPackage.1.0.0.nupkg")))
+            using (var reader = new BinaryReader(stream))
+            {
+                var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+
+                Assert.Equal(0, metadata.StartOfLocalFileHeaders);
+                Assert.Equal(0xbcc, metadata.EndOfLocalFileHeaders);
+
+                Assert.Equal(6, metadata.CentralDirectoryHeaders.Count);
+                Assert.Equal(0xd7c, metadata.EndOfCentralDirectory);
+
+                Assert.Equal(5, metadata.SignatureCentralDirectoryHeaderIndex);
+
+                var expectedHeaders = new[]
+                {
+                    new { ChangeInOffset = 0L, FileEntryTotalSize = 0x136, HeaderSize = 0x39, IndexInHeaders = 0,
+                          IsPackageSignatureFile = false, OffsetToFileHeader = 0, Position = 0xbcc },
+                    new { ChangeInOffset = 0L, FileEntryTotalSize = 0x110, HeaderSize = 0x42, IndexInHeaders = 1,
+                          IsPackageSignatureFile = false, OffsetToFileHeader = 0x136, Position = 0xc05 },
+                    new { ChangeInOffset = 0L, FileEntryTotalSize = 0x29, HeaderSize = 0x39, IndexInHeaders = 2,
+                          IsPackageSignatureFile = false, OffsetToFileHeader = 0x246, Position = 0xc47 },
+                    new { ChangeInOffset = 0L, FileEntryTotalSize = 0xff, HeaderSize = 0x41, IndexInHeaders = 3,
+                          IsPackageSignatureFile = false, OffsetToFileHeader = 0x26f, Position = 0xc80 },
+                    new { ChangeInOffset = 0L, FileEntryTotalSize = 0x1dd, HeaderSize = 0x7f, IndexInHeaders = 4,
+                          IsPackageSignatureFile = false, OffsetToFileHeader = 0x36e, Position = 0xcc1 },
+                    new { ChangeInOffset = 0L, FileEntryTotalSize = 0x681, HeaderSize = 0x3c, IndexInHeaders = 5,
+                          IsPackageSignatureFile = true, OffsetToFileHeader = 0x54b, Position = 0xd40 },
+                };
+
+                Assert.Equal(expectedHeaders.Length, metadata.CentralDirectoryHeaders.Count);
+
+                for (var i = 0; i < expectedHeaders.Length; ++i)
+                {
+                    var expectedHeader = expectedHeaders[i];
+                    var actualHeader = metadata.CentralDirectoryHeaders[i];
+
+                    Assert.Equal(expectedHeader.Position, actualHeader.Position);
+                    Assert.Equal(expectedHeader.OffsetToFileHeader, actualHeader.OffsetToLocalFileHeader);
+                    Assert.Equal(expectedHeader.FileEntryTotalSize, actualHeader.FileEntryTotalSize);
+                    Assert.Equal(expectedHeader.IsPackageSignatureFile, actualHeader.IsPackageSignatureFile);
+                    Assert.Equal(expectedHeader.HeaderSize, actualHeader.HeaderSize);
+                    Assert.Equal(expectedHeader.ChangeInOffset, actualHeader.ChangeInOffset);
+                    Assert.Equal(expectedHeader.IndexInHeaders, actualHeader.IndexInHeaders);
+                }
+            }
+        }
+
+        [Fact]
+        public void ReadSignedArchiveMetadata_WithOnlyPackageSignatureEntry_ReturnsMetadata()
         {
             using (var stream = new MemoryStream(GetResource("SignatureFileEntry.zip")))
             using (var reader = new BinaryReader(stream))
@@ -625,6 +641,25 @@ namespace NuGet.Packaging.Test
             return ResourceTestUtility.GetResourceBytes(
                 $"NuGet.Packaging.Test.compiler.resources.{name}",
                 typeof(SignedPackageArchiveUtilityTests));
+        }
+
+        private static byte[] GetNonEmptyZip()
+        {
+            using (var stream = new MemoryStream())
+            {
+                using (var zip = new ZipArchive(stream, ZipArchiveMode.Create))
+                {
+                    var entry = zip.CreateEntry("file.txt");
+
+                    using (var entryStream = entry.Open())
+                    using (var streamWriter = new StreamWriter(entryStream))
+                    {
+                        streamWriter.Write("peach");
+                    }
+                }
+
+                return stream.ToArray();
+            }
         }
 
         private class ReadTest : IDisposable

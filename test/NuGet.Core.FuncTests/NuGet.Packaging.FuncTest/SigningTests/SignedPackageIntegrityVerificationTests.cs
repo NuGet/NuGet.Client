@@ -33,6 +33,8 @@ namespace NuGet.Packaging.FuncTest
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private IList<ISignatureVerificationProvider> _trustProviders;
 
+        private readonly SignedPackageVerifierSettings _settings;
+
         public SignedPackageIntegrityVerificationTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
@@ -41,6 +43,15 @@ namespace NuGet.Packaging.FuncTest
             {
                 new IntegrityVerificationProvider()
             };
+
+            _settings = new SignedPackageVerifierSettings(
+                allowUnsigned: true,
+                allowUntrusted: false,
+                allowUntrustedSelfIssuedCertificate: true,
+                allowIgnoreTimestamp: true,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: true,
+                allowUnknownRevocation: true);
         }
 
         [CIOnlyFact]
@@ -62,7 +73,7 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, entryCount - 1, entryCount - 1);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -89,7 +100,7 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, 0, 0);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -123,7 +134,7 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, entryCount - 1, 0);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -157,7 +168,7 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, 0, entryCount - 1);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -192,7 +203,7 @@ namespace NuGet.Packaging.FuncTest
                 var middleEntry = (entryCount - 1) / 2;
                 await SignedArchiveTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, middleEntry - 1, middleEntry + 1);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -228,7 +239,7 @@ namespace NuGet.Packaging.FuncTest
                     }
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
                 using (var packageReader = new PackageArchiveReader(packageStream))
                 {
                     // Act
@@ -240,7 +251,7 @@ namespace NuGet.Packaging.FuncTest
                     result.Valid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
                 }
             }
         }
@@ -292,7 +303,7 @@ namespace NuGet.Packaging.FuncTest
                     }
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
                 using (var packageReader = new PackageArchiveReader(packageStream))
                 {
                     // Act
@@ -304,7 +315,7 @@ namespace NuGet.Packaging.FuncTest
                     result.Valid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
+                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
                 }
             }
         }
@@ -351,7 +362,6 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.Position + 38L, origin: SeekOrigin.Begin);
@@ -382,7 +392,6 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip header signature (4 bytes) and 2 version fields (2 bytes each)
@@ -392,7 +401,7 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((ushort)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
@@ -404,7 +413,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
                     }
                 }
             }
@@ -427,7 +436,6 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip header signature (4 bytes) and 2 version fields (2 bytes each)
@@ -460,7 +468,6 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip header signature (4 bytes), 2 version fields (2 bytes each) and general purpose bit field (2 bytes)
@@ -493,7 +500,6 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip till uncompressed size (20 bytes total)
@@ -503,7 +509,7 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((uint)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
@@ -515,7 +521,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
                     }
                 }
             }
@@ -538,7 +544,6 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip till compressed size (20 bytes total)
@@ -571,7 +576,6 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip till uncompressed size (24 bytes total)
@@ -581,7 +585,7 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((uint)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
@@ -593,7 +597,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
                     }
                 }
             }
@@ -616,7 +620,6 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip till uncompressed size (24 bytes total)
@@ -649,17 +652,16 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip header signature (4 bytes) and version field (2 bytes)
-                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToFileHeader + 6L, origin: SeekOrigin.Begin);
+                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToLocalFileHeader + 6L, origin: SeekOrigin.Begin);
 
                         // change general purpose bit flag
                         writer.Write((ushort)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
@@ -671,7 +673,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
                     }
                 }
             }
@@ -694,11 +696,10 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip header signature (4 bytes) and version field (2 bytes)
-                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToFileHeader + 6L, origin: SeekOrigin.Begin);
+                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToLocalFileHeader + 6L, origin: SeekOrigin.Begin);
 
                         // change general purpose bit flag
                         writer.Write((ushort)1);
@@ -727,17 +728,16 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip header signature (4 bytes), version fields(2 bytes) and general purpose bit field (2 bytes)
-                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToFileHeader + 8L, origin: SeekOrigin.Begin);
+                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToLocalFileHeader + 8L, origin: SeekOrigin.Begin);
 
                         // change compression method
                         writer.Write((ushort)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
@@ -749,7 +749,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
                     }
                 }
             }
@@ -772,11 +772,10 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip header signature (4 bytes), version fields(2 bytes) and general purpose bit field (2 bytes)
-                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToFileHeader + 8L, origin: SeekOrigin.Begin);
+                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToLocalFileHeader + 8L, origin: SeekOrigin.Begin);
 
                         // change compression method
                         writer.Write((ushort)1);
@@ -805,17 +804,16 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip till compressed size (18 bytes total)
-                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToFileHeader + 18L, origin: SeekOrigin.Begin);
+                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToLocalFileHeader + 18L, origin: SeekOrigin.Begin);
 
                         // change compressed size
                         writer.Write((uint)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
@@ -827,7 +825,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
                     }
                 }
             }
@@ -850,11 +848,10 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip till compressed size (18 bytes total)
-                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToFileHeader + 18L, origin: SeekOrigin.Begin);
+                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToLocalFileHeader + 18L, origin: SeekOrigin.Begin);
 
                         // change compressed size
                         writer.Write((uint)1);
@@ -883,11 +880,10 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip till uncompressed size (22 bytes total)
-                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToFileHeader + 22L, origin: SeekOrigin.Begin);
+                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToLocalFileHeader + 22L, origin: SeekOrigin.Begin);
 
                         // change uncompressed size
                         writer.Write((uint)1);
@@ -896,7 +892,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.Default);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
                     using (var packageReader = new PackageArchiveReader(packageStream))
                     {
                         // Act
@@ -908,7 +904,7 @@ namespace NuGet.Packaging.FuncTest
                         result.Valid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
-                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
+                        totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
                     }
                 }
             }
@@ -930,11 +926,10 @@ namespace NuGet.Packaging.FuncTest
                     using (var writer = new BinaryWriter(packageWriteStream, _writerEncoding, leaveOpen: true))
                     {
                         var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                        metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
                         var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
 
                         // skip till uncompressed size (22 bytes total)
-                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToFileHeader + 22L, origin: SeekOrigin.Begin);
+                        writer.BaseStream.Seek(offset: signatureCentralDirectoryHeader.OffsetToLocalFileHeader + 22L, origin: SeekOrigin.Begin);
 
                         // change uncompressed size
                         writer.Write((uint)1);
@@ -950,12 +945,9 @@ namespace NuGet.Packaging.FuncTest
         {
             using (var reader = new BinaryReader(packageStream, _readerEncoding, leaveOpen: true))
             {
-                var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                metadata.SignatureCentralDirectoryHeaderIndex = SignedArchiveTestUtility.GetSignatureCentralDirectoryIndex(metadata, _specification);
-                var signatureCentralDirectoryHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
+                var exception = Assert.Throws<SignatureException>(
+                    () => SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader));
 
-                // Assert
-                var exception = Assert.Throws<SignatureException>(() => SignedPackageArchiveIOUtility.AssertSignatureEntryMetadata(reader, signatureCentralDirectoryHeader));
                 exception.AsLogMessage().Code.Should().Be(NuGetLogCode.NU3005);
             }
         }
