@@ -4,7 +4,7 @@
 namespace NuGet.Common
 {
     /// <summary>
-    /// This enum is used to quantify NuGet error and wanring codes. 
+    /// This enum is used to quantify NuGet error and warning codes. 
     /// Format - NUxyzw where NU is the profix indicating NuGet and xyzw is a 4 digit code
     ///
     /// Numbers - xyzw
@@ -58,6 +58,11 @@ namespace NuGet.Common
         /// Invalid combination of PTF and ATF
         /// </summary>
         NU1003 = 1003,
+
+        /// <summary>
+        /// RestoreOutputPath does not match MSBuildProjectExtensionsPath
+        /// </summary>
+        NU1004 = 1004,
 
         /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
