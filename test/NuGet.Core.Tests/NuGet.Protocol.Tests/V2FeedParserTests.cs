@@ -831,5 +831,30 @@ namespace NuGet.Protocol.Tests
             // Verify no failures from reading the stream
             Assert.NotNull(package);
         }
+
+        [Fact]
+        public async Task V2FeedParser_FollowNextLinksCached()
+        {
+            // Arrange
+            var serviceAddress = ProtocolUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress, string.Empty);
+            responses.Add(
+                serviceAddress + "FindPackagesById()?id='WindowsAzure.ServiceBus'&semVerLevel=2.0.0",
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureServiceBus-FindPackageById-Page1.xml", GetType()));
+            responses.Add("https://www.nuget.org/api/v2/FindPackagesById()?id=%27WindowsAzure.ServiceBus%27&$skip=100",
+               ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureServiceBus-FindPackageById-Page2.xml", GetType()));
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+            httpSource.DisableCaching = false;
+            var parser = new V2FeedParser(httpSource, serviceAddress);
+
+            // Act
+            var packages = await parser.FindPackagesByIdAsync("WindowsAzure.ServiceBus", new SourceCacheContext(), NullLogger.Instance, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(110, packages.Count());
+        }
     }
 }
