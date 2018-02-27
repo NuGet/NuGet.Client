@@ -388,7 +388,7 @@ namespace NuGet.Packaging.Signing
         /// Asserts the validity of central directory header and local file header for the package signature file entry.
         /// </summary>
         /// <param name="reader">BinaryReader on the package.</param>
-        /// <param name="signatureCentralDirectoryHeader">Metadata for the package signature file's central directory header.</param>
+        /// <param name="metadata">Metadata for the package signature file's central directory header.</param>
         /// <exception cref="SignatureException">Thrown if either header is invalid.</exception>
         private static void AssertSignatureEntryMetadata(BinaryReader reader, SignedPackageArchiveMetadata metadata)
         {
