@@ -6,8 +6,8 @@ https://developer.github.com/v3/repos/statuses/
 .DESCRIPTION
 Uses the Personal Access Token of NuGetLurker to post status of tests and build to GitHub.
 #>
-# set security protocol for Invoke-RestMethod
-. "$PSScriptRoot\SetSecurityProtocol.ps1"
+# Set security protocol to tls1.2 for Invoke-RestMethod powershell cmdlet
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Function Update-GitCommitStatus {
     param(
