@@ -14,7 +14,7 @@
   <PropertyGroup>
     <ReferenceOutputPath>$(ArtifactsDirectory)NuGet.VisualStudio.Client\15.0\bin\$(Configuration)\</ReferenceOutputPath>
     <NuGetTargetsPath>$(RepositoryRootDirectory)src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets</NuGetTargetsPath>
-    <XmlTransformPath>$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\</XmlTransformPath>
+    <XmlTransformPath>$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.2\lib\net40\</XmlTransformPath>
   </PropertyGroup>
 
   <PropertyGroup>
