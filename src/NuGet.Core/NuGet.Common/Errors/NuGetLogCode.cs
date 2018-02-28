@@ -60,11 +60,6 @@ namespace NuGet.Common
         NU1003 = 1003,
 
         /// <summary>
-        /// RestoreOutputPath does not match MSBuildProjectExtensionsPath
-        /// </summary>
-        NU1004 = 1004,
-
-        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,

@@ -287,15 +287,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The RestoreOutputPath, which resolved to &apos;{0}&apos;, did not match the MSBuildProjectExtensionsPath, which was &apos;{1}&apos;.  These properties must match in order for assets from NuGet restore to be applied correctly when building..
-        /// </summary>
-        internal static string Error_RestoreOutputPathMismatch {
-            get {
-                return ResourceManager.GetString("Error_RestoreOutputPathMismatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid tools package {0} {1}. Tools packages cannot contain more than one PackageType..
         /// </summary>
         internal static string Error_ToolsPackageWithExtraPackageTypes {

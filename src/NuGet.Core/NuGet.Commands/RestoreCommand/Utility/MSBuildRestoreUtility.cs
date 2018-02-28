@@ -396,15 +396,6 @@ namespace NuGet.Commands
             return false;
         }
 
-        //  Log error NU1003
-        public static RestoreLogMessage GetErrorForRestoreOutputPathMismatch(string restoreOutputAbsolutePath, string msbuildProjectExtensionsPath)
-        {
-            var text = string.Format(CultureInfo.CurrentCulture, Strings.Error_RestoreOutputPathMismatch, restoreOutputAbsolutePath, msbuildProjectExtensionsPath);
-            var message = RestoreLogMessage.CreateError(NuGetLogCode.NU1503, text);
-
-            return message;
-        }
-
         /// <summary>
         /// Log warning NU1503
         /// </summary>

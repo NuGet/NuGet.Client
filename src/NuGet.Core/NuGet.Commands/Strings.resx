@@ -691,7 +691,4 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Error_InvalidDependencyVersionConstraints" xml:space="preserve">
     <value>Package version constraints for '{0}' return a version range that is empty.</value>
   </data>
-  <data name="Error_RestoreOutputPathMismatch" xml:space="preserve">
-    <value>The RestoreOutputPath, which resolved to '{0}', did not match the MSBuildProjectExtensionsPath, which was '{1}'.  These properties must match in order for assets from NuGet restore to be applied correctly when building.</value>
-  </data>
 </root>
