@@ -82,7 +82,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentException(Strings.InvalidArgument, nameof(signaturePlacement));
             }
 
-            Certificate = new X509Certificate2(certificate);
+            Certificate = certificate;
             SignatureHashAlgorithm = signatureHashAlgorithm;
             TimestampHashAlgorithm = timestampHashAlgorithm;
             SignaturePlacement = signaturePlacement;

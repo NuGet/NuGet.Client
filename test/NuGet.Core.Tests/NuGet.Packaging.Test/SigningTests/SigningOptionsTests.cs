@@ -42,7 +42,6 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Constructor_WhenOutputPathAndPackagePathAreEqual_Throws()
         {
-            var authorSignPackageRequest = new AuthorSignPackageRequest(new X509Certificate2(), HashAlgorithmName.SHA256);
             var exception = Assert.Throws<ArgumentException>(
                 () => new SigningOptions(packageFilePath: "packagePath",
                                         outputFilePath: "packagePath",
