@@ -41,8 +41,8 @@ param
     [string]$BuildOutputPath
 )
 
-# set security protocol for Invoke-RestMethod
-. "$PSScriptRoot\SetSecurityProtocol.ps1"
+# Set security protocol to tls1.2 for Invoke-RestMethod powershell cmdlet
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $repoOwner = "dotnet"
 $Base64Token = [System.Convert]::ToBase64String([char[]]$PersonalAccessToken)
