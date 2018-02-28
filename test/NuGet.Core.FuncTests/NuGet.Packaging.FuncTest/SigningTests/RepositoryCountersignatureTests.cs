@@ -46,8 +46,7 @@ namespace NuGet.Packaging.FuncTest
         [Fact]
         public async Task GetRepositoryCountersignature_WithNoCountersignatures_ReturnsNull()
         {
-            using (var test = await Test.CreateWithoutRepositoryCountersignatureAsync(
-                new X509Certificate2(_fixture.TrustedTestCertificate.Source.Cert)))
+            using (var test = await Test.CreateWithoutRepositoryCountersignatureAsync(_fixture.TrustedTestCertificate.Source.Cert))
             {
                 var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(test.PrimarySignature);
 
@@ -58,7 +57,7 @@ namespace NuGet.Packaging.FuncTest
         [Fact]
         public async Task GetRepositoryCountersignature_WithRepositoryCountersignature_ReturnsInstance()
         {
-            using (var test = await Test.CreateAsync(new X509Certificate2(_fixture.TrustedTestCertificate.Source.Cert)))
+            using (var test = await Test.CreateAsync(_fixture.TrustedTestCertificate.Source.Cert))
             {
                 var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(test.PrimarySignature);
 
@@ -76,7 +75,7 @@ namespace NuGet.Packaging.FuncTest
         [Fact]
         public async Task GetSignatureValue_WithSha256_ReturnsValue()
         {
-            using (var test = await Test.CreateAsync(new X509Certificate2(_fixture.TrustedTestCertificate.Source.Cert)))
+            using (var test = await Test.CreateAsync(_fixture.TrustedTestCertificate.Source.Cert))
             {
                 var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(test.PrimarySignature);
                 var actualValue = repositoryCountersignature.GetSignatureValue();
@@ -144,7 +143,7 @@ namespace NuGet.Packaging.FuncTest
                 var packageContext = new SimpleTestPackageContext();
                 var test = await CreateWithoutRepositoryCountersignatureAsync(certificate);
                 var request = new RepositorySignPackageRequest(
-                    certificate,
+                    new X509Certificate2(certificate),
                     HashAlgorithmName.SHA256,
                     HashAlgorithmName.SHA256,
                     SignaturePlacement.Countersignature,
@@ -168,7 +167,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var directory = TestDirectory.Create())
                 {
                     var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(
-                        certificate,
+                         new X509Certificate2(certificate),
                         packageContext,
                         directory);
 

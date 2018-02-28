@@ -175,7 +175,7 @@ namespace NuGet.Packaging.Signing
         public static async Task RemoveSignatureAsync(string packageFilePath, string outputFilePath, CancellationToken token)
         {
             using (var packageReadStream = File.OpenRead(packageFilePath))
-            using (var packageWriteStream = File.OpenWrite(outputFilePath))
+            using (var packageWriteStream = File.Open(outputFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
             {
                 await package.RemoveSignatureAsync(token);
