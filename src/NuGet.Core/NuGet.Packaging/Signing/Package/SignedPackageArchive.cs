@@ -70,10 +70,9 @@ namespace NuGet.Packaging.Signing
         {
             token.ThrowIfCancellationRequested();
 
-            if (ZipWriteStream == null)
-            {
-                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
-            }
+            // Don't update the read stream, do the removing in the write stream
+            ZipReadStream.Position = 0;
+            ZipReadStream.CopyTo(ZipWriteStream);
 
             if (!await IsSignedAsync(token))
             {

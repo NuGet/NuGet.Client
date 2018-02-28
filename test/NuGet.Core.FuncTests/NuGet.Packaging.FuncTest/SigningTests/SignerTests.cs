@@ -35,9 +35,9 @@ namespace NuGet.Packaging.FuncTest
         {
             using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
             {
-                await test.Signer.SignAsync(test.Request, NullLogger.Instance, CancellationToken.None);
+                await test.Signer.SignAsync(CancellationToken.None);
 
-                var isSigned = await IsSignedAsync(test.WriteStream);
+                var isSigned = await IsSignedAsync(test.Options.OutputFilePath);
 
                 Assert.True(isSigned);
             }
@@ -48,17 +48,17 @@ namespace NuGet.Packaging.FuncTest
         {
             using (var signTest = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
             {
-                await signTest.Signer.SignAsync(signTest.Request, NullLogger.Instance, CancellationToken.None);
+                await signTest.Signer.SignAsync(CancellationToken.None);
 
-                var isSigned = await IsSignedAsync(signTest.WriteStream);
+                var isSigned = await IsSignedAsync(signTest.Options.OutputFilePath);
 
                 Assert.True(isSigned);
 
-                using (var unsignTest = new Test(signTest.WriteStream))
+                using (var unsignTest = new Test(signTest.Options.OutputFilePath))
                 {
-                    await unsignTest.Signer.RemoveSignaturesAsync(NullLogger.Instance, CancellationToken.None);
+                    await unsignTest.Signer.RemoveSignatureAsync(CancellationToken.None);
 
-                    isSigned = await IsSignedAsync(unsignTest.WriteStream);
+                    isSigned = await IsSignedAsync(unsignTest.Options.OutputFilePath);
 
                     Assert.False(isSigned);
                 }
@@ -71,14 +71,15 @@ namespace NuGet.Packaging.FuncTest
             using (var test = new Test(_testFixture.TrustedTestCertificateExpired.Source.Cert))
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
-                    () => test.Signer.SignAsync(test.Request, NullLogger.Instance, CancellationToken.None));
+                    () => test.Signer.SignAsync(CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3018, exception.Code);
                 Assert.Contains("Certificate chain validation failed.", exception.Message);
 
-                var isSigned = await IsSignedAsync(test.WriteStream);
-
+                var isSigned = await IsSignedAsync(test.Options.PackageFilePath);
                 Assert.False(isSigned);
+
+                Assert.False(File.Exists(test.Options.OutputFilePath));
             }
         }
 
@@ -88,28 +89,28 @@ namespace NuGet.Packaging.FuncTest
             using (var test = new Test(_testFixture.TrustedTestCertificateNotYetValid.Source.Cert))
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
-                    () => test.Signer.SignAsync(test.Request, NullLogger.Instance, CancellationToken.None));
+                    () => test.Signer.SignAsync(CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3017, exception.Code);
                 Assert.Contains("The signing certificate is not yet valid", exception.Message);
 
-                var isSigned = await IsSignedAsync(test.WriteStream);
-
+                var isSigned = await IsSignedAsync(test.Options.PackageFilePath);
                 Assert.False(isSigned);
+
+                Assert.False(File.Exists(test.Options.OutputFilePath));
+
             }
         }
 
-        private static async Task<bool> IsSignedAsync(MemoryStream package)
+        private static async Task<bool> IsSignedAsync(string packagePath)
         {
-            var currentPosition = package.Position;
+            using (var package = File.OpenRead(packagePath))
+            using (var reader = new PackageArchiveReader(package, leaveStreamOpen: true))
+            {
+                var isSigned = await reader.IsSignedAsync(CancellationToken.None);
 
-            var reader = new PackageArchiveReader(package, leaveStreamOpen: true);
-
-            var isSigned = await reader.IsSignedAsync(CancellationToken.None);
-
-            package.Seek(offset: currentPosition, loc: SeekOrigin.Begin);
-
-            return isSigned;
+                return isSigned;
+            }
         }
 
         private sealed class Test : IDisposable
@@ -117,11 +118,8 @@ namespace NuGet.Packaging.FuncTest
             private readonly X509Certificate2 _certificate;
             private readonly TestDirectory _directory;
 
-            internal SignedPackageArchive Package { get; }
-            internal MemoryStream ReadStream { get; }
-            internal SignPackageRequest Request { get; }
+            internal SignerOptions Options { get; }
             internal Signer Signer { get; }
-            internal MemoryStream WriteStream { get; }
 
             private bool _isDisposed;
 
@@ -131,38 +129,41 @@ namespace NuGet.Packaging.FuncTest
                 _certificate = new X509Certificate2(certificate);
 
                 var packageContext = new SimpleTestPackageContext();
+                var packageFileName = Guid.NewGuid().ToString();
+                var package = packageContext.CreateAsFile(_directory, packageFileName);
 
-                ReadStream = packageContext.CreateAsStream();
-                WriteStream = packageContext.CreateAsStream();
-
-                Package = new SignedPackageArchive(ReadStream, WriteStream);
-                Request = new AuthorSignPackageRequest(_certificate, HashAlgorithmName.SHA256);
+                var outputPath = Path.Combine(_directory, Guid.NewGuid().ToString());
 
                 var signatureProvider = new X509SignatureProvider(timestampProvider: null);
 
-                Signer = new Signer(Package, signatureProvider);
+                var request = new AuthorSignPackageRequest(_certificate, HashAlgorithmName.SHA256);
+                Options = new SignerOptions(packageFilePath: package.FullName, outputFilePath: outputPath, overwrite: true, signatureProvider: signatureProvider, signRequest: request, logger: NullLogger.Instance);
+
+                Signer = new Signer(Options);
             }
 
-            internal Test(MemoryStream stream)
+            internal Test(string packagePath)
             {
-                ReadStream = stream;
-                WriteStream = stream;
+                _directory = TestDirectory.Create();
+                _certificate = new X509Certificate2();
 
-                Package = new SignedPackageArchive(ReadStream, WriteStream);
+                var outputPath = Path.Combine(_directory, Guid.NewGuid().ToString());
 
                 var signatureProvider = new X509SignatureProvider(timestampProvider: null);
 
-                Signer = new Signer(Package, signatureProvider);
+                var request = new AuthorSignPackageRequest(_certificate, HashAlgorithmName.SHA256);
+                Options = new SignerOptions(packageFilePath: packagePath, outputFilePath: outputPath, overwrite: true, signatureProvider: signatureProvider, signRequest: request, logger: NullLogger.Instance);
+
+                Signer = new Signer(Options);
             }
 
             public void Dispose()
             {
                 if (!_isDisposed)
                 {
+                    Options?.Dispose();
                     _certificate?.Dispose();
                     _directory?.Dispose();
-                    ReadStream.Dispose();
-                    WriteStream.Dispose();
 
                     GC.SuppressFinalize(this);
 

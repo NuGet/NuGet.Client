@@ -917,6 +917,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} and {1} should be different. Package signing cannot be done in place..
+        /// </summary>
+        internal static string SigningCannotBeDoneInPlace {
+            get {
+                return ResourceManager.GetString("SigningCannotBeDoneInPlace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The signing-certificate attribute is not allowed..
         /// </summary>
         internal static string SigningCertificateAttributeMustNotBePresent {
