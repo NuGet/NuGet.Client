@@ -175,7 +175,7 @@ namespace NuGet.Packaging.Signing
         public static async Task RemoveSignatureAsync(string packageFilePath, string outputFilePath, CancellationToken token)
         {
             using (var packageReadStream = File.OpenRead(packageFilePath))
-            using (var packageWriteStream = File.Open(outputFilePath, FileMode.OpenOrCreate))
+            using (var packageWriteStream = File.OpenWrite(outputFilePath))
             using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
             {
                 await package.RemoveSignatureAsync(token);
@@ -197,7 +197,7 @@ namespace NuGet.Packaging.Signing
             try
             {
                 using (var packageReadStream = File.OpenRead(inputPackagePath))
-                using (var packageWriteStream = File.Open(tempPackagePath, FileMode.OpenOrCreate))
+                using (var packageWriteStream = File.OpenWrite(tempPackagePath))
                 using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
                 {
                     var primarySignature = await package.GetPrimarySignatureAsync(token);
@@ -210,7 +210,7 @@ namespace NuGet.Packaging.Signing
                 }
 
                 using (var packageReadStream = File.OpenRead(inputPackagePath))
-                using (var packageWriteStream = File.Open(options.OutputFilePath, FileMode.OpenOrCreate))
+                using (var packageWriteStream = File.OpenWrite(options.OutputFilePath))
                 using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
                 {
                     if (await package.IsZip64Async(token))

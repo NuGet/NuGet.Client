@@ -128,7 +128,7 @@ namespace NuGet.Commands
             return new X509SignatureProvider(timestampProvider);
         }
 
-        private async Task<int> SignPackageAsync(
+        private async Task SignPackageAsync(
             SigningOptions signingOptions,
             SignPackageRequest signRequest,
             string packageOutputPath,
@@ -145,8 +145,6 @@ namespace NuGet.Commands
                     FileUtility.Replace(signingOptions.OutputFilePath, packageOutputPath);
                 }
             }
-
-            return 0;
         }
 
         private static async Task<X509Certificate2> GetCertificateAsync(SignArgs signArgs)

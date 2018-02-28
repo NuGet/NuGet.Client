@@ -4,7 +4,6 @@
 #if IS_DESKTOP
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -20,14 +19,10 @@ namespace NuGet.Packaging.FuncTest
     public class SigningUtilityTests
     {
         private readonly SigningTestFixture _testFixture;
-        private IList<ISignatureVerificationProvider> _trustProviders;
-        private SigningSpecifications _signingSpecifications;
 
         public SigningUtilityTests(SigningTestFixture fixture)
         {
              _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            _trustProviders = _testFixture.TrustProviders;
-            _signingSpecifications = _testFixture.SigningSpecifications;
         }
 
         [CIOnlyFact]

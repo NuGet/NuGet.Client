@@ -561,7 +561,7 @@ namespace NuGet.Packaging.Test
         {
             return ResourceTestUtility.GetResourceBytes(
                 $"NuGet.Packaging.Test.compiler.resources.{name}",
-                typeof(SigningTestUtility));
+                typeof(SigningUtilityTests));
         }
 
         private sealed class SignTest : IDisposable
