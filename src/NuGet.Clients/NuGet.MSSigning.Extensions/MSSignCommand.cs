@@ -60,16 +60,17 @@ namespace NuGet.MSSigning.Extensions
 
         public override async Task ExecuteCommandAsync()
         {
-            var signRequest = GetSignRequest();
-            var packages = GetPackages();
-            var signCommandRunner = new SignCommandRunner();
-            var result = await signCommandRunner.ExecuteCommandAsync(
-                packages, signRequest, Timestamper, Console, OutputDirectory, Overwrite, CancellationToken.None);
-
-
-            if (result != 0)
+            using (var signRequest = GetSignRequest())
             {
-                throw new ExitCodeException(exitCode: result);
+                var packages = GetPackages();
+                var signCommandRunner = new SignCommandRunner();
+                var result = await signCommandRunner.ExecuteCommandAsync(
+                    packages, signRequest, Timestamper, Console, OutputDirectory, Overwrite, CancellationToken.None);
+
+                if (result != 0)
+                {
+                    throw new ExitCodeException(exitCode: result);
+                }
             }
         }
 

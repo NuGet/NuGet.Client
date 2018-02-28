@@ -11,18 +11,16 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class SignerOptionsTests
+    public class SigningOptionsTests
     {
         [Fact]
         public void Constructor_WhenPackagePathIsNull_Throws()
         {
-            var authorSignPackageRequest = new AuthorSignPackageRequest(new X509Certificate2(), HashAlgorithmName.SHA256);
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SignerOptions(packageFilePath: null,
+                () => new SigningOptions(packageFilePath: null,
                                         outputFilePath: "outputPath",
                                         overwrite: true,
                                         signatureProvider: Mock.Of<ISignatureProvider>(),
-                                        signRequest: authorSignPackageRequest,
                                         logger: Mock.Of<ILogger>()));
 
             Assert.Equal("packageFilePath", exception.ParamName);
@@ -31,13 +29,11 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Constructor_WhenOutputPathIsNull_Throws()
         {
-            var authorSignPackageRequest = new AuthorSignPackageRequest(new X509Certificate2(), HashAlgorithmName.SHA256);
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SignerOptions(packageFilePath: "packagePath",
+                () => new SigningOptions(packageFilePath: "packagePath",
                                         outputFilePath: null,
                                         overwrite: true,
                                         signatureProvider: Mock.Of<ISignatureProvider>(),
-                                        signRequest: authorSignPackageRequest,
                                         logger: Mock.Of<ILogger>()));
 
             Assert.Equal("outputFilePath", exception.ParamName);
@@ -48,11 +44,10 @@ namespace NuGet.Packaging.Test
         {
             var authorSignPackageRequest = new AuthorSignPackageRequest(new X509Certificate2(), HashAlgorithmName.SHA256);
             var exception = Assert.Throws<ArgumentException>(
-                () => new SignerOptions(packageFilePath: "packagePath",
+                () => new SigningOptions(packageFilePath: "packagePath",
                                         outputFilePath: "packagePath",
                                         overwrite: true,
                                         signatureProvider: Mock.Of<ISignatureProvider>(),
-                                        signRequest: authorSignPackageRequest,
                                         logger: Mock.Of<ILogger>()));
 
             Assert.Equal("packageFilePath and outputFilePath should be different. Package signing cannot be done in place.", exception.Message);
@@ -61,43 +56,24 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Constructor_WhenSignatureProviderIsNull_Throws()
         {
-            var authorSignPackageRequest = new AuthorSignPackageRequest(new X509Certificate2(), HashAlgorithmName.SHA256);
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SignerOptions(packageFilePath: "packagePath",
+                () => new SigningOptions(packageFilePath: "packagePath",
                                         outputFilePath: "outputPath",
                                         overwrite: true,
                                         signatureProvider: null,
-                                        signRequest: authorSignPackageRequest,
                                         logger: Mock.Of<ILogger>()));
 
             Assert.Equal("signatureProvider", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WhenSignRequestIsNull_Throws()
-        {
-            var authorSignPackageRequest = new AuthorSignPackageRequest(new X509Certificate2(), HashAlgorithmName.SHA256);
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new SignerOptions(packageFilePath: "packagePath",
-                                        outputFilePath: "outputPath",
-                                        overwrite: true,
-                                        signatureProvider: Mock.Of<ISignatureProvider>(),
-                                        signRequest: null,
-                                        logger: Mock.Of<ILogger>()));
-
-            Assert.Equal("signRequest", exception.ParamName);
-        }
-
-        [Fact]
         public void Constructor_WhenLoggerIsNull_Throws()
         {
-            var authorSignPackageRequest = new AuthorSignPackageRequest(new X509Certificate2(), HashAlgorithmName.SHA256);
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SignerOptions(packageFilePath: "packagePath",
+                () => new SigningOptions(packageFilePath: "packagePath",
                                         outputFilePath: "outputPath",
                                         overwrite: true,
                                         signatureProvider: Mock.Of<ISignatureProvider>(),
-                                        signRequest: authorSignPackageRequest,
                                         logger: null));
 
             Assert.Equal("logger", exception.ParamName);
