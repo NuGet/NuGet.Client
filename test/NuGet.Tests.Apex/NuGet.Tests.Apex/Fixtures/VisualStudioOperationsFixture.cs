@@ -101,5 +101,21 @@ namespace NuGet.Tests.Apex
             // throw error for xUnit
             throw new InvalidOperationException(message);
         }
+
+        /// <summary>
+        /// Use the new env var for telling Omni which VS instance to use
+        /// </summary>
+        private class InternalVisualStudioHostConfiguration : VisualStudioHostConfiguration
+        {
+            protected static readonly TimeSpan InternalRemoteObjectLeaseTime = TimeSpan.FromHours(1);
+            protected static readonly TimeSpan InternalRemoteSingletonObjectLeaseTime = TimeSpan.Zero;
+
+            public InternalVisualStudioHostConfiguration()
+                : base()
+            {
+                this.RemoteObjectLeaseTime = InternalRemoteObjectLeaseTime;
+                this.RemoteSingletonObjectLeaseTime = InternalRemoteSingletonObjectLeaseTime;
+            }
+        }
     }
 }

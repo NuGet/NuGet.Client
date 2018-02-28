@@ -42,16 +42,28 @@
     <Compile Include="NuGetIVsApiTests\NetCoreProjectTestCase.cs" />
     <Compile Include="NuGetIVsApiTests\NuGetUITestCase.cs" />
     <Compile Include="NuGetIVsApiTests\Utils.cs" />
+    <Compile Include="NuGetIVsApiTests\E2E\AbuseLinkTests.cs" />
     <Compile Include="Apex\NuGetTypeConstraint.cs" />
     <Compile Include="Apex\NuGetUIProjectTestExtensionVerifier.cs" />
     <Compile Include="Apex\NuGetUIProjectTestExtension.cs" />
     <Compile Include="Apex\NuGetBaseTestExtension.cs" />
     <Compile Include="VisualStudioHostExtension.cs" />
+    <Compile Include="Platform\ContextExtensions.cs" />
+    <Compile Include="Platform\ContextImplementation.cs" />
+    <Compile Include="Platform\PlatformContextDetailsBase.cs" />
+    <Compile Include="Platform\CodeLanguageExtensions.cs" />
+    <Compile Include="Platform\PlatformContextCapability.cs" />
+    <Compile Include="Platform\WpfPlatformContextDetails.cs" />
+    <Compile Include="Platform\UWPPlatformContextDetails.cs" />
+    <Compile Include="Platform\WindowsImmersivePlatformContextDetails.cs" />
+    <Compile Include="Platform\UWPProjectTargetPlatformVersionDetails.cs" />
+    <Compile Include="Util\UAPSDKVersionHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Apex\NuGetConsoleTestExtensionVerifier.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Build" Version="15.6.82" />
     <PackageReference Include="Microsoft.Test.Apex-d15rel">
       <Version>15.0.27006.00</Version>
     </PackageReference>
@@ -71,10 +83,12 @@
     </ProjectReference>
     <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="..\..\TestExtensions\NuGet.StaFact\NuGet.StaFact.csproj" />
+    <ProjectReference Include="..\Foundation\Foundation.csproj" />
     <ProjectReference Include="..\NuGet.Console.TestContract\NuGet.Console.TestContract.csproj" />
     <ProjectReference Include="..\NuGet.PackageManagement.UI.TestContract\NuGet.PackageManagement.UI.TestContract.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="NewFolder\" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
@@ -88,4 +102,8 @@
     <PlatformTarget>x86</PlatformTarget>
     <RuntimeIdentifier>x86</RuntimeIdentifier>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FluentAssertions" Version="5.1.2" />
+  </ItemGroup>
 </Project>
