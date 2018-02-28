@@ -404,7 +404,6 @@ phases:
   queue:
     name: DDNuGet-Linux
     timeoutInMinutes: 45
-    demands: sh
 
   steps:
   - task: PowerShell@2
@@ -455,7 +454,6 @@ phases:
   queue:
     name: VSEng-MicroBuildMacSierra
     timeoutInMinutes: 60
-    demands: sh
 
   steps:
   - task: PowerShell@2
