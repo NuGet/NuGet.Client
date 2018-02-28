@@ -197,7 +197,7 @@ namespace NuGet.Packaging.Signing
             try
             {
                 using (var packageReadStream = File.OpenRead(inputPackagePath))
-                using (var packageWriteStream = File.OpenWrite(tempPackagePath))
+                using (var packageWriteStream = File.Open(tempPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
                 {
                     var primarySignature = await package.GetPrimarySignatureAsync(token);
