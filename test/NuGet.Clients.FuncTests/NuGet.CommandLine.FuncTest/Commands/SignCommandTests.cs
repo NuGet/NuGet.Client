@@ -633,5 +633,27 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
             }
         }
+
+        [CIOnlyFact]
+        public void SignCommand_SignPackageWithUntrustedSelfIssuedCertificateInCertificateStore()
+        {
+            using (var directory = TestDirectory.Create())
+            {
+                var packageContext = new SimpleTestPackageContext();
+                var packageFile = packageContext.CreateAsFile(directory, fileName: Guid.NewGuid().ToString());
+
+                using (var certificate = _testFixture.UntrustedSelfIssuedCertificateInCertificateStore)
+                {
+                    var result = CommandRunner.Run(
+                        _nugetExePath,
+                        directory,
+                        $"sign {packageFile.FullName} -CertificateFingerprint {certificate.Thumbprint}",
+                        waitForExit: true);
+
+                    Assert.True(result.Success);
+                    Assert.Contains(_noTimestamperWarningCode, result.AllOutput);
+                }
+            }
+        }
     }
 }

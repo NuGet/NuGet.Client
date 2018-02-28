@@ -396,9 +396,15 @@ namespace Test.Utility.Signing
             generator.SetPublicKey(keyPair.Public);
 
             var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", keyPair.Private);
-            var certificate = generator.Generate(signatureFactory);
+            var bcCertificate = generator.Generate(signatureFactory);
 
-            return new X509Certificate2(certificate.GetEncoded());
+            var certificate = new X509Certificate2(bcCertificate.GetEncoded());
+
+#if IS_DESKTOP
+            certificate.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
+#endif
+
+            return certificate;
         }
 
         private static X509SubjectKeyIdentifierExtension GetSubjectKeyIdentifier(X509Certificate2 issuer)
