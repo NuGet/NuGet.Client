@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.UI
         {
             return !DependingPackages.Any()
                 ? Package.ToString()
-                : Package + " " + string.Format(CultureInfo.CurrentCulture, Resources.NuGetUpgrade_PackageDependencyOf, string.Join(", ", DependingPackages));
+                : $"{Package} {string.Format(CultureInfo.CurrentCulture, Resources.NuGetUpgrade_PackageDependencyOf, string.Join(", ", DependingPackages))}";
         }
     }
 }

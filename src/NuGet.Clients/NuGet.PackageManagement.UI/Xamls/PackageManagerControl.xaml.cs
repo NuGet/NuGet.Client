@@ -14,7 +14,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -143,7 +142,7 @@ namespace NuGet.PackageManagement.UI
 
             // UI is initialized. Start the first search
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-            _packageList.IsSolution = this.Model.IsSolution;
+            _packageList.IsSolution = Model.IsSolution;
 
             Loaded += (_, __) =>
             {
@@ -302,7 +301,7 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<bool> ShouldShowUpgradeProjectAsync()
         {
-
+            VSThreadHelper.ThrowIfNotOnUIThread();
             // If user has turned it off, don't show
             if (RegistrySettingUtility.GetBooleanSetting(Constants.SuppressUpgradePackagesConfigName))
             {
@@ -530,7 +529,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+#pragma warning disable IDE1006 // Naming Styles
         private void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
+#pragma warning restore IDE1006 // Naming Styles
         {
             // make sure update happens on the UI thread.
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
@@ -1066,7 +1067,7 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                this.IsEnabled = false;
+                IsEnabled = false;
                 NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
                 try
                 {

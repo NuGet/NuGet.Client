@@ -42,7 +42,25 @@ namespace NuGet.PackageManagement.UI
 
         public string Title => string.Format(CultureInfo.CurrentCulture, Resources.Text_ChangesForProject, ProjectName);
 
-        private string ProjectName => _projectName ?? (_projectName = NuGetProject.GetUniqueNameOrName(Project));
+        private string ProjectName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_projectName))
+                {
+                    _projectName = NuGetProject.GetUniqueNameOrName(Project);
+                    return _projectName;
+                }
+                else
+                {
+                    return _projectName;
+                }
+            }
+            set
+            {
+                _projectName = value;
+            }
+        }
 
         public IList<PackageDependencyInfo> PackageDependencyInfos { get; }
 
@@ -199,8 +217,6 @@ namespace NuGet.PackageManagement.UI
 #if DEBUG
         public NuGetProjectUpgradeWindowModel()
         {
-            // This should only be called by the designer. Prepopulate design time sample values
-            //_analysisResults = DesignTimeAnalysisResults;
             _upgradeDependencyItems = DesignTimeUpgradeDependencyItems;
             _collapseDependencies = true;
             _projectName = "TestProject";

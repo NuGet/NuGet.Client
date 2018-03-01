@@ -29,6 +29,7 @@ namespace NuGet.PackageManagement.UI
 
         public static async Task<bool> IsNuGetProjectUpgradeableAsync(NuGetProject nuGetProject, Project envDTEProject = null)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (nuGetProject == null && envDTEProject == null)
             {
                 return false;
@@ -78,7 +79,7 @@ namespace NuGet.PackageManagement.UI
         public static bool IsPackagesConfigSelected(IVsMonitorSelection vsMonitorSelection)
         {
             var selectedFileName = GetSelectedFileName(vsMonitorSelection);
-            return !string.IsNullOrEmpty(selectedFileName) && Path.GetFileName(selectedFileName).ToLower() == "packages.config";
+            return !string.IsNullOrEmpty(selectedFileName) && Path.GetFileName(selectedFileName).Equals("packages.config", StringComparison.OrdinalIgnoreCase);
         }
 
         public static string GetSelectedFileName(IVsMonitorSelection vsMonitorSelection)

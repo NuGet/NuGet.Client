@@ -1298,15 +1298,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Things to consider before upgrading to project.json..
-        /// </summary>
-        public static string Text_BeforeUpgradeConsiderations {
-            get {
-                return ResourceManager.GetString("Text_BeforeUpgradeConsiderations", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to by {0}.
         /// </summary>
         public static string Text_ByAuthor {
@@ -1330,15 +1321,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_ChangesForProject {
             get {
                 return ResourceManager.GetString("Text_ChangesForProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to By default, dependencies will be collapsed (packages that are included as dependencies of other packages won&apos;t be included in the resulting project.json file). Deselect this option to include all packages..
-        /// </summary>
-        public static string Text_ConvertPackagesConfigIntroText2 {
-            get {
-                return ResourceManager.GetString("Text_ConvertPackagesConfigIntroText2", resourceCulture);
             }
         }
         

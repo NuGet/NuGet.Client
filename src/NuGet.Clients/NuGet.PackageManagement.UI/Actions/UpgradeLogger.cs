@@ -11,7 +11,7 @@ using System.Xml.Xsl;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class UpgradeLogger
+    internal class UpgradeLogger : IDisposable
     {
         // Example upgrade report XML:
         //
@@ -58,6 +58,7 @@ namespace NuGet.PackageManagement.UI
         private const string PropertiesString = "Properties";
         private const string PropertyString = "Property";
         private const string ValueString = "Value";
+        private const string BackupPathString = "BackupPath";
 
         private const string XsltManifestResourceName = "NuGet.PackageManagement.UI.Resources.UpgradeReport.xslt";
 
@@ -69,6 +70,7 @@ namespace NuGet.PackageManagement.UI
         private readonly XmlElement _propertiesElement;
 
         private readonly string _backupPath;
+        private readonly string _htmlFilePath;
 
         internal UpgradeLogger(string reportName, string backupPath)
         {
@@ -83,15 +85,15 @@ namespace NuGet.PackageManagement.UI
             }
 
             _backupPath = backupPath;
-
+            _htmlFilePath = $@"{_backupPath}\NuGetUpgradeLog.html";
             _xmlDocument = new XmlDocument { PreserveWhitespace = true };
             _xmlDocument.LoadXml($"<?xml version='1.0' encoding='UTF-16'?>\r\n<{NuGetUpgradeReportString}>\r\n</{NuGetUpgradeReportString}>");
 
             var upgradeReportElement = _xmlDocument.DocumentElement;
             Debug.Assert(upgradeReportElement != null, "_upgradeReportElement != null");
 
-            upgradeReportElement.SetAttribute("Name", reportName);
-            upgradeReportElement.SetAttribute("BackupPath", backupPath);
+            upgradeReportElement.SetAttribute(NameString, reportName);
+            upgradeReportElement.SetAttribute(BackupPathString, backupPath);
 
             _propertiesElement = _xmlDocument.CreateElement(PropertiesString);
             upgradeReportElement.AppendChild(_propertiesElement);
@@ -129,22 +131,26 @@ namespace NuGet.PackageManagement.UI
             packagesElement.AppendChild(packageElement);
         }
 
-        internal string Flush()
+        internal string GetHtmlFilePath()
         {
-            var htmlFilePath = $@"{_backupPath}\NuGetUpgradeLog.html";
+            return _htmlFilePath;
+        }
+
+        internal void Flush()
+        {
+            
             using (var xsltStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(XsltManifestResourceName))
             {
                 Debug.Assert(xsltStream != null, $"Resource {XsltManifestResourceName} could not be loaded.");
 
                 using (var xmlReader = XmlReader.Create(xsltStream))
-                using (var writer = new XmlTextWriter(htmlFilePath, null))
+                using (var writer = new XmlTextWriter(_htmlFilePath, null))
                 {
                     var transform = new XslCompiledTransform();
                     transform.Load(xmlReader);
                     transform.Transform(_xmlDocument, writer);
                 }
             }
-            return htmlFilePath;
         }
 
         private XmlElement GetProjectElement(string projectName)
@@ -159,6 +165,11 @@ namespace NuGet.PackageManagement.UI
                 _projectsElement.AppendChild(projectElement);
                 return projectElement;
             });
+        }
+
+        public void Dispose()
+        {
+            Flush();
         }
 
         internal enum ErrorLevel

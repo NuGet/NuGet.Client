@@ -10,6 +10,7 @@ namespace NuGet.PackageManagement.UI
     internal class VisualStudioProgressDialogSession : IModalProgressDialogSession
     {
         private readonly Action _dispose;
+        private bool _isDisposed = false;
 
         public VisualStudioProgressDialogSession(ThreadedWaitDialogHelper.Session session)
         {
@@ -20,7 +21,11 @@ namespace NuGet.PackageManagement.UI
 
         public void Dispose()
         {
-            _dispose();
+            if(!_isDisposed)
+            {
+                _dispose();
+                _isDisposed = true;
+            }
         }
 
         public IProgress<ProgressDialogData> Progress { get; }

@@ -699,9 +699,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="NuGetUpgrade_PackageDependencyOf" xml:space="preserve">
     <value>(dependency of {0})</value>
   </data>
-  <data name="Text_ConvertPackagesConfigIntroText2" xml:space="preserve">
-    <value>By default, dependencies will be collapsed (packages that are included as dependencies of other packages won't be included in the resulting project.json file). Deselect this option to include all packages.</value>
-  </data>
   <data name="Text_UpgradeOptions" xml:space="preserve">
     <value>Upgrade Options:</value>
   </data>
@@ -725,9 +722,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Text_UpgraderHeader" xml:space="preserve">
     <value>Packages as PackageReference:</value>
-  </data>
-  <data name="Text_BeforeUpgradeConsiderations" xml:space="preserve">
-    <value>Things to consider before upgrading to project.json.</value>
   </data>
   <data name="Text_ProjectAnalysisResults" xml:space="preserve">
     <value>Project Analysis Results</value>

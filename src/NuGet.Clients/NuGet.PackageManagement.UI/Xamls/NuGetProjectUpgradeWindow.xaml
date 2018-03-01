@@ -174,11 +174,11 @@
           Header="{x:Static nuget:Resources.Text_TransitiveDependencies}"
           IsExpanded="True"
           Margin="0,0,0,4"
-          Visibility="{Binding TransiviteDependencies, Converter={StaticResource EnumerableToVisibilityConverter}}"
+          Visibility="{Binding TransitiveDependencies, Converter={StaticResource EnumerableToVisibilityConverter}}"
           Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}">
           <ItemsControl
             Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
-            ItemsSource="{Binding TransiviteDependencies}"
+            ItemsSource="{Binding TransitiveDependencies}"
             IsTabStop="False" />
         </Expander>
       </ItemsControl>

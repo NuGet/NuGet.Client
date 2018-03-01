@@ -824,7 +824,7 @@ namespace NuGetVSExtension
 
         private void BeforeQueryStatusForUpgradeNuGetProject(object sender, EventArgs args)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 if (ShouldMEFBeInitialized())
                 {
@@ -844,7 +844,7 @@ namespace NuGetVSExtension
         private void BeforeQueryStatusForUpgradePackagesConfig(object sender, EventArgs args)
         {
             // Check whether to show context menu item on packages.config
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 if (ShouldMEFBeInitialized())
                 {

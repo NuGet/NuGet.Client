@@ -172,32 +172,32 @@ namespace NuGet.PackageManagement.UI
 
             var createWebBrowserOwnerGuid = new Guid(CreateWebBrowserOwnerGuidString);
 
-            IVsWindowFrame frame;
-            IVsWebBrowser browser;
-            webBrowsingService.CreateWebBrowser((uint)CreateWebBrowserFlags, ref createWebBrowserOwnerGuid, null, url, null, out browser, out frame);
+            webBrowsingService.CreateWebBrowser((uint)CreateWebBrowserFlags, ref createWebBrowserOwnerGuid, null, url, null, out var browser, out var frame);
         }
 
         private static string GenerateUpgradeReport(NuGetProject nuGetProject, string backupPath, NuGetProjectUpgradeWindowModel upgradeInformationWindowModel)
         {
             var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
-            var upgradeLogger = new UpgradeLogger(projectName, backupPath);
-            foreach (var error in upgradeInformationWindowModel.Errors)
+            using (var upgradeLogger = new UpgradeLogger(projectName, backupPath))
             {
-                upgradeLogger.LogIssue(projectName, UpgradeLogger.ErrorLevel.Error, error);
+                foreach (var error in upgradeInformationWindowModel.Errors)
+                {
+                    upgradeLogger.LogIssue(projectName, UpgradeLogger.ErrorLevel.Error, error);
+                }
+                foreach (var warning in upgradeInformationWindowModel.Warnings)
+                {
+                    upgradeLogger.LogIssue(projectName, UpgradeLogger.ErrorLevel.Warning, warning);
+                }
+                foreach (var package in upgradeInformationWindowModel.DirectDependencies)
+                {
+                    upgradeLogger.RegisterPackage(projectName, package, true);
+                }
+                foreach (var package in upgradeInformationWindowModel.TransitiveDependencies)
+                {
+                    upgradeLogger.RegisterPackage(projectName, package, false);
+                }
+                return upgradeLogger.GetHtmlFilePath();
             }
-            foreach (var warning in upgradeInformationWindowModel.Warnings)
-            {
-                upgradeLogger.LogIssue(projectName, UpgradeLogger.ErrorLevel.Warning, warning);
-            }
-            foreach (var package in upgradeInformationWindowModel.DirectDependencies)
-            {
-                upgradeLogger.RegisterPackage(projectName, package, true);
-            }
-            foreach (var package in upgradeInformationWindowModel.TransitiveDependencies)
-            {
-                upgradeLogger.RegisterPackage(projectName, package, false);
-            }
-            return upgradeLogger.Flush();
         }
 
         /// <summary>

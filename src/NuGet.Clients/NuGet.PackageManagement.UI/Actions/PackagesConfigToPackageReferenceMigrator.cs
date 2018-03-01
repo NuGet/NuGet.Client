@@ -30,7 +30,6 @@ namespace NuGet.PackageManagement.UI
             IProgress<ProgressDialogData> progress,
             CancellationToken token)
         {
-            var dependencyItems = upgradeDependencyItems as IList<NuGetProjectUpgradeDependencyItem> ?? upgradeDependencyItems.ToList();
 
             var startTime = DateTimeOffset.Now;
             var packagesCount = 0;
@@ -67,7 +66,7 @@ namespace NuGet.PackageManagement.UI
                     progress.Report(progressData);
 
                     // Don't uninstall packages we couldn't find - that will just fail
-                    var actions = dependencyItems.Select(d => d.Package)
+                    var actions = upgradeDependencyItems.Select(d => d.Package)
                         .Where(p => !notFoundPackages.Contains(p))
                         .Select(t => NuGetProjectAction.CreateUninstallProjectAction(t, nuGetProject));
 
@@ -112,7 +111,7 @@ namespace NuGet.PackageManagement.UI
                     PackageSourceMoniker
                         .PopulateList(context.SourceProvider)
                         .ForEach(s => activeSources.AddRange(s.SourceRepositories));
-                    var packagesToInstall = GetPackagesToInstall(dependencyItems, collapseDependencies).ToList();
+                    var packagesToInstall = GetPackagesToInstall(upgradeDependencyItems, collapseDependencies).ToList();
                     packagesCount = packagesToInstall.Count;
 
                     // create low level NuGet actions based on number of packages being installed
