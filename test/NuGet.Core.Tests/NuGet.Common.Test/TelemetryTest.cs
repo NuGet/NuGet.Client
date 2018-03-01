@@ -10,31 +10,6 @@ namespace NuGet.Common.Test
     public class TelemetryTest
     {
         [Fact]
-        public void TelemetryTest_TelemetryActivity()
-        {
-            // Arrange
-            var telemetryService = new Mock<INuGetTelemetryService>();
-            TelemetryEvent telemetryEvent = null;
-            telemetryService.Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
-                .Callback<TelemetryEvent>(x => telemetryEvent = x);
-
-            TelemetryActivity.NuGetTelemetryService = telemetryService.Object;
-
-            // Act
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId())
-            {
-                // Wait for 5 seconds
-                Thread.Sleep(5000);
-                telemetry.TelemetryEvent = new TelemetryEvent("testEvent", new Dictionary<string, object>());
-            }
-
-            // Assert
-            Assert.NotNull(telemetryEvent["StartTime"]);
-            Assert.NotNull(telemetryEvent["EndTime"]);
-            Assert.Equal(5, Convert.ToInt32(telemetryEvent["Duration"]));
-        }
-
-        [Fact]
         public void TelemetryTest_TelemetryActivityWithOperationId()
         {
             // Arrange

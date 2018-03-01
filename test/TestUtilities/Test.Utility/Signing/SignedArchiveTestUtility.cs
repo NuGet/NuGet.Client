@@ -79,11 +79,13 @@ namespace Test.Utility.Signing
             {
                 packageStream.CopyTo(fileStream);
             }
-
-            using (request = request ?? new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256))
+#if IS_DESKTOP
+            using (var cert = new X509Certificate2(certificate))
+            using (request = request ?? new AuthorSignPackageRequest(cert, HashAlgorithmName.SHA256))
             {
-                await SignAndTimeStampPackageAsync(testLogger, certificate, tempPath, signedPackagePath, timestampService, request);
+                await SignAndTimeStampPackageAsync(testLogger, tempPath, signedPackagePath, timestampService, request);
             }
+#endif
 
             FileUtility.Delete(tempPath);
 
@@ -123,14 +125,17 @@ namespace Test.Utility.Signing
         /// </summary>
         private static async Task SignPackageAsync(TestLogger testLogger, X509Certificate2 certificate, string inputPackagePath, string outputPackagePath)
         {
+#if IS_DESKTOP
             var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
-            using (var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256))
+            using (var cert = new X509Certificate2(certificate))
+            using (var request = new AuthorSignPackageRequest(cert, HashAlgorithmName.SHA256))
             {
-                var overwrite = false;
+                const bool overwrite = false;
                 var signingOptions = new SigningOptions(inputPackagePath, outputPackagePath, overwrite, testSignatureProvider, testLogger);
 
                 await SigningUtility.SignAsync(signingOptions, request, CancellationToken.None);
             }
+#endif
         }
 
         /// <summary>
@@ -139,7 +144,6 @@ namespace Test.Utility.Signing
         /// </summary>
         private static async Task SignAndTimeStampPackageAsync(
             TestLogger testLogger,
-            X509Certificate2 certificate,
             string inputPackagePath,
             string outputPackagePath,
             Uri timestampService,
