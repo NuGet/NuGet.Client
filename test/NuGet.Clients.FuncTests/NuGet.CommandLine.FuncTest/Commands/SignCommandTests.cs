@@ -94,8 +94,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Assert
                 result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
-                result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
-                result.AllOutput.Should().Contain("The certificate is not valid for the requested usage");
             }
         }
 
@@ -253,8 +251,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Assert
                 result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
-                result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
-                result.AllOutput.Should().Contain("The certificate is revoked");
             }
         }
 
