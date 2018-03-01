@@ -691,4 +691,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Error_InvalidDependencyVersionConstraints" xml:space="preserve">
     <value>Package version constraints for '{0}' return a version range that is empty.</value>
   </data>
+  <data name="Error_UnableToSignPackage" xml:space="preserve">
+    <value>Unable to sign package.</value>
+  </data>
 </root>

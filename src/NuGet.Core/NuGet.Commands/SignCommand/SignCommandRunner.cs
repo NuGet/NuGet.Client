@@ -138,9 +138,14 @@ namespace NuGet.Commands
             {
                 await SigningUtility.SignAsync(signingOptions, signRequest, token);
 
-                if (File.Exists(signingOptions.OutputFilePath))
+                var outputPathInfo = new FileInfo(signingOptions.OutputFilePath);
+                if (outputPathInfo.Exists && outputPathInfo.Length > 0)
                 {
                     FileUtility.Replace(signingOptions.OutputFilePath, packageOutputPath);
+                }
+                else if (outputPathInfo.Length == 0)
+                {
+                    throw new SignatureException(Strings.Error_UnableToSignPackage);
                 }
             }
             catch
