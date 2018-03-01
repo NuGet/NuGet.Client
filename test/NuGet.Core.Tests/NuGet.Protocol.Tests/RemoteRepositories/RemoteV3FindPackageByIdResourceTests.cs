@@ -151,35 +151,6 @@ namespace NuGet.Protocol.Tests
             }
         }
 
-        [Fact]
-        public async Task GetAllVersionsAsync_NoErrorsOnNoContent()
-        {
-            // Arrange
-            var serviceAddress = ProtocolUtility.CreateServiceAddress();
-
-            var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "FindPackagesById()?id='a'", "204");
-
-            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
-            var logger = new TestLogger();
-
-            using (var cacheContext = new SourceCacheContext())
-            {
-                var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
-
-                // Act
-                var versions = await resource.GetAllVersionsAsync(
-                    "a",
-                    cacheContext,
-                    logger,
-                    CancellationToken.None);
-
-                // Assert
-                // Verify no items returned, and no exceptions were thrown above
-                Assert.Equal(0, versions.Count());
-            }
-        }
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -677,35 +648,11 @@ namespace NuGet.Protocol.Tests
                         })
                     },
                     {
-                        serviceAddress + $"FindPackagesById()?id='{packageIdentity.Id}'",
-                        request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                        {
-                            Content = new TestContent(
-                                ProtocolUtility.GetResource(
-                                    "NuGet.Protocol.Tests.compiler.resources.XunitFindPackagesById.xml",
-                                    typeof(RemoteV3FindPackageByIdResourceTest)))
-                        })
-                    },
-                    {
-                        serviceAddress + $"FindPackagesById()?id='{packageIdentity.Id.ToUpper()}'",
-                        request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                        {
-                            Content = new TestContent(
-                                ProtocolUtility.GetResource(
-                                    "NuGet.Protocol.Tests.compiler.resources.XunitFindPackagesById.xml",
-                                    typeof(RemoteV3FindPackageByIdResourceTest)))
-                        })
-                    },
-                    {
                         serviceAddress + "api/v2/package/xunit/2.2.0-beta1-build3239",
                         request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new ByteArrayContent(packageBytes)
                         })
-                    },
-                    {
-                        serviceAddress + $"FindPackagesById()?id='a'",
-                        request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NoContent))
                     }
                 };
 

@@ -39,6 +39,7 @@ namespace NuGet.Protocol
         private readonly HttpSource _httpSource;
         private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageVersionsCache = new Dictionary<string, Task<IEnumerable<PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
+        private readonly V2FeedQueryBuilder _queryBuilder;
 
         /// <summary>
         /// Initializes a new <see cref="RemoteV2FindPackageByIdResource" /> class.
@@ -64,6 +65,7 @@ namespace NuGet.Protocol
             _baseUri = packageSource.Source.EndsWith("/") ? packageSource.Source : (packageSource.Source + "/");
             _httpSource = httpSource;
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(_httpSource);
+            _queryBuilder = new V2FeedQueryBuilder();
 
             PackageSource = packageSource;
         }
@@ -342,7 +344,8 @@ namespace NuGet.Protocol
         {
             for (var retry = 0; retry < 3; ++retry)
             {
-                var uri = _baseUri + "FindPackagesById()?id='" + id + "'";
+                var relativeUri = _queryBuilder.BuildFindPackagesByIdUri(id).TrimStart('/');
+                var uri = _baseUri + relativeUri;
                 var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retry);
 
                 try
