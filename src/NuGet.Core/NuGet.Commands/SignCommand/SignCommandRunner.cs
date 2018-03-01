@@ -82,6 +82,9 @@ namespace NuGet.Commands
 
                 foreach (var packagePath in packagesToSign)
                 {
+                    // Set the output of the signing operation to a temp file because signing cannot be done in place.
+                    var tempPackageFile = new FileInfo(Path.GetTempFileName());
+
                     try
                     {
                         string outputPath;
@@ -95,15 +98,33 @@ namespace NuGet.Commands
                             outputPath = Path.Combine(outputDirectory, Path.GetFileName(packagePath));
                         }
 
-                        // Set the output of the signing operation to a temp package because signing is cannot be done in place
-                        var tempPackagePath = Path.GetTempFileName();
-                        var signingOptions = new SigningOptions(packagePath, tempPackagePath, overwrite, signatureProvider, logger);
-                        await SignPackageAsync(signingOptions, signPackageRequest, outputPath, token);
+                        using (var options = SigningOptions.CreateFromFilePaths(
+                            packagePath,
+                            tempPackageFile.FullName,
+                            overwrite,
+                            signatureProvider,
+                            logger))
+                        {
+                            await SigningUtility.SignAsync(options, signPackageRequest, token);
+                        }
+
+                        if (tempPackageFile.Length > 0)
+                        {
+                            FileUtility.Replace(tempPackageFile.FullName, outputPath);
+                        }
+                        else
+                        {
+                            throw new SignatureException(Strings.Error_UnableToSignPackage);
+                        }
                     }
                     catch (Exception e)
                     {
                         success = false;
                         ExceptionUtilities.LogException(e, logger);
+                    }
+                    finally
+                    {
+                        FileUtility.Delete(tempPackageFile.FullName);
                     }
                 }
             }
@@ -126,36 +147,6 @@ namespace NuGet.Commands
             }
 
             return new X509SignatureProvider(timestampProvider);
-        }
-
-        private async Task SignPackageAsync(
-            SigningOptions signingOptions,
-            SignPackageRequest signRequest,
-            string packageOutputPath,
-            CancellationToken token)
-        {
-            try
-            {
-                await SigningUtility.SignAsync(signingOptions, signRequest, token);
-
-                var outputPathInfo = new FileInfo(signingOptions.OutputFilePath);
-                if (outputPathInfo.Exists && outputPathInfo.Length > 0)
-                {
-                    FileUtility.Replace(signingOptions.OutputFilePath, packageOutputPath);
-                }
-                else if (outputPathInfo.Length == 0)
-                {
-                    throw new SignatureException(Strings.Error_UnableToSignPackage);
-                }
-            }
-            catch
-            {
-                if (File.Exists(signingOptions.OutputFilePath))
-                {
-                    FileUtility.Delete(signingOptions.OutputFilePath);
-                }
-                throw;
-            }
         }
 
         private static async Task<X509Certificate2> GetCertificateAsync(SignArgs signArgs)

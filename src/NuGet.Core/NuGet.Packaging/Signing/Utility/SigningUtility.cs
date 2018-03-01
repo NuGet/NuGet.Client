@@ -172,16 +172,6 @@ namespace NuGet.Packaging.Signing
             return signer;
         }
 
-        public static async Task RemoveSignatureAsync(string packageFilePath, string outputFilePath, CancellationToken token)
-        {
-            using (var packageReadStream = File.OpenRead(packageFilePath))
-            using (var packageWriteStream = File.Open(outputFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
-            {
-                await package.RemoveSignatureAsync(token);
-            }
-        }
-
         /// <summary>
         /// Add a signature to a package.
         /// </summary>
@@ -191,35 +181,44 @@ namespace NuGet.Packaging.Signing
 
             Verify(signRequest, options.Logger);
 
-            var inputPackagePath = options.PackageFilePath;
-            var tempPackagePath = Path.GetTempFileName();
+            var tempPackageFile = new FileInfo(Path.GetTempFileName());
+            Stream unsignedPackageStream = null;
 
             try
             {
-                using (var packageReadStream = File.OpenRead(inputPackagePath))
-                using (var packageWriteStream = File.Open(tempPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
-                {
-                    var primarySignature = await package.GetPrimarySignatureAsync(token);
+                var inputPackageStream = options.InputPackageStream;
+                var isSigned = false;
 
-                    if (options.Overwrite && primarySignature != null)
-                    {
-                        await package.RemoveSignatureAsync(token);
-                        inputPackagePath = tempPackagePath;
-                    }
-                }
-
-                using (var packageReadStream = File.OpenRead(inputPackagePath))
-                using (var packageWriteStream = File.OpenWrite(options.OutputFilePath))
-                using (var package = new SignedPackageArchive(packageReadStream, packageWriteStream))
+                using (var package = new SignedPackageArchive(options.InputPackageStream, Stream.Null))
                 {
                     if (await package.IsZip64Async(token))
                     {
                         throw new SignatureException(NuGetLogCode.NU3006, Strings.ErrorZip64NotSupported);
                     }
 
-                    var hashAlgorithm = signRequest.SignatureHashAlgorithm;
+                    isSigned = await package.IsSignedAsync(token);
 
+                    if (isSigned && !options.Overwrite)
+                    {
+                        throw new SignatureException(NuGetLogCode.NU3001, Strings.SignedPackagePackageAlreadySigned);
+                    }
+                }
+
+                if (isSigned)
+                {
+                    unsignedPackageStream = tempPackageFile.Open(FileMode.OpenOrCreate, FileAccess.ReadWrite);
+
+                    using (var package = new SignedPackageArchive(options.InputPackageStream, unsignedPackageStream))
+                    {
+                        await package.RemoveSignatureAsync(token);
+                    }
+
+                    inputPackageStream = unsignedPackageStream;
+                }
+
+                using (var package = new SignedPackageArchive(inputPackageStream, options.OutputPackageStream))
+                {
+                    var hashAlgorithm = signRequest.SignatureHashAlgorithm;
                     var zipArchiveHash = await package.GetArchiveHashAsync(hashAlgorithm, token);
                     var signatureContent = GenerateSignatureContent(hashAlgorithm, zipArchiveHash);
                     var signature = await options.SignatureProvider.CreatePrimarySignatureAsync(signRequest, signatureContent, options.Logger, token);
@@ -232,7 +231,12 @@ namespace NuGet.Packaging.Signing
             }
             finally
             {
-                FileUtility.Delete(tempPackagePath);
+                if (unsignedPackageStream != null && !ReferenceEquals(unsignedPackageStream, options.InputPackageStream))
+                {
+                    unsignedPackageStream.Dispose();
+                }
+
+                FileUtility.Delete(tempPackageFile.FullName);
             }
         }
 
@@ -247,7 +251,6 @@ namespace NuGet.Packaging.Signing
         /// Remove a signature from a package.
         /// </summary>
         public static Task RemoveSignatureAsync(string packageFilePath, string outputFilePath, CancellationToken token) => throw new NotImplementedException();
-
 
         /// <summary>
         /// Add a signature to a package.

@@ -548,7 +548,7 @@ namespace NuGet.Packaging.Test
             {
                 await SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None);
 
-                Assert.True(await test.IsSignedAsync());
+                Assert.True(await SignedArchiveTestUtility.IsSignedAsync(test.Options.OutputPackageStream));
 
                 Assert.Equal(0, test.Logger.Errors);
                 Assert.Equal(1, test.Logger.Warnings);
@@ -589,6 +589,7 @@ namespace NuGet.Packaging.Test
                 if (!_isDisposed)
                 {
                     Request?.Dispose();
+                    Options.Dispose();
                     _directory?.Dispose();
 
                     GC.SuppressFinalize(this);
@@ -604,12 +605,16 @@ namespace NuGet.Packaging.Test
                 ISignatureProvider signatureProvider = null)
             {
                 var directory = TestDirectory.Create();
-                var signedPackagePath = Path.Combine(directory, Guid.NewGuid().ToString());
-                var outputPackagePath = Path.Combine(directory, Guid.NewGuid().ToString());
+                var signedPackageFile = new FileInfo(Path.Combine(directory, Guid.NewGuid().ToString()));
+                var outputPackageFile = new FileInfo(Path.Combine(directory, Guid.NewGuid().ToString()));
 
-                if (package != null)
+                if (package == null)
                 {
-                    using (Stream fileStream = File.OpenWrite(signedPackagePath))
+                    File.WriteAllBytes(signedPackageFile.FullName, Array.Empty<byte>());
+                }
+                else
+                {
+                    using (var fileStream = signedPackageFile.Create())
                     {
                         fileStream.Write(package, 0, package.Length);
                     }
@@ -618,23 +623,19 @@ namespace NuGet.Packaging.Test
                 signatureProvider = signatureProvider ?? Mock.Of<ISignatureProvider>();
                 var logger = new TestLogger();
                 var request = new AuthorSignPackageRequest(certificate, hashAlgorithm);
-                var signerOptions = new SigningOptions(signedPackagePath, outputPackagePath, false, signatureProvider, logger);
+                var overwrite = false;
+                var options = SigningOptions.CreateFromFilePaths(
+                    signedPackageFile.FullName,
+                    outputPackageFile.FullName,
+                    overwrite,
+                    signatureProvider,
+                    logger);
 
                 return new SignTest(
                     request,
                     directory,
-                    signerOptions,
+                    options,
                     logger);
-            }
-
-            internal Task<bool> IsSignedAsync()
-            {
-                using (var unused = new MemoryStream())
-                using (var outputStream = File.OpenRead(Options.OutputFilePath))
-                using (var signedPackage = new SignedPackageArchive(outputStream, unused))
-                {
-                    return signedPackage.IsSignedAsync(CancellationToken.None);
-                }
             }
         }
 #endif

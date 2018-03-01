@@ -119,6 +119,20 @@ namespace Test.Utility.Signing
             }
         }
 
+        public static async Task<bool> IsSignedAsync(Stream package)
+        {
+            var currentPosition = package.Position;
+
+            using (var reader = new PackageArchiveReader(package, leaveStreamOpen: true))
+            {
+                var isSigned = await reader.IsSignedAsync(CancellationToken.None);
+
+                package.Seek(offset: currentPosition, origin: SeekOrigin.Begin);
+
+                return isSigned;
+            }
+        }
+
         /// <summary>
         /// Sign a package for test purposes.
         /// This does not timestamp a signature and can be used outside corp network.
@@ -131,9 +145,15 @@ namespace Test.Utility.Signing
             using (var request = new AuthorSignPackageRequest(cert, HashAlgorithmName.SHA256))
             {
                 const bool overwrite = false;
-                var signingOptions = new SigningOptions(inputPackagePath, outputPackagePath, overwrite, testSignatureProvider, testLogger);
-
-                await SigningUtility.SignAsync(signingOptions, request, CancellationToken.None);
+                using (var options = SigningOptions.CreateFromFilePaths(
+                    inputPackagePath,
+                    outputPackagePath,
+                    overwrite,
+                    testSignatureProvider,
+                    testLogger))
+                {
+                    await SigningUtility.SignAsync(options, request, CancellationToken.None);
+                }
             }
 #endif
         }
@@ -151,9 +171,16 @@ namespace Test.Utility.Signing
         {
             var testSignatureProvider = new X509SignatureProvider(new Rfc3161TimestampProvider(timestampService));
             var overwrite = false;
-            var signingOptions = new SigningOptions(inputPackagePath, outputPackagePath, overwrite, testSignatureProvider, testLogger);
 
-            await SigningUtility.SignAsync(signingOptions, request, CancellationToken.None);
+            using (var options = SigningOptions.CreateFromFilePaths(
+                inputPackagePath,
+                outputPackagePath,
+                overwrite,
+                testSignatureProvider,
+                testLogger))
+            {
+                await SigningUtility.SignAsync(options, request, CancellationToken.None);
+            }
         }
 
         public static async Task<VerifySignaturesResult> VerifySignatureAsync(SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)

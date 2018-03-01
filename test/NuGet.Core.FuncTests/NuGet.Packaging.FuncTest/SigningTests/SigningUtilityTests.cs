@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.FuncTest
@@ -42,7 +43,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 await SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None);
 
-                var isSigned = await IsSignedAsync(test.Options.OutputFilePath);
+                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.Options.OutputPackageStream);
 
                 Assert.True(isSigned);
             }
@@ -51,19 +52,19 @@ namespace NuGet.Packaging.FuncTest
         [CIOnlyFact]
         public async Task RemoveSignaturesAsync_RemovesPackageSignatureAsync()
         {
-            using (var signTest = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
+            using (var directory = TestDirectory.Create())
+            using (var certificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             {
-                await SigningUtility.SignAsync(signTest.Options, signTest.Request, CancellationToken.None);
+                var signedPackageFile = await CreateSignedPackageAsync(directory, certificate);
 
-                var isSigned = await IsSignedAsync(signTest.Options.OutputFilePath);
-
-                Assert.True(isSigned);
-
-                using (var unsignTest = new Test(signTest.Options.OutputFilePath))
+                using (var test = new Test(signedPackageFile.FullName))
                 {
-                    await SigningUtility.RemoveSignatureAsync(unsignTest.Options.PackageFilePath, unsignTest.Options.OutputFilePath, CancellationToken.None);
+                    using (var package = new SignedPackageArchive(test.Options.InputPackageStream, test.Options.OutputPackageStream))
+                    {
+                        await package.RemoveSignatureAsync(CancellationToken.None);
+                    }
 
-                    isSigned = await IsSignedAsync(unsignTest.Options.OutputFilePath);
+                    var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.Options.OutputPackageStream);
 
                     Assert.False(isSigned);
                 }
@@ -81,10 +82,10 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(NuGetLogCode.NU3018, exception.Code);
                 Assert.Contains("Certificate chain validation failed.", exception.Message);
 
-                var isSigned = await IsSignedAsync(test.Options.PackageFilePath);
+                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.Options.InputPackageStream);
                 Assert.False(isSigned);
 
-                Assert.False(File.Exists(test.Options.OutputFilePath));
+                Assert.False(test.OutputFile.Exists);
             }
         }
 
@@ -99,23 +100,38 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(NuGetLogCode.NU3017, exception.Code);
                 Assert.Contains("The signing certificate is not yet valid", exception.Message);
 
-                var isSigned = await IsSignedAsync(test.Options.PackageFilePath);
+                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.Options.InputPackageStream);
                 Assert.False(isSigned);
 
-                Assert.False(File.Exists(test.Options.OutputFilePath));
-
+                Assert.False(test.OutputFile.Exists);
             }
         }
 
-        private static async Task<bool> IsSignedAsync(string packagePath)
+        private static async Task<FileInfo> CreateSignedPackageAsync(TestDirectory directory, X509Certificate2 certificate)
         {
-            using (var package = File.OpenRead(packagePath))
-            using (var reader = new PackageArchiveReader(package, leaveStreamOpen: true))
-            {
-                var isSigned = await reader.IsSignedAsync(CancellationToken.None);
+            var packageContext = new SimpleTestPackageContext();
+            var packageFileName = Guid.NewGuid().ToString();
+            var package = packageContext.CreateAsFile(directory, packageFileName);
+            var signatureProvider = new X509SignatureProvider(timestampProvider: null);
+            var overwrite = true;
+            var outputFile = new FileInfo(Path.Combine(directory, Guid.NewGuid().ToString()));
 
-                return isSigned;
+            using (var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256))
+            using (var options = SigningOptions.CreateFromFilePaths(
+                package.FullName,
+                outputFile.FullName,
+                overwrite,
+                signatureProvider,
+                NullLogger.Instance))
+            {
+                await SigningUtility.SignAsync(options, request, CancellationToken.None);
+
+                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(options.OutputPackageStream);
+
+                Assert.True(isSigned);
             }
+
+            return outputFile;
         }
 
         private sealed class Test : IDisposable
@@ -125,37 +141,56 @@ namespace NuGet.Packaging.FuncTest
 
             internal SigningOptions Options { get; }
             internal SignPackageRequest Request { get; }
+            internal FileInfo OutputFile { get; }
 
             private bool _isDisposed;
 
-            internal Test(X509Certificate2 certificate)
+            private Test()
             {
                 _directory = TestDirectory.Create();
+
+                var outputPath = Path.Combine(_directory, Guid.NewGuid().ToString());
+
+                OutputFile = new FileInfo(outputPath);
+            }
+
+            internal Test(X509Certificate2 certificate) : this()
+            {
                 _certificate = new X509Certificate2(certificate);
 
                 var packageContext = new SimpleTestPackageContext();
                 var packageFileName = Guid.NewGuid().ToString();
                 var package = packageContext.CreateAsFile(_directory, packageFileName);
-
-                var outputPath = Path.Combine(_directory, Guid.NewGuid().ToString());
-
                 var signatureProvider = new X509SignatureProvider(timestampProvider: null);
 
                 Request = new AuthorSignPackageRequest(_certificate, HashAlgorithmName.SHA256);
-                Options = new SigningOptions(packageFilePath: package.FullName, outputFilePath: outputPath, overwrite: true, signatureProvider: signatureProvider, logger: NullLogger.Instance);
+
+                var overwrite = true;
+
+                Options = SigningOptions.CreateFromFilePaths(
+                    package.FullName,
+                    OutputFile.FullName,
+                    overwrite,
+                    signatureProvider,
+                    NullLogger.Instance);
             }
 
-            internal Test(string packageFilePath)
+            internal Test(string packageFilePath) : this()
             {
-                _directory = TestDirectory.Create();
                 _certificate = new X509Certificate2();
-
-                var outputPath = Path.Combine(_directory, Guid.NewGuid().ToString());
 
                 var signatureProvider = new X509SignatureProvider(timestampProvider: null);
 
                 Request = new AuthorSignPackageRequest(_certificate, HashAlgorithmName.SHA256);
-                Options = new SigningOptions(packageFilePath: packageFilePath, outputFilePath: outputPath, overwrite: true, signatureProvider: signatureProvider, logger: NullLogger.Instance);
+
+                var overwrite = true;
+
+                Options = SigningOptions.CreateFromFilePaths(
+                    packageFilePath,
+                    OutputFile.FullName,
+                    overwrite,
+                    signatureProvider,
+                    NullLogger.Instance);
             }
 
             public void Dispose()
@@ -164,6 +199,7 @@ namespace NuGet.Packaging.FuncTest
                 {
                     Request?.Dispose();
                     _certificate?.Dispose();
+                    Options.Dispose();
                     _directory?.Dispose();
 
                     GC.SuppressFinalize(this);
