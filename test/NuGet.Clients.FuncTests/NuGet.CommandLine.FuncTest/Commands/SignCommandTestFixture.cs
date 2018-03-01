@@ -28,6 +28,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
         private TrustedTestCert<X509Certificate2> _trustedTimestampRoot;
+        private TrustedTestCert<X509Certificate2> _untrustedSelfIssuedCertificateInCertificateStore;
         private TrustedTestCertificateChain _trustedTestCertChain;
         private TrustedTestCertificateChain _revokedTestCertChain;
         private TrustedTestCertificateChain _revocationUnknownTestCertChain;
@@ -174,6 +175,24 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 }
 
                 return _revocationUnknownTestCertChain.Leaf;
+            }
+        }
+
+        public X509Certificate2 UntrustedSelfIssuedCertificateInCertificateStore
+        {
+            get
+            {
+                if (_untrustedSelfIssuedCertificateInCertificateStore == null)
+                {
+                    var certificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false);
+
+                    _untrustedSelfIssuedCertificateInCertificateStore = TrustedTestCert.Create(
+                        certificate,
+                        StoreName.My,
+                        StoreLocation.CurrentUser);
+                }
+
+                return new X509Certificate2(_untrustedSelfIssuedCertificateInCertificateStore.Source);
             }
         }
 
@@ -324,6 +343,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             _trustedTestCertExpired?.Dispose();
             _trustedTestCertNotYetValid?.Dispose();
             _trustedTimestampRoot?.Dispose();
+            _untrustedSelfIssuedCertificateInCertificateStore?.Dispose();
             _trustedTestCertChain?.Dispose();
             _revokedTestCertChain?.Dispose();
             _revocationUnknownTestCertChain?.Dispose();

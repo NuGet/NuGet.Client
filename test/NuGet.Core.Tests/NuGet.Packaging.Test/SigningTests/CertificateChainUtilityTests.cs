@@ -114,7 +114,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetCertificateChain_WithUntrustedSelfSignedCertificate_ReturnsChain()
+        public void GetCertificateChain_WithUntrustedSelfIssuedCertificate_ReturnsChain()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             {

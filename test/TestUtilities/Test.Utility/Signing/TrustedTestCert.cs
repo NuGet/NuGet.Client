@@ -96,9 +96,6 @@ namespace Test.Utility.Signing
             using (_store)
             {
                 _store.Remove(TrustedCert);
-#if IS_DESKTOP
-                _store.Close();
-#endif
             }
 
             DisposeCrl();
