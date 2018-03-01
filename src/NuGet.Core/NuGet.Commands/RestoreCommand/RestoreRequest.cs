@@ -132,16 +132,10 @@ namespace NuGet.Commands
         public ProjectStyle ProjectStyle { get; set; } = ProjectStyle.Unknown;
 
         /// <summary>
-        /// Restore output path
+        /// MSBuildProjectExtensionsPath, which is where the restore output will go
         /// </summary>
-        public string RestoreOutputPath { get; set; }
+        public string MSBuildProjectExtensionsPath { get; set; }
 
-        /// <summary>
-        /// Base Intermediate output path
-        /// </summary>
-        public string BaseIntermediateOutputPath { get; set; }
-
-        
         /// <summary>
         /// Compatibility options
         /// </summary>

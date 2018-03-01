@@ -153,7 +153,6 @@ namespace NuGet.Commands
                 ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle,
                 RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
                 DependencyGraphSpec = projectDgSpec,
-                BaseIntermediateOutputPath = projectPackageSpec.RestoreMetadata.OutputPath,
                 ParentId = restoreArgs.ParentId
             };
             

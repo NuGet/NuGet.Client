@@ -200,8 +200,8 @@
   <data name="ProjectNotLoaded_RestoreFailed" xml:space="preserve">
     <value>The operation failed as details for project {0} could not be loaded.</value>
   </data>
-  <data name="BaseIntermediateOutputPathNotFound" xml:space="preserve">
-    <value>The BaseIntermediateOutputPath MSBuild property could not be found for project '{0}'.</value>
+  <data name="MSBuildProjectExtensionsPathNotFound" xml:space="preserve">
+    <value>The MSBuildProjectExtensionsPath MSBuild property could not be found for project '{0}'.</value>
     <comment>{0} is the full path to the project.</comment>
   </data>
   <data name="ProjectCouldNotBeCastedToBuildPropertyStorage" xml:space="preserve">
