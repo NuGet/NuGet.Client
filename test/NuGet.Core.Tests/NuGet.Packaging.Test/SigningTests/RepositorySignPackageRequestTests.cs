@@ -36,7 +36,6 @@ namespace NuGet.Packaging.Test
                     certificate,
                     HashAlgorithmName.SHA256,
                     HashAlgorithmName.SHA256,
-                    SignaturePlacement.PrimarySignature,
                     new Uri("https://test.test"),
                     packageOwners: null));
 
@@ -55,7 +54,6 @@ namespace NuGet.Packaging.Test
                         certificate,
                         signatureHashAlgorithm,
                         HashAlgorithmName.SHA256,
-                        SignaturePlacement.PrimarySignature,
                         _validV3ServiceIndexUrl,
                         _validPackageOwners));
 
@@ -75,7 +73,6 @@ namespace NuGet.Packaging.Test
                         certificate,
                         HashAlgorithmName.SHA256,
                         timestampHashAlgorithm,
-                        SignaturePlacement.PrimarySignature,
                         _validV3ServiceIndexUrl,
                         _validPackageOwners));
 
@@ -83,23 +80,6 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
-        public void Constructor_WithInvalidSignaturePlacement_Throws()
-        {
-            using (var certificate = new X509Certificate2())
-            {
-                var exception = Assert.Throws<ArgumentException>(
-                    () => new RepositorySignPackageRequest(
-                        certificate,
-                        HashAlgorithmName.SHA256,
-                        HashAlgorithmName.SHA256,
-                        (SignaturePlacement)int.MinValue,
-                        _validV3ServiceIndexUrl,
-                        _validPackageOwners));
-
-                Assert.Equal("signaturePlacement", exception.ParamName);
-            }
-        }
 
         [Fact]
         public void Constructor_WhenV3ServiceIndexUrlNull_Throws()
@@ -111,7 +91,6 @@ namespace NuGet.Packaging.Test
                         certificate,
                         HashAlgorithmName.SHA256,
                         HashAlgorithmName.SHA256,
-                        SignaturePlacement.PrimarySignature,
                         v3ServiceIndexUrl: null,
                         packageOwners: _validPackageOwners));
 
@@ -129,7 +108,6 @@ namespace NuGet.Packaging.Test
                         certificate,
                         HashAlgorithmName.SHA256,
                         HashAlgorithmName.SHA256,
-                        SignaturePlacement.PrimarySignature,
                         new Uri("/", UriKind.Relative),
                         _validPackageOwners));
 
@@ -148,7 +126,6 @@ namespace NuGet.Packaging.Test
                         certificate,
                         HashAlgorithmName.SHA256,
                         HashAlgorithmName.SHA256,
-                        SignaturePlacement.PrimarySignature,
                         new Uri("http://test.test", UriKind.Absolute),
                         _validPackageOwners));
 
@@ -170,7 +147,6 @@ namespace NuGet.Packaging.Test
                         certificate,
                         HashAlgorithmName.SHA256,
                         HashAlgorithmName.SHA256,
-                        SignaturePlacement.PrimarySignature,
                         _validV3ServiceIndexUrl,
                         new string[] { packageOwner }));
 
@@ -187,12 +163,10 @@ namespace NuGet.Packaging.Test
                 certificate,
                 HashAlgorithmName.SHA256,
                 HashAlgorithmName.SHA384,
-                SignaturePlacement.Countersignature,
                 _validV3ServiceIndexUrl,
                 _validPackageOwners))
             {
                 Assert.Equal(SignatureType.Repository, request.SignatureType);
-                Assert.Equal(SignaturePlacement.Countersignature, request.SignaturePlacement);
                 Assert.Same(certificate, request.Certificate);
                 Assert.Equal(HashAlgorithmName.SHA256, request.SignatureHashAlgorithm);
                 Assert.Equal(HashAlgorithmName.SHA384, request.TimestampHashAlgorithm);

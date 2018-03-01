@@ -182,4 +182,24 @@ nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p
   <data name="MSSignCommandOverwriteDescription" xml:space="preserve">
     <value>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</value>
   </data>
+  <data name="RepoSignCommandDescription" xml:space="preserve">
+    <value>Sign a NuGet package by adding repository signature with specified p7b file.</value>
+  </data>
+  <data name="RepoSignCommandOwnersDescription" xml:space="preserve">
+    <value>Semicolon separated list of package owners.</value>
+  </data>
+  <data name="RepoSignCommandUsageDescription" xml:space="preserve">
+    <value>Sign a NuGet package with repository signature.</value>
+  </data>
+  <data name="RepoSignCommandUsageExamples" xml:space="preserve">
+    <value>nuget reposign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Cryptographic Service Provider"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a"  -Owners bar;foo -V3ServiceIndexUrl https://v3.index
+
+nuget reposign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Cryptographic Service Provider"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a" -OutputDirectory .\..\Signed -Owners bar;foo -V3ServiceIndexUrl https://v3.index</value>
+  </data>
+  <data name="RepoSignCommandUsageSummary" xml:space="preserve">
+    <value>&lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; -CertificateFile &lt;p7b_file_path&gt; -CSPName &lt;cryptographic_service_provider_name&gt; -KeyContainer &lt;key_container_guid&gt; -CertificateFingerprint &lt;certificate_fingerprint&gt; -Owners &lt;package_owners&gt; -V3ServiceIndexUrl &lt;v3_service_index_url&gt;</value>
+  </data>
+  <data name="RepoSignCommandV3ServiceIndexUrlDescription" xml:space="preserve">
+    <value>Repository v3 service index url.</value>
+  </data>
 </root>

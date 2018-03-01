@@ -146,7 +146,6 @@ namespace NuGet.Packaging.FuncTest
                     new X509Certificate2(certificate),
                     HashAlgorithmName.SHA256,
                     HashAlgorithmName.SHA256,
-                    SignaturePlacement.Countersignature,
                     v3ServiceIndexUrl,
                     packageOwners);
                 var cmsSigner = SigningUtility.CreateCmsSigner(request, NullLogger.Instance);

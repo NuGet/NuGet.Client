@@ -344,7 +344,6 @@ namespace NuGet.Packaging.Test
                 certificate,
                 Common.HashAlgorithmName.SHA256,
                 Common.HashAlgorithmName.SHA256,
-                SignaturePlacement.PrimarySignature,
                 v3ServiceIndexUrl,
                 packageOwners))
             {
@@ -700,7 +699,6 @@ namespace NuGet.Packaging.Test
                 certificate,
                 Common.HashAlgorithmName.SHA256,
                 Common.HashAlgorithmName.SHA256,
-                SignaturePlacement.PrimarySignature,
                 v3ServiceIndexUrl,
                 packageOwners);
         }
