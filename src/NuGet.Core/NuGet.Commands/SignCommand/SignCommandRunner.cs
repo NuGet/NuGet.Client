@@ -137,13 +137,19 @@ namespace NuGet.Commands
             try
             {
                 await SigningUtility.SignAsync(signingOptions, signRequest, token);
-            }
-            finally
-            {
+
                 if (File.Exists(signingOptions.OutputFilePath))
                 {
                     FileUtility.Replace(signingOptions.OutputFilePath, packageOutputPath);
                 }
+            }
+            catch
+            {
+                if (File.Exists(signingOptions.OutputFilePath))
+                {
+                    FileUtility.Delete(signingOptions.OutputFilePath);
+                }
+                throw;
             }
         }
 

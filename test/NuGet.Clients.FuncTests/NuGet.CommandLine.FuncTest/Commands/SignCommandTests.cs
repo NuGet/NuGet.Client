@@ -3,10 +3,12 @@
 
 using System;
 using System.IO;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Common;
+using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
@@ -648,6 +650,49 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                     Assert.True(result.Success);
                     Assert.Contains(_noTimestamperWarningCode, result.AllOutput);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task SignCommand_SignPackageWithUnsuportedTimestampHashAlgorithm_ShouldNotModifyPackageAsync()
+        {
+            var testServer = await _testFixture.GetSigningTestServerAsync();
+            var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
+            var options = new TimestampServiceOptions() { SignatureHashAlgorithm = new Oid(Oids.Sha1) };
+            var timestampService = TimestampService.Create(certificateAuthority, options);
+
+            using (testServer.RegisterResponder(timestampService))
+            using (var directory = TestDirectory.Create())
+            {
+                var packageContext = new SimpleTestPackageContext();
+                var packageFile = packageContext.CreateAsFile(directory, fileName: Guid.NewGuid().ToString());
+
+                byte[] originalFile;
+                using (var packageStream = packageFile.OpenRead())
+                using(var ms = new MemoryStream())
+                {
+                    packageStream.CopyTo(ms);
+                    originalFile = ms.ToArray();
+                }
+
+                using (var certificate = _testFixture.UntrustedSelfIssuedCertificateInCertificateStore)
+                {
+                    var result = CommandRunner.Run(
+                        _nugetExePath,
+                        directory,
+                        $"sign {packageFile.FullName} -CertificateFingerprint {certificate.Thumbprint} -Timestamper {timestampService.Url}",
+                        waitForExit: true);
+
+                    Assert.False(result.Success);
+                    Assert.Contains("The timestamp certificate has an unsupported signature algorithm.", result.AllOutput);
+                    using (var packageStream = packageFile.OpenRead())
+                    using (var ms = new MemoryStream())
+                    {
+                        packageStream.CopyTo(ms);
+                        var newFile = ms.ToArray();
+                        Assert.Equal(newFile, originalFile);
+                    }
                 }
             }
         }
