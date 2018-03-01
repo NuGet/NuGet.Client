@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.UI
             {
                 _collapseDependencies = value;
                 OnPropertyChanged(nameof(DirectDependencies));
-                OnPropertyChanged(nameof(TransiviteDependencies));
+                OnPropertyChanged(nameof(TransitiveDependencies));
             }
         }
 
@@ -101,7 +101,7 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<string> DirectDependencies => CollapseDependencies ? IncludedCollapsedPackages : AllPackages;
 
-        public IEnumerable<string> TransiviteDependencies => CollapseDependencies ? DependencyPackages : new List<string>();
+        public IEnumerable<string> TransitiveDependencies => CollapseDependencies ? DependencyPackages : new List<string>();
 
         private IEnumerable<string> DependencyPackages => _dependencyPackages ?? (_dependencyPackages = GetDependencyPackages());
 

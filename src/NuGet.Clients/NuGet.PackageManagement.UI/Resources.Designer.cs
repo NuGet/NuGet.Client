@@ -961,7 +961,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Upgrading Project.
+        ///   Looks up a localized string similar to Upgrading Project to PackageReference.
         /// </summary>
         public static string NuGetUpgrade_WaitMessage {
             get {
@@ -1330,15 +1330,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_ChangesForProject {
             get {
                 return ResourceManager.GetString("Text_ChangesForProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This tool will switch your project from using packages.config to using project.json to maintain your NuGet packages..
-        /// </summary>
-        public static string Text_ConvertPackagesConfigIntroText1 {
-            get {
-                return ResourceManager.GetString("Text_ConvertPackagesConfigIntroText1", resourceCulture);
             }
         }
         
@@ -1897,6 +1888,15 @@ namespace NuGet.PackageManagement.UI {
         public static string UpgradeLogger_BackupPathMustBeValid {
             get {
                 return ResourceManager.GetString("UpgradeLogger_BackupPathMustBeValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project cannot be upgraded as backing up the project file and packages.config ran into an issue..
+        /// </summary>
+        public static string Upgrader_BackupFailed {
+            get {
+                return ResourceManager.GetString("Upgrader_BackupFailed", resourceCulture);
             }
         }
         

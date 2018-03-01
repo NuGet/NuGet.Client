@@ -41,23 +41,26 @@ namespace NuGet.PackageManagement.UI
             {
                 try
                 {
-                    // 1. Backup files that will change
+                    // 1. Backup files (csproj and packages.config) that will change
                     var solutionManager = context.SolutionManager;
-                    var solutionDirectory = solutionManager.SolutionDirectory;
-                    var backupPath = Path.Combine(solutionDirectory, "Backup", NuGetProject.GetUniqueNameOrName(nuGetProject));
-                    Directory.CreateDirectory(backupPath);
-
-                    // Backup packages.config
                     var msBuildNuGetProject = (MSBuildNuGetProject)nuGetProject;
-                    var packagesConfigFullPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
-                    var packagesConfigFileName = Path.GetFileName(packagesConfigFullPath);
-                    File.Copy(packagesConfigFullPath, Path.Combine(backupPath, packagesConfigFileName), true);
-
-                    // Backup project file
                     var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem;
-                    var projectFullPath = msBuildNuGetProjectSystem.ProjectFileFullPath;
-                    var projectFileName = Path.GetFileName(projectFullPath);
-                    File.Copy(projectFullPath, Path.Combine(backupPath, projectFileName), true);
+                    var backupPath = string.Empty;
+                    try
+                    {
+                        backupPath = CreateBackup(msBuildNuGetProject, solutionManager.SolutionDirectory);
+                    }
+                    catch(Exception ex)
+                    {
+                        status = NuGetOperationStatus.Failed;
+                        // log error message
+                        uiService.ShowError(ex);
+                        uiService.ProjectContext.Log(MessageLevel.Info,
+                            string.Format(CultureInfo.CurrentCulture, Resources.Upgrader_BackupFailed));
+
+                        return null;
+                    }
+                    
 
                     // 2. Uninstall all packages currently in packages.config
                     var progressData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage, Resources.NuGetUpgrade_Progress_Uninstalling);
@@ -80,9 +83,6 @@ namespace NuGet.PackageManagement.UI
                         uiService.ProjectContext.Log(MessageLevel.Info,
                             string.Format(CultureInfo.CurrentCulture, Resources.Upgrade_UninstallFailed));
 
-                        // delete backup directory
-                        Directory.Delete(backupPath);
-
                         return null;
                     }
 
@@ -90,7 +90,6 @@ namespace NuGet.PackageManagement.UI
                     var uniqueName = msBuildNuGetProjectSystem.ProjectUniqueName;
                     await msBuildNuGetProject.SaveAsync(token);
 
-                    //solutionManager.ReloadProject(nuGetProject);
                     nuGetProject = await solutionManager.GetNuGetProjectAsync(uniqueName);
                     nuGetProject = await solutionManager.UpgradeProjectToPackageReferenceAsync(nuGetProject);
 
@@ -154,6 +153,12 @@ namespace NuGet.PackageManagement.UI
 
                    
                 }
+                catch (Exception ex)
+                {
+                    status = NuGetOperationStatus.Failed;
+                    uiService.ShowError(ex);
+                    return null;
+                }
                 finally
                 {
                     telemetry.TelemetryEvent = VSTelemetryServiceUtility.GetUpgradeTelemetryEvent(
@@ -171,6 +176,26 @@ namespace NuGet.PackageManagement.UI
                 upgradeDependencyItems.Where(
                     upgradeDependencyItem => !collapseDependencies || !upgradeDependencyItem.DependingPackages.Any())
                     .Select(upgradeDependencyItem => upgradeDependencyItem.Package);
+        }
+
+        private static string CreateBackup(MSBuildNuGetProject msBuildNuGetProject, string solutionDirectory)
+        {
+            var guid = Guid.NewGuid().ToString().Split('-').First();
+            var backupPath = Path.Combine(solutionDirectory, $"Backup_{guid}", NuGetProject.GetUniqueNameOrName(msBuildNuGetProject));
+            Directory.CreateDirectory(backupPath);
+
+            // Backup packages.config
+            var packagesConfigFullPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
+            var packagesConfigFileName = Path.GetFileName(packagesConfigFullPath);
+            File.Copy(packagesConfigFullPath, Path.Combine(backupPath, packagesConfigFileName), overwrite: true);
+
+            // Backup project file
+            var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem;
+            var projectFullPath = msBuildNuGetProjectSystem.ProjectFileFullPath;
+            var projectFileName = Path.GetFileName(projectFullPath);
+            File.Copy(projectFullPath, Path.Combine(backupPath, projectFileName), overwrite: true);
+
+            return backupPath;
         }
     }
 }

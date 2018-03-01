@@ -193,7 +193,7 @@ namespace NuGet.PackageManagement.UI
             {
                 upgradeLogger.RegisterPackage(projectName, package, true);
             }
-            foreach (var package in upgradeInformationWindowModel.TransiviteDependencies)
+            foreach (var package in upgradeInformationWindowModel.TransitiveDependencies)
             {
                 upgradeLogger.RegisterPackage(projectName, package, false);
             }

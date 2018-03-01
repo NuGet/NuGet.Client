@@ -694,13 +694,10 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Uninstalling packages from packages.config</value>
   </data>
   <data name="NuGetUpgrade_WaitMessage" xml:space="preserve">
-    <value>Upgrading Project</value>
+    <value>Upgrading Project to PackageReference</value>
   </data>
   <data name="NuGetUpgrade_PackageDependencyOf" xml:space="preserve">
     <value>(dependency of {0})</value>
-  </data>
-  <data name="Text_ConvertPackagesConfigIntroText1" xml:space="preserve">
-    <value>This tool will switch your project from using packages.config to using project.json to maintain your NuGet packages.</value>
   </data>
   <data name="Text_ConvertPackagesConfigIntroText2" xml:space="preserve">
     <value>By default, dependencies will be collapsed (packages that are included as dependencies of other packages won't be included in the resulting project.json file). Deselect this option to include all packages.</value>
@@ -791,5 +788,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Text_TransitiveDependencies" xml:space="preserve">
     <value>Transitive Dependencies</value>
+  </data>
+  <data name="Upgrader_BackupFailed" xml:space="preserve">
+    <value>The project cannot be upgraded as backing up the project file and packages.config ran into an issue.</value>
   </data>
 </root>
