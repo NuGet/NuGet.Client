@@ -107,21 +107,23 @@ namespace NuGet.Packaging.FuncTest
             using (var directory = TestDirectory.Create())
             using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA512, HashAlgorithmName.SHA256);
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(
-                    certificate,
-                    packageContext,
-                    directory,
-                    timestampService.Url,
-                    request);
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
-                using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                using (var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA512, HashAlgorithmName.SHA256))
                 {
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
-                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                    var signedPackagePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(
+                        certificate,
+                        packageContext,
+                        directory,
+                        timestampService.Url,
+                        request);
+                    var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                    using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                    {
+                        var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                        var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
-                    result.Valid.Should().BeTrue();
-                    resultsWithErrors.Count().Should().Be(0);
+                        result.Valid.Should().BeTrue();
+                        resultsWithErrors.Count().Should().Be(0);
+                    }
                 }
             }
         }

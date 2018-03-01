@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -237,10 +238,12 @@ namespace NuGet.Test.Utility
             {
                 using (var signPackage = new SignedPackageArchive(tempStream, stream))
                 {
-                    using (var request = new AuthorSignPackageRequest(packageContext.AuthorSignatureCertificate, HashAlgorithmName.SHA256))
+#if IS_DESKTOP
+                    using (var request = new AuthorSignPackageRequest(new X509Certificate2(packageContext.AuthorSignatureCertificate), HashAlgorithmName.SHA256))
                     {
                         AddSignatureToPackageAsync(signPackage, request, testLogger).Wait();
                     }
+#endif
                 }
 
                 tempStream.Dispose();

@@ -97,10 +97,8 @@ namespace NuGet.Commands
 
                         // Set the output of the signing operation to a temp package because signing is cannot be done in place
                         var tempPackagePath = Path.GetTempFileName();
-                        using (var signerOptions = new SignerOptions(packagePath, tempPackagePath, overwrite, signatureProvider, signPackageRequest, logger))
-                        {
-                            await SignPackageAsync(signerOptions, outputPath, token);
-                        }
+                        var signingOptions = new SigningOptions(packagePath, tempPackagePath, overwrite, signatureProvider, logger);
+                        await SignPackageAsync(signingOptions, signPackageRequest, outputPath, token);
                     }
                     catch (Exception e)
                     {
@@ -130,26 +128,23 @@ namespace NuGet.Commands
             return new X509SignatureProvider(timestampProvider);
         }
 
-        private async Task<int> SignPackageAsync(
-            SignerOptions signerOptions,
+        private async Task SignPackageAsync(
+            SigningOptions signingOptions,
+            SignPackageRequest signRequest,
             string packageOutputPath,
             CancellationToken token)
         {
             try
             {
-                var signer = new Signer(signerOptions);
-
-                await signer.SignAsync(token);
+                await SigningUtility.SignAsync(signingOptions, signRequest, token);
             }
             finally
             {
-                if (File.Exists(signerOptions.OutputFilePath))
+                if (File.Exists(signingOptions.OutputFilePath))
                 {
-                    FileUtility.Replace(signerOptions.OutputFilePath, packageOutputPath);
+                    FileUtility.Replace(signingOptions.OutputFilePath, packageOutputPath);
                 }
             }
-
-            return 0;
         }
 
         private static async Task<X509Certificate2> GetCertificateAsync(SignArgs signArgs)

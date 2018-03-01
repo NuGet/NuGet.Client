@@ -4,7 +4,6 @@
 #if IS_DESKTOP
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -25,7 +24,6 @@ namespace NuGet.Packaging.FuncTest
 
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
-        private IList<ISignatureVerificationProvider> _trustProviders;
 
         public AllowListVerificationProviderTests(SigningTestFixture fixture)
         {

@@ -45,11 +45,12 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
+            using (var cert = new X509Certificate2(_trustedTestCert.Source.Cert))
             using (var dir = TestDirectory.Create())
             {
                 // Act
                 var signedPackagePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(
-                    _trustedTestCert.Source.Cert,
+                    cert,
                     nupkg,
                     dir,
                     timestampService.Url);
