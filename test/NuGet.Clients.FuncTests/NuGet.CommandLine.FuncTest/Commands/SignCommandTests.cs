@@ -667,14 +667,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 var packageContext = new SimpleTestPackageContext();
                 var packageFile = packageContext.CreateAsFile(directory, fileName: Guid.NewGuid().ToString());
-
-                byte[] originalFile;
-                using (var packageStream = packageFile.OpenRead())
-                using(var ms = new MemoryStream())
-                {
-                    packageStream.CopyTo(ms);
-                    originalFile = ms.ToArray();
-                }
+                var originalFile = File.ReadAllBytes(packageFile.FullName);
 
                 using (var certificate = _testFixture.UntrustedSelfIssuedCertificateInCertificateStore)
                 {
@@ -686,13 +679,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                     Assert.False(result.Success);
                     Assert.Contains("The timestamp certificate has an unsupported signature algorithm.", result.AllOutput);
-                    using (var packageStream = packageFile.OpenRead())
-                    using (var ms = new MemoryStream())
-                    {
-                        packageStream.CopyTo(ms);
-                        var newFile = ms.ToArray();
-                        Assert.Equal(newFile, originalFile);
-                    }
+
+                    var resultingFile = File.ReadAllBytes(packageFile.FullName);
+                    Assert.Equal(resultingFile, originalFile);
                 }
             }
         }
