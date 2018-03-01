@@ -94,8 +94,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Assert
                 result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
-                result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
-                result.AllOutput.Should().Contain("The certificate is not valid for the requested usage");
             }
         }
 
@@ -253,8 +251,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Assert
                 result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
-                result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
-                result.AllOutput.Should().Contain("The certificate is revoked");
             }
         }
 
@@ -631,6 +627,28 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Assert
                 firstResult.Success.Should().BeFalse();
                 firstResult.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
+            }
+        }
+
+        [CIOnlyFact]
+        public void SignCommand_SignPackageWithUntrustedSelfIssuedCertificateInCertificateStore()
+        {
+            using (var directory = TestDirectory.Create())
+            {
+                var packageContext = new SimpleTestPackageContext();
+                var packageFile = packageContext.CreateAsFile(directory, fileName: Guid.NewGuid().ToString());
+
+                using (var certificate = _testFixture.UntrustedSelfIssuedCertificateInCertificateStore)
+                {
+                    var result = CommandRunner.Run(
+                        _nugetExePath,
+                        directory,
+                        $"sign {packageFile.FullName} -CertificateFingerprint {certificate.Thumbprint}",
+                        waitForExit: true);
+
+                    Assert.True(result.Success);
+                    Assert.Contains(_noTimestamperWarningCode, result.AllOutput);
+                }
             }
         }
     }

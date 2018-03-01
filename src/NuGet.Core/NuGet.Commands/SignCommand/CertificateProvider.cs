@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.Commands
 {
@@ -132,23 +134,33 @@ namespace NuGet.Commands
 
         private static X509Certificate2Collection LoadCertificateFromStore(CertificateSourceOptions options)
         {
-            var resultCollection = new X509Certificate2Collection();
+            X509Certificate2Collection resultCollection = null;
             var store = new X509Store(options.StoreName, options.StoreLocation);
 
             OpenStore(store);
 
+            // Passing true for validOnly seems like a good idea; it would filter out invalid certificates.
+            // However, "invalid certificates" is a broad category that includes untrusted self-issued certificates.
+            // Untrusted self-issued certificates are permitted at signing time, so we must perform certificate
+            // validity checks ourselves.
+            const bool validOnly = false;
+
             if (!string.IsNullOrEmpty(options.Fingerprint))
             {
-                resultCollection = store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly: true);
+                resultCollection = store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly);
             }
             else if (!string.IsNullOrEmpty(options.SubjectName))
             {
-                resultCollection = store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly: true);
+                resultCollection = store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly);
             }
 
 #if IS_DESKTOP
             store.Close();
 #endif
+
+            resultCollection = resultCollection ?? new X509Certificate2Collection();
+            resultCollection = GetValidCertificates(resultCollection);
+
             return resultCollection;
         }
 
@@ -172,6 +184,41 @@ namespace NuGet.Commands
                         store));
                 }
             }
+        }
+
+        private static X509Certificate2Collection GetValidCertificates(X509Certificate2Collection certificates)
+        {
+            var validCertificates = new X509Certificate2Collection();
+
+            foreach (var certificate in certificates)
+            {
+                if (IsValid(certificate, certificates))
+                {
+                    validCertificates.Add(certificate);
+                }
+            }
+
+            return validCertificates;
+        }
+
+        private static bool IsValid(X509Certificate2 certificate, X509Certificate2Collection extraStore)
+        {
+            IReadOnlyList<X509Certificate2> chain;
+
+            try
+            {
+                chain = CertificateChainUtility.GetCertificateChain(
+                    certificate,
+                    extraStore,
+                    NullLogger.Instance,
+                    CertificateType.Signature);
+            }
+            catch (SignatureException)
+            {
+                return false;
+            }
+
+            return chain != null && chain.Count > 0;
         }
     }
 }
