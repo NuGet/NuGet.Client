@@ -67,7 +67,8 @@ namespace NuGet.Commands
 
             if (packageSpec.RestoreMetadata?.ProjectStyle == ProjectStyle.DotnetToolReference)
             {
-                if (packageSpec.GetAllPackageDependencies().Count() != 1)
+                // Autoreferenced packages are allowed. Currently they're using Microsoft.NET.Platforms as an auto-ref package
+                if (packageSpec.GetAllPackageDependencies().Where(e => !e.AutoReferenced).Count() != 1)
                 {
                     // Create issue
                     var issue = CompatibilityIssue.IncompatibleProjectType(
@@ -382,7 +383,8 @@ namespace NuGet.Commands
 
             if (ProjectStyle.DotnetToolReference == compatibilityData.PackageSpec.RestoreMetadata?.ProjectStyle)
             {
-                if (!containsDotnetToolPackageType && compatibilityData.PackageSpec.GetAllPackageDependencies().Any(e => e.Name.Equals(compatibilityData.TargetLibrary.Name, StringComparison.OrdinalIgnoreCase)))
+                // If the package is not autoreferenced or a tool package
+                if (!containsDotnetToolPackageType && compatibilityData.PackageSpec.GetAllPackageDependencies().Where(e => !e.AutoReferenced).Any(e => e.Name.Equals(compatibilityData.TargetLibrary.Name, StringComparison.OrdinalIgnoreCase)))
                 {
                     var issue = CompatibilityIssue.IncompatiblePackageWithDotnetTool(new PackageIdentity(node.Key.Name, node.Key.Version));
                     issues.Add(issue);
