@@ -10,8 +10,14 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
-    internal class MisplacedAssemblyRule : IPackageRule
+    internal class MisplacedAssemblyOutsideLibRule : IPackageRule
     {
+        public string MessageFormat { get; }
+
+        public MisplacedAssemblyOutsideLibRule(string messageFormat)
+        {
+            MessageFormat = messageFormat;
+        }
         public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
             foreach (var packageFile in builder.GetFiles())
@@ -19,15 +25,7 @@ namespace NuGet.Packaging.Rules
                 var file = PathUtility.GetPathWithDirectorySeparator(packageFile);
                 var directory = Path.GetDirectoryName(file);
 
-                // if under 'lib' directly
-                if (directory.Equals(PackagingConstants.Folders.Lib, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (PackageHelper.IsAssembly(file))
-                    {
-                        yield return CreatePackageIssueForAssembliesUnderLib(file);
-                    }
-                }
-                else if (!ValidFolders.Any(folder => file.StartsWith(folder, StringComparison.OrdinalIgnoreCase)))
+                if (!ValidFolders.Any(folder => file.StartsWith(folder, StringComparison.OrdinalIgnoreCase)))
                 {
                     // when checking for assemblies outside 'lib' folder, only check .dll files.
                     // .exe files are often legitimate outside 'lib'.
@@ -40,17 +38,10 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackLogMessage CreatePackageIssueForAssembliesUnderLib(string target)
+        private PackLogMessage CreatePackageIssueForAssembliesOutsideLib(string target)
         {
             return PackLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyDirectlyUnderLibWarning, target),
-                NuGetLogCode.NU5101);
-        }
-
-        private static PackLogMessage CreatePackageIssueForAssembliesOutsideLib(string target)
-        {
-            return PackLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyOutsideLibWarning, target),
+                string.Format(CultureInfo.CurrentCulture, MessageFormat, target),
                 NuGetLogCode.NU5100);
         }
 
@@ -67,6 +58,7 @@ namespace NuGet.Packaging.Rules
                 yield return PackagingConstants.Folders.Runtimes + Path.DirectorySeparatorChar;
                 yield return PackagingConstants.Folders.Native + Path.DirectorySeparatorChar;
                 yield return PackagingConstants.Folders.Build + Path.DirectorySeparatorChar;
+                yield return PackagingConstants.Folders.BuildCrossTargeting + Path.DirectorySeparatorChar;
                 yield return PackagingConstants.Folders.Tools + Path.DirectorySeparatorChar;
                 yield break;
             }

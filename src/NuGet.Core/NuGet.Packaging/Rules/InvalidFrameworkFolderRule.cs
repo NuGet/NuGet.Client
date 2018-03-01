@@ -15,12 +15,19 @@ namespace NuGet.Packaging.Rules
     {
         private const string LibDirectory = "lib";
 
+        public string MessageFormat { get; }
+
+        public InvalidFrameworkFolderRule(string messageFormat)
+        {
+            MessageFormat = messageFormat;
+        }
+
         public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var file in builder.GetFiles().Select(t => PathUtility.GetPathWithDirectorySeparator(t)))
             {
-                string[] parts = file.Split(Path.DirectorySeparatorChar);
+                var parts = file.Split(Path.DirectorySeparatorChar);
                 if (parts.Length >= 3 && parts[0].Equals(LibDirectory, StringComparison.OrdinalIgnoreCase))
                 {
                     set.Add(file);
@@ -52,7 +59,7 @@ namespace NuGet.Packaging.Rules
             // starting from NuGet 1.8, we support localized packages, which
             // can have a culture folder under lib, e.g. lib\fr-FR\strings.resources.dll
             var nuspecReader = builder.NuspecReader;
-            if (String.IsNullOrEmpty(nuspecReader.GetLanguage()))
+            if (string.IsNullOrEmpty(nuspecReader.GetLanguage()))
             {
                 return false;
             }
@@ -64,7 +71,7 @@ namespace NuGet.Packaging.Rules
         private PackLogMessage CreatePackageIssue(string target)
         {
             return PackLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.InvalidFrameworkWarning, target),
+                string.Format(CultureInfo.CurrentCulture, MessageFormat, target),
                 NuGetLogCode.NU5103);
         }
     }
