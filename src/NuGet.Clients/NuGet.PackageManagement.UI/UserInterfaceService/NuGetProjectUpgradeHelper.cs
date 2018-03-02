@@ -24,7 +24,16 @@ namespace NuGet.PackageManagement.UI
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 VsProjectTypes.CsharpProjectTypeGuid,
-                VsProjectTypes.VbProjectTypeGuid
+                VsProjectTypes.VbProjectTypeGuid,
+                VsProjectTypes.FsharpProjectTypeGuid
+            };
+
+        private static readonly HashSet<string> UnupgradeableProjectTypes =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                VsProjectTypes.CppProjectTypeGuid,
+                VsProjectTypes.WebApplicationProjectTypeGuid,
+                VsProjectTypes.WebSiteProjectTypeGuid
             };
 
         public static async Task<bool> IsNuGetProjectUpgradeableAsync(NuGetProject nuGetProject, Project envDTEProject = null)
@@ -48,6 +57,11 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
+            if(!nuGetProject.ProjectServices.Capabilities.SupportsPackageReferences)
+            {
+                return false;
+            }
+
             var msBuildNuGetProject = nuGetProject as MSBuildNuGetProject;
             if (msBuildNuGetProject == null || !msBuildNuGetProject.PackagesConfigNuGetProject.PackagesConfigExists())
             {
@@ -69,11 +83,16 @@ namespace NuGet.PackageManagement.UI
             {
                 return false;
             }
+            var projectGuids = VsHierarchyUtility.GetProjectTypeGuids(envDTEProject);
+
+            if(projectGuids.Any(t => UnupgradeableProjectTypes.Contains(t)))
+            {
+                return false;
+            }
 
             // Project is supported language, and not an unsupported type
             return UpgradeableProjectTypes.Contains(envDTEProject.Kind) &&
-                   VsHierarchyUtility.GetProjectTypeGuids(envDTEProject)
-                       .All(projectTypeGuid => !SupportedProjectTypes.IsUnsupported(projectTypeGuid));
+                   projectGuids.All(projectTypeGuid => !SupportedProjectTypes.IsUnsupported(projectTypeGuid));
         }
 
         public static bool IsPackagesConfigSelected(IVsMonitorSelection vsMonitorSelection)
