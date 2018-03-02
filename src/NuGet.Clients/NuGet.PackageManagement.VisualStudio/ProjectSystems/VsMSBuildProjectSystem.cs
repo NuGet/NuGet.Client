@@ -727,6 +727,19 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public VSLangProj157.References3 References3
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                dynamic projectObj = VsProjectAdapter.Project.Object;
+                var references = (VSLangProj157.References3)projectObj.References;
+                projectObj = null;
+                return references;
+            }
+        }
+
         public async Task AddFrameworkReferenceAsync(string name, string packageId)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -794,7 +807,20 @@ namespace NuGet.PackageManagement.VisualStudio
                     assemblyFullPath = Path.Combine(projectFullPath, referencePath);
 
                     // Add a reference to the project
-                    dynamic reference = References.Add(assemblyFullPath);
+                    dynamic reference;
+                    try
+                    {
+                        // First try the References3.AddFiles API, as that will incur fewer
+                        // design-time builds.
+                        References3.AddFiles(new[] { assemblyFullPath }, out var referencesArray);
+                        var references = (VSLangProj.Reference[])referencesArray;
+                        reference = references[0];
+                    }
+                    catch (Exception)
+                    {
+                        // If that didn't work, fall back to References.Add.
+                        reference = References.Add(assemblyFullPath);
+                    }
 
                     if (reference != null)
                     {
