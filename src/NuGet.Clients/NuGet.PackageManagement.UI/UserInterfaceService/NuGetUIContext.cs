@@ -1,9 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -68,5 +72,25 @@ namespace NuGet.PackageManagement.UI
         public IUserSettingsManager UserSettingsManager { get; }
 
         public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
+
+        public async  Task<bool> IsNuGetProjectUpgradeable(NuGetProject project)
+        {
+            return await NuGetProjectUpgradeHelper.IsNuGetProjectUpgradeableAsync(project);
+        }
+
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
+        public IModalProgressDialogSession StartModalProgressDialog(string caption, ProgressDialogData initialData, INuGetUI uiService)
+        {
+            var waitForDialogFactory = (IVsThreadedWaitDialogFactory)Package.GetGlobalService(typeof(SVsThreadedWaitDialogFactory));
+            var progressData = new ThreadedWaitDialogProgressData(
+                initialData.WaitMessage,
+                initialData.ProgressText,
+                null,
+                initialData.IsCancelable,
+                initialData.CurrentStep,
+                initialData.TotalSteps);
+            var session = waitForDialogFactory.StartWaitDialog(caption, progressData);
+            return new VisualStudioProgressDialogSession(session);
+        }
     }
 }

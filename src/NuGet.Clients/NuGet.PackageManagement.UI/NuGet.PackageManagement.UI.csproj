@@ -37,6 +37,7 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Caching" />
@@ -50,13 +51,17 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\PackagesConfigToPackageReferenceMigrator.cs" />
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
+    <Compile Include="Actions\UpgradeLogger.cs" />
     <Compile Include="Automation\TabItemButtonAutomationPeer.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
     <Compile Include="Controls\TabItemButton.cs" />
+    <Compile Include="Converters\BooleanToGridRowHeightConverter.cs" />
+    <Compile Include="Converters\InverseBooleanConverter.cs" />
     <Compile Include="Converters\RadioBoolToIntConverter.cs" />
     <Compile Include="Converters\TooltipConverter.cs" />
     <Compile Include="Converters\BooleanToFontWeightConverter.cs" />
@@ -66,6 +71,8 @@
     <Compile Include="DisplayVersion.cs" />
     <Compile Include="IPackageItemLoader.cs" />
     <Compile Include="Models\LoadingStatusViewModel.cs" />
+    <Compile Include="Models\NuGetProjectUpgradeDependencyItem.cs" />
+    <Compile Include="Models\NuGetProjectUpgradeWindowModel.cs" />
     <Compile Include="Models\PackageSearchStatus.cs" />
     <Compile Include="Models\ProjectVersionConstraint.cs" />
     <Compile Include="Models\PackageIconMonikers.cs" />
@@ -103,14 +110,22 @@
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserInterfaceService\IModalProgressDialogSession.cs" />
     <Compile Include="UserInterfaceService\IUserSettingsManager.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="UserInterfaceService\NuGetProjectUpgradeHelper.cs" />
+    <Compile Include="UserInterfaceService\VisualStudioProgress.cs" />
+    <Compile Include="UserInterfaceService\VisualStudioProgressDialogSession.cs" />
     <Compile Include="Utility\VsUtility.cs" />
+    <Compile Include="UserInterfaceService\ProgressDialogData.cs" />
     <Compile Include="Xamls\DeprecatedFrameworkWindow.xaml.cs">
       <DependentUpon>DeprecatedFrameworkWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Xamls\InfiniteScrollListBox.cs" />
     <Compile Include="Xamls\InfiniteScrollListBoxAutomationPeer.cs" />
+    <Compile Include="Xamls\NuGetProjectUpgradeWindow.xaml.cs">
+      <DependentUpon>NuGetProjectUpgradeWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Xamls\PackageManagementFormatWindow.xaml.cs">
       <DependentUpon>PackageManagementFormatWindow.xaml</DependentUpon>
     </Compile>
@@ -274,6 +289,10 @@
     <Page Include="Xamls\InstalledIndicator.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Xamls\NuGetProjectUpgradeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\PackageManagementFormatWindow.xaml">
       <SubType>Designer</SubType>
@@ -475,6 +494,16 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\StatusInformation_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\statuserror.16.16.png" />
+    <Resource Include="Resources\statusinformation.16.16.png" />
+    <Resource Include="Resources\statuswarning.16.16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\UpgradeReport.xslt">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
