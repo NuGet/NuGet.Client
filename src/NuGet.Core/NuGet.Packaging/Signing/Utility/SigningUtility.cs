@@ -247,10 +247,6 @@ namespace NuGet.Packaging.Signing
             return new SignatureContent(SigningSpecifications.V1, hashAlgorithmName, base64ZipArchiveHash);
         }
 #else
-        /// <summary>
-        /// Remove a signature from a package.
-        /// </summary>
-        public static Task RemoveSignatureAsync(string packageFilePath, string outputFilePath, CancellationToken token) => throw new NotImplementedException();
 
         /// <summary>
         /// Add a signature to a package.
