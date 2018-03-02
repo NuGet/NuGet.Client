@@ -50,28 +50,6 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task RemoveSignaturesAsync_RemovesPackageSignatureAsync()
-        {
-            using (var directory = TestDirectory.Create())
-            using (var certificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
-            {
-                var signedPackageFile = await CreateSignedPackageAsync(directory, certificate);
-
-                using (var test = new Test(signedPackageFile.FullName))
-                {
-                    using (var package = new SignedPackageArchive(test.Options.InputPackageStream, test.Options.OutputPackageStream))
-                    {
-                        await package.RemoveSignatureAsync(CancellationToken.None);
-                    }
-
-                    var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.Options.OutputPackageStream);
-
-                    Assert.False(isSigned);
-                }
-            }
-        }
-
-        [CIOnlyFact]
         public async Task SignAsync_WithExpiredCertificate_ThrowsAsync()
         {
             using (var test = new Test(_testFixture.TrustedTestCertificateExpired.Source.Cert))
@@ -107,33 +85,6 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        private static async Task<FileInfo> CreateSignedPackageAsync(TestDirectory directory, X509Certificate2 certificate)
-        {
-            var packageContext = new SimpleTestPackageContext();
-            var packageFileName = Guid.NewGuid().ToString();
-            var package = packageContext.CreateAsFile(directory, packageFileName);
-            var signatureProvider = new X509SignatureProvider(timestampProvider: null);
-            var overwrite = true;
-            var outputFile = new FileInfo(Path.Combine(directory, Guid.NewGuid().ToString()));
-
-            using (var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256))
-            using (var options = SigningOptions.CreateFromFilePaths(
-                package.FullName,
-                outputFile.FullName,
-                overwrite,
-                signatureProvider,
-                NullLogger.Instance))
-            {
-                await SigningUtility.SignAsync(options, request, CancellationToken.None);
-
-                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(options.OutputPackageStream);
-
-                Assert.True(isSigned);
-            }
-
-            return outputFile;
-        }
-
         private sealed class Test : IDisposable
         {
             private readonly X509Certificate2 _certificate;
@@ -145,18 +96,14 @@ namespace NuGet.Packaging.FuncTest
 
             private bool _isDisposed;
 
-            private Test()
+            internal Test(X509Certificate2 certificate)
             {
                 _directory = TestDirectory.Create();
+                _certificate = new X509Certificate2(certificate);
 
                 var outputPath = Path.Combine(_directory, Guid.NewGuid().ToString());
 
                 OutputFile = new FileInfo(outputPath);
-            }
-
-            internal Test(X509Certificate2 certificate) : this()
-            {
-                _certificate = new X509Certificate2(certificate);
 
                 var packageContext = new SimpleTestPackageContext();
                 var packageFileName = Guid.NewGuid().ToString();
@@ -169,24 +116,6 @@ namespace NuGet.Packaging.FuncTest
 
                 Options = SigningOptions.CreateFromFilePaths(
                     package.FullName,
-                    OutputFile.FullName,
-                    overwrite,
-                    signatureProvider,
-                    NullLogger.Instance);
-            }
-
-            internal Test(string packageFilePath) : this()
-            {
-                _certificate = new X509Certificate2();
-
-                var signatureProvider = new X509SignatureProvider(timestampProvider: null);
-
-                Request = new AuthorSignPackageRequest(_certificate, HashAlgorithmName.SHA256);
-
-                var overwrite = true;
-
-                Options = SigningOptions.CreateFromFilePaths(
-                    packageFilePath,
                     OutputFile.FullName,
                     overwrite,
                     signatureProvider,
