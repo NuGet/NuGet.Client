@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;

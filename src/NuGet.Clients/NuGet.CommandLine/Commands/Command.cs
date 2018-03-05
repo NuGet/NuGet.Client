@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 extern alias CoreV2;
 
@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using NuGet.Commands;
 using NuGet.Credentials;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -184,7 +185,8 @@ namespace NuGet.CommandLine
 
         private IEnumerable<NuGet.Credentials.ICredentialProvider> GetCredentialProviders()
         {
-            var extensionLocator = new ExtensionLocator();
+            var nugetDirectory = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+            var extensionLocator = new ExtensionLocator(nugetDirectory);
             var providers = new List<Credentials.ICredentialProvider>();
             var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings, Console)
                 .BuildAll(Verbosity.ToString())

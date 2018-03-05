@@ -166,7 +166,10 @@ namespace NuGet.Credentials
         private PluginCredentialResponse GetPluginResponse(PluginCredentialRequest request,
             CancellationToken cancellationToken)
         {
-            var argumentString =
+            var argumentString = 
+#if !IS_DESKTOP
+                $"\"{Path}\" " +
+#endif
                 $"-uri {request.Uri}"
                 + (request.IsRetry ? " -isRetry" : string.Empty)
                 + (request.NonInteractive ? " -nonInteractive" : string.Empty);
@@ -180,7 +183,11 @@ namespace NuGet.Credentials
 
             var startInfo = new ProcessStartInfo
             {
+#if IS_DESKTOP
                 FileName = Path,
+#else
+                FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH"),
+#endif
                 Arguments = argumentString,
 #if IS_DESKTOP
                 WindowStyle = ProcessWindowStyle.Hidden,

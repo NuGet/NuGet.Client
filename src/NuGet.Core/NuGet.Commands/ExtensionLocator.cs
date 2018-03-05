@@ -1,32 +1,44 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 
-namespace NuGet.CommandLine
+namespace NuGet.Commands
 {
     /// <summary>
     /// Provides a common facility for locating extensions
     /// </summary>
     public class ExtensionLocator : IExtensionLocator
     {
-        private static readonly string ExtensionsDirectoryRoot =
-            Path.Combine(Environment.GetFolderPath(
-                Environment.SpecialFolder.LocalApplicationData),
-                "NuGet",
-                "Commands");
+        private static readonly string ExtensionsDirectoryRoot = NuGetEnvironment.GetFolderPath(NuGetFolderPath.ExtensionsDirectory);
 
-        private static readonly string CredentialProvidersDirectoryRoot =
-            Path.Combine(Environment.GetFolderPath(
-                Environment.SpecialFolder.LocalApplicationData),
-                "NuGet",
-                "CredentialProviders");
+        private static readonly string CredentialProvidersDirectoryRoot = NuGetEnvironment.GetFolderPath(NuGetFolderPath.CredentialProvidersDirectory);
 
+#if IS_CORECLR
+        private static readonly string CredentialProviderPattern = "CredentialProvider*.dll";
+#else
         private static readonly string CredentialProviderPattern = "CredentialProvider*.exe";
+#endif
 
-        public readonly static string ExtensionsEnvar = "NUGET_EXTENSIONS_PATH";
-        public readonly static string CredentialProvidersEnvar = "NUGET_CREDENTIALPROVIDERS_PATH";
+        public static readonly string ExtensionsEnvar = "NUGET_EXTENSIONS_PATH";
+
+        public static readonly string CredentialProvidersEnvar = "NUGET_CREDENTIALPROVIDERS_PATH";
+
+        /// <summary>
+        /// Stores the base path to include as a location of extensions.
+        /// </summary>
+        private readonly string _basePath;
+
+        /// <summary>
+        /// Initializes a new instance of the ExtensionLocator class.
+        /// </summary>
+        /// <param name="basePath">A base path to include in the search for extensions.  This can be the directory where NuGet.exe is located.</param>
+        public ExtensionLocator(string basePath)
+        {
+            _basePath = basePath;
+        }
 
         /// <summary>
         /// Find paths to all extensions
@@ -37,6 +49,7 @@ namespace NuGet.CommandLine
             return FindAll(
                 ExtensionsDirectoryRoot,
                 customPaths,
+                _basePath,
                 "*.dll",
                 "*Extensions.dll"
                 );
@@ -51,6 +64,7 @@ namespace NuGet.CommandLine
             return FindAll(
                 CredentialProvidersDirectoryRoot,
                 customPaths,
+                _basePath,
                 CredentialProviderPattern,
                 CredentialProviderPattern
                 );
@@ -67,6 +81,8 @@ namespace NuGet.CommandLine
         /// also check subdirectories.</param>
         /// <param name="customPaths">User-defined search paths.
         /// Will also check subdirectories.</param>
+        /// <param name="basePath">A base path to search for extensions.  This is usually
+        /// the directory of the running program like NuGet.exe.</param>
         /// <param name="assemblyPattern">The filename pattern to search for.</param>
         /// <param name="nugetDirectoryAssemblyPattern">The filename pattern to search for
         /// when looking in the nuget.exe directory. This is more restrictive so we do not
@@ -76,6 +92,7 @@ namespace NuGet.CommandLine
         private static IEnumerable<string> FindAll(
             string globalRootDirectory,
             IEnumerable<string> customPaths,
+            string basePath,
             string assemblyPattern,
             string nugetDirectoryAssemblyPattern)
         {
@@ -93,18 +110,17 @@ namespace NuGet.CommandLine
                 paths.AddRange(Directory.EnumerateFiles(directory, assemblyPattern, SearchOption.AllDirectories));
             }
 
-            // Add the nuget.exe directory, but be more careful since it contains non-extension assemblies.
-            // Ideally we want to look for all files. However, using MEF to identify imports results in assemblies
-            // being loaded and locked by our App Domain which could be slow, might affect people's build systems
-            // and among other things breaks our build.
+            // Add the base path, usually the directory of nuget.exe, but be more careful since it contains
+            // non-extension assemblies. Ideally we want to look for all files. However, using MEF to identify
+            // imports results in assemblies being loaded and locked by our App Domain which could be slow,
+            // might affect people's build systems and among other things breaks our build.
             // Consequently, we'll use a convention - only binaries ending in the name Extensions would be loaded.
-            var nugetDirectory = Path.GetDirectoryName(typeof(Program).Assembly.Location);
-            if (nugetDirectory == null)
+            if (String.IsNullOrWhiteSpace(basePath) || !Directory.Exists(basePath))
             {
                 return paths;
             }
 
-            paths.AddRange(Directory.EnumerateFiles(nugetDirectory, nugetDirectoryAssemblyPattern));
+            paths.AddRange(Directory.EnumerateFiles(basePath, nugetDirectoryAssemblyPattern));
 
             return paths;
         }

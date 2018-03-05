@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.PackageManagement;
 
@@ -227,7 +228,8 @@ namespace NuGet.CommandLine
 
         private static void AddExtensionsToCatalog(AggregateCatalog catalog, IConsole console)
         {
-            var extensionLocator = new ExtensionLocator();
+            var nugetDirectory = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+            var extensionLocator = new ExtensionLocator(nugetDirectory);
             var files = extensionLocator.FindExtensions();
             RegisterExtensions(catalog, files, console);
         }

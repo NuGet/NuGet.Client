@@ -29,6 +29,7 @@
     <ProjectReference Include="..\NuGet.ProjectModel\NuGet.ProjectModel.csproj" />
     <ProjectReference Include="..\NuGet.Configuration\NuGet.Configuration.csproj" />
     <ProjectReference Include="..\NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj" />
+    <ProjectReference Include="..\..\NuGet.Clients\NuGet.Credentials\NuGet.Credentials.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
