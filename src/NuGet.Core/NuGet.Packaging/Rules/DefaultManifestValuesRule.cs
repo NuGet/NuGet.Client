@@ -23,11 +23,6 @@ namespace NuGet.Packaging.Rules
 
         public string MessageFormat { get; }
 
-        public DefaultManifestValuesRule()
-        {
-            MessageFormat = AnalysisResources.DefaultSpecValueWarning;
-        }
-
         public DefaultManifestValuesRule(string messageFormat)
         {
             MessageFormat = messageFormat;
