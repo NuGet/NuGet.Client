@@ -14786,13 +14786,13 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget verify -Signatures .\..\MyPackage.nupkg -Signer &quot;86C0E8C51FF0EBDAD355315DF82AA6EC7049B542;BE36A4562FB2EE05DBB3D32323ADF445084ED656&quot; -Verbosity detailed
+        ///   Looks up a localized string similar to nuget verify -Signatures .\..\MyPackage.nupkg -CertificateFingerprint &quot;CE40881FF5F0AD3E58965DA20A9F571EF1651A56933748E1BF1C99E537C4E039;5F874AAF47BCB268A19357364E7FBB09D6BF9E8A93E1229909AC5CAC865802E2&quot; -Verbosity detailed
         ///
-        ///nuget verify -Signatures c:\foo\MyPackage.nupkg -Signer BE36A4562FB2EE05DBB3D32323ADF445084ED656
+        ///nuget verify -Signatures C:\packages\MyPackage.nupkg -CertificateFingerprint CE40881FF5F0AD3E58965DA20A9F571EF1651A56933748E1BF1C99E537C4E039
         ///
         ///nuget verify -Signatures MyPackage.nupkg -Verbosity quiet
         ///
-        ///nuget verify-Signatures  .\*.nupkg.
+        ///nuget verify -Signatures .\*.nupkg.
         /// </summary>
         internal static string VerifyCommandUsageExamples {
             get {
