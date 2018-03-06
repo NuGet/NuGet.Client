@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -166,7 +166,10 @@ namespace NuGet.Credentials
         private PluginCredentialResponse GetPluginResponse(PluginCredentialRequest request,
             CancellationToken cancellationToken)
         {
-            var argumentString =
+            var argumentString = 
+#if !IS_DESKTOP
+                $"\"{Path}\" " +
+#endif
                 $"-uri {request.Uri}"
                 + (request.IsRetry ? " -isRetry" : string.Empty)
                 + (request.NonInteractive ? " -nonInteractive" : string.Empty);
@@ -180,15 +183,20 @@ namespace NuGet.Credentials
 
             var startInfo = new ProcessStartInfo
             {
+#if IS_DESKTOP
                 FileName = Path,
+#else
+                FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH"),
+#endif
                 Arguments = argumentString,
+#if IS_DESKTOP
                 WindowStyle = ProcessWindowStyle.Hidden,
+#endif
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 StandardOutputEncoding = Encoding.UTF8,
                 StandardErrorEncoding = Encoding.UTF8,
-                ErrorDialog = false
             };
 
             string stdOut = null;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -70,6 +70,18 @@ namespace NuGet.Common
 
                 case NuGetFolderPath.Temp:
                     return Path.Combine(Path.GetTempPath(), "NuGetScratch");
+
+                case NuGetFolderPath.ExtensionsDirectory:
+                    return Path.Combine(
+                        GetFolderPath(SpecialFolder.LocalApplicationData),
+                        "NuGet",
+                        "Commands");
+
+                case NuGetFolderPath.CredentialProvidersDirectory:
+                    return Path.Combine(
+                        GetFolderPath(SpecialFolder.LocalApplicationData),
+                        "NuGet",
+                        "CredentialProviders");
 
                 default:
                     return null;

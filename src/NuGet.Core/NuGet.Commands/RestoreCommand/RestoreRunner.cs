@@ -11,7 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Credentials;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 
 namespace NuGet.Commands
 {
@@ -64,6 +66,8 @@ namespace NuGet.Commands
             {
                 log.LogVerbose(Strings.Log_RunningNonParallelRestore);
             }
+
+            SetDefaultCredentialProvider(restoreContext);
 
             // Get requests
             var requests = new Queue<RestoreSummaryRequest>(restoreRequests);
@@ -119,6 +123,8 @@ namespace NuGet.Commands
             {
                 log.LogVerbose(Strings.Log_RunningNonParallelRestore);
             }
+
+            SetDefaultCredentialProvider(restoreContext);
 
             // Get requests
             var requests = new Queue<RestoreSummaryRequest>(restoreRequests);
@@ -375,6 +381,55 @@ namespace NuGet.Commands
             }
 
             return Strings.Error_InvalidCommandLineInput;
+        }
+
+        /// <summary>
+        /// Set default credential provider for the HttpClient, which is used by V2 sources.
+        /// Also set up authenticated proxy handling for V3 sources.
+        /// </summary>
+        private static void SetDefaultCredentialProvider(RestoreArgs restoreContext)
+        {
+            if (HttpHandlerResourceV3.CredentialService == null)
+            {
+                // TODO: [jeffkl] How can users pass in that it should be NonInteractive
+                HttpHandlerResourceV3.CredentialService = new CredentialService(GetCredentialProviders(restoreContext), nonInteractive: false);
+            }
+        }
+
+        private static IEnumerable<NuGet.Credentials.ICredentialProvider> GetCredentialProviders(RestoreArgs restoreContext)
+        {
+            ISettings settings;
+            if (restoreContext.ConfigFile != null)
+            {
+                settings = Settings.LoadSettingsGivenConfigPaths(new List<string> {restoreContext.ConfigFile});
+            }
+            else
+            {
+                settings = ((PackageSourceProvider)restoreContext.CachingSourceProvider.PackageSourceProvider).Settings;
+                // TODO: [jeffkl] this only gets user-wide settings and not project specific settings because it does not know about the initial project
+                //settings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: restoreContext.MachineWideSettings)
+            }
+
+            // TODO: [jeffkl] Where to look for credential providers, next to MSBuild?  Next to this assembly?
+            string basePath = null;
+            var extensionLocator = new ExtensionLocator(basePath);
+            var providers = new List<Credentials.ICredentialProvider>();
+            var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, settings, restoreContext.Log)
+                // TODO: [jeffkl] How can users specify a verbosity?
+                .BuildAll(verbosity: "Detailed")
+                .ToList();
+
+            providers.Add(new SettingsCredentialProvider(restoreContext.CachingSourceProvider.PackageSourceProvider, restoreContext.Log));
+            if (pluginProviders.Any())
+            {
+                providers.AddRange(pluginProviders);
+                if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
+                {
+                    providers.Add(new DefaultCredentialsCredentialProvider());
+                }
+            }
+
+            return providers;
         }
     }
 }
