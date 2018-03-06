@@ -17,11 +17,6 @@ namespace NuGet.MSSigning.Extensions
        UsageDescriptionResourceName = "MSSignCommandUsageDescription")]
     public class MSSignCommand : MSSignAbstract
     {
-        // Default constructor used only for testing, since the Command Default Constructor is protected
-        public MSSignCommand() : base()
-        {
-        }
-
         [Option(typeof(NuGetMSSignCommand), "MSSignCommandOverwriteDescription")]
         public bool Overwrite { get; set; }
 

@@ -252,11 +252,11 @@ namespace NuGet.MSSigning.Extensions {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Semicolon separated list of package owners..
+        ///   Looks up a localized string similar to Semicolon-separated list of package owners..
         /// </summary>
-        internal static string RepoSignCommandOwnersDescription {
+        internal static string RepoSignCommandPackageOwnersDescription {
             get {
-                return ResourceManager.GetString("RepoSignCommandOwnersDescription", resourceCulture);
+                return ResourceManager.GetString("RepoSignCommandPackageOwnersDescription", resourceCulture);
             }
         }
         
@@ -270,9 +270,9 @@ namespace NuGet.MSSigning.Extensions {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget reposign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName &quot;Cryptographic Service Provider&quot;  -KeyContainer &quot;4003d786-cc37-4004-bfdf-c4f3e8ef9b3a&quot; -CertificateFingerprint &quot;4003d786cc374004bfdfc4f3e8ef9b3a&quot;  -Owners bar;foo -V3ServiceIndexUrl https://v3.index
+        ///   Looks up a localized string similar to nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName &quot;Cryptographic Service Provider&quot; -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -V3ServiceIndexUrl https://v3.index.test
         ///
-        ///nuget reposign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName &quot;Cryptographic Service Provider&quot;  -KeyContainer &quot;4003d786-cc37-4004-bfdf-c4f3e8ef9b3a&quot; -CertificateFingerprint &quot;4003d786cc [rest of string was truncated]&quot;;.
+        ///nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName &quot;Cryptographic Service Provider&quot; -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateF [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string RepoSignCommandUsageExamples {
             get {
@@ -281,7 +281,7 @@ namespace NuGet.MSSigning.Extensions {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; -CertificateFile &lt;p7b_file_path&gt; -CSPName &lt;cryptographic_service_provider_name&gt; -KeyContainer &lt;key_container_guid&gt; -CertificateFingerprint &lt;certificate_fingerprint&gt; -Owners &lt;package_owners&gt; -V3ServiceIndexUrl &lt;v3_service_index_url&gt;.
+        ///   Looks up a localized string similar to &lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; -CertificateFile &lt;p7b_file_path&gt; -CSPName &lt;cryptographic_service_provider_name&gt; -KeyContainer &lt;key_container_guid&gt; -CertificateFingerprint &lt;certificate_fingerprint&gt; -PackageOwners &lt;package_owners&gt; -V3ServiceIndexUrl &lt;v3_service_index_url&gt;.
         /// </summary>
         internal static string RepoSignCommandUsageSummary {
             get {
@@ -290,7 +290,7 @@ namespace NuGet.MSSigning.Extensions {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Repository v3 service index url..
+        ///   Looks up a localized string similar to Repository V3 service index URL..
         /// </summary>
         internal static string RepoSignCommandV3ServiceIndexUrlDescription {
             get {

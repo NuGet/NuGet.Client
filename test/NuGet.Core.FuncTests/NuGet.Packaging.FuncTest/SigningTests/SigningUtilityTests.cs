@@ -43,11 +43,15 @@ namespace NuGet.Packaging.FuncTest
             {
                 await SigningUtility.SignAsync(test.Options, test.AuthorRequest, CancellationToken.None);
 
-                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.Options.OutputPackageStream);
+                using (var package = new PackageArchiveReader(test.Options.OutputPackageStream))
+                {
+                    var primarySignature = await package.GetPrimarySignatureAsync(CancellationToken.None);
 
-                Assert.True(isSigned);
+                    Assert.IsType<AuthorPrimarySignature>(primarySignature);
+                }
             }
         }
+
         [CIOnlyFact]
         public async Task SignAsync_AddsPackageRepositorySignatureAsync()
         {
@@ -55,31 +59,11 @@ namespace NuGet.Packaging.FuncTest
             {
                 await SigningUtility.SignAsync(test.Options, test.RepositoryRequest, CancellationToken.None);
 
-                var isSigned = await IsSignedAsync(test.Options.OutputFilePath);
-
-                Assert.True(isSigned);
-            }
-        }
-
-
-        [CIOnlyFact]
-        public async Task RemoveSignaturesAsync_RemovesPackageSignatureAsync()
-        {
-            using (var signTest = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
-            {
-                await SigningUtility.SignAsync(signTest.Options, signTest.AuthorRequest, CancellationToken.None);
-
-                var isSigned = await IsSignedAsync(signTest.Options.OutputFilePath);
-
-                Assert.True(isSigned);
-
-                using (var unsignTest = new Test(signTest.Options.OutputFilePath))
+                using (var package = new PackageArchiveReader(test.Options.OutputPackageStream))
                 {
-                    await SigningUtility.RemoveSignatureAsync(unsignTest.Options.PackageFilePath, unsignTest.Options.OutputFilePath, CancellationToken.None);
+                    var primarySignature = await package.GetPrimarySignatureAsync(CancellationToken.None);
 
-                    isSigned = await IsSignedAsync(unsignTest.Options.OutputFilePath);
-
-                    Assert.False(isSigned);
+                    Assert.IsType<RepositoryPrimarySignature>(primarySignature);
                 }
             }
         }
@@ -150,21 +134,11 @@ namespace NuGet.Packaging.FuncTest
                 var signatureProvider = new X509SignatureProvider(timestampProvider: null);
 
                 AuthorRequest = new AuthorSignPackageRequest(_authorCertificate, HashAlgorithmName.SHA256);
-                RepositoryRequest = new RepositorySignPackageRequest(_repositoryCertificate, HashAlgorithmName.SHA256, HashAlgorithmName.SHA256, new Uri("https://test/api/index.json"), null);
-                Options = new SigningOptions(packageFilePath: package.FullName, outputFilePath: outputPath, overwrite: true, signatureProvider: signatureProvider, logger: NullLogger.Instance);
-            }
-
-            internal Test(string packageFilePath)
-            {
-                _directory = TestDirectory.Create();
-                _authorCertificate = new X509Certificate2();
-                _repositoryCertificate = new X509Certificate2();
+                RepositoryRequest = new RepositorySignPackageRequest(_repositoryCertificate, HashAlgorithmName.SHA256, HashAlgorithmName.SHA256, new Uri("https://test/api/index.json"), packageOwners: null);
 
                 var overwrite = true;
 
-                AuthorRequest = new AuthorSignPackageRequest(_authorCertificate, HashAlgorithmName.SHA256);
-                RepositoryRequest = new RepositorySignPackageRequest(_repositoryCertificate, HashAlgorithmName.SHA256, HashAlgorithmName.SHA256, new Uri("https://test/api/index.json"), null);
-                Options = new SigningOptions(packageFilePath: packageFilePath, outputFilePath: outputPath, overwrite: true, signatureProvider: signatureProvider, logger: NullLogger.Instance);
+                Options = SigningOptions.CreateFromFilePaths(package.FullName, outputPath, overwrite, signatureProvider, NullLogger.Instance);
             }
 
             public void Dispose()
@@ -172,6 +146,7 @@ namespace NuGet.Packaging.FuncTest
                 if (!_isDisposed)
                 {
                     AuthorRequest?.Dispose();
+                    RepositoryRequest?.Dispose();
                     _authorCertificate?.Dispose();
                     _repositoryCertificate?.Dispose();
                     _directory?.Dispose();

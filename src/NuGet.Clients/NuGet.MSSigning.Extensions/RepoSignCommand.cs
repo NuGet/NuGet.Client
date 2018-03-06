@@ -23,15 +23,10 @@ namespace NuGet.MSSigning.Extensions
        UsageDescriptionResourceName = "RepoSignCommandUsageDescription")]
     public class RepoSignCommand : MSSignAbstract
     {
-        // Default constructor used only for testing, since the Command Default Constructor is protected
-        public RepoSignCommand() : base()
-        {
-        }
+        private readonly List<string> _packageOwners = new List<string>();
 
-        private readonly List<string> _owners = new List<string>();
-
-        [Option(typeof(NuGetMSSignCommand), "RepoSignCommandOwnersDescription")]
-        public IList<string> Owners => _owners;
+        [Option(typeof(NuGetMSSignCommand), "RepoSignCommandPackageOwnersDescription")]
+        public IList<string> PackageOwners => _packageOwners;
 
         [Option(typeof(NuGetMSSignCommand), "RepoSignCommandV3ServiceIndexUrlDescription")]
         public string V3ServiceIndexUrl { get; set; }
@@ -43,7 +38,7 @@ namespace NuGet.MSSigning.Extensions
                 var packages = GetPackages();
                 var signCommandRunner = new SignCommandRunner();
                 var result = await signCommandRunner.ExecuteCommandAsync(
-                    packages, signRequest, Timestamper, Console, OutputDirectory, false, CancellationToken.None);
+                    packages, signRequest, Timestamper, Console, OutputDirectory, overwrite: false, token: CancellationToken.None);
 
                 if (result != 0)
                 {
@@ -73,7 +68,7 @@ namespace NuGet.MSSigning.Extensions
                 signatureHashAlgorithm,
                 timestampHashAlgorithm,
                 v3ServiceIndexUri,
-                new ReadOnlyCollection<string>(Owners))
+                new ReadOnlyCollection<string>(PackageOwners))
             {
                 PrivateKey = privateKey
             };
@@ -86,13 +81,11 @@ namespace NuGet.MSSigning.Extensions
         private Uri ValidateAndParseV3ServiceIndexUrl()
         {
             // Assert mandatory argument
-            if (!string.IsNullOrEmpty(V3ServiceIndexUrl) ||
-                Uri.IsWellFormedUriString(V3ServiceIndexUrl, UriKind.Absolute))
+            if (Uri.TryCreate(V3ServiceIndexUrl, UriKind.Absolute, out var v3ServiceIndexUrl))
             {
-                var uri = UriUtility.CreateSourceUri(V3ServiceIndexUrl, UriKind.Absolute);
-                if (uri.Scheme == Uri.UriSchemeHttps)
+                if (v3ServiceIndexUrl.Scheme == Uri.UriSchemeHttps)
                 {
-                    return uri;
+                    return v3ServiceIndexUrl;
                 }
             }
 
@@ -103,11 +96,11 @@ namespace NuGet.MSSigning.Extensions
 
         private void ValidatePackageOwners()
         {
-            if (Owners.Any(packageOwner => string.IsNullOrWhiteSpace(packageOwner)))
+            if (PackageOwners.Any(packageOwner => string.IsNullOrWhiteSpace(packageOwner)))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     NuGetMSSignCommand.MSSignCommandInvalidArgumentException,
-                    nameof(Owners)));
+                    nameof(PackageOwners)));
             }
         }
     }
