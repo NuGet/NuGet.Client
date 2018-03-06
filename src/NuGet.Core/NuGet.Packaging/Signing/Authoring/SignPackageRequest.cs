@@ -40,10 +40,6 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public abstract SignatureType SignatureType { get; }
 
-        /// <summary>
-        /// Gets the signature placement.
-        /// </summary>
-        public SignaturePlacement SignaturePlacement { get; }
 
         internal IReadOnlyList<X509Certificate2> Chain { get; private set; }
 
@@ -57,8 +53,7 @@ namespace NuGet.Packaging.Signing
         protected SignPackageRequest(
             X509Certificate2 certificate,
             HashAlgorithmName signatureHashAlgorithm,
-            HashAlgorithmName timestampHashAlgorithm,
-            SignaturePlacement signaturePlacement)
+            HashAlgorithmName timestampHashAlgorithm)
         {
             if (certificate == null)
             {
@@ -77,15 +72,9 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentException(Strings.InvalidArgument, nameof(timestampHashAlgorithm));
             }
 
-            if (!Enum.IsDefined(typeof(SignaturePlacement), signaturePlacement))
-            {
-                throw new ArgumentException(Strings.InvalidArgument, nameof(signaturePlacement));
-            }
-
             Certificate = certificate;
             SignatureHashAlgorithm = signatureHashAlgorithm;
             TimestampHashAlgorithm = timestampHashAlgorithm;
-            SignaturePlacement = signaturePlacement;
             AdditionalCertificates = new X509Certificate2Collection();
         }
 

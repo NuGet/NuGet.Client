@@ -37,15 +37,34 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task SignAsync_AddsPackageSignatureAsync()
+        public async Task SignAsync_AddsPackageAuthorSignatureAsync()
         {
             using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
             {
-                await SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None);
+                await SigningUtility.SignAsync(test.Options, test.AuthorRequest, CancellationToken.None);
 
-                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.Options.OutputPackageStream);
+                using (var package = new PackageArchiveReader(test.Options.OutputPackageStream))
+                {
+                    var primarySignature = await package.GetPrimarySignatureAsync(CancellationToken.None);
 
-                Assert.True(isSigned);
+                    Assert.IsType<AuthorPrimarySignature>(primarySignature);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task SignAsync_AddsPackageRepositorySignatureAsync()
+        {
+            using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
+            {
+                await SigningUtility.SignAsync(test.Options, test.RepositoryRequest, CancellationToken.None);
+
+                using (var package = new PackageArchiveReader(test.Options.OutputPackageStream))
+                {
+                    var primarySignature = await package.GetPrimarySignatureAsync(CancellationToken.None);
+
+                    Assert.IsType<RepositoryPrimarySignature>(primarySignature);
+                }
             }
         }
 
@@ -55,7 +74,7 @@ namespace NuGet.Packaging.FuncTest
             using (var test = new Test(_testFixture.TrustedTestCertificateExpired.Source.Cert))
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
-                    () => SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None));
+                    () => SigningUtility.SignAsync(test.Options, test.AuthorRequest, CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3018, exception.Code);
                 Assert.Contains("Certificate chain validation failed.", exception.Message);
@@ -73,7 +92,7 @@ namespace NuGet.Packaging.FuncTest
             using (var test = new Test(_testFixture.TrustedTestCertificateNotYetValid.Source.Cert))
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
-                    () => SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None));
+                    () => SigningUtility.SignAsync(test.Options, test.AuthorRequest, CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3017, exception.Code);
                 Assert.Contains("The signing certificate is not yet valid", exception.Message);
@@ -87,19 +106,23 @@ namespace NuGet.Packaging.FuncTest
 
         private sealed class Test : IDisposable
         {
-            private readonly X509Certificate2 _certificate;
+            private readonly X509Certificate2 _authorCertificate;
+            private readonly X509Certificate2 _repositoryCertificate;
+
             private readonly TestDirectory _directory;
 
             internal SigningOptions Options { get; }
-            internal SignPackageRequest Request { get; }
             internal FileInfo OutputFile { get; }
+            internal AuthorSignPackageRequest AuthorRequest { get; }
+            internal RepositorySignPackageRequest RepositoryRequest { get; }
 
             private bool _isDisposed;
 
             internal Test(X509Certificate2 certificate)
             {
                 _directory = TestDirectory.Create();
-                _certificate = new X509Certificate2(certificate);
+                _authorCertificate = new X509Certificate2(certificate);
+                _repositoryCertificate = new X509Certificate2(certificate);
 
                 var outputPath = Path.Combine(_directory, Guid.NewGuid().ToString());
 
@@ -110,25 +133,22 @@ namespace NuGet.Packaging.FuncTest
                 var package = packageContext.CreateAsFile(_directory, packageFileName);
                 var signatureProvider = new X509SignatureProvider(timestampProvider: null);
 
-                Request = new AuthorSignPackageRequest(_certificate, HashAlgorithmName.SHA256);
+                AuthorRequest = new AuthorSignPackageRequest(_authorCertificate, HashAlgorithmName.SHA256);
+                RepositoryRequest = new RepositorySignPackageRequest(_repositoryCertificate, HashAlgorithmName.SHA256, HashAlgorithmName.SHA256, new Uri("https://test/api/index.json"), packageOwners: null);
 
                 var overwrite = true;
 
-                Options = SigningOptions.CreateFromFilePaths(
-                    package.FullName,
-                    OutputFile.FullName,
-                    overwrite,
-                    signatureProvider,
-                    NullLogger.Instance);
+                Options = SigningOptions.CreateFromFilePaths(package.FullName, outputPath, overwrite, signatureProvider, NullLogger.Instance);
             }
 
             public void Dispose()
             {
                 if (!_isDisposed)
                 {
-                    Request?.Dispose();
-                    _certificate?.Dispose();
-                    Options.Dispose();
+                    AuthorRequest?.Dispose();
+                    RepositoryRequest?.Dispose();
+                    _authorCertificate?.Dispose();
+                    _repositoryCertificate?.Dispose();
                     _directory?.Dispose();
 
                     GC.SuppressFinalize(this);

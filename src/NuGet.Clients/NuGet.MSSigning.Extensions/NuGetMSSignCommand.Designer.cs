@@ -241,5 +241,61 @@ namespace NuGet.MSSigning.Extensions {
                 return ResourceManager.GetString("MSSignCommandUsageSummary", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign a NuGet package by adding repository signature with specified p7b file..
+        /// </summary>
+        internal static string RepoSignCommandDescription {
+            get {
+                return ResourceManager.GetString("RepoSignCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Semicolon-separated list of package owners..
+        /// </summary>
+        internal static string RepoSignCommandPackageOwnersDescription {
+            get {
+                return ResourceManager.GetString("RepoSignCommandPackageOwnersDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign a NuGet package with repository signature..
+        /// </summary>
+        internal static string RepoSignCommandUsageDescription {
+            get {
+                return ResourceManager.GetString("RepoSignCommandUsageDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName &quot;Cryptographic Service Provider&quot; -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -V3ServiceIndexUrl https://v3.index.test
+        ///
+        ///nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName &quot;Cryptographic Service Provider&quot; -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateF [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string RepoSignCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("RepoSignCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; -CertificateFile &lt;p7b_file_path&gt; -CSPName &lt;cryptographic_service_provider_name&gt; -KeyContainer &lt;key_container_guid&gt; -CertificateFingerprint &lt;certificate_fingerprint&gt; -PackageOwners &lt;package_owners&gt; -V3ServiceIndexUrl &lt;v3_service_index_url&gt;.
+        /// </summary>
+        internal static string RepoSignCommandUsageSummary {
+            get {
+                return ResourceManager.GetString("RepoSignCommandUsageSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Repository V3 service index URL..
+        /// </summary>
+        internal static string RepoSignCommandV3ServiceIndexUrlDescription {
+            get {
+                return ResourceManager.GetString("RepoSignCommandV3ServiceIndexUrlDescription", resourceCulture);
+            }
+        }
     }
 }
