@@ -14,6 +14,7 @@
     <OutDir>$(RepositoryRootDirectory)</OutDir>
     <SignTargetsDependOn>BatchSign</SignTargetsDependOn>
     <SignTargetsDependOn Condition="'$(SignVsix)' == 'true'">GetOutputVsix</SignTargetsDependOn>
+    <SignTargetsDependOn Condition="'$(SignNupkgs)' == 'true'">GetOutputNupkgs</SignTargetsDependOn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -45,6 +46,14 @@
     <ItemGroup>
       <FilesToSign Include="$(VsixPublishDestination)**\NuGet.Tools.vsix">
         <Authenticode>100040160</Authenticode>
+      </FilesToSign>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetOutputNupkgs">
+    <ItemGroup>
+      <FilesToSign Include="$(NupkgOutputDirectory)**\*.nupkg">
+        <Authenticode>NuGet</Authenticode>
       </FilesToSign>
     </ItemGroup>
   </Target>
