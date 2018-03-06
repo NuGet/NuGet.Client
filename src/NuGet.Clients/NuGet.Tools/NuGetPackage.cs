@@ -233,13 +233,13 @@ namespace NuGetVSExtension
             _mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (null != _mcs)
             {
-                // menu command for upgrading packages.config files to project.json - Project menu, Project context menu, References context menu
+                // menu command for upgrading packages.config files to PackageReference - References context menu
                 var upgradeNuGetProjectCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpgradeNuGetProject);
                 var upgradeNuGetProjectCommand = new OleMenuCommand(ExecuteUpgradeNuGetProjectCommandAsync, null,
                     BeforeQueryStatusForUpgradeNuGetProject, upgradeNuGetProjectCommandID);
                 _mcs.AddCommand(upgradeNuGetProjectCommand);
 
-                // menu command for upgrading packages.config files to project.json - packages.config context menu
+                // menu command for upgrading packages.config files to PackageReference - packages.config context menu
                 var upgradePackagesConfigCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpgradePackagesConfig);
                 var upgradePackagesConfigCommand = new OleMenuCommand(ExecuteUpgradeNuGetProjectCommandAsync, null,
                     BeforeQueryStatusForUpgradePackagesConfig, upgradePackagesConfigCommandID);

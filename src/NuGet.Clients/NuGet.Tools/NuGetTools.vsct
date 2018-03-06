@@ -205,13 +205,7 @@
       <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_ITEM_OPEN"/>
     </CommandPlacement>
     <CommandPlacement guid="guidDialogCmdSet" id="cmdidUpgradeNuGetProject" priority="0xF101">
-      <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_PROJECT_ADD"/>
-    </CommandPlacement>
-    <CommandPlacement guid="guidDialogCmdSet" id="cmdidUpgradeNuGetProject" priority="0xF101">
       <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_REFROOT_ADD"/>
-    </CommandPlacement>
-    <CommandPlacement guid="guidDialogCmdSet" id="cmdidUpgradeNuGetProject" priority="0xF101">
-      <Parent guid="guidSHLMainMenu" id="IDG_VS_PROJ_OPTIONS"/>
     </CommandPlacement>
     <CommandPlacement guid="guidDialogCmdSet" id="cmdidRestorePackages" priority="0xF101">
       <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_SOLUTION_BUILD" />
