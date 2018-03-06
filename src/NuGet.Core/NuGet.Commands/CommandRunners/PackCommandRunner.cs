@@ -862,7 +862,21 @@ namespace NuGet.Commands
             if (!_packArgs.NoDefaultExcludes)
             {
                 // The user has not explicitly disabled default filtering.
-                wildCards = wildCards.Concat(_defaultExcludes);
+                var excludedFiles = PathResolver.FilterPackageFiles(packageFiles, ResolvePath, _defaultExcludes);
+                if(excludedFiles != null)
+                {
+                    foreach (var file in excludedFiles)
+                    {
+                        if(file is PhysicalPackageFile)
+                        {
+                            var physicalPackageFile = file as PhysicalPackageFile;
+                            _packArgs.Logger.Log(PackLogMessage.CreateWarning(
+                                String.Format(CultureInfo.CurrentCulture, Strings.Warning_FileExcludedByDefault, physicalPackageFile.SourcePath),
+                                NuGetLogCode.NU5119));
+
+                        }
+                    }
+                }
             }
             wildCards = wildCards.Concat(_packArgs.Exclude);
 

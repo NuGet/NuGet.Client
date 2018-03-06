@@ -631,6 +631,11 @@ namespace NuGet.Common
         NU5118 = 5118,
 
         /// <summary>
+        /// Warning_FileExcludedByDefault
+        /// </summary>
+        NU5119 = 5119,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,
