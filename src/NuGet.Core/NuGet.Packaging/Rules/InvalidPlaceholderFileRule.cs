@@ -13,6 +13,12 @@ namespace NuGet.Packaging.Rules
 {
     internal class InvalidPlaceholderFileRule : IPackageRule
     {
+        public string MessageFormat { get; }
+
+        public InvalidPlaceholderFileRule(string messageFormat)
+        {
+            MessageFormat = messageFormat;
+        }
         public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
             foreach (var file in builder.GetFiles())
@@ -28,10 +34,10 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackLogMessage CreatePackageIssueForPlaceholderFile(string target)
+        private PackLogMessage CreatePackageIssueForPlaceholderFile(string target)
         {
             return PackLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.PlaceholderFileInPackageWarning, target),
+                String.Format(CultureInfo.CurrentCulture, MessageFormat, target),
                 NuGetLogCode.NU5109);
         }
     }

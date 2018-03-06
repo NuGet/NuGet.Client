@@ -75,7 +75,7 @@ namespace NuGet.Commands
         {
             this._createProjectFactory = createProjectFactory;
             this._packArgs = packArgs;
-            Rules = DefaultPackageRuleSet.Rules;
+            Rules = PackageCreationRuleSet.Rules;
             GenerateNugetPackage = true;
         }
 

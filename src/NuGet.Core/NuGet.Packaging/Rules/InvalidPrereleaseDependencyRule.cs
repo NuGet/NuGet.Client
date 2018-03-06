@@ -12,6 +12,12 @@ namespace NuGet.Packaging.Rules
 {
     internal class InvalidPrereleaseDependencyRule : IPackageRule
     {
+        public string MessageFormat { get; }
+
+        public InvalidPrereleaseDependencyRule(string messageFormat)
+        {
+            MessageFormat = messageFormat;
+        }
         public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
         {
             var nuspecReader = builder?.NuspecReader;
@@ -38,10 +44,10 @@ namespace NuGet.Packaging.Rules
                    dependency.VersionRange.MaxVersion?.IsPrerelease == true;
         }
 
-        private static PackLogMessage CreatePackageIssueForPrereleaseDependency(string dependency)
+        private PackLogMessage CreatePackageIssueForPrereleaseDependency(string dependency)
         {
             return PackLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.InvalidPrereleaseDependencyWarning, dependency),
+                String.Format(CultureInfo.CurrentCulture, MessageFormat, dependency),
                 NuGetLogCode.NU5104);
         }
     }

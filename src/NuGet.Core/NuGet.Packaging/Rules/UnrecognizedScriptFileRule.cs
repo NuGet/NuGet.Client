@@ -10,14 +10,14 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
-    internal class MisplacedScriptFileRule : IPackageRule
+    internal class UnrecognizedScriptFileRule : IPackageRule
     {
         private const string ScriptExtension = ".ps1";
         private static readonly string ToolsDirectory = PackagingConstants.Folders.Tools;
 
         public string MessageFormat { get; }
-
-        public MisplacedScriptFileRule(string messageFormat)
+        
+        public UnrecognizedScriptFileRule(string messageFormat)
         {
             MessageFormat = messageFormat;
         }
@@ -30,19 +30,24 @@ namespace NuGet.Packaging.Rules
                 {
                     continue;
                 }
-
-                if (!file.StartsWith(ToolsDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                else
                 {
-                    yield return CreatePackageIssueForMisplacedScript(file);
+                    var name = Path.GetFileNameWithoutExtension(file);
+                    if (!name.Equals("install", StringComparison.OrdinalIgnoreCase) &&
+                        !name.Equals("uninstall", StringComparison.OrdinalIgnoreCase) &&
+                        !name.Equals("init", StringComparison.OrdinalIgnoreCase))
+                    {
+                        yield return CreatePackageIssueForUnrecognizedScripts(file);
+                    }
                 }
             }
         }
 
-        private PackLogMessage CreatePackageIssueForMisplacedScript(string target)
+        private PackLogMessage CreatePackageIssueForUnrecognizedScripts(string target)
         {
             return PackLogMessage.CreateWarning(
-                string.Format(CultureInfo.CurrentCulture, MessageFormat, target),
-                NuGetLogCode.NU5110);
+                String.Format(CultureInfo.CurrentCulture, MessageFormat, target),
+                NuGetLogCode.NU5111);
         }
     }
 }
