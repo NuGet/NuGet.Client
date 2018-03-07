@@ -1,10 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
-  
+
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.0</TargetFrameworks>
     <TestProject>true</TestProject>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="compiler\resources\*" />
+    <EmbeddedResource Include="compiler\resources\*" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.XPlat.FuncTest\NuGet.XPlat.FuncTest.csproj" />

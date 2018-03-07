@@ -26,7 +26,7 @@ namespace NuGet.Packaging.FuncTest
     {
         private const string _packageTamperedError = "The package integrity check failed.";
         private const string _packageUnsignedError = "The package is not signed.";
-        private const string _packageInvalidSignatureError = "The package signature is invalid.";
+        private const string _packageInvalidSignatureError = "The package signature is invalid or cannot be verified on this platform.";
 
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;

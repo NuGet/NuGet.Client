@@ -350,7 +350,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature is invalid..
+        ///   Looks up a localized string similar to The package signature is invalid or cannot be verified on this platform..
         /// </summary>
         internal static string ErrorPackageSignatureInvalid {
             get {
@@ -1057,6 +1057,15 @@ namespace NuGet.Packaging {
         internal static string UnableToReadPackageHashInformation {
             get {
                 return ResourceManager.GetString("UnableToReadPackageHashInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unexpected error occurred while verifying a package signature..
+        /// </summary>
+        internal static string UnexpectedPackageSignatureVerificationError {
+            get {
+                return ResourceManager.GetString("UnexpectedPackageSignatureVerificationError", resourceCulture);
             }
         }
         

@@ -790,7 +790,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         // Test that when a directory is passed to nuget.exe restore, and the directory contains
         // multiple solution files, nuget.exe will generate an error.
         [Fact]
-        public void RestoreCommand_MutipleSolutionFilesInDirectory()
+        public void RestoreCommand_MultipleSolutionFilesInDirectory()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -2220,10 +2220,87 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);               
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 var packageFileA = Path.Combine(randomSolutionFolder, "GlobalPackages", "packagea","1.1.0", "packageA.1.1.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
             }
+        }
+
+        [Fact]
+        public void RestoreCommand_WithAuthorSignedPackage_Succeeds()
+        {
+            using (var packageSourceFolder = TestDirectory.Create())
+            using (var packageDestinationFolder = TestDirectory.Create())
+            using (var projectFolder = TestDirectory.Create())
+            {
+                var packageFile = new FileInfo(Path.Combine(packageSourceFolder.Path, "TestPackage.AuthorSigned.1.0.0.nupkg"));
+                var package = GetResource(packageFile.Name);
+
+                File.WriteAllBytes(packageFile.FullName, package);
+
+                var projectFile = new FileInfo(Path.Combine(projectFolder, "ClassLibrary1.csproj"));
+                File.WriteAllText(
+                    projectFile.FullName,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Project ToolsVersion=""4.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+  <PropertyGroup>
+    <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
+    <Platform Condition="" '$(Platform)' == '' "">AnyCPU</Platform>
+    <ProjectGuid>{8586D895-886A-41C9-AAE0-B5510BFA50FC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ClassLibrary1</RootNamespace>
+    <AssemblyName>ClassLibrary1</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include=""System"" />
+    <Reference Include=""System.Core"" />
+    <Reference Include=""Microsoft.CSharp"" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include=""TestPackage.AuthorSigned"">
+      <Version>1.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>
+                    ");
+
+                var expectedFilePath = Path.Combine(packageDestinationFolder.Path, "testpackage.authorsigned", "1.0.0", packageFile.Name);
+                var nugetExe = Util.GetNuGetExePath();
+
+                var args = new string[]
+                    {
+                        "restore",
+                        projectFile.Name,
+                        "-Source",
+                        packageSourceFolder.Path,
+                        "-PackagesDirectory",
+                        packageDestinationFolder.Path
+                    };
+
+                Assert.False(File.Exists(expectedFilePath));
+
+                var result = CommandRunner.Run(
+                    nugetExe,
+                    projectFolder.Path,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                Assert.True(0 == result.ExitCode, result.AllOutput);
+                Assert.True(result.Success);
+                Assert.True(File.Exists(expectedFilePath));
+            }
+        }
+
+        private static byte[] GetResource(string name)
+        {
+            return ResourceTestUtility.GetResourceBytes(
+                $"NuGet.CommandLine.Test.compiler.resources.{name}",
+                typeof(NuGetRestoreCommandTest));
         }
     }
 }
