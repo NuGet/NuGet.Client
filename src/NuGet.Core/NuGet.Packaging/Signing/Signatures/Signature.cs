@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
 #endif
@@ -114,8 +115,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(data));
             }
 
-            var cms = new SignedCms();
-            cms.Decode(data);
+            var cms = Decode(data);
 
             return Load(cms);
         }
@@ -202,6 +202,22 @@ namespace NuGet.Packaging.Signing
             }
 
             return timestampList;
+        }
+
+        private static SignedCms Decode(byte[] bytes)
+        {
+            try
+            {
+                var signedCms = new SignedCms();
+
+                signedCms.Decode(bytes);
+
+                return signedCms;
+            }
+            catch (Exception ex)
+            {
+                throw new CryptographicException(Strings.UnexpectedPackageSignatureVerificationError, ex);
+            }
         }
 
 #else
