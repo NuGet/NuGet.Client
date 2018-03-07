@@ -294,7 +294,7 @@ Valid from:</comment>
     <value>The package is not signed. Unable to verify signature from an unsigned package.</value>
   </data>
   <data name="ErrorPackageSignatureInvalid" xml:space="preserve">
-    <value>The package signature is invalid.</value>
+    <value>The package signature is invalid or cannot be verified on this platform.</value>
   </data>
   <data name="CommitmentTypeIndicationAttributeInvalidCombination" xml:space="preserve">
     <value>The commitment-type-indication attribute contains an invalid combination of values.</value>
@@ -548,5 +548,8 @@ Valid from:</comment>
     <value>{0} and {1} should be different. Package signing cannot be done in place.</value>
     <comment>0 - PackageFilePath parameter name
 1 - OutputFilePath parameter name</comment>
+  </data>
+  <data name="UnexpectedPackageSignatureVerificationError" xml:space="preserve">
+    <value>An unexpected error occurred while verifying a package signature.</value>
   </data>
 </root>
