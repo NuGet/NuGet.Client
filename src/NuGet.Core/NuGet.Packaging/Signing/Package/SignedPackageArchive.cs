@@ -70,18 +70,15 @@ namespace NuGet.Packaging.Signing
         {
             token.ThrowIfCancellationRequested();
 
-            // Don't update the read stream, do the removing in the write stream
-            ZipReadStream.Position = 0;
-            ZipReadStream.CopyTo(ZipWriteStream);
-
             if (!await IsSignedAsync(token))
             {
                 throw new SignatureException(Strings.SignedPackageNotSignedOnRemove);
             }
 
-            using (var zip = new ZipArchive(ZipWriteStream, ZipArchiveMode.Update, leaveOpen: true))
+            using (var reader = new BinaryReader(ZipReadStream, SigningSpecifications.Encoding, leaveOpen: true))
+            using (var writer = new BinaryWriter(ZipWriteStream, SigningSpecifications.Encoding, leaveOpen: true))
             {
-                zip.GetEntry(SigningSpecifications.SignaturePath).Delete();
+                SignedPackageArchiveUtility.UnsignZip(reader, writer);
             }
         }
 

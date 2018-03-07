@@ -302,6 +302,38 @@ namespace NuGet.Packaging.Signing
             return metadata;
         }
 
+        internal static void RemoveSignature(BinaryReader reader, BinaryWriter writer)
+        {
+            var metadata = ReadSignedArchiveMetadata(reader);
+            var signatureFileMetadata = metadata.GetPackageSignatureFileCentralDirectoryHeaderMetadata();
+
+            reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
+            writer.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
+
+            // Write local file headers up until the package signature file local file header.
+            ReadAndWriteUntilPosition(reader, writer, signatureFileMetadata.OffsetToLocalFileHeader);
+
+            // Skip over package signature file local file header.
+            reader.BaseStream.Seek(offset: signatureFileMetadata.FileEntryTotalSize, origin: SeekOrigin.Current);
+
+            // Write any remaining local file headers, then central directory headers up until
+            // the package signature central directory header.
+            ReadAndWriteUntilPosition(reader, writer, signatureFileMetadata.Position);
+
+            // Skip over package signature file central directory header.
+            reader.BaseStream.Seek(offset: signatureFileMetadata.HeaderSize, origin: SeekOrigin.Current);
+
+            // Write any remaining central directory headers.
+            ReadAndWriteUntilPosition(reader, writer, metadata.EndOfCentralDirectory);
+
+            ReadAndWriteUpdatedEndOfCentralDirectoryRecordIntoZip(
+                reader,
+                writer,
+                entryCountChange: -1,
+                sizeOfSignatureCentralDirectoryRecord: -signatureFileMetadata.HeaderSize,
+                sizeOfSignatureFileHeaderAndData: -signatureFileMetadata.FileEntryTotalSize);
+        }
+
         private static UnsignedPackageArchiveMetadata ReadUnsignedArchiveMetadata(BinaryReader reader)
         {
             if (reader == null)
@@ -555,7 +587,12 @@ namespace NuGet.Packaging.Signing
             var totalSignatureSize = signatureFileHeaderLength + signatureFileLength;
 
             // update and write the end of central directory record
-            ReadAndWriteUpdatedEndOfCentralDirectoryRecordIntoZip(reader, writer, signatureCentralDirectoryHeaderLength, totalSignatureSize);
+            ReadAndWriteUpdatedEndOfCentralDirectoryRecordIntoZip(
+                reader,
+                writer,
+                entryCountChange: 1,
+                sizeOfSignatureCentralDirectoryRecord: signatureCentralDirectoryHeaderLength,
+                sizeOfSignatureFileHeaderAndData: totalSignatureSize);
         }
 
         /// <summary>
@@ -709,13 +746,15 @@ namespace NuGet.Packaging.Signing
         /// Writes the end of central directory header into a zip using the writer starting at the writer.BaseStream.Position.
         /// The new end of central directory record will be based on the one at reader.BaseStream.Position.
         /// </summary>
-        /// <param name="reader">BinaryWriter to be used to read exisitng end of central directory record.</param>
-        /// <param name="writer">BinaryWriter to be used to write file.</param>
+        /// <param name="reader">BinaryReader to be used to read the existing end of central directory record.</param>
+        /// <param name="writer">BinaryWriter to be used to write the updated end of central directory record.</param>
+        /// <param name="entryCountChange">The change to central directory header counts.</param>
         /// <param name="sizeOfSignatureCentralDirectoryRecord">Size of the central directory header for the signature file.</param>
         /// <param name="sizeOfSignatureFileHeaderAndData">Size of the signature file and the corresponding local file header.</param>
         private static void ReadAndWriteUpdatedEndOfCentralDirectoryRecordIntoZip(
             BinaryReader reader,
             BinaryWriter writer,
+            sbyte entryCountChange,
             long sizeOfSignatureCentralDirectoryRecord,
             long sizeOfSignatureFileHeaderAndData)
         {
@@ -724,10 +763,10 @@ namespace NuGet.Packaging.Signing
 
             // Update central directory header counts by adding 1 for the signature entry
             var centralDirectoryCountOnThisDisk = reader.ReadUInt16();
-            writer.Write((ushort)(centralDirectoryCountOnThisDisk + 1));
+            writer.Write((ushort)(centralDirectoryCountOnThisDisk + entryCountChange));
 
             var centralDirectoryCountTotal = reader.ReadUInt16();
-            writer.Write((ushort)(centralDirectoryCountTotal + 1));
+            writer.Write((ushort)(centralDirectoryCountTotal + entryCountChange));
 
             // Update size of central directory by adding size of signature central directory size
             var sizeOfCentralDirectory = reader.ReadUInt32();

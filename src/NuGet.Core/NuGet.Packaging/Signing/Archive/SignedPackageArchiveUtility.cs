@@ -8,12 +8,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+#if IS_DESKTOP
+using System.Security.Cryptography.Pkcs;
+#endif
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
-    /// <remarks>This is public only to facilitate testing.</remarks>
     public static class SignedPackageArchiveUtility
     {
         private static readonly SigningSpecifications _signingSpecification = SigningSpecifications.V1;
@@ -224,6 +228,156 @@ namespace NuGet.Packaging.Signing
 
 #if IS_DESKTOP
         /// <summary>
+        /// Removes repository primary signature (if it exists) or any repository countersignature (if it exists).
+        /// </summary>
+        /// <param name="input">A readable stream for a signed package.</param>
+        /// <param name="output">A read/write stream for receiving an updated package.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A flag indicating whether or not a signature was removed.</returns>
+        public static async Task<bool> RemoveRepositorySignaturesAsync(
+            Stream input,
+            Stream output,
+            CancellationToken cancellationToken)
+        {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            if (output == null)
+            {
+                throw new ArgumentNullException(nameof(output));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            PrimarySignature primarySignature;
+
+            using (var packageReader = new PackageArchiveReader(input, leaveStreamOpen: true))
+            {
+                primarySignature = await packageReader.GetPrimarySignatureAsync(cancellationToken);
+            }
+
+            if (primarySignature == null)
+            {
+                return false;
+            }
+
+            switch (primarySignature.Type)
+            {
+                case SignatureType.Repository:
+                    await RemoveRepositoryPrimarySignatureAsync(input, output, cancellationToken);
+
+                    return true;
+
+                default:
+                    return await RemoveRepositoryCountersignatureAsync(
+                        input,
+                        output,
+                        primarySignature,
+                        cancellationToken);
+            }
+        }
+
+        private static Task RemoveRepositoryPrimarySignatureAsync(
+            Stream input,
+            Stream output,
+            CancellationToken cancellationToken)
+        {
+            using (var package = new SignedPackageArchive(input, output))
+            {
+                return package.RemoveSignatureAsync(cancellationToken);
+            }
+        }
+
+        private static async Task<bool> RemoveRepositoryCountersignatureAsync(
+            Stream input,
+            Stream output,
+            PrimarySignature primarySignature,
+            CancellationToken cancellationToken)
+        {
+            if (TryRemoveRepositoryCountersignatures(primarySignature.SignedCms, out var updatedSignedCms))
+            {
+                primarySignature = PrimarySignature.Load(updatedSignedCms.Encode());
+
+                using (var unsignedPackage = new MemoryStream())
+                {
+                    using (var package = new SignedPackageArchive(input, unsignedPackage))
+                    {
+                        await package.RemoveSignatureAsync(cancellationToken);
+                    }
+
+                    using (var package = new SignedPackageArchive(unsignedPackage, output))
+                    using (var signatureStream = new MemoryStream(primarySignature.GetBytes()))
+                    {
+                        await package.AddSignatureAsync(signatureStream, cancellationToken);
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryRemoveRepositoryCountersignatures(SignedCms signedCms, out SignedCms updatedSignedCms)
+        {
+            updatedSignedCms = null;
+
+            // SignerInfo.CouterSignerInfos returns a mutable copy of countersigners.  This copy does not reflect
+            // the removal of countersigners via SignerInfo.RemoveCounterSignature(...).
+            // Also, SignerInfo.UnsignedAttributes is defined as an ASN.1 SET, which is an unordered collection.
+            // The underlying platform may reorder elements when modifying the collection, so obtaining updated
+            // indicies is necessary after removing an attribute.
+            var tempSignedCms = new SignedCms();
+
+            tempSignedCms = Reencode(signedCms);
+
+            while (true)
+            {
+                var repositoryCountersignatureFound = false;
+                var primarySigner = tempSignedCms.SignerInfos[0];
+                var countersigners = primarySigner.CounterSignerInfos;
+
+                for (var i = 0; i < countersigners.Count; ++i)
+                {
+                    var countersigner = countersigners[i];
+
+                    if (AttributeUtility.GetSignatureType(countersigner.SignedAttributes) == SignatureType.Repository)
+                    {
+                        repositoryCountersignatureFound = true;
+
+                        primarySigner.RemoveCounterSignature(i);
+
+                        // This is a workaround to SignerInfo.CounterSignerInfos not reflecting changes in the signed CMS.
+                        tempSignedCms = Reencode(tempSignedCms);
+                        updatedSignedCms = tempSignedCms;
+
+                        // Indices of other countersignatures may have changed unexpectedly as a result
+                        // of removing a countersignature.
+                        break;
+                    }
+                }
+
+                if (!repositoryCountersignatureFound)
+                {
+                    break;
+                }
+            }
+
+            return updatedSignedCms != null;
+        }
+
+        private static SignedCms Reencode(SignedCms signedCms)
+        {
+            var newSignedCms = new SignedCms();
+
+            newSignedCms.Decode(signedCms.Encode());
+
+            return newSignedCms;
+        }
+
+        /// <summary>
         /// Signs a Zip with the contents in the SignatureStream using the writer.
         /// The reader is used to read the exisiting contents for the Zip.
         /// </summary>
@@ -233,6 +387,21 @@ namespace NuGet.Packaging.Signing
         internal static void SignZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
         {
             SignedPackageArchiveIOUtility.WriteSignatureIntoZip(signatureStream, reader, writer);
+        }
+
+        internal static void UnsignZip(BinaryReader reader, BinaryWriter writer)
+        {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            SignedPackageArchiveIOUtility.RemoveSignature(reader, writer);
         }
 
         /// <summary>
@@ -351,7 +520,20 @@ namespace NuGet.Packaging.Signing
         }
 #else
 
+        public static Task<bool> RemoveRepositorySignaturesAsync(
+            Stream input,
+            Stream output,
+            CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
         internal static void SignZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void UnsignZip(BinaryReader reader, BinaryWriter writer)
         {
             throw new NotImplementedException();
         }
