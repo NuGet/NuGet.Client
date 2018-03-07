@@ -271,10 +271,10 @@ namespace NuGet.Packaging.Signing
                     return true;
 
                 default:
-                    return await RemoveRepositoryCountersignatureAsync(
+                    return await RemoveRepositoryCountersignaturesAsync(
                         input,
                         output,
-                        primarySignature,
+                        primarySignature.SignedCms,
                         cancellationToken);
             }
         }
@@ -290,15 +290,15 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private static async Task<bool> RemoveRepositoryCountersignatureAsync(
+        private static async Task<bool> RemoveRepositoryCountersignaturesAsync(
             Stream input,
             Stream output,
-            PrimarySignature primarySignature,
+            SignedCms signedCms,
             CancellationToken cancellationToken)
         {
-            if (TryRemoveRepositoryCountersignatures(primarySignature.SignedCms, out var updatedSignedCms))
+            if (TryRemoveRepositoryCountersignatures(signedCms, out var updatedSignedCms))
             {
-                primarySignature = PrimarySignature.Load(updatedSignedCms.Encode());
+                var primarySignature = PrimarySignature.Load(updatedSignedCms.Encode());
 
                 using (var unsignedPackage = new MemoryStream())
                 {
