@@ -60,7 +60,16 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException(nameof(folderPath));
             }
 
-            TargetFramework = GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+            // In ProjectFactory.cs, an instance of _project is initialized as a dynamic through
+            // Activator.CreateInstance.  It has a Dictionary<string, object> which is later
+            // provided to this constructor.  Occasionally, the value is a string, occasionally, it
+            // is a NuGetFramework.  Not knowing why that's happening, we can protect against it here.
+            // https://github.com/NuGet/Home/issues/4491
+
+            var oFramework = GetMetadata<object>(NuGetProjectMetadataKeys.TargetFramework);
+            TargetFramework = oFramework is string
+                ? NuGetFramework.ParseFrameworkName((string)oFramework, DefaultFrameworkNameProvider.Instance)
+                : (NuGetFramework)oFramework;
 
             PackagesConfigPath = Path.Combine(folderPath, "packages.config");
 
