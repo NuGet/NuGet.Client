@@ -100,9 +100,11 @@ namespace NuGet.PackageManagement.Telemetry
                     projectType = NuGetProjectType.XProjProjectJson;
                 }
 
-                // Get package count.
-                var installedPackages = await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var installedPackagesCount = installedPackages.Count();
+                // Get package count - don't attempt to get the project.json package count, because it fails on PCL project creation due to concurrency issue 
+                var installedPackagesCount =
+                    projectType == NuGetProjectType.UwpProjectJson ?
+                    0 :
+                    (await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None)).Count();
 
                 return new ProjectTelemetryEvent(
                     NuGetVersion.Value,
