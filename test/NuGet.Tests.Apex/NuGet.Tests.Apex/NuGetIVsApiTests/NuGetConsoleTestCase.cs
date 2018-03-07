@@ -486,7 +486,6 @@ namespace NuGet.Tests.Apex
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
-
                 Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
                 Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
 
