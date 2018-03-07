@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Shared;
 
@@ -63,7 +64,7 @@ namespace NuGet.ProjectModel
             }
 
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
-                   EqualityUtility.SequenceEqualWithNullCheck(ProjectReferences, other.ProjectReferences);
+                   ProjectReferences.OrderedEquals(other.ProjectReferences, e => e.ProjectPath, PathUtility.GetStringComparerBasedOnOS());
         }
 
         public ProjectRestoreMetadataFrameworkInfo Clone()
