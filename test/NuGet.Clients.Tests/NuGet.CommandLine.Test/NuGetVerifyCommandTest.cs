@@ -79,17 +79,15 @@ namespace NuGet.CommandLine.Test
 
                 if (RuntimeEnvironmentHelper.IsMono)
                 {
-                    Assert.Equal(_failureCode, result.Item1);
-                    Assert.Equal(_failureCode, result.ExitCode);
+                    Assert.True(_failureCode == result.ExitCode, result.AllOutput);
                     Assert.False(result.Success);
-                    Assert.Contains("The package signature is invalid or cannot be verified on this platform.", result.Output);
+                    Assert.Contains("The package signature is invalid or cannot be verified on this platform.", result.AllOutput);
                 }
                 else
                 {
-                    Assert.Equal(_successCode, result.Item1);
-                    Assert.Equal(_successCode, result.ExitCode);
+                    Assert.True(_successCode == result.ExitCode, result.AllOutput);
                     Assert.True(result.Success);
-                    Assert.Contains("Successfully verified package(s).", result.Output);
+                    Assert.Contains("Successfully verified package(s).", result.AllOutput);
                 }
             }
         }
