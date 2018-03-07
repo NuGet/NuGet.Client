@@ -83,39 +83,6 @@
             UpdateButtonClicked="PackageList_UpdateButtonClicked" />
 
           <Border
-            Grid.Row="1"
-            BorderThickness="0,1,0,0"
-            x:Name="_upgradeNuGetProject"
-            BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-            Background="{DynamicResource {x:Static nuget:Brushes.LegalMessageBackground}}">
-            <StackPanel Orientation="Vertical">
-              <TextBlock
-                Margin="24,12,24,0"
-                TextWrapping="Wrap"
-                Text="{x:Static nuget:Resources.Text_UpgradeNuGetProjectDescription}" />
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="auto" />
-                </Grid.ColumnDefinitions>
-                <CheckBox
-                  Grid.Column="0"
-                  VerticalAlignment="Center"
-                  Margin="24,0"
-                  Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
-                  Content="{x:Static nuget:Resources.DoNotShowThisAgain}" />
-                <Button
-                  Grid.Column="1"
-                  Margin="24,12,24,12"
-                  MinWidth="86"
-                  Height="24"
-                  MinHeight="24"
-                  Content="{x:Static nuget:Resources.Button_Upgrade}" Click="UpgradeButton_Click" />
-              </Grid>
-            </StackPanel>
-          </Border>
-
-          <Border
             Grid.Row="2"
             BorderThickness="0,1,0,0"
             x:Name="_legalDisclaimer"

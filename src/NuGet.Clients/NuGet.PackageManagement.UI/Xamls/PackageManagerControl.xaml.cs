@@ -45,6 +45,8 @@ namespace NuGet.PackageManagement.UI
 
         private RestartRequestBar _restartBar;
 
+        private PRMigratorBar _migratorBar;
+
         private readonly IVsWindowSearchHost _windowSearchHost;
         private readonly IVsWindowSearchHostFactory _windowSearchHostFactory;
 
@@ -53,10 +55,6 @@ namespace NuGet.PackageManagement.UI
         private readonly Dispatcher _uiDispatcher;
 
         private bool _missingPackageStatus;
-
-        // Initial to true so change detection logic is simple (since UI defaults to shown).
-        private bool _shouldShowUpgradeProject = true;
-        private bool _nuGetProjectUpgradeCollapseDependencies;
 
         private readonly INuGetUILogger _uiLogger;
 
@@ -128,6 +126,8 @@ namespace NuGet.PackageManagement.UI
 
             AddRestartRequestBar(vsShell);
 
+            AddMigratorBar();
+
             _packageDetail.Control = this;
             _packageDetail.Visibility = Visibility.Hidden;
 
@@ -167,7 +167,6 @@ namespace NuGet.PackageManagement.UI
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
 
-            UpdateUpgradeProjectVisibility();
             Unloaded += PackageManagerUnloaded;
 
             if (IsUILegalDisclaimerSuppressed())
@@ -284,41 +283,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void UpdateUpgradeProjectVisibility()
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                var newValue = await ShouldShowUpgradeProjectAsync();
-                if (newValue != _shouldShowUpgradeProject)
-                {
-                    _shouldShowUpgradeProject = newValue;
-                    _upgradeNuGetProject.Visibility = newValue ? Visibility.Visible : Visibility.Collapsed;
-                }
-            });
-        }
-
-        private async Task<bool> ShouldShowUpgradeProjectAsync()
-        {
-            VSThreadHelper.ThrowIfNotOnUIThread();
-            // If user has turned it off, don't show
-            if (RegistrySettingUtility.GetBooleanSetting(Constants.SuppressUpgradePackagesConfigName))
-            {
-                return false;
-            }
-
-            // We don't currently support converting an entire solution
-            if (Model.IsSolution)
-            {
-                return false;
-            }
-
-            // We only support a single project
-            var projects = Model.Context.Projects.ToList();
-            return (projects.Count == 1) && await Model.Context.IsNuGetProjectUpgradeable(projects[0]);
-        }
-
         private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
         {
             Unloaded -= PackageManagerUnloaded;
@@ -377,8 +341,6 @@ namespace NuGet.PackageManagement.UI
                 SetSelectedDepencyBehavior(dependencySetting ?? DependencyBehavior.Lowest);
                 return;
             }
-
-            _nuGetProjectUpgradeCollapseDependencies = settings.NuGetProjectUpgradeCollapseDependencies;
 
             _detailModel.Options.ShowPreviewWindow = settings.ShowPreviewWindow;
             _detailModel.Options.ShowDeprecatedFrameworkWindow = settings.ShowDeprecatedFrameworkWindow;
@@ -450,7 +412,6 @@ namespace NuGet.PackageManagement.UI
         {
             var settings = new UserSettings
             {
-                NuGetProjectUpgradeCollapseDependencies = _nuGetProjectUpgradeCollapseDependencies,
                 SourceRepository = SelectedSource?.SourceName,
                 ShowPreviewWindow = _detailModel.Options.ShowPreviewWindow,
                 ShowDeprecatedFrameworkWindow = _detailModel.Options.ShowDeprecatedFrameworkWindow,
@@ -527,6 +488,15 @@ namespace NuGet.PackageManagement.UI
                 Model.Context.PackageRestoreManager.PackagesMissingStatusChanged
                     -= packageRestoreManager_PackagesMissingStatusChanged;
             }
+        }
+
+        private void AddMigratorBar()
+        {
+            _migratorBar = new PRMigratorBar(Model);
+
+            DockPanel.SetDock(_migratorBar, Dock.Top);
+
+            _root.Children.Insert(0, _migratorBar);
         }
 
 #pragma warning disable IDE1006 // Naming Styles
@@ -897,7 +867,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             RefreshConsolidatablePackagesCount();
-            UpdateUpgradeProjectVisibility();
 
             _packageDetail?.Refresh();
         }
@@ -1200,14 +1169,5 @@ namespace NuGet.PackageManagement.UI
                nugetUi => SetOptions(nugetUi, NuGetActionType.Update));
         }
 
-        private async void UpgradeButton_Click(object sender, RoutedEventArgs e)
-        {
-            var project = Model.Context.Projects.FirstOrDefault();
-            Debug.Assert(project != null);
-
-            _nuGetProjectUpgradeCollapseDependencies = await
-                     Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, project,
-                    _nuGetProjectUpgradeCollapseDependencies);
-        }
     }
 }

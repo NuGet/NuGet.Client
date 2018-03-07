@@ -762,12 +762,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Radio_FlattenDependencies" xml:space="preserve">
     <value>Flatten dependencies</value>
   </data>
-  <data name="Button_Upgrade" xml:space="preserve">
-    <value>Upgrade</value>
-  </data>
-  <data name="Text_UpgradeNuGetProjectDescription" xml:space="preserve">
-    <value>Upgrade this project from packages.config to PackageReference format.</value>
-  </data>
   <data name="Upgrade_InstallFailed" xml:space="preserve">
     <value>NuGet upgrade failed to install packages as PackageReference. Changed files are backed up at {0}</value>
   </data>
@@ -785,5 +779,14 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Upgrader_BackupFailed" xml:space="preserve">
     <value>The project cannot be upgraded as backing up the project file and packages.config ran into an issue.</value>
+  </data>
+  <data name="AskForPRMigrator" xml:space="preserve">
+    <value>Consider migrating this project's NuGet package management format from 'packages.config' to 'PackageRefernece'.</value>
+  </data>
+  <data name="Link_UpgradeOption" xml:space="preserve">
+    <value>Migrate Now</value>
+  </data>
+  <data name="Link_MigratorHelp" xml:space="preserve">
+    <value>Why should I migrate?</value>
   </data>
 </root>

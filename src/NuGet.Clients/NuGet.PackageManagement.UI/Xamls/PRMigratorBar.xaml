@@ -1,0 +1,55 @@
+<UserControl x:Class="NuGet.PackageManagement.UI.PRMigratorBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Loaded="UserControl_Loaded"
+             xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <nuget:SharedResources />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Border x:Name="MigratorBar" VerticalAlignment="Center" Visibility="Collapsed" BorderThickness="0,0,0,1">
+    <Grid Margin="0,4,0,6">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <TextBlock
+        Grid.Column="0"
+        x:Name="UpgradeMessage"
+        Margin="5,0,5,0"
+        TextWrapping="Wrap"
+        VerticalAlignment="Center"
+        Text="{x:Static resx:Resources.AskForPRMigrator}" />
+      <TextBlock
+        Grid.Column="1"
+        TextWrapping="Wrap"
+        VerticalAlignment="Center"
+        Margin="15,0,5,0">
+        <Hyperlink
+          NavigateUri=" "
+          Style="{StaticResource HyperlinkStyle}"
+          Hyperlink.Click="OnMigrationLinkClick" >
+          <Run Text="{x:Static resx:Resources.Link_UpgradeOption}" />
+        </Hyperlink>
+      </TextBlock>
+      <TextBlock
+        Grid.Column="2"
+        TextWrapping="Wrap"
+        VerticalAlignment="Center"
+        Margin="15,0,5,0">
+        <Hyperlink
+          NavigateUri="https://aka.ms/nuget-pc2pr-migrator"
+          Style="{StaticResource HyperlinkStyle}"
+          RequestNavigate="OnMigrationHelpUrlNavigate" >
+          <Run Text="{x:Static resx:Resources.Link_MigratorHelp}" />
+        </Hyperlink>
+      </TextBlock>
+      
+    </Grid>
+  </Border>
+</UserControl>

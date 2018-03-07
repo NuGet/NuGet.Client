@@ -106,6 +106,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Consider migrating this project&apos;s NuGet package management format from &apos;packages.config&apos; to &apos;PackageRefernece&apos;..
+        /// </summary>
+        public static string AskForPRMigrator {
+            get {
+                return ResourceManager.GetString("AskForPRMigrator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Some NuGet packages are missing from this solution. Click to restore from your online package sources..
         /// </summary>
         public static string AskForRestoreMessage {
@@ -273,15 +282,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Button_Update {
             get {
                 return ResourceManager.GetString("Button_Update", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Upgrade.
-        /// </summary>
-        public static string Button_Upgrade {
-            get {
-                return ResourceManager.GetString("Button_Upgrade", resourceCulture);
             }
         }
         
@@ -925,11 +925,29 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Why should I migrate?.
+        /// </summary>
+        public static string Link_MigratorHelp {
+            get {
+                return ResourceManager.GetString("Link_MigratorHelp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reverting NuGet Project Upgrade.
         /// </summary>
         public static string Link_RevertNuGetProjectUpgrade {
             get {
                 return ResourceManager.GetString("Link_RevertNuGetProjectUpgrade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Migrate Now.
+        /// </summary>
+        public static string Link_UpgradeOption {
+            get {
+                return ResourceManager.GetString("Link_UpgradeOption", resourceCulture);
             }
         }
         
@@ -1681,15 +1699,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_UpgradeCompleteResolveProblemsDirections {
             get {
                 return ResourceManager.GetString("Text_UpgradeCompleteResolveProblemsDirections", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Upgrade this project from packages.config to PackageReference format..
-        /// </summary>
-        public static string Text_UpgradeNuGetProjectDescription {
-            get {
-                return ResourceManager.GetString("Text_UpgradeNuGetProjectDescription", resourceCulture);
             }
         }
         
