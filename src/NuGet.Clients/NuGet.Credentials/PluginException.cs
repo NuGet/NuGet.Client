@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Credentials;
@@ -17,7 +17,7 @@ namespace NuGet.Credentials
         public PluginException(string message) : base(message) { }
 
         public PluginException(string message, Exception inner) : base(message, inner) { }
-#if NET46
+#if IS_DESKTOP
         protected PluginException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context)
