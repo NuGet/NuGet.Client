@@ -5,21 +5,19 @@
   <xsl:output omit-xml-declaration="yes" />
 
   <!-- Issue row templates -->
-  <xsl:template match="Issue">
+  <xsl:template match="Package">
     <tr>
-      <td>
-        <xsl:attribute name="class">
-          <xsl:choose>
-            <xsl:when test="@Level = '2'">IconErrorEncoded</xsl:when>
-            <xsl:when test="@Level = '1'">IconWarningEncoded</xsl:when>
-            <xsl:when test="@Level = '0'">IconInfoEncoded</xsl:when>
-          </xsl:choose>
-        </xsl:attribute>
-      </td>
+      <td class="IconWarningEncoded" />
       <td class="issueCell">
-        <span>
-          <xsl:value-of select="@Description" />
-        </span>
+        <div>
+          <xsl:value-of select="@Name" />
+          v<xsl:value-of select="@Version" />
+        </div>
+        <xsl:for-each select="Issue">
+          <div class="packageIssue">
+            <xsl:value-of select="@Description" />
+          </div>
+        </xsl:for-each>
       </td>
     </tr>
   </xsl:template>
@@ -31,13 +29,19 @@
 
       <table>
         <tr>
-          <th class="issueCell">Top-level Dependencies</th>
+          <th class="issueCell">Package Id</th>
+          <th>Version</th>
         </tr>
         <xsl:for-each select="IncludedPackages/Package">
           <tr>
             <td class="issueCell">
               <span>
                 <xsl:value-of select="@Name" />
+              </span>
+            </td>
+            <td>
+              <span>
+                v<xsl:value-of select="@Version" />
               </span>
             </td>
           </tr>
@@ -62,13 +66,19 @@
 
       <table>
         <tr>
-          <th class="issueCell">Transitive Dependencies</th>
+          <th class="issueCell">Package Id</th>
+          <th>Version</th>
         </tr>
         <xsl:for-each select="ExcludedPackages/Package">
           <tr>
             <td class="issueCell">
               <span>
                 <xsl:value-of select="@Name" />
+              </span>
+            </td>
+            <td>
+              <span>
+                v<xsl:value-of select="@Version" />
               </span>
             </td>
           </tr>
@@ -79,6 +89,7 @@
               <td class="issueCell">
                 No transitive dependencies found.
               </td>
+              <td />
             </tr>
           </xsl:when>
         </xsl:choose>
@@ -89,7 +100,7 @@
   <!-- Project Details Template -->
   <xsl:template match="Projects" mode="ProjectDetails">
     <xsl:for-each select="Project">
-      <xsl:variable name="issuesCount" select="count(Issues/Issue)" />
+      <xsl:variable name="issuesCount" select="count(Issues/Package/Issue)" />
 
       <table>
         <tr>
@@ -97,8 +108,8 @@
           <th class="issueCell" _locID="DescriptionTableHeader">Description</th>
         </tr>
 
-        <xsl:for-each select="Issues/Issue">
-          <xsl:sort select="@Level" order="descending" />
+        <xsl:for-each select="Issues/Package">
+          <xsl:sort select="@Name" order="ascending" />
           <xsl:apply-templates select="." />
         </xsl:for-each>
 
@@ -235,6 +246,11 @@
                         width: 100%;
                     }
 
+                    .packageIssue
+                    {
+                        margin-left: 25px;
+                    }
+
                     /* Padding around the content after the h1 */ 
                     #content 
                     {
@@ -280,14 +296,18 @@
       </head>
       <body>
         <h1>
-          NuGet Upgrade Report - <xsl:value-of select="current()/@Name" />
+          NuGet Migration Report - <xsl:value-of select="current()/@Name" />
         </h1>
 
         <div id="content">
           <h2 _locID="OverviewTitle">Overview</h2>
-          <div class="info-text">Upgrade to PackageReference was completed successfully. Please build and run your solution to verify that all packages are available.</div>
+          <div class="info-text">Migration to PackageReference was completed successfully. Please build and run your solution to verify that all packages are available.</div>
           <div class="info-text">
-            Changed files are backed up here:
+            If you run into any problems, have feedback, questions, or concerns, please
+            <a href="https://github.com/NuGet/Home/issues/">file an issue on the NuGet GitHub repository.</a>
+          </div>
+          <div class="info-text">
+            Changed files and this report have been backed up here:
             <a>
               <xsl:attribute name="href">
                 <xsl:value-of select="current()/@BackupPath" />
@@ -296,20 +316,21 @@
             </a>
           </div>
           <div class="info-text">
-            If you need to revert changes, follow the directions here:
-            <a href="https://aka.ms/nugetupgraderevertv1">Reverting NuGet Project Upgrade</a>
+            <a href="https://aka.ms/nugetupgraderevertv1">Help me revert the NuGet project migration</a>
           </div>
 
           <h2 _locID="PackagesTitle">Packages Processed</h2>
+          <h3 _locID="IncludePackagesTitle">Top-level Dependencies:</h3>
           <div class="issues">
             <xsl:apply-templates select="Projects" mode="IncludedPackages" />
           </div>
           <p />
+          <h3 _locID="IncludePackagesTitle">Transitive Dependencies:</h3>
           <div class="issues">
             <xsl:apply-templates select="Projects" mode="ExcludedPackages" />
           </div>
 
-          <h2 _locID="IssuesTitle">Issues Found</h2>
+          <h2 _locID="IssuesTitle">Package compatibility issues</h2>
           <div class="issues">
             <xsl:apply-templates select="Projects" mode="ProjectDetails" />
           </div>

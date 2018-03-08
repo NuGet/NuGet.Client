@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Xml;
 using System.Xml.Xsl;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -21,21 +23,23 @@ namespace NuGet.PackageManagement.UI
         //   <Projects>
         //     <Project Name="ConsoleApplication13">
         //       <Issues>
-        //         <Issue Level="1" Description="Newtonsoft.Json.6.0.8 contains an install.ps1 script that will not be applied after upgrading." />
-        //         <Issue Level="2" Description="My.God.Its.Full.Of.Stars.1.4.9 could not be found." />
+        //         <Package Name="Newtonsoft.Json" Version="1.0.0">
+        //           <Issue Description="contains an install.ps1 script that will not be applied after upgrading." />
+        //           <Issue Description="could not be found." />
+        //         </Package>
         //       </Issues>
         //       <IncludedPackages>
-        //         <Package Name="Microsoft.Owin.3.0.1" />
-        //         <Package Name="WindowsAzure.Storage.7.0.0" />
+        //         <Package Name="Microsoft.Owin" Version="3.0.1" />
+        //         <Package Name="WindowsAzure.Storage" Version="7.0.0" />
         //       </IncludedPackages>
         //       <ExcludedPackages>
-        //         <Package Name="Microsoft.Azure.KeyVault.Core.1.0.0 (dependency of WindowsAzure.Storage.7.0.0)" />
-        //         <Package Name="Microsoft.Data.Edm.5.6.4 (dependency of Microsoft.Data.OData.5.6.4)" />
-        //         <Package Name="Microsoft.Data.OData.5.6.4 (dependency of Microsoft.Data.Services.Client.5.6.4, WindowsAzure.Storage.7.0.0)" />
-        //         <Package Name="Microsoft.Data.Services.Client.5.6.4 (dependency of WindowsAzure.Storage.7.0.0)" />
-        //         <Package Name="Newtonsoft.Json.6.0.8 (dependency of WindowsAzure.Storage.7.0.0)" />
-        //         <Package Name="Owin.1.0.0 (dependency of Microsoft.Owin.3.0.1)" />
-        //         <Package Name="System.Spatial.5.6.4 (dependency of Microsoft.Data.OData.5.6.4)" />
+        //         <Package Name="Microsoft.Azure.KeyVault.Core" Version="1.0.0" />
+        //         <Package Name="Microsoft.Data.Edm" Version="5.6.4" />
+        //         <Package Name="Microsoft.Data.OData" Version="5.6.4" />
+        //         <Package Name="Microsoft.Data.Services.Client" Version="5.6.4" />
+        //         <Package Name="Newtonsoft.Json" Version="6.0.8" />
+        //         <Package Name="Owin" Version="1.0.0" />
+        //         <Package Name="System.Spatial" Version="5.6.4" />
         //       </ExcludedPackages>
         //     </Project>
         //   </Projects>
@@ -49,8 +53,8 @@ namespace NuGet.PackageManagement.UI
         private const string IncludedPackagesString = "IncludedPackages";
         private const string IssuesString = "Issues";
         private const string IssueString = "Issue";
-        private const string LevelString = "Level";
         private const string NameString = "Name";
+        private const string VersionString = "Version";
         private const string NuGetUpgradeReportString = "NuGetUpgradeReport";
         private const string PackageString = "Package";
         private const string ProjectsString = "Projects";
@@ -110,25 +114,31 @@ namespace NuGet.PackageManagement.UI
             _propertiesElement.AppendChild(propertyElement);
         }
 
-        internal void LogIssue(string projectName, ErrorLevel errorLevel, string description)
-        {
-            var issueElement = _xmlDocument.CreateElement(IssueString);
-            issueElement.SetAttribute(LevelString, ((uint)errorLevel).ToString());
-            issueElement.SetAttribute(DescriptionString, description);
-
-            var issuesElement = GetProjectElement(projectName).SelectSingleNode(IssuesString);
-            Debug.Assert(issuesElement != null, "issuesElement != null");
-            issuesElement.AppendChild(issueElement);
-        }
-
-        internal void RegisterPackage(string projectName, string name, bool included)
+        internal void RegisterPackage(string projectName, string name, string version, IList<PackLogMessage> issues, bool included)
         {
             var packageElement = _xmlDocument.CreateElement(PackageString);
             packageElement.SetAttribute(NameString, name);
+            packageElement.SetAttribute(VersionString, version);
 
             var packagesElement = GetProjectElement(projectName).SelectSingleNode(included ? IncludedPackagesString : ExcludedPackagesString);
             Debug.Assert(packagesElement != null, "packagesElement != null");
             packagesElement.AppendChild(packageElement);
+
+            if (issues.Count > 0)
+            {
+                var issuesElement = GetProjectElement(projectName).SelectSingleNode(IssuesString);
+                Debug.Assert(issuesElement != null, "issuesElement != null");
+                var issuePackageElement = packageElement.Clone();
+                issuesElement.AppendChild(issuePackageElement);
+
+                foreach (var issue in issues)
+                {
+                    var issueElement = _xmlDocument.CreateElement(IssueString);
+                    issueElement.SetAttribute(DescriptionString, issue.Message);
+
+                    issuePackageElement.AppendChild(issueElement);
+                }
+            }
         }
 
         internal string GetHtmlFilePath()

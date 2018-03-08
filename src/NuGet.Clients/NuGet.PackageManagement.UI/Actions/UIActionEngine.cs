@@ -175,23 +175,16 @@ namespace NuGet.PackageManagement.UI
             var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             using (var upgradeLogger = new UpgradeLogger(projectName, backupPath))
             {
-                // TODO: use the NuGetPackageUpgradeDependencyItem list (AllPackageItems) to walk through each item and find any issues.
-                //foreach (var error in upgradeInformationWindowModel.Errors)
-                //{
-                //    upgradeLogger.LogIssue(projectName, UpgradeLogger.ErrorLevel.Error, error);
-                //}
-                //foreach (var warning in upgradeInformationWindowModel.Warnings)
-                //{
-                //    upgradeLogger.LogIssue(projectName, UpgradeLogger.ErrorLevel.Warning, warning);
-                //}
                 foreach (var package in upgradeInformationWindowModel.DirectDependencies)
                 {
-                    upgradeLogger.RegisterPackage(projectName, package.Id, true);
+                    upgradeLogger.RegisterPackage(projectName, package.Id, package.Version, package.Issues, true);
                 }
+
                 foreach (var package in upgradeInformationWindowModel.TransitiveDependencies)
                 {
-                    upgradeLogger.RegisterPackage(projectName, package.Id, false);
+                    upgradeLogger.RegisterPackage(projectName, package.Id, package.Version, package.Issues, false);
                 }
+
                 return upgradeLogger.GetHtmlFilePath();
             }
         }
