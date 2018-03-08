@@ -109,7 +109,7 @@ namespace NuGet.Test
 
                         configs.Add(config);
 
-                        CreateConfigJsonNet452(config);
+                        BasicConfigNet46(config);
 
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
@@ -251,7 +251,7 @@ namespace NuGet.Test
 
                         configs.Add(config);
 
-                        CreateConfigJsonNet452(config);
+                        BasicConfigNet46(config);
 
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
@@ -378,7 +378,7 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net452");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -483,7 +483,7 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -548,7 +548,7 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -615,7 +615,7 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -790,9 +790,9 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
-                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var projectTargetFramework = NuGetFramework.Parse("net46");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
@@ -941,9 +941,9 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
-                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var projectTargetFramework = NuGetFramework.Parse("net46");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
@@ -1035,9 +1035,9 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
-                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var projectTargetFramework = NuGetFramework.Parse("net46");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
@@ -1529,7 +1529,7 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net452");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1600,7 +1600,7 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net452");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1639,7 +1639,7 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net452");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1681,7 +1681,7 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net452");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1735,7 +1735,7 @@ namespace NuGet.Test
 
                     var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
 
-                    CreateConfigJsonNet452(randomConfig);
+                    BasicConfigNet46(randomConfig);
 
                     var projectTargetFramework = NuGetFramework.Parse("net452");
                     var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
@@ -1796,22 +1796,22 @@ namespace NuGet.Test
             }
         }
 
-        private static void CreateConfigJsonNet452(string path)
+        private static void BasicConfigNet46(string path)
         {
             using (var writer = new StreamWriter(path))
             {
-                writer.Write(BasicConfigNet452.ToString());
+                writer.Write(BasicConfigNet460.ToString());
             }
         }
 
-        private static JObject BasicConfigNet452
+        private static JObject BasicConfigNet460
         {
             get
             {
                 var json = new JObject();
 
                 var frameworks = new JObject();
-                frameworks["net452"] = new JObject();
+                frameworks["net46"] = new JObject();
 
                 json["dependencies"] = new JObject();
 
