@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if IS_DESKTOP
-
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
@@ -23,89 +22,131 @@ namespace NuGet.Packaging.FuncTest
 
         public SignedPackageArchiveTests(SigningTestFixture fixture)
         {
-             _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+            if (fixture == null)
+            {
+                throw new ArgumentNullException(nameof(fixture));
+            }
+
+            _fixture = fixture;
         }
 
         [CIOnlyFact]
         public async Task RemoveSignatureAsync_RemovesPackageSignatureAsync()
         {
-            using (var directory = TestDirectory.Create())
-            using (var certificate = new X509Certificate2(_fixture.TrustedTestCertificate.Source.Cert))
+            using (var test = await Test.CreateAsync(_fixture))
             {
-                var signedPackageFile = await CreateSignedPackageAsync(directory, certificate);
+                await test.Package.RemoveSignatureAsync(CancellationToken.None);
 
-                using (var test = new Test(signedPackageFile.FullName))
-                {
-                    using (var package = new SignedPackageArchive(test.InputPackageStream, test.OutputPackageStream))
-                    {
-                        await package.RemoveSignatureAsync(CancellationToken.None);
-                    }
+                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.OutputPackageStream);
 
-                    var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.OutputPackageStream);
-
-                    Assert.False(isSigned);
-                }
+                Assert.False(isSigned);
             }
         }
 
-        private static async Task<FileInfo> CreateSignedPackageAsync(TestDirectory directory, X509Certificate2 certificate)
+        [CIOnlyFact]
+        public async Task RemoveSignatureAsync_WithCancelledToken_Throws()
         {
-            var packageContext = new SimpleTestPackageContext();
-            var packageFileName = Guid.NewGuid().ToString();
-            var package = packageContext.CreateAsFile(directory, packageFileName);
-            var signatureProvider = new X509SignatureProvider(timestampProvider: null);
-            var overwrite = true;
-            var outputFile = new FileInfo(Path.Combine(directory, Guid.NewGuid().ToString()));
-
-            using (var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256))
-            using (var options = SigningOptions.CreateFromFilePaths(
-                package.FullName,
-                outputFile.FullName,
-                overwrite,
-                signatureProvider,
-                NullLogger.Instance))
+            using (var test = await Test.CreateAsync(_fixture))
             {
-                await SigningUtility.SignAsync(options, request, CancellationToken.None);
-
-                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(options.OutputPackageStream);
-
-                Assert.True(isSigned);
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => test.Package.RemoveSignatureAsync(new CancellationToken(canceled: true)));
             }
+        }
 
-            return outputFile;
+        [CIOnlyFact]
+        public async Task RemoveSignatureAsync_WithUnsignedPackage_Throws()
+        {
+            using (var test = Test.CreateUnsigned())
+            {
+                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.InputPackageStream);
+
+                Assert.False(isSigned);
+
+                var exception = await Assert.ThrowsAsync<SignatureException>(
+                    () => test.Package.RemoveSignatureAsync(CancellationToken.None));
+
+                Assert.Equal(NuGetLogCode.NU3000, exception.Code);
+                Assert.Equal("The package is not signed. Unable to remove signature from an unsigned package.", exception.Message);
+            }
         }
 
         private sealed class Test : IDisposable
         {
-            private readonly TestDirectory _directory;
-
-            internal Stream InputPackageStream { get; }
-            internal Stream OutputPackageStream { get; }
+            internal MemoryStream InputPackageStream { get; }
+            internal MemoryStream OutputPackageStream { get; }
+            internal SignedPackageArchive Package { get; }
 
             private bool _isDisposed;
 
-            internal Test(string packageFilePath)
+            private Test(MemoryStream inputPackageStream)
             {
-                _directory = TestDirectory.Create();
+                InputPackageStream = inputPackageStream;
+                OutputPackageStream = new MemoryStream();
 
-                var outputPath = Path.Combine(_directory, Guid.NewGuid().ToString());
+                Package = new SignedPackageArchive(InputPackageStream, OutputPackageStream);
+            }
 
-                InputPackageStream = File.OpenRead(packageFilePath);
-                OutputPackageStream = File.Open(outputPath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            internal static async Task<Test> CreateAsync(SigningTestFixture fixture, Stream unsignedPackage = null)
+            {
+                using (var certificate = new X509Certificate2(fixture.TrustedTestCertificate.Source.Cert))
+                {
+                    var signedPackageFile = await CreateSignedPackageAsync(certificate, unsignedPackage);
+
+                    return new Test(signedPackageFile);
+                }
+            }
+
+            internal static Test CreateUnsigned()
+            {
+                var packageContext = new SimpleTestPackageContext();
+                var package = packageContext.CreateAsStream();
+
+                return new Test(package);
             }
 
             public void Dispose()
             {
                 if (!_isDisposed)
                 {
-                    _directory?.Dispose();
-
                     InputPackageStream.Dispose();
                     OutputPackageStream.Dispose();
+                    Package?.Dispose();
 
                     GC.SuppressFinalize(this);
 
                     _isDisposed = true;
+                }
+            }
+
+            private static async Task<MemoryStream> CreateSignedPackageAsync(
+                X509Certificate2 certificate,
+                Stream unsignedPackage = null)
+            {
+                if (unsignedPackage == null)
+                {
+                    var packageContext = new SimpleTestPackageContext();
+                    unsignedPackage = packageContext.CreateAsStream();
+                }
+
+                var signatureProvider = new X509SignatureProvider(timestampProvider: null);
+                var overwrite = true;
+
+                using (var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256))
+                using (var outputPackageStream = new MemoryStream())
+                using (var options = new SigningOptions(
+                    new Lazy<Stream>(() => unsignedPackage),
+                    new Lazy<Stream>(() => outputPackageStream),
+                    overwrite,
+                    signatureProvider,
+                    NullLogger.Instance))
+                {
+                    await SigningUtility.SignAsync(options, request, CancellationToken.None);
+
+                    var isSigned = await SignedArchiveTestUtility.IsSignedAsync(options.OutputPackageStream);
+
+                    Assert.True(isSigned);
+
+                    return new MemoryStream(outputPackageStream.ToArray());
                 }
             }
         }

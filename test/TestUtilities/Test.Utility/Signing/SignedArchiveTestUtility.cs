@@ -53,6 +53,23 @@ namespace Test.Utility.Signing
             return signedPackagePath;
         }
 
+        public static async Task CreateSignedPackageAsync(
+            SignPackageRequest request,
+            Stream packageReadStream,
+            Stream packageWriteStream)
+        {
+            using (var signedPackage = new SignedPackageArchive(packageReadStream, packageWriteStream))
+            using (var options = new SigningOptions(
+                new Lazy<Stream>(() => packageReadStream),
+                new Lazy<Stream>(() => packageWriteStream),
+                overwrite: false,
+                signatureProvider: new X509SignatureProvider(timestampProvider: null),
+                logger: NullLogger.Instance))
+            {
+                await SigningUtility.SignAsync(options, request, CancellationToken.None);
+            }
+        }
+
         /// <summary>
         /// Generates a signed copy of a package and returns the path to that package
         /// This method timestamps a package and should only be used with tests marked with [CIOnlyFact]
