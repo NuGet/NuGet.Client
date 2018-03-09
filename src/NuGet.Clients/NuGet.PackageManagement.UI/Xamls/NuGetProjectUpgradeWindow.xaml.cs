@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.UI
             var checkBox = sender as CheckBox;
             foreach(var item in model.TransitiveDependencies)
             {
-                item.PromoteToTopLevel = checkBox.IsChecked.GetValueOrDefault();
+                item.InstallAsTopLevel = checkBox.IsChecked.GetValueOrDefault();
             }
         }
     }

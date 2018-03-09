@@ -39,6 +39,15 @@ namespace NuGet.PackageManagement.UI
             {
                 try
                 {
+                    // 0. Fail if any package was not found
+                    if(notFoundPackages.Any())
+                    {
+                        status = NuGetOperationStatus.Failed;
+                        var notFoundPackageIds = string.Join(",", notFoundPackages.Select(t => t.Id));
+                        uiService.ProjectContext.Log(MessageLevel.Error, string.Format(CultureInfo.CurrentCulture, Resources.Migrator_PackageNotFound, notFoundPackageIds));
+                        return null;
+                    }
+
                     // 1. Backup files (csproj and packages.config) that will change
                     var solutionManager = context.SolutionManager;
                     var msBuildNuGetProject = (MSBuildNuGetProject)nuGetProject;
@@ -172,7 +181,7 @@ namespace NuGet.PackageManagement.UI
         {
             return
                 upgradeDependencyItems.Where(
-                    upgradeDependencyItem => upgradeDependencyItem.PromoteToTopLevel)
+                    upgradeDependencyItem => upgradeDependencyItem.InstallAsTopLevel)
                     .Select(upgradeDependencyItem => upgradeDependencyItem.Package);
         }
 

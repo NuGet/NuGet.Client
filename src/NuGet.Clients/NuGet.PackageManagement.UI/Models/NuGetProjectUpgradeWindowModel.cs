@@ -24,6 +24,7 @@ namespace NuGet.PackageManagement.UI
         private ObservableCollection<NuGetProjectUpgradeDependencyItem> _upgradeDependencyItems;
         private HashSet<PackageIdentity> _notFoundPackages;
         private string _projectName;
+        private bool _hasNotFoundPackages;
 
         public NuGetProjectUpgradeWindowModel(NuGetProject project, IList<PackageDependencyInfo> packageDependencyInfos)
         {
@@ -77,6 +78,18 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public bool HasNotFoundPackages
+        {
+            get
+            {
+                return _hasNotFoundPackages;
+            }
+            set
+            {
+                _hasNotFoundPackages = value;
+                OnPropertyChanged("HasNotFoundPackages");
+            }
+        }
         public ObservableCollection<NuGetProjectUpgradeDependencyItem> UpgradeDependencyItems
             => _upgradeDependencyItems ?? (_upgradeDependencyItems = GetUpgradeDependencyItems());
 
@@ -84,10 +97,6 @@ namespace NuGet.PackageManagement.UI
                 .Where(upgradeDependencyItem => !upgradeDependencyItem.DependingPackages.Any());
 
         public IEnumerable<NuGetProjectUpgradeDependencyItem> TransitiveDependencies => UpgradeDependencyItems.Where(d => d.DependingPackages.Any());
-
-        public IEnumerable<NuGetProjectUpgradeDependencyItem> AllPackages => UpgradeDependencyItems;
-
-        private IEnumerable<NuGetProjectUpgradeDependencyItem> PackagesToInstall => UpgradeDependencyItems.Where(t => t.PromoteToTopLevel);
 
         private void InitPackageUpgradeIssues(FolderNuGetProject folderNuGetProject, NuGetProjectUpgradeDependencyItem package, NuGetFramework framework)
         {
@@ -98,6 +107,7 @@ namespace NuGet.PackageManagement.UI
             if (string.IsNullOrEmpty(packagePath))
             {
                 HasIssues = true;
+                HasNotFoundPackages = true;
                 _notFoundPackages.Add(packageIdentity);
                 package.Issues.Add(PackLogMessage.CreateWarning(
                     string.Format(CultureInfo.CurrentCulture, Resources.Upgrader_PackageNotFound, packageIdentity.Id),
@@ -138,7 +148,7 @@ namespace NuGet.PackageManagement.UI
                     if(matchingDependencyItem != null)
                     {
                         matchingDependencyItem.DependingPackages.Add(new PackageIdentity(packageDependencyInfo.Id, packageDependencyInfo.Version));
-                        matchingDependencyItem.PromoteToTopLevel = false;
+                        matchingDependencyItem.InstallAsTopLevel = false;
                     }
                 }
             }

@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.UI
 {
     public class NuGetProjectUpgradeDependencyItem : INotifyPropertyChanged
     {
-        private bool _promoteToTopLevel;
+        private bool _installAsTopLevel;
         public PackageIdentity Package { get; }
         public IList<PackageIdentity> DependingPackages { get; }
 
@@ -23,15 +23,15 @@ namespace NuGet.PackageManagement.UI
 
         public string Version { get; }
 
-        public bool PromoteToTopLevel {
+        public bool InstallAsTopLevel {
             get
             {
-                return _promoteToTopLevel;
+                return _installAsTopLevel;
             }
             set
             {
-                _promoteToTopLevel = value;
-                OnPropertyChanged("PromoteToTopLevel");
+                _installAsTopLevel = value;
+                OnPropertyChanged("InstallAsTopLevel");
             }
         }
 
@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.UI
 
         public NuGetProjectUpgradeDependencyItem(PackageIdentity package, IList<PackageIdentity> dependingPackages = null)
         {
-            _promoteToTopLevel = true;
+            _installAsTopLevel = true;
             Package = package;
             Id = package.Id;
             Version = package.Version.ToNormalizedString();

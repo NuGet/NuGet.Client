@@ -970,6 +970,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Migration failed as packages {0} could not be uninstalled. These packages were not found in the solution packages folder. No changes were made to the project..
+        /// </summary>
+        public static string Migrator_PackageNotFound {
+            get {
+                return ResourceManager.GetString("Migrator_PackageNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Top-Level.
         /// </summary>
         public static string Migrator_TopLevelColumnHeader {
@@ -1892,7 +1901,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to determine compatibility of package as {0}.nupkg was not found on disk..
+        ///   Looks up a localized string similar to Unable to determine compatibility of package as {0}.nupkg was not found on disk. The project cannot be migrated..
         /// </summary>
         public static string Upgrader_PackageNotFound {
             get {

@@ -198,7 +198,7 @@
             </DataGridTemplateColumn.HeaderStyle>
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding Mode=TwoWay, Path=PromoteToTopLevel, UpdateSourceTrigger=PropertyChanged}"/>
+                <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding Mode=TwoWay, Path=InstallAsTopLevel, UpdateSourceTrigger=PropertyChanged}"/>
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
@@ -235,6 +235,7 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <Expander
+              Margin="4,4,8,0"
               Template="{StaticResource SimpleExpander}"
               Header="{Binding Path=Id}"
               Visibility="{Binding Path=Issues, Converter={StaticResource EnumerableToVisibilityConverter}}"
@@ -247,8 +248,8 @@
                 IsTabStop="False">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                      <TextBlock Text="{Binding Path=Message}" Margin="0,2,0,2"/>
+                    <StackPanel Orientation="Vertical">
+                      <TextBlock Text="{Binding Path=Message}" Margin="0,2,0,2" TextWrapping="Wrap"/>
                     </StackPanel>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -290,6 +291,7 @@
         Content="{x:Static nuget:Resources.Button_OK}"
         AutomationProperties.AutomationId="OkButton"
         IsDefault="True"
+        IsEnabled="{Binding HasNotFoundPackages, Converter={StaticResource InverseBooleanConverter}}"
         Click="OkButtonClicked" />
       <Button
         Grid.Column="2"
