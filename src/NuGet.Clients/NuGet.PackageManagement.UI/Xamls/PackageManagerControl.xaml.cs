@@ -55,7 +55,6 @@ namespace NuGet.PackageManagement.UI
         private readonly Dispatcher _uiDispatcher;
 
         private bool _missingPackageStatus;
-
         private readonly INuGetUILogger _uiLogger;
 
         public PackageManagerModel Model { get; }
@@ -1169,5 +1168,12 @@ namespace NuGet.PackageManagement.UI
                nugetUi => SetOptions(nugetUi, NuGetActionType.Update));
         }
 
+        private async void UpgradeButton_Click(object sender, RoutedEventArgs e)
+        {
+            var project = Model.Context.Projects.FirstOrDefault();
+            Debug.Assert(project != null);
+
+            await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, project);
+        }
     }
 }

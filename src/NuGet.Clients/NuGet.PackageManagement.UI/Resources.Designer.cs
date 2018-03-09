@@ -286,6 +286,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Upgrade.
+        /// </summary>
+        public static string Button_Upgrade {
+            get {
+                return ResourceManager.GetString("Button_Upgrade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Yes.
         /// </summary>
         public static string Button_Yes {
@@ -952,6 +961,33 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package Id.
+        /// </summary>
+        public static string Migrator_PackageIdColumnHeader {
+            get {
+                return ResourceManager.GetString("Migrator_PackageIdColumnHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Top-Level.
+        /// </summary>
+        public static string Migrator_TopLevelColumnHeader {
+            get {
+                return ResourceManager.GetString("Migrator_TopLevelColumnHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version.
+        /// </summary>
+        public static string Migrator_VersionColumnHeader {
+            get {
+                return ResourceManager.GetString("Migrator_VersionColumnHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to (dependency of {0}).
         /// </summary>
         public static string NuGetUpgrade_PackageDependencyOf {
@@ -984,33 +1020,6 @@ namespace NuGet.PackageManagement.UI {
         public static string NuGetUpgrade_WaitMessage {
             get {
                 return ResourceManager.GetString("NuGetUpgrade_WaitMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} cannot be found..
-        /// </summary>
-        public static string NuGetUpgradeError_CannotFindPackage {
-            get {
-                return ResourceManager.GetString("NuGetUpgradeError_CannotFindPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} contains content files and may not work after upgrading..
-        /// </summary>
-        public static string NuGetUpgradeWarning_HasContentFiles {
-            get {
-                return ResourceManager.GetString("NuGetUpgradeWarning_HasContentFiles", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} contains an install.ps1 script that will not be applied after upgrading..
-        /// </summary>
-        public static string NuGetUpgradeWarning_HasInstallScript {
-            get {
-                return ResourceManager.GetString("NuGetUpgradeWarning_HasInstallScript", resourceCulture);
             }
         }
         
@@ -1085,24 +1094,6 @@ namespace NuGet.PackageManagement.UI {
         public static string PackageRestoreWaitMessage {
             get {
                 return ResourceManager.GetString("PackageRestoreWaitMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Collapse dependencies (recommended).
-        /// </summary>
-        public static string Radio_CollapseDependencies {
-            get {
-                return ResourceManager.GetString("Radio_CollapseDependencies", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Flatten dependencies.
-        /// </summary>
-        public static string Radio_FlattenDependencies {
-            get {
-                return ResourceManager.GetString("Radio_FlattenDependencies", resourceCulture);
             }
         }
         
@@ -1343,7 +1334,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Top-level Dependencies.
+        ///   Looks up a localized string similar to Top-level dependencies:.
         /// </summary>
         public static string Text_DirectDependencies {
             get {
@@ -1375,6 +1366,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_ErrorOccurred {
             get {
                 return ResourceManager.GetString("Text_ErrorOccurred", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help me migrate to NuGet PackageReference.
+        /// </summary>
+        public static string Text_HelpMeMigrate {
+            get {
+                return ResourceManager.GetString("Text_HelpMeMigrate", resourceCulture);
             }
         }
         
@@ -1505,7 +1505,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Issues:.
+        ///   Looks up a localized string similar to Package compatibility issues:.
         /// </summary>
         public static string Text_NuGetUpgradeIssues {
             get {
@@ -1658,7 +1658,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Transitive Dependencies.
+        ///   Looks up a localized string similar to Transitive dependencies:.
         /// </summary>
         public static string Text_TransitiveDependencies {
             get {
@@ -1703,11 +1703,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Upgrade Options:.
+        ///   Looks up a localized string similar to Migrate this project from packages.config to PackageReference format..
         /// </summary>
-        public static string Text_UpgradeOptions {
+        public static string Text_UpgradeNuGetProjectDescription {
             get {
-                return ResourceManager.GetString("Text_UpgradeOptions", resourceCulture);
+                return ResourceManager.GetString("Text_UpgradeNuGetProjectDescription", resourceCulture);
             }
         }
         
@@ -1847,7 +1847,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet upgrade failed to install packages as PackageReference. Changed files are backed up at {0}.
+        ///   Looks up a localized string similar to NuGet migrate failed to install packages as PackageReference. Changed files are backed up at {0}.
         /// </summary>
         public static string Upgrade_InstallFailed {
             get {
@@ -1888,6 +1888,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Upgrader_BackupFailed {
             get {
                 return ResourceManager.GetString("Upgrader_BackupFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to determine compatibility of package as {0}.nupkg was not found on disk..
+        /// </summary>
+        public static string Upgrader_PackageNotFound {
+            get {
+                return ResourceManager.GetString("Upgrader_PackageNotFound", resourceCulture);
             }
         }
         
@@ -1991,11 +2000,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet Upgrader.
+        ///   Looks up a localized string similar to Migrate NuGet format to PackageReference - {0}.
         /// </summary>
-        public static string WindowTitle_NuGetUpgrader {
+        public static string WindowTitle_NuGetMigrator {
             get {
-                return ResourceManager.GetString("WindowTitle_NuGetUpgrader", resourceCulture);
+                return ResourceManager.GetString("WindowTitle_NuGetMigrator", resourceCulture);
             }
         }
         

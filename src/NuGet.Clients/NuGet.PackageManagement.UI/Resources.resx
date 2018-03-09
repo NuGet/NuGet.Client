@@ -699,26 +699,14 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="NuGetUpgrade_PackageDependencyOf" xml:space="preserve">
     <value>(dependency of {0})</value>
   </data>
-  <data name="Text_UpgradeOptions" xml:space="preserve">
-    <value>Upgrade Options:</value>
-  </data>
   <data name="Text_NuGetUpgradeIssues" xml:space="preserve">
-    <value>Issues:</value>
+    <value>Package compatibility issues:</value>
   </data>
   <data name="Text_NuGetUpgradeNoIssuesFound" xml:space="preserve">
     <value>No issues were found.</value>
   </data>
   <data name="Text_NuGetUpgradeResolveErrorsBeforeUpgrading" xml:space="preserve">
     <value>You must resolve any errors before upgrading.</value>
-  </data>
-  <data name="NuGetUpgradeError_CannotFindPackage" xml:space="preserve">
-    <value>{0} cannot be found.</value>
-  </data>
-  <data name="NuGetUpgradeWarning_HasContentFiles" xml:space="preserve">
-    <value>{0} contains content files and may not work after upgrading.</value>
-  </data>
-  <data name="NuGetUpgradeWarning_HasInstallScript" xml:space="preserve">
-    <value>{0} contains an install.ps1 script that will not be applied after upgrading.</value>
   </data>
   <data name="Text_UpgraderHeader" xml:space="preserve">
     <value>Packages as PackageReference:</value>
@@ -744,8 +732,9 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Text_ChangesForProject" xml:space="preserve">
     <value>Changes for {0}</value>
   </data>
-  <data name="WindowTitle_NuGetUpgrader" xml:space="preserve">
-    <value>NuGet Upgrader</value>
+  <data name="WindowTitle_NuGetMigrator" xml:space="preserve">
+    <value>Migrate NuGet format to PackageReference - {0}</value>
+    <comment>{0} is the project name</comment>
   </data>
   <data name="WindowTitle_ConvertPackagesConfigIntro" xml:space="preserve">
     <value>Convert</value>
@@ -756,14 +745,14 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Error_ProjectNotInCache" xml:space="preserve">
     <value>Project {0} does not exist in the project system cache.</value>
   </data>
-  <data name="Radio_CollapseDependencies" xml:space="preserve">
-    <value>Collapse dependencies (recommended)</value>
+  <data name="Button_Upgrade" xml:space="preserve">
+    <value>Upgrade</value>
   </data>
-  <data name="Radio_FlattenDependencies" xml:space="preserve">
-    <value>Flatten dependencies</value>
+  <data name="Text_UpgradeNuGetProjectDescription" xml:space="preserve">
+    <value>Migrate this project from packages.config to PackageReference format.</value>
   </data>
   <data name="Upgrade_InstallFailed" xml:space="preserve">
-    <value>NuGet upgrade failed to install packages as PackageReference. Changed files are backed up at {0}</value>
+    <value>NuGet migrate failed to install packages as PackageReference. Changed files are backed up at {0}</value>
   </data>
   <data name="Upgrade_RevertSteps" xml:space="preserve">
     <value>Please follow simple instructions from {0} to go back to previous state.</value>
@@ -772,10 +761,10 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>NuGet upgrade failed to uninstall packages from packages.config so rolled back to previous state.</value>
   </data>
   <data name="Text_DirectDependencies" xml:space="preserve">
-    <value>Top-level Dependencies</value>
+    <value>Top-level dependencies:</value>
   </data>
   <data name="Text_TransitiveDependencies" xml:space="preserve">
-    <value>Transitive Dependencies</value>
+    <value>Transitive dependencies:</value>
   </data>
   <data name="Upgrader_BackupFailed" xml:space="preserve">
     <value>The project cannot be upgraded as backing up the project file and packages.config ran into an issue.</value>
@@ -788,5 +777,20 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Link_MigratorHelp" xml:space="preserve">
     <value>Why should I migrate?</value>
+  </data>
+  <data name="Text_HelpMeMigrate" xml:space="preserve">
+    <value>Help me migrate to NuGet PackageReference</value>
+  </data>
+  <data name="Upgrader_PackageNotFound" xml:space="preserve">
+    <value>Unable to determine compatibility of package as {0}.nupkg was not found on disk.</value>
+  </data>
+  <data name="Migrator_PackageIdColumnHeader" xml:space="preserve">
+    <value>Package Id</value>
+  </data>
+  <data name="Migrator_TopLevelColumnHeader" xml:space="preserve">
+    <value>Top-Level</value>
+  </data>
+  <data name="Migrator_VersionColumnHeader" xml:space="preserve">
+    <value>Version</value>
   </data>
 </root>

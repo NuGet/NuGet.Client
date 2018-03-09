@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 
@@ -36,6 +37,16 @@ namespace NuGet.PackageManagement.UI
             {
                 Process.Start(hyperlink.NavigateUri.AbsoluteUri);
                 e.Handled = true;
+            }
+        }
+
+        private void PromoteAllToTopLevel_Checked(object sender, RoutedEventArgs e)
+        {
+            var model = DataContext as NuGetProjectUpgradeWindowModel;
+            var checkBox = sender as CheckBox;
+            foreach(var item in model.TransitiveDependencies)
+            {
+                item.PromoteToTopLevel = checkBox.IsChecked.GetValueOrDefault();
             }
         }
     }

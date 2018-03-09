@@ -24,7 +24,6 @@ namespace NuGet.PackageManagement.UI
             DependencyBehavior = DependencyBehavior.Lowest;
             FileConflictAction = FileConflictAction.PromptUser;
             OptionsExpanded = false;
-            NuGetProjectUpgradeCollapseDependencies = true;
         }
 
         public string SourceRepository { get; set; }
@@ -46,8 +45,6 @@ namespace NuGet.PackageManagement.UI
         public FileConflictAction FileConflictAction { get; set; }
 
         public bool OptionsExpanded { get; set; }
-
-        public bool NuGetProjectUpgradeCollapseDependencies { get; set; }
 
         // The sort property of the project list in the solution package manager
         public string SortPropertyName { get; set; }

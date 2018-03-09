@@ -26,7 +26,6 @@ namespace NuGet.PackageManagement.UI
             NuGetProject nuGetProject,
             IEnumerable<NuGetProjectUpgradeDependencyItem> upgradeDependencyItems,
             IEnumerable<PackageIdentity> notFoundPackages,
-            bool collapseDependencies,
             IProgress<ProgressDialogData> progress,
             CancellationToken token)
         {
@@ -111,7 +110,7 @@ namespace NuGet.PackageManagement.UI
                     PackageSourceMoniker
                         .PopulateList(context.SourceProvider)
                         .ForEach(s => activeSources.AddRange(s.SourceRepositories));
-                    var packagesToInstall = GetPackagesToInstall(upgradeDependencyItems, collapseDependencies).ToList();
+                    var packagesToInstall = GetPackagesToInstall(upgradeDependencyItems).ToList();
                     packagesCount = packagesToInstall.Count;
 
                     // create low level NuGet actions based on number of packages being installed
@@ -169,11 +168,11 @@ namespace NuGet.PackageManagement.UI
         }
 
         private static IEnumerable<PackageIdentity> GetPackagesToInstall(
-            IEnumerable<NuGetProjectUpgradeDependencyItem> upgradeDependencyItems, bool collapseDependencies)
+            IEnumerable<NuGetProjectUpgradeDependencyItem> upgradeDependencyItems)
         {
             return
                 upgradeDependencyItems.Where(
-                    upgradeDependencyItem => !collapseDependencies || !upgradeDependencyItem.DependingPackages.Any())
+                    upgradeDependencyItem => upgradeDependencyItem.PromoteToTopLevel)
                     .Select(upgradeDependencyItem => upgradeDependencyItem.Package);
         }
 

@@ -87,7 +87,7 @@
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <CommandName>cmdidUpgradeNuGetProject</CommandName>
-          <ButtonText>&amp;Upgrade packages.config to PackageReference...</ButtonText>
+          <ButtonText>&amp;Migrate packages.config to PackageReference...</ButtonText>
         </Strings>
       </Button>
 
@@ -98,7 +98,7 @@
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <CommandName>cmdidUpgradePackagesConfig</CommandName>
-          <ButtonText>&amp;Upgrade packages.config to PackageReference...</ButtonText>
+          <ButtonText>&amp;Migrate packages.config to PackageReference...</ButtonText>
         </Strings>
       </Button>
 
