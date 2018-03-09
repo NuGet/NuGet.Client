@@ -16,6 +16,7 @@ using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
@@ -816,8 +817,16 @@ namespace NuGet.PackageManagement.VisualStudio
                         var references = (VSLangProj.Reference[])referencesArray;
                         reference = references[0];
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
+                        if (e is InvalidCastException)
+                        {
+                            // We've encountered a project system that doesn't implement References3, or
+                            // there's some sort of setup issue such that we can't find the library with
+                            // the References3 type. Send a report about this.
+                            TelemetryActivity.EmitTelemetryEvent(new TelemetryEvent("References3InvalidCastException"));
+                        }
+
                         // If that didn't work, fall back to References.Add.
                         reference = References.Add(assemblyFullPath);
                     }
