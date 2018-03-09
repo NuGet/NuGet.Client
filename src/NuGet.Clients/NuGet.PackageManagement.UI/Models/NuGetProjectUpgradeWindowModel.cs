@@ -109,7 +109,7 @@ namespace NuGet.PackageManagement.UI
                 HasIssues = true;
                 HasNotFoundPackages = true;
                 _notFoundPackages.Add(packageIdentity);
-                package.Issues.Add(PackLogMessage.CreateWarning(
+                package.Issues.Add(PackagingLogMessage.CreateWarning(
                     string.Format(CultureInfo.CurrentCulture, Resources.Upgrader_PackageNotFound, packageIdentity.Id),
                     NuGetLogCode.NU5500));
             }
@@ -117,8 +117,7 @@ namespace NuGet.PackageManagement.UI
             {
                 using (var reader = new PackageArchiveReader(packagePath))
                 {
-                    // TODO: Create the right set of rules here.
-                    var packageRules = PackageCreationRuleSet.Rules;
+                    var packageRules = RuleSet.PackagesConfigToPackageReferenceMigrationRuleSet;
                     var issues = package.Issues;
 
                     foreach (var rule in packageRules)

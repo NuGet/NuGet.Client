@@ -10,16 +10,15 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
-    internal class MisplacedTransformFileRule : IPackageRule
+    internal class XdtTransformInPackageReferenceProjectRule : IPackageRule
     {
-        private const string CodeTransformExtension = ".pp";
         private const string ConfigTransformExtension = ".transform";
         private const string ContentDirectory = "content";
         private const string ContentFilesDirectory = "contentFiles";
 
         public string MessageFormat { get; }
 
-        public MisplacedTransformFileRule(string messageFormat)
+        public XdtTransformInPackageReferenceProjectRule(string messageFormat)
         {
             MessageFormat = messageFormat;
         }
@@ -29,28 +28,27 @@ namespace NuGet.Packaging.Rules
             foreach (var file in builder.GetFiles().Select(t => PathUtility.GetPathWithDirectorySeparator(t)))
             {
                 // if not a .transform file, ignore
-                if (!file.EndsWith(CodeTransformExtension, StringComparison.OrdinalIgnoreCase) &&
-                    !file.EndsWith(ConfigTransformExtension, StringComparison.OrdinalIgnoreCase))
+                if (!file.EndsWith(ConfigTransformExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                // if not inside 'content' folder, warn
-                if (!file.StartsWith(ContentDirectory + Path.DirectorySeparatorChar,
+                // if inside content or contentFiles folder then warn.
+                if (file.StartsWith(ContentDirectory + Path.DirectorySeparatorChar,
                     StringComparison.OrdinalIgnoreCase)
-                    && !file.StartsWith(ContentFilesDirectory + Path.DirectorySeparatorChar,
+                    || file.StartsWith(ContentFilesDirectory + Path.DirectorySeparatorChar,
                     StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return CreatePackageIssueForMisplacedContent(file);
+                    yield return CreatePackageIssueForTransformFiles(file);
                 }
             }
         }
 
-        private PackagingLogMessage CreatePackageIssueForMisplacedContent(string path)
+        private PackagingLogMessage CreatePackageIssueForTransformFiles(string path)
         {
             return PackagingLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, MessageFormat, path),
-                NuGetLogCode.NU5108);
+                NuGetLogCode.NU5122);
         }
     }
 }

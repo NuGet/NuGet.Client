@@ -22,7 +22,7 @@ namespace NuGet.Packaging.Rules
             MessageFormat = messageFormat;
         }
 
-        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
+        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
             foreach (var file in builder.GetFiles().Select(t => PathUtility.GetPathWithDirectorySeparator(t)))
             {
@@ -43,9 +43,9 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private PackLogMessage CreatePackageIssueForUnrecognizedScripts(string target)
+        private PackagingLogMessage CreatePackageIssueForUnrecognizedScripts(string target)
         {
-            return PackLogMessage.CreateWarning(
+            return PackagingLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, MessageFormat, target),
                 NuGetLogCode.NU5111);
         }

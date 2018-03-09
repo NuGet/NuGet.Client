@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Rules
         {
             MessageFormat = messageFormat;
         }
-        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
+        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
             var nuspecReader = builder?.NuspecReader;
             if (nuspecReader.GetDependencyGroups() == null)
@@ -44,9 +44,9 @@ namespace NuGet.Packaging.Rules
                    dependency.VersionRange.MaxVersion?.IsPrerelease == true;
         }
 
-        private PackLogMessage CreatePackageIssueForPrereleaseDependency(string dependency)
+        private PackagingLogMessage CreatePackageIssueForPrereleaseDependency(string dependency)
         {
-            return PackLogMessage.CreateWarning(
+            return PackagingLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, MessageFormat, dependency),
                 NuGetLogCode.NU5104);
         }

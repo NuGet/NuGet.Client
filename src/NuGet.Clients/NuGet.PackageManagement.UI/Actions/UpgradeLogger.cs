@@ -114,7 +114,7 @@ namespace NuGet.PackageManagement.UI
             _propertiesElement.AppendChild(propertyElement);
         }
 
-        internal void RegisterPackage(string projectName, string name, string version, IList<PackLogMessage> issues, bool included)
+        internal void RegisterPackage(string projectName, string name, string version, IList<PackagingLogMessage> issues, bool included)
         {
             var packageElement = _xmlDocument.CreateElement(PackageString);
             packageElement.SetAttribute(NameString, name);

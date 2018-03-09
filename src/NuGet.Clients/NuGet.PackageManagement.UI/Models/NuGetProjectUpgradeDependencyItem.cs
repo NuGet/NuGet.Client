@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI
         public PackageIdentity Package { get; }
         public IList<PackageIdentity> DependingPackages { get; }
 
-        public IList<PackLogMessage> Issues { get; }
+        public IList<PackagingLogMessage> Issues { get; }
 
         public string Id { get; }
 
@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.UI
             Id = package.Id;
             Version = package.Version.ToNormalizedString();
             DependingPackages = dependingPackages ?? new List<PackageIdentity>();
-            Issues = new List<PackLogMessage>();
+            Issues = new List<PackagingLogMessage>();
         }
 
         public override string ToString()

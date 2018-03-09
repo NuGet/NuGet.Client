@@ -19,7 +19,7 @@ namespace NuGet.Packaging.Rules
             MessageFormat = messageFormat;
         }
 
-        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
+        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
             if (builder == null)
             {
@@ -31,7 +31,7 @@ namespace NuGet.Packaging.Rules
 
             if (dependency != null && dependency.VersionRange == VersionRange.All)
             {
-                var issue = PackLogMessage.CreateWarning(String.Format(
+                var issue = PackagingLogMessage.CreateWarning(String.Format(
                     CultureInfo.CurrentCulture,
                     AnalysisResources.UnspecifiedDependencyVersionWarning,
                     dependency.Id),
@@ -40,9 +40,9 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private PackLogMessage CreateIssueFor(string field, string value)
+        private PackagingLogMessage CreateIssueFor(string field, string value)
         {
-            return PackLogMessage.CreateWarning(
+            return PackagingLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, MessageFormat, value, field),
                 NuGetLogCode.NU5102);
         }

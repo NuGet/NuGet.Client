@@ -7,9 +7,9 @@ using System.Collections.ObjectModel;
 
 namespace NuGet.Packaging.Rules
 {
-    public static class PackageCreationRuleSet
+    public static class RuleSet
     {
-        private static readonly ReadOnlyCollection<IPackageRule> _rules = new ReadOnlyCollection<IPackageRule>(
+        private static readonly ReadOnlyCollection<IPackageRule> _packageCreationRules = new ReadOnlyCollection<IPackageRule>(
             new IPackageRule[] {
                 new InvalidFrameworkFolderRule(AnalysisResources.InvalidFrameworkWarning),
                 new MisplacedAssemblyUnderLibRule(AnalysisResources.AssemblyDirectlyUnderLibWarning),
@@ -27,11 +27,28 @@ namespace NuGet.Packaging.Rules
             }
         );
 
-        public static IEnumerable<IPackageRule> Rules
+        private static readonly ReadOnlyCollection<IPackageRule> _packagesConfigToPackageReferenceMigrationRuleSet = new ReadOnlyCollection<IPackageRule>(
+            new IPackageRule[] {
+                new MisplacedAssemblyUnderLibRule(AnalysisResources.Migrator_AssemblyDirectlyUnderLibWarning),
+                new InstallScriptInPackageReferenceProjectRule(AnalysisResources.Migrator_PackageHasInstallScript),
+                new ContentFolderInPackageReferenceProjectRule(AnalysisResources.Migrator_PackageHasContentFolder),
+                new XdtTransformInPackageReferenceProjectRule(AnalysisResources.Migrator_XdtTransformInPackage)
+            }
+        );
+
+        public static IEnumerable<IPackageRule> PackageCreationRuleSet
         {
             get
             {
-                return _rules;
+                return _packageCreationRules;
+            }
+        }
+
+        public static IEnumerable<IPackageRule> PackagesConfigToPackageReferenceMigrationRuleSet
+        {
+            get
+            {
+                return _packagesConfigToPackageReferenceMigrationRuleSet;
             }
         }
     }

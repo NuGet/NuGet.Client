@@ -19,7 +19,7 @@ namespace NuGet.Packaging.Rules
         {
             MessageFormat = messageFormat;
         }
-        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
+        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
             foreach (var file in builder.GetFiles())
             {
@@ -34,9 +34,9 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private PackLogMessage CreatePackageIssueForPlaceholderFile(string target)
+        private PackagingLogMessage CreatePackageIssueForPlaceholderFile(string target)
         {
-            return PackLogMessage.CreateWarning(
+            return PackagingLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, MessageFormat, target),
                 NuGetLogCode.NU5109);
         }
