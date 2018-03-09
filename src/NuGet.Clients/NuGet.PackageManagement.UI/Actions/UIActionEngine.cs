@@ -175,12 +175,14 @@ namespace NuGet.PackageManagement.UI
             var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             using (var upgradeLogger = new UpgradeLogger(projectName, backupPath))
             {
-                foreach (var package in upgradeInformationWindowModel.DirectDependencies)
+                var installedAsTopLevel = upgradeInformationWindowModel.UpgradeDependencyItems.Where(t => t.PromoteToTopLevel);
+                var transitiveDependencies = upgradeInformationWindowModel.TransitiveDependencies.Where(t => !t.PromoteToTopLevel);
+                foreach (var package in installedAsTopLevel)
                 {
                     upgradeLogger.RegisterPackage(projectName, package.Id, package.Version, package.Issues, true);
                 }
 
-                foreach (var package in upgradeInformationWindowModel.TransitiveDependencies)
+                foreach (var package in transitiveDependencies)
                 {
                     upgradeLogger.RegisterPackage(projectName, package.Id, package.Version, package.Issues, false);
                 }
