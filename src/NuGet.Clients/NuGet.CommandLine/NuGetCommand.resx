@@ -5470,4 +5470,7 @@ This option should be used when specifying the certificate via -CertificateSubje
   <data name="VerifyCommandAllDescription" xml:space="preserve">
     <value>Specifies that all verifications possible should be performed to the package(s).</value>
   </data>
+  <data name="SourcesCommandTrustDescription" xml:space="preserve">
+    <value>Make a source a trusted repository for repository signature verification.</value>
+  </data>
 </root>

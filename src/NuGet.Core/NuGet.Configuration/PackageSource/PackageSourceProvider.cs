@@ -555,6 +555,16 @@ namespace NuGet.Configuration
             }
         }
 
+        public void SaveTrustedSources(IEnumerable<TrustedSource> trustedSources)
+        {
+            _trustedSourceProvider.SaveTrustedSources(trustedSources);
+        }
+
+        public void DeleteTrustedSource(string sourceName)
+        {
+            _trustedSourceProvider.DeleteTrustedSource(sourceName);
+        }
+
         private class IndexedPackageSource
         {
             public int Index { get; set; }
