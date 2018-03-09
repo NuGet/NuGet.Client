@@ -26,7 +26,6 @@ namespace NuGet.PackageManagement.UI
             NuGetProject nuGetProject,
             IEnumerable<NuGetProjectUpgradeDependencyItem> upgradeDependencyItems,
             IEnumerable<PackageIdentity> notFoundPackages,
-            bool collapseDependencies,
             IProgress<ProgressDialogData> progress,
             CancellationToken token)
         {
@@ -40,6 +39,15 @@ namespace NuGet.PackageManagement.UI
             {
                 try
                 {
+                    // 0. Fail if any package was not found
+                    if(notFoundPackages.Any())
+                    {
+                        status = NuGetOperationStatus.Failed;
+                        var notFoundPackageIds = string.Join(",", notFoundPackages.Select(t => t.Id));
+                        uiService.ProjectContext.Log(MessageLevel.Error, string.Format(CultureInfo.CurrentCulture, Resources.Migrator_PackageNotFound, notFoundPackageIds));
+                        return null;
+                    }
+
                     // 1. Backup files (csproj and packages.config) that will change
                     var solutionManager = context.SolutionManager;
                     var msBuildNuGetProject = (MSBuildNuGetProject)nuGetProject;
@@ -111,7 +119,7 @@ namespace NuGet.PackageManagement.UI
                     PackageSourceMoniker
                         .PopulateList(context.SourceProvider)
                         .ForEach(s => activeSources.AddRange(s.SourceRepositories));
-                    var packagesToInstall = GetPackagesToInstall(upgradeDependencyItems, collapseDependencies).ToList();
+                    var packagesToInstall = GetPackagesToInstall(upgradeDependencyItems).ToList();
                     packagesCount = packagesToInstall.Count;
 
                     // create low level NuGet actions based on number of packages being installed
@@ -169,11 +177,11 @@ namespace NuGet.PackageManagement.UI
         }
 
         private static IEnumerable<PackageIdentity> GetPackagesToInstall(
-            IEnumerable<NuGetProjectUpgradeDependencyItem> upgradeDependencyItems, bool collapseDependencies)
+            IEnumerable<NuGetProjectUpgradeDependencyItem> upgradeDependencyItems)
         {
             return
                 upgradeDependencyItems.Where(
-                    upgradeDependencyItem => !collapseDependencies || !upgradeDependencyItem.DependingPackages.Any())
+                    upgradeDependencyItem => upgradeDependencyItem.InstallAsTopLevel)
                     .Select(upgradeDependencyItem => upgradeDependencyItem.Package);
         }
 

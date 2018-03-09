@@ -542,12 +542,8 @@ namespace NuGetVSExtension
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
             var uiController = ServiceLocator.GetInstance<INuGetUIFactory>().Create(nuGetProject);
             var settings = uiController.UIContext.UserSettingsManager.GetSettings(GetProjectSettingsKey(nuGetProject));
-            var collapseDependencies = settings.NuGetProjectUpgradeCollapseDependencies;
 
-            collapseDependencies = await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject,
-                collapseDependencies);
-
-            settings.NuGetProjectUpgradeCollapseDependencies = collapseDependencies;
+            await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject);
             uiController.UIContext.UserSettingsManager.PersistSettings();
         }
 

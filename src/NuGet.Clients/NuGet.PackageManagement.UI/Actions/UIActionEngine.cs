@@ -116,7 +116,7 @@ namespace NuGet.PackageManagement.UI
                 token);
         }
 
-        public async Task<bool> UpgradeNuGetProjectAsync(INuGetUI uiService, NuGetProject nuGetProject, bool collapseDependencies)
+        public async Task UpgradeNuGetProjectAsync(INuGetUI uiService, NuGetProject nuGetProject)
         {
             var context = uiService.UIContext;
             // Restore the project before proceeding
@@ -125,20 +125,18 @@ namespace NuGet.PackageManagement.UI
             await context.PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, uiService.ProjectContext, CancellationToken.None);
 
             var packagesDependencyInfo = await context.PackageManager.GetInstalledPackagesDependencyInfo(nuGetProject, CancellationToken.None, includeUnresolved: true);
-            var upgradeInformationWindowModel = new NuGetProjectUpgradeWindowModel(nuGetProject, packagesDependencyInfo.ToList(), collapseDependencies);
+            var upgradeInformationWindowModel = new NuGetProjectUpgradeWindowModel(nuGetProject, packagesDependencyInfo.ToList());
 
             var result = uiService.ShowNuGetUpgradeWindow(upgradeInformationWindowModel);
             if (!result)
             {
-                return collapseDependencies;
+                return;
             }
-
-            collapseDependencies = upgradeInformationWindowModel.CollapseDependencies;
 
             var progressDialogData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage);
             string backupPath;
 
-            using (var progressDialogSession = context.StartModalProgressDialog(Resources.WindowTitle_NuGetUpgrader, progressDialogData, uiService))
+            using (var progressDialogSession = context.StartModalProgressDialog(Resources.WindowTitle_NuGetMigrator, progressDialogData, uiService))
             {
                 backupPath = await PackagesConfigToPackageReferenceMigrator.DoUpgradeAsync(
                     context,
@@ -146,7 +144,6 @@ namespace NuGet.PackageManagement.UI
                     nuGetProject,
                     upgradeInformationWindowModel.UpgradeDependencyItems,
                     upgradeInformationWindowModel.NotFoundPackages,
-                    collapseDependencies,
                     progressDialogSession.Progress,
                     progressDialogSession.UserCancellationToken);
             }
@@ -157,8 +154,6 @@ namespace NuGet.PackageManagement.UI
 
                 OpenUrlInInternalWebBrowser(htmlLogFile);
             }
-
-            return collapseDependencies;
         }
 
         private static void OpenUrlInInternalWebBrowser(string url)
@@ -180,22 +175,18 @@ namespace NuGet.PackageManagement.UI
             var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             using (var upgradeLogger = new UpgradeLogger(projectName, backupPath))
             {
-                foreach (var error in upgradeInformationWindowModel.Errors)
+                var installedAsTopLevel = upgradeInformationWindowModel.UpgradeDependencyItems.Where(t => t.InstallAsTopLevel);
+                var transitiveDependencies = upgradeInformationWindowModel.TransitiveDependencies.Where(t => !t.InstallAsTopLevel);
+                foreach (var package in installedAsTopLevel)
                 {
-                    upgradeLogger.LogIssue(projectName, UpgradeLogger.ErrorLevel.Error, error);
+                    upgradeLogger.RegisterPackage(projectName, package.Id, package.Version, package.Issues, true);
                 }
-                foreach (var warning in upgradeInformationWindowModel.Warnings)
+
+                foreach (var package in transitiveDependencies)
                 {
-                    upgradeLogger.LogIssue(projectName, UpgradeLogger.ErrorLevel.Warning, warning);
+                    upgradeLogger.RegisterPackage(projectName, package.Id, package.Version, package.Issues, false);
                 }
-                foreach (var package in upgradeInformationWindowModel.DirectDependencies)
-                {
-                    upgradeLogger.RegisterPackage(projectName, package, true);
-                }
-                foreach (var package in upgradeInformationWindowModel.TransitiveDependencies)
-                {
-                    upgradeLogger.RegisterPackage(projectName, package, false);
-                }
+
                 return upgradeLogger.GetHtmlFilePath();
             }
         }
