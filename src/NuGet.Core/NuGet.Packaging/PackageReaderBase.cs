@@ -352,7 +352,7 @@ namespace NuGet.Packaging
 
         public abstract bool PackageSignatureVerified { get; }
 
-        public abstract IEnumerable<IRepositoryCertInfo> RepositoryCertInfos { get; }
+        public abstract IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos { get; }
 
         /// <summary>
         /// Frameworks mentioned in the package.

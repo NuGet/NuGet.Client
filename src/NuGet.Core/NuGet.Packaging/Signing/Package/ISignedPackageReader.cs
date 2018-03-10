@@ -22,7 +22,7 @@ namespace NuGet.Packaging.Signing
 
         bool PackageSignatureVerified { get; }
 
-        IEnumerable<IRepositoryCertInfo> RepositoryCertInfos { get; }
+        IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos { get; }
 
         /// <summary>
         /// Get package signature.

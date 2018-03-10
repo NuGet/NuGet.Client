@@ -245,7 +245,7 @@ namespace NuGet.Packaging
             PackageExtractionContext packageExtractionContext,
             bool packageSignatureVerified,
             bool requiredRepoSign,
-            IEnumerable<IRepositoryCertInfo> repositoryCertInfos,
+            IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos,
             CancellationToken token,
             Guid parentId = default(Guid))
         {
@@ -334,7 +334,7 @@ namespace NuGet.Packaging
                                     await copyToAsync(nupkgStream);
                                     nupkgStream.Seek(0, SeekOrigin.Begin);
 
-                                    using (var packageReader = new PackageArchiveReader(nupkgStream, packageSignatureVerified, requiredRepoSign, repositoryCertInfos))
+                                    using (var packageReader = new PackageArchiveReader(nupkgStream, packageSignatureVerified, requiredRepoSign, RepositoryCertificateInfos))
                                     {
                                         if (packageSaveMode.HasFlag(PackageSaveMode.Nuspec) || packageSaveMode.HasFlag(PackageSaveMode.Files))
                                         {

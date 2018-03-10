@@ -40,7 +40,7 @@ namespace NuGet.Packaging
 
         public override bool PackageSignatureVerified { get; }
 
-        public override IEnumerable<IRepositoryCertInfo> RepositoryCertInfos { get; }
+        public override IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos { get; }
 
         /// <summary>
         /// Nupkg package reader
@@ -51,8 +51,8 @@ namespace NuGet.Packaging
                 Stream stream,
                 bool packageSignatureVerified = false,
                 bool requiredRepoSign = false,
-                IEnumerable<IRepositoryCertInfo> repositoryCertInfos = null)
-                : this(stream, false, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance, packageSignatureVerified, requiredRepoSign, repositoryCertInfos)
+                IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos = null)
+                : this(stream, false, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance, packageSignatureVerified, requiredRepoSign, RepositoryCertificateInfos)
         {
         }
 
@@ -69,8 +69,8 @@ namespace NuGet.Packaging
             IFrameworkCompatibilityProvider compatibilityProvider,
             bool packageSignatureVerified = false,
             bool requiredRepoSign = false,
-            IEnumerable<IRepositoryCertInfo> repositoryCertInfos = null)
-            : this(stream, false, packageSignatureVerified, requiredRepoSign, repositoryCertInfos)
+            IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos = null)
+            : this(stream, false, packageSignatureVerified, requiredRepoSign, RepositoryCertificateInfos)
         {
         }
 
@@ -84,18 +84,18 @@ namespace NuGet.Packaging
             bool leaveStreamOpen,
             bool packageSignatureVerified = false,
             bool requiredRepoSign = false,
-            IEnumerable<IRepositoryCertInfo> repositoryCertInfos = null)
+            IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos = null)
             : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen),
                   DefaultFrameworkNameProvider.Instance,
                   DefaultCompatibilityProvider.Instance,
                   packageSignatureVerified,
                   requiredRepoSign,
-                  repositoryCertInfos)
+                  RepositoryCertificateInfos)
         {
             ZipReadStream = stream;
             PackageSignatureVerified = packageSignatureVerified;
             RequiredRepoSign = requiredRepoSign;
-            RepositoryCertInfos = repositoryCertInfos;
+            RepositoryCertificateInfos = RepositoryCertificateInfos;
         }
 
         /// <summary>
@@ -112,13 +112,13 @@ namespace NuGet.Packaging
             IFrameworkCompatibilityProvider compatibilityProvider,
             bool packageSignatureVerified = false,
             bool requiredRepoSign = false,
-            IEnumerable<IRepositoryCertInfo> repositoryCertInfos = null)
-            : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen), frameworkProvider, compatibilityProvider, packageSignatureVerified, requiredRepoSign, repositoryCertInfos)
+            IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos = null)
+            : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen), frameworkProvider, compatibilityProvider, packageSignatureVerified, requiredRepoSign, RepositoryCertificateInfos)
         {
             ZipReadStream = stream;
             PackageSignatureVerified = packageSignatureVerified;
             RequiredRepoSign = requiredRepoSign;
-            RepositoryCertInfos = repositoryCertInfos;
+            RepositoryCertificateInfos = RepositoryCertificateInfos;
         }
 
         /// <summary>
@@ -126,8 +126,8 @@ namespace NuGet.Packaging
         /// </summary>
         /// <param name="zipArchive">ZipArchive containing the nupkg data.</param>
         /// <param name="requiredRepoSign">Set to true if the package is needed to be repository signed.</param>
-        public PackageArchiveReader(ZipArchive zipArchive, bool packageSignatureVerified = false, bool requiredRepoSign = false, IEnumerable<IRepositoryCertInfo> repositoryCertInfos = null)
-            : this(zipArchive, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance, packageSignatureVerified, requiredRepoSign, repositoryCertInfos)
+        public PackageArchiveReader(ZipArchive zipArchive, bool packageSignatureVerified = false, bool requiredRepoSign = false, IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos = null)
+            : this(zipArchive, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance, packageSignatureVerified, requiredRepoSign, RepositoryCertificateInfos)
         {
         }
 
@@ -144,13 +144,13 @@ namespace NuGet.Packaging
             IFrameworkCompatibilityProvider compatibilityProvider,
             bool packageSignatureVerified = false,
             bool requiredRepoSign = false,
-            IEnumerable<IRepositoryCertInfo> repositoryCertInfos = null)
+            IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos = null)
             : base(frameworkProvider, compatibilityProvider)
         {
             _zipArchive = zipArchive ?? throw new ArgumentNullException(nameof(zipArchive));
             PackageSignatureVerified = packageSignatureVerified;
             RequiredRepoSign = requiredRepoSign;
-            RepositoryCertInfos = repositoryCertInfos;
+            RepositoryCertificateInfos = RepositoryCertificateInfos;
         }
 
         public PackageArchiveReader(
@@ -159,7 +159,7 @@ namespace NuGet.Packaging
             IFrameworkCompatibilityProvider compatibilityProvider = null,
             bool packageSignatureVerified = false,
             bool requiredRepoSign = false,
-            IEnumerable<IRepositoryCertInfo> repositoryCertInfos = null)
+            IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos = null)
             : base(frameworkProvider ?? DefaultFrameworkNameProvider.Instance, compatibilityProvider ?? DefaultCompatibilityProvider.Instance)
         {
             if (filePath == null)
@@ -169,7 +169,7 @@ namespace NuGet.Packaging
 
             PackageSignatureVerified = packageSignatureVerified;
             RequiredRepoSign = requiredRepoSign;
-            RepositoryCertInfos = repositoryCertInfos;
+            RepositoryCertificateInfos = RepositoryCertificateInfos;
 
             // Since this constructor owns the stream, the responsibility falls here to dispose the stream of an
             // invalid .zip archive. If this constructor succeeds, the disposal of the stream is handled by the

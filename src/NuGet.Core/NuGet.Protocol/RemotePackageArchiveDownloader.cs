@@ -268,7 +268,7 @@ namespace NuGet.Protocol
                 stream,
                 packageSignatureVerified: false,
                 requiredRepoSign: _resource.RepositorySignatureResource?.AllRepositorySigned ?? false,
-                repositoryCertInfos: _resource.RepositorySignatureResource?.RepositoryCertInfos);
+                RepositoryCertificateInfos: _resource.RepositorySignatureResource?.RepositoryCertificateInfos);
         }
 
         private FileStream GetDestinationStream()

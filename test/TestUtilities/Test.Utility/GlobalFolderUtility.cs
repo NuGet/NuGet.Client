@@ -43,7 +43,7 @@ namespace NuGet.Test.Utility
                         pathContext,
                         packageSignatureVerified: true,
                         requiredRepoSign: false,
-                        repositoryCertInfos: null,
+                        RepositoryCertificateInfos: null,
                         token: CancellationToken.None);
                 }
             }

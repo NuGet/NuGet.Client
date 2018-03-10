@@ -84,7 +84,7 @@ namespace NuGet.Protocol.Tests
                         Assert.Equal(identity.ToString(), id.ToString());
 
                         Assert.False(packageReader.RequiredRepoSign);
-                        var certInfo = packageReader.RepositoryCertInfos.FirstOrDefault();
+                        var certInfo = packageReader.RepositoryCertificateInfos.FirstOrDefault();
 
                         RepositorySignatureResourceTests.VerifyCertInfo(certInfo);
                     }

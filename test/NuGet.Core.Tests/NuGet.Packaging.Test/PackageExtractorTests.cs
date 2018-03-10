@@ -2090,7 +2090,7 @@ namespace NuGet.Packaging.Test
                             signedPackageVerifier: signedPackageVerifier.Object),
                             packageSignatureVerified: false,
                             requiredRepoSign: false,
-                            repositoryCertInfos: null,
+                            RepositoryCertificateInfos: null,
                             token: CancellationToken.None);
 
                     // Assert
@@ -2135,7 +2135,7 @@ namespace NuGet.Packaging.Test
                             signedPackageVerifier: signedPackageVerifier.Object),
                             packageSignatureVerified: false,
                             requiredRepoSign: false,
-                            repositoryCertInfos: null,
+                            RepositoryCertificateInfos: null,
                             token: CancellationToken.None);
 
                     // Assert
@@ -2181,7 +2181,7 @@ namespace NuGet.Packaging.Test
                             signedPackageVerifier: signedPackageVerifier.Object),
                             packageSignatureVerified: false,
                             requiredRepoSign: false,
-                            repositoryCertInfos: null,
+                            RepositoryCertificateInfos: null,
                             token: CancellationToken.None));
                 }
             }

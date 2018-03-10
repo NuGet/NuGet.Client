@@ -458,7 +458,7 @@ namespace NuGet.Protocol.Plugins
 
         public override bool PackageSignatureVerified => true;
 
-        public override IEnumerable<IRepositoryCertInfo> RepositoryCertInfos => null;
+        public override IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos => null;
 
         /// <summary>
         /// Asynchronously gets the .nuspec reader.

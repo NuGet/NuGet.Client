@@ -216,7 +216,7 @@ namespace NuGet.Protocol
                         leaveStreamOpen: true,
                         packageSignatureVerified: false,
                         requiredRepoSign: repositorySignatureResource?.AllRepositorySigned?? false,
-                        repositoryCertInfos: repositorySignatureResource?.RepositoryCertInfos?? null));
+                        RepositoryCertificateInfos: repositorySignatureResource?.RepositoryCertificateInfos?? null));
             }
             catch
             {

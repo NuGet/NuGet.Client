@@ -25,7 +25,7 @@ namespace NuGet.Packaging
 
         public override bool PackageSignatureVerified => true;
 
-        public override IEnumerable<IRepositoryCertInfo> RepositoryCertInfos => null;
+        public override IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos => null;
 
         /// <summary>
         /// Package folder reader

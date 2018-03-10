@@ -153,7 +153,7 @@ namespace NuGet.Protocol.Tests
 
             public override bool PackageSignatureVerified => true;
 
-            public override IEnumerable<IRepositoryCertInfo> RepositoryCertInfos => null;
+            public override IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos => null;
 
             public override IEnumerable<string> CopyFiles(
                 string destination,

@@ -120,7 +120,7 @@ namespace NuGet.Protocol
                 packageExtractionContext,
                 packageSignatureVerified: true,
                 requiredRepoSign: repositorySignatureResource?.AllRepositorySigned?? false,
-                repositoryCertInfos: repositorySignatureResource?.RepositoryCertInfos?? null,
+                RepositoryCertificateInfos: repositorySignatureResource?.RepositoryCertificateInfos?? null,
                 token: token,
                 parentId: parentId);
 

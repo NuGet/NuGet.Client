@@ -580,7 +580,7 @@ namespace NuGet.Protocol.Tests
 
                 Assert.False(repoSignInfo.AllRepositorySigned);
 
-                var certInfo = repoSignInfo.RepositoryCertInfos.FirstOrDefault();
+                var certInfo = repoSignInfo.RepositoryCertificateInfos.FirstOrDefault();
                 RepositorySignatureResourceTests.VerifyCertInfo(certInfo);
             }
         }

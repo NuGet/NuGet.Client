@@ -516,7 +516,7 @@ namespace NuGet.Protocol.Tests
                 var packageReader = test.Downloader.SignedPackageReader;
                 Assert.False(packageReader.RequiredRepoSign);
 
-                var certInfo = packageReader.RepositoryCertInfos.FirstOrDefault();
+                var certInfo = packageReader.RepositoryCertificateInfos.FirstOrDefault();
                 RepositorySignatureResourceTests.VerifyCertInfo(certInfo);
             }
         }

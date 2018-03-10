@@ -438,7 +438,7 @@ namespace NuGet.Test.Utility
                                 signedPackageVerifier: null),
                             packageSignatureVerified: true,
                             requiredRepoSign: false,
-                            repositoryCertInfos: null,
+                            RepositoryCertificateInfos: null,
                             token: CancellationToken.None);
                     }
                 }
