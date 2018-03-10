@@ -1960,7 +1960,9 @@ namespace ProjectManagement.Test
 
         private static DownloadResourceResult GetDownloadResourceResult(FileInfo fileInfo)
         {
-            return new DownloadResourceResult(fileInfo.OpenRead());
+            var packageStream = fileInfo.OpenRead();
+
+            return new DownloadResourceResult(packageStream, new PackageArchiveReader(packageStream, leaveStreamOpen: true));
         }
 
         private class TestMSBuildNuGetProject

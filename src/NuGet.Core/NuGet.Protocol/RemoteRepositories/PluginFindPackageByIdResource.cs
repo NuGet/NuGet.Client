@@ -29,6 +29,8 @@ namespace NuGet.Protocol.Core.Types
         private readonly IPlugin _plugin;
         private readonly IPluginMulticlientUtilities _utilities;
 
+        public override RepositorySignatureResource RepositorySignatureResource => null;
+
         /// <summary>
         /// Instantiates a new <see cref="PluginFindPackageByIdResource" /> class.
         /// </summary>

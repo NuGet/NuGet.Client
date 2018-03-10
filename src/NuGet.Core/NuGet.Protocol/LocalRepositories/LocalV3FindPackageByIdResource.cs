@@ -52,6 +52,8 @@ namespace NuGet.Protocol
             set => _packageFileCache = value;
         }
 
+        public override RepositorySignatureResource RepositorySignatureResource => null;
+
         /// <summary>
         /// Initializes a new <see cref="LocalV3FindPackageByIdResource" /> class.
         /// </summary>

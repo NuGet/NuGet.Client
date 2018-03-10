@@ -318,6 +318,7 @@ namespace NuGet.CommandLine.Test.Caching
                     identity,
                     fileStream,
                     GlobalPackagesPath,
+                    null,
                     Guid.Empty,
                     Common.NullLogger.Instance,
                     CancellationToken.None))

@@ -21,6 +21,12 @@ namespace NuGet.Packaging
     {
         private readonly DirectoryInfo _root;
 
+        public override bool RequiredRepoSign => false;
+
+        public override bool PackageSignatureVerified => true;
+
+        public override IEnumerable<IRepositoryCertInfo> RepositoryCertInfos => null;
+
         /// <summary>
         /// Package folder reader
         /// </summary>

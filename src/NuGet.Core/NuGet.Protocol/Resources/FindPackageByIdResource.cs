@@ -18,6 +18,8 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public abstract class FindPackageByIdResource : INuGetResource
     {
+        public abstract RepositorySignatureResource RepositorySignatureResource { get; }
+
         /// <summary>
         /// Asynchronously gets all package versions for a package ID.
         /// </summary>

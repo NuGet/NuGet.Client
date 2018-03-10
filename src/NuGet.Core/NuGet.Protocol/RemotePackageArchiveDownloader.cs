@@ -264,7 +264,11 @@ namespace NuGet.Protocol
         {
             var stream = GetDestinationStream();
 
-            return new PackageArchiveReader(stream);
+            return new PackageArchiveReader(
+                stream,
+                packageSignatureVerified: false,
+                requiredRepoSign: _resource.RepositorySignatureResource?.AllRepositorySigned ?? false,
+                repositoryCertInfos: _resource.RepositorySignatureResource?.RepositoryCertInfos);
         }
 
         private FileStream GetDestinationStream()

@@ -423,6 +423,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -559,12 +560,14 @@ namespace NuGet.Packaging.Test
                                 signedPackageVerifier: null);
 
                     // Act
-                    var packageFiles = PackageExtractor.ExtractPackageAsync(packageStream,
+                    var packageFiles = PackageExtractor.ExtractPackageAsync(new PackageArchiveReader(packageStream),
+                                                                     packageStream,
                                                                      resolver,
                                                                      packageExtractionContext,
                                                                      CancellationToken.None);
 
-                    var satellitePackageFiles = PackageExtractor.ExtractPackageAsync(satellitePackageStream,
+                    var satellitePackageFiles = PackageExtractor.ExtractPackageAsync(new PackageArchiveReader(satellitePackageStream),
+                                                                     satellitePackageStream,
                                                                      resolver,
                                                                      packageExtractionContext,
                                                                      CancellationToken.None);
@@ -607,6 +610,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -648,6 +652,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -701,6 +706,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -744,6 +750,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -788,6 +795,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -843,12 +851,14 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
                         CancellationToken.None);
 
                     var satellitePackageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(satellitePackageStream),
                         satellitePackageStream,
                         resolver,
                         packageExtractionContext,
@@ -894,6 +904,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -936,6 +947,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -975,6 +987,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -1016,6 +1029,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -1057,6 +1071,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -1098,6 +1113,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -1139,6 +1155,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     var packageFiles = PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -1182,6 +1199,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     await PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -1227,6 +1245,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     await PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -1273,6 +1292,7 @@ namespace NuGet.Packaging.Test
 
                     // Act
                     await PackageExtractor.ExtractPackageAsync(
+                        new PackageArchiveReader(packageStream),
                         packageStream,
                         resolver,
                         packageExtractionContext,
@@ -2068,7 +2088,10 @@ namespace NuGet.Packaging.Test
                             xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                             logger: NullLogger.Instance,
                             signedPackageVerifier: signedPackageVerifier.Object),
-                        CancellationToken.None);
+                            packageSignatureVerified: false,
+                            requiredRepoSign: false,
+                            repositoryCertInfos: null,
+                            token: CancellationToken.None);
 
                     // Assert
                     Assert.False(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
@@ -2110,7 +2133,10 @@ namespace NuGet.Packaging.Test
                             xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                             logger: NullLogger.Instance,
                             signedPackageVerifier: signedPackageVerifier.Object),
-                        CancellationToken.None);
+                            packageSignatureVerified: false,
+                            requiredRepoSign: false,
+                            repositoryCertInfos: null,
+                            token: CancellationToken.None);
 
                     // Assert
                     Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
@@ -2153,87 +2179,10 @@ namespace NuGet.Packaging.Test
                             xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                             logger: NullLogger.Instance,
                             signedPackageVerifier: signedPackageVerifier.Object),
-                        CancellationToken.None));
-                }
-            }
-        }
-
-        [Fact]
-        public async Task ExtractPackageAsyncByStream_TrustedSignPackage()
-        {
-            // Arrange
-            using (var root = TestDirectory.Create())
-            {
-                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-
-                var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
-                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(true));
-
-                var resolver = new PackagePathResolver(root);
-                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
-
-                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
-                {
-                    var packageExtractionContext = new PackageExtractionContext(
-                        PackageSaveMode.Nuspec | PackageSaveMode.Files,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        NullLogger.Instance,
-                        signedPackageVerifier.Object);
-
-                    // Act
-                    var packageFiles = await PackageExtractor.ExtractPackageAsync(packageStream,
-                                                                     resolver,
-                                                                     packageExtractionContext,
-                                                                     CancellationToken.None);
-
-                    // Assert
-                    var installPath = resolver.GetInstallPath(identity);
-                    Assert.False(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
-                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
-                    Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "a.dll")));
-                }
-            }
-        }
-
-        [Fact]
-        public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip()
-        {
-            // Arrange
-            using (var root = TestDirectory.Create())
-            {
-                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-
-                var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-
-                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(It.IsAny<ISignedPackageReader>(),
-                    It.IsAny<CancellationToken>(), It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(false));
-
-                var resolver = new PackagePathResolver(root);
-                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
-
-                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
-                {
-                    var packageExtractionContext = new PackageExtractionContext(
-                        PackageSaveMode.Nupkg,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        NullLogger.Instance,
-                        signedPackageVerifier.Object);
-
-                    // Act & Assert
-                    await Assert.ThrowsAsync<SignatureException>(
-                        () => PackageExtractor.ExtractPackageAsync(
-                            packageStream,
-                            resolver,
-                            packageExtractionContext,
-                            CancellationToken.None));
+                            packageSignatureVerified: false,
+                            requiredRepoSign: false,
+                            repositoryCertInfos: null,
+                            token: CancellationToken.None));
                 }
             }
         }

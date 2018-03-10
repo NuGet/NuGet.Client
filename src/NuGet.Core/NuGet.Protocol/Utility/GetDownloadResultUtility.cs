@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.Protocol.Core.Types;
@@ -25,6 +26,7 @@ namespace NuGet.Protocol
            Uri uri,
            PackageDownloadContext downloadContext,
            string globalPackagesFolder,
+           RepositorySignatureResource repositorySignatureResource,
            ILogger logger,
            CancellationToken token)
         {
@@ -82,6 +84,7 @@ namespace NuGet.Protocol
                                     identity,
                                     packageStream,
                                     downloadContext,
+                                    repositorySignatureResource,
                                     token);
                             }
                             else
@@ -90,6 +93,7 @@ namespace NuGet.Protocol
                                     identity,
                                     packageStream,
                                     globalPackagesFolder,
+                                    repositorySignatureResource,
                                     downloadContext.ParentId,
                                     logger,
                                     token);
@@ -155,6 +159,7 @@ namespace NuGet.Protocol
             PackageIdentity packageIdentity,
             Stream packageStream,
             PackageDownloadContext downloadContext,
+            RepositorySignatureResource repositorySignatureResource,
             CancellationToken token)
         {
             if (packageIdentity == null)
@@ -204,7 +209,14 @@ namespace NuGet.Protocol
 
                 fileStream.Seek(0, SeekOrigin.Begin);
 
-                return new DownloadResourceResult(fileStream);
+                return new DownloadResourceResult(
+                    fileStream,
+                    new PackageArchiveReader(
+                        fileStream,
+                        leaveStreamOpen: true,
+                        packageSignatureVerified: false,
+                        requiredRepoSign: repositorySignatureResource?.AllRepositorySigned?? false,
+                        repositoryCertInfos: repositorySignatureResource?.RepositoryCertInfos?? null));
             }
             catch
             {

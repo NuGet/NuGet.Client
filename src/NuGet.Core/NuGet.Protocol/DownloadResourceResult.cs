@@ -42,38 +42,22 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="stream">A package stream.</param>
         /// <param name="source">A package source.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream" /> is <c>null</c>.</exception>
-        public DownloadResourceResult(Stream stream, string source)
+        public DownloadResourceResult(Stream stream, PackageReaderBase packageReader, string source)
         {
             if (stream == null)
             {
                 throw new ArgumentNullException(nameof(stream));
             }
 
+            if (packageReader == null)
+            {
+                throw new ArgumentNullException(nameof(packageReader));
+            }
+
             Status = DownloadResourceResultStatus.Available;
             _stream = stream;
+            _stream.Seek(0, SeekOrigin.Begin);
             _packageSource = source;
-        }
-
-        /// <summary>
-        /// Initializes a new <see cref="DownloadResourceResult" /> class.
-        /// </summary>
-        /// <param name="stream">A package stream.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream" /> is <c>null</c>.</exception>
-        public DownloadResourceResult(Stream stream)
-            : this(stream, source: null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new <see cref="DownloadResourceResult" /> class.
-        /// </summary>
-        /// <param name="stream">A package stream.</param>
-        /// <param name="packageReader">A package reader.</param>
-        /// <param name="source">A package source.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream" /> is <c>null</c>.</exception>
-        public DownloadResourceResult(Stream stream, PackageReaderBase packageReader, string source)
-            : this(stream, source)
-        {
             _packageReader = packageReader;
         }
 
@@ -107,8 +91,6 @@ namespace NuGet.Protocol.Core.Types
         }
 
         public DownloadResourceResultStatus Status { get; }
-
-        public bool SignatureVerified { get; set; }
 
         /// <summary>
         /// Gets the package <see cref="PackageStream"/>.

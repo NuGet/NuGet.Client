@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -178,10 +178,8 @@ namespace NuGet.ProjectManagement
             }
 
             // These casts enforce use of -Async(...) methods.
-            var packageReader = downloadResourceResult.PackageReader
-                ?? new PackageArchiveReader(downloadResourceResult.PackageStream, leaveStreamOpen: true);
-            IAsyncPackageContentReader packageContentReader = packageReader;
-            IAsyncPackageCoreReader packageCoreReader = packageReader;
+            IAsyncPackageContentReader packageContentReader = downloadResourceResult.PackageReader;
+            IAsyncPackageCoreReader packageCoreReader = downloadResourceResult.PackageReader;
 
             var libItemGroups = await packageContentReader.GetLibItemsAsync(token);
             var referenceItemGroups = await packageContentReader.GetReferenceItemsAsync(token);

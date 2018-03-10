@@ -187,8 +187,7 @@ namespace NuGet.PackageManagement
             // Create a download result for the package that already exists
             return new DownloadResourceResult(
                 File.OpenRead(nupkgPath),
-                new PackageArchiveReader(nupkgPath))
-            { SignatureVerified = true };
+                new PackageArchiveReader(nupkgPath, packageSignatureVerified: true));
         }
     }
 }

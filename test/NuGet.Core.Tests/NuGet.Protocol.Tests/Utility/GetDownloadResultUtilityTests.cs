@@ -1,10 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
@@ -23,57 +25,73 @@ namespace NuGet.Protocol.Tests
         public async Task GetDownloadResultUtility_WithSingleDirectDownload_ReturnsTemporaryDownloadResult()
         {
             // Arrange
-            var uri = new Uri("http://fake/content.nupkg");
-            var expectedContent = "TestContent";
-            var identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0-Beta"));
-            var testHttpSource = new TestHttpSource(
-                new PackageSource("http://fake"),
-                new Dictionary<string, string>
-                {
-                    { uri.ToString(), expectedContent }
-                });
-            var logger = new TestLogger();
-            var token = CancellationToken.None;
-
-            using (var cacheContext = new SourceCacheContext())
-            using (var downloadDirectory = TestDirectory.Create())
-            using (var globalPackagesFolder = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext("PackageA", "1.0.0-Beta").CreateAsStream())
             {
-                var downloadContext = new PackageDownloadContext(
-                    cacheContext,
-                    downloadDirectory,
-                    directDownload: true);
-
-                // Act
-                using (var result = await GetDownloadResultUtility.GetDownloadResultAsync(
-                    testHttpSource,
-                    identity,
-                    uri,
-                    downloadContext,
-                    globalPackagesFolder,
-                    logger,
-                    token))
+                var uri = new Uri("http://fake/content.nupkg");
+                var identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0-Beta"));
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
                 {
-                    // Assert
-                    Assert.Null(result.PackageReader);
-                    Assert.Equal(DownloadResourceResultStatus.Available, result.Status);
-                    Assert.NotNull(result.PackageStream);
-                    Assert.True(result.PackageStream.CanSeek);
-                    Assert.True(result.PackageStream.CanRead);
-                    Assert.Equal(0, result.PackageStream.Position);
+                    {
+                        uri.ToString(),
+                        request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new TestContent(zipStream)
+                        })
+                    }
+                };
 
-                    var files = Directory.EnumerateFileSystemEntries(downloadDirectory).ToArray();
-                    Assert.Equal(1, files.Length);
-                    Assert.EndsWith(".nugetdirectdownload", Path.GetFileName(files[0]));
+                var testHttpSource = new TestHttpSource(
+                    new PackageSource("http://fake"),
+                    responses);
+                var logger = new TestLogger();
+                var token = CancellationToken.None;
 
+                using (var cacheContext = new SourceCacheContext())
+                using (var downloadDirectory = TestDirectory.Create())
+                using (var globalPackagesFolder = TestDirectory.Create())
+                {
+                    var downloadContext = new PackageDownloadContext(
+                        cacheContext,
+                        downloadDirectory,
+                        directDownload: true);
+
+                    // Act
+                    using (var result = await GetDownloadResultUtility.GetDownloadResultAsync(
+                        testHttpSource,
+                        identity,
+                        uri,
+                        downloadContext,
+                        globalPackagesFolder,
+                        RepositorySignatureResourceTests.GetRepositorySignatureResource(),
+                        logger,
+                        token))
+                    {
+                        // Assert
+                        Assert.Equal(DownloadResourceResultStatus.Available, result.Status);
+                        Assert.NotNull(result.PackageStream);
+                        Assert.True(result.PackageStream.CanSeek);
+                        Assert.True(result.PackageStream.CanRead);
+                        Assert.Equal(0, result.PackageStream.Position);
+
+                        var files = Directory.EnumerateFileSystemEntries(downloadDirectory).ToArray();
+                        Assert.Equal(1, files.Length);
+                        Assert.EndsWith(".nugetdirectdownload", Path.GetFileName(files[0]));
+
+                        Assert.Equal(0, Directory.EnumerateFileSystemEntries(globalPackagesFolder).Count());
+
+                        var packageReader = result.PackageReader;
+                        var id = await packageReader.GetIdentityAsync(CancellationToken.None);
+                        Assert.Equal(identity.ToString(), id.ToString());
+
+                        Assert.False(packageReader.RequiredRepoSign);
+                        var certInfo = packageReader.RepositoryCertInfos.FirstOrDefault();
+
+                        RepositorySignatureResourceTests.VerifyCertInfo(certInfo);
+                    }
+
+                    Assert.Equal(0, Directory.EnumerateFileSystemEntries(downloadDirectory).Count());
                     Assert.Equal(0, Directory.EnumerateFileSystemEntries(globalPackagesFolder).Count());
-
-                    var actualContent = new StreamReader(result.PackageStream).ReadToEnd();
-                    Assert.Equal(expectedContent, actualContent);
                 }
-
-                Assert.Equal(0, Directory.EnumerateFileSystemEntries(downloadDirectory).Count());
-                Assert.Equal(0, Directory.EnumerateFileSystemEntries(globalPackagesFolder).Count());
             }
         }
 
@@ -81,60 +99,74 @@ namespace NuGet.Protocol.Tests
         public async Task GetDownloadResultUtility_WithTwoOfTheSameDownloads_DoesNotCollide()
         {
             // Arrange
-            var uri = new Uri("http://fake/content.nupkg");
-            var expectedContent = "TestContent";
-            var identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0-Beta"));
-            var testHttpSource = new TestHttpSource(
-                new PackageSource("http://fake"),
-                new Dictionary<string, string>
-                {
-                    { uri.ToString(), expectedContent }
-                });
-            var logger = new TestLogger();
-            var token = CancellationToken.None;
-
-            using (var cacheContext = new SourceCacheContext())
-            using (var downloadDirectory = TestDirectory.Create())
-            using (var globalPackagesFolder = TestDirectory.Create())
+            using (var zipStream = new SimpleTestPackageContext("PackageA", "1.0.0-Beta").CreateAsStream())
             {
-                var downloadContext = new PackageDownloadContext(
-                    cacheContext,
-                    downloadDirectory,
-                    directDownload: true);
-
-                // Act
-                using (var resultA = await GetDownloadResultUtility.GetDownloadResultAsync(
-                    testHttpSource,
-                    identity,
-                    uri,
-                    downloadContext,
-                    globalPackagesFolder,
-                    logger,
-                    token))
-                using (var resultB = await GetDownloadResultUtility.GetDownloadResultAsync(
-                    testHttpSource,
-                    identity,
-                    uri,
-                    downloadContext,
-                    globalPackagesFolder,
-                    logger,
-                    token))
+                var uri = new Uri("http://fake/content.nupkg");
+                var identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0-Beta"));
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
                 {
-                    // Assert
-                    var files = Directory.EnumerateFileSystemEntries(downloadDirectory).ToArray();
-                    Assert.Equal(2, files.Length);
-                    Assert.EndsWith(".nugetdirectdownload", Path.GetFileName(files[0]));
-                    Assert.EndsWith(".nugetdirectdownload", Path.GetFileName(files[1]));
+                    {
+                        uri.ToString(),
+                        request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new TestContent(zipStream)
+                        })
+                    }
+                };
 
-                    var actualContentA = new StreamReader(resultA.PackageStream).ReadToEnd();
-                    Assert.Equal(expectedContent, actualContentA);
+                var testHttpSource = new TestHttpSource(
+                    new PackageSource("http://fake"),
+                    responses);
+                var logger = new TestLogger();
+                var token = CancellationToken.None;
 
-                    var actualContentB = new StreamReader(resultB.PackageStream).ReadToEnd();
-                    Assert.Equal(expectedContent, actualContentB);
+                using (var cacheContext = new SourceCacheContext())
+                using (var downloadDirectory = TestDirectory.Create())
+                using (var globalPackagesFolder = TestDirectory.Create())
+                {
+                    var downloadContext = new PackageDownloadContext(
+                        cacheContext,
+                        downloadDirectory,
+                        directDownload: true);
+
+                    // Act
+                    using (var resultA = await GetDownloadResultUtility.GetDownloadResultAsync(
+                        testHttpSource,
+                        identity,
+                        uri,
+                        downloadContext,
+                        globalPackagesFolder,
+                        null,
+                        logger,
+                        token))
+                    using (var resultB = await GetDownloadResultUtility.GetDownloadResultAsync(
+                        testHttpSource,
+                        identity,
+                        uri,
+                        downloadContext,
+                        globalPackagesFolder,
+                        null,
+                        logger,
+                        token))
+                    {
+                        // Assert
+                        var files = Directory.EnumerateFileSystemEntries(downloadDirectory).ToArray();
+                        Assert.Equal(2, files.Length);
+                        Assert.EndsWith(".nugetdirectdownload", Path.GetFileName(files[0]));
+                        Assert.EndsWith(".nugetdirectdownload", Path.GetFileName(files[1]));
+
+                        var packageReaderA = resultA.PackageReader;
+                        var idA = await packageReaderA.GetIdentityAsync(CancellationToken.None);
+                        Assert.Equal(identity.ToString(), idA.ToString());
+
+                        var packageReaderB = resultA.PackageReader;
+                        var idB = await packageReaderA.GetIdentityAsync(CancellationToken.None);
+                        Assert.Equal(identity.ToString(), idB.ToString());
+                    }
+
+                    Assert.Equal(0, Directory.EnumerateFileSystemEntries(downloadDirectory).Count());
+                    Assert.Equal(0, Directory.EnumerateFileSystemEntries(globalPackagesFolder).Count());
                 }
-
-                Assert.Equal(0, Directory.EnumerateFileSystemEntries(downloadDirectory).Count());
-                Assert.Equal(0, Directory.EnumerateFileSystemEntries(globalPackagesFolder).Count());
             }
         }
 

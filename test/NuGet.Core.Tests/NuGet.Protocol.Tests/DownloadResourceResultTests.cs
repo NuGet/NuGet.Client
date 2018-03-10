@@ -79,57 +79,6 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void Constructor_Stream_ThrowsForNullStream()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new DownloadResourceResult(stream: null));
-
-            Assert.Equal("stream", exception.ParamName);
-        }
-
-        [Fact]
-        public void Constructor_Stream_InitializesProperties()
-        {
-            using (var result = new DownloadResourceResult(Stream.Null))
-            {
-                Assert.Null(result.PackageReader);
-                Assert.Null(result.PackageSource);
-                Assert.Same(Stream.Null, result.PackageStream);
-                Assert.Equal(DownloadResourceResultStatus.Available, result.Status);
-            }
-        }
-
-        [Fact]
-        public void Constructor_StreamSource_ThrowsForNullStream()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new DownloadResourceResult(stream: null, source: "a"));
-
-            Assert.Equal("stream", exception.ParamName);
-        }
-
-        [Fact]
-        public void Constructor_StreamSource_AllowsNullSource()
-        {
-            using (var result = new DownloadResourceResult(Stream.Null, source: null))
-            {
-                Assert.Null(result.PackageSource);
-            }
-        }
-
-        [Fact]
-        public void Constructor_StreamSource_InitializesProperties()
-        {
-            using (var result = new DownloadResourceResult(Stream.Null, source: "a"))
-            {
-                Assert.Null(result.PackageReader);
-                Assert.Equal("a", result.PackageSource);
-                Assert.Same(Stream.Null, result.PackageStream);
-                Assert.Equal(DownloadResourceResultStatus.Available, result.Status);
-            }
-        }
-
-        [Fact]
         public void Constructor_StreamPackageReaderBase_ThrowsForNullStream()
         {
             using (var packageReader = new TestPackageReader())
@@ -138,15 +87,6 @@ namespace NuGet.Protocol.Tests
                     () => new DownloadResourceResult(stream: null, packageReader: packageReader));
 
                 Assert.Equal("stream", exception.ParamName);
-            }
-        }
-
-        [Fact]
-        public void Constructor_StreamPackageReaderBase_AllowsNullPackageReader()
-        {
-            using (var result = new DownloadResourceResult(Stream.Null, packageReader: null))
-            {
-                Assert.Null(result.PackageReader);
             }
         }
 
@@ -176,16 +116,6 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void Constructor_StreamPackageReaderBaseSource_AllowsNullPackageReaderAndSource()
-        {
-            using (var result = new DownloadResourceResult(Stream.Null, packageReader: null, source: null))
-            {
-                Assert.Null(result.PackageReader);
-                Assert.Null(result.PackageSource);
-            }
-        }
-
-        [Fact]
         public void Constructor_StreamPackageReaderBaseSource_InitializesProperties()
         {
             using (var packageReader = new TestPackageReader())
@@ -202,7 +132,8 @@ namespace NuGet.Protocol.Tests
         public void Dispose_IsIdempotent()
         {
             using (var stream = new TestStream())
-            using (var result = new DownloadResourceResult(stream))
+            using (var packageReader = new TestPackageReader())
+            using (var result = new DownloadResourceResult(stream, packageReader))
             {
                 result.Dispose();
                 result.Dispose();
@@ -217,6 +148,12 @@ namespace NuGet.Protocol.Tests
                 : base(DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
             {
             }
+
+            public override bool RequiredRepoSign => false;
+
+            public override bool PackageSignatureVerified => true;
+
+            public override IEnumerable<IRepositoryCertInfo> RepositoryCertInfos => null;
 
             public override IEnumerable<string> CopyFiles(
                 string destination,

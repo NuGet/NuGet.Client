@@ -436,7 +436,10 @@ namespace NuGet.Test.Utility
                                 XmlDocFileSaveMode.None,
                                 NullLogger.Instance,
                                 signedPackageVerifier: null),
-                            CancellationToken.None);
+                            packageSignatureVerified: true,
+                            requiredRepoSign: false,
+                            repositoryCertInfos: null,
+                            token: CancellationToken.None);
                     }
                 }
             }
@@ -481,7 +484,7 @@ namespace NuGet.Test.Utility
             {
                 using (var stream = File.OpenRead(path))
                 {
-                    await PackageExtractor.ExtractPackageAsync(stream, resolver, context, CancellationToken.None);
+                    await PackageExtractor.ExtractPackageAsync(new PackageArchiveReader(stream), stream, resolver, context, CancellationToken.None);
                 }
             }
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -395,7 +395,8 @@ namespace NuGet.Test
 
         private static DownloadResourceResult GetDownloadResult(FileInfo packageFileInfo)
         {
-            return new DownloadResourceResult(packageFileInfo.OpenRead());
+            var packageStream = packageFileInfo.OpenRead();
+            return new DownloadResourceResult(packageStream, new PackageArchiveReader(packageStream, leaveStreamOpen: true));
         }
     }
 }

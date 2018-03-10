@@ -309,23 +309,10 @@ namespace NuGet.PackageManagement
                     sourceRepository.PackageSource.Source));
             }
 
-            if (result.PackageReader == null)
-            {
-                result.PackageStream.Seek(0, SeekOrigin.Begin);
-                var packageReader = new PackageArchiveReader(result.PackageStream);
-                result.PackageStream.Seek(0, SeekOrigin.Begin);
-                result = new DownloadResourceResult(result.PackageStream, packageReader, sourceRepository.PackageSource.Source)
-                {
-                    SignatureVerified = result.SignatureVerified
-                };
-            }
-            else if (result.Status != DownloadResourceResultStatus.AvailableWithoutStream)
+            if (result.Status != DownloadResourceResultStatus.AvailableWithoutStream)
             {
                 // bind the source
-                result = new DownloadResourceResult(result.PackageStream, result.PackageReader, sourceRepository.PackageSource.Source)
-                {
-                    SignatureVerified = result.SignatureVerified
-                };
+                result = new DownloadResourceResult(result.PackageStream, result.PackageReader, sourceRepository.PackageSource.Source);
             }
 
             return result;

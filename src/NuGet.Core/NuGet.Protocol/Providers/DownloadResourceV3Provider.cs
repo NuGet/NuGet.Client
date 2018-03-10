@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,17 +30,18 @@ namespace NuGet.Protocol
                 // If index.json contains a flat container resource use that to directly
                 // construct package download urls.
                 var packageBaseAddress = serviceIndex.GetServiceEntryUri(ServiceTypes.PackageBaseAddress)?.AbsoluteUri;
+                var repositorySignatureResource = await source.GetResourceAsync<RepositorySignatureResource>(token);
 
                 if (packageBaseAddress != null)
                 {
-                    curResource = new DownloadResourceV3(client, packageBaseAddress);
+                    curResource = new DownloadResourceV3(client, packageBaseAddress, repositorySignatureResource);
                 }
                 else
                 {
                     // If there is no flat container resource fall back to using the registration resource to find
                     // the download url.
                     var registrationResource = await source.GetResourceAsync<RegistrationResourceV3>(token);
-                    curResource = new DownloadResourceV3(client, registrationResource);
+                    curResource = new DownloadResourceV3(client, registrationResource, repositorySignatureResource);
                 }
             }
 

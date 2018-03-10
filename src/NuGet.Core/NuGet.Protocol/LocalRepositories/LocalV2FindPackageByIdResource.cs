@@ -29,6 +29,8 @@ namespace NuGet.Protocol
 
         private readonly string _source;
 
+        public override RepositorySignatureResource RepositorySignatureResource => null;
+
         /// <summary>
         /// Initializes a new <see cref="LocalV2FindPackageByIdResource" /> class.
         /// </summary>

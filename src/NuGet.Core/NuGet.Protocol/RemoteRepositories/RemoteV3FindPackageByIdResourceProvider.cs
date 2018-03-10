@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,10 +26,12 @@ namespace NuGet.Protocol
             if (serviceIndexResource != null)
             {
                 var httpSourceResource = await sourceRepository.GetResourceAsync<HttpSourceResource>(token);
+                var repositorySignatureResource = await sourceRepository.GetResourceAsync<RepositorySignatureResource>(token);
 
                 resource = new RemoteV3FindPackageByIdResource(
                     sourceRepository,
-                    httpSourceResource.HttpSource);
+                    httpSourceResource.HttpSource,
+                    repositorySignatureResource);
             }
 
             return Tuple.Create(resource != null, resource);

@@ -18,11 +18,11 @@ namespace NuGet.Protocol
         private readonly RegistrationResourceV3 _regResource;
         private readonly HttpSource _client;
         private readonly string _packageBaseAddressUrl;
-
+        private readonly RepositorySignatureResource _repositorySignatureResource;
         /// <summary>
         /// Download packages using the download url found in the registration resource.
         /// </summary>
-        public DownloadResourceV3(HttpSource client, RegistrationResourceV3 regResource)
+        public DownloadResourceV3(HttpSource client, RegistrationResourceV3 regResource, RepositorySignatureResource repositorySignatureResource)
             : this(client)
         {
             if (regResource == null)
@@ -31,12 +31,13 @@ namespace NuGet.Protocol
             }
 
             _regResource = regResource;
+            _repositorySignatureResource = repositorySignatureResource;
         }
 
         /// <summary>
         /// Download packages using the package base address container resource.
         /// </summary>
-        public DownloadResourceV3(HttpSource client, string packageBaseAddress)
+        public DownloadResourceV3(HttpSource client, string packageBaseAddress, RepositorySignatureResource repositorySignatureResource)
             : this(client)
         {
             if (packageBaseAddress == null)
@@ -45,6 +46,7 @@ namespace NuGet.Protocol
             }
 
             _packageBaseAddressUrl = packageBaseAddress.TrimEnd('/');
+            _repositorySignatureResource = repositorySignatureResource;
         }
 
         private DownloadResourceV3(HttpSource client)
@@ -132,6 +134,7 @@ namespace NuGet.Protocol
                     uri,
                     downloadContext,
                     globalPackagesFolder,
+                    _repositorySignatureResource,
                     logger,
                     token);
             }

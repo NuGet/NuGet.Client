@@ -148,9 +148,9 @@ namespace NuGet.ProjectManagement
 
                     if (packageExtractionContext == null)
                     {
-                        var signedPackageVerifier = !downloadResourceResult.SignatureVerified ? new PackageSignatureVerifier(
+                        var signedPackageVerifier = new PackageSignatureVerifier(
                             SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default) : null;
+                            SignedPackageVerifierSettings.Default);
 
                         packageExtractionContext = new PackageExtractionContext(
                             PackageSaveMode.Defaultv2,
@@ -175,34 +175,21 @@ namespace NuGet.ProjectManagement
                     }
                     var addedPackageFilesList = new List<string>();
 
-                    if (downloadResourceResult.PackageReader != null)
+                    if (downloadResourceResult.Status == DownloadResourceResultStatus.AvailableWithoutStream)
                     {
-                        if (downloadResourceResult.Status == DownloadResourceResultStatus.AvailableWithoutStream)
-                        {
-                            addedPackageFilesList.AddRange(
-                                await PackageExtractor.ExtractPackageAsync(
-                                    downloadResourceResult.PackageReader,
-                                    PackagePathResolver,
-                                    packageExtractionContext,
-                                    cancellationToken,
-                                    nuGetProjectContext.OperationId));
-                        }
-                        else
-                        {
-                            addedPackageFilesList.AddRange(
-                                await PackageExtractor.ExtractPackageAsync(
-                                    downloadResourceResult.PackageReader,
-                                    downloadResourceResult.PackageStream,
-                                    PackagePathResolver,
-                                    packageExtractionContext,
-                                    cancellationToken,
-                                    nuGetProjectContext.OperationId));
-                        }
+                        addedPackageFilesList.AddRange(
+                            await PackageExtractor.ExtractPackageAsync(
+                                downloadResourceResult.PackageReader,
+                                PackagePathResolver,
+                                packageExtractionContext,
+                                cancellationToken,
+                                nuGetProjectContext.OperationId));
                     }
                     else
                     {
                         addedPackageFilesList.AddRange(
                             await PackageExtractor.ExtractPackageAsync(
+                                downloadResourceResult.PackageReader,
                                 downloadResourceResult.PackageStream,
                                 PackagePathResolver,
                                 packageExtractionContext,
