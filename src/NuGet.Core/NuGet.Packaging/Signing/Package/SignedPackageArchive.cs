@@ -55,8 +55,11 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(NuGetLogCode.NU3001, Strings.SignedPackagePackageAlreadySigned);
             }
 
-            using (var reader = new BinaryReader(ZipReadStream, SigningSpecifications.Encoding, leaveOpen: true))
-            using (var writer = new BinaryWriter(ZipWriteStream, SigningSpecifications.Encoding, leaveOpen: true))
+            using (var reader = new BinaryReader(ZipReadStream, new UTF8Encoding(), leaveOpen: true))
+            using (var writer = new BinaryWriter(
+                ZipWriteStream,
+                new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true),
+                leaveOpen: true))
             {
                 SignedPackageArchiveUtility.SignZip((MemoryStream)signatureStream, reader, writer);
             }
@@ -91,7 +94,8 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
 
-            using (var reader = new BinaryReader(ZipReadStream, new UTF8Encoding(), leaveOpen: true))
+            using (var bufferedStream = new ReadOnlyBufferedStream(ZipReadStream, leaveOpen: true))
+            using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
             {
                 return Task.FromResult(SignedPackageArchiveUtility.IsZip64(reader));
             }
