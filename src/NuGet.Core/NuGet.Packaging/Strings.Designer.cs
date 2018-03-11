@@ -638,6 +638,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Arguments {0} and {1} were out of bounds for the array..
+        /// </summary>
+        internal static string RangeOutOfBoundsForArray {
+            get {
+                return ResourceManager.GetString("RangeOutOfBoundsForArray", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package signature contains an invalid attribute: {0}.
         /// </summary>
         internal static string SignatureContainsInvalidAttribute {
@@ -904,6 +913,24 @@ namespace NuGet.Packaging {
         internal static string SigningCertificateV2UnsupportedHashAlgorithm {
             get {
                 return ResourceManager.GetString("SigningCertificateV2UnsupportedHashAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The stream must be readable..
+        /// </summary>
+        internal static string StreamMustBeReadable {
+            get {
+                return ResourceManager.GetString("StreamMustBeReadable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The stream must be seekable..
+        /// </summary>
+        internal static string StreamMustBeSeekable {
+            get {
+                return ResourceManager.GetString("StreamMustBeSeekable", resourceCulture);
             }
         }
         

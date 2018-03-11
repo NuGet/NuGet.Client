@@ -246,6 +246,7 @@ namespace NuGet.Packaging.Signing
             // Read central directory records
             var centralDirectoryRecords = new List<CentralDirectoryHeaderMetadata>();
             CentralDirectoryHeader header;
+            var index = 0;
 
             while (CentralDirectoryHeader.TryRead(reader, out header))
             {
@@ -263,10 +264,13 @@ namespace NuGet.Packaging.Signing
                     IsPackageSignatureFile = isPackageSignatureFile,
                     HeaderSize = header.GetSizeInBytes(),
                     OffsetToFileHeader = header.RelativeOffsetOfLocalHeader,
-                    Position = header.OffsetFromStart
+                    Position = header.OffsetFromStart,
+                    IndexInHeaders = index
                 };
 
                 centralDirectoryRecords.Add(centralDirectoryMetadata);
+
+                ++index;
             }
 
             if (centralDirectoryRecords.Count == 0)
@@ -278,9 +282,35 @@ namespace NuGet.Packaging.Signing
             metadata.EndOfCentralDirectory = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize;
             metadata.CentralDirectoryHeaders = centralDirectoryRecords;
 
-            UpdateSignedPackageArchiveMetadata(reader, metadata);
+            var endOfLocalFileHeadersPosition = centralDirectoryRecords.Min(record => record.Position);
+
+            metadata.EndOfFileHeaders = endOfLocalFileHeadersPosition;
+
+            UpdateLocalFileHeadersTotalSize(centralDirectoryRecords, endOfLocalFileHeadersPosition);
 
             return metadata;
+        }
+
+        private static void UpdateLocalFileHeadersTotalSize(
+            IReadOnlyList<CentralDirectoryHeaderMetadata> records,
+            long startOfCentralDirectory)
+        {
+            var orderedRecords = records.OrderBy(record => record.OffsetToFileHeader).ToArray();
+
+            for (var i = 0; i < orderedRecords.Length - 1; ++i)
+            {
+                var current = orderedRecords[i];
+                var next = orderedRecords[i + 1];
+
+                current.FileEntryTotalSize = next.OffsetToFileHeader - current.OffsetToFileHeader;
+            }
+
+            if (orderedRecords.Length > 0)
+            {
+                var last = orderedRecords.Last();
+
+                last.FileEntryTotalSize = startOfCentralDirectory - last.OffsetToFileHeader;
+            }
         }
 
         /// <summary>
