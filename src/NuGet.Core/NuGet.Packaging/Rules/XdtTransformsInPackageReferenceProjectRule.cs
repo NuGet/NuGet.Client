@@ -13,8 +13,10 @@ namespace NuGet.Packaging.Rules
     internal class XdtTransformInPackageReferenceProjectRule : IPackageRule
     {
         private const string ConfigTransformExtension = ".transform";
-        private const string ContentDirectory = "content";
-        private const string ContentFilesDirectory = "contentFiles";
+        private const string InstallXdtExtension = ".install.xdt";
+        private const string UninstallXdtExtension = ".uninstall.xdt";
+        private const string ContentDirectory = "content/";
+        private const string ContentFilesDirectory = "contentFiles/";
 
         public string MessageFormat { get; }
 
@@ -25,19 +27,13 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            foreach (var file in builder.GetFiles().Select(t => PathUtility.GetPathWithDirectorySeparator(t)))
+            foreach (var file in builder.GetFiles()
+                .Where(f => f.StartsWith(ContentDirectory, StringComparison.OrdinalIgnoreCase) || f.StartsWith(ContentFilesDirectory, StringComparison.OrdinalIgnoreCase))
+                .Select(t => PathUtility.GetPathWithDirectorySeparator(t)))
             {
-                // if not a .transform file, ignore
-                if (!file.EndsWith(ConfigTransformExtension, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                // if inside content or contentFiles folder then warn.
-                if (file.StartsWith(ContentDirectory + Path.DirectorySeparatorChar,
-                    StringComparison.OrdinalIgnoreCase)
-                    || file.StartsWith(ContentFilesDirectory + Path.DirectorySeparatorChar,
-                    StringComparison.OrdinalIgnoreCase))
+                if (file.EndsWith(ConfigTransformExtension, StringComparison.OrdinalIgnoreCase)
+                    || file.EndsWith(InstallXdtExtension, StringComparison.OrdinalIgnoreCase)
+                    || file.EndsWith(UninstallXdtExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     yield return CreatePackageIssueForTransformFiles(file);
                 }
@@ -47,7 +43,7 @@ namespace NuGet.Packaging.Rules
         private PackagingLogMessage CreatePackageIssueForTransformFiles(string path)
         {
             return PackagingLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, MessageFormat, path),
+                string.Format(CultureInfo.CurrentCulture, MessageFormat, path),
                 NuGetLogCode.NU5122);
         }
     }
