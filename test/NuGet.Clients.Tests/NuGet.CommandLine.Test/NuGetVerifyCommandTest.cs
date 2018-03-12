@@ -81,7 +81,7 @@ namespace NuGet.CommandLine.Test
                 {
                     Assert.True(_failureCode == result.ExitCode, result.AllOutput);
                     Assert.False(result.Success);
-                    Assert.Contains("The package signature is invalid or cannot be verified on this platform.", result.AllOutput);
+                    Assert.Contains("NU3004: The package is not signed.", result.AllOutput);
                 }
                 else
                 {
