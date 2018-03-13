@@ -156,7 +156,7 @@ namespace NuGet.Commands
             }
             else
             {
-                Logger.Log(PackLogMessage.CreateWarning(string.Format(
+                Logger.Log(PackagingLogMessage.CreateWarning(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.FileNotAddedToPackage,
                         packageFile.Source,

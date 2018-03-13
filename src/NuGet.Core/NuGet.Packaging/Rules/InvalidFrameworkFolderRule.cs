@@ -22,7 +22,7 @@ namespace NuGet.Packaging.Rules
             MessageFormat = messageFormat;
         }
 
-        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
+        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var file in builder.GetFiles().Select(t => PathUtility.GetPathWithDirectorySeparator(t)))
@@ -68,9 +68,9 @@ namespace NuGet.Packaging.Rules
             return name.Equals(nuspecReader.GetLanguage(), StringComparison.OrdinalIgnoreCase);
         }
 
-        private PackLogMessage CreatePackageIssue(string target)
+        private PackagingLogMessage CreatePackageIssue(string target)
         {
-            return PackLogMessage.CreateWarning(
+            return PackagingLogMessage.CreateWarning(
                 string.Format(CultureInfo.CurrentCulture, MessageFormat, target),
                 NuGetLogCode.NU5103);
         }

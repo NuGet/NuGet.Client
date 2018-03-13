@@ -9,7 +9,7 @@ namespace NuGet.Packaging.Rules
 {
     public interface IPackageRule
     {
-        IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder);
+        IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder);
         string MessageFormat { get; }
     }
 }

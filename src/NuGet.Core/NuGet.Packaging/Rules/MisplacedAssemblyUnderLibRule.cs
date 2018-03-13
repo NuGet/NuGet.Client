@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Rules
         {
             MessageFormat = messageFormat;
         }
-        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
+        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
             foreach (var packageFile in builder.GetFiles())
             {
@@ -36,16 +36,16 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private PackLogMessage CreatePackageIssueForAssembliesUnderLib(string target)
+        private PackagingLogMessage CreatePackageIssueForAssembliesUnderLib(string target)
         {
-            return PackLogMessage.CreateWarning(
+            return PackagingLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, MessageFormat, target),
                 NuGetLogCode.NU5101);
         }
 
-        private static PackLogMessage CreatePackageIssueForAssembliesOutsideLib(string target)
+        private static PackagingLogMessage CreatePackageIssueForAssembliesOutsideLib(string target)
         {
-            return PackLogMessage.CreateWarning(
+            return PackagingLogMessage.CreateWarning(
                 String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyOutsideLibWarning, target),
                 NuGetLogCode.NU5100);
         }

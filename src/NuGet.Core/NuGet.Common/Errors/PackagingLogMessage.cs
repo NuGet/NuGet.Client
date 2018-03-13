@@ -5,7 +5,7 @@ using System;
 
 namespace NuGet.Common
 {
-    public class PackLogMessage : IPackLogMessage
+    public class PackagingLogMessage : IPackLogMessage
     {
         public LogLevel Level { get; set; }
         public NuGetLogCode Code { get; set; }
@@ -25,7 +25,7 @@ namespace NuGet.Common
         /// <param name="logLevel">The log level</param>
         /// <param name="logCode">The NuGet log code</param>
         /// <param name="message">The log message</param>
-        private PackLogMessage(LogLevel logLevel, NuGetLogCode logCode, string message)
+        private PackagingLogMessage(LogLevel logLevel, NuGetLogCode logCode, string message)
         {
             Level = logLevel;
             Code = logCode;
@@ -33,7 +33,7 @@ namespace NuGet.Common
             Time = DateTimeOffset.UtcNow;
         }
 
-        private PackLogMessage(LogLevel logLevel, string message)
+        private PackagingLogMessage(LogLevel logLevel, string message)
         {
             Message = message;
             Code = NuGetLogCode.Undefined;
@@ -46,19 +46,19 @@ namespace NuGet.Common
         /// </summary>
         /// <param name="code">The logging code</param>
         /// <param name="message">The log message</param>
-        public static PackLogMessage CreateError(string message, NuGetLogCode code)
+        public static PackagingLogMessage CreateError(string message, NuGetLogCode code)
         {
-            return new PackLogMessage(LogLevel.Error, code, message);
+            return new PackagingLogMessage(LogLevel.Error, code, message);
         }
 
-        public static PackLogMessage CreateWarning(string message, NuGetLogCode code)
+        public static PackagingLogMessage CreateWarning(string message, NuGetLogCode code)
         {
-            return new PackLogMessage(LogLevel.Warning, code, message);
+            return new PackagingLogMessage(LogLevel.Warning, code, message);
         }
 
-        public static PackLogMessage CreateMessage(string message, LogLevel logLevel)
+        public static PackagingLogMessage CreateMessage(string message, LogLevel logLevel)
         {
-            return new PackLogMessage(logLevel, message);
+            return new PackagingLogMessage(logLevel, message);
         }
 
         /// <summary>

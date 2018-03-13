@@ -23,13 +23,13 @@ namespace NuGet.Packaging.Rules
         // NuGet 2.12 regex for version parsing.
         private const string LegacyRegex = @"^(?<Version>\d+(\s*\.\s*\d+){0,3})(?<Release>-[a-z][0-9a-z-]*)?$";
 
-        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
+        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
             var regex = new Regex(LegacyRegex, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
             var nuspecReader = builder.NuspecReader;
             if (!regex.IsMatch(nuspecReader.GetVersion().ToFullString()))
             {
-                yield return PackLogMessage.CreateWarning(
+                yield return PackagingLogMessage.CreateWarning(
                     string.Format(CultureInfo.CurrentCulture, MessageFormat, nuspecReader.GetVersion().ToFullString()),
                     NuGetLogCode.NU5105);
             }

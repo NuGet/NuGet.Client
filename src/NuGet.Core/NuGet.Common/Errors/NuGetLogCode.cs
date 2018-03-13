@@ -636,8 +636,24 @@ namespace NuGet.Common
         NU5119 = 5119,
 
         /// <summary>
+        /// Migrator_PackageHasInstallScript
+        /// </summary>
+        NU5120 = 5120,
+
+        /// <summary>
+        /// Migrator_PackageHasContentFolder
+        /// </summary>
+        NU5121 = 5121,
+
+        /// <summary>
+        /// Migrator_XdtTransformInPackage
+        /// </summary>
+        NU5122 = 5122,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
-        NU5500 = 5500,
+        NU5500 = 5500
+
     }
 }
