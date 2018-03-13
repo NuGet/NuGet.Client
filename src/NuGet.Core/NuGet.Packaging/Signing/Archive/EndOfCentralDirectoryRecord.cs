@@ -62,7 +62,9 @@ namespace NuGet.Packaging.Signing
             var bufferSize = (int)Math.Min(length, DefaultBufferSize);
             var matchingByteCount = 0;
 
-            // position is 0-based, while bufferSize is 1-based.
+            // Read backwards from the end of stream in adjacent, non-overlapping chunks of size "bufferSize",
+            // and search backwards for the byte signature.
+            // Note:  position is 0-based, while bufferSize is 1-based.
             for (var position = length - bufferSize; position >= 0; position -= bufferSize)
             {
                 reader.BaseStream.Position = position;
