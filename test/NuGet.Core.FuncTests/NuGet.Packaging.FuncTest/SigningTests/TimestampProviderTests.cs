@@ -44,11 +44,11 @@ namespace NuGet.Packaging.FuncTest
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
-            var data = "Test data to be signed and timestamped";
+            var content = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, content.GetBytes());
                 var primarySignature = PrimarySignature.Load(signedCms.Encode());
                 var timestampHashAlgorithm = Common.HashAlgorithmName.SHA256;
                 var signatureValue = primarySignature.GetSignatureValue();
@@ -139,7 +139,7 @@ namespace NuGet.Packaging.FuncTest
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var authorCertName = "author@nuget.func.test";
-            var data = "Test data to be signed and timestamped";
+            var content = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
 
             Action<X509V3CertificateGenerator> modifyGenerator = delegate (X509V3CertificateGenerator gen)
             {
@@ -150,7 +150,7 @@ namespace NuGet.Packaging.FuncTest
             using (var authorCert = SigningTestUtility.GenerateCertificate(authorCertName, modifyGenerator: modifyGenerator))
             {
                 var timestampHashAlgorithm = Common.HashAlgorithmName.SHA256;
-                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, content.GetBytes());
                 var signature = PrimarySignature.Load(signedCms.Encode());
                 var signatureValue = signature.GetSignatureValue();
                 var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
@@ -176,12 +176,12 @@ namespace NuGet.Packaging.FuncTest
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
-            var data = "Test data to be signed and timestamped";
+            var content = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var timestampHashAlgorithm = Common.HashAlgorithmName.SHA256;
-                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, content.GetBytes());
                 var signature = PrimarySignature.Load(signedCms.Encode());
                 var signatureValue = signature.GetSignatureValue();
                 var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
@@ -208,12 +208,12 @@ namespace NuGet.Packaging.FuncTest
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
-            var data = "Test data to be signed and timestamped";
+            var content = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var timestampHashAlgorithm = Common.HashAlgorithmName.SHA256;
-                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, content.GetBytes());
                 var signature = PrimarySignature.Load(signedCms.Encode());
                 var signatureValue = signature.GetSignatureValue();
                 var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
@@ -358,8 +358,7 @@ namespace NuGet.Packaging.FuncTest
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
-            var data = "Test data to be signed and timestamped";
-            var signatureContent = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, data);
+            var signatureContent = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
@@ -403,8 +402,7 @@ namespace NuGet.Packaging.FuncTest
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
-            var data = "Test data to be signed and timestamped";
-            var signatureContent = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, data);
+            var signatureContent = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
@@ -456,8 +454,8 @@ namespace NuGet.Packaging.FuncTest
                 using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
                 {
                     var timestampHashAlgorithm = Common.HashAlgorithmName.SHA256;
-                    var content = Encoding.UTF8.GetBytes("peach");
-                    var signedCms = SigningTestUtility.GenerateSignedCms(certificate, content);
+                    var content = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "peach");
+                    var signedCms = SigningTestUtility.GenerateSignedCms(certificate, content.GetBytes());
                     var signature = PrimarySignature.Load(signedCms.Encode());
                     var signatureValue = signature.GetSignatureValue();
                     var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
