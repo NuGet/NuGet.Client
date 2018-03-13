@@ -416,6 +416,25 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+    _GetRestoreProjectStyle
+    If using PackageReference, enable an MSBuild warning if BaseIntermediateOutputPath is set to something different
+    than MSBuildProjectExtensionsPath, because it may be unexpected that the assets and related files wouldn't be written
+    to the BaseIntermediateOutputPath.
+    ============================================================
+  -->
+
+  <Target Name="EnableIntermediateOutputPathMismatchWarning" DependsOnTargets="_GetRestoreProjectStyle"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+          Condition="'$(RestoreProjectStyle)' == 'PackageReference'">
+    
+    <PropertyGroup Condition="'$(EnableBaseIntermediateOutputPathMismatchWarning)' == ''">
+      <EnableBaseIntermediateOutputPathMismatchWarning>true</EnableBaseIntermediateOutputPathMismatchWarning>
+    </PropertyGroup>
+  
+  </Target>
+  
+  <!--
+    ============================================================
     _GetRestoreTargetFrameworksOutput
     Read target frameworks from the project.
     Non-NETCore project frameworks will be returned.
