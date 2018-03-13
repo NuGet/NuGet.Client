@@ -179,11 +179,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No certificate matching the provided {0} fingerprint(s) was found in the signature..
+        ///   Looks up a localized string similar to No allowed certificate was found in the signature..
         /// </summary>
-        internal static string Error_NoMatchingCertificate {
+        internal static string Error_NoAllowedCertificate {
             get {
-                return ResourceManager.GetString("Error_NoMatchingCertificate", resourceCulture);
+                return ResourceManager.GetString("Error_NoAllowedCertificate", resourceCulture);
             }
         }
         

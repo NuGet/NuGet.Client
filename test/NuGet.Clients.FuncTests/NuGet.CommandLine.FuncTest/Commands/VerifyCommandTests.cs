@@ -275,5 +275,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 verifyResult.AllOutput.Should().Contain(_noMatchingCertErrorCode);
             }
         }
+
+        // TODO: Add tests with config with trusted sources
+        // TODO: Add tests with config without trusted sources
+        // TODO: Add tests for certificateFingerprint and config with trusted sources
     }
 }

@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -13,12 +13,10 @@ namespace NuGet.Packaging.Signing
 {
     public class AllowListVerificationProvider : ISignatureVerificationProvider
     {
-        private HashAlgorithmName _fingerprintAlgorithm;
         private IReadOnlyList<VerificationAllowListEntry> _allowList;
 
         public AllowListVerificationProvider(IReadOnlyList<VerificationAllowListEntry> allowList)
         {
-            _fingerprintAlgorithm = HashAlgorithmName.SHA256;
             _allowList = allowList;
         }
 
@@ -36,7 +34,7 @@ namespace NuGet.Packaging.Signing
             if (_allowList.Count() > 0 && !IsSignatureAllowed(signature))
             {
                 status = SignatureVerificationStatus.Untrusted;
-                issues.Add(SignatureLog.Issue(fatal: !settings.AllowUntrusted, code: NuGetLogCode.NU3003, message: string.Format(CultureInfo.CurrentCulture, Strings.Error_NoMatchingCertificate, _fingerprintAlgorithm.ToString())));
+                issues.Add(SignatureLog.Issue(fatal: !settings.AllowUntrusted, code: NuGetLogCode.NU3003, message: Strings.Error_NoAllowedCertificate));
             }
 
             return new SignedPackageVerificationResult(status, signature, issues);
@@ -44,25 +42,56 @@ namespace NuGet.Packaging.Signing
 
         private bool IsSignatureAllowed(PrimarySignature signature)
         {
-            // Get information needed for allow list verification
-            var primarySignatureCertificateFingerprint = CertificateUtility.GetHash(signature.SignerInfo.Certificate, _fingerprintAlgorithm);
-            var primarySignatureCertificateFingerprintString = BitConverter.ToString(primarySignatureCertificateFingerprint).Replace("-", "");
+            // To avoid getting the countersignature more than once lets memoize it
+            var repositoryCounterSignature = new Lazy<RepositoryCountersignature>(() => RepositoryCountersignature.GetRepositoryCountersignature(signature));
+
+            // Also memoize certificate fingerprints for primary signature and repository countersignature
+            var signatureCertFingerprints = new Dictionary<HashAlgorithmName, string>();
+            var countersignatureCertFingerprints = new Dictionary<HashAlgorithmName, string>();
 
             foreach (var allowedEntry in _allowList)
             {
                 // Verify the certificate hash allow list objects
-                var certificateHashEntry = allowedEntry as CertificateHashAllowListEntry;
-                if (certificateHashEntry != null)
+                var certHashEntry = allowedEntry as CertificateHashAllowListEntry;
+                if (certHashEntry != null)
                 {
-                    if (certificateHashEntry.VerificationTarget.HasFlag(VerificationTarget.Primary) &&
-                        StringComparer.OrdinalIgnoreCase.Equals(certificateHashEntry.CertificateFingerprint, primarySignatureCertificateFingerprintString))
+                    if (certHashEntry.VerificationTarget.HasFlag(VerificationTarget.Primary))
                     {
-                        return true;
+                        if (!signatureCertFingerprints.TryGetValue(certHashEntry.FingerprintAlgorithm, out var signatureCertFingerprint))
+                        {
+                            signatureCertFingerprint = GetCertFingerprint(signature.SignerInfo.Certificate, certHashEntry.FingerprintAlgorithm);
+                            signatureCertFingerprints.Add(certHashEntry.FingerprintAlgorithm, signatureCertFingerprint);
+                        }
+
+                        if (StringComparer.OrdinalIgnoreCase.Equals(certHashEntry.CertificateFingerprint, signatureCertFingerprint))
+                        {
+                            return true;
+                        }
+                    }
+
+                    if (certHashEntry.VerificationTarget.HasFlag(VerificationTarget.Counter))
+                    {
+                        if (!countersignatureCertFingerprints.TryGetValue(certHashEntry.FingerprintAlgorithm, out var countersignatureCertFingerprint))
+                        {
+                            countersignatureCertFingerprint = GetCertFingerprint(repositoryCounterSignature.Value.SignerInfo.Certificate, certHashEntry.FingerprintAlgorithm);
+                            countersignatureCertFingerprints.Add(certHashEntry.FingerprintAlgorithm, countersignatureCertFingerprint);
+                        }
+
+                        if (StringComparer.OrdinalIgnoreCase.Equals(certHashEntry.CertificateFingerprint, countersignatureCertFingerprint))
+                        {
+                            return true;
+                        }
                     }
                 }
             }
 
             return false;
+        }
+
+        private string GetCertFingerprint(X509Certificate2 cert, HashAlgorithmName algorithm)
+        {
+            var countersignatureCertFingerprintHash = CertificateUtility.GetHash(cert, algorithm);
+            return BitConverter.ToString(countersignatureCertFingerprintHash).Replace("-", "");
         }
 
 #else

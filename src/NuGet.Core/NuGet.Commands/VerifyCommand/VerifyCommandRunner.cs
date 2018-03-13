@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.Protocol;
@@ -41,6 +42,8 @@ namespace NuGet.Commands
 
                 var allowListEntries = verifyArgs.CertificateFingerprint.Select(fingerprint =>
                     new CertificateHashAllowListEntry(VerificationTarget.Primary, fingerprint)).ToList();
+
+                allowListEntries.AddRange(GetTrustedSources(verifyArgs.Settings));
 
                 var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs(allowListEntries));
                 var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
@@ -105,6 +108,17 @@ namespace NuGet.Commands
         private bool ShouldExecuteVerification(VerifyArgs args, Verification v)
         {
             return args.Verifications.Any(verification => verification == Verification.All || verification == v);
+        }
+
+        private IEnumerable<CertificateHashAllowListEntry> GetTrustedSources(ISettings settings)
+        {
+            var packageSourceProvider = new PackageSourceProvider(settings);
+
+            return packageSourceProvider.LoadPackageSources()
+                .Where(source => source.TrustedSource != null)
+                .SelectMany(source => source.TrustedSource.Certificates)
+                .Select(certificate =>
+                    new CertificateHashAllowListEntry(VerificationTarget.Primary|VerificationTarget.Counter, certificate.Fingerprint, certificate.FingerprintAlgorithm));
         }
     }
 }

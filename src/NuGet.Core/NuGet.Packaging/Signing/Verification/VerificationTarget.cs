@@ -9,6 +9,6 @@ namespace NuGet.Packaging.Signing
     public enum VerificationTarget
     {
         Primary     = 0x000001,
-        Repository  = 0x000010
+        Counter     = 0x000010
     }
 }

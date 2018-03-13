@@ -593,6 +593,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
+        // TODO: Add tests for countersignatures
+
         private static void AssertOfflineRevocation(IEnumerable<SignatureLog> issues, LogLevel logLevel)
         {
             Assert.Contains(issues, issue =>
