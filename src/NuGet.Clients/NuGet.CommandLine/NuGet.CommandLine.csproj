@@ -29,7 +29,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.XML" />
+    <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.VisualStudio.Setup.Configuration.Interop">
       <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Setup.Configuration.Interop.1.1.142-preview4-29265\lib\net35\Microsoft.VisualStudio.Setup.Configuration.Interop.dll</HintPath>
