@@ -37,7 +37,7 @@ namespace NuGet.Packaging.Test
                 var primarySignature = PrimarySignature.Load(test.PrimarySignedCms.Encode());
 
                 // Validate countersignature
-                var countersignature = RepositoryCountersignature.GetRepositoryCounterSignature(primarySignature);
+                var countersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
                 Assert.Null(countersignature);
             }
@@ -65,7 +65,7 @@ namespace NuGet.Packaging.Test
                 var primarySignature = PrimarySignature.Load(test.PrimarySignedCms.Encode());
 
                 // Validate countersignature
-                var countersignature = RepositoryCountersignature.GetRepositoryCounterSignature(primarySignature);
+                var countersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
                 Assert.Null(countersignature);
             }
@@ -96,7 +96,7 @@ namespace NuGet.Packaging.Test
 
                 // Validate countersignature
                 var exception = Assert.Throws<SignatureException>(
-                     () => RepositoryCountersignature.GetRepositoryCounterSignature(primarySignature));
+                     () => RepositoryCountersignature.GetRepositoryCountersignature(primarySignature));
 
                 Assert.Equal(NuGetLogCode.NU3033, exception.Code);
                 Assert.Equal("A repository primary signature must not have a repository countersignature.", exception.Message);
@@ -144,7 +144,7 @@ namespace NuGet.Packaging.Test
 
                 // Validate countersignature
                 var exception = Assert.Throws<SignatureException>(
-                     () => RepositoryCountersignature.GetRepositoryCounterSignature(primarySignature));
+                     () => RepositoryCountersignature.GetRepositoryCountersignature(primarySignature));
 
                 Assert.Equal(NuGetLogCode.NU3032, exception.Code);
                 Assert.Equal("The package signature contains multiple repository countersignatures.", exception.Message);
@@ -174,7 +174,7 @@ namespace NuGet.Packaging.Test
 
                 // Validate countersignature
                 var exception = Assert.Throws<SignatureException>(
-                     () => RepositoryCountersignature.GetRepositoryCounterSignature(primarySignature));
+                     () => RepositoryCountersignature.GetRepositoryCountersignature(primarySignature));
 
                 Assert.Equal(NuGetLogCode.NU3000, exception.Code);
                 Assert.Equal("Exactly one nuget-v3-service-index-url attribute is required.", exception.Message);
@@ -215,7 +215,7 @@ namespace NuGet.Packaging.Test
 
                 // Validate countersignature
                 var exception = Assert.Throws<SignatureException>(
-                     () => RepositoryCountersignature.GetRepositoryCounterSignature(primarySignature));
+                     () => RepositoryCountersignature.GetRepositoryCountersignature(primarySignature));
 
                 Assert.Equal(NuGetLogCode.NU3000, exception.Code);
                 Assert.Equal("The nuget-v3-service-index-url attribute is invalid.", exception.Message);
@@ -257,7 +257,7 @@ namespace NuGet.Packaging.Test
 
                 // Validate countersignature
                 var exception = Assert.Throws<SignatureException>(
-                     () => RepositoryCountersignature.GetRepositoryCounterSignature(primarySignature));
+                     () => RepositoryCountersignature.GetRepositoryCountersignature(primarySignature));
 
                 Assert.Equal(NuGetLogCode.NU3000, exception.Code);
                 Assert.Equal("The nuget-package-owners attribute is invalid.", exception.Message);
@@ -288,7 +288,7 @@ namespace NuGet.Packaging.Test
                 var primarySignature = PrimarySignature.Load(test.PrimarySignedCms.Encode());
 
                 // Validate countersignature
-                var countersignature = RepositoryCountersignature.GetRepositoryCounterSignature(primarySignature);
+                var countersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
                 Assert.Equal(SignatureType.Repository, countersignature.Type);
             }
@@ -320,7 +320,7 @@ namespace NuGet.Packaging.Test
                 var primarySignature = PrimarySignature.Load(test.PrimarySignedCms.Encode());
 
                 // Validate countersignature
-                var countersignature = RepositoryCountersignature.GetRepositoryCounterSignature(primarySignature);
+                var countersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
                 Assert.Equal(SignatureType.Repository, countersignature.Type);
             }
