@@ -27,6 +27,7 @@ namespace NuGet.CommandLine
         private static readonly XNamespace MSBuildNamespace = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
 
         private readonly static string[] MSBuildVersions = new string[] { "14", "12", "4" };
+        private readonly static TimeSpan TimeOut = TimeSpan.FromSeconds(10);
 
         public static bool IsMsBuildBasedProject(string projectFullPath)
         {
@@ -909,12 +910,12 @@ namespace NuGet.CommandLine
                 return "\"\"";
             }
 
-            var escaped = Regex.Replace(argument, @"(\\*)""", @"$1\$0");
+            var escaped = Regex.Replace(argument, @"(\\*)""", @"$1\$0", RegexOptions.None , TimeOut);
 
             escaped = Regex.Replace(
                 escaped,
                 @"^(.*\s.*?)(\\*)$", @"""$1$2$2""",
-                RegexOptions.Singleline);
+                RegexOptions.Singleline, TimeOut);
 
             return escaped;
         }
@@ -925,8 +926,8 @@ namespace NuGet.CommandLine
             {
                 return "\"\"";
             }
-            var escaped = Regex.Replace(argument, @"(\\*)" + "\"", @"$1$1\" + "\"");
-            escaped = "\"" + Regex.Replace(escaped, @"(\\+)$", @"$1$1") + "\"";
+            var escaped = Regex.Replace(argument, @"(\\*)" + "\"", @"$1$1\" + "\"", RegexOptions.None, TimeOut);
+            escaped = "\"" + Regex.Replace(escaped, @"(\\+)$", @"$1$1", RegexOptions.None, TimeOut) + "\"";
             return escaped;
 
         }

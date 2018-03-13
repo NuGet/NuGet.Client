@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,6 +11,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public static class PathValidator
     {
+        private static readonly TimeSpan TimeOut = TimeSpan.FromSeconds(10);
         private static readonly char[] _invalidPathChars = Path.GetInvalidPathChars();
 
         /// <summary>
@@ -42,7 +43,7 @@ namespace NuGet.PackageManagement.VisualStudio
                       Environment.OSVersion.Platform == PlatformID.Unix))
                 {
                     // Checking driver letter on Windows
-                    if (!Regex.IsMatch(path.Trim(), @"^[A-Za-z]:\\"))
+                    if (!Regex.IsMatch(path.Trim(), @"^[A-Za-z]:\\", RegexOptions.None, TimeOut))
                     {
                         return false;
                     }
@@ -71,7 +72,7 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 Path.GetFullPath(path);
-                return Regex.IsMatch(path.Trim(), @"^\\\\");
+                return Regex.IsMatch(path.Trim(), @"^\\\\", RegexOptions.None, TimeOut);
             }
             catch
             {
@@ -90,7 +91,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Uri result;
 
             // Make sure url starts with protocol:// because Uri.TryCreate() returns true for local and UNC paths even if badly formed.
-            return Regex.IsMatch(url, @"^\w+://", RegexOptions.IgnoreCase) && Uri.TryCreate(url, UriKind.Absolute, out result);
+            return Regex.IsMatch(url, @"^\w+://", RegexOptions.IgnoreCase, TimeOut) && Uri.TryCreate(url, UriKind.Absolute, out result);
         }
 
         public static string GetCanonicalPath(string path)

@@ -56,7 +56,7 @@ namespace NuGet.Common
             return Path.Combine(basePath, wildcard);
         }
 
-        private static Regex WildcardToRegex(string wildcard)
+        private static Regex WildcardToRegex(string wildcard) // TODO NK
         {
             var pattern = Regex.Escape(wildcard);
             if (Path.DirectorySeparatorChar == '/')
@@ -81,7 +81,7 @@ namespace NuGet.Common
                     .Replace(@"\?", "."); // ? translates to a single any character
             }
 
-            return new Regex('^' + pattern + '$', RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+            return new Regex('^' + pattern + '$', RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture); // TODO NK 
         }
 
         public static IEnumerable<string> PerformWildcardSearch(string basePath, string searchPath)
@@ -107,7 +107,7 @@ namespace NuGet.Common
             normalizedBasePath = GetPathToEnumerateFrom(basePath, searchPath);
 
             // Append the basePath to searchPattern and get the search regex. We need to do this because the search regex is matched from line start.
-            Regex searchRegex = WildcardToRegex(Path.Combine(basePath, searchPath));
+            Regex searchRegex = WildcardToRegex(Path.Combine(basePath, searchPath)); // TODO NK 
 
             // This is a hack to prevent enumerating over the entire directory tree if the only wildcard characters are the ones in the file name. 
             // If the path portion of the search path does not contain any wildcard characters only iterate over the TopDirectory.

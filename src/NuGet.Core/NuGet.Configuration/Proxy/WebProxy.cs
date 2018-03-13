@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -67,9 +67,21 @@ namespace NuGet.Configuration
             if (_regExBypassList != null && _regExBypassList.Length > 0)
             {
                 var normalizedUri = uri.Scheme + "://" + uri.Host + ((!uri.IsDefaultPort) ? (":" + uri.Port) : "");
-                return _regExBypassList.Any(r => r.IsMatch(normalizedUri));
-            }
 
+                return _regExBypassList.Any(r => SafeMatch(r,normalizedUri));
+            }
+            return false;
+        }
+
+        private static bool SafeMatch(Regex regex, string value)
+        {
+            try
+            {
+                return regex.IsMatch(value);
+            }
+            catch (RegexMatchTimeoutException)
+            {
+            }
             return false;
         }
 
@@ -77,7 +89,7 @@ namespace NuGet.Configuration
         {
             _regExBypassList = _bypassList?
                 .Select(x => WildcardToRegex(x))
-                .Select(x => new Regex(x, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                .Select(x => new Regex(x, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromSeconds(10))) 
                 .ToArray();
         }
 

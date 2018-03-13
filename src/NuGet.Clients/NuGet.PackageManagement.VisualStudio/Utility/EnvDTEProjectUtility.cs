@@ -361,7 +361,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Need NOT be on the UI thread
 
             var pattern = string.Join(string.Empty, wildcard.Split('.').Select(GetPattern));
-            return new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+            return new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture, TimeSpan.FromSeconds(10));
         }
 
         private static string GetPattern(string token)

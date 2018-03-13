@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -38,7 +38,7 @@ namespace NuGet.Common
                 if (RuntimeEnvironmentHelper.IsWindows)
                 {
                     // Checking driver letter on Windows
-                    if (!Regex.IsMatch(path.Trim(), @"^[A-Za-z]:\\"))
+                    if (!Regex.IsMatch(path.Trim(), @"^[A-Za-z]:\\")) // TODO NK
                     {
                         return false;
                     }
@@ -88,7 +88,7 @@ namespace NuGet.Common
             Uri result;
 
             // Make sure url starts with protocol:// because Uri.TryCreate() returns true for local and UNC paths even if badly formed.
-            return Regex.IsMatch(url, @"^\w+://", RegexOptions.IgnoreCase) && Uri.TryCreate(url, UriKind.Absolute, out result);
+            return Regex.IsMatch(url, @"^\w+://", RegexOptions.IgnoreCase) && Uri.TryCreate(url, UriKind.Absolute, out result); //TODO NK
         }
 
         public static bool IsValidRelativePath(string path)

@@ -1,4 +1,4 @@
-﻿extern alias CoreV2;
+extern alias CoreV2;
 
 using System;
 using System.Collections.Generic;
@@ -136,7 +136,7 @@ namespace NuGet.CommandLine
         private static string RemoveSchemaNamespace(string content)
         {
             // This seems to be the only way to clear out xml namespaces.
-            return Regex.Replace(content, @"(xmlns:?[^=]*=[""][^""]*[""])", String.Empty, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            return Regex.Replace(content, @"(xmlns:?[^=]*=[""][^""]*[""])", String.Empty, RegexOptions.IgnoreCase | RegexOptions.Multiline, TimeSpan.FromSeconds(10)); // no external data here
         }
     }
 }
