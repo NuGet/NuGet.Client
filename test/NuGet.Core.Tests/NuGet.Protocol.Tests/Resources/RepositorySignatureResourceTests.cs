@@ -102,7 +102,7 @@ namespace NuGet.Protocol.Tests
             certInfo.SetupGet(p => p.ContentUrl).Returns(_contentUrl);
 
             var certInfos = new List<IRepositoryCertificateInfo>() { certInfo.Object };
-            return new RepositorySignatureResource(allRepositorySigned: false, repositoryCertInfos: certInfos);
+            return new RepositorySignatureResource(allRepositorySigned: false, RepositoryCertificateInfos: certInfos);
         }
 
         public static void VerifyCertInfo(IRepositoryCertificateInfo certInfo)

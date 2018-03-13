@@ -26,6 +26,9 @@ namespace NuGet.Packaging
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
         IAsyncPackageCoreReader CoreReader { get; }
 
+        /// <summary>
+        /// Gets a signed package reader.
+        /// </summary>
         ISignedPackageReader SignedPackageReader { get; }
 
         /// <summary>

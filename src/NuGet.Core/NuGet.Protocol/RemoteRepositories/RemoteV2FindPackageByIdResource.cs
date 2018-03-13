@@ -75,6 +75,8 @@ namespace NuGet.Protocol
         /// </summary>
         public PackageSource PackageSource { get; }
 
+        public override RepositorySignatureResource RepositorySignatureResource => null;
+
         /// <summary>
         /// Asynchronously gets all package versions for a package ID.
         /// </summary>

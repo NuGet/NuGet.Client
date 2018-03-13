@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -466,6 +467,60 @@ namespace NuGet.Protocol.Tests
             }
         }
 
+        [Fact]
+        public async Task RepositorySign_Basic()
+        {
+            using (var test = RemotePackageArchiveDownloaderTest.Create())
+            {
+                test.Resource.Setup(x => x.CopyNupkgToStreamAsync(
+                        It.IsNotNull<string>(),
+                        It.IsNotNull<NuGetVersion>(),
+                        It.IsNotNull<Stream>(),
+                        It.IsNotNull<SourceCacheContext>(),
+                        It.IsNotNull<ILogger>(),
+                        It.IsAny<CancellationToken>()))
+                    .Callback<string, NuGetVersion, Stream, SourceCacheContext, ILogger, CancellationToken>(
+                        (id, version, stream, cacheContext, logger, cancellationToken) =>
+                        {
+                            var remoteDirectoryPath = Path.Combine(test.TestDirectory.Path, "remote");
+
+                            Directory.CreateDirectory(remoteDirectoryPath);
+
+                            var packageContext = new SimpleTestPackageContext()
+                            {
+                                Id = test.PackageIdentity.Id,
+                                Version = test.PackageIdentity.Version.ToNormalizedString()
+                            };
+
+                            packageContext.AddFile($"lib/net45/{test.PackageIdentity.Id}.dll");
+
+                            SimpleTestPackageUtility.CreatePackages(remoteDirectoryPath, packageContext);
+
+                            var sourcePackageFilePath = Path.Combine(
+                                remoteDirectoryPath,
+                                $"{test.PackageIdentity.Id}.{test.PackageIdentity.Version.ToNormalizedString()}.nupkg");
+
+                            using (var remoteStream = File.OpenRead(sourcePackageFilePath))
+                            {
+                                remoteStream.CopyTo(stream);
+                            }
+                        })
+                    .ReturnsAsync(true);
+
+                var destinationFilePath = Path.Combine(test.TestDirectory.Path, "a");
+
+                await test.Downloader.CopyNupkgFileToAsync(
+                    destinationFilePath,
+                    CancellationToken.None);
+
+                var packageReader = test.Downloader.SignedPackageReader;
+                Assert.False(packageReader.RequiredRepoSign);
+
+                var certInfo = packageReader.RepositoryCertificateInfos.FirstOrDefault();
+                RepositorySignatureResourceTests.VerifyCertInfo(certInfo);
+            }
+        }
+
         private sealed class RemotePackageArchiveDownloaderTest : IDisposable
         {
             internal RemotePackageArchiveDownloader Downloader { get; }
@@ -516,6 +571,7 @@ namespace NuGet.Protocol.Tests
                     $"{_packageIdentity.Id}.{_packageIdentity.Version.ToNormalizedString()}.nupkg");
 
                 var resource = new Mock<FindPackageByIdResource>(MockBehavior.Strict);
+                resource.SetupGet(p => p.RepositorySignatureResource).Returns(RepositorySignatureResourceTests.GetRepositorySignatureResource());
 
                 var downloader = new RemotePackageArchiveDownloader(
                     resource.Object,

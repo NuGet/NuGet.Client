@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,10 +27,12 @@ namespace NuGet.Protocol
                 && packageBaseAddress.Count > 0)
             {
                 var httpSourceResource = await sourceRepository.GetResourceAsync<HttpSourceResource>(token);
+                var repositorySignatureResource = await sourceRepository.GetResourceAsync<RepositorySignatureResource>(token);
 
                 resource = new HttpFileSystemBasedFindPackageByIdResource(
                     packageBaseAddress,
-                    httpSourceResource.HttpSource);
+                    httpSourceResource.HttpSource,
+                    repositorySignatureResource);
             }
 
             return Tuple.Create(resource != null, resource);

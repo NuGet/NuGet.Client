@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -499,7 +500,9 @@ namespace ProjectManagement.Test
 
         private static DownloadResourceResult GetDownloadResourceResult(FileInfo fileInfo)
         {
-            return new DownloadResourceResult(fileInfo.OpenRead());
+            var packageStream = fileInfo.OpenRead();
+
+            return new DownloadResourceResult(packageStream, new PackageArchiveReader(packageStream, leaveStreamOpen: true));
         }
 
         private static JObject BasicConfig

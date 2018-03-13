@@ -454,6 +454,12 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         public override NuspecReader NuspecReader => throw new NotSupportedException();
 
+        public override bool RequiredRepoSign => false;
+
+        public override bool PackageSignatureVerified => true;
+
+        public override IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos => null;
+
         /// <summary>
         /// Asynchronously gets the .nuspec reader.
         /// </summary>

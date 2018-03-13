@@ -36,6 +36,8 @@ namespace NuGet.Protocol
         private readonly IReadOnlyList<Uri> _baseUris;
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
 
+        public override RepositorySignatureResource RepositorySignatureResource { get; }
+
         /// <summary>
         /// Initializes a new <see cref="HttpFileSystemBasedFindPackageByIdResource" /> class.
         /// </summary>
@@ -46,7 +48,8 @@ namespace NuGet.Protocol
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpSource" /> is <c>null</c>.</exception>
         public HttpFileSystemBasedFindPackageByIdResource(
             IReadOnlyList<Uri> baseUris,
-            HttpSource httpSource)
+            HttpSource httpSource,
+            RepositorySignatureResource repositorySignatureResource)
         {
             if (baseUris == null)
             {
@@ -58,18 +61,14 @@ namespace NuGet.Protocol
                 throw new ArgumentException(Strings.OneOrMoreUrisMustBeSpecified, nameof(baseUris));
             }
 
-            if (httpSource == null)
-            {
-                throw new ArgumentNullException(nameof(httpSource));
-            }
-
             _baseUris = baseUris
                 .Take(MaxRetries)
                 .Select(uri => uri.OriginalString.EndsWith("/", StringComparison.Ordinal) ? uri : new Uri(uri.OriginalString + "/"))
                 .ToList();
 
-            _httpSource = httpSource;
+            _httpSource = httpSource ?? throw new ArgumentNullException(nameof(httpSource));
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
+            RepositorySignatureResource = repositorySignatureResource;
         }
 
         /// <summary>

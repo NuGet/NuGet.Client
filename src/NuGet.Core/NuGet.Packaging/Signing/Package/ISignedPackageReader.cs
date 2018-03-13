@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging.Signing
 {
@@ -13,6 +15,15 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public interface ISignedPackageReader : IDisposable
     {
+        /// <summary>
+        /// Return true if the package is needed to be repository signed.
+        /// </summary>
+        bool RequiredRepoSign { get; }
+
+        bool PackageSignatureVerified { get; }
+
+        IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos { get; }
+
         /// <summary>
         /// Get package signature.
         /// </summary>

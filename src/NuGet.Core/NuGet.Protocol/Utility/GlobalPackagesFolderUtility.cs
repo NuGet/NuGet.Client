@@ -52,7 +52,7 @@ namespace NuGet.Protocol
                 {
                     stream = File.Open(nupkgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                     packageReader = new PackageFolderReader(installPath);
-                    return new DownloadResourceResult(stream, packageReader) { SignatureVerified = true };
+                    return new DownloadResourceResult(stream, packageReader);
                 }
                 catch
                 {
@@ -77,6 +77,7 @@ namespace NuGet.Protocol
             PackageIdentity packageIdentity,
             Stream packageStream,
             string globalPackagesFolder,
+            RepositorySignatureResource repositorySignatureResource,
             Guid parentId,
             ILogger logger,
             CancellationToken token)
@@ -117,8 +118,11 @@ namespace NuGet.Protocol
                 stream => packageStream.CopyToAsync(stream, BufferSize, token),
                 versionFolderPathResolver,
                 packageExtractionContext,
-                token,
-                parentId);
+                packageSignatureVerified: true,
+                requiredRepoSign: repositorySignatureResource?.AllRepositorySigned?? false,
+                RepositoryCertificateInfos: repositorySignatureResource?.RepositoryCertificateInfos?? null,
+                token: token,
+                parentId: parentId);
 
             var package = GetPackage(packageIdentity, globalPackagesFolder);
 

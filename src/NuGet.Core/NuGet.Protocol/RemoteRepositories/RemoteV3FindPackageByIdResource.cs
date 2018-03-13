@@ -39,20 +39,11 @@ namespace NuGet.Protocol
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpSource" />
         /// is <c>null</c>.</exception>
-        public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, HttpSource httpSource)
+        public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, HttpSource httpSource, RepositorySignatureResource repositorySignatureResource)
         {
-            if (sourceRepository == null)
-            {
-                throw new ArgumentNullException(nameof(sourceRepository));
-            }
-
-            if (httpSource == null)
-            {
-                throw new ArgumentNullException(nameof(httpSource));
-            }
-
-            SourceRepository = sourceRepository;
-            _httpSource = httpSource;
+            SourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
+            _httpSource = httpSource ?? throw new ArgumentNullException(nameof(httpSource));
+            RepositorySignatureResource = repositorySignatureResource;
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
         }
 
@@ -60,6 +51,8 @@ namespace NuGet.Protocol
         /// Gets the source repository.
         /// </summary>
         public SourceRepository SourceRepository { get; }
+
+        public override RepositorySignatureResource RepositorySignatureResource { get; }
 
         /// <summary>
         /// Asynchronously gets all package versions for a package ID.

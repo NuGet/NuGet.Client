@@ -29,10 +29,10 @@ namespace NuGet.Protocol
         }
 
         // Test only.
-        public RepositorySignatureResource(bool allRepositorySigned, IEnumerable<IRepositoryCertificateInfo> repositoryCertInfos)
+        public RepositorySignatureResource(bool allRepositorySigned, IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos)
         {
             AllRepositorySigned = allRepositorySigned;
-            RepositoryCertificateInfos = repositoryCertInfos;
+            RepositoryCertificateInfos = RepositoryCertificateInfos;
         }
 
     }

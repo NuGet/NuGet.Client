@@ -30,7 +30,8 @@ namespace NuGet.Protocol.Tests
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new RemoteV3FindPackageByIdResource(
                     sourceRepository: null,
-                    httpSource: CreateDummyHttpSource()));
+                    httpSource: CreateDummyHttpSource(),
+                    repositorySignatureResource: null));
 
             Assert.Equal("sourceRepository", exception.ParamName);
         }
@@ -43,7 +44,8 @@ namespace NuGet.Protocol.Tests
                     new SourceRepository(
                         new PackageSource("https://unit.test"),
                         Enumerable.Empty<INuGetResourceProvider>()),
-                    httpSource: null));
+                    httpSource: null,
+                    repositorySignatureResource: null));
 
             Assert.Equal("httpSource", exception.ParamName);
         }
@@ -546,6 +548,20 @@ namespace NuGet.Protocol.Tests
             }
         }
 
+        [Fact]
+        public void GetPackageRepoSignInfo()
+        {
+            using (var test = RemoteV3FindPackageByIdResourceTest.Create())
+            {
+                var repoSignInfo = test.Resource.RepositorySignatureResource;
+
+                Assert.False(repoSignInfo.AllRepositorySigned);
+
+                var certInfo = repoSignInfo.RepositoryCertificateInfos.FirstOrDefault();
+                RepositorySignatureResourceTests.VerifyCertInfo(certInfo);
+            }
+        }
+
         private static HttpSource CreateDummyHttpSource()
         {
             var packageSource = new PackageSource("https://unit.test");
@@ -657,9 +673,11 @@ namespace NuGet.Protocol.Tests
                 };
 
                 var httpSource = new TestHttpSource(packageSource, responses);
+
                 var resource = new RemoteV3FindPackageByIdResource(
                     sourceRepository,
-                    httpSource);
+                    httpSource,
+                    repositorySignatureResource: RepositorySignatureResourceTests.GetRepositorySignatureResource());
 
                 return new RemoteV3FindPackageByIdResourceTest(
                     resource,

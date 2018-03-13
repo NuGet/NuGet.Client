@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -28,7 +29,8 @@ namespace NuGet.Protocol.Tests
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new HttpFileSystemBasedFindPackageByIdResource(
                     baseUris: null,
-                    httpSource: CreateDummyHttpSource()));
+                    httpSource: CreateDummyHttpSource(),
+                    repositorySignatureResource: null));
 
             Assert.Equal("baseUris", exception.ParamName);
         }
@@ -39,7 +41,8 @@ namespace NuGet.Protocol.Tests
             var exception = Assert.Throws<ArgumentException>(
                 () => new HttpFileSystemBasedFindPackageByIdResource(
                     new List<Uri>(),
-                    CreateDummyHttpSource()));
+                    CreateDummyHttpSource(),
+                    repositorySignatureResource: null));
 
             Assert.Equal("baseUris", exception.ParamName);
         }
@@ -50,7 +53,8 @@ namespace NuGet.Protocol.Tests
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new HttpFileSystemBasedFindPackageByIdResource(
                     new List<Uri>() { new Uri("https://unit.test") },
-                    httpSource: null));
+                    httpSource: null,
+                    repositorySignatureResource: null));
 
             Assert.Equal("httpSource", exception.ParamName);
         }
@@ -567,6 +571,20 @@ namespace NuGet.Protocol.Tests
             }
         }
 
+        [Fact]
+        public void GetPackageRepoSignInfo()
+        {
+            using (var test = HttpFileSystemBasedFindPackageByIdResourceTest.Create())
+            {
+                var repoSignInfo = test.Resource.RepositorySignatureResource;
+
+                Assert.False(repoSignInfo.AllRepositorySigned);
+
+                var certInfo = repoSignInfo.RepositoryCertificateInfos.FirstOrDefault();
+                RepositorySignatureResourceTests.VerifyCertInfo(certInfo);
+            }
+        }
+
         private static HttpSource CreateDummyHttpSource()
         {
             var packageSource = new PackageSource("https://unit.test");
@@ -648,7 +666,8 @@ namespace NuGet.Protocol.Tests
                 var httpSource = new TestHttpSource(packageSource, responses);
                 var resource = new HttpFileSystemBasedFindPackageByIdResource(
                     baseUris,
-                    httpSource);
+                    httpSource,
+                    repositorySignatureResource: RepositorySignatureResourceTests.GetRepositorySignatureResource());
 
                 return new HttpFileSystemBasedFindPackageByIdResourceTest(
                     resource,

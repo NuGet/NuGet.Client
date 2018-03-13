@@ -46,20 +46,12 @@ namespace NuGet.Packaging
         /// <param name="compatibilityProvider">A framework compatibility provider.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="frameworkProvider" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="compatibilityProvider" /> is <c>null</c>.</exception>
-        public PackageReaderBase(IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
+        public PackageReaderBase(
+            IFrameworkNameProvider frameworkProvider,
+            IFrameworkCompatibilityProvider compatibilityProvider)
         {
-            if (frameworkProvider == null)
-            {
-                throw new ArgumentNullException(nameof(frameworkProvider));
-            }
-
-            if (compatibilityProvider == null)
-            {
-                throw new ArgumentNullException(nameof(compatibilityProvider));
-            }
-
-            FrameworkProvider = frameworkProvider;
-            CompatibilityProvider = compatibilityProvider;
+            FrameworkProvider = frameworkProvider ?? throw new ArgumentNullException(nameof(frameworkProvider));
+            CompatibilityProvider = compatibilityProvider ?? throw new ArgumentNullException(nameof(compatibilityProvider));
         }
 
         #region IPackageCoreReader implementation
@@ -121,7 +113,6 @@ namespace NuGet.Packaging
                 return _nuspecReader;
             }
         }
-
         #endregion
 
         #region IAsyncPackageCoreReader implementation
@@ -356,6 +347,12 @@ namespace NuGet.Packaging
         }
 
         #endregion
+
+        public abstract bool RequiredRepoSign { get; }
+
+        public abstract bool PackageSignatureVerified { get; }
+
+        public abstract IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos { get; }
 
         /// <summary>
         /// Frameworks mentioned in the package.

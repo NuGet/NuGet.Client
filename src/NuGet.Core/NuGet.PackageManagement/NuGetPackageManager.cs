@@ -2930,7 +2930,9 @@ namespace NuGet.PackageManagement
                         var packagePath = PackagesFolderNuGetProject.GetInstalledPackageFilePath(nuGetProjectAction.PackageIdentity);
                         if (File.Exists(packagePath))
                         {
-                            using (var downloadResourceResult = new DownloadResourceResult(File.OpenRead(packagePath), nuGetProjectAction.SourceRepository?.PackageSource?.Source))
+                            var packageStream = File.OpenRead(packagePath);
+                            using (var downloadResourceResult = new DownloadResourceResult(
+                                File.OpenRead(packagePath), new PackageArchiveReader(packageStream, leaveStreamOpen: true, packageSignatureVerified: true), nuGetProjectAction.SourceRepository?.PackageSource?.Source))
                             {
                                 await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, downloadResourceResult, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                             }

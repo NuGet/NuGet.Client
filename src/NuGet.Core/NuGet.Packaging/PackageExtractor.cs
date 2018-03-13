@@ -17,134 +17,6 @@ namespace NuGet.Packaging
     public static class PackageExtractor
     {
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
-            Stream packageStream,
-            PackagePathResolver packagePathResolver,
-            PackageExtractionContext packageExtractionContext,
-            CancellationToken token,
-            Guid parentId = default(Guid))
-        {
-            if (packageStream == null)
-            {
-                throw new ArgumentNullException(nameof(packageStream));
-            }
-
-            if (!packageStream.CanSeek)
-            {
-                throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
-            }
-
-            if (packagePathResolver == null)
-            {
-                throw new ArgumentNullException(nameof(packagePathResolver));
-            }
-
-            if (packageExtractionContext == null)
-            {
-                throw new ArgumentNullException(nameof(packageExtractionContext));
-            }
-
-            var packageSaveMode = packageExtractionContext.PackageSaveMode;
-            var filesAdded = new List<string>();
-            var nupkgStartPosition = packageStream.Position;
-
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(parentId))
-            {
-                using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
-                {
-                    var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(CancellationToken.None);
-
-                    var installPath = packagePathResolver.GetInstallPath(packageIdentityFromNuspec);
-                    var packageDirectoryInfo = Directory.CreateDirectory(installPath);
-                    var packageDirectory = packageDirectoryInfo.FullName;
-
-                    try
-                    {
-                        telemetry.StartIntervalMeasure();
-
-                        await VerifyPackageSignatureAsync(
-                         telemetry.OperationId,
-                         packageIdentityFromNuspec,
-                         packageExtractionContext,
-                         packageReader,
-                         token);
-
-                        telemetry.EndIntervalMeasure(PackagingConstants.PackageVerifyDurationName);
-                    }
-                    catch (SignatureException)
-                    {
-                        telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Failed,
-                                       ExtractionSource.NuGetFolderProject,
-                                       packageIdentityFromNuspec);
-                        throw;
-                    }
-
-                    var packageFiles = await packageReader.GetPackageFilesAsync(packageSaveMode, token);
-
-                    if ((packageSaveMode & PackageSaveMode.Nuspec) == PackageSaveMode.Nuspec)
-                    {
-                        var sourceNuspecFile = packageFiles.Single(p => PackageHelper.IsManifest(p));
-
-                        var targetNuspecPath = Path.Combine(
-                            packageDirectory,
-                            packagePathResolver.GetManifestFileName(packageIdentityFromNuspec));
-
-                        // Extract the .nuspec file with a well known file name.
-                        filesAdded.Add(packageReader.ExtractFile(
-                            sourceNuspecFile,
-                            targetNuspecPath,
-                            packageExtractionContext.Logger));
-
-                        packageFiles = packageFiles.Except(new[] { sourceNuspecFile });
-                    }
-
-                    var packageFileExtractor = new PackageFileExtractor(packageFiles, packageExtractionContext.XmlDocFileSaveMode);
-
-                    filesAdded.AddRange(await packageReader.CopyFilesAsync(
-                        packageDirectory,
-                        packageFiles,
-                        packageFileExtractor.ExtractPackageFile,
-                        packageExtractionContext.Logger,
-                        token));
-
-                    if ((packageSaveMode & PackageSaveMode.Nupkg) == PackageSaveMode.Nupkg)
-                    {
-                        // During package extraction, nupkg is the last file to be created
-                        // Since all the packages are already created, the package stream is likely positioned at its end
-                        // Reset it to the nupkgStartPosition
-                        packageStream.Seek(nupkgStartPosition, SeekOrigin.Begin);
-
-                        var nupkgFilePath = Path.Combine(
-                            packageDirectory,
-                            packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
-
-                        filesAdded.Add(packageStream.CopyToFile(nupkgFilePath));
-                    }
-
-                    // Now, copy satellite files unless requested to not copy them
-                    if (packageExtractionContext.CopySatelliteFiles)
-                    {
-                        filesAdded.AddRange(await CopySatelliteFilesAsync(
-                            packageReader,
-                            packagePathResolver,
-                            packageSaveMode,
-                            packageExtractionContext,
-                            token));
-                    }
-                    telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                      packageExtractionContext.PackageSaveMode,
-                                      NuGetOperationStatus.Succeeded,
-                                      ExtractionSource.NuGetFolderProject,
-                                      packageIdentityFromNuspec);
-
-                }
-
-                return filesAdded;
-            }
-        }
-
-        public static async Task<IEnumerable<string>> ExtractPackageAsync(
             PackageReaderBase packageReader,
             Stream packageStream,
             PackagePathResolver packagePathResolver,
@@ -371,6 +243,9 @@ namespace NuGet.Packaging
             Func<Stream, Task> copyToAsync,
             VersionFolderPathResolver versionFolderPathResolver,
             PackageExtractionContext packageExtractionContext,
+            bool packageSignatureVerified,
+            bool requiredRepoSign,
+            IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos,
             CancellationToken token,
             Guid parentId = default(Guid))
         {
@@ -459,7 +334,7 @@ namespace NuGet.Packaging
                                     await copyToAsync(nupkgStream);
                                     nupkgStream.Seek(0, SeekOrigin.Begin);
 
-                                    using (var packageReader = new PackageArchiveReader(nupkgStream))
+                                    using (var packageReader = new PackageArchiveReader(nupkgStream, packageSignatureVerified, requiredRepoSign, RepositoryCertificateInfos))
                                     {
                                         if (packageSaveMode.HasFlag(PackageSaveMode.Nuspec) || packageSaveMode.HasFlag(PackageSaveMode.Files))
                                         {
@@ -972,7 +847,7 @@ namespace NuGet.Packaging
             ISignedPackageReader signedPackageReader,
             CancellationToken token)
         {
-            if (packageExtractionContext.SignedPackageVerifier != null)
+            if (packageExtractionContext.SignedPackageVerifier != null && !signedPackageReader.PackageSignatureVerified)
             {
                 var verifyResult = await packageExtractionContext.SignedPackageVerifier.VerifySignaturesAsync(
                        signedPackageReader,

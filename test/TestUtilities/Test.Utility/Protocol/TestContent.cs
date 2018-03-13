@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -11,11 +11,17 @@ namespace Test.Utility
 {
     public class TestContent : HttpContent
     {
-        private MemoryStream _stream;
+        private Stream _stream;
 
         public TestContent(string s)
         {
             _stream = new MemoryStream(Encoding.UTF8.GetBytes(s));
+            _stream.Seek(0, SeekOrigin.Begin);
+        }
+
+        public TestContent(Stream stream)
+        {
+            _stream = stream;
             _stream.Seek(0, SeekOrigin.Begin);
         }
 

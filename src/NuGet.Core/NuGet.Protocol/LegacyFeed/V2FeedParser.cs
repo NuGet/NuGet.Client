@@ -277,8 +277,9 @@ namespace NuGet.Protocol
                 downloadUri,
                 downloadContext,
                 globalPackagesFolder,
-                log,
-                token);
+                repositorySignatureResource: null,
+                logger: log,
+                token: token);
         }
 
         public async Task<DownloadResourceResult> DownloadFromIdentity(
@@ -302,8 +303,9 @@ namespace NuGet.Protocol
                 new Uri(packageInfo.DownloadUrl),
                 downloadContext,
                 globalPackagesFolder,
-                log,
-                token);
+                repositorySignatureResource: null,
+                logger: log,
+                token: token);
         }
 
         /// <summary>
