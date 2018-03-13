@@ -64,9 +64,12 @@ namespace NuGet.Packaging
             }
         }
 
+        public string Source { get; }
+
         /// <summary>
         /// Initializes a new <see cref="LocalPackageArchiveDownloader" /> class.
         /// </summary>
+        /// <param name="source">A package source.</param>
         /// <param name="packageFilePath">A source package archive file path.</param>
         /// <param name="packageIdentity">A package identity.</param>
         /// <param name="logger">A logger.</param>
@@ -77,6 +80,7 @@ namespace NuGet.Packaging
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
         /// is either <c>null</c> or an empty string.</exception>
         public LocalPackageArchiveDownloader(
+            string source,
             string packageFilePath,
             PackageIdentity packageIdentity,
             ILogger logger)
@@ -104,6 +108,7 @@ namespace NuGet.Packaging
             _packageReader = new Lazy<PackageArchiveReader>(GetPackageReader);
             _sourceStream = new Lazy<FileStream>(GetSourceStream);
             _handleExceptionAsync = exception => Task.FromResult(false);
+            Source = source;
         }
 
         /// <summary>

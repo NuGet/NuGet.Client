@@ -32,6 +32,8 @@ namespace NuGet.Protocol
         /// <summary>This API is intended only for testing purposes and should not be used in product code.</summary>
         public IHttpRetryHandler RetryHandler { get; set; } = new HttpRetryHandler();
 
+        public string PackageSource => _packageSource.Source;
+
         public HttpSource(
             PackageSource packageSource,
             Func<Task<HttpHandlerResource>> messageHandlerFactory,

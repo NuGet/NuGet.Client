@@ -79,6 +79,7 @@ namespace NuGet.Protocol
                             if (directDownload)
                             {
                                 return await DirectDownloadAsync(
+                                    client.PackageSource,
                                     identity,
                                     packageStream,
                                     downloadContext,
@@ -87,6 +88,7 @@ namespace NuGet.Protocol
                             else
                             {
                                 return await GlobalPackagesFolderUtility.AddPackageAsync(
+                                    client.PackageSource,
                                     identity,
                                     packageStream,
                                     globalPackagesFolder,
@@ -152,6 +154,7 @@ namespace NuGet.Protocol
         }
 
         private static async Task<DownloadResourceResult> DirectDownloadAsync(
+            string source,
             PackageIdentity packageIdentity,
             Stream packageStream,
             PackageDownloadContext downloadContext,
@@ -204,7 +207,7 @@ namespace NuGet.Protocol
 
                 fileStream.Seek(0, SeekOrigin.Begin);
 
-                return new DownloadResourceResult(fileStream);
+                return new DownloadResourceResult(fileStream, source);
             }
             catch
             {

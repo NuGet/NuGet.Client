@@ -269,7 +269,7 @@ namespace NuGet.Protocol
 
             if (packageInfo != null)
             {
-                packageDownloader = new LocalPackageArchiveDownloader(packageInfo.Path, packageInfo.Identity, logger);
+                packageDownloader = new LocalPackageArchiveDownloader(_source, packageInfo.Path, packageInfo.Identity, logger);
             }
 
             return Task.FromResult(packageDownloader);

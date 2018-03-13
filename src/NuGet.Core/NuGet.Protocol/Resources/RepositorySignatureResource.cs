@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -12,6 +13,7 @@ namespace NuGet.Protocol
 {
     public class RepositorySignatureResource : INuGetResource
     {
+        public string Source { get; }
 
         public bool AllRepositorySigned { get; }
 
@@ -26,6 +28,7 @@ namespace NuGet.Protocol
 
             AllRepositorySigned = allRepositorySigned;
             RepositoryCertificateInfos = data.OfType<JObject>().Select(p => p.FromJToken<RepositoryCertificateInfo>());
+            Source = source.PackageSource.Source;
         }
 
         // Test only.
@@ -33,6 +36,12 @@ namespace NuGet.Protocol
         {
             AllRepositorySigned = allRepositorySigned;
             RepositoryCertificateInfos = repositoryCertInfos;
+        }
+
+        public void UpdateRepositorySignatureInfo()
+        {
+            RepositorySignatureInfoProvider.Instance.AddOrUpdateRepositorySignatureInfo
+                (Source, new RepositorySignatureInfo(AllRepositorySigned, RepositoryCertificateInfos));
         }
 
     }

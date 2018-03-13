@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -46,7 +46,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var token = CancellationToken.None;
 
-                using (var packageStream = GetDownloadResult(packageFileInfo))
+                using (var packageStream = GetDownloadResult(randomPackageSourcePath.Path, packageFileInfo))
                 {
                     // Act
                     await projectA.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -183,7 +183,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var token = CancellationToken.None;
 
-                using (var packageStream = GetDownloadResult(packageFileInfo))
+                using (var packageStream = GetDownloadResult(randomPackageSourcePath.Path, packageFileInfo))
                 {
                     // Act
                     await projectA.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -314,7 +314,7 @@ namespace NuGet.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestPackageSourcePath,
                     testPackage1.Id, testPackage1.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResult(packageFileInfo))
+                using (var packageStream = GetDownloadResult(randomTestPackageSourcePath.Path, packageFileInfo))
                 {
                     // Act
                     await projectB.InstallPackageAsync(testPackage1, packageStream, testNuGetProjectContext, token);
@@ -323,7 +323,7 @@ namespace NuGet.Test
 
                 packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestPackageSourcePath,
                     testPackage2.Id, testPackage2.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResult(packageFileInfo))
+                using (var packageStream = GetDownloadResult(randomTestPackageSourcePath.Path, packageFileInfo))
                 {
                     // Act
                     await projectA.InstallPackageAsync(testPackage2, packageStream, testNuGetProjectContext, token);
@@ -393,9 +393,9 @@ namespace NuGet.Test
             }
         }
 
-        private static DownloadResourceResult GetDownloadResult(FileInfo packageFileInfo)
+        private static DownloadResourceResult GetDownloadResult(string source, FileInfo packageFileInfo)
         {
-            return new DownloadResourceResult(packageFileInfo.OpenRead());
+            return new DownloadResourceResult(packageFileInfo.OpenRead(), source);
         }
     }
 }

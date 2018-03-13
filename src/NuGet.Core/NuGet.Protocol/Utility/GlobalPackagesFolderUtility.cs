@@ -52,7 +52,7 @@ namespace NuGet.Protocol
                 {
                     stream = File.Open(nupkgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                     packageReader = new PackageFolderReader(installPath);
-                    return new DownloadResourceResult(stream, packageReader) { SignatureVerified = true };
+                    return new DownloadResourceResult(stream, packageReader, source: null) { SignatureVerified = true };
                 }
                 catch
                 {
@@ -74,6 +74,7 @@ namespace NuGet.Protocol
         }
 
         public static async Task<DownloadResourceResult> AddPackageAsync(
+            string source,
             PackageIdentity packageIdentity,
             Stream packageStream,
             string globalPackagesFolder,
@@ -113,6 +114,7 @@ namespace NuGet.Protocol
             var versionFolderPathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 
             await PackageExtractor.InstallFromSourceAsync(
+                source,
                 packageIdentity,
                 stream => packageStream.CopyToAsync(stream, BufferSize, token),
                 versionFolderPathResolver,

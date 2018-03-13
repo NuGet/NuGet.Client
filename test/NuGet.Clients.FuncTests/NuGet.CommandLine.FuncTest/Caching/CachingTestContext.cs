@@ -315,12 +315,13 @@ namespace NuGet.CommandLine.Test.Caching
             using (var fileStream = new FileStream(packagePath, FileMode.Open, FileAccess.Read))
             {
                 using (await GlobalPackagesFolderUtility.AddPackageAsync(
-                    identity,
-                    fileStream,
-                    GlobalPackagesPath,
-                    Guid.Empty,
-                    Common.NullLogger.Instance,
-                    CancellationToken.None))
+                    source: null,
+                    packageIdentity: identity,
+                    packageStream: fileStream,
+                    globalPackagesFolder: GlobalPackagesPath,
+                    parentId: Guid.Empty,
+                    logger: Common.NullLogger.Instance,
+                    token: CancellationToken.None))
                 {
                 }
             }

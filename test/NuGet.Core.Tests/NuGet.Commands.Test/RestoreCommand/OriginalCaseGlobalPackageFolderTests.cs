@@ -42,7 +42,7 @@ namespace NuGet.Commands.Test
                     identity.Version.ToString());
 
                 var logger = new TestLogger();
-                var graph = GetRestoreTargetGraph(identity, packagePath, logger);
+                var graph = GetRestoreTargetGraph(sourceDirectory,identity, packagePath, logger);
 
                 var request = GetRestoreRequest(packagesDirectory, logger);
                 var resolver = new VersionFolderPathResolver(packagesDirectory, isLowercase: false);
@@ -79,7 +79,7 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
                 var identityB = new PackageIdentity("PackageB", NuGetVersion.Parse("2.0.0-Beta"));
-                var graph = GetRestoreTargetGraph(identityB, packagePath, logger);
+                var graph = GetRestoreTargetGraph(sourceDirectory, identityB, packagePath, logger);
 
                 // Add the package to the fallback directory.
                 await SimpleTestPackageUtility.CreateFolderFeedV3(fallbackDirectory, identityB);
@@ -117,7 +117,7 @@ namespace NuGet.Commands.Test
                     identity.Version.ToString());
 
                 var logger = new TestLogger();
-                var graph = GetRestoreTargetGraph(identity, packagePath, logger);
+                var graph = GetRestoreTargetGraph(sourceDirectory, identity, packagePath, logger);
 
                 var request = GetRestoreRequest(packagesDirectory, logger);
                 var resolver = new VersionFolderPathResolver(packagesDirectory, isLowercase: false);
@@ -157,8 +157,8 @@ namespace NuGet.Commands.Test
                     identity.Version.ToString());
 
                 var logger = new TestLogger();
-                var graphA = GetRestoreTargetGraph(identity, packagePath, logger);
-                var graphB = GetRestoreTargetGraph(identity, packagePath, logger);
+                var graphA = GetRestoreTargetGraph(sourceDirectory, identity, packagePath, logger);
+                var graphB = GetRestoreTargetGraph(sourceDirectory, identity, packagePath, logger);
 
                 var request = GetRestoreRequest(packagesDirectory, logger);
                 var resolver = new VersionFolderPathResolver(packagesDirectory, isLowercase: false);
@@ -225,6 +225,7 @@ namespace NuGet.Commands.Test
         }
 
         private static RestoreTargetGraph GetRestoreTargetGraph(
+            string source,
             PackageIdentity identity,
             FileInfo packagePath,
             TestLogger logger)
@@ -245,6 +246,7 @@ namespace NuGet.Commands.Test
                     (callbackIdentity, sourceCacheContext, callbackLogger, cancellationToken) =>
                     {
                         packageDependency = new LocalPackageArchiveDownloader(
+                            source,
                             packagePath.FullName,
                             callbackIdentity,
                             callbackLogger);

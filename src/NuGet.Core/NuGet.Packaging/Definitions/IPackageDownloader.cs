@@ -28,6 +28,8 @@ namespace NuGet.Packaging
 
         ISignedPackageReader SignedPackageReader { get; }
 
+        string Source { get; }
+
         /// <summary>
         /// Asynchronously copies a .nupkg to a target file path.
         /// </summary>

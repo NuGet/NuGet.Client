@@ -32,6 +32,7 @@ namespace NuGet.Protocol.Tests
             {
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => new RemotePackageArchiveDownloader(
+                        null,
                         resource: null,
                         packageIdentity: _packageIdentity,
                         cacheContext: sourceCacheContext,
@@ -48,6 +49,7 @@ namespace NuGet.Protocol.Tests
             {
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => new RemotePackageArchiveDownloader(
+                        null,
                         Mock.Of<FindPackageByIdResource>(),
                         packageIdentity: null,
                         cacheContext: sourceCacheContext,
@@ -62,6 +64,7 @@ namespace NuGet.Protocol.Tests
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new RemotePackageArchiveDownloader(
+                    null,
                     Mock.Of<FindPackageByIdResource>(),
                     _packageIdentity,
                     cacheContext: null,
@@ -77,6 +80,7 @@ namespace NuGet.Protocol.Tests
             {
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => new RemotePackageArchiveDownloader(
+                        null,
                         Mock.Of<FindPackageByIdResource>(),
                         _packageIdentity,
                         sourceCacheContext,
@@ -518,6 +522,7 @@ namespace NuGet.Protocol.Tests
                 var resource = new Mock<FindPackageByIdResource>(MockBehavior.Strict);
 
                 var downloader = new RemotePackageArchiveDownloader(
+                    testDirectory.Path,
                     resource.Object,
                     _packageIdentity,
                     sourceCacheContext,

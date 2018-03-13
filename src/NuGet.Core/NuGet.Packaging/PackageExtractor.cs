@@ -17,6 +17,7 @@ namespace NuGet.Packaging
     public static class PackageExtractor
     {
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
+            string source,
             Stream packageStream,
             PackagePathResolver packagePathResolver,
             PackageExtractionContext packageExtractionContext,
@@ -145,6 +146,7 @@ namespace NuGet.Packaging
         }
 
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
+            string source,
             PackageReaderBase packageReader,
             Stream packageStream,
             PackagePathResolver packagePathResolver,
@@ -253,6 +255,7 @@ namespace NuGet.Packaging
         }
 
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
+            string source,
             PackageReaderBase packageReader,
             PackagePathResolver packagePathResolver,
             PackageExtractionContext packageExtractionContext,
@@ -367,6 +370,7 @@ namespace NuGet.Packaging
         /// resulted in no copy operation.
         /// </returns>
         public static async Task<bool> InstallFromSourceAsync(
+            string source,
             PackageIdentity packageIdentity,
             Func<Stream, Task> copyToAsync,
             VersionFolderPathResolver versionFolderPathResolver,

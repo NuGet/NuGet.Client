@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using Newtonsoft.Json.Linq;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using Test.Utility;
@@ -86,6 +87,71 @@ namespace NuGet.Protocol.Tests
 
             // Act & Assert
             Assert.Throws<FatalProtocolException>(() => new RepositorySignatureResource(jobject, repo));
+        }
+
+        [Fact]
+        public async Task RepositorySignatureResource_RepositorySignatureInfo()
+        {
+            // Arrange
+            var source = $"http://unit.test/{Guid.NewGuid()}/v3-with-flat-container/index.json";
+            var responses = new Dictionary<string, string>();
+            responses.Add(source, JsonData.repoSignIndexJsonData);
+            responses.Add("https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.repoSignData);
+
+            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+
+            // Act
+            var repositorySignatureResource = await repo.GetResourceAsync<RepositorySignatureResource>();
+            repositorySignatureResource.UpdateRepositorySignatureInfo();
+
+            // Assert
+
+            var repositorySignatureInfo = RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source);
+
+            Assert.False(repositorySignatureInfo.AllRepositorySigned);
+            Assert.NotNull(repositorySignatureInfo.RepositoryCertificateInfos);
+            Assert.Equal(1, repositorySignatureInfo.RepositoryCertificateInfos.Count());
+
+            var certInfo = repositorySignatureInfo.RepositoryCertificateInfos.FirstOrDefault();
+            VerifyCertInfo(certInfo);
+        }
+
+        [Fact]
+        public async Task RepositorySignatureResource_RepositorySignatureInfoConcurrency()
+        {
+            // Arrange
+            var source1 = $"http://unit.test/{Guid.NewGuid()}1/v3-with-flat-container/index.json";
+            var source2 = $"http://unit.test/{Guid.NewGuid()}2/v3-with-flat-container/index.json";
+            var source3 = $"http://unit.test/{Guid.NewGuid()}3/v3-with-flat-container/index.json";
+
+            var sources = new List<string>() { source1, source2, source3 };
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(source1, JsonData.repoSignIndexJsonData);
+            responses.Add(source2, JsonData.repoSignIndexJsonData);
+            responses.Add(source3, JsonData.repoSignIndexJsonData);
+
+            responses.Add("https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.repoSignData);
+
+            var repos = sources.Select(p => StaticHttpHandler.CreateSource(p, Repository.Provider.GetCoreV3(), responses));
+
+            // Act
+            var findPackageByIdResourceTasks = repos.Select(p => p.GetResourceAsync<FindPackageByIdResource>());
+
+            await Task.WhenAll(findPackageByIdResourceTasks);
+
+            // Assert
+            var repositorySignatureInfo1 = RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source1);
+            var repositorySignatureInfo2 = RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source2);
+            var repositorySignatureInfo3 = RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source3);
+
+            var repositorySignatureInfos = new List<RepositorySignatureInfo>() { repositorySignatureInfo1, repositorySignatureInfo2, repositorySignatureInfo3 };
+
+            Assert.True(repositorySignatureInfos.All(p => p.AllRepositorySigned == false));
+            Assert.True(repositorySignatureInfos.All(p => p.RepositoryCertificateInfos != null));
+            Assert.True(repositorySignatureInfos.All(p => p.RepositoryCertificateInfos.Count() == 1));
+
+            repositorySignatureInfos.ForEach(p => VerifyCertInfo(p.RepositoryCertificateInfos.FirstOrDefault()));
         }
 
         public static RepositorySignatureResource GetRepositorySignatureResource()

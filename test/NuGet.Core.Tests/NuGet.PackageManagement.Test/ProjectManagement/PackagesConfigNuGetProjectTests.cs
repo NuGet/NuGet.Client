@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -318,7 +318,7 @@ namespace ProjectManagement.Test
 
         private static DownloadResourceResult GetDownloadResourceResult()
         {
-            return new DownloadResourceResult(Stream.Null);
+            return new DownloadResourceResult(Stream.Null, null);
         }
     }
 }

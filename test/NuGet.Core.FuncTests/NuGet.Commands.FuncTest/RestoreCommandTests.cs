@@ -443,6 +443,7 @@ namespace NuGet.Commands.FuncTest
                 var packageIdentity = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
 
                 using (var packageDownloader = new LocalPackageArchiveDownloader(
+                    workingDir,
                     packagePath,
                     packageIdentity,
                     logger))

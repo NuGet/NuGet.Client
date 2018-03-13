@@ -181,6 +181,7 @@ namespace NuGet.ProjectManagement
                         {
                             addedPackageFilesList.AddRange(
                                 await PackageExtractor.ExtractPackageAsync(
+                                    downloadResourceResult.PackageSource,
                                     downloadResourceResult.PackageReader,
                                     PackagePathResolver,
                                     packageExtractionContext,
@@ -191,6 +192,7 @@ namespace NuGet.ProjectManagement
                         {
                             addedPackageFilesList.AddRange(
                                 await PackageExtractor.ExtractPackageAsync(
+                                    downloadResourceResult.PackageSource,
                                     downloadResourceResult.PackageReader,
                                     downloadResourceResult.PackageStream,
                                     PackagePathResolver,
@@ -203,6 +205,7 @@ namespace NuGet.ProjectManagement
                     {
                         addedPackageFilesList.AddRange(
                             await PackageExtractor.ExtractPackageAsync(
+                                downloadResourceResult.PackageSource,
                                 downloadResourceResult.PackageStream,
                                 PackagePathResolver,
                                 packageExtractionContext,
