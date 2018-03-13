@@ -507,4 +507,14 @@ Valid from:</comment>
   <data name="UnexpectedPackageSignatureVerificationError" xml:space="preserve">
     <value>An unexpected error occurred while verifying a package signature.</value>
   </data>
+  <data name="RangeOutOfBoundsForArray" xml:space="preserve">
+    <value>Arguments {0} and {1} were out of bounds for the array.</value>
+    <comment>{0} and {1} are parameter names</comment>
+  </data>
+  <data name="StreamMustBeReadable" xml:space="preserve">
+    <value>The stream must be readable.</value>
+  </data>
+  <data name="StreamMustBeSeekable" xml:space="preserve">
+    <value>The stream must be seekable.</value>
+  </data>
 </root>

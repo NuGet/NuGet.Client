@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 
 // ZIP specification: http://www.pkware.com/documents/casestudies/APPNOTE.TXT
@@ -26,11 +27,9 @@ namespace NuGet.Packaging.Signing
 
         internal static EndOfCentralDirectoryRecord Read(BinaryReader reader)
         {
-            reader.BaseStream.Seek(offset: -22, origin: SeekOrigin.End);
+            SeekToEndOfCentralDirectoryRecord(reader);
 
-            SignedPackageArchiveIOUtility.SeekReaderBackwardToMatchByteSignature(reader, BitConverter.GetBytes(Signature));
-
-            var header = new EndOfCentralDirectoryRecord();
+             var header = new EndOfCentralDirectoryRecord();
 
             header.OffsetFromStart = reader.BaseStream.Position;
 
@@ -46,6 +45,68 @@ namespace NuGet.Packaging.Signing
             header.FileComment = reader.ReadBytes(header.FileCommentLength);
 
             return header;
+        }
+
+        private static void SeekToEndOfCentralDirectoryRecord(BinaryReader reader)
+        {
+            var byteSignature = BitConverter.GetBytes(Signature);
+            var length = reader.BaseStream.Length;
+
+            if (length < byteSignature.Length)
+            {
+                ThrowByteSignatureNotFoundException(byteSignature);
+            }
+
+            const int DefaultBufferSize = 4096;
+
+            var bufferSize = (int)Math.Min(length, DefaultBufferSize);
+            var matchingByteCount = 0;
+
+            // Read backwards from the end of stream in adjacent, non-overlapping chunks of size "bufferSize",
+            // and search backwards for the byte signature.
+            // Note:  position is 0-based, while bufferSize is 1-based.
+            for (var position = length - bufferSize; position >= 0; position -= bufferSize)
+            {
+                reader.BaseStream.Position = position;
+
+                var buffer = reader.ReadBytes(bufferSize);
+
+                for (var i = buffer.Length - 1; i >= 0; --i)
+                {
+                    if (buffer[i] == byteSignature[byteSignature.Length - matchingByteCount - 1])
+                    {
+                        ++matchingByteCount;
+
+                        if (matchingByteCount == byteSignature.Length)
+                        {
+                            reader.BaseStream.Position = position + i;
+
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        matchingByteCount = 0;
+                    }
+                }
+
+                bufferSize = (int)Math.Min(position, bufferSize);
+
+                if (bufferSize == 0)
+                {
+                    break;
+                }
+            }
+
+            ThrowByteSignatureNotFoundException(byteSignature);
+        }
+
+        private static void ThrowByteSignatureNotFoundException(byte[] signature)
+        {
+            throw new InvalidDataException(
+                string.Format(CultureInfo.CurrentCulture,
+                Strings.ErrorByteSignatureNotFound,
+                BitConverter.ToString(signature).Replace("-", "")));
         }
     }
 }
