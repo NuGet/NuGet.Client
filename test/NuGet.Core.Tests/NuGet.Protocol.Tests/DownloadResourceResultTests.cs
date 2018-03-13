@@ -82,7 +82,7 @@ namespace NuGet.Protocol.Tests
         public void Constructor_Stream_ThrowsForNullStream()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new DownloadResourceResult(stream: null));
+                () => new DownloadResourceResult(stream: null, source: null));
 
             Assert.Equal("stream", exception.ParamName);
         }
@@ -90,7 +90,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public void Constructor_Stream_InitializesProperties()
         {
-            using (var result = new DownloadResourceResult(Stream.Null))
+            using (var result = new DownloadResourceResult(Stream.Null, source: null))
             {
                 Assert.Null(result.PackageReader);
                 Assert.Null(result.PackageSource);
@@ -135,7 +135,7 @@ namespace NuGet.Protocol.Tests
             using (var packageReader = new TestPackageReader())
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => new DownloadResourceResult(stream: null, packageReader: packageReader));
+                    () => new DownloadResourceResult(stream: null, packageReader: packageReader, source: null));
 
                 Assert.Equal("stream", exception.ParamName);
             }
@@ -144,7 +144,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public void Constructor_StreamPackageReaderBase_AllowsNullPackageReader()
         {
-            using (var result = new DownloadResourceResult(Stream.Null, packageReader: null))
+            using (var result = new DownloadResourceResult(Stream.Null, packageReader: null, source: null))
             {
                 Assert.Null(result.PackageReader);
             }
@@ -154,7 +154,7 @@ namespace NuGet.Protocol.Tests
         public void Constructor_StreamPackageReaderBase_InitializesProperties()
         {
             using (var packageReader = new TestPackageReader())
-            using (var result = new DownloadResourceResult(Stream.Null, packageReader))
+            using (var result = new DownloadResourceResult(Stream.Null, packageReader, source: null))
             {
                 Assert.Same(packageReader, result.PackageReader);
                 Assert.Null(result.PackageSource);
@@ -202,7 +202,7 @@ namespace NuGet.Protocol.Tests
         public void Dispose_IsIdempotent()
         {
             using (var stream = new TestStream())
-            using (var result = new DownloadResourceResult(stream))
+            using (var result = new DownloadResourceResult(stream, source: null))
             {
                 result.Dispose();
                 result.Dispose();

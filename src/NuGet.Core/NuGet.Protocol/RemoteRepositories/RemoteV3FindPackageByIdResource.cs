@@ -287,7 +287,7 @@ namespace NuGet.Protocol
                 return null;
             }
 
-            return new RemotePackageArchiveDownloader(this, packageInfo.Identity, cacheContext, logger);
+            return new RemotePackageArchiveDownloader(SourceRepository.PackageSource.Source, this, packageInfo.Identity, cacheContext, logger);
         }
 
         private async Task<RemoteSourceDependencyInfo> GetPackageInfoAsync(

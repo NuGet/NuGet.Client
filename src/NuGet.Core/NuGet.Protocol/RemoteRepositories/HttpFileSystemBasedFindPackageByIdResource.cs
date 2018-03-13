@@ -295,7 +295,7 @@ namespace NuGet.Protocol
             PackageInfo packageInfo;
             if (packageInfos.TryGetValue(packageIdentity.Version, out packageInfo))
             {
-                return new RemotePackageArchiveDownloader(this, packageInfo.Identity, cacheContext, logger);
+                return new RemotePackageArchiveDownloader(_httpSource.PackageSource, this, packageInfo.Identity, cacheContext, logger);
             }
 
             return null;

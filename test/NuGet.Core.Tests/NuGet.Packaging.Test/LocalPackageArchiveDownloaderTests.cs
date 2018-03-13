@@ -23,9 +23,10 @@ namespace NuGet.Packaging.Test
         {
             var exception = Assert.Throws<ArgumentException>(
                 () => new LocalPackageArchiveDownloader(
-                    packageFilePath,
-                    new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0")),
-                    NullLogger.Instance));
+                    source: null,
+                    packageFilePath: packageFilePath,
+                    packageIdentity: new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0")),
+                    logger: NullLogger.Instance));
 
             Assert.Equal("packageFilePath", exception.ParamName);
         }
@@ -35,6 +36,7 @@ namespace NuGet.Packaging.Test
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new LocalPackageArchiveDownloader(
+                    source: null,
                     packageFilePath: "a",
                     packageIdentity: null,
                     logger: NullLogger.Instance));
@@ -47,6 +49,7 @@ namespace NuGet.Packaging.Test
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new LocalPackageArchiveDownloader(
+                    source: null,
                     packageFilePath: "a",
                     packageIdentity: new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0")),
                     logger: null));
@@ -412,6 +415,7 @@ namespace NuGet.Packaging.Test
                     $"{packageIdentity.Id}.{packageIdentity.Version.ToNormalizedString()}.nupkg");
 
                 var downloader = new LocalPackageArchiveDownloader(
+                    testDirectory.Path,
                     sourcePackageFilePath,
                     packageIdentity,
                     NullLogger.Instance);

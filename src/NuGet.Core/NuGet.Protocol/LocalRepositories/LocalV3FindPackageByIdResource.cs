@@ -295,7 +295,7 @@ namespace NuGet.Protocol
                 var packagePath = _resolver.GetPackageFilePath(packageIdentity.Id, matchedVersion);
                 var matchedPackageIdentity = new PackageIdentity(packageIdentity.Id, matchedVersion);
 
-                packageDependency = new LocalPackageArchiveDownloader(packagePath, matchedPackageIdentity, logger);
+                packageDependency = new LocalPackageArchiveDownloader(_source, packagePath, matchedPackageIdentity, logger);
             }
 
             return Task.FromResult(packageDependency);

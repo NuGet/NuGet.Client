@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,6 +26,10 @@ namespace NuGet.Protocol
             {
                 var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
                 var client = httpSourceResource.HttpSource;
+
+                // Repository signature information init
+                var repositorySignatureResource = await source.GetResourceAsync<RepositorySignatureResource>(token);
+                repositorySignatureResource?.UpdateRepositorySignatureInfo();
 
                 // If index.json contains a flat container resource use that to directly
                 // construct package download urls.

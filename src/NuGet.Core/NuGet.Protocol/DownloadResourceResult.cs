@@ -58,16 +58,6 @@ namespace NuGet.Protocol.Core.Types
         /// Initializes a new <see cref="DownloadResourceResult" /> class.
         /// </summary>
         /// <param name="stream">A package stream.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream" /> is <c>null</c>.</exception>
-        public DownloadResourceResult(Stream stream)
-            : this(stream, source: null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new <see cref="DownloadResourceResult" /> class.
-        /// </summary>
-        /// <param name="stream">A package stream.</param>
         /// <param name="packageReader">A package reader.</param>
         /// <param name="source">A package source.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream" /> is <c>null</c>.</exception>
@@ -75,17 +65,6 @@ namespace NuGet.Protocol.Core.Types
             : this(stream, source)
         {
             _packageReader = packageReader;
-        }
-
-        /// <summary>
-        /// Initializes a new <see cref="DownloadResourceResult" /> class.
-        /// </summary>
-        /// <param name="stream">A package stream.</param>
-        /// <param name="packageReader">A package reader.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream" /> is <c>null</c>.</exception>
-        public DownloadResourceResult(Stream stream, PackageReaderBase packageReader)
-            : this(stream, packageReader, source: null)
-        {
         }
 
         /// <summary>

@@ -208,9 +208,10 @@ namespace NuGet.Protocol.Core.Types
                         var versionFolderPathResolver = new VersionFolderPathResolver(source);
 
                         using (var packageDownloader = new LocalPackageArchiveDownloader(
-                            packagePath,
-                            packageIdentity,
-                            logger))
+                            source: null,
+                            packageFilePath: packagePath,
+                            packageIdentity: packageIdentity,
+                            logger: logger))
                         {
                             // Set Empty parentId here.
                             await PackageExtractor.InstallFromSourceAsync(

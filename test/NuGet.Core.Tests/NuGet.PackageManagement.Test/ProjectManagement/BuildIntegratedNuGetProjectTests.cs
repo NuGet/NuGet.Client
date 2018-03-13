@@ -252,7 +252,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath.Path, packageFileInfo))
                 {
                     // Act
                     await buildIntegratedProject.InstallPackageAsync(
@@ -298,7 +298,7 @@ namespace ProjectManagement.Test
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
                 var packageFileInfo2 = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath.Path, packageFileInfo))
                 {
                     await buildIntegratedProject.InstallPackageAsync(
                         packageIdentity.Id,
@@ -352,7 +352,7 @@ namespace ProjectManagement.Test
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
                 var packageFileInfo2 = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath.Path, packageFileInfo))
                 {
                     await buildIntegratedProject.InstallPackageAsync(
                         packageIdentity.Id,
@@ -497,9 +497,9 @@ namespace ProjectManagement.Test
             }
         }
 
-        private static DownloadResourceResult GetDownloadResourceResult(FileInfo fileInfo)
+        private static DownloadResourceResult GetDownloadResourceResult(string source, FileInfo fileInfo)
         {
-            return new DownloadResourceResult(fileInfo.OpenRead());
+            return new DownloadResourceResult(fileInfo.OpenRead(), source);
         }
 
         private static JObject BasicConfig

@@ -105,7 +105,7 @@ namespace NuGet.ProjectManagement.Test
                 var nupkgFilePath = Path.Combine(packageInstallPath, packagePathResolver.GetPackageFileName(packageIdentity));
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var token = CancellationToken.None;
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestSourcePath, packageFileInfo))
                 {
                     // Act
                     await folderNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -183,7 +183,7 @@ namespace NuGet.ProjectManagement.Test
                 var nupkgFilePath = Path.Combine(packageInstallPath, packagePathResolver.GetPackageFileName(packageIdentity));
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var token = CancellationToken.None;
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestSourcePath, packageFileInfo))
                 {
                     // Act
                     await folderNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -240,7 +240,7 @@ namespace NuGet.ProjectManagement.Test
                 var nupkgFilePath = Path.Combine(packageInstallPath, packagePathResolver.GetPackageFileName(packageIdentity));
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var token = CancellationToken.None;
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestSourcePath, packageFileInfo))
                 {
                     // Act
                     await folderNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -333,7 +333,7 @@ namespace NuGet.ProjectManagement.Test
                 var nupkgFilePath = Path.Combine(packageInstallPath, packagePathResolver.GetPackageFileName(packageIdentity));
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var token = CancellationToken.None;
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestSourcePath, packageFileInfo))
                 {
                     // Act
                     await folderNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -613,7 +613,7 @@ namespace NuGet.ProjectManagement.Test
                 var nupkgFilePath = Path.Combine(packageInstallPath, packagePathResolver.GetPackageFileName(packageIdentity));
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var token = CancellationToken.None;
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestSourcePath, packageFileInfo))
                 {
                     // Act
                     await folderNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -671,7 +671,7 @@ namespace NuGet.ProjectManagement.Test
                 };
 
                 var token = CancellationToken.None;
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestSourcePath, packageFileInfo))
                 {
                     // Act
                     await folderNuGetProject.InstallPackageAsync(
@@ -738,7 +738,7 @@ namespace NuGet.ProjectManagement.Test
                 };
 
                 var token = CancellationToken.None;
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestSourcePath, packageFileInfo))
                 {
                     // Act
                     await folderNuGetProject.InstallPackageAsync(
@@ -848,9 +848,9 @@ namespace NuGet.ProjectManagement.Test
             }
         }
 
-        private static DownloadResourceResult GetDownloadResourceResult(FileInfo fileInfo)
+        private static DownloadResourceResult GetDownloadResourceResult(string source, FileInfo fileInfo)
         {
-            return new DownloadResourceResult(fileInfo.OpenRead());
+            return new DownloadResourceResult(fileInfo.OpenRead(), source);
         }
 
         private sealed class FolderNuGetProjectTest : IDisposable
@@ -862,6 +862,8 @@ namespace NuGet.ProjectManagement.Test
             internal PackagePathResolver Resolver { get; }
             internal TestDirectory TestDirectory { get; }
 
+            internal string Source { get; }
+
             internal FolderNuGetProjectTest(bool useSideBySidePaths = true)
             {
                 PackageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
@@ -870,12 +872,12 @@ namespace NuGet.ProjectManagement.Test
                 Resolver = new PackagePathResolver(ProjectDirectory.FullName, useSideBySidePaths);
                 Project = new FolderNuGetProject(ProjectDirectory.FullName, Resolver);
 
-                var sourcePackageDirectoryPath = Path.Combine(TestDirectory.Path, "source");
+                Source = Path.Combine(TestDirectory.Path, "source");
 
-                Directory.CreateDirectory(sourcePackageDirectoryPath);
+                Directory.CreateDirectory(Source);
 
                 Package = TestPackagesGroupedByFolder.GetLegacyTestPackage(
-                    sourcePackageDirectoryPath,
+                    Source,
                     PackageIdentity.Id,
                     PackageIdentity.Version.ToNormalizedString());
             }
@@ -898,7 +900,7 @@ namespace NuGet.ProjectManagement.Test
 
             internal async Task InstallAsync(PackageSaveMode packageSaveMode)
             {
-                using (var result = GetDownloadResourceResult(Package))
+                using (var result = GetDownloadResourceResult(Source, Package))
                 {
                     var projectContext = new TestNuGetProjectContext();
 

@@ -95,7 +95,7 @@ namespace ProjectManagement.Test
                 var packageFileInfo = TestPackagesGroupedByFolder.GetPackageWithEmptyFolders(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
 
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(
@@ -153,7 +153,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -203,7 +203,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -256,7 +256,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackageWithMultipleReferences(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -298,7 +298,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackageWithMultipleReferences(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -332,7 +332,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackageWithMultipleReferences(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
                 }
@@ -369,7 +369,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackageWithMultipleReferences(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
                 }
@@ -416,7 +416,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -467,7 +467,7 @@ namespace ProjectManagement.Test
                 Exception exception = null;
                 try
                 {
-                    using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                    using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                     {
                         // Act
                         await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -518,7 +518,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetPackageWithFrameworkReference(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -570,7 +570,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -622,7 +622,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetContentPackageWithTargetFramework(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -674,7 +674,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -738,7 +738,7 @@ namespace ProjectManagement.Test
                 var packageFileInfo = TestPackagesGroupedByFolder.GetPackageWithPPFiles(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
 
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -789,7 +789,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetPackageWithPPFiles(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -874,7 +874,7 @@ namespace ProjectManagement.Test
     </system.webServer>
 </configuration>
 ");
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -953,7 +953,7 @@ namespace ProjectManagement.Test
     </system.web>
 </configuration>
 ");
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1040,7 +1040,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetPackageWithBuildFiles(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1089,7 +1089,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetPackageWithBuildFiles(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1155,7 +1155,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetPackageWithPowershellScripts(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1207,7 +1207,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetPackageWithPowershellScripts(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     testNuGetProjectContext.ActionType = NuGetActionType.Uninstall;
@@ -1283,7 +1283,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacySolutionLevelPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1331,7 +1331,7 @@ namespace ProjectManagement.Test
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacySolutionLevelPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
 
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     testNuGetProjectContext.ActionType = NuGetActionType.Install;
@@ -1399,7 +1399,7 @@ namespace ProjectManagement.Test
 
                 try
                 {
-                    using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                    using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                     {
                         // Act
                         await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1451,7 +1451,7 @@ namespace ProjectManagement.Test
                 Exception exception = null;
                 try
                 {
-                    using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                    using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                     {
                         // Act
                         await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1498,7 +1498,7 @@ namespace ProjectManagement.Test
                 var packageFileInfo = TestPackagesGroupedByFolder.GetEmptyPackageWithDependencies(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
 
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1538,7 +1538,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1588,7 +1588,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1655,7 +1655,7 @@ namespace ProjectManagement.Test
                     packageIdentity.Id,
                     packageIdentity.Version.ToNormalizedString());
 
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act Install
                     await
@@ -1737,7 +1737,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     testNuGetProjectContext.ActionType = NuGetActionType.Install;
@@ -1802,7 +1802,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     testNuGetProjectContext.ActionType = NuGetActionType.Install;
@@ -1838,7 +1838,7 @@ namespace ProjectManagement.Test
                 // since the last package was uninstalled
                 Assert.False(File.Exists(packagesProjectNameConfigPath));
 
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     testNuGetProjectContext.ActionType = NuGetActionType.Uninstall;
@@ -1886,7 +1886,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetNet45TestPackageWithDummyFile(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1931,7 +1931,7 @@ namespace ProjectManagement.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetTestPackageWithDummyFile(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                using (var packageStream = GetDownloadResourceResult(randomTestPackageSourcePath, packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1958,9 +1958,9 @@ namespace ProjectManagement.Test
             Assert.Equal(expected, actual);
         }
 
-        private static DownloadResourceResult GetDownloadResourceResult(FileInfo fileInfo)
+        private static DownloadResourceResult GetDownloadResourceResult(string source, FileInfo fileInfo)
         {
-            return new DownloadResourceResult(fileInfo.OpenRead());
+            return new DownloadResourceResult(fileInfo.OpenRead(), source);
         }
 
         private class TestMSBuildNuGetProject

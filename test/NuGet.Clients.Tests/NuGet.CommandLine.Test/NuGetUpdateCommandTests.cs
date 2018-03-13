@@ -88,7 +88,7 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -98,7 +98,7 @@ namespace NuGet.CommandLine.Test
 
                 using (var stream = File.OpenRead(b1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         b1,
                         downloadResult,
@@ -180,7 +180,7 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -286,7 +286,7 @@ namespace NuGet.CommandLine.Test
 
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject1.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -296,7 +296,7 @@ namespace NuGet.CommandLine.Test
 
                 using (var stream = File.OpenRead(b1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject2.InstallPackageAsync(
                         b1,
                         downloadResult,
@@ -388,7 +388,7 @@ namespace NuGet.CommandLine.Test
 
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject1.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -484,7 +484,7 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -563,7 +563,7 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -651,7 +651,7 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -742,7 +742,7 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a2Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a2,
                         downloadResult,
@@ -826,7 +826,7 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -906,7 +906,7 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -987,7 +987,7 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -1105,7 +1105,7 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject1.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -1195,7 +1195,7 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject1.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -1315,7 +1315,7 @@ namespace NuGet.CommandLine.Test
 
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject1.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -1325,7 +1325,7 @@ namespace NuGet.CommandLine.Test
 
                 using (var stream = File.OpenRead(b1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject2.InstallPackageAsync(
                         b1,
                         downloadResult,

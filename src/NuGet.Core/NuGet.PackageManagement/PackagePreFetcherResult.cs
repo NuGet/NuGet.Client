@@ -182,12 +182,13 @@ namespace NuGet.PackageManagement
             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
         }
 
-        private static DownloadResourceResult GetPackagesFolderResult(string nupkgPath)
+        private DownloadResourceResult GetPackagesFolderResult(string nupkgPath)
         {
             // Create a download result for the package that already exists
             return new DownloadResourceResult(
                 File.OpenRead(nupkgPath),
-                new PackageArchiveReader(nupkgPath))
+                new PackageArchiveReader(nupkgPath),
+                Source?.Source)
             { SignatureVerified = true };
         }
     }
