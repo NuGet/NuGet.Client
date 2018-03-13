@@ -111,7 +111,7 @@ namespace NuGet.Test.Utility
             var tempStream = stream;
             var isUsingTempStream = false;
 
-            if (packageContext.AuthorSignatureCertificate != null)
+            if (packageContext.PrimarySignatureCertificate != null)
             {
                 tempStream = new MemoryStream();
                 isUsingTempStream = true;
@@ -239,9 +239,21 @@ namespace NuGet.Test.Utility
                 using (var signPackage = new SignedPackageArchive(tempStream, stream))
                 {
 #if IS_DESKTOP
-                    using (var request = new AuthorSignPackageRequest(new X509Certificate2(packageContext.AuthorSignatureCertificate), HashAlgorithmName.SHA256))
+                    using (var request = new AuthorSignPackageRequest(new X509Certificate2(packageContext.PrimarySignatureCertificate), HashAlgorithmName.SHA256))
                     {
                         AddSignatureToPackageAsync(signPackage, request, testLogger).Wait();
+                    }
+
+                    if (packageContext.RepositoryCountersignatureCertificate != null && packageContext.V3ServiceIndexUrl != null)
+                    {
+                        using (var request = new RepositorySignPackageRequest(packageContext.RepositoryCountersignatureCertificate,
+                                                                                HashAlgorithmName.SHA256,
+                                                                                HashAlgorithmName.SHA256,
+                                                                                packageContext.V3ServiceIndexUrl,
+                                                                                packageContext.PackageOwners))
+                        {
+                            AddRepositoryCountersignatureToSignedPackageAsync(signPackage, request, testLogger).Wait();
+                        }
                     }
 #endif
                 }
@@ -269,6 +281,26 @@ namespace NuGet.Test.Utility
                 await package.AddSignatureAsync(stream, CancellationToken.None);
 #endif
             }
+        }
+
+        private static async Task AddRepositoryCountersignatureToSignedPackageAsync(ISignedPackage package, RepositorySignPackageRequest request, ILogger logger)
+        {
+#if IS_DESKTOP
+            var primarySignature = await package.GetPrimarySignatureAsync(CancellationToken.None);
+
+            if (primarySignature != null)
+            {
+                var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
+
+                var signature = await testSignatureProvider.CreateRepositoryCountersignatureAsync(request, primarySignature, logger, CancellationToken.None);
+
+                using (var stream = new MemoryStream(signature.GetBytes()))
+                {
+
+                    await package.AddSignatureAsync(stream, CancellationToken.None);
+                }
+            }
+#endif
         }
 
         /// <summary>

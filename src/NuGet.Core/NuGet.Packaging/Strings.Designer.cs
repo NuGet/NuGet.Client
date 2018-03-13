@@ -206,11 +206,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A repository primary signature should not have a repository countersignatures..
+        ///   Looks up a localized string similar to A repository primary signature must not have a repository countersignature..
         /// </summary>
-        internal static string Error_RepositorySignatureShouldNotHaveARepositoryCountersignature {
+        internal static string Error_RepositorySignatureMustNotHaveARepositoryCountersignature {
             get {
-                return ResourceManager.GetString("Error_RepositorySignatureShouldNotHaveARepositoryCountersignature", resourceCulture);
+                return ResourceManager.GetString("Error_RepositorySignatureMustNotHaveARepositoryCountersignature", resourceCulture);
             }
         }
         
@@ -895,6 +895,15 @@ namespace NuGet.Packaging {
         internal static string SignedPackageNotSignedOnVerify {
             get {
                 return ResourceManager.GetString("SignedPackageNotSignedOnVerify", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package already contains a repository countersignature. Please remove the existing signature before adding a new repository countersignature..
+        /// </summary>
+        internal static string SignedPackagePackageAlreadyCountersigned {
+            get {
+                return ResourceManager.GetString("SignedPackagePackageAlreadyCountersigned", resourceCulture);
             }
         }
         

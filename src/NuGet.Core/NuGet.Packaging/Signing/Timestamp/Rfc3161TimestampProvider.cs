@@ -51,16 +51,27 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamps data present in the TimestampRequest.
         /// </summary>
-        public Task<PrimarySignature> TimestampPrimarySignatureAsync(TimestampRequest request, ILogger logger, CancellationToken token)
+        public Task<PrimarySignature> TimestampSignatureAsync(PrimarySignature primarySignature, TimestampRequest request, ILogger logger, CancellationToken token)
         {
-            var timestampedSignature = TimestampData(request, logger, token);
-            return Task.FromResult(PrimarySignature.Load(timestampedSignature));
+            var bytes = GetEncodedTimestampCmsForData(request, logger, token);
+            using (var signatureNativeCms = NativeCms.Decode(primarySignature.GetBytes()))
+            {
+                if (request.TimestampSignaturePlacement == SignaturePlacement.Countersignature)
+                {
+                    signatureNativeCms.AddTimestampToRepositoryCountersignature(bytes);
+                }
+                else
+                {
+                    signatureNativeCms.AddTimestamp(bytes);
+                }
+                return Task.FromResult(PrimarySignature.Load(signatureNativeCms.Encode()));
+            }
         }
 
         /// <summary>
         /// Timestamps data present in the TimestampRequest.
         /// </summary>
-        public byte[] TimestampData(TimestampRequest request, ILogger logger, CancellationToken token)
+        public byte[] GetEncodedTimestampCmsForData(TimestampRequest request, ILogger logger, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -74,52 +85,41 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            // Get the signatureValue from the signerInfo object
-            using (var nativeCms = NativeCms.Decode(request.Signature))
-            {
-                var signatureValue = nativeCms.GetPrimarySignatureSignatureValue();
-                var messageHash = request.TimestampHashAlgorithm.ComputeHash(signatureValue);
+            // Allows us to track the request.
+            var nonce = GenerateNonce();
+            var rfc3161TimestampRequest = new Rfc3161TimestampRequest(
+                request.SignatureMessageHash,
+                request.TimestampHashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(),
+                nonce: nonce,
+                requestSignerCertificates: true);
 
-                // Allows us to track the request.
-                var nonce = GenerateNonce();
-                var rfc3161TimestampRequest = new Rfc3161TimestampRequest(
-                    messageHash,
-                    request.TimestampHashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(),
-                    nonce: nonce,
-                    requestSignerCertificates: true);
+            // Request a timestamp
+            // The response status need not be checked here as lower level api will throw if the response is invalid
+            var timestampToken = rfc3161TimestampRequest.SubmitRequest(
+                _timestamperUrl,
+                TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
 
-                // Request a timestamp
-                // The response status need not be checked here as lower level api will throw if the response is invalid
-                var timestampToken = rfc3161TimestampRequest.SubmitRequest(
-                    _timestamperUrl,
-                    TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
+            // quick check for response validity
+            ValidateTimestampResponse(nonce, request.SignatureMessageHash, timestampToken);
 
-                // quick check for response validity
-                ValidateTimestampResponse(nonce, messageHash, timestampToken);
+            var timestampCms = timestampToken.AsSignedCms();
+            ValidateTimestampCms(request.SigningSpec, timestampCms);
 
-                var timestampCms = timestampToken.AsSignedCms();
-                ValidateTimestampCms(request.SigningSpec, timestampCms);
+            // If the timestamp signed CMS already has a complete chain for the signing certificate,
+            // it's ready to be added to the signature to be timestamped.
+            // However, a timestamp service is not required to include all certificates in a complete
+            // chain for the signing certificate in the SignedData.certificates collection.
+            // Some timestamp services include all certificates except the root in the
+            // SignedData.certificates collection.
+            var signerInfo = timestampCms.SignerInfos[0];
+            var chain = CertificateChainUtility.GetCertificateChain(
+                signerInfo.Certificate,
+                timestampCms.Certificates,
+                logger,
+                CertificateType.Timestamp);
 
-                // If the timestamp signed CMS already has a complete chain for the signing certificate,
-                // it's ready to be added to the signature to be timestamped.
-                // However, a timestamp service is not required to include all certificates in a complete
-                // chain for the signing certificate in the SignedData.certificates collection.
-                // Some timestamp services include all certificates except the root in the
-                // SignedData.certificates collection.
-                var signerInfo = timestampCms.SignerInfos[0];
-                var chain = CertificateChainUtility.GetCertificateChain(
-                    signerInfo.Certificate,
-                    timestampCms.Certificates,
-                    logger,
-                    CertificateType.Timestamp);
-
-                var timestampCmsWithChainCertificates = EnsureCertificatesInCertificatesCollection(timestampCms, chain);
-                var bytes = timestampCmsWithChainCertificates.Encode();
-
-                nativeCms.AddTimestamp(bytes);
-
-                return nativeCms.Encode();
-            }
+            var timestampCmsWithChainCertificates = EnsureCertificatesInCertificatesCollection(timestampCms, chain);
+            return timestampCmsWithChainCertificates.Encode();
         }
 
         private static SignedCms EnsureCertificatesInCertificatesCollection(
@@ -223,7 +223,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamp a signature.
         /// </summary>
-        public Task<PrimarySignature> TimestampPrimarySignatureAsync(TimestampRequest timestampRequest, ILogger logger, CancellationToken token)
+        public Task<PrimarySignature> TimestampSignatureAsync(PrimarySignature primarySignature, TimestampRequest timestampRequest, ILogger logger, CancellationToken token)
         {
             throw new NotImplementedException();
         }

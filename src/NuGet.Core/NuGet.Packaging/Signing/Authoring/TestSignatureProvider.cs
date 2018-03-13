@@ -21,5 +21,10 @@ namespace NuGet.Packaging.Signing
         {
             return Task.FromResult(_signature);
         }
+
+        public Task<PrimarySignature> CreateRepositoryCountersignatureAsync(RepositorySignPackageRequest request, PrimarySignature primarySignature, ILogger logger, CancellationToken token)
+        {
+            return Task.FromResult(_signature);
+        }
     }
 }

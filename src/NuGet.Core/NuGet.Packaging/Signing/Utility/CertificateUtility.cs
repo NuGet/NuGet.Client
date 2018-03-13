@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -306,6 +307,18 @@ namespace NuGet.Packaging.Signing
 
                 return true;
             }
+        }
+
+        public static IReadOnlyList<byte[]> GetRawDataForCollection(X509Certificate2Collection certificates)
+        {
+            var certificatesRawData = new List<byte[]>();
+
+            foreach (var certificate in certificates)
+            {
+                certificatesRawData.Add(certificate.RawData);
+            }
+
+            return certificatesRawData.AsReadOnly();
         }
     }
 }

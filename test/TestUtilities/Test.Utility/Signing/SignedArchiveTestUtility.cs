@@ -150,6 +150,47 @@ namespace Test.Utility.Signing
             }
         }
 
+        public static async Task<bool> IsRepositoryCountersignedAsync(Stream package)
+        {
+            using (var reader = new PackageArchiveReader(package, leaveStreamOpen: true))
+            {
+                var primarySignature = await reader.GetPrimarySignatureAsync(CancellationToken.None);
+                if (primarySignature != null)
+                {
+#if IS_DESKTOP
+                    return RepositoryCountersignature.HasRepositoryCounterSignature(primarySignature);
+#endif
+                }
+
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// Adds a Repository countersignature to a given primary signature
+        /// </summary>
+        /// <param name="testCert">Certificate to be used while generating the countersignature.</param>
+        /// <param name="primarySignature">Primary signature to add countersignature.</param>
+        /// <param name="timestampProvider">An optional timestamp provider.</param>
+        /// <returns></returns>
+        public static async Task<PrimarySignature> RepositoryCountersignPrimarySignatureAsync(
+            X509Certificate2 testCert,
+            PrimarySignature primarySignature,
+            ITimestampProvider timestampProvider = null)
+        {
+            var testLogger = new TestLogger();
+            var hashAlgorithm = HashAlgorithmName.SHA256;
+            var v3ServiceIndexUrl = new Uri("https://testv3serviceIndex.url/api/index.json");
+
+            using (var request = new RepositorySignPackageRequest(testCert, hashAlgorithm, hashAlgorithm, v3ServiceIndexUrl, null))
+            {
+                var testSignatureProvider = new X509SignatureProvider(timestampProvider);
+
+                return await testSignatureProvider.CreateRepositoryCountersignatureAsync(request, primarySignature, testLogger, CancellationToken.None);
+            }
+        }
+
         /// <summary>
         /// Sign a package for test purposes.
         /// This does not timestamp a signature and can be used outside corp network.
@@ -225,6 +266,19 @@ namespace Test.Utility.Signing
             return await signatureProvider.CreatePrimarySignatureAsync(request, signatureContent, testLogger, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Adds a repository countersignature for a given primary signature for tests.
+        /// </summary>
+        /// <param name="signatureProvider">Signature proivider to create the repository countersignature.</param>
+        /// <param name="signature">Primary signature to add the repository countersignature.</param>
+        /// <param name="request">RepositorySignPackageRequest containing the metadata for the signature request.</param>
+        /// <param name="testLogger">ILogger.</param>
+        /// <returns>Primary signature with a repository countersignature.</returns>
+        public static async Task<PrimarySignature> RepositoryCountersignPrimarySignatureAsync(ISignatureProvider signatureProvider, PrimarySignature signature, RepositorySignPackageRequest request, TestLogger testLogger)
+        {
+            return await signatureProvider.CreateRepositoryCountersignatureAsync(request, signature, testLogger, CancellationToken.None);
+        }
+
 #if IS_DESKTOP
         private static SignatureContent CreateSignatureContent(FileInfo packageFile)
         {
@@ -276,7 +330,6 @@ namespace Test.Utility.Signing
 
             return signedPackageFile;
         }
-#endif
 
         /// <summary>
         /// Timestamps a signature for tests.
@@ -288,16 +341,19 @@ namespace Test.Utility.Signing
         /// <returns>Timestamped Signature.</returns>
         public static Task<PrimarySignature> TimestampPrimarySignature(ITimestampProvider timestampProvider, SignPackageRequest signatureRequest, PrimarySignature signature, ILogger logger)
         {
-            var timestampRequest = new TimestampRequest
-            {
-                Signature = signature.GetBytes(),
-                SigningSpec = SigningSpecifications.V1,
-                TimestampHashAlgorithm = signatureRequest.TimestampHashAlgorithm
-            };
+            var signatureValue = signature.GetSignatureValue();
+            var messageHash = signatureRequest.TimestampHashAlgorithm.ComputeHash(signatureValue);
+
+            var timestampRequest = new TimestampRequest(
+                signingSpec: SigningSpecifications.V1,
+                signatureMessageHash: messageHash,
+                timestampHashAlgorithm: signatureRequest.TimestampHashAlgorithm,
+                timestampSignaturePlacement: SignaturePlacement.PrimarySignature
+            );
 
             return TimestampPrimarySignature(timestampProvider, timestampRequest, signature, logger);
         }
-
+#endif
         /// <summary>
         /// Timestamps a signature for tests.
         /// </summary>
@@ -308,7 +364,7 @@ namespace Test.Utility.Signing
         /// <returns>Timestamped Signature.</returns>
         public static Task<PrimarySignature> TimestampPrimarySignature(ITimestampProvider timestampProvider, TimestampRequest timestampRequest, PrimarySignature signature, ILogger logger)
         {
-            return timestampProvider.TimestampPrimarySignatureAsync(timestampRequest, logger, CancellationToken.None);
+            return timestampProvider.TimestampSignatureAsync(signature, timestampRequest, logger, CancellationToken.None);
         }
 
         /// <summary>

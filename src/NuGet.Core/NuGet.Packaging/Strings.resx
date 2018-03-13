@@ -529,8 +529,8 @@ Valid from:</comment>
     <value>nuget-v3-service-index-url: {0}</value>
     <comment>0- The nuget-v3-service-index-url value</comment>
   </data>
-  <data name="Error_RepositorySignatureShouldNotHaveARepositoryCountersignature" xml:space="preserve">
-    <value>A repository primary signature should not have a repository countersignatures.</value>
+  <data name="Error_RepositorySignatureMustNotHaveARepositoryCountersignature" xml:space="preserve">
+    <value>A repository primary signature must not have a repository countersignature.</value>
   </data>
   <data name="InvalidRepositoryCounterSignature" xml:space="preserve">
     <value>The repository countersignature is invalid.</value>
@@ -561,5 +561,8 @@ Valid from:</comment>
   </data>
   <data name="StreamMustBeSeekable" xml:space="preserve">
     <value>The stream must be seekable.</value>
+  </data>
+  <data name="SignedPackagePackageAlreadyCountersigned" xml:space="preserve">
+    <value>The package already contains a repository countersignature. Please remove the existing signature before adding a new repository countersignature.</value>
   </data>
 </root>
