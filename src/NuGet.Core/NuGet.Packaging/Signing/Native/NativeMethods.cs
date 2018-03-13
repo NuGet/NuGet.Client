@@ -41,8 +41,7 @@ namespace NuGet.Packaging.Signing
             SafeCryptMsgHandle hCryptMsg,
             uint dwIndex,
             int cCountersigners,
-            CMSG_SIGNER_ENCODE_INFO rgCountersigners
-            );
+            CMSG_SIGNER_ENCODE_INFO rgCountersigners);
 
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380219(v=vs.85).aspx
         [DllImport("crypt32.dll", SetLastError = true)]
@@ -236,14 +235,6 @@ namespace NuGet.Packaging.Signing
         internal Rfc3161TimestampWin32.CRYPTOAPI_BLOB EncryptedHash;
         internal CRYPT_ATTRIBUTES AuthAttrs;
         internal CRYPT_ATTRIBUTES UnauthAttrs;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct REPOSITORY_COUNTER_SIGNER_INFO
-    {
-        public int dwUnauthAttrIndex;
-        public CRYPT_ATTRIBUTE_STRING UnauthAttr;
-        public CMSG_SIGNER_INFO SignerInfo;
     }
 
     [Flags]

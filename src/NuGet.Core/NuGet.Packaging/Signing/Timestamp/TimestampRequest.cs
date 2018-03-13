@@ -14,29 +14,29 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Signing Specification for this timestamp request.
         /// </summary>
-        public SigningSpecifications SigningSpec { get; }
+        public SigningSpecifications SigningSpecifications { get; }
 
         /// <summary>
-        /// Hash of Signature that needs to be timestamped.
+        /// Gets the hashed message to be timestamped.
         /// </summary>
-        public byte[] SignatureMessageHash { get; }
+        public byte[] HashedMessage { get; }
 
         /// <summary>
-        /// Hash algorithm to be used for timestamping.
+        /// Gets the hash algorithm used to generate <see cref="HashedMessage" />.
         /// </summary>
-        public HashAlgorithmName TimestampHashAlgorithm { get; }
+        public HashAlgorithmName HashAlgorithm { get; }
 
         /// <summary>
-        /// Placement of signature to be timestamped.
+        /// Gets the target signature for the timestamp
         /// </summary>
-        public SignaturePlacement TimestampSignaturePlacement { get; }
+        public SignaturePlacement Target { get; }
 
-        public TimestampRequest(SigningSpecifications signingSpec, byte[] signatureMessageHash, HashAlgorithmName timestampHashAlgorithm, SignaturePlacement timestampSignaturePlacement)
+        public TimestampRequest(SigningSpecifications signingSpecifications, byte[] hashedMessage, HashAlgorithmName hashAlgorithm, SignaturePlacement target)
         {
-            SigningSpec = signingSpec ?? throw new ArgumentNullException(nameof(signingSpec));
-            SignatureMessageHash = signatureMessageHash ?? throw new ArgumentNullException(nameof(signatureMessageHash));
-            TimestampHashAlgorithm = timestampHashAlgorithm;
-            TimestampSignaturePlacement = timestampSignaturePlacement;
+            SigningSpecifications = signingSpecifications ?? throw new ArgumentNullException(nameof(signingSpecifications));
+            HashedMessage = hashedMessage ?? throw new ArgumentNullException(nameof(hashedMessage));
+            HashAlgorithm = hashAlgorithm;
+            Target = target;
         }
     }
 }

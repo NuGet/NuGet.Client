@@ -200,15 +200,24 @@ namespace NuGet.Packaging.Signing
                     primarySignature = await package.GetPrimarySignatureAsync(token);
                     isSigned = primarySignature != null;
 
-                    var isRepositoryCounterSignature = IsRepositoryCounterSignature(signRequest.SignatureType, primarySignature);
-                    if (isRepositoryCounterSignature)
+                    if (signRequest.SignatureType == SignatureType.Repository && primarySignature != null)
                     {
+                        if (primarySignature.Type == SignatureType.Repository)
+                        {
+                            throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureMustNotHaveARepositoryCountersignature);
+                        }
+
+                        if (SignatureUtility.HasRepositoryCountersignature(primarySignature))
+                        {
+                            throw new SignatureException(NuGetLogCode.NU3032, Strings.SignedPackagePackageAlreadyCountersigned);
+                        }
+
                         signaturePlacement = SignaturePlacement.Countersignature;
                     }
 
-                    if (isSigned && !options.Overwrite && !isRepositoryCounterSignature)
+                    if (isSigned && !options.Overwrite && signaturePlacement != SignaturePlacement.Countersignature)
                     {
-                        throw new SignatureException(NuGetLogCode.NU3001, Strings.SignedPackagePackageAlreadySigned);
+                        throw new SignatureException(NuGetLogCode.NU3001, Strings.SignedPackageAlreadySigned);
                     }
                 }
 
@@ -259,26 +268,6 @@ namespace NuGet.Packaging.Signing
 
                 FileUtility.Delete(tempPackageFile.FullName);
             }
-        }
-
-        private static bool IsRepositoryCounterSignature(SignatureType requestSignatureType, PrimarySignature existingPrimarySignature)
-        {
-            if (requestSignatureType == SignatureType.Repository && existingPrimarySignature != null)
-            {
-                if (existingPrimarySignature.Type == SignatureType.Repository)
-                {
-                    throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureMustNotHaveARepositoryCountersignature);
-                }
-
-                if (RepositoryCountersignature.HasRepositoryCounterSignature(existingPrimarySignature))
-                {
-                    throw new SignatureException(NuGetLogCode.NU3032, Strings.SignedPackagePackageAlreadyCountersigned);
-                }
-
-                return true;
-            }
-
-            return false;
         }
 
         private static SignatureContent GenerateSignatureContent(Common.HashAlgorithmName hashAlgorithmName, byte[] zipArchiveHash)

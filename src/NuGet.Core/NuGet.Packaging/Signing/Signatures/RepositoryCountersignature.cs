@@ -73,22 +73,6 @@ namespace NuGet.Packaging.Signing
             return repositoryCountersignature;
         }
 
-        public static bool HasRepositoryCounterSignature(PrimarySignature primarySignature)
-        {
-            var counterSignatures = primarySignature.SignerInfo.CounterSignerInfos;
-
-            foreach (var counterSignature in counterSignatures)
-            {
-                var countersignatureType = AttributeUtility.GetSignatureType(counterSignature.SignedAttributes);
-                if (countersignatureType == SignatureType.Repository)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         public override byte[] GetSignatureValue()
         {
             using (var nativeCms = NativeCms.Decode(_primarySignature.GetBytes()))

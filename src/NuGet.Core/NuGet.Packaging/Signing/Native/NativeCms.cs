@@ -17,6 +17,13 @@ namespace NuGet.Packaging.Signing
     {
         private readonly SafeCryptMsgHandle _handle;
 
+        private struct RepositoryCounterSignerInfo
+        {
+            public uint dwUnauthAttrIndex;
+            public CRYPT_ATTRIBUTE_STRING UnauthAttr;
+            public CMSG_SIGNER_INFO SignerInfo;
+        }
+
         private NativeCms(SafeCryptMsgHandle handle)
         {
             _handle = handle;
@@ -70,7 +77,7 @@ namespace NuGet.Packaging.Signing
             return countersignatureSignatureValue;
         }
 
-        private unsafe REPOSITORY_COUNTER_SIGNER_INFO? GetRepositoryCountersignature()
+        private unsafe RepositoryCounterSignerInfo? GetRepositoryCountersignature()
         {
             const uint primarySignerInfoIndex = 0;
             uint unsignedAttributeCount = 0;
@@ -101,7 +108,7 @@ namespace NuGet.Packaging.Signing
 
                 var unsignedAttributes = Marshal.PtrToStructure<CRYPT_ATTRIBUTES>(pointer);
 
-                for (var i = 0; i < unsignedAttributes.cAttr; ++i)
+                for (uint i = 0; i < unsignedAttributes.cAttr; ++i)
                 {
                     var attributePointer = new IntPtr(
                         (long)unsignedAttributes.rgAttr + (i * Marshal.SizeOf<CRYPT_ATTRIBUTE_STRING>()));
@@ -143,7 +150,7 @@ namespace NuGet.Packaging.Signing
 
                         if (IsRepositoryCounterSignerInfo(counterSignerInfo))
                         {
-                            return new REPOSITORY_COUNTER_SIGNER_INFO()
+                            return new RepositoryCounterSignerInfo()
                             {
                                 dwUnauthAttrIndex = i,
                                 UnauthAttr = attribute,
@@ -254,7 +261,7 @@ namespace NuGet.Packaging.Signing
             }
         }
 #if IS_DESKTOP
-        internal unsafe void AddCounterSignature(CmsSigner cmsSigner, CngKey privateKey)
+        internal unsafe void AddCountersignature(CmsSigner cmsSigner, CngKey privateKey)
         {
             using (var hb = new HeapBlockRetainer())
             {
@@ -272,13 +279,12 @@ namespace NuGet.Packaging.Signing
 #endif
 
 #if IS_DESKTOP
-        internal unsafe void AddTimestampToRepositoryCountersignature(byte[] timestampCms)
+        internal unsafe void AddTimestampToRepositoryCountersignature(SignedCms timestamp)
         {
             using (var hb = new HeapBlockRetainer())
             {
-                // Get the repository countersignature data
-                var repositoryCounterSiganture = GetRepositoryCountersignature();
-                if (repositoryCounterSiganture == null)
+                var repositoryCountersignature = GetRepositoryCountersignature();
+                if (repositoryCountersignature == null)
                 {
                     throw new SignatureException(Strings.Error_NotOneRepositoryCounterSignature);
                 }
@@ -287,7 +293,7 @@ namespace NuGet.Packaging.Signing
                 var countersignatureDelAttr = new CMSG_CTRL_DEL_SIGNER_UNAUTH_ATTR_PARA()
                 {
                     dwSignerIndex = 0,
-                    dwUnauthAttrIndex = (uint)repositoryCounterSiganture.Value.dwUnauthAttrIndex
+                    dwUnauthAttrIndex = repositoryCountersignature.Value.dwUnauthAttrIndex
                 };
 
                 countersignatureDelAttr.cbSize = (uint)Marshal.SizeOf(countersignatureDelAttr);
@@ -304,11 +310,11 @@ namespace NuGet.Packaging.Signing
                 }
 
                 // Add timestamp attribute to existing unsigned attributes
-                var signerInfo = repositoryCounterSiganture.Value.SignerInfo;
-                var unauthAttrCount = (int)signerInfo.UnauthAttrs.cAttr + 1;
+                var signerInfo = repositoryCountersignature.Value.SignerInfo;
+                var unauthAttrCount = signerInfo.UnauthAttrs.cAttr + 1;
 
                 var attributeSize = Marshal.SizeOf<CRYPT_ATTRIBUTE>();
-                var attributesArray = (CRYPT_ATTRIBUTE*)hb.Alloc(attributeSize * unauthAttrCount);
+                var attributesArray = (CRYPT_ATTRIBUTE*)hb.Alloc((int)(attributeSize * unauthAttrCount));
                 var currentAttribute = attributesArray;
 
                 // Copy existing unsigned attributes
@@ -326,11 +332,11 @@ namespace NuGet.Packaging.Signing
                 }
 
                 // Add timestamp attribute
-                *currentAttribute = GetCryptAttributeForData(timestampCms, Oids.SignatureTimeStampTokenAttribute, hb);
+                *currentAttribute = GetCryptAttributeForData(timestamp.Encode(), Oids.SignatureTimeStampTokenAttribute, hb);
 
                 signerInfo.UnauthAttrs = new CRYPT_ATTRIBUTES()
                 {
-                    cAttr = (uint)unauthAttrCount,
+                    cAttr = unauthAttrCount,
                     rgAttr = new IntPtr(attributesArray)
                 };
 
@@ -403,13 +409,12 @@ namespace NuGet.Packaging.Signing
                 }
             }
         }
-#endif
 
-        internal unsafe void AddTimestamp(byte[] timestampCms)
+        internal unsafe void AddTimestamp(SignedCms timestamp)
         {
             using (var hb = new HeapBlockRetainer())
             {
-                var timestampAttr = GetCryptAttributeForData(timestampCms, Oids.SignatureTimeStampTokenAttribute, hb);
+                var timestampAttr = GetCryptAttributeForData(timestamp.Encode(), Oids.SignatureTimeStampTokenAttribute, hb);
                 var timestampAddAttr = CreateUnsignedAddAttribute(timestampAttr, hb);
 
                 timestampAddAttr.cbSize = (uint)Marshal.SizeOf(timestampAddAttr);
@@ -426,6 +431,7 @@ namespace NuGet.Packaging.Signing
                 }
             }
         }
+#endif
 
         private static CRYPT_ATTRIBUTE GetCryptAttributeForData(byte[] data, string attributeOid, HeapBlockRetainer hb)
         {

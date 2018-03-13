@@ -311,7 +311,7 @@ namespace NuGet.Packaging.Signing
 
         public static IReadOnlyList<byte[]> GetRawDataForCollection(X509Certificate2Collection certificates)
         {
-            var certificatesRawData = new List<byte[]>();
+            var certificatesRawData = new List<byte[]>(capacity: certificates.Count);
 
             foreach (var certificate in certificates)
             {

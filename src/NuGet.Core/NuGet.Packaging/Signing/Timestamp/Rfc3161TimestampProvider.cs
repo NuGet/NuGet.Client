@@ -53,16 +53,16 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public Task<PrimarySignature> TimestampSignatureAsync(PrimarySignature primarySignature, TimestampRequest request, ILogger logger, CancellationToken token)
         {
-            var bytes = GetEncodedTimestampCmsForData(request, logger, token);
+            var timestampCms = GetTimestamp(request, logger, token);
             using (var signatureNativeCms = NativeCms.Decode(primarySignature.GetBytes()))
             {
-                if (request.TimestampSignaturePlacement == SignaturePlacement.Countersignature)
+                if (request.Target == SignaturePlacement.Countersignature)
                 {
-                    signatureNativeCms.AddTimestampToRepositoryCountersignature(bytes);
+                    signatureNativeCms.AddTimestampToRepositoryCountersignature(timestampCms);
                 }
                 else
                 {
-                    signatureNativeCms.AddTimestamp(bytes);
+                    signatureNativeCms.AddTimestamp(timestampCms);
                 }
                 return Task.FromResult(PrimarySignature.Load(signatureNativeCms.Encode()));
             }
@@ -71,7 +71,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamps data present in the TimestampRequest.
         /// </summary>
-        public byte[] GetEncodedTimestampCmsForData(TimestampRequest request, ILogger logger, CancellationToken token)
+        public SignedCms GetTimestamp(TimestampRequest request, ILogger logger, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -88,8 +88,8 @@ namespace NuGet.Packaging.Signing
             // Allows us to track the request.
             var nonce = GenerateNonce();
             var rfc3161TimestampRequest = new Rfc3161TimestampRequest(
-                request.SignatureMessageHash,
-                request.TimestampHashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(),
+                request.HashedMessage,
+                request.HashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(),
                 nonce: nonce,
                 requestSignerCertificates: true);
 
@@ -100,10 +100,10 @@ namespace NuGet.Packaging.Signing
                 TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
 
             // quick check for response validity
-            ValidateTimestampResponse(nonce, request.SignatureMessageHash, timestampToken);
+            ValidateTimestampResponse(nonce, request.HashedMessage, timestampToken);
 
             var timestampCms = timestampToken.AsSignedCms();
-            ValidateTimestampCms(request.SigningSpec, timestampCms);
+            ValidateTimestampCms(request.SigningSpecifications, timestampCms);
 
             // If the timestamp signed CMS already has a complete chain for the signing certificate,
             // it's ready to be added to the signature to be timestamped.
@@ -118,8 +118,7 @@ namespace NuGet.Packaging.Signing
                 logger,
                 CertificateType.Timestamp);
 
-            var timestampCmsWithChainCertificates = EnsureCertificatesInCertificatesCollection(timestampCms, chain);
-            return timestampCmsWithChainCertificates.Encode();
+            return EnsureCertificatesInCertificatesCollection(timestampCms, chain);
         }
 
         private static SignedCms EnsureCertificatesInCertificatesCollection(

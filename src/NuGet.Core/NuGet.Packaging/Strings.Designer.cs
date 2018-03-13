@@ -863,6 +863,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package already contains a signature. Please remove the existing signature before adding a new signature..
+        /// </summary>
+        internal static string SignedPackageAlreadySigned {
+            get {
+                return ResourceManager.GetString("SignedPackageAlreadySigned", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package stream read position cannot be longer than the length of the stream..
         /// </summary>
         internal static string SignedPackageArchiveIOExtraRead {
@@ -904,15 +913,6 @@ namespace NuGet.Packaging {
         internal static string SignedPackagePackageAlreadyCountersigned {
             get {
                 return ResourceManager.GetString("SignedPackagePackageAlreadyCountersigned", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The package already contains a signature. Please remove the existing signature before adding a new signature..
-        /// </summary>
-        internal static string SignedPackagePackageAlreadySigned {
-            get {
-                return ResourceManager.GetString("SignedPackagePackageAlreadySigned", resourceCulture);
             }
         }
         

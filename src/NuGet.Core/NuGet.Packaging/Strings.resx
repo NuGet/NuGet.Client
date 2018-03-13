@@ -244,7 +244,7 @@
   <data name="SignedPackageUnableToAccessSignature" xml:space="preserve">
     <value>The package was not opened correctly to perform signature operations. Please use a Stream-based constructor to have access to signature attributes of the package.</value>
   </data>
-  <data name="SignedPackagePackageAlreadySigned" xml:space="preserve">
+  <data name="SignedPackageAlreadySigned" xml:space="preserve">
     <value>The package already contains a signature. Please remove the existing signature before adding a new signature.</value>
   </data>
   <data name="SignedPackageNotSignedOnRemove" xml:space="preserve">

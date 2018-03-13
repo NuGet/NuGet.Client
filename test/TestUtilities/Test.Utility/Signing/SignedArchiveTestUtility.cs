@@ -158,7 +158,7 @@ namespace Test.Utility.Signing
                 if (primarySignature != null)
                 {
 #if IS_DESKTOP
-                    return RepositoryCountersignature.HasRepositoryCounterSignature(primarySignature);
+                    return SignatureUtility.HasRepositoryCountersignature(primarySignature);
 #endif
                 }
 
@@ -181,7 +181,7 @@ namespace Test.Utility.Signing
         {
             var testLogger = new TestLogger();
             var hashAlgorithm = HashAlgorithmName.SHA256;
-            var v3ServiceIndexUrl = new Uri("https://testv3serviceIndex.url/api/index.json");
+            var v3ServiceIndexUrl = new Uri("https://v3serviceIndex.test/api/index.json");
 
             using (var request = new RepositorySignPackageRequest(testCert, hashAlgorithm, hashAlgorithm, v3ServiceIndexUrl, null))
             {
@@ -345,10 +345,10 @@ namespace Test.Utility.Signing
             var messageHash = signatureRequest.TimestampHashAlgorithm.ComputeHash(signatureValue);
 
             var timestampRequest = new TimestampRequest(
-                signingSpec: SigningSpecifications.V1,
-                signatureMessageHash: messageHash,
-                timestampHashAlgorithm: signatureRequest.TimestampHashAlgorithm,
-                timestampSignaturePlacement: SignaturePlacement.PrimarySignature
+                signingSpecifications: SigningSpecifications.V1,
+                hashedMessage: messageHash,
+                hashAlgorithm: signatureRequest.TimestampHashAlgorithm,
+                target: SignaturePlacement.PrimarySignature
             );
 
             return TimestampPrimarySignature(timestampProvider, timestampRequest, signature, logger);

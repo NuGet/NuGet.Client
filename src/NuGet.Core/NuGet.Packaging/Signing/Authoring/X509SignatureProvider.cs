@@ -32,7 +32,7 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Sign the package stream hash with a X509Certificate2.
+        /// Sign the package stream hash with an X509Certificate2.
         /// </summary>
         public Task<PrimarySignature> CreatePrimarySignatureAsync(SignPackageRequest request, SignatureContent signatureContent, ILogger logger, CancellationToken token)
         {
@@ -83,6 +83,8 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            token.ThrowIfCancellationRequested();
+
             var signature = CreateRepositoryCountersignature(request, primarySignature, logger);
 
             if (_timestampProvider == null)
@@ -96,7 +98,7 @@ namespace NuGet.Packaging.Signing
         }
 
 #if IS_DESKTOP
-        private PrimarySignature CreatePrimarySignature(SignPackageRequest request, SignatureContent signatureContent, ILogger logger)
+        private static PrimarySignature CreatePrimarySignature(SignPackageRequest request, SignatureContent signatureContent, ILogger logger)
         {
             var cmsSigner = SigningUtility.CreateCmsSigner(request, logger);
 
@@ -108,7 +110,7 @@ namespace NuGet.Packaging.Signing
             return CreatePrimarySignature(cmsSigner, request, signatureContent.GetBytes());
         }
 
-        private PrimarySignature CreateRepositoryCountersignature(SignPackageRequest request, PrimarySignature primarySignature, ILogger logger)
+        private static PrimarySignature CreateRepositoryCountersignature(SignPackageRequest request, PrimarySignature primarySignature, ILogger logger)
         {
             var cmsSigner = SigningUtility.CreateCmsSigner(request, logger);
 
@@ -120,14 +122,14 @@ namespace NuGet.Packaging.Signing
             return CreateRepositoryCountersignature(cmsSigner, request, primarySignature);
         }
 
-        private PrimarySignature CreatePrimarySignature(CmsSigner cmsSigner, byte[] signingData, CngKey privateKey)
+        private static PrimarySignature CreatePrimarySignature(CmsSigner cmsSigner, byte[] signingData, CngKey privateKey)
         {
             var cms = NativeUtilities.NativeSign(cmsSigner, signingData, privateKey);
 
             return PrimarySignature.Load(cms);
         }
 
-        private PrimarySignature CreatePrimarySignature(CmsSigner cmsSigner, SignPackageRequest request, byte[] signingData)
+        private static PrimarySignature CreatePrimarySignature(CmsSigner cmsSigner, SignPackageRequest request, byte[] signingData)
         {
             var contentInfo = new ContentInfo(signingData);
             var cms = new SignedCms(contentInfo);
@@ -148,11 +150,11 @@ namespace NuGet.Packaging.Signing
             return PrimarySignature.Load(cms);
         }
 
-        private PrimarySignature CreateRepositoryCountersignature(CmsSigner cmsSigner, PrimarySignature primarySignature, CngKey privateKey)
+        private static PrimarySignature CreateRepositoryCountersignature(CmsSigner cmsSigner, PrimarySignature primarySignature, CngKey privateKey)
         {
             using (var primarySignatureNativeCms = NativeCms.Decode(primarySignature.GetBytes()))
             {
-                primarySignatureNativeCms.AddCounterSignature(cmsSigner, privateKey);
+                primarySignatureNativeCms.AddCountersignature(cmsSigner, privateKey);
 
                 var bytes = primarySignatureNativeCms.Encode();
                 var updatedCms = new SignedCms();
@@ -163,11 +165,14 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private PrimarySignature CreateRepositoryCountersignature(CmsSigner cmsSigner, SignPackageRequest request, PrimarySignature primarySignature)
+        private static PrimarySignature CreateRepositoryCountersignature(CmsSigner cmsSigner, SignPackageRequest request, PrimarySignature primarySignature)
         {
+            var cms = new SignedCms();
+            cms.Decode(primarySignature.GetBytes());
+
             try
             {
-                primarySignature.SignerInfo.ComputeCounterSignature(cmsSigner);
+                cms.SignerInfos[0].ComputeCounterSignature(cmsSigner);
             }
             catch (CryptographicException ex) when (ex.HResult == INVALID_PROVIDER_TYPE_HRESULT)
             {
@@ -178,7 +183,7 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(NuGetLogCode.NU3001, exceptionBuilder.ToString());
             }
 
-            return primarySignature;
+            return PrimarySignature.Load(cms);
         }
 
         private Task<PrimarySignature> TimestampPrimarySignatureAsync(SignPackageRequest request, ILogger logger, PrimarySignature signature, CancellationToken token)
@@ -187,10 +192,10 @@ namespace NuGet.Packaging.Signing
             var messageHash = request.TimestampHashAlgorithm.ComputeHash(signatureValue);
 
             var timestampRequest = new TimestampRequest(
-                signingSpec: SigningSpecifications.V1,
-                signatureMessageHash: messageHash,
-                timestampHashAlgorithm: request.TimestampHashAlgorithm,
-                timestampSignaturePlacement: SignaturePlacement.PrimarySignature
+                signingSpecifications: SigningSpecifications.V1,
+                hashedMessage: messageHash,
+                hashAlgorithm: request.TimestampHashAlgorithm,
+                target: SignaturePlacement.PrimarySignature
             );
 
             return _timestampProvider.TimestampSignatureAsync(signature, timestampRequest, logger, token);
@@ -203,17 +208,17 @@ namespace NuGet.Packaging.Signing
             var messageHash = request.TimestampHashAlgorithm.ComputeHash(signatureValue);
 
             var timestampRequest = new TimestampRequest(
-                signingSpec: SigningSpecifications.V1,
-                signatureMessageHash: messageHash,
-                timestampHashAlgorithm: request.TimestampHashAlgorithm,
-                timestampSignaturePlacement: SignaturePlacement.Countersignature
+                signingSpecifications: SigningSpecifications.V1,
+                hashedMessage: messageHash,
+                hashAlgorithm: request.TimestampHashAlgorithm,
+                target: SignaturePlacement.Countersignature
             );
 
             return _timestampProvider.TimestampSignatureAsync(primarySignature, timestampRequest, logger, token);
         }
 
 #else
-        private PrimarySignature CreatePrimarySignature(SignPackageRequest request, SignatureContent signatureContent, ILogger logger)
+        private static PrimarySignature CreatePrimarySignature(SignPackageRequest request, SignatureContent signatureContent, ILogger logger)
         {
             throw new NotSupportedException();
         }
@@ -223,7 +228,7 @@ namespace NuGet.Packaging.Signing
             throw new NotSupportedException();
         }
 
-        private PrimarySignature CreateRepositoryCountersignature(SignPackageRequest request, PrimarySignature signature, ILogger logger)
+        private static PrimarySignature CreateRepositoryCountersignature(SignPackageRequest request, PrimarySignature signature, ILogger logger)
         {
             throw new NotSupportedException();
         }

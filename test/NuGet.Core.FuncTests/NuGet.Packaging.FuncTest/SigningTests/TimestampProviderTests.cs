@@ -38,7 +38,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetEncodedTimestampCmsForData_WithValidInput_ReturnsTimestamp()
+        public async Task GetTimestamp_WithValidInput_ReturnsTimestamp()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -53,19 +53,16 @@ namespace NuGet.Packaging.FuncTest
                 var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
 
                 var request = new TimestampRequest(
-                    signingSpec: SigningSpecifications.V1,
-                    signatureMessageHash: messageHash,
-                    timestampHashAlgorithm: timestampHashAlgorithm,
-                    timestampSignaturePlacement: SignaturePlacement.PrimarySignature
+                    signingSpecifications: SigningSpecifications.V1,
+                    hashedMessage: messageHash,
+                    hashAlgorithm: timestampHashAlgorithm,
+                    target: SignaturePlacement.PrimarySignature
                 );
 
                 // Act
-                var timestampedData = timestampProvider.GetEncodedTimestampCmsForData(request, logger, CancellationToken.None);
-                var timestampedCms = new SignedCms();
-                timestampedCms.Decode(timestampedData);
+                var timestampedCms = timestampProvider.GetTimestamp(request, logger, CancellationToken.None);
 
                 // Assert
-                timestampedData.Should().NotBeNull();
                 timestampedCms.Should().NotBeNull();
                 timestampedCms.Detached.Should().BeFalse();
                 timestampedCms.ContentInfo.Should().NotBeNull();
@@ -74,7 +71,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetEncodedTimestampCmsForData_AssertCompleteChain_Success()
+        public async Task GetTimestamp_AssertCompleteChain_Success()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
@@ -129,7 +126,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetEncodedTimestampCmsForData_WhenRequestNull_Throws()
+        public async Task GetTimestamp_WhenRequestNull_Throws()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -152,14 +149,14 @@ namespace NuGet.Packaging.FuncTest
                 var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
 
                 var request = new TimestampRequest(
-                    signingSpec: SigningSpecifications.V1,
-                    signatureMessageHash: messageHash,
-                    timestampHashAlgorithm: timestampHashAlgorithm,
-                    timestampSignaturePlacement: SignaturePlacement.PrimarySignature
+                    signingSpecifications: SigningSpecifications.V1,
+                    hashedMessage: messageHash,
+                    hashAlgorithm: timestampHashAlgorithm,
+                    target: SignaturePlacement.PrimarySignature
                 );
 
                 // Act
-                Action timestampAction = () => timestampProvider.GetEncodedTimestampCmsForData(null, logger, CancellationToken.None);
+                Action timestampAction = () => timestampProvider.GetTimestamp(null, logger, CancellationToken.None);
 
                 // Assert
                 timestampAction.ShouldThrow<ArgumentNullException>()
@@ -168,7 +165,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetEncodedTimestampCmsForData_WhenLoggerNull_Throws()
+        public async Task GetTimestamp_WhenLoggerNull_Throws()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
@@ -183,14 +180,14 @@ namespace NuGet.Packaging.FuncTest
                 var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
 
                 var request = new TimestampRequest(
-                    signingSpec: SigningSpecifications.V1,
-                    signatureMessageHash: messageHash,
-                    timestampHashAlgorithm: timestampHashAlgorithm,
-                    timestampSignaturePlacement: SignaturePlacement.PrimarySignature
+                    signingSpecifications: SigningSpecifications.V1,
+                    hashedMessage: messageHash,
+                    hashAlgorithm: timestampHashAlgorithm,
+                    target: SignaturePlacement.PrimarySignature
                 );
 
                 // Act
-                Action timestampAction = () => timestampProvider.GetEncodedTimestampCmsForData(request, null, CancellationToken.None);
+                Action timestampAction = () => timestampProvider.GetTimestamp(request, null, CancellationToken.None);
 
                 // Assert
                 timestampAction.ShouldThrow<ArgumentNullException>()
@@ -199,7 +196,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetEncodedTimestampCmsForData_WhenCancelled_Throws()
+        public async Task GetTimestamp_WhenCancelled_Throws()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -215,14 +212,14 @@ namespace NuGet.Packaging.FuncTest
                 var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
 
                 var request = new TimestampRequest(
-                   signingSpec: SigningSpecifications.V1,
-                   signatureMessageHash: messageHash,
-                   timestampHashAlgorithm: timestampHashAlgorithm,
-                   timestampSignaturePlacement: SignaturePlacement.PrimarySignature
+                   signingSpecifications: SigningSpecifications.V1,
+                   hashedMessage: messageHash,
+                   hashAlgorithm: timestampHashAlgorithm,
+                   target: SignaturePlacement.PrimarySignature
                );
 
                 // Act
-                Action timestampAction = () => timestampProvider.GetEncodedTimestampCmsForData(request, logger, new CancellationToken(canceled: true));
+                Action timestampAction = () => timestampProvider.GetTimestamp(request, logger, new CancellationToken(canceled: true));
 
                 // Assert
                 timestampAction.ShouldThrow<OperationCanceledException>()
@@ -231,7 +228,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetEncodedTimestampCmsForData_WhenRevocationInformationUnavailable_Success()
+        public async Task GetTimestamp_WhenRevocationInformationUnavailable_Success()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -247,9 +244,9 @@ namespace NuGet.Packaging.FuncTest
                     (timestampProvider, request) =>
                     {
                         var logger = new TestLogger();
-                        var timestamp = timestampProvider.GetEncodedTimestampCmsForData(request, logger, CancellationToken.None);
+                        var timestamp = timestampProvider.GetTimestamp(request, logger, CancellationToken.None);
 
-                        Assert.NotEmpty(timestamp);
+                        Assert.NotNull(timestamp);
 
                         Assert.Equal(0, logger.Errors);
                         Assert.Equal(2, logger.Warnings);
@@ -261,7 +258,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetEncodedTimestampCmsForData_WhenTimestampSigningCertificateRevoked_Throws()
+        public async Task GetTimestamp_WhenTimestampSigningCertificateRevoked_Throws()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -278,14 +275,14 @@ namespace NuGet.Packaging.FuncTest
                 (timestampProvider, request) =>
                 {
                     var exception = Assert.Throws<TimestampException>(
-                        () => timestampProvider.GetEncodedTimestampCmsForData(request, NullLogger.Instance, CancellationToken.None));
+                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal("Certificate chain validation failed.", exception.Message);
                 });
         }
 
         [CIOnlyFact]
-        public async Task GetEncodedTimestampCmsForData_WithFailureReponse_Throws()
+        public async Task GetTimestamp_WithFailureReponse_Throws()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -298,7 +295,7 @@ namespace NuGet.Packaging.FuncTest
                 (timestampProvider, request) =>
                 {
                     var exception = Assert.Throws<CryptographicException>(
-                        () => timestampProvider.GetEncodedTimestampCmsForData(request, NullLogger.Instance, CancellationToken.None));
+                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.StartsWith(
                         "The timestamp signature and/or certificate could not be verified or is malformed.",
@@ -307,7 +304,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetEncodedTimestampCmsForData_WhenSigningCertificateNotReturned_Throws()
+        public async Task GetTimestamp_WhenSigningCertificateNotReturned_Throws()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -320,14 +317,14 @@ namespace NuGet.Packaging.FuncTest
                 (timestampProvider, request) =>
                 {
                     var exception = Assert.Throws<CryptographicException>(
-                        () => timestampProvider.GetEncodedTimestampCmsForData(request, NullLogger.Instance, CancellationToken.None));
+                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.StartsWith("Cannot find object or property.", exception.Message);
                 });
         }
 
         [CIOnlyFact]
-        public async Task GetEncodedTimestampCmsForData_WhenSignatureHashAlgorithmIsSha1_Throws()
+        public async Task GetTimestamp_WhenSignatureHashAlgorithmIsSha1_Throws()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -340,7 +337,7 @@ namespace NuGet.Packaging.FuncTest
                 (timestampProvider, request) =>
                 {
                     var exception = Assert.Throws<TimestampException>(
-                        () => timestampProvider.GetEncodedTimestampCmsForData(request, NullLogger.Instance, CancellationToken.None));
+                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal(
                         "The timestamp certificate has an unsupported signature algorithm.",
@@ -365,11 +362,10 @@ namespace NuGet.Packaging.FuncTest
                 var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
 
                 var request = new TimestampRequest(
-                   signingSpec: SigningSpecifications.V1,
-                   signatureMessageHash: messageHash,
-                   timestampHashAlgorithm: timestampHashAlgorithm,
-                   timestampSignaturePlacement: SignaturePlacement.PrimarySignature
-               );
+                   SigningSpecifications.V1,
+                   messageHash,
+                   timestampHashAlgorithm,
+                   SignaturePlacement.PrimarySignature);
 
                 // Act
                 var primarySignature = await timestampProvider.TimestampSignatureAsync(signature, request, logger, CancellationToken.None);
@@ -381,19 +377,24 @@ namespace NuGet.Packaging.FuncTest
                 primarySignature.SignerInfo.UnsignedAttributes.Count.Should().BeGreaterOrEqualTo(1);
 
                 var hasTimestampUnsignedAttribute = false;
+                var timestampCms = new SignedCms();
+
                 foreach (var attr in primarySignature.SignerInfo.UnsignedAttributes)
                 {
                     if (string.Compare(attr.Oid.Value, Oids.SignatureTimeStampTokenAttribute, CultureInfo.CurrentCulture, CompareOptions.Ordinal) == 0)
                     {
                         hasTimestampUnsignedAttribute = true;
+                        timestampCms.Decode(attr.Values[0].RawData);
                     }
                 }
                 hasTimestampUnsignedAttribute.Should().BeTrue();
+
+                timestampCms.CheckSignature(verifySignatureOnly: true);
             }
         }
 
         [CIOnlyFact]
-        public async Task TimestampSignatureAsync_TimestampingCountersignature_Succeds()
+        public async Task TimestampSignatureAsync_TimestampingCountersignature_Succeeds()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -409,11 +410,10 @@ namespace NuGet.Packaging.FuncTest
                 var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
 
                 var request = new TimestampRequest(
-                   signingSpec: SigningSpecifications.V1,
-                   signatureMessageHash: messageHash,
-                   timestampHashAlgorithm: timestampHashAlgorithm,
-                   timestampSignaturePlacement: SignaturePlacement.Countersignature
-               );
+                   SigningSpecifications.V1,
+                   messageHash,
+                   timestampHashAlgorithm,
+                   SignaturePlacement.Countersignature);
 
                 // Act
                 var primarySignature = await timestampProvider.TimestampSignatureAsync(signature, request, logger, CancellationToken.None);
@@ -426,14 +426,19 @@ namespace NuGet.Packaging.FuncTest
                 repositoryCountersignature.SignerInfo.UnsignedAttributes.Count.Should().BeGreaterOrEqualTo(1);
 
                 var hasTimestampUnsignedAttribute = false;
+                var timestampCms = new SignedCms();
+
                 foreach (var attr in repositoryCountersignature.SignerInfo.UnsignedAttributes)
                 {
                     if (string.Compare(attr.Oid.Value, Oids.SignatureTimeStampTokenAttribute, CultureInfo.CurrentCulture, CompareOptions.Ordinal) == 0)
                     {
                         hasTimestampUnsignedAttribute = true;
+                        timestampCms.Decode(attr.Values[0].RawData);
                     }
                 }
                 hasTimestampUnsignedAttribute.Should().BeTrue();
+
+                timestampCms.CheckSignature(verifySignatureOnly: true);
             }
         }
 
@@ -457,11 +462,10 @@ namespace NuGet.Packaging.FuncTest
                     var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
 
                     var request = new TimestampRequest(
-                       signingSpec: SigningSpecifications.V1,
-                       signatureMessageHash: messageHash,
-                       timestampHashAlgorithm: timestampHashAlgorithm,
-                       timestampSignaturePlacement: SignaturePlacement.PrimarySignature
-                   );
+                       SigningSpecifications.V1,
+                       messageHash,
+                       timestampHashAlgorithm,
+                       SignaturePlacement.PrimarySignature);
 
                     verifyTimestampData(timestampProvider, request);
                 }

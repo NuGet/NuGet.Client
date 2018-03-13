@@ -69,7 +69,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task SignAsync_WithSignedPackage_AddsRepositoryCountersignatureAsync()
+        public async Task SignAsync_WhenRepositoryCountersigningPrimarySignature_Succeeds()
         {
             using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
             {
@@ -84,7 +84,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var countersignatureOptions = SigningOptions.CreateFromFilePaths(
                     test.OutputFile.FullName,
-                    test.CreateNewTempFile(),
+                    test.GetNewTempFilePath(),
                     overwrite: false,
                     signatureProvider: new X509SignatureProvider(timestampProvider: null),
                     logger: NullLogger.Instance))
@@ -134,7 +134,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task SignAsync_WithRepositorySignedPackage_ThrowsAsync()
+        public async Task SignAsync_WhenRepositoryCountersigningRepositorySignedPackage_Throws()
         {
             using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
             {
@@ -149,7 +149,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var countersignatureOptions = SigningOptions.CreateFromFilePaths(
                     test.OutputFile.FullName,
-                    test.CreateNewTempFile(),
+                    test.GetNewTempFilePath(),
                     overwrite: false,
                     signatureProvider: new X509SignatureProvider(timestampProvider: null),
                     logger: NullLogger.Instance))
@@ -164,7 +164,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task SignAsync_WithRepositoryCountersignedPackage_ThrowsAsync()
+        public async Task SignAsync_WhenRepositoryCountersigningRepositoryCountersignedPackage_Throws()
         {
             using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
             {
@@ -176,7 +176,7 @@ namespace NuGet.Packaging.FuncTest
                     Assert.True(isSigned);
                 }
 
-                var countersignedPackageOutputPath = test.CreateNewTempFile();
+                var countersignedPackageOutputPath = test.GetNewTempFilePath();
                 using (var countersignatureOptions = SigningOptions.CreateFromFilePaths(
                     test.OutputFile.FullName,
                     countersignedPackageOutputPath,
@@ -192,7 +192,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var countersignatureOptions = SigningOptions.CreateFromFilePaths(
                     countersignedPackageOutputPath,
-                    test.CreateNewTempFile(),
+                    test.GetNewTempFilePath(),
                     overwrite: false,
                     signatureProvider: new X509SignatureProvider(timestampProvider: null),
                     logger: NullLogger.Instance))
@@ -226,7 +226,7 @@ namespace NuGet.Packaging.FuncTest
                 _authorCertificate = new X509Certificate2(certificate);
                 _repositoryCertificate = new X509Certificate2(certificate);
 
-                var outputPath = CreateNewTempFile();
+                var outputPath = GetNewTempFilePath();
 
                 OutputFile = new FileInfo(outputPath);
 
@@ -243,7 +243,7 @@ namespace NuGet.Packaging.FuncTest
                 Options = SigningOptions.CreateFromFilePaths(package.FullName, outputPath, overwrite, signatureProvider, NullLogger.Instance);
             }
 
-            internal string CreateNewTempFile()
+            internal string GetNewTempFilePath()
             {
                 return Path.Combine(_directory, Guid.NewGuid().ToString());
             }
