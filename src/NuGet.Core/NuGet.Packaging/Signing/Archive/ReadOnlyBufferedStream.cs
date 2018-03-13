@@ -42,6 +42,9 @@ namespace NuGet.Packaging.Signing
             {
                 ThrowIfDisposed();
 
+                // For stream implementations that support seeking, the Stream contract (per MSDN) is that
+                // "[s]eeking to any location beyond the length of the stream is supported."
+                // So, Position > Length is legal.
                 if (value < 0)
                 {
                     throw new ArgumentOutOfRangeException(nameof(value));
@@ -160,8 +163,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            if (count - offset > buffer.Length ||
-                count + offset > buffer.Length)
+            if (count > buffer.Length - offset)
             {
                 throw new ArgumentException(
                     string.Format(
@@ -332,6 +334,11 @@ namespace NuGet.Packaging.Signing
             var offset = 0;
             var count = _buffer.Length;
 
+            // Read(...) does not guarantee that the requested number of bytes will be read, even if there are ample
+            // bytes in the source.  From MSDN:
+            //
+            //     An implementation is free to return fewer bytes than requested even if the end of the stream has
+            //     not been reached.
             do
             {
                 bytesRead = _stream.Read(_buffer, offset, count);

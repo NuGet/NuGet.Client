@@ -433,6 +433,26 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
+        [InlineData(0)]
+        [InlineData(1024)]
+        public void Read_WithZeroCount_ReadsZeroBytes(long position)
+        {
+            using (var test = CreateTest())
+            {
+                test.BufferedReadStream.Position = position;
+
+                var buffer = new byte[10];
+
+                var bytesRead = test.BufferedReadStream.Read(buffer, offset: 0, count: 0);
+
+                Assert.Equal(0, bytesRead);
+                Assert.True(buffer.All(b => b == 0));
+                Assert.Equal(0, test.UnderlyingStream.ReadCallCount);
+                Assert.Equal(0, test.UnderlyingStream.ReadByteCallCount);
+            }
+        }
+
+        [Theory]
         [InlineData(1)]
         [InlineData(2)]
         [InlineData(3)]
@@ -491,7 +511,7 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(buffer.Length, bytesRead);
 
-                test.AssertBufferCorrectness(buffer, startingPosition, length: bytesRead);
+                test.AssertBufferCorrectness(buffer, startingPosition, bytesRead);
 
                 Assert.Equal(2, test.UnderlyingStream.ReadCallCount);
                 Assert.Equal(0, test.UnderlyingStream.ReadByteCallCount);
@@ -514,7 +534,7 @@ namespace NuGet.Packaging.Test
 
                     var startingPositionInUnderlyingBuffer = buffer.Length * i;
 
-                    test.AssertBufferCorrectness(buffer, startingPositionInUnderlyingBuffer, length: bytesRead);
+                    test.AssertBufferCorrectness(buffer, startingPositionInUnderlyingBuffer, bytesRead);
                 }
 
                 Assert.Equal(1, test.UnderlyingStream.ReadCallCount);
@@ -539,11 +559,14 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(expectedLength, bytesRead);
 
                 test.AssertBufferCorrectness(buffer, startingPosition, expectedLength);
+
+                Assert.Equal(8, test.UnderlyingStream.ReadCallCount);  // 8 == 24 (expectedLength) / 3 (bufferSize)
+                Assert.Equal(0, test.UnderlyingStream.ReadByteCallCount);
             }
         }
 
         [Fact]
-        public void Read_FromAtEndOfStreamReadingToPastEndOfStream_ReadsUpToEndOfStream()
+        public void Read_FromAtEndOfStreamReadingToPastEndOfStream_ReadsZeroBytes()
         {
             using (var test = CreateTest())
             {
@@ -555,11 +578,13 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(0, bytesRead);
                 Assert.True(buffer.All(b => b == 0));
+                Assert.Equal(0, test.UnderlyingStream.ReadCallCount);
+                Assert.Equal(0, test.UnderlyingStream.ReadByteCallCount);
             }
         }
 
         [Fact]
-        public void Read_FromAfterEndOfStream_ReadsUpToEndOfStream()
+        public void Read_FromAfterEndOfStream_ReadsZeroBytes()
         {
             using (var test = CreateTest())
             {
@@ -571,6 +596,8 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(0, bytesRead);
                 Assert.True(buffer.All(b => b == 0));
+                Assert.Equal(0, test.UnderlyingStream.ReadCallCount);
+                Assert.Equal(0, test.UnderlyingStream.ReadByteCallCount);
             }
         }
 
