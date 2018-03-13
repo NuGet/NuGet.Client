@@ -47,6 +47,6 @@ namespace NuGet.Commands
         /// <summary>
         /// Settings read from the config file provided by the user. Defaults to settings from %AppData%\NuGet\NuGet.config
         /// </summary>
-        public ISettings Settings { get; set; }
+        public IEnumerable<PackageSource> TrustedSources { get; set; }
     }
 }

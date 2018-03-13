@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Commands;
 using static NuGet.Commands.VerifyArgs;
@@ -40,15 +41,8 @@ namespace NuGet.CommandLine
                 throw new ArgumentNullException(nameof(PackagePath));
             }
 
-            if (ConfigFile != null)
-            {
-                ConfigFile = Path.GetFullPath(ConfigFile);
-            }
-
-            Settings = Configuration.Settings.LoadDefaultSettings(
-                CurrentDirectory,
-                configFileName: ConfigFile,
-                machineWideSettings: MachineWideSettings);
+            var trustedSources = SourceProvider.LoadPackageSources()
+                .Where(source => source.TrustedSource != null);
 
             var verifyArgs = new VerifyArgs()
             {
@@ -56,7 +50,7 @@ namespace NuGet.CommandLine
                 PackagePath = PackagePath,
                 CertificateFingerprint = CertificateFingerprint,
                 Logger = Console,
-                Settings = Settings
+                TrustedSources = trustedSources
             };
 
             switch (Verbosity)
