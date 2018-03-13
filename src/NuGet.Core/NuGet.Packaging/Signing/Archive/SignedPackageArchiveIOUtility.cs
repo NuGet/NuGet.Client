@@ -24,98 +24,6 @@ namespace NuGet.Packaging.Signing
         private const int ValidZipDate_YearMax = 2107;
 
         /// <summary>
-        /// Takes a binary reader and moves forwards the current position of its base stream until it finds the specified signature.
-        /// </summary>
-        /// <param name="reader">Binary reader to update current position</param>
-        /// <param name="byteSignature">byte signature to be matched</param>
-        public static void SeekReaderForwardToMatchByteSignature(BinaryReader reader, byte[] byteSignature)
-        {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            if (byteSignature == null || byteSignature.Length == 0)
-            {
-                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(byteSignature));
-            }
-
-            var stream = reader.BaseStream;
-            var originalPosition = stream.Position;
-
-            if (originalPosition + byteSignature.Length > stream.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(byteSignature), Strings.ErrorByteSignatureTooBig);
-            }
-
-            while (stream.Position <= (stream.Length - byteSignature.Length))
-            {
-                if (CurrentStreamPositionMatchesByteSignature(reader, byteSignature))
-                {
-                    return;
-                }
-
-                stream.Position += 1;
-            }
-
-            stream.Seek(offset: originalPosition, origin: SeekOrigin.Begin);
-
-            throw new InvalidDataException(
-                string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.ErrorByteSignatureNotFound,
-                    BitConverter.ToString(byteSignature).Replace("-", "")));
-        }
-
-        /// <summary>
-        /// Takes a binary reader and moves backwards the current position of it's base stream until it finds the specified signature.
-        /// </summary>
-        /// <param name="reader">Binary reader to update current position</param>
-        /// <param name="byteSignature">byte signature to be matched</param>
-        public static void SeekReaderBackwardToMatchByteSignature(BinaryReader reader, byte[] byteSignature)
-        {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            if (byteSignature == null || byteSignature.Length == 0)
-            {
-                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(byteSignature));
-            }
-
-            var stream = reader.BaseStream;
-            var originalPosition = stream.Position;
-
-            if (originalPosition + byteSignature.Length > stream.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(byteSignature), Strings.ErrorByteSignatureTooBig);
-            }
-
-            while (stream.Position >= 0)
-            {
-                if (CurrentStreamPositionMatchesByteSignature(reader, byteSignature))
-                {
-                    return;
-                }
-
-                if (stream.Position == 0)
-                {
-                    break;
-                }
-
-                stream.Position -= 1;
-            }
-
-            stream.Seek(offset: originalPosition, origin: SeekOrigin.Begin);
-
-            throw new InvalidDataException(
-                string.Format(CultureInfo.CurrentCulture,
-                Strings.ErrorByteSignatureNotFound,
-                BitConverter.ToString(byteSignature).Replace("-", "")));
-        }
-
-        /// <summary>
         /// Read bytes from a BinaryReader and write them to the BinaryWriter and stop when the provided position
         /// is the current position of the BinaryReader's base stream. It does not read the byte in the provided position.
         /// </summary>
@@ -290,11 +198,12 @@ namespace NuGet.Packaging.Signing
 
             var lastCentralDirectoryRecord = centralDirectoryRecords.Last();
             var endOfCentralDirectoryPosition = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize;
-            var endOfLocalFileHeadersPosition = GetEndOfLocalFileHeadersPosition(reader, centralDirectoryRecords);
+            var endOfLocalFileHeadersPosition = centralDirectoryRecords.Min(record => record.Position);
+
+            UpdateLocalFileHeadersTotalSize(centralDirectoryRecords, endOfLocalFileHeadersPosition);
 
             metadata.EndOfCentralDirectory = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize;
             metadata.CentralDirectoryHeaders = centralDirectoryRecords;
-            metadata.EndOfLocalFileHeaders = endOfLocalFileHeadersPosition;
             metadata.SignatureCentralDirectoryHeaderIndex = packageSignatureFileMetadataIndex;
 
             AssertSignatureEntryMetadata(reader, metadata);
@@ -368,52 +277,33 @@ namespace NuGet.Packaging.Signing
 
             var lastCentralDirectoryRecord = centralDirectoryRecords.Last();
             var endOfCentralDirectoryPosition = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize;
-            var endOfFileHeadersPosition = GetEndOfLocalFileHeadersPosition(reader, centralDirectoryRecords);
+            var endOfLocalFileHeadersPosition = centralDirectoryRecords.Min(record => record.Position);
 
-            return new UnsignedPackageArchiveMetadata(endOfFileHeadersPosition, endOfCentralDirectoryPosition);
+            UpdateLocalFileHeadersTotalSize(centralDirectoryRecords, endOfLocalFileHeadersPosition);
+
+            return new UnsignedPackageArchiveMetadata(endOfLocalFileHeadersPosition, endOfCentralDirectoryPosition);
         }
 
-        private static long GetEndOfLocalFileHeadersPosition(
-            BinaryReader reader,
-            IReadOnlyList<CentralDirectoryHeaderMetadata> records)
+        private static void UpdateLocalFileHeadersTotalSize(
+            IReadOnlyList<CentralDirectoryHeaderMetadata> records,
+            long startOfCentralDirectory)
         {
-            var endOfFileHeaders = 0L;
+            var orderedRecords = records.OrderBy(record => record.OffsetToLocalFileHeader).ToArray();
 
-            for (var i = 0; i < records.Count; i++)
+            for (var i = 0; i < orderedRecords.Length - 1; ++i)
             {
-                var record = records[i];
+                var current = orderedRecords[i];
+                var next = orderedRecords[i + 1];
 
-                // Go to local file header
-                reader.BaseStream.Seek(offset: record.OffsetToLocalFileHeader, origin: SeekOrigin.Begin);
-
-                // Validate file header signature
-                var fileHeaderSignature = reader.ReadUInt32();
-
-                if (fileHeaderSignature != LocalFileHeader.Signature)
-                {
-                    throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
-                }
-
-                // The total size of file entry is from the start of the file header until
-                // the start of the next file header (or the start of the first central directory header)
-                try
-                {
-                    SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(LocalFileHeader.Signature));
-                }
-                // No local File header found (entry must be the last entry), search for the start of the first central directory
-                catch
-                {
-                    SeekReaderForwardToMatchByteSignature(reader, BitConverter.GetBytes(CentralDirectoryHeader.Signature));
-                }
-
-                record.FileEntryTotalSize = reader.BaseStream.Position - record.OffsetToLocalFileHeader;
-
-                var endOfFileHeader = record.FileEntryTotalSize + record.OffsetToLocalFileHeader;
-
-                endOfFileHeaders = Math.Max(endOfFileHeaders, endOfFileHeader);
+                current.FileEntryTotalSize = next.OffsetToLocalFileHeader - current.OffsetToLocalFileHeader;
             }
 
-            return endOfFileHeaders;
+            if (orderedRecords.Length > 0)
+            {
+                var last = orderedRecords.Last();
+
+                last.FileEntryTotalSize = startOfCentralDirectory - last.OffsetToLocalFileHeader;
+            }
         }
 
         /// <summary>

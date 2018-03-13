@@ -21,11 +21,6 @@ namespace NuGet.Packaging.Signing
         public long StartOfLocalFileHeaders { get; set; }
 
         /// <summary>
-        /// Offset, in bytes, to the end of last file header relative to the start of the archive.
-        /// </summary>
-        public long EndOfLocalFileHeaders { get; set; }
-
-        /// <summary>
         /// Offset, in bytes, to the end of central directory headers relative to the start of the archive.
         /// </summary>
         public long EndOfCentralDirectory { get; set; }

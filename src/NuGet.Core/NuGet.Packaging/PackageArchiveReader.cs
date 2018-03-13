@@ -240,7 +240,8 @@ namespace NuGet.Packaging
 
             if (await IsSignedAsync(token))
             {
-                using (var reader = new BinaryReader(ZipReadStream, new UTF8Encoding(), leaveOpen: true))
+                using (var bufferedStream = new ReadOnlyBufferedStream(ZipReadStream, leaveOpen: true))
+                using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
                 using (var stream = SignedPackageArchiveUtility.OpenPackageSignatureFileStream(reader))
                 {
 #if IS_DESKTOP
@@ -293,10 +294,12 @@ namespace NuGet.Packaging
             }
 
 #if IS_DESKTOP
-            using (var reader = new BinaryReader(ZipReadStream, new UTF8Encoding(), leaveOpen: true))
+            using (var bufferedStream = new ReadOnlyBufferedStream(ZipReadStream, leaveOpen: true))
+            using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
             using (var hashAlgorithm = signatureContent.HashAlgorithm.GetHashProvider())
             {
                 var expectedHash = Convert.FromBase64String(signatureContent.HashValue);
+
                 if (!SignedPackageArchiveUtility.VerifySignedPackageIntegrity(reader, hashAlgorithm, expectedHash))
                 {
                     throw new SignatureException(NuGetLogCode.NU3008, Strings.SignaturePackageIntegrityFailure, GetIdentity());
