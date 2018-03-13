@@ -10,7 +10,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -45,7 +44,6 @@ namespace NuGet.Packaging.FuncTest
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var content = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
-
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, content.GetBytes());
@@ -72,8 +70,6 @@ namespace NuGet.Packaging.FuncTest
                 timestampedCms.Detached.Should().BeFalse();
                 timestampedCms.ContentInfo.Should().NotBeNull();
                 timestampedCms.SignerInfos.Count.Should().Be(1);
-                timestampedCms.SignerInfos[0].UnsignedAttributes.Count.Should().Be(1);
-                timestampedCms.SignerInfos[0].UnsignedAttributes[0].Oid.Value.Should().Be(Oids.SignatureTimeStampTokenAttribute);
             }
         }
 
