@@ -9,6 +9,8 @@
     <OutputName>$(MSBuildProjectName)</OutputName>
     <OutputType>vsix</OutputType>
     <IsPackage>true</IsPackage>
+    <!-- We set this to false here so we can batch sign the vsix later -->
+    <MicroBuild_SigningEnabled>false</MicroBuild_SigningEnabled>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -44,7 +44,7 @@
 
   <Target Name="GetOutputVsix">
     <ItemGroup>
-      <FilesToSign Include="$(VsixPublishDestination)**\NuGet.Tools.vsix">
+      <FilesToSign Include="$(VsixPublishDestination)**\*.vsix">
         <Authenticode>100040160</Authenticode>
       </FilesToSign>
     </ItemGroup>
