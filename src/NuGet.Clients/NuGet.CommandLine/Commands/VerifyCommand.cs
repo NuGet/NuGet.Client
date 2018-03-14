@@ -42,7 +42,8 @@ namespace NuGet.CommandLine
             }
 
             var trustedSources = SourceProvider.LoadPackageSources()
-                .Where(source => source.TrustedSource != null);
+                .Where(source => source.TrustedSource != null)
+                .Select(source => source.TrustedSource);
 
             var verifyArgs = new VerifyArgs()
             {

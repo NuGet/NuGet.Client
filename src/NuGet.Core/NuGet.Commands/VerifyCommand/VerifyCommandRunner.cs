@@ -41,14 +41,15 @@ namespace NuGet.Commands
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
 
                 var allowListEntries = verifyArgs.CertificateFingerprint.Select(fingerprint =>
-                    new CertificateHashAllowListEntry(VerificationTarget.Primary, fingerprint)).ToList();
+                    new CertificateHashAllowListEntry(SignaturePlacement.PrimarySignature, VerificationTarget.Author | VerificationTarget.Repository, fingerprint)).ToList();
 
                 allowListEntries.AddRange(
                     verifyArgs.TrustedSources
-                    .SelectMany(source => source.TrustedSource.Certificates)
+                    .SelectMany(trustedSource => trustedSource.Certificates)
                     .Select(certificate =>
                         new CertificateHashAllowListEntry(
-                            VerificationTarget.Primary | VerificationTarget.Counter,
+                            SignaturePlacement.PrimarySignature | SignaturePlacement.Countersignature,
+                            VerificationTarget.Repository,
                             certificate.Fingerprint,
                             certificate.FingerprintAlgorithm)));
 

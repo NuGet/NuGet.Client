@@ -55,7 +55,7 @@ namespace NuGet.Packaging.Signing
                 var certHashEntry = allowedEntry as CertificateHashAllowListEntry;
                 if (certHashEntry != null)
                 {
-                    if (certHashEntry.VerificationTarget.HasFlag(VerificationTarget.Primary))
+                    if (certHashEntry.Placement.HasFlag(SignaturePlacement.PrimarySignature))
                     {
                         if (!signatureCertFingerprints.TryGetValue(certHashEntry.FingerprintAlgorithm, out var signatureCertFingerprint))
                         {
@@ -63,13 +63,14 @@ namespace NuGet.Packaging.Signing
                             signatureCertFingerprints.Add(certHashEntry.FingerprintAlgorithm, signatureCertFingerprint);
                         }
 
-                        if (StringComparer.OrdinalIgnoreCase.Equals(certHashEntry.CertificateFingerprint, signatureCertFingerprint))
+                        if (IsSignatureTargeted(certHashEntry.VerificationTarget, signature) &&
+                            StringComparer.OrdinalIgnoreCase.Equals(certHashEntry.CertificateFingerprint, signatureCertFingerprint))
                         {
                             return true;
                         }
                     }
 
-                    if (certHashEntry.VerificationTarget.HasFlag(VerificationTarget.Counter))
+                    if (certHashEntry.Placement.HasFlag(SignaturePlacement.Countersignature))
                     {
                         if (!countersignatureCertFingerprints.TryGetValue(certHashEntry.FingerprintAlgorithm, out var countersignatureCertFingerprint))
                         {
@@ -77,7 +78,8 @@ namespace NuGet.Packaging.Signing
                             countersignatureCertFingerprints.Add(certHashEntry.FingerprintAlgorithm, countersignatureCertFingerprint);
                         }
 
-                        if (StringComparer.OrdinalIgnoreCase.Equals(certHashEntry.CertificateFingerprint, countersignatureCertFingerprint))
+                        if (IsSignatureTargeted(certHashEntry.VerificationTarget, repositoryCounterSignature.Value) &&
+                            StringComparer.OrdinalIgnoreCase.Equals(certHashEntry.CertificateFingerprint, countersignatureCertFingerprint))
                         {
                             return true;
                         }
@@ -88,7 +90,14 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-        private string GetCertFingerprint(X509Certificate2 cert, HashAlgorithmName algorithm)
+        private static bool IsSignatureTargeted(VerificationTarget target, Signature signature)
+        {
+            return (target.HasFlag(VerificationTarget.Author) && signature is AuthorPrimarySignature) ||
+                (target.HasFlag(VerificationTarget.Repository) && signature is RepositoryPrimarySignature) ||
+                (target.HasFlag(VerificationTarget.Repository) && signature is RepositoryCountersignature);
+        }
+
+        private static string GetCertFingerprint(X509Certificate2 cert, HashAlgorithmName algorithm)
         {
             var countersignatureCertFingerprintHash = CertificateUtility.GetHash(cert, algorithm);
             return BitConverter.ToString(countersignatureCertFingerprintHash).Replace("-", "");
