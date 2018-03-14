@@ -98,6 +98,54 @@ namespace NuGet.Packaging.Test
             Assert.Equal("3b1efd3a66ea28b16697394703a72ca340a05bd5", certificates[2].Thumbprint, StringComparer.OrdinalIgnoreCase);
         }
 
+        [Fact]
+        public void HasRepositoryCountersignature_WithNullPrimarySignature_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => SignatureUtility.HasRepositoryCountersignature(primarySignature: null));
+
+            Assert.Equal("primarySignature", exception.ParamName);
+        }
+
+        [Fact]
+        public async Task HasRepositoryCountersignature_WithSignatureWithoutRepositoryCountersignature_ReturnsFalseAsync()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                var packageContext = new SimpleTestPackageContext();
+                var unsignedPackageStream = packageContext.CreateAsStream();
+
+                var signature = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(
+                    certificate,
+                    unsignedPackageStream);
+
+                var hasRepoCountersignature = SignatureUtility.HasRepositoryCountersignature(signature);
+
+                Assert.False(hasRepoCountersignature);
+            }
+        }
+
+        [Fact]
+        public async Task HasRepositoryCountersignature_WithSignatureWithRepositoryCountersignature_ReturnsTrueAsync()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            using (var repositoryCertificate = _fixture.GetDefaultCertificate())
+            {
+                var packageContext = new SimpleTestPackageContext();
+                var unsignedPackageStream = packageContext.CreateAsStream();
+
+                var signature = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(
+                    certificate,
+                    unsignedPackageStream);
+
+                var reposignedSignature = await SignedArchiveTestUtility.RepositoryCountersignPrimarySignatureAsync(repositoryCertificate, signature);
+
+                var hasRepoCountersignature = SignatureUtility.HasRepositoryCountersignature(reposignedSignature);
+
+                Assert.True(hasRepoCountersignature);
+            }
+        }
+
         private static PrimarySignature GeneratePrimarySignatureWithNoCertificates(PrimarySignature signature)
         {
             var certificateStore = X509StoreFactory.Create(

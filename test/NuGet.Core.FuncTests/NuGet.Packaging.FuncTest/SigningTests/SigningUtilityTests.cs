@@ -69,6 +69,35 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
+        public async Task SignAsync_WhenRepositoryCountersigningPrimarySignature_Succeeds()
+        {
+            using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
+            {
+                await SigningUtility.SignAsync(test.Options, test.AuthorRequest, CancellationToken.None);
+
+                using (var package = new PackageArchiveReader(test.Options.OutputPackageStream))
+                {
+                    var primarySignature = await package.GetPrimarySignatureAsync(CancellationToken.None);
+
+                    Assert.IsType<AuthorPrimarySignature>(primarySignature);
+                }
+
+                using (var countersignatureOptions = SigningOptions.CreateFromFilePaths(
+                    test.OutputFile.FullName,
+                    test.GetNewTempFilePath(),
+                    overwrite: false,
+                    signatureProvider: new X509SignatureProvider(timestampProvider: null),
+                    logger: NullLogger.Instance))
+                {
+                    await SigningUtility.SignAsync(countersignatureOptions, test.RepositoryRequest, CancellationToken.None);
+
+                    var isRepositoryCountersigned = await SignedArchiveTestUtility.IsRepositoryCountersignedAsync(countersignatureOptions.OutputPackageStream);
+                    Assert.True(isRepositoryCountersigned);
+                }
+            }
+        }
+
+        [CIOnlyFact]
         public async Task SignAsync_WithExpiredCertificate_ThrowsAsync()
         {
             using (var test = new Test(_testFixture.TrustedTestCertificateExpired.Source.Cert))
@@ -104,6 +133,79 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
+        [CIOnlyFact]
+        public async Task SignAsync_WhenRepositoryCountersigningRepositorySignedPackage_Throws()
+        {
+            using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
+            {
+                await SigningUtility.SignAsync(test.Options, test.RepositoryRequest, CancellationToken.None);
+
+                using (var package = new PackageArchiveReader(test.Options.OutputPackageStream))
+                {
+                    var primarySignature = await package.GetPrimarySignatureAsync(CancellationToken.None);
+
+                    Assert.IsType<RepositoryPrimarySignature>(primarySignature);
+                }
+
+                using (var countersignatureOptions = SigningOptions.CreateFromFilePaths(
+                    test.OutputFile.FullName,
+                    test.GetNewTempFilePath(),
+                    overwrite: false,
+                    signatureProvider: new X509SignatureProvider(timestampProvider: null),
+                    logger: NullLogger.Instance))
+                {
+                    var exception = await Assert.ThrowsAsync<SignatureException>(
+                        () => SigningUtility.SignAsync(countersignatureOptions, test.RepositoryRequest, CancellationToken.None));
+
+                    Assert.Equal(NuGetLogCode.NU3033, exception.Code);
+                    Assert.Contains("A repository primary signature must not have a repository countersignature", exception.Message);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task SignAsync_WhenRepositoryCountersigningRepositoryCountersignedPackage_Throws()
+        {
+            using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
+            {
+                await SigningUtility.SignAsync(test.Options, test.AuthorRequest, CancellationToken.None);
+
+                using (var package = new PackageArchiveReader(test.Options.OutputPackageStream))
+                {
+                    var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.Options.OutputPackageStream);
+                    Assert.True(isSigned);
+                }
+
+                var countersignedPackageOutputPath = test.GetNewTempFilePath();
+                using (var countersignatureOptions = SigningOptions.CreateFromFilePaths(
+                    test.OutputFile.FullName,
+                    countersignedPackageOutputPath,
+                    overwrite: false,
+                    signatureProvider: new X509SignatureProvider(timestampProvider: null),
+                    logger: NullLogger.Instance))
+                {
+                    await SigningUtility.SignAsync(countersignatureOptions, test.RepositoryRequest, CancellationToken.None);
+
+                    var isRepositoryCountersigned = await SignedArchiveTestUtility.IsRepositoryCountersignedAsync(countersignatureOptions.OutputPackageStream);
+                    Assert.True(isRepositoryCountersigned);
+                }
+
+                using (var countersignatureOptions = SigningOptions.CreateFromFilePaths(
+                    countersignedPackageOutputPath,
+                    test.GetNewTempFilePath(),
+                    overwrite: false,
+                    signatureProvider: new X509SignatureProvider(timestampProvider: null),
+                    logger: NullLogger.Instance))
+                {
+                    var exception = await Assert.ThrowsAsync<SignatureException>(
+                        () => SigningUtility.SignAsync(countersignatureOptions, test.RepositoryRequest, CancellationToken.None));
+
+                    Assert.Equal(NuGetLogCode.NU3032, exception.Code);
+                    Assert.Contains("The package already contains a repository countersignature", exception.Message);
+                }
+            }
+        }
+
         private sealed class Test : IDisposable
         {
             private readonly X509Certificate2 _authorCertificate;
@@ -124,7 +226,7 @@ namespace NuGet.Packaging.FuncTest
                 _authorCertificate = new X509Certificate2(certificate);
                 _repositoryCertificate = new X509Certificate2(certificate);
 
-                var outputPath = Path.Combine(_directory, Guid.NewGuid().ToString());
+                var outputPath = GetNewTempFilePath();
 
                 OutputFile = new FileInfo(outputPath);
 
@@ -139,6 +241,11 @@ namespace NuGet.Packaging.FuncTest
                 var overwrite = true;
 
                 Options = SigningOptions.CreateFromFilePaths(package.FullName, outputPath, overwrite, signatureProvider, NullLogger.Instance);
+            }
+
+            internal string GetNewTempFilePath()
+            {
+                return Path.Combine(_directory, Guid.NewGuid().ToString());
             }
 
             public void Dispose()

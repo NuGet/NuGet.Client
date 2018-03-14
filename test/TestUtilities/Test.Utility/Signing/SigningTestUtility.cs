@@ -8,6 +8,8 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Common;
+using NuGet.Packaging.Signing;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
@@ -225,7 +227,7 @@ namespace Test.Utility.Signing
                 {
                     // for a certificate in a chain create CRL distribution point extension
                     var crlServerUri = $"{chainCertificateRequest.CrlServerBaseUri}{issuerDN}.crl";
-                    var generalName = new GeneralName(GeneralName.UniformResourceIdentifier, new DerIA5String(crlServerUri));
+                    var generalName = new Org.BouncyCastle.Asn1.X509.GeneralName(Org.BouncyCastle.Asn1.X509.GeneralName.UniformResourceIdentifier, new DerIA5String(crlServerUri));
                     var distPointName = new DistributionPointName(new GeneralNames(generalName));
                     var distPoint = new DistributionPoint(distPointName, null, null);
 
@@ -455,6 +457,32 @@ namespace Test.Utility.Signing
             cms.ComputeSignature(cmsSigner);
 
             return cms;
+        }
+
+        /// <summary>
+        /// Generates a SignedCMS object for some content.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="cert">Certificate for cms signer</param>
+        /// <returns>SignedCms object</returns>
+        public static SignedCms GenerateRepositoryCountersignedSignedCms(X509Certificate2 cert, byte[] content)
+        {
+            var contentInfo = new ContentInfo(content);
+            var hashAlgorithm = NuGet.Common.HashAlgorithmName.SHA256;
+
+            using (var primarySignatureRequest = new AuthorSignPackageRequest(new X509Certificate2(cert), hashAlgorithm))
+            using (var countersignatureRequest = new RepositorySignPackageRequest(new X509Certificate2(cert), hashAlgorithm, hashAlgorithm, new Uri("https://api.nuget.org/v3/index.json"), null))
+            {
+                var cmsSigner = SigningUtility.CreateCmsSigner(primarySignatureRequest, NullLogger.Instance);
+
+                var cms = new SignedCms(contentInfo);
+                cms.ComputeSignature(cmsSigner);
+
+                var counterCmsSigner = SigningUtility.CreateCmsSigner(countersignatureRequest, NullLogger.Instance);
+                cms.SignerInfos[0].ComputeCounterSignature(counterCmsSigner);
+
+                return cms;
+            }
         }
 #endif
 

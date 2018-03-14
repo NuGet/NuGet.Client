@@ -183,10 +183,11 @@ namespace NuGet.Packaging.Signing
 
             var tempPackageFile = new FileInfo(Path.GetTempFileName());
             Stream unsignedPackageStream = null;
+            var signaturePlacement = SignaturePlacement.PrimarySignature;
 
             try
             {
-                var inputPackageStream = options.InputPackageStream;
+                PrimarySignature primarySignature;
                 var isSigned = false;
 
                 using (var package = new SignedPackageArchive(options.InputPackageStream, Stream.Null))
@@ -196,14 +197,31 @@ namespace NuGet.Packaging.Signing
                         throw new SignatureException(NuGetLogCode.NU3006, Strings.ErrorZip64NotSupported);
                     }
 
-                    isSigned = await package.IsSignedAsync(token);
+                    primarySignature = await package.GetPrimarySignatureAsync(token);
+                    isSigned = primarySignature != null;
 
-                    if (isSigned && !options.Overwrite)
+                    if (signRequest.SignatureType == SignatureType.Repository && primarySignature != null)
                     {
-                        throw new SignatureException(NuGetLogCode.NU3001, Strings.SignedPackagePackageAlreadySigned);
+                        if (primarySignature.Type == SignatureType.Repository)
+                        {
+                            throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureMustNotHaveARepositoryCountersignature);
+                        }
+
+                        if (SignatureUtility.HasRepositoryCountersignature(primarySignature))
+                        {
+                            throw new SignatureException(NuGetLogCode.NU3032, Strings.SignedPackagePackageAlreadyCountersigned);
+                        }
+
+                        signaturePlacement = SignaturePlacement.Countersignature;
+                    }
+
+                    if (isSigned && !options.Overwrite && signaturePlacement != SignaturePlacement.Countersignature)
+                    {
+                        throw new SignatureException(NuGetLogCode.NU3001, Strings.SignedPackageAlreadySigned);
                     }
                 }
 
+                var inputPackageStream = options.InputPackageStream;
                 if (isSigned)
                 {
                     unsignedPackageStream = tempPackageFile.Open(FileMode.OpenOrCreate, FileAccess.ReadWrite);
@@ -218,11 +236,23 @@ namespace NuGet.Packaging.Signing
 
                 using (var package = new SignedPackageArchive(inputPackageStream, options.OutputPackageStream))
                 {
-                    var hashAlgorithm = signRequest.SignatureHashAlgorithm;
-                    var zipArchiveHash = await package.GetArchiveHashAsync(hashAlgorithm, token);
-                    var signatureContent = GenerateSignatureContent(hashAlgorithm, zipArchiveHash);
-                    var signature = await options.SignatureProvider.CreatePrimarySignatureAsync(signRequest, signatureContent, options.Logger, token);
-
+                    PrimarySignature signature;
+                    if (signaturePlacement == SignaturePlacement.Countersignature)
+                    {
+                        signature = await options.SignatureProvider.CreateRepositoryCountersignatureAsync(
+                            signRequest as RepositorySignPackageRequest,
+                            primarySignature,
+                            options.Logger,
+                            token);
+                    }
+                    else
+                    {
+                        var hashAlgorithm = signRequest.SignatureHashAlgorithm;
+                        var zipArchiveHash = await package.GetArchiveHashAsync(hashAlgorithm, token);
+                        var signatureContent = GenerateSignatureContent(hashAlgorithm, zipArchiveHash);
+                        signature = await options.SignatureProvider.CreatePrimarySignatureAsync(signRequest, signatureContent, options.Logger, token);
+                    }
+                    
                     using (var stream = new MemoryStream(signature.GetBytes()))
                     {
                         await package.AddSignatureAsync(stream, token);

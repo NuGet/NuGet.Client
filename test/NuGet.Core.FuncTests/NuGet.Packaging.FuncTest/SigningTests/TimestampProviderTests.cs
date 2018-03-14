@@ -5,11 +5,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -38,43 +38,40 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task TimestampData_WithValidInput_ReturnsTimestamp()
+        public async Task GetTimestamp_WithValidInput_ReturnsTimestamp()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
-            var data = "Test data to be signed and timestamped";
-
+            var content = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
-                var signatureValue = signedCms.Encode();
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, content.GetBytes());
+                var primarySignature = PrimarySignature.Load(signedCms.Encode());
+                var timestampHashAlgorithm = Common.HashAlgorithmName.SHA256;
+                var signatureValue = primarySignature.GetSignatureValue();
+                var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
 
-                var request = new TimestampRequest
-                {
-                    SigningSpec = SigningSpecifications.V1,
-                    TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
-                    Signature = signatureValue
-                };
+                var request = new TimestampRequest(
+                    signingSpecifications: SigningSpecifications.V1,
+                    hashedMessage: messageHash,
+                    hashAlgorithm: timestampHashAlgorithm,
+                    target: SignaturePlacement.PrimarySignature
+                );
 
                 // Act
-                var timestampedData = timestampProvider.TimestampData(request, logger, CancellationToken.None);
-                var timestampedCms = new SignedCms();
-                timestampedCms.Decode(timestampedData);
+                var timestampedCms = timestampProvider.GetTimestamp(request, logger, CancellationToken.None);
 
                 // Assert
-                timestampedData.Should().NotBeNull();
                 timestampedCms.Should().NotBeNull();
                 timestampedCms.Detached.Should().BeFalse();
                 timestampedCms.ContentInfo.Should().NotBeNull();
                 timestampedCms.SignerInfos.Count.Should().Be(1);
-                timestampedCms.SignerInfos[0].UnsignedAttributes.Count.Should().Be(1);
-                timestampedCms.SignerInfos[0].UnsignedAttributes[0].Oid.Value.Should().Be(Oids.SignatureTimeStampTokenAttribute);
             }
         }
 
         [CIOnlyFact]
-        public async Task TimestampData_AssertCompleteChain_Success()
+        public async Task GetTimestamp_AssertCompleteChain_Success()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
@@ -129,13 +126,13 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task TimestampData_WhenRequestNull_Throws()
+        public async Task GetTimestamp_WhenRequestNull_Throws()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var authorCertName = "author@nuget.func.test";
-            var data = "Test data to be signed and timestamped";
+            var content = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
 
             Action<X509V3CertificateGenerator> modifyGenerator = delegate (X509V3CertificateGenerator gen)
             {
@@ -145,18 +142,21 @@ namespace NuGet.Packaging.FuncTest
 
             using (var authorCert = SigningTestUtility.GenerateCertificate(authorCertName, modifyGenerator: modifyGenerator))
             {
-                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
-                var signatureValue = signedCms.Encode();
+                var timestampHashAlgorithm = Common.HashAlgorithmName.SHA256;
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, content.GetBytes());
+                var signature = PrimarySignature.Load(signedCms.Encode());
+                var signatureValue = signature.GetSignatureValue();
+                var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
 
-                var request = new TimestampRequest
-                {
-                    SigningSpec = SigningSpecifications.V1,
-                    TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
-                    Signature = signatureValue
-                };
+                var request = new TimestampRequest(
+                    signingSpecifications: SigningSpecifications.V1,
+                    hashedMessage: messageHash,
+                    hashAlgorithm: timestampHashAlgorithm,
+                    target: SignaturePlacement.PrimarySignature
+                );
 
                 // Act
-                Action timestampAction = () => timestampProvider.TimestampData(null, logger, CancellationToken.None);
+                Action timestampAction = () => timestampProvider.GetTimestamp(null, logger, CancellationToken.None);
 
                 // Assert
                 timestampAction.ShouldThrow<ArgumentNullException>()
@@ -165,26 +165,29 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task TimestampData_WhenLoggerNull_Throws()
+        public async Task GetTimestamp_WhenLoggerNull_Throws()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
-            var data = "Test data to be signed and timestamped";
+            var content = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
-                var signatureValue = signedCms.Encode();
+                var timestampHashAlgorithm = Common.HashAlgorithmName.SHA256;
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, content.GetBytes());
+                var signature = PrimarySignature.Load(signedCms.Encode());
+                var signatureValue = signature.GetSignatureValue();
+                var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
 
-                var request = new TimestampRequest
-                {
-                    SigningSpec = SigningSpecifications.V1,
-                    TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
-                    Signature = signatureValue
-                };
+                var request = new TimestampRequest(
+                    signingSpecifications: SigningSpecifications.V1,
+                    hashedMessage: messageHash,
+                    hashAlgorithm: timestampHashAlgorithm,
+                    target: SignaturePlacement.PrimarySignature
+                );
 
                 // Act
-                Action timestampAction = () => timestampProvider.TimestampData(request, null, CancellationToken.None);
+                Action timestampAction = () => timestampProvider.GetTimestamp(request, null, CancellationToken.None);
 
                 // Assert
                 timestampAction.ShouldThrow<ArgumentNullException>()
@@ -193,27 +196,30 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task TimestampData_WhenCancelled_Throws()
+        public async Task GetTimestamp_WhenCancelled_Throws()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
-            var data = "Test data to be signed and timestamped";
+            var content = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, Encoding.ASCII.GetBytes(data));
-                var signatureValue = signedCms.Encode();
+                var timestampHashAlgorithm = Common.HashAlgorithmName.SHA256;
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, content.GetBytes());
+                var signature = PrimarySignature.Load(signedCms.Encode());
+                var signatureValue = signature.GetSignatureValue();
+                var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
 
-                var request = new TimestampRequest
-                {
-                    SigningSpec = SigningSpecifications.V1,
-                    TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
-                    Signature = signatureValue
-                };
+                var request = new TimestampRequest(
+                   signingSpecifications: SigningSpecifications.V1,
+                   hashedMessage: messageHash,
+                   hashAlgorithm: timestampHashAlgorithm,
+                   target: SignaturePlacement.PrimarySignature
+               );
 
                 // Act
-                Action timestampAction = () => timestampProvider.TimestampData(request, logger, new CancellationToken(canceled: true));
+                Action timestampAction = () => timestampProvider.GetTimestamp(request, logger, new CancellationToken(canceled: true));
 
                 // Assert
                 timestampAction.ShouldThrow<OperationCanceledException>()
@@ -222,7 +228,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task TimestampData_WhenRevocationInformationUnavailable_Success()
+        public async Task GetTimestamp_WhenRevocationInformationUnavailable_Success()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -238,9 +244,9 @@ namespace NuGet.Packaging.FuncTest
                     (timestampProvider, request) =>
                     {
                         var logger = new TestLogger();
-                        var timestamp = timestampProvider.TimestampData(request, logger, CancellationToken.None);
+                        var timestamp = timestampProvider.GetTimestamp(request, logger, CancellationToken.None);
 
-                        Assert.NotEmpty(timestamp);
+                        Assert.NotNull(timestamp);
 
                         Assert.Equal(0, logger.Errors);
                         Assert.Equal(2, logger.Warnings);
@@ -252,7 +258,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task TimestampData_WhenTimestampSigningCertificateRevoked_Throws()
+        public async Task GetTimestamp_WhenTimestampSigningCertificateRevoked_Throws()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -269,14 +275,14 @@ namespace NuGet.Packaging.FuncTest
                 (timestampProvider, request) =>
                 {
                     var exception = Assert.Throws<TimestampException>(
-                        () => timestampProvider.TimestampData(request, NullLogger.Instance, CancellationToken.None));
+                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal("Certificate chain validation failed.", exception.Message);
                 });
         }
 
         [CIOnlyFact]
-        public async Task TimestampData_WithFailureReponse_Throws()
+        public async Task GetTimestamp_WithFailureReponse_Throws()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -289,7 +295,7 @@ namespace NuGet.Packaging.FuncTest
                 (timestampProvider, request) =>
                 {
                     var exception = Assert.Throws<CryptographicException>(
-                        () => timestampProvider.TimestampData(request, NullLogger.Instance, CancellationToken.None));
+                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.StartsWith(
                         "The timestamp signature and/or certificate could not be verified or is malformed.",
@@ -298,7 +304,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task TimestampData_WhenSigningCertificateNotReturned_Throws()
+        public async Task GetTimestamp_WhenSigningCertificateNotReturned_Throws()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -311,14 +317,14 @@ namespace NuGet.Packaging.FuncTest
                 (timestampProvider, request) =>
                 {
                     var exception = Assert.Throws<CryptographicException>(
-                        () => timestampProvider.TimestampData(request, NullLogger.Instance, CancellationToken.None));
+                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.StartsWith("Cannot find object or property.", exception.Message);
                 });
         }
 
         [CIOnlyFact]
-        public async Task TimestampData_WhenSignatureHashAlgorithmIsSha1_Throws()
+        public async Task GetTimestamp_WhenSignatureHashAlgorithmIsSha1_Throws()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -331,13 +337,111 @@ namespace NuGet.Packaging.FuncTest
                 (timestampProvider, request) =>
                 {
                     var exception = Assert.Throws<TimestampException>(
-                        () => timestampProvider.TimestampData(request, NullLogger.Instance, CancellationToken.None));
+                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal(
                         "The timestamp certificate has an unsupported signature algorithm.",
                         exception.Message);
                 });
         }
+
+        [CIOnlyFact]
+        public async Task TimestampSignatureAsync_TimestampingPrimarySignature_Succeds()
+        {
+            var logger = new TestLogger();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
+            var signatureContent = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
+
+            using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var timestampHashAlgorithm = Common.HashAlgorithmName.SHA256;
+                var signedCms = SigningTestUtility.GenerateSignedCms(authorCert, signatureContent.GetBytes());
+                var signature = PrimarySignature.Load(signedCms.Encode());
+                var signatureValue = signature.GetSignatureValue();
+                var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
+
+                var request = new TimestampRequest(
+                   SigningSpecifications.V1,
+                   messageHash,
+                   timestampHashAlgorithm,
+                   SignaturePlacement.PrimarySignature);
+
+                // Act
+                var primarySignature = await timestampProvider.TimestampSignatureAsync(signature, request, logger, CancellationToken.None);
+
+                // Assert
+                primarySignature.Should().NotBeNull();
+                primarySignature.SignedCms.Should().NotBeNull();
+                primarySignature.SignerInfo.Should().NotBeNull();
+                primarySignature.SignerInfo.UnsignedAttributes.Count.Should().BeGreaterOrEqualTo(1);
+
+                var hasTimestampUnsignedAttribute = false;
+                var timestampCms = new SignedCms();
+
+                foreach (var attr in primarySignature.SignerInfo.UnsignedAttributes)
+                {
+                    if (string.Compare(attr.Oid.Value, Oids.SignatureTimeStampTokenAttribute, CultureInfo.CurrentCulture, CompareOptions.Ordinal) == 0)
+                    {
+                        hasTimestampUnsignedAttribute = true;
+                        timestampCms.Decode(attr.Values[0].RawData);
+                    }
+                }
+                hasTimestampUnsignedAttribute.Should().BeTrue();
+
+                timestampCms.CheckSignature(verifySignatureOnly: true);
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task TimestampSignatureAsync_TimestampingCountersignature_Succeeds()
+        {
+            var logger = new TestLogger();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
+            var signatureContent = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
+
+            using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var timestampHashAlgorithm = Common.HashAlgorithmName.SHA256;
+                var signedCms = SigningTestUtility.GenerateRepositoryCountersignedSignedCms(authorCert, signatureContent.GetBytes());
+                var signature = PrimarySignature.Load(signedCms.Encode());
+                var signatureValue = signature.GetSignatureValue();
+                var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
+
+                var request = new TimestampRequest(
+                   SigningSpecifications.V1,
+                   messageHash,
+                   timestampHashAlgorithm,
+                   SignaturePlacement.Countersignature);
+
+                // Act
+                var primarySignature = await timestampProvider.TimestampSignatureAsync(signature, request, logger, CancellationToken.None);
+
+                var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
+
+                // Assert
+                repositoryCountersignature.Should().NotBeNull();
+                repositoryCountersignature.SignerInfo.Should().NotBeNull();
+                repositoryCountersignature.SignerInfo.UnsignedAttributes.Count.Should().BeGreaterOrEqualTo(1);
+
+                var hasTimestampUnsignedAttribute = false;
+                var timestampCms = new SignedCms();
+
+                foreach (var attr in repositoryCountersignature.SignerInfo.UnsignedAttributes)
+                {
+                    if (string.Compare(attr.Oid.Value, Oids.SignatureTimeStampTokenAttribute, CultureInfo.CurrentCulture, CompareOptions.Ordinal) == 0)
+                    {
+                        hasTimestampUnsignedAttribute = true;
+                        timestampCms.Decode(attr.Values[0].RawData);
+                    }
+                }
+                hasTimestampUnsignedAttribute.Should().BeTrue();
+
+                timestampCms.CheckSignature(verifySignatureOnly: true);
+            }
+        }
+
 
         private void VerifyTimestampData(
             ISigningTestServer testServer,
@@ -350,15 +454,18 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
                 {
-                    var content = Encoding.UTF8.GetBytes("peach");
-                    var signedCms = SigningTestUtility.GenerateSignedCms(certificate, content);
+                    var timestampHashAlgorithm = Common.HashAlgorithmName.SHA256;
+                    var content = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "peach");
+                    var signedCms = SigningTestUtility.GenerateSignedCms(certificate, content.GetBytes());
+                    var signature = PrimarySignature.Load(signedCms.Encode());
+                    var signatureValue = signature.GetSignatureValue();
+                    var messageHash = timestampHashAlgorithm.ComputeHash(signatureValue);
 
-                    var request = new TimestampRequest()
-                    {
-                        SigningSpec = SigningSpecifications.V1,
-                        TimestampHashAlgorithm = Common.HashAlgorithmName.SHA256,
-                        Signature = signedCms.Encode()
-                    };
+                    var request = new TimestampRequest(
+                       SigningSpecifications.V1,
+                       messageHash,
+                       timestampHashAlgorithm,
+                       SignaturePlacement.PrimarySignature);
 
                     verifyTimestampData(timestampProvider, request);
                 }

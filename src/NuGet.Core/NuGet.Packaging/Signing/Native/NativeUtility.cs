@@ -110,7 +110,7 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private unsafe static CMSG_SIGNER_ENCODE_INFO CreateSignerInfo(
+        internal unsafe static CMSG_SIGNER_ENCODE_INFO CreateSignerInfo(
             CmsSigner cmsSigner,
             CngKey privateKey,
             HeapBlockRetainer hb)

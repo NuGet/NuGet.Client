@@ -206,11 +206,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A repository primary signature should not have a repository countersignatures..
+        ///   Looks up a localized string similar to A repository primary signature must not have a repository countersignature..
         /// </summary>
-        internal static string Error_RepositorySignatureShouldNotHaveARepositoryCountersignature {
+        internal static string Error_RepositorySignatureMustNotHaveARepositoryCountersignature {
             get {
-                return ResourceManager.GetString("Error_RepositorySignatureShouldNotHaveARepositoryCountersignature", resourceCulture);
+                return ResourceManager.GetString("Error_RepositorySignatureMustNotHaveARepositoryCountersignature", resourceCulture);
             }
         }
         
@@ -863,6 +863,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package already contains a signature. Please remove the existing signature before adding a new signature..
+        /// </summary>
+        internal static string SignedPackageAlreadySigned {
+            get {
+                return ResourceManager.GetString("SignedPackageAlreadySigned", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package stream read position cannot be longer than the length of the stream..
         /// </summary>
         internal static string SignedPackageArchiveIOExtraRead {
@@ -899,11 +908,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package already contains a signature. Please remove the existing signature before adding a new signature..
+        ///   Looks up a localized string similar to The package already contains a repository countersignature. Please remove the existing signature before adding a new repository countersignature..
         /// </summary>
-        internal static string SignedPackagePackageAlreadySigned {
+        internal static string SignedPackagePackageAlreadyCountersigned {
             get {
-                return ResourceManager.GetString("SignedPackagePackageAlreadySigned", resourceCulture);
+                return ResourceManager.GetString("SignedPackagePackageAlreadyCountersigned", resourceCulture);
             }
         }
         

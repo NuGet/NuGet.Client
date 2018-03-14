@@ -53,7 +53,10 @@ namespace NuGet.Test.Utility
 
         public bool UseDefaultRuntimeAssemblies { get; set; } = true;
 
-        public X509Certificate2 AuthorSignatureCertificate { get; set; }
+        public X509Certificate2 PrimarySignatureCertificate { get; set; }
+        public X509Certificate2 RepositoryCountersignatureCertificate { get; set; }
+        public Uri V3ServiceIndexUrl { get; set; }
+        public IReadOnlyList<string> PackageOwners { get; set; }
 
         /// <summary>
         /// runtime.json

@@ -52,7 +52,7 @@ namespace NuGet.Packaging.Signing
 
             if (await IsSignedAsync(token))
             {
-                throw new SignatureException(NuGetLogCode.NU3001, Strings.SignedPackagePackageAlreadySigned);
+                throw new SignatureException(NuGetLogCode.NU3001, Strings.SignedPackageAlreadySigned);
             }
 
             using (var reader = new BinaryReader(ZipReadStream, new UTF8Encoding(), leaveOpen: true))
