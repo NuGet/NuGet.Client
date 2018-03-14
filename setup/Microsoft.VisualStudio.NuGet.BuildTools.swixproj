@@ -24,14 +24,6 @@
     <PackagePreprocessorDefinitions>$(PackagePreprocessorDefinitions);ReferenceOutputPath=$(ReferenceOutputPath);NuGetTargetsPath=$(NuGetTargetsPath);XmlTransformPath=$(XmlTransformPath);BuildNumber=$(BuildNumber)</PackagePreprocessorDefinitions>
   </PropertyGroup>
 
-  <!-- Needed for the MicroBuild signing plugin -->
-  <ItemGroup>
-    <SigningTarget Include="$(OutputPath)$(OutputName)"/>
-    <FilesToSign Include="@(SigningTarget)">
-      <Authenticode>100040160</Authenticode>
-    </FilesToSign>
-  </ItemGroup>
-
   <ItemGroup>
     <Package Include="Microsoft.VisualStudio.NuGet.BuildTools.swr" />
   </ItemGroup>

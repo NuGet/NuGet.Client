@@ -180,21 +180,6 @@ phases:
       msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
 
   - task: MSBuild@1
-    displayName: "Sign Nupkgs"
-    inputs:
-      solution: "build\\sign.proj"
-      msbuildVersion: "15.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:AfterBuild /p:SignNupkgs=true"
-
-  - task: CopyFiles@2
-    displayName: "Copy Nupkgs"
-    inputs:
-      SourceFolder: "artifacts\\$(NupkgOutputDir)"
-      Contents: "*.nupkg"
-      TargetFolder: "$(BuildOutputTargetPath)\\artifacts\\$(VsixPublishDir)\\$(NupkgOutputDir)"
-
-  - task: MSBuild@1
     displayName: "Pack VSIX"
     inputs:
       solution: "build\\build.proj"
@@ -204,13 +189,19 @@ phases:
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
   - task: MSBuild@1
-    displayName: "Sign VSIX"
+    displayName: "Sign Nupkgs and VSIX"
     inputs:
       solution: "build\\sign.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:AfterBuild /p:SignVsix=true"
-    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+      msbuildArguments: "/t:AfterBuild /p:SignPackages=true"
+
+  - task: CopyFiles@2
+    displayName: "Copy Nupkgs"
+    inputs:
+      SourceFolder: "artifacts\\$(NupkgOutputDir)"
+      Contents: "*.nupkg"
+      TargetFolder: "$(BuildOutputTargetPath)\\artifacts\\$(VsixPublishDir)\\$(NupkgOutputDir)"
 
   - task: MSBuild@1
     displayName: "Generate VSMAN file for VSIX"
