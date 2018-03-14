@@ -20,8 +20,6 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class AllowListVerificationProviderTests
     {
-        private const string _noCertInAllowList = "No certificate matching";
-
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private SignedPackageVerifierSettings _settings;
@@ -108,7 +106,7 @@ namespace NuGet.Packaging.FuncTest
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3003);
-                    totalErrorIssues.First().Message.Should().Contain(_noCertInAllowList);
+                    totalErrorIssues.First().Message.Should().Contain("No allowed certificate");
                 }
             }
         }
