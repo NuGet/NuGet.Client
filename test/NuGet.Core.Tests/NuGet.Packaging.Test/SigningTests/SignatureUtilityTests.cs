@@ -129,6 +129,7 @@ namespace NuGet.Packaging.Test
         public async Task HasRepositoryCountersignature_WithSignatureWithRepositoryCountersignature_ReturnsTrueAsync()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
+            using (var repositoryCertificate = _fixture.GetDefaultCertificate())
             {
                 var packageContext = new SimpleTestPackageContext();
                 var unsignedPackageStream = packageContext.CreateAsStream();
@@ -137,7 +138,7 @@ namespace NuGet.Packaging.Test
                     certificate,
                     unsignedPackageStream);
 
-                var reposignedSignature = await SignedArchiveTestUtility.RepositoryCountersignPrimarySignatureAsync(certificate, signature);
+                var reposignedSignature = await SignedArchiveTestUtility.RepositoryCountersignPrimarySignatureAsync(repositoryCertificate, signature);
 
                 var hasRepoCountersignature = SignatureUtility.HasRepositoryCountersignature(reposignedSignature);
 
