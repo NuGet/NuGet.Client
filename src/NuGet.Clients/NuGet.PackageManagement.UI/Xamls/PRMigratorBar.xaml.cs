@@ -44,6 +44,35 @@ namespace NuGet.PackageManagement.UI
             MigratorBar.SetResourceReference(Border.BorderBrushProperty, VsBrushes.ActiveBorderKey);
         }
 
+        public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
+        {
+            if (args.Length > 0)
+            {
+                message = string.Format(CultureInfo.CurrentCulture, message, args);
+            }
+
+            ShowMessage(message);
+        }
+
+        public void ReportError(string message)
+        {
+            ShowMessage(message);
+        }
+
+        private void ShowMessage(string message)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                UpgradeMessage.Text = message;
+            });
+        }
+
+        public FileConflictAction ResolveFileConflict(string message)
+        {
+            return FileConflictAction.IgnoreAll;
+        }
+
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
@@ -52,11 +81,11 @@ namespace NuGet.PackageManagement.UI
 
                 if (await ShouldShowUpgradeProjectAsync())
                 {
-                    MigratorBar.Visibility = Visibility.Visible;
+                    ShowMigratorBar();
                 }
                 else
                 {
-                    MigratorBar.Visibility = Visibility.Collapsed;
+                    HideMigratorBar();
                 }
             });
         }
@@ -82,6 +111,16 @@ namespace NuGet.PackageManagement.UI
             return (projects.Count == 1) && await _model.Context.IsNuGetProjectUpgradeable(projects[0]);
         }
 
+        private void HideMigratorBar()
+        {
+            MigratorBar.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowMigratorBar()
+        {
+            MigratorBar.Visibility = Visibility.Visible;
+        }
+
         private void OnMigrationLinkClick(object sender, RoutedEventArgs e)
         {
             var project = _model.Context.Projects.FirstOrDefault();
@@ -90,35 +129,6 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await _model.Context.UIActionEngine.UpgradeNuGetProjectAsync(_model.UIController, project);
-            });
-        }
-
-        public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
-        {
-            if (args.Length > 0)
-            {
-                message = string.Format(CultureInfo.CurrentCulture, message, args);
-            }
-
-            ShowMessage(message);
-        }
-
-        public void ReportError(string message)
-        {
-            ShowMessage(message);
-        }
-
-        public FileConflictAction ResolveFileConflict(string message)
-        {
-            return FileConflictAction.IgnoreAll;
-        }
-
-        private void ShowMessage(string message)
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                UpgradeMessage.Text = message;
             });
         }
 
@@ -131,6 +141,11 @@ namespace NuGet.PackageManagement.UI
                 UIUtility.LaunchExternalLink(hyperlink.NavigateUri);
                 e.Handled = true;
             }
+        }
+
+        private void OnDeclineMigrationLinkClick(object sender, RoutedEventArgs e)
+        {
+            HideMigratorBar();
         }
     }
 }

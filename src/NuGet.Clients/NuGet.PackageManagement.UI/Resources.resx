@@ -770,7 +770,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>The project cannot be upgraded as backing up the project file and packages.config ran into an issue.</value>
   </data>
   <data name="AskForPRMigrator" xml:space="preserve">
-    <value>Consider migrating this project's NuGet package management format from 'packages.config' to 'PackageRefernece'.</value>
+    <value>Consider migrating this project's NuGet package management format from 'packages.config' to 'PackageReference'.</value>
   </data>
   <data name="Link_UpgradeOption" xml:space="preserve">
     <value>Migrate Now</value>
