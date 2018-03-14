@@ -239,7 +239,7 @@ phases:
       solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/p:BuildNumber=$(BuildNumber)"
+      msbuildArguments: "/v:diag"
     condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   - task: CopyFiles@2
