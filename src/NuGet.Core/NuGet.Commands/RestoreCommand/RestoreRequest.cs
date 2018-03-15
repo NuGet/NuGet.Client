@@ -79,7 +79,12 @@ namespace NuGet.Commands
         /// (or, if that property is not specified, from the default location of the lock file, as specified in the
         /// description for <see cref="LockFilePath"/>)
         /// </summary>
-        public LockFile ExistingLockFile { get; set; }
+        public LockFile ExistingLockFile { get; private set; }
+
+        /// <summary>
+        /// The SHA256 hash of the existing lock file, if it exists.
+        /// </summary>
+        public byte[] ExistingLockFileHash { get; private set; }
 
         /// <summary>
         /// The number of concurrent tasks to run during installs. Defaults to
@@ -160,5 +165,11 @@ namespace NuGet.Commands
                             SignedPackageVerifierSettings.Default);
 
         public Guid ParentId { get; set;}
+
+        public void SetExistingLockFile(LockFile existingLockFile, byte[] existingLockFileHash)
+        {
+            ExistingLockFile = existingLockFile;
+            ExistingLockFileHash = existingLockFileHash;
+        }
     }
 }

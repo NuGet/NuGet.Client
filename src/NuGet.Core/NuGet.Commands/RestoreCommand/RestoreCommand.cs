@@ -101,6 +101,7 @@ namespace NuGet.Commands
                                 _success,
                                 _request.ExistingLockFile,
                                 _request.ExistingLockFile,
+                                _request.ExistingLockFileHash,
                                 _request.ExistingLockFile.Path,
                                 cacheFile,
                                 _request.Project.RestoreMetadata.CacheFilePath,
@@ -202,6 +203,7 @@ namespace NuGet.Commands
                     msbuildOutputFiles,
                     assetsFile,
                     _request.ExistingLockFile,
+                    _request.ExistingLockFileHash,
                     assetsFilePath,
                     cacheFile,
                     cacheFilePath,
@@ -248,7 +250,8 @@ namespace NuGet.Commands
             {
                 if (noOp) // Only if the hash matches, then load the lock file. This is a performance hit, so we need to delay it as much as possible.
                 {
-                    _request.ExistingLockFile = LockFileUtilities.GetLockFile(_request.LockFilePath, _logger);
+                    var existingLockFile = LockFileUtilities.GetLockFile(_request.LockFilePath, _logger, out var existingLockFileHash);
+                    _request.SetExistingLockFile(existingLockFile, existingLockFileHash);
                 }
                 else
                 {

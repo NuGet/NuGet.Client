@@ -637,7 +637,7 @@ namespace NuGet.Commands.FuncTest
                 request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-                request.ExistingLockFile = result.LockFile;
+                request.SetExistingLockFile(result.LockFile, null);
                 command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
@@ -993,7 +993,7 @@ namespace NuGet.Commands.FuncTest
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 // Act
-                request.ExistingLockFile = modifiedLockFile;
+                request.SetExistingLockFile(modifiedLockFile, null);
 
                 command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
@@ -1041,7 +1041,7 @@ namespace NuGet.Commands.FuncTest
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
                 var previousLockFile = result.LockFile;
-                request.ExistingLockFile = result.LockFile;
+                request.SetExistingLockFile(result.LockFile, null);
 
                 // Act 2
                 // Read the file from disk to verify the reader
@@ -1437,7 +1437,7 @@ namespace NuGet.Commands.FuncTest
                 var logger = new TestLogger();
                 var requestB = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 requestB.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-                requestB.ExistingLockFile = resultA.LockFile;
+                requestB.SetExistingLockFile(resultA.LockFile, null);
                 var commandB = new RestoreCommand(requestB);
 
                 // Act
@@ -1791,7 +1791,7 @@ namespace NuGet.Commands.FuncTest
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
-                request.ExistingLockFile = lockFile;
+                request.SetExistingLockFile(lockFile, null);
 
                 // Act
                 var command = new RestoreCommand(request);
