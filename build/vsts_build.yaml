@@ -349,6 +349,16 @@ phases:
         Write-Host "##vso[build.updatebuildnumber]$env:BuildNumber"
         gci env:* | sort-object name
 
+  - task: CopyFiles@2
+    displayName: "Copy Public Key Files"
+    inputs:
+      SourceFolder: "$(NuGetSharePublicKeys)"
+      Contents: "*.snk"
+      TargetFolder: "$(Build.Repository.LocalPath)\\keys"
+      CleanTargetFolder: "true"
+      OverWrite: "true"
+      flattenFolders: "true"
+
   - task: PowerShell@1
     displayName: "Download Config Files"
     enabled: "false"
@@ -381,7 +391,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreFuncTests  /p:BuildRTM=false  /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
+      msbuildArguments: "/t:CoreFuncTests  /p:BuildRTM=false  /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
