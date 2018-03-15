@@ -13,8 +13,8 @@
     </CommonMSBuildProperties>
     <OutDir>$(RepositoryRootDirectory)</OutDir>
     <SignTargetsDependOn>BatchSign</SignTargetsDependOn>
-    <SignTargetsDependOn Condition="'$(SignVsix)' == 'true'">GetOutputVsix</SignTargetsDependOn>
-    <SignTargetsDependOn Condition="'$(SignNupkgs)' == 'true'">GetOutputNupkgs</SignTargetsDependOn>
+    <SignTargetsDependOn Condition="'$(SignPackages)' == 'true'">GetOutputNupkgs</SignTargetsDependOn>
+    <SignTargetsDependOn Condition="'$(SignPackages)' == 'true' AND '$(BuildRTM)' != 'true'">GetOutputNupkgs;GetOutputVsix</SignTargetsDependOn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -44,7 +44,7 @@
 
   <Target Name="GetOutputVsix">
     <ItemGroup>
-      <FilesToSign Include="$(VsixPublishDestination)**\NuGet.Tools.vsix">
+      <FilesToSign Include="$(VsixPublishDestination)**\*.vsix">
         <Authenticode>100040160</Authenticode>
       </FilesToSign>
     </ItemGroup>

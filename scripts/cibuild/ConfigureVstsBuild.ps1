@@ -66,6 +66,7 @@ Function Update-VsixVersion {
     # Evaluate the new version
     $newVersion = Get-Version $ReleaseProductVersion $buildNumber
     Write-Host "Updating the VSIX version [$oldVersion] => [$newVersion]"
+    Write-Host "##vso[task.setvariable variable=VsixBuildNumber;]$newVersion"
     # setting the revision to the new version
     $root.Metadata.Identity.Version = "$newVersion"
 

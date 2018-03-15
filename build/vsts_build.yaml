@@ -58,7 +58,7 @@ phases:
 
   steps:  
   - task: PowerShell@1
-    displayName: "Print Environment Variables"
+    displayName: "Update Build Number"
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
@@ -76,6 +76,13 @@ phases:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\ConfigureVstsBuild.ps1"
       arguments: "-BuildCounterFile $(BuildCounterFile) -BuildInfoJsonFile $(BuildInfoJsonFile) -BuildRTM $(BuildRTM) -SkipUpdateBuildNumber"
     displayName: "Configure VSTS CI Environment"
+
+  - task: PowerShell@1
+    displayName: "Print Environment Variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        gci env:* | sort-object name
 
   - task: MicroBuildLocalizationPlugin@1
     displayName: "Install Localization Plugin"
@@ -180,21 +187,6 @@ phases:
       msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
 
   - task: MSBuild@1
-    displayName: "Sign Nupkgs"
-    inputs:
-      solution: "build\\sign.proj"
-      msbuildVersion: "15.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:AfterBuild /p:SignNupkgs=true"
-
-  - task: CopyFiles@2
-    displayName: "Copy Nupkgs"
-    inputs:
-      SourceFolder: "artifacts\\$(NupkgOutputDir)"
-      Contents: "*.nupkg"
-      TargetFolder: "$(BuildOutputTargetPath)\\artifacts\\$(VsixPublishDir)\\$(NupkgOutputDir)"
-
-  - task: MSBuild@1
     displayName: "Pack VSIX"
     inputs:
       solution: "build\\build.proj"
@@ -204,13 +196,28 @@ phases:
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
   - task: MSBuild@1
-    displayName: "Sign VSIX"
+    displayName: "Generate Build Tools package"
+    inputs:
+      solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
+      msbuildVersion: "15.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/p:BuildNumber=$(BuildNumber)"
+    condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
+  - task: MSBuild@1
+    displayName: "Sign Nupkgs and VSIX"
     inputs:
       solution: "build\\sign.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:AfterBuild /p:SignVsix=true"
-    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+      msbuildArguments: "/t:AfterBuild /p:SignPackages=true"
+
+  - task: CopyFiles@2
+    displayName: "Copy Nupkgs"
+    inputs:
+      SourceFolder: "artifacts\\$(NupkgOutputDir)"
+      Contents: "*.nupkg"
+      TargetFolder: "$(BuildOutputTargetPath)\\artifacts\\$(VsixPublishDir)\\$(NupkgOutputDir)"
 
   - task: MSBuild@1
     displayName: "Generate VSMAN file for VSIX"
@@ -241,15 +248,6 @@ phases:
         $(VsixPublishDir)\\NuGet.Tools.vsix
         $(VsixPublishDir)\\EndToEnd.zip 
       TargetFolder: "$(BuildOutputTargetPath)\\artifacts"
-
-  - task: MSBuild@1
-    displayName: "Generate Build Tools package"
-    inputs:
-      solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-      msbuildVersion: "15.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/p:BuildNumber=$(BuildNumber)"
-    condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   - task: CopyFiles@2
     displayName: "Copy LCG Files"
