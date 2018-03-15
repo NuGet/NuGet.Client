@@ -797,6 +797,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Migration failed as packages {0} could not be uninstalled. These packages were not found in the solution packages folder. No changes were made to the project.</value>
   </data>
   <data name="Link_DoNotShowAgain" xml:space="preserve">
-    <value>Do not show again</value>
+    <value>Don't show again</value>
   </data>
 </root>

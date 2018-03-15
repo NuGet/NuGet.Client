@@ -916,7 +916,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Do not show again.
+        ///   Looks up a localized string similar to Don&apos;t show again.
         /// </summary>
         public static string Link_DoNotShowAgain {
             get {
