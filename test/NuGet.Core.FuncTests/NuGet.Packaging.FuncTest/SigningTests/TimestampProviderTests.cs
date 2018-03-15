@@ -81,7 +81,7 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = nupkg.CreateAsStream())
             {
                 // Act
-                var signature = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(authorCert, packageStream, timestampProvider);
+                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(authorCert, packageStream, timestampProvider);
                 var authorSignedCms = signature.SignedCms;
                 var timestamp = signature.Timestamps.First();
                 var timestampCms = timestamp.SignedCms;

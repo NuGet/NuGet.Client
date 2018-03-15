@@ -115,7 +115,7 @@ namespace NuGet.Packaging.Test
                 var packageContext = new SimpleTestPackageContext();
                 var unsignedPackageStream = packageContext.CreateAsStream();
 
-                var signature = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(
+                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(
                     certificate,
                     unsignedPackageStream);
 
@@ -134,15 +134,19 @@ namespace NuGet.Packaging.Test
                 var packageContext = new SimpleTestPackageContext();
                 var unsignedPackageStream = packageContext.CreateAsStream();
 
-                var signature = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(
+                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(
                     certificate,
                     unsignedPackageStream);
 
-                var reposignedSignature = await SignedArchiveTestUtility.RepositoryCountersignPrimarySignatureAsync(repositoryCertificate, signature);
+                var hashAlgorithm = Common.HashAlgorithmName.SHA256;
+                var v3ServiceIndexUri = new Uri("https://v3serviceIndex.test/api/index.json");
+                using (var request = new RepositorySignPackageRequest(repositoryCertificate, hashAlgorithm, hashAlgorithm, v3ServiceIndexUri, null))
+                {
+                    var reposignedSignature = await SignedArchiveTestUtility.RepositoryCountersignPrimarySignatureAsync(signature, request);
+                    var hasRepoCountersignature = SignatureUtility.HasRepositoryCountersignature(reposignedSignature);
 
-                var hasRepoCountersignature = SignatureUtility.HasRepositoryCountersignature(reposignedSignature);
-
-                Assert.True(hasRepoCountersignature);
+                    Assert.True(hasRepoCountersignature);
+                }
             }
         }
 
