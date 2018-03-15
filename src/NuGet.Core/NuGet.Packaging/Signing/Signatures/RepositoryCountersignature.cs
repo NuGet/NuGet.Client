@@ -39,11 +39,6 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(primarySignature));
             }
 
-            if (primarySignature.Type == SignatureType.Repository)
-            {
-                throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureMustNotHaveARepositoryCountersignature);
-            }
-
             var countersignatures = primarySignature.SignerInfo.CounterSignerInfos;
             RepositoryCountersignature repositoryCountersignature = null;
 
@@ -57,6 +52,11 @@ namespace NuGet.Packaging.Signing
                     if (repositoryCountersignature != null)
                     {
                         throw new SignatureException(NuGetLogCode.NU3032, Strings.Error_NotOneRepositoryCounterSignature);
+                    }
+
+                    if (primarySignature.Type == SignatureType.Repository)
+                    {
+                        throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureMustNotHaveARepositoryCountersignature);
                     }
 
                     var v3ServiceIndexUrl = AttributeUtility.GetNuGetV3ServiceIndexUrl(countersignature.SignedAttributes);

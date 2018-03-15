@@ -408,7 +408,7 @@ Valid from:</comment>
     <value>Multiple timestamps are not accepted.</value>
   </data>
   <data name="ErrorNoTimestamp" xml:space="preserve">
-    <value>The primary signature should be timestamped to enable long-term signature validity after the certificate has expired.</value>
+    <value>The signature should be timestamped to enable long-term signature validity after the certificate has expired.</value>
   </data>
   <data name="TimestampNoCertificate" xml:space="preserve">
     <value>The timestamp signature does not have a signing certificate.</value>

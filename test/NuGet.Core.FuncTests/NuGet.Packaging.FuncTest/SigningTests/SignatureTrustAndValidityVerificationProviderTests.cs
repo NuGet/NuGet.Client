@@ -593,7 +593,80 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // TODO: Add tests for countersignatures
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithSignedAndCountersignedPackage_Succeeds()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var trusted = SigningTestUtility.GenerateTrustedTestCertificate())
+            using (var counterCertificate = new X509Certificate2(trusted.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    testCertificate,
+                    nupkg,
+                    dir);
+
+                var repositorySignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                    counterCertificate,
+                    signedPackagePath,
+                    dir,
+                    new Uri("https://v3ServiceIndex.test/api/index"));
+
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                using (var packageReader = new PackageArchiveReader(repositorySignedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+
+                    // Assert
+                    result.Valid.Should().BeTrue();
+                    resultsWithErrors.Count().Should().Be(0);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithSignedTimestampedCountersignedAndCountersignatureTimestampedPackage_Succeeds()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var trusted = SigningTestUtility.GenerateTrustedTestCertificate())
+            using (var counterCertificate = new X509Certificate2(trusted.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    testCertificate,
+                    nupkg,
+                    dir,
+                    timestampService.Url);
+
+                var repositorySignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                    counterCertificate,
+                    signedPackagePath,
+                    dir,
+                    new Uri("https://v3ServiceIndex.test/api/index"),
+                    timestampService.Url);
+
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                using (var packageReader = new PackageArchiveReader(repositorySignedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+
+                    // Assert
+                    result.Valid.Should().BeTrue();
+                    resultsWithErrors.Count().Should().Be(0);
+                }
+            }
+        }
 
         private static void AssertOfflineRevocation(IEnumerable<SignatureLog> issues, LogLevel logLevel)
         {

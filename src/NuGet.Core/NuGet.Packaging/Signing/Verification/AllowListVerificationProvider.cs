@@ -72,16 +72,20 @@ namespace NuGet.Packaging.Signing
 
                     if (certHashEntry.Placement.HasFlag(SignaturePlacement.Countersignature))
                     {
-                        if (!countersignatureCertFingerprints.TryGetValue(certHashEntry.FingerprintAlgorithm, out var countersignatureCertFingerprint))
+                        // Check if a countersignature exists here to not even get the countersignature if there is no intention to verify it
+                        if (repositoryCounterSignature.Value != null)
                         {
-                            countersignatureCertFingerprint = GetCertFingerprint(repositoryCounterSignature.Value.SignerInfo.Certificate, certHashEntry.FingerprintAlgorithm);
-                            countersignatureCertFingerprints.Add(certHashEntry.FingerprintAlgorithm, countersignatureCertFingerprint);
-                        }
+                            if (!countersignatureCertFingerprints.TryGetValue(certHashEntry.FingerprintAlgorithm, out var countersignatureCertFingerprint))
+                            {
+                                countersignatureCertFingerprint = GetCertFingerprint(repositoryCounterSignature.Value.SignerInfo.Certificate, certHashEntry.FingerprintAlgorithm);
+                                countersignatureCertFingerprints.Add(certHashEntry.FingerprintAlgorithm, countersignatureCertFingerprint);
+                            }
 
-                        if (IsSignatureTargeted(certHashEntry.VerificationTarget, repositoryCounterSignature.Value) &&
-                            StringComparer.OrdinalIgnoreCase.Equals(certHashEntry.CertificateFingerprint, countersignatureCertFingerprint))
-                        {
-                            return true;
+                            if (IsSignatureTargeted(certHashEntry.VerificationTarget, repositoryCounterSignature.Value) &&
+                                StringComparer.OrdinalIgnoreCase.Equals(certHashEntry.CertificateFingerprint, countersignatureCertFingerprint))
+                            {
+                                return true;
+                            }
                         }
                     }
                 }
