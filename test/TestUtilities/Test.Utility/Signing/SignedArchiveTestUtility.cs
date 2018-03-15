@@ -52,8 +52,8 @@ namespace Test.Utility.Signing
                 packageStream.CopyTo(fileStream);
             }
 
-            using (var originalPackage = File.OpenRead(signedPackagePath))
-            using (var signedPackage = File.Open(tempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var originalPackage = File.OpenRead(tempPath))
+            using (var signedPackage = File.Open(signedPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             using (var request = new AuthorSignPackageRequest(certificate, signatureHashAlgorithm, timestampHashAlgorithm))
             {
                 await CreateSignedPackageAsync(request, originalPackage, signedPackage, timestampService);
@@ -97,8 +97,8 @@ namespace Test.Utility.Signing
                 packageStream.CopyTo(fileStream);
             }
 
-            using (var originalPackage = File.OpenRead(signedPackagePath))
-            using (var signedPackage = File.Open(tempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var originalPackage = File.OpenRead(tempPath))
+            using (var signedPackage = File.Open(signedPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             using (var request = new RepositorySignPackageRequest(certificate, signatureHashAlgorithm, timestampHashAlgorithm, v3ServiceIndex, packageOwners))
             {
                 await CreateSignedPackageAsync(request, originalPackage, signedPackage, timestampService);
@@ -135,16 +135,13 @@ namespace Test.Utility.Signing
         {
             var testLogger = new TestLogger();
             var outputPackagePath = Path.Combine(outputDir, Guid.NewGuid().ToString());
-            var tempPath = Path.GetTempFileName();
 
             using (var originalPackage = File.OpenRead(packagePath))
-            using (var signedPackage = File.Open(tempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var signedPackage = File.Open(outputPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             using (var request = new RepositorySignPackageRequest(certificate, signatureHashAlgorithm, timestampHashAlgorithm, v3ServiceIndex, packageOwners))
             {
                 await CreateSignedPackageAsync(request, originalPackage, signedPackage, timestampService);
             }
-
-            FileUtility.Delete(tempPath);
 
             return outputPackagePath;
         }
@@ -205,7 +202,7 @@ namespace Test.Utility.Signing
             SignPackageRequest request,
             ITimestampProvider timestampProvider = null)
         {
-            Assert.True(await package.IsSignedAsync(CancellationToken.None));
+            Assert.False(await package.IsSignedAsync(CancellationToken.None));
 
             var testLogger = new TestLogger();
             var signatureProvider = new X509SignatureProvider(timestampProvider);
