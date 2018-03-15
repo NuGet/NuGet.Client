@@ -151,8 +151,9 @@ namespace NuGet.Commands
             {
                 // Set properties from the restore metadata
                 ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle,
-                RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
+                AssetsCachePath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
                 DependencyGraphSpec = projectDgSpec,
+                RestoreOutputPath = projectPackageSpec.RestoreMetadata.OutputPath,
                 ParentId = restoreArgs.ParentId
             };
             

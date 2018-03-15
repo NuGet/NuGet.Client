@@ -132,9 +132,14 @@ namespace NuGet.Commands
         public ProjectStyle ProjectStyle { get; set; } = ProjectStyle.Unknown;
 
         /// <summary>
-        /// MSBuildProjectExtensionsPath, which is where the restore output will go
+        /// RestoreOutputPath, which is where the restore output (assets file and generated props and targets) will go
         /// </summary>
-        public string MSBuildProjectExtensionsPath { get; set; }
+        public string RestoreOutputPath { get; set; }
+
+        /// <summary>
+        /// AssetsCachePath, which is where the no-op restore cache will go
+        /// </summary>
+        public string AssetsCachePath { get; set; }
 
         /// <summary>
         /// Compatibility options

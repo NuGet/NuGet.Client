@@ -26,7 +26,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// The cache file path is $(MSBuildProjectExtensionsPath)\$(project).nuget.cache
+        /// The cache file path is $(project).nuget.cache in the AssetsCachePath folder
         /// </summary>
         private static string GetBuildIntegratedProjectCacheFilePath(RestoreRequest request)
         {
@@ -35,7 +35,7 @@ namespace NuGet.Commands
                 || request.ProjectStyle == ProjectStyle.PackageReference
                 || request.ProjectStyle == ProjectStyle.Standalone)
             {
-                var cacheRoot = request.MSBuildProjectExtensionsPath;
+                var cacheRoot = request.AssetsCachePath;
                 return request.Project.RestoreMetadata.CacheFilePath = GetProjectCacheFilePath(cacheRoot, request.Project.RestoreMetadata.ProjectPath);
             }
 
