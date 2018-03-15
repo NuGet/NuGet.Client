@@ -114,9 +114,9 @@ namespace NuGet.Protocol
 
             for (var retry = 0; retry < 3; retry++)
             {
-                using (var sourecCacheContext = new SourceCacheContext())
+                using (var sourceCacheContext = new SourceCacheContext())
                 {
-                    var cacheContext = HttpSourceCacheContext.Create(sourecCacheContext, retry);
+                    var cacheContext = HttpSourceCacheContext.Create(sourceCacheContext, retry);
 
                     try
                     {
