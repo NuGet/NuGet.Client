@@ -916,6 +916,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Do not show again.
+        /// </summary>
+        public static string Link_DoNotShowAgain {
+            get {
+                return ResourceManager.GetString("Link_DoNotShowAgain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Learn about Install Options.
         /// </summary>
         public static string Link_LearnAboutInstallOptions {

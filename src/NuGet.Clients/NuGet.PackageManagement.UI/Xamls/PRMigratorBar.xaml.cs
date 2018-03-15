@@ -132,6 +132,12 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
+        private void OnDoNotShowAgainClick(object sender, RoutedEventArgs e)
+        {
+            RegistrySettingUtility.SetBooleanSetting(Constants.SuppressUpgradePackagesConfigName, true);
+            MigratorBar.Visibility = Visibility.Collapsed;
+        }
+
         private void OnMigrationHelpUrlNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
             var hyperlink = (Hyperlink)sender;
