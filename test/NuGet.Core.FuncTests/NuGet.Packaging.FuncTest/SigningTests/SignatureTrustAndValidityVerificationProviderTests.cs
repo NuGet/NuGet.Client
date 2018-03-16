@@ -689,7 +689,7 @@ namespace NuGet.Packaging.FuncTest
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3027 &&
                 issue.Level == logLevel &&
-                issue.Message == "The primary signature should be timestamped to enable long-term signature validity after the certificate has expired.");
+                issue.Message == "The signature should be timestamped to enable long-term signature validity after the certificate has expired.");
         }
 
         private static void AssertUntrustedRoot(IEnumerable<SignatureLog> issues, LogLevel logLevel)

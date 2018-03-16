@@ -124,7 +124,8 @@ namespace NuGet.Packaging.FuncTest
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
 
                 var allowListHashes = new[] { "abc" };
-                var allowList = allowListHashes.Select(hash => new CertificateHashAllowListEntry(VerificationTarget.Primary, hash)).ToList();
+                var allowList = allowListHashes.Select(hash =>
+                    new CertificateHashAllowListEntry(SignaturePlacement.PrimarySignature, VerificationTarget.Author, hash)).ToList();
 
                 var trustProviders = new[]
                 {
@@ -159,7 +160,7 @@ namespace NuGet.Packaging.FuncTest
                     totalErrorIssues.Count().Should().Be(0);
                     totalWarningIssues.Count().Should().Be(1);
                     totalWarningIssues.First().Code.Should().Be(NuGetLogCode.NU3003);
-                    totalWarningIssues.First().Message.Should().Contain(_noCertInAllowList);
+                    totalWarningIssues.First().Message.Should().Contain("No allowed certificate");
                 }
             }
         }
