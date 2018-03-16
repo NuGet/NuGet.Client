@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Consider migrating this project&apos;s NuGet package management format from &apos;packages.config&apos; to &apos;PackageRefernece&apos;..
+        ///   Looks up a localized string similar to Consider migrating this project&apos;s NuGet package management format from &apos;packages.config&apos; to &apos;PackageReference&apos;..
         /// </summary>
         public static string AskForPRMigrator {
             get {
@@ -912,6 +912,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_Version {
             get {
                 return ResourceManager.GetString("Label_Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Don&apos;t show again.
+        /// </summary>
+        public static string Link_DoNotShowAgain {
+            get {
+                return ResourceManager.GetString("Link_DoNotShowAgain", resourceCulture);
             }
         }
         

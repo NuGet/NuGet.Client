@@ -11,22 +11,20 @@
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </UserControl.Resources>
-  <Border x:Name="MigratorBar" VerticalAlignment="Center" Visibility="Collapsed" BorderThickness="0,0,0,1">
-    <Grid Margin="0,4,0,6">
+  <Border x:Name="MigratorBar" VerticalAlignment="Center" Visibility="Collapsed">
+    <Grid Background="Transparent" Margin="0,3,0,3">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
       </Grid.ColumnDefinitions>
-      <TextBlock
-        Grid.Column="0"
+      <StackPanel Margin="0,4,0,6" Grid.Column="0" Orientation="Horizontal">
+        <TextBlock
         x:Name="UpgradeMessage"
         Margin="5,0,5,0"
         TextWrapping="Wrap"
         VerticalAlignment="Center"
         Text="{x:Static resx:Resources.AskForPRMigrator}" />
-      <TextBlock
-        Grid.Column="1"
+        <TextBlock
         TextWrapping="Wrap"
         VerticalAlignment="Center"
         Margin="15,0,5,0">
@@ -36,9 +34,8 @@
           Hyperlink.Click="OnMigrationLinkClick" >
           <Run Text="{x:Static resx:Resources.Link_UpgradeOption}" />
         </Hyperlink>
-      </TextBlock>
-      <TextBlock
-        Grid.Column="2"
+        </TextBlock>
+        <TextBlock
         TextWrapping="Wrap"
         VerticalAlignment="Center"
         Margin="15,0,5,0">
@@ -48,8 +45,25 @@
           RequestNavigate="OnMigrationHelpUrlNavigate" >
           <Run Text="{x:Static resx:Resources.Link_MigratorHelp}" />
         </Hyperlink>
-      </TextBlock>
-      
+        </TextBlock>
+        <TextBlock
+        TextWrapping="Wrap"
+        VerticalAlignment="Center"
+        Margin="15,0,5,0">
+        <Hyperlink
+          NavigateUri=" "
+          Style="{StaticResource HyperlinkStyle}"
+          Hyperlink.Click="OnDoNotShowAgainClick" >
+          <Run Text="{x:Static resx:Resources.Link_DoNotShowAgain}" />
+        </Hyperlink>
+        </TextBlock>
+      </StackPanel>
+      <Button Click="OnDeclineMigrationLinkClick" Margin="8,0,5,0" 
+            VerticalAlignment="Center" HorizontalAlignment="Right" ToolTip="{x:Static resx:Resources.IgnoreUpgrade}" BorderThickness="0" Background="Transparent" Grid.Column="1">
+        <Path Data="F1M2.28484E-07,1.33331L1.33333,0 4.00001,2.66669 6.66667,6.10352E-05 8,1.33331 5.33334,4 8,6.66669 6.66667,8 4,5.33331 1.33333,8 1.086E-07,6.66669 2.66667,4 2.28484E-07,1.33331z"
+            Stretch="Uniform" Margin="3,1,2,2" Visibility="Visible" Width="9" Height="9"
+            Fill="{DynamicResource {x:Static nuget:Brushes.ButtonBorderBrushKey}}"/>
+      </Button>
     </Grid>
   </Border>
 </UserControl>
