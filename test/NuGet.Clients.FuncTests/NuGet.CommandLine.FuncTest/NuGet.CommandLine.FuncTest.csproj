@@ -8,11 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="compiler\resources\Test.RepoCountersigned.1.0.0.nupkg" />
-    <None Remove="compiler\resources\Test.Reposigned.1.0.0.nupkg" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="compiler\resources\Test.RepoCountersigned.1.0.0.nupkg" />
     <EmbeddedResource Include="compiler\resources\Test.Reposigned.1.0.0.nupkg" />
   </ItemGroup>
