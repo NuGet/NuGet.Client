@@ -201,7 +201,7 @@ phases:
       solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/p:BuildNumber=$(BuildNumber)"
+      msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
     condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   - task: MSBuild@1
@@ -220,9 +220,17 @@ phases:
       TargetFolder: "$(BuildOutputTargetPath)\\artifacts\\$(VsixPublishDir)\\$(NupkgOutputDir)"
 
   - task: MSBuild@1
-    displayName: "Generate VSMAN file for VSIX"
+    displayName: "Generate VSMAN file for NuGet Core VSIX"
     inputs:
       solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
+      msbuildVersion: "15.0"
+      configuration: "$(BuildConfiguration)"
+    condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+
+  - task: MSBuild@1
+    displayName: "Generate VSMAN file for Build Tools VSIX"
+    inputs:
+      solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
