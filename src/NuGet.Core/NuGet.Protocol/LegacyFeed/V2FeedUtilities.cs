@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -36,6 +37,10 @@ namespace NuGet.Protocol
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
+                // Update http source cache context MaxAge so that it can always go online to fetch
+                // latest version of packages.
+                sourceCacheContext.MaxAge = DateTimeOffset.UtcNow;
+
                 // apply the filters to the version list returned
                 var packages = await feedParser.FindPackagesByIdAsync(
                     package.Id,
