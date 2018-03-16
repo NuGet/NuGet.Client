@@ -49,7 +49,7 @@ namespace NuGet.Packaging.FuncTest
             using (var dir = TestDirectory.Create())
             {
                 // Act
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedAndTimeStampedPackageAsync(
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                     cert,
                     nupkg,
                     dir,
@@ -77,7 +77,7 @@ namespace NuGet.Packaging.FuncTest
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 // Act
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
 
                 // Assert
                 using (var stream = File.OpenRead(signedPackagePath))
@@ -99,7 +99,7 @@ namespace NuGet.Packaging.FuncTest
             using (var directory = TestDirectory.Create())
             using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var packageFilePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(
+                var packageFilePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                     certificate,
                     packageContext,
                     directory);
@@ -149,7 +149,7 @@ namespace NuGet.Packaging.FuncTest
             using (var certificate1 = new X509Certificate2(certificates[0].Source.Cert))
             using (var certificate2 = new X509Certificate2(certificates[1].Source.Cert))
             {
-                var packageFilePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(
+                var packageFilePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                     certificate1,
                     packageContext,
                     directory);

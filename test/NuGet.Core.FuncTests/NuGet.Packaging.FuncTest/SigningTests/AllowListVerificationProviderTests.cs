@@ -40,9 +40,9 @@ namespace NuGet.Packaging.FuncTest
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
-                var certificateFingerprint = CertificateUtility.GetHash(testCertificate, HashAlgorithmName.SHA256);
-                var certificateFingerprintString = BitConverter.ToString(certificateFingerprint).Replace("-", "");
+                var certificateFingerprintString = SignatureTestUtility.GetFingerprint(testCertificate, HashAlgorithmName.SHA256);
+
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
 
                 var allowListHashes = new[] { certificateFingerprintString, "abc" };
                 var allowList = allowListHashes.Select(hash => new CertificateHashAllowListEntry(VerificationTarget.Primary, hash)).ToList();
@@ -74,7 +74,7 @@ namespace NuGet.Packaging.FuncTest
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signedPackagePath = await SignedArchiveTestUtility.CreateSignedPackageAsync(testCertificate, nupkg, dir);
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
 
                 var allowListHashes = new[] { "abc" };
                 var allowList = allowListHashes.Select(hash => new CertificateHashAllowListEntry(VerificationTarget.Primary, hash)).ToList();

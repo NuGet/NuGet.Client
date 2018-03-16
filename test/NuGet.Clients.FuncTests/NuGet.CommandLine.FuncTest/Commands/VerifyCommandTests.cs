@@ -221,8 +221,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 signResult.Success.Should().BeTrue();
 
-                var certificateFingerprint = CertificateUtility.GetHash(cert.Source.Cert, HashAlgorithmName.SHA256);
-                var certificateFingerprintString = BitConverter.ToString(certificateFingerprint).Replace("-", "");
+                var certificateFingerprintString = SignatureTestUtility.GetFingerprint(cert.Source.Cert, HashAlgorithmName.SHA256);
 
                 // Act
                 var verifyResult = CommandRunner.Run(
