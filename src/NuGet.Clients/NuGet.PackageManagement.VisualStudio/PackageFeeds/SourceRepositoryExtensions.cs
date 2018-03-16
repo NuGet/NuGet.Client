@@ -88,6 +88,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
+                // Update http source cache context MaxAge so that it can always go online to fetch
+                // latest version of packages.
+                sourceCacheContext.MaxAge = DateTimeOffset.UtcNow;
+
                 var packages = await metadataResource?.GetMetadataAsync(
                     identity.Id,
                     includePrerelease: true,
@@ -142,6 +146,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
+                // Update http source cache context MaxAge so that it can always go online to fetch
+                // latest version of packages.
+                sourceCacheContext.MaxAge = DateTimeOffset.UtcNow;
+
                 var packages = await metadataResource?.GetMetadataAsync(
                     packageId,
                     includePrerelease,

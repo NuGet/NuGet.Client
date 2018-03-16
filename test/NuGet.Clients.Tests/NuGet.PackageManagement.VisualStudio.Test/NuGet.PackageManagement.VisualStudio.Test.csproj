@@ -26,6 +26,7 @@
     <Compile Include="DispatcherThreadCollection.cs" />
     <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />
     <Compile Include="Feeds\UpdatePackageFeedTests.cs" />
+    <Compile Include="Feeds\InstalledPackageFeedTests.cs" />
     <Compile Include="FrameworkAssemblyResolverTests.cs" />
     <Compile Include="ProjectSystems\ProjectKNuGetProjectTests.cs" />
     <Compile Include="ProjectSystems\ProjectSystemCacheTests.cs" />
