@@ -40,9 +40,9 @@ namespace NuGet.Packaging.FuncTest
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
+                var certificateFingerprintString = SignatureTestUtility.GetFingerprint(testCertificate, HashAlgorithmName.SHA256);
+
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
-                var certificateFingerprint = CertificateUtility.GetHash(testCertificate, HashAlgorithmName.SHA256);
-                var certificateFingerprintString = BitConverter.ToString(certificateFingerprint).Replace("-", "");
 
                 var allowListHashes = new[] { certificateFingerprintString, "abc" };
                 var allowList = allowListHashes.Select(hash => new CertificateHashAllowListEntry(VerificationTarget.Primary, hash)).ToList();
