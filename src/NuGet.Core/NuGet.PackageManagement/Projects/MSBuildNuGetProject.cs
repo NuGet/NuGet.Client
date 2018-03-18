@@ -313,7 +313,7 @@ namespace NuGet.ProjectManagement
             {
                 foreach (var referenceItem in compatibleReferenceItemsGroup.Items)
                 {
-                    if (IsAssemblyReference(referenceItem))
+                    if (IsAssemblyReference(packageIdentity, referenceItem))
                     {
                         var referenceItemFullPath = Path.Combine(packageInstallPath, referenceItem);
                         var referenceName = Path.GetFileName(referenceItem);
@@ -530,7 +530,7 @@ namespace NuGet.ProjectManagement
                 {
                     foreach (var item in compatibleReferenceItemsGroup.Items)
                     {
-                        if (IsAssemblyReference(item))
+                        if (IsAssemblyReference(packageIdentity, item))
                         {
                             await ProjectSystem.RemoveReferenceAsync(Path.GetFileName(item));
                         }
@@ -601,8 +601,13 @@ namespace NuGet.ProjectManagement
             return base.PostProcessAsync(nuGetProjectContext, token);
         }
 
-        private static bool IsAssemblyReference(string filePath)
+        private static bool IsAssemblyReference(PackageIdentity packageIdentity, string filePath)
         {
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
             // assembly reference must be under lib/
             if (!filePath.StartsWith(PackagingConstants.Folders.Lib + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
                 && !filePath.StartsWith(PackagingConstants.Folders.Lib + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
@@ -619,8 +624,19 @@ namespace NuGet.ProjectManagement
             }
 
             // Assembly reference must have a .dll|.exe|.winmd extension and is not a resource assembly;
-            return !filePath.EndsWith(Constants.ResourceAssemblyExtension, StringComparison.OrdinalIgnoreCase) &&
-                   Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase);
+            if (Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase))
+            {
+                // Assembly name can be ended as ".resources" by itself. 
+                // We should check full name + resources.dll postfix here.
+                if (filePath.EndsWith(packageIdentity.Id+Constants.ResourceAssemblyExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;                   
         }
 
         private static IDictionary<XName, Action<XElement, XElement>> GetConfigMappings()

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -500,7 +501,9 @@ namespace NuGet.Packaging
 
             if (StringComparer.OrdinalIgnoreCase.Equals(extension, ".dll"))
             {
-                if (!path.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase))
+                // Resource assembly suppose to be located in the culture folder.
+                // In other case proper assemblies that are ended with "resources" can be filtered.
+                if (!Regex.IsMatch(path, @"[\\\/](\w{2}|\w{2}[-]\w{2})[\\\/].+[.]resources[.]dll$", RegexOptions.IgnoreCase))
                 {
                     result = true;
                 }

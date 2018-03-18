@@ -35,10 +35,58 @@ namespace NuGet.Packaging.Test
                         Assert.Equal(zipReader.GetIdentity(), folderReader.GetIdentity(), new PackageIdentityComparer());
 
                         Assert.Equal(zipReader.GetLibItems().Count(), folderReader.GetLibItems().Count());
+                        var referenceItems = zipReader.GetReferenceItems();
+                        var folderItems = folderReader.GetReferenceItems();
 
-                        Assert.Equal(zipReader.GetReferenceItems().Count(), folderReader.GetReferenceItems().Count());
+                        Assert.Equal(referenceItems.Count(), folderItems.Count());
 
-                        Assert.Equal(zipReader.GetReferenceItems().First().Items.First(), folderReader.GetReferenceItems().First().Items.First());
+                        Assert.Equal(referenceItems.First().Items.First(), folderItems.First().Items.First());
+                    }
+                }
+            }
+        }
+
+        // verify that assemblies ended with "resources" still processed.
+        [Fact]
+        public void PackagesEndedWithResourcesShouldBeProcessed()
+        {
+            using (var packageFile = TestPackagesCore.GetLegacyTestPackage("test.resources"))
+            {
+                using (var zip = new ZipArchive(File.OpenRead(packageFile)))
+                using (var zipReader = new PackageArchiveReader(zip))
+                {
+                    var folder = Path.Combine(Path.GetDirectoryName(packageFile), Guid.NewGuid().ToString());
+
+                    using (var zipFile = new ZipArchive(File.OpenRead(packageFile)))
+                    {
+                        zipFile.ExtractAll(folder);
+
+                        var folderReader = new PackageFolderReader(folder);
+
+                        Assert.Equal(zipReader.GetIdentity(), folderReader.GetIdentity(), new PackageIdentityComparer());
+                        var libs1 = zipReader.GetLibItems().Count();
+                        var libs2 = folderReader.GetLibItems().Count();
+                        Assert.Equal(libs1, libs2);
+
+                        var group1 = zipReader.GetReferenceItems();
+                        var group2 = folderReader.GetReferenceItems();
+
+                        Assert.Equal(group1.Count(), group2.Count());
+
+                        // Check that resource assembly not filtered out.
+                        Assert.True(group1.First().Items.Any(p => p.EndsWith("resources.dll")));
+                        // Check that resource assembly not filtered out.
+                        Assert.True(group2.First().Items.Any(p => p.EndsWith("resources.dll")));
+
+                        foreach (var item in group1)
+                        {  
+                            Assert.False(item.Items.Any(p=>p.EndsWith("resources.resources.dll")));
+                        }
+
+                        foreach (var item in group2)
+                        {
+                            Assert.False(item.Items.Any(p => p.EndsWith("resources.resources.dll")));
+                        }
                     }
                 }
             }

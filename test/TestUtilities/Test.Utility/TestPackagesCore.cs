@@ -174,16 +174,18 @@ namespace NuGet.Test.Utility
             return file;
         }
 
-        public static TempFile GetLegacyTestPackage()
+        public static TempFile GetLegacyTestPackage(string packageName="test")
         {
             var file = new TempFile();
 
             using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
-                zip.AddEntry("lib/test.dll", ZeroContent);
-                zip.AddEntry("lib/net40/test40.dll", ZeroContent);
-                zip.AddEntry("lib/net40/test40b.dll", ZeroContent);
-                zip.AddEntry("lib/net45/test45.dll", ZeroContent);
+                zip.AddEntry("lib/"+ packageName + ".dll", ZeroContent);
+                zip.AddEntry("lib/net40/"+ packageName + "40.dll", ZeroContent);
+                zip.AddEntry("lib/net40/"+ packageName + "40b.dll", ZeroContent);
+                zip.AddEntry("lib/net45/"+ packageName + "45.dll", ZeroContent);
+                zip.AddEntry("lib/net40/en/" + packageName + ".resources.dll", ZeroContent);
+                zip.AddEntry("lib/net45/en-GB/" + packageName + ".resources.dll", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
