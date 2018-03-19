@@ -11,10 +11,11 @@
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d15.$(MinorNuGetVersion)</VsTargetBranch>
     <SdkTargetBranch>master</SdkTargetBranch>
     <CliTargetBranch>master</CliTargetBranch>
-    <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
-    changes we might have made-->
+    <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api changes we might have made-->
+    <NetCoreMajorVersion Condition=" '$(NetCoreMajorVersion)' == '' ">2</NetCoreMajorVersion>
+    <NetCoreMinorVersion Condition=" '$(NetCoreMinorVersion)' == '' ">1</NetCoreMinorVersion>
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">netcore-$(NetCoreMajorVersion).$(NetCoreMinorVersion)-preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
   </PropertyGroup>
 
   <!-- Dependency versions -->
