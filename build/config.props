@@ -15,7 +15,7 @@
     <NetCoreMajorVersion Condition=" '$(NetCoreMajorVersion)' == '' ">2</NetCoreMajorVersion>
     <NetCoreMinorVersion Condition=" '$(NetCoreMinorVersion)' == '' ">1</NetCoreMinorVersion>
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">netcore-$(NetCoreMajorVersion).$(NetCoreMinorVersion)-preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">netcore.$(NetCoreMajorVersion).$(NetCoreMinorVersion).preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
   </PropertyGroup>
 
   <!-- Dependency versions -->
