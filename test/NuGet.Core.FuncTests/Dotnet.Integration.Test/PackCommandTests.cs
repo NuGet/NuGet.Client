@@ -2314,5 +2314,58 @@ namespace ClassLibrary
                 }
             }
         }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackWithSourceControlInformationVerifyNuspec()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    var ns = xml.Root.Name.Namespace;
+
+                    // mock implementation of InitializeSourceControlInformation common targets:
+                    xml.Add(
+                        new XElement(ns + "Target",
+                            new XAttribute("Name", "InitializeSourceControlInformation"),
+                            new XElement(ns + "PropertyGroup",
+                                new XElement("SourceRevisionId", "e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3"),
+                                new XElement("PrivateRepositoryUrl", "https://github.com/NuGet/NuGet.Client.git"))));
+
+                    xml.Add(
+                        new XElement(ns + "PropertyGroup",
+                            new XElement("SourceControlInformationFeatureSupported", "true")));
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the output .nuspec.
+                    nuspecReader.GetRepositoryMetadata().Type.Should().Be("");
+                    nuspecReader.GetRepositoryMetadata().Url.Should().Be("https://github.com/NuGet/NuGet.Client.git");
+                    nuspecReader.GetRepositoryMetadata().Branch.Should().Be("");
+                    nuspecReader.GetRepositoryMetadata().Commit.Should().Be("e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3");
+                }
+            }
+        }
     }
 }
