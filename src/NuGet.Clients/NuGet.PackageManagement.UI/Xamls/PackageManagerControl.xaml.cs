@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -13,7 +14,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -45,6 +45,8 @@ namespace NuGet.PackageManagement.UI
 
         private RestartRequestBar _restartBar;
 
+        private PRMigratorBar _migratorBar;
+
         private readonly IVsWindowSearchHost _windowSearchHost;
         private readonly IVsWindowSearchHostFactory _windowSearchHostFactory;
 
@@ -53,7 +55,6 @@ namespace NuGet.PackageManagement.UI
         private readonly Dispatcher _uiDispatcher;
 
         private bool _missingPackageStatus;
-
         private readonly INuGetUILogger _uiLogger;
 
         public PackageManagerModel Model { get; }
@@ -124,6 +125,8 @@ namespace NuGet.PackageManagement.UI
 
             AddRestartRequestBar(vsShell);
 
+            AddMigratorBar();
+
             _packageDetail.Control = this;
             _packageDetail.Visibility = Visibility.Hidden;
 
@@ -138,7 +141,7 @@ namespace NuGet.PackageManagement.UI
 
             // UI is initialized. Start the first search
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-            _packageList.IsSolution = this.Model.IsSolution;
+            _packageList.IsSolution = Model.IsSolution;
 
             Loaded += (_, __) =>
             {
@@ -162,6 +165,8 @@ namespace NuGet.PackageManagement.UI
             solutionManager.AfterNuGetCacheUpdated += SolutionManager_CacheUpdated;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
+
+            Unloaded += PackageManagerUnloaded;
 
             if (IsUILegalDisclaimerSuppressed())
             {
@@ -275,6 +280,11 @@ namespace NuGet.PackageManagement.UI
             {
                 _topPanel.SelectFilter(settings.SelectedFilter);
             }
+        }
+
+        private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
+        {
+            Unloaded -= PackageManagerUnloaded;
         }
 
         private static bool IsUILegalDisclaimerSuppressed()
@@ -479,7 +489,18 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void AddMigratorBar()
+        {
+            _migratorBar = new PRMigratorBar(Model);
+
+            DockPanel.SetDock(_migratorBar, Dock.Top);
+
+            _root.Children.Insert(0, _migratorBar);
+        }
+
+#pragma warning disable IDE1006 // Naming Styles
         private void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
+#pragma warning restore IDE1006 // Naming Styles
         {
             // make sure update happens on the UI thread.
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
@@ -1014,7 +1035,7 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                this.IsEnabled = false;
+                IsEnabled = false;
                 NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
                 try
                 {
@@ -1145,6 +1166,14 @@ namespace NuGet.PackageManagement.UI
                         CancellationToken.None);
                 },
                nugetUi => SetOptions(nugetUi, NuGetActionType.Update));
+        }
+
+        private async void UpgradeButton_Click(object sender, RoutedEventArgs e)
+        {
+            var project = Model.Context.Projects.FirstOrDefault();
+            Debug.Assert(project != null);
+
+            await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, project);
         }
     }
 }

@@ -59,6 +59,20 @@ namespace NuGet.PackageManagement.UI
             return result;
         }
 
+        public bool ShowNuGetUpgradeWindow(NuGetProjectUpgradeWindowModel nuGetProjectUpgradeWindowModel)
+        {
+            var result = false;
+
+            UIDispatcher.Invoke(() =>
+            {
+                var upgradeInformationWindow = new NuGetProjectUpgradeWindow(nuGetProjectUpgradeWindowModel);
+
+                result = upgradeInformationWindow.ShowModal() == true;
+            });
+
+            return result;
+        }
+
         private bool WarnAboutDotnetDeprecationImpl(IEnumerable<NuGetProject> projects)
         {
             var window = new DeprecatedFrameworkWindow(UIContext)

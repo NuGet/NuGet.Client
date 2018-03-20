@@ -11,19 +11,31 @@ namespace NuGet.Packaging.Test
 {
     public class KeyPairFileReaderTests
     {
+        private static readonly Encoding _encoding = new UTF8Encoding();
+
         [Fact]
         public void Constructor_IfStreamIsNull_Throws()
         {
-            var exception = Assert.Throws<ArgumentNullException>(() => new KeyPairFileReader(stream: null));
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new KeyPairFileReader(stream: null, encoding: _encoding));
 
             Assert.Equal("stream", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_IfEncodingIsNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new KeyPairFileReader(Stream.Null, encoding: null));
+
+            Assert.Equal("encoding", exception.ParamName);
         }
 
         [Fact]
         public void ReadSection_IfContentEmpty_ReturnsEmptyResult()
         {
             using (var stream = new MemoryStream())
-            using (var reader = new KeyPairFileReader(stream))
+            using (var reader = new KeyPairFileReader(stream, _encoding))
             {
                 var section = reader.ReadSection();
 
@@ -41,7 +53,7 @@ namespace NuGet.Packaging.Test
         {
             var bytes = Encoding.UTF8.GetBytes(content);
             using (var stream = new MemoryStream(bytes))
-            using (var reader = new KeyPairFileReader(stream))
+            using (var reader = new KeyPairFileReader(stream, _encoding))
             {
                 var exception = Assert.Throws<SignatureException>(() => reader.ReadSection());
 
@@ -57,7 +69,7 @@ namespace NuGet.Packaging.Test
             var bytes = Encoding.UTF8.GetBytes(content);
 
             using (var stream = new MemoryStream(bytes))
-            using (var reader = new KeyPairFileReader(stream))
+            using (var reader = new KeyPairFileReader(stream, _encoding))
             {
                 var exception = Assert.Throws<SignatureException>(() => reader.ReadSection());
 
@@ -71,7 +83,7 @@ namespace NuGet.Packaging.Test
             var bytes = Encoding.UTF8.GetBytes("a:b\r\n\r\nc:d\r\n\r\n");
 
             using (var stream = new MemoryStream(bytes))
-            using (var reader = new KeyPairFileReader(stream))
+            using (var reader = new KeyPairFileReader(stream, _encoding))
             {
                 var headerSection = reader.ReadSection();
 
@@ -96,7 +108,7 @@ namespace NuGet.Packaging.Test
             {
                 Assert.True(stream.CanRead);
 
-                using (var reader = new KeyPairFileReader(stream))
+                using (var reader = new KeyPairFileReader(stream, _encoding))
                 {
                 }
 

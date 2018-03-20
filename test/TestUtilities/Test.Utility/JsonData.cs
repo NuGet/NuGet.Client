@@ -4194,6 +4194,248 @@ namespace Test.Utility
             ""Expires"": ""2017-03-09T16:47:16""
             }}";
         #endregion
-        
+
+        #region RepoSignIndexJson
+        public const string repoSignIndexJsonData = @"{
+  ""version"": ""3.0.0"",
+  ""resources"": [
+    {
+      ""@id"": ""https://nuget-dev-usnc-v2v3search.nugettest.org/"",
+      ""@type"": ""SearchGalleryQueryService/3.0.0-rc"",
+      ""comment"": ""Azure Website based Search Service used by Gallery (primary)""
+    },
+    {
+      ""@id"": ""https://nuget-dev-ussc-v2v3search.nugettest.org/"",
+      ""@type"": ""SearchGalleryQueryService/3.0.0-rc"",
+      ""comment"": ""Azure Website based Search Service used by Gallery (secondary)""
+    },
+    {
+      ""@id"": ""https://nuget-dev-usnc-v2v3search.nugettest.org/autocomplete"",
+      ""@type"": ""SearchAutocompleteService"",
+      ""comment"": ""Autocomplete endpoint of NuGet Search service (primary).""
+    },
+    {
+      ""@id"": ""https://nuget-dev-ussc-v2v3search.nugettest.org/autocomplete"",
+      ""@type"": ""SearchAutocompleteService"",
+      ""comment"": ""Autocomplete endpoint of NuGet Search service (secondary).""
+    },
+    {
+      ""@id"": ""https://nuget-dev-usnc-v2v3search.nugettest.org/autocomplete"",
+      ""@type"": ""SearchAutocompleteService/3.0.0-beta"",
+      ""comment"": ""Autocomplete endpoint of NuGet Search service (primary) used by beta clients""
+    },
+    {
+      ""@id"": ""https://nuget-dev-ussc-v2v3search.nugettest.org/autocomplete"",
+      ""@type"": ""SearchAutocompleteService/3.0.0-beta"",
+      ""comment"": ""Autocomplete endpoint of NuGet Search service (secondary) used by beta clients""
+    },
+    {
+      ""@id"": ""https://nuget-dev-usnc-v2v3search.nugettest.org/autocomplete"",
+      ""@type"": ""SearchAutocompleteService/3.0.0-rc"",
+      ""comment"": ""Autocomplete endpoint of NuGet Search service (primary) used by RC clients""
+    },
+    {
+      ""@id"": ""https://nuget-dev-ussc-v2v3search.nugettest.org/autocomplete"",
+      ""@type"": ""SearchAutocompleteService/3.0.0-rc"",
+      ""comment"": ""Autocomplete endpoint of NuGet Search service (secondary) used by RC clients""
+    },
+    {
+      ""@id"": ""https://nuget-dev-usnc-v2v3search.nugettest.org/query"",
+      ""@type"": ""SearchQueryService"",
+      ""comment"": ""Query endpoint of NuGet Search service (primary).""
+    },
+    {
+      ""@id"": ""https://nuget-dev-ussc-v2v3search.nugettest.org/query"",
+      ""@type"": ""SearchQueryService"",
+      ""comment"": ""Query endpoint of NuGet Search service (secondary).""
+    },
+    {
+      ""@id"": ""https://nuget-dev-usnc-v2v3search.nugettest.org/query"",
+      ""@type"": ""SearchQueryService/3.0.0-beta"",
+      ""comment"": ""Query endpoint of NuGet Search service (primary) used by beta clients""
+    },
+    {
+      ""@id"": ""https://nuget-dev-ussc-v2v3search.nugettest.org/query"",
+      ""@type"": ""SearchQueryService/3.0.0-beta"",
+      ""comment"": ""Query endpoint of NuGet Search service (secondary) used by beta clients""
+    },
+    {
+      ""@id"": ""https://nuget-dev-usnc-v2v3search.nugettest.org/query"",
+      ""@type"": ""SearchQueryService/3.0.0-rc"",
+      ""comment"": ""Query endpoint of NuGet Search service (primary) used by RC clients""
+    },
+    {
+      ""@id"": ""https://nuget-dev-ussc-v2v3search.nugettest.org/query"",
+      ""@type"": ""SearchQueryService/3.0.0-rc"",
+      ""comment"": ""Query endpoint of NuGet Search service (secondary) used by RC clients""
+    },
+    {
+      ""@id"": ""https://nuget-dev-usnc-v2v3search.nugettest.org/query"",
+      ""@type"": ""SearchQueryService/3.4.0"",
+      ""comment"": ""Query endpoint of NuGet Search service (primary).""
+    },
+    {
+      ""@id"": ""https://nuget-dev-ussc-v2v3search.nugettest.org/query"",
+      ""@type"": ""SearchQueryService/3.4.0"",
+      ""comment"": ""Query endpoint of NuGet Search service (secondary).""
+    },
+    {
+      ""@id"": ""https://dev.nugettest.org/packages/{id}/{version}/ReportAbuse"",
+      ""@type"": ""ReportAbuseUriTemplate"",
+      ""comment"": ""URI template used by NuGet Client to construct Report Abuse URL for packages.""
+    },
+    {
+      ""@id"": ""https://dev.nugettest.org/packages/{id}/{version}/ReportAbuse"",
+      ""@type"": ""ReportAbuseUriTemplate/3.0.0-beta"",
+      ""comment"": ""URI template used by NuGet Client to construct Report Abuse URL for packages.""
+    },
+    {
+      ""@id"": ""https://dev.nugettest.org/packages/{id}/{version}/ReportAbuse"",
+      ""@type"": ""ReportAbuseUriTemplate/3.0.0-rc"",
+      ""comment"": ""URI template used by NuGet Client to construct Report Abuse URL for packages.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-registration3/"",
+      ""@type"": ""RegistrationsBaseUrl"",
+      ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored. This base URL does not include SemVer 2.0.0 packages.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-registration3/"",
+      ""@type"": ""RegistrationsBaseUrl/3.0.0-beta"",
+      ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored. This base URL does not include SemVer 2.0.0 packages.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-registration3/"",
+      ""@type"": ""RegistrationsBaseUrl/3.0.0-rc"",
+      ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored. This base URL does not include SemVer 2.0.0 packages.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-registration3/{id-lower}/index.json"",
+      ""@type"": ""PackageDisplayMetadataUriTemplate"",
+      ""comment"": ""URI template used by NuGet Client to construct display metadata for Packages using ID.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-registration3/{id-lower}/index.json"",
+      ""@type"": ""PackageDisplayMetadataUriTemplate/3.0.0-beta"",
+      ""comment"": ""URI template used by NuGet Client to construct display metadata for Packages using ID.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-registration3/{id-lower}/index.json"",
+      ""@type"": ""PackageDisplayMetadataUriTemplate/3.0.0-rc"",
+      ""comment"": ""URI template used by NuGet Client to construct display metadata for Packages using ID.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-registration3/{id-lower}/{version-lower}.json"",
+      ""@type"": ""PackageVersionDisplayMetadataUriTemplate"",
+      ""comment"": ""URI template used by NuGet Client to construct display metadata for Packages using ID, Version.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-registration3/{id-lower}/{version-lower}.json"",
+      ""@type"": ""PackageVersionDisplayMetadataUriTemplate/3.0.0-beta"",
+      ""comment"": ""URI template used by NuGet Client to construct display metadata for Packages using ID, Version.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-registration3/{id-lower}/{version-lower}.json"",
+      ""@type"": ""PackageVersionDisplayMetadataUriTemplate/3.0.0-rc"",
+      ""comment"": ""URI template used by NuGet Client to construct display metadata for Packages using ID, Version.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-flatcontainer/"",
+      ""@type"": ""PackageBaseAddress/3.0.0"",
+      ""comment"": ""Base URL of where NuGet packages are stored, in the format https://api.nuget.org/v3-flatcontainer/{id-lower}/{version-lower}/{id-lower}.{version-lower}.nupkg""
+    },
+    {
+      ""@id"": ""https://dev.nugettest.org/api/v2"",
+      ""@type"": ""LegacyGallery"",
+      ""comment"": ""Legacy gallery using the V2 protocol.""
+    },
+    {
+      ""@id"": ""https://dev.nugettest.org/api/v2"",
+      ""@type"": ""LegacyGallery/2.0.0"",
+      ""comment"": ""Legacy gallery using the V2 protocol.""
+    },
+    {
+      ""@id"": ""https://dev.nugettest.org/api/v2/package"",
+      ""@type"": ""PackagePublish/2.0.0"",
+      ""comment"": ""Legacy gallery publish endpoint using the V2 protocol.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-registration3-gz/"",
+      ""@type"": ""RegistrationsBaseUrl/3.4.0"",
+      ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored in GZIP format. This base URL does not include SemVer 2.0.0 packages.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-registration3-gz-semver2/"",
+      ""@type"": ""RegistrationsBaseUrl/3.6.0"",
+      ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored in GZIP format. This base URL includes SemVer 2.0.0 packages.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-registration3-gz-semver2/"",
+      ""@type"": ""RegistrationsBaseUrl/Versioned"",
+      ""clientVersion"": ""4.3.0-alpha"",
+      ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored in GZIP format. This base URL includes SemVer 2.0.0 packages.""
+    },
+    {
+      ""@id"": ""https://api.nuget.org/v3-index/repository-signatures/index.json"",
+      ""@type"": ""RepositorySignatures/4.7.0"",
+      ""comment"": ""The endpoint for discovering information about this package source's repository signatures.""
+    },
+    {
+      ""@id"": ""https://az635243.vo.msecnd.net/v3/catalog0/index.json"",
+      ""@type"": ""Catalog/3.0.0"",
+      ""comment"": ""Index of the NuGet package catalog.""
+    }
+  ],
+  ""@context"": {
+    ""@vocab"": ""http://schema.nuget.org/schema#"",
+    ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
+  }
+}";
+        #endregion
+
+        #region repoSignResponse
+        public const string repoSignData = @"{
+  ""allRepositorySigned"": false,
+  ""signingCertificates"": [
+    {
+      ""fingerprints"": {
+        ""2.16.840.1.101.3.4.2.1"": ""3f9001ea83c560d712c24cf213c3d312cb3bff51ee89435d3430bd06b5d0eece""
+      },
+      ""subject"": ""CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"",
+      ""issuer"": ""CN=DigiCert SHA2 Assured ID Code Signing CA, OU=www.digicert.com, O=DigiCert Inc, C=US"",
+      ""notBefore"": ""2018-02-26T00:00:00.0000000Z"",
+      ""notAfter"": ""2021-01-27T12:00:00.0000000Z"",
+      ""contentUrl"": ""https://api.nuget.org/v3-index/repository-signatures/certificates/3f9001ea83c560d712c24cf213c3d312cb3bff51ee89435d3430bd06b5d0eece.crt""
+    }
+  ]
+}";
+        #endregion
+
+        #region repoSignResponseWithoutAllRepositorySigned
+
+        public const string repoSignDataNoAllRepositorySigned = @"{
+  ""signingCertificates"": [
+    {
+      ""fingerprints"": {
+        ""2.16.840.1.101.3.4.2.1"": ""3f9001ea83c560d712c24cf213c3d312cb3bff51ee89435d3430bd06b5d0eece""
+      },
+      ""subject"": ""CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"",
+      ""issuer"": ""CN=DigiCert SHA2 Assured ID Code Signing CA, OU=www.digicert.com, O=DigiCert Inc, C=US"",
+      ""notBefore"": ""2018-02-26T00:00:00.0000000Z"",
+      ""notAfter"": ""2021-01-27T12:00:00.0000000Z"",
+      ""contentUrl"": ""https://api.nuget.org/v3-index/repository-signatures/certificates/3f9001ea83c560d712c24cf213c3d312cb3bff51ee89435d3430bd06b5d0eece.crt""
+    }
+  ]
+}";
+        #endregion
+
+        #region repoSignResponseWithoutCertInfo
+
+        public const string repoSignDataNoCertInfo = @"{
+  ""allRepositorySigned"": false
+}";
+        #endregion
+
+
     }
 }

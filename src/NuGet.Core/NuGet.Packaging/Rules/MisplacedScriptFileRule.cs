@@ -15,7 +15,14 @@ namespace NuGet.Packaging.Rules
         private const string ScriptExtension = ".ps1";
         private static readonly string ToolsDirectory = PackagingConstants.Folders.Tools;
 
-        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
+        public string MessageFormat { get; }
+
+        public MisplacedScriptFileRule(string messageFormat)
+        {
+            MessageFormat = messageFormat;
+        }
+
+        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
             foreach (var file in builder.GetFiles().Select(t => PathUtility.GetPathWithDirectorySeparator(t)))
             {
@@ -28,31 +35,14 @@ namespace NuGet.Packaging.Rules
                 {
                     yield return CreatePackageIssueForMisplacedScript(file);
                 }
-                else
-                {
-                    string name = Path.GetFileNameWithoutExtension(file);
-                    if (!name.Equals("install", StringComparison.OrdinalIgnoreCase) &&
-                        !name.Equals("uninstall", StringComparison.OrdinalIgnoreCase) &&
-                        !name.Equals("init", StringComparison.OrdinalIgnoreCase))
-                    {
-                        yield return CreatePackageIssueForUnrecognizedScripts(file);
-                    }
-                }
             }
         }
 
-        private static PackLogMessage CreatePackageIssueForMisplacedScript(string target)
+        private PackagingLogMessage CreatePackageIssueForMisplacedScript(string target)
         {
-            return PackLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.ScriptOutsideToolsWarning, target),
+            return PackagingLogMessage.CreateWarning(
+                string.Format(CultureInfo.CurrentCulture, MessageFormat, target),
                 NuGetLogCode.NU5110);
-        }
-
-        private static PackLogMessage CreatePackageIssueForUnrecognizedScripts(string target)
-        {
-            return PackLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.UnrecognizedScriptWarning, target),
-                NuGetLogCode.NU5111);
         }
     }
 }

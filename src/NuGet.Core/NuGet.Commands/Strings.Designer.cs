@@ -332,6 +332,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to sign package..
+        /// </summary>
+        internal static string Error_UnableToSignPackage {
+            get {
+                return ResourceManager.GetString("Error_UnableToSignPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; specifies an invalid build action &apos;{1}&apos; for file &apos;{2}&apos;..
         /// </summary>
         internal static string Error_UnknownBuildAction {
@@ -1544,6 +1553,15 @@ namespace NuGet.Commands {
         internal static string Warning_FileDoesNotExist {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; was not added to the package. Files and folders starting with &apos;.&apos; or ending with &apos;.nupkg&apos; are excluded by default. To include this file, use -NoDefaultExcludes from the commandline.
+        /// </summary>
+        internal static string Warning_FileExcludedByDefault {
+            get {
+                return ResourceManager.GetString("Warning_FileExcludedByDefault", resourceCulture);
             }
         }
         

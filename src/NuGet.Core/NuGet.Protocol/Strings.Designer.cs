@@ -341,6 +341,24 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to parse {0} information from {1}. .
+        /// </summary>
+        internal static string Log_FailedToParseRepoSignInfor {
+            get {
+                return ResourceManager.GetString("Log_FailedToParseRepoSignInfor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to get repository signature information for source {0}..
+        /// </summary>
+        internal static string Log_FailedToReadRepositorySignature {
+            get {
+                return ResourceManager.GetString("Log_FailedToReadRepositorySignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to load the service index for source {0}..
         /// </summary>
         internal static string Log_FailedToReadServiceIndex {
@@ -427,6 +445,15 @@ namespace NuGet.Protocol {
         internal static string Log_RetryingHttp {
             get {
                 return ResourceManager.GetString("Log_RetryingHttp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Retrying repository signature request for source &apos;{0}&apos;..
+        /// </summary>
+        internal static string Log_RetryingRepositorySignature {
+            get {
+                return ResourceManager.GetString("Log_RetryingRepositorySignature", resourceCulture);
             }
         }
         

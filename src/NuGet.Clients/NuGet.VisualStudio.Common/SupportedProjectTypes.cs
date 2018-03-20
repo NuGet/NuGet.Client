@@ -33,7 +33,7 @@ namespace NuGet.VisualStudio
         private static readonly HashSet<string> _unsupportedProjectTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 VsProjectTypes.LightSwitchProjectTypeGuid,
-                VsProjectTypes.InstallShieldLimitedEditionTypeGuid,
+                VsProjectTypes.InstallShieldLimitedEditionTypeGuid
             };
 
         // List of project types that cannot have binding redirects added

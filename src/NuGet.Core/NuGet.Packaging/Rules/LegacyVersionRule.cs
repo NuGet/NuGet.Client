@@ -14,17 +14,23 @@ namespace NuGet.Packaging.Rules
     /// <remarks>This rule should be removed once more users move to SemVer 2.0.0 capable clients.</remarks>
     internal class LegacyVersionRule : IPackageRule
     {
+        public string MessageFormat { get; }
+
+        public LegacyVersionRule(string messageFormat)
+        {
+            MessageFormat = messageFormat;
+        }
         // NuGet 2.12 regex for version parsing.
         private const string LegacyRegex = @"^(?<Version>\d+(\s*\.\s*\d+){0,3})(?<Release>-[a-z][0-9a-z-]*)?$";
 
-        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
+        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
             var regex = new Regex(LegacyRegex, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
             var nuspecReader = builder.NuspecReader;
             if (!regex.IsMatch(nuspecReader.GetVersion().ToFullString()))
             {
-                yield return PackLogMessage.CreateWarning(
-                    string.Format(CultureInfo.CurrentCulture, AnalysisResources.LegacyVersionWarning, nuspecReader.GetVersion().ToFullString()),
+                yield return PackagingLogMessage.CreateWarning(
+                    string.Format(CultureInfo.CurrentCulture, MessageFormat, nuspecReader.GetVersion().ToFullString()),
                     NuGetLogCode.NU5105);
             }
         }

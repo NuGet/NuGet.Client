@@ -4,12 +4,25 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+#if IS_DESKTOP
+using System.Security.Cryptography;
+using System.Security.Cryptography.Pkcs;
+#endif
+using NuGet.Common;
+
 
 namespace NuGet.Packaging.Signing
 {
     internal class NativeCms : IDisposable
     {
         private readonly SafeCryptMsgHandle _handle;
+
+        private struct RepositoryCounterSignerInfo
+        {
+            public uint dwUnauthAttrIndex;
+            public CRYPT_ATTRIBUTE_STRING UnauthAttr;
+            public CMSG_SIGNER_INFO SignerInfo;
+        }
 
         private NativeCms(SafeCryptMsgHandle handle)
         {
@@ -53,10 +66,10 @@ namespace NuGet.Packaging.Signing
                 return null;
             }
 
-            var countersignatureSignatureValue = new byte[repositoryCountersignature.Value.EncryptedHash.cbData];
+            var countersignatureSignatureValue = new byte[repositoryCountersignature.Value.SignerInfo.EncryptedHash.cbData];
 
             Marshal.Copy(
-                repositoryCountersignature.Value.EncryptedHash.pbData,
+                repositoryCountersignature.Value.SignerInfo.EncryptedHash.pbData,
                 countersignatureSignatureValue,
                 startIndex: 0,
                 length: countersignatureSignatureValue.Length);
@@ -64,7 +77,7 @@ namespace NuGet.Packaging.Signing
             return countersignatureSignatureValue;
         }
 
-        private unsafe CMSG_SIGNER_INFO? GetRepositoryCountersignature()
+        private unsafe RepositoryCounterSignerInfo? GetRepositoryCountersignature()
         {
             const uint primarySignerInfoIndex = 0;
             uint unsignedAttributeCount = 0;
@@ -95,7 +108,7 @@ namespace NuGet.Packaging.Signing
 
                 var unsignedAttributes = Marshal.PtrToStructure<CRYPT_ATTRIBUTES>(pointer);
 
-                for (var i = 0; i < unsignedAttributes.cAttr; ++i)
+                for (uint i = 0; i < unsignedAttributes.cAttr; ++i)
                 {
                     var attributePointer = new IntPtr(
                         (long)unsignedAttributes.rgAttr + (i * Marshal.SizeOf<CRYPT_ATTRIBUTE_STRING>()));
@@ -137,7 +150,12 @@ namespace NuGet.Packaging.Signing
 
                         if (IsRepositoryCounterSignerInfo(counterSignerInfo))
                         {
-                            return counterSignerInfo;
+                            return new RepositoryCounterSignerInfo()
+                            {
+                                dwUnauthAttrIndex = i,
+                                UnauthAttr = attribute,
+                                SignerInfo = counterSignerInfo
+                            };
                         }
                     }
                 }
@@ -242,35 +260,95 @@ namespace NuGet.Packaging.Signing
                 }
             }
         }
-
-        internal unsafe void AddTimestamp(byte[] timeStampCms)
+#if IS_DESKTOP
+        internal unsafe void AddCountersignature(CmsSigner cmsSigner, CngKey privateKey)
         {
             using (var hb = new HeapBlockRetainer())
             {
-                var unmanagedTimestamp = hb.Alloc(timeStampCms.Length);
-                Marshal.Copy(timeStampCms, 0, unmanagedTimestamp, timeStampCms.Length);
-                var blob = new CRYPT_INTEGER_BLOB()
-                {
-                    cbData = (uint)timeStampCms.Length,
-                    pbData = unmanagedTimestamp
-                };
-                var unmanagedBlob = hb.Alloc(Marshal.SizeOf(blob));
-                Marshal.StructureToPtr(blob, unmanagedBlob, fDeleteOld: false);
+                var signerInfo = NativeUtilities.CreateSignerInfo(cmsSigner, privateKey, hb);
 
-                var attr = new CRYPT_ATTRIBUTE()
+                NativeUtilities.ThrowIfFailed(NativeMethods.CryptMsgCountersign(
+                    _handle,
+                    dwIndex: 0,
+                    cCountersigners: 1,
+                    rgCountersigners: signerInfo));
+
+                AddCertificates(CertificateUtility.GetRawDataForCollection(cmsSigner.Certificates));
+            }
+        }
+#endif
+
+#if IS_DESKTOP
+        internal unsafe void AddTimestampToRepositoryCountersignature(SignedCms timestamp)
+        {
+            using (var hb = new HeapBlockRetainer())
+            {
+                var repositoryCountersignature = GetRepositoryCountersignature();
+                if (repositoryCountersignature == null)
                 {
-                    pszObjId = hb.AllocAsciiString(Oids.SignatureTimeStampTokenAttribute),
-                    cValue = 1,
-                    rgValue = unmanagedBlob
+                    throw new SignatureException(Strings.Error_NotOneRepositoryCounterSignature);
+                }
+
+                // Remove repository countersignature from message
+                var countersignatureDelAttr = new CMSG_CTRL_DEL_SIGNER_UNAUTH_ATTR_PARA()
+                {
+                    dwSignerIndex = 0,
+                    dwUnauthAttrIndex = repositoryCountersignature.Value.dwUnauthAttrIndex
                 };
-                var unmanagedAttr = hb.Alloc(Marshal.SizeOf(attr));
-                Marshal.StructureToPtr(attr, unmanagedAttr, fDeleteOld: false);
+
+                countersignatureDelAttr.cbSize = (uint)Marshal.SizeOf(countersignatureDelAttr);
+                var unmanagedCountersignatureDelAttr = hb.Alloc(Marshal.SizeOf(countersignatureDelAttr));
+                Marshal.StructureToPtr(countersignatureDelAttr, unmanagedCountersignatureDelAttr, fDeleteOld: false);
+
+                if (!NativeMethods.CryptMsgControl(
+                    _handle,
+                    dwFlags: 0,
+                    dwCtrlType: CMSG_CONTROL_TYPE.CMSG_CTRL_DEL_SIGNER_UNAUTH_ATTR,
+                    pvCtrlPara: unmanagedCountersignatureDelAttr))
+                {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
+
+                // Add timestamp attribute to existing unsigned attributes
+                var signerInfo = repositoryCountersignature.Value.SignerInfo;
+                var unauthAttrCount = signerInfo.UnauthAttrs.cAttr + 1;
+
+                var attributeSize = Marshal.SizeOf<CRYPT_ATTRIBUTE>();
+                var attributesArray = (CRYPT_ATTRIBUTE*)hb.Alloc((int)(attributeSize * unauthAttrCount));
+                var currentAttribute = attributesArray;
+
+                // Copy existing unsigned attributes
+                for (var i = 0; i < unauthAttrCount - 1; ++i)
+                {
+                    var existingAttributePointer = new IntPtr(
+                         (long)signerInfo.UnauthAttrs.rgAttr + (i * Marshal.SizeOf<CRYPT_ATTRIBUTE>()));
+                    var existingAttribute = Marshal.PtrToStructure<CRYPT_ATTRIBUTE>(existingAttributePointer);
+
+                    currentAttribute->pszObjId = existingAttribute.pszObjId;
+                    currentAttribute->cValue = existingAttribute.cValue;
+                    currentAttribute->rgValue = existingAttribute.rgValue;
+
+                    currentAttribute++;
+                }
+
+                // Add timestamp attribute
+                *currentAttribute = GetCryptAttributeForData(timestamp.Encode(), Oids.SignatureTimeStampTokenAttribute, hb);
+
+                signerInfo.UnauthAttrs = new CRYPT_ATTRIBUTES()
+                {
+                    cAttr = unauthAttrCount,
+                    rgAttr = new IntPtr(attributesArray)
+                };
+
+                // Encode signer info
+                var unmanagedSignerInfo = hb.Alloc(Marshal.SizeOf(signerInfo));
+                Marshal.StructureToPtr(signerInfo, unmanagedSignerInfo, fDeleteOld: false);
 
                 uint encodedLength = 0;
                 if (!NativeMethods.CryptEncodeObjectEx(
                     CMSG_ENCODING.Any,
-                    lpszStructType: new IntPtr(NativeMethods.PKCS_ATTRIBUTE),
-                    pvStructInfo: unmanagedAttr,
+                    lpszStructType: new IntPtr(NativeMethods.PKCS7_SIGNER_INFO),
+                    pvStructInfo: unmanagedSignerInfo,
                     dwFlags: 0,
                     pEncodePara: IntPtr.Zero,
                     pvEncoded: IntPtr.Zero,
@@ -285,9 +363,9 @@ namespace NuGet.Packaging.Signing
 
                 var unmanagedEncoded = hb.Alloc((int)encodedLength);
                 if (!NativeMethods.CryptEncodeObjectEx(
-                   CMSG_ENCODING.Any,
-                    lpszStructType: new IntPtr(NativeMethods.PKCS_ATTRIBUTE),
-                    pvStructInfo: unmanagedAttr,
+                    CMSG_ENCODING.Any,
+                    lpszStructType: new IntPtr(NativeMethods.PKCS7_SIGNER_INFO),
+                    pvStructInfo: unmanagedSignerInfo,
                     dwFlags: 0,
                     pEncodePara: IntPtr.Zero,
                     pvEncoded: unmanagedEncoded,
@@ -296,28 +374,133 @@ namespace NuGet.Packaging.Signing
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                 }
 
-                var addAttr = new CMSG_CTRL_ADD_SIGNER_UNAUTH_ATTR_PARA()
+                var encondedSignerBlob = new CRYPT_INTEGER_BLOB()
                 {
-                    dwSignerIndex = 0,
-                    BLOB = new CRYPT_INTEGER_BLOB()
-                    {
-                        cbData = encodedLength,
-                        pbData = unmanagedEncoded
-                    }
+                    cbData = encodedLength,
+                    pbData = unmanagedEncoded
                 };
-                addAttr.cbSize = (uint)Marshal.SizeOf(addAttr);
-                var unmanagedAddAttr = hb.Alloc(Marshal.SizeOf(addAttr));
-                Marshal.StructureToPtr(addAttr, unmanagedAddAttr, fDeleteOld: false);
+
+                var unmanagedBlob = hb.Alloc(Marshal.SizeOf(encondedSignerBlob));
+                Marshal.StructureToPtr(encondedSignerBlob, unmanagedBlob, fDeleteOld: false);
+
+                var signerInfoAttr = new CRYPT_ATTRIBUTE()
+                {
+                    pszObjId = hb.AllocAsciiString(Oids.Countersignature),
+                    cValue = 1,
+                    rgValue = unmanagedBlob
+                };
+
+                // Create add unauth for signer info
+                var signerInfoAddAttr = CreateUnsignedAddAttribute(signerInfoAttr, hb);
+
+                // Add repository countersignature back to message
+                signerInfoAddAttr.cbSize = (uint)Marshal.SizeOf(signerInfoAddAttr);
+                var unmanagedSignerInfoAddAttr = hb.Alloc(Marshal.SizeOf(signerInfoAddAttr));
+
+                Marshal.StructureToPtr(signerInfoAddAttr, unmanagedSignerInfoAddAttr, fDeleteOld: false);
 
                 if (!NativeMethods.CryptMsgControl(
                     _handle,
                     dwFlags: 0,
                     dwCtrlType: CMSG_CONTROL_TYPE.CMSG_CTRL_ADD_SIGNER_UNAUTH_ATTR,
-                    pvCtrlPara: unmanagedAddAttr))
+                    pvCtrlPara: unmanagedSignerInfoAddAttr))
                 {
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                 }
             }
+        }
+
+        internal unsafe void AddTimestamp(SignedCms timestamp)
+        {
+            using (var hb = new HeapBlockRetainer())
+            {
+                var timestampAttr = GetCryptAttributeForData(timestamp.Encode(), Oids.SignatureTimeStampTokenAttribute, hb);
+                var timestampAddAttr = CreateUnsignedAddAttribute(timestampAttr, hb);
+
+                timestampAddAttr.cbSize = (uint)Marshal.SizeOf(timestampAddAttr);
+                var unmanagedTimestampAddAttr = hb.Alloc(Marshal.SizeOf(timestampAddAttr));
+                Marshal.StructureToPtr(timestampAddAttr, unmanagedTimestampAddAttr, fDeleteOld: false);
+
+                if (!NativeMethods.CryptMsgControl(
+                    _handle,
+                    dwFlags: 0,
+                    dwCtrlType: CMSG_CONTROL_TYPE.CMSG_CTRL_ADD_SIGNER_UNAUTH_ATTR,
+                    pvCtrlPara: unmanagedTimestampAddAttr))
+                {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
+            }
+        }
+#endif
+
+        private static CRYPT_ATTRIBUTE GetCryptAttributeForData(byte[] data, string attributeOid, HeapBlockRetainer hb)
+        {
+            var unmanagedData = hb.Alloc(data.Length);
+            Marshal.Copy(data, 0, unmanagedData, data.Length);
+            var blob = new CRYPT_INTEGER_BLOB()
+            {
+                cbData = (uint)data.Length,
+                pbData = unmanagedData
+            };
+
+            var unmanagedBlob = hb.Alloc(Marshal.SizeOf(blob));
+            Marshal.StructureToPtr(blob, unmanagedBlob, fDeleteOld: false);
+
+            var attr = new CRYPT_ATTRIBUTE()
+            {
+                pszObjId = hb.AllocAsciiString(attributeOid),
+                cValue = 1,
+                rgValue = unmanagedBlob
+            };
+
+            return attr;
+        }
+
+        private static unsafe CMSG_CTRL_ADD_SIGNER_UNAUTH_ATTR_PARA CreateUnsignedAddAttribute(CRYPT_ATTRIBUTE attr, HeapBlockRetainer hb)
+        {
+            var unmanagedAttr = hb.Alloc(Marshal.SizeOf(attr));
+            Marshal.StructureToPtr(attr, unmanagedAttr, fDeleteOld: false);
+
+            uint encodedLength = 0;
+            if (!NativeMethods.CryptEncodeObjectEx(
+                CMSG_ENCODING.Any,
+                lpszStructType: new IntPtr(NativeMethods.PKCS_ATTRIBUTE),
+                pvStructInfo: unmanagedAttr,
+                dwFlags: 0,
+                pEncodePara: IntPtr.Zero,
+                pvEncoded: IntPtr.Zero,
+                pcbEncoded: ref encodedLength))
+            {
+                var err = Marshal.GetLastWin32Error();
+                if (err != NativeMethods.ERROR_MORE_DATA)
+                {
+                    Marshal.ThrowExceptionForHR(NativeMethods.GetHRForWin32Error(err));
+                }
+            }
+
+            var unmanagedEncoded = hb.Alloc((int)encodedLength);
+            if (!NativeMethods.CryptEncodeObjectEx(
+                CMSG_ENCODING.Any,
+                lpszStructType: new IntPtr(NativeMethods.PKCS_ATTRIBUTE),
+                pvStructInfo: unmanagedAttr,
+                dwFlags: 0,
+                pEncodePara: IntPtr.Zero,
+                pvEncoded: unmanagedEncoded,
+                pcbEncoded: ref encodedLength))
+            {
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            }
+
+            var addAttr = new CMSG_CTRL_ADD_SIGNER_UNAUTH_ATTR_PARA()
+            {
+                dwSignerIndex = 0,
+                BLOB = new CRYPT_INTEGER_BLOB()
+                {
+                    cbData = encodedLength,
+                    pbData = unmanagedEncoded
+                }
+            };
+            return addAttr;
         }
 
         internal byte[] Encode()

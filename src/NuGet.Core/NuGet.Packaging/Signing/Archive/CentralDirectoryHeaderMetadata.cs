@@ -16,7 +16,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Offset in bytes to the corresponding file header relative to the start of the archive
         /// </summary>
-        public long OffsetToFileHeader { get; set; }
+        public long OffsetToLocalFileHeader { get; set; }
 
         /// <summary>
         /// Total size of corresponding file entry in bytes

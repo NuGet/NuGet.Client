@@ -261,7 +261,7 @@ namespace NuGet.Common
         NU3008 = 3008,
 
         /// <summary>
-        /// The package signature contains multiple primary signatures.
+        /// The package signature file does not contain exactly one primary signature.
         /// </summary>
         NU3009 = 3009,
 
@@ -631,8 +631,29 @@ namespace NuGet.Common
         NU5118 = 5118,
 
         /// <summary>
+        /// Warning_FileExcludedByDefault
+        /// </summary>
+        NU5119 = 5119,
+
+        /// <summary>
+        /// Migrator_PackageHasInstallScript
+        /// </summary>
+        NU5120 = 5120,
+
+        /// <summary>
+        /// Migrator_PackageHasContentFolder
+        /// </summary>
+        NU5121 = 5121,
+
+        /// <summary>
+        /// Migrator_XdtTransformInPackage
+        /// </summary>
+        NU5122 = 5122,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
-        NU5500 = 5500,
+        NU5500 = 5500
+
     }
 }

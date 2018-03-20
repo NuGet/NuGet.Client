@@ -26,7 +26,8 @@ param
     [string]$BuildOutputPath
 )
 
-
+# Set security protocol to tls1.2 for Invoke-RestMethod powershell cmdlet
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 # These environment variables are set on the VSTS Release Definition agents.
 $Branch = ${env:BUILD_SOURCEBRANCHNAME}

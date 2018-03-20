@@ -3,14 +3,19 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
+using System.IO;
+using System.Linq;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -21,12 +26,7 @@ namespace NuGet.Packaging.Test
 
         public SigningUtilityTests(CertificatesFixture fixture)
         {
-            if (fixture == null)
-            {
-                throw new ArgumentNullException(nameof(fixture));
-            }
-
-            _fixture = fixture;
+            _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
         [Fact]
@@ -344,7 +344,6 @@ namespace NuGet.Packaging.Test
                 certificate,
                 Common.HashAlgorithmName.SHA256,
                 Common.HashAlgorithmName.SHA256,
-                SignaturePlacement.PrimarySignature,
                 v3ServiceIndexUrl,
                 packageOwners))
             {
@@ -358,7 +357,7 @@ namespace NuGet.Packaging.Test
         }
 
         private static void VerifyAttributes(
-            CryptographicAttributeObjectCollection attributes,
+            System.Security.Cryptography.CryptographicAttributeObjectCollection attributes,
             SignPackageRequest request)
         {
             var pkcs9SigningTimeAttributeFound = false;
@@ -410,7 +409,7 @@ namespace NuGet.Packaging.Test
         }
 
         private static void VerifyAttributesRepository(
-            CryptographicAttributeObjectCollection attributes,
+            System.Security.Cryptography.CryptographicAttributeObjectCollection attributes,
             RepositorySignPackageRequest request)
         {
             VerifyAttributes(attributes, request);
@@ -445,6 +444,198 @@ namespace NuGet.Packaging.Test
 
             Assert.True(nugetV3ServiceIndexUrlAttributeFound);
             Assert.Equal(request.PackageOwners != null && request.PackageOwners.Count > 0, nugetPackageOwnersAttributeFound);
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenCancellationTokenIsCancelled_ThrowsAsync()
+        {
+            using (var test = SignTest.Create(new X509Certificate2(), HashAlgorithmName.SHA256))
+            {
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => SigningUtility.SignAsync(test.Options, test.Request, new CancellationToken(canceled: true)));
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenCertificateSignatureAlgorithmIsUnsupported_ThrowsAsync()
+        {
+            using (var certificate = SigningTestUtility.GenerateCertificate(
+                "test",
+                generator => { },
+                "SHA256WITHRSAANDMGF1"))
+            using (var test = SignTest.Create(certificate, HashAlgorithmName.SHA256))
+            {
+                var exception = await Assert.ThrowsAsync<SignatureException>(
+                    () => SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None));
+
+                Assert.Equal(NuGetLogCode.NU3013, exception.Code);
+                Assert.Equal("The signing certificate has an unsupported signature algorithm.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenCertificatePublicKeyLengthIsUnsupported_ThrowsAsync()
+        {
+            using (var certificate = SigningTestUtility.GenerateCertificate(
+                "test",
+                generator => { },
+                publicKeyLength: 1024))
+            using (var test = SignTest.Create(certificate, HashAlgorithmName.SHA256))
+            {
+                var exception = await Assert.ThrowsAsync<SignatureException>(
+                    () => SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None));
+
+                Assert.Equal(NuGetLogCode.NU3014, exception.Code);
+                Assert.Equal("The signing certificate does not meet a minimum public key length requirement.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenPackageIsZip64_ThrowsAsync()
+        {
+            using (var test = SignTest.Create(
+                _fixture.GetDefaultCertificate(),
+                HashAlgorithmName.SHA256,
+                GetResource("CentralDirectoryHeaderWithZip64ExtraField.zip")))
+            {
+                var exception = await Assert.ThrowsAsync<SignatureException>(
+                    () => SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None));
+
+                Assert.Equal(NuGetLogCode.NU3006, exception.Code);
+                Assert.Equal("Signed Zip64 packages are not supported.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenChainBuildingFails_ThrowsAsync()
+        {
+            using (var packageStream = new SimpleTestPackageContext().CreateAsStream())
+            using (var test = SignTest.Create(
+                 _fixture.GetExpiredCertificate(),
+                HashAlgorithmName.SHA256,
+                packageStream.ToArray(),
+                new X509SignatureProvider(timestampProvider: null)))
+            {
+                var exception = await Assert.ThrowsAsync<SignatureException>(
+                    () => SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None));
+
+                Assert.Equal(NuGetLogCode.NU3018, exception.Code);
+                Assert.Equal("Certificate chain validation failed.", exception.Message);
+
+                Assert.Equal(1, test.Logger.Errors);
+                Assert.Equal(1, test.Logger.Warnings);
+                Assert.Contains(test.Logger.LogMessages, message =>
+                    message.Code == NuGetLogCode.NU3018 &&
+                    message.Level == LogLevel.Error &&
+                    message.Message == "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.");
+                Assert.Contains(test.Logger.LogMessages, message =>
+                    message.Code == NuGetLogCode.NU3018 &&
+                    message.Level == LogLevel.Warning &&
+                    message.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WithUntrustedSelfSignedCertificate_SucceedsAsync()
+        {
+            using (var packageStream = new SimpleTestPackageContext().CreateAsStream())
+            using (var test = SignTest.Create(
+                 _fixture.GetDefaultCertificate(),
+                HashAlgorithmName.SHA256,
+                packageStream.ToArray(),
+                new X509SignatureProvider(timestampProvider: null)))
+            {
+                await SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None);
+
+                Assert.True(await SignedArchiveTestUtility.IsSignedAsync(test.Options.OutputPackageStream));
+
+                Assert.Equal(0, test.Logger.Errors);
+                Assert.Equal(1, test.Logger.Warnings);
+                Assert.Equal(1, test.Logger.Messages.Count());
+                Assert.True(test.Logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
+            }
+        }
+
+        private static byte[] GetResource(string name)
+        {
+            return ResourceTestUtility.GetResourceBytes(
+                $"NuGet.Packaging.Test.compiler.resources.{name}",
+                typeof(SigningUtilityTests));
+        }
+
+        private sealed class SignTest : IDisposable
+        {
+            private bool _isDisposed = false;
+            private readonly TestDirectory _directory;
+
+            internal SigningOptions Options { get; }
+            internal SignPackageRequest Request { get; }
+            internal TestLogger Logger { get; }
+
+            private SignTest(SignPackageRequest request,
+                TestDirectory directory,
+                SigningOptions options,
+                TestLogger logger)
+            {
+                Request = request;
+                Options = options;
+                Logger = logger;
+                _directory = directory;
+            }
+
+            public void Dispose()
+            {
+                if (!_isDisposed)
+                {
+                    Request?.Dispose();
+                    Options.Dispose();
+                    _directory?.Dispose();
+
+                    GC.SuppressFinalize(this);
+
+                    _isDisposed = true;
+                }
+            }
+
+            internal static SignTest Create(
+                X509Certificate2 certificate,
+                HashAlgorithmName hashAlgorithm,
+                byte[] package = null,
+                ISignatureProvider signatureProvider = null)
+            {
+                var directory = TestDirectory.Create();
+                var signedPackageFile = new FileInfo(Path.Combine(directory, Guid.NewGuid().ToString()));
+                var outputPackageFile = new FileInfo(Path.Combine(directory, Guid.NewGuid().ToString()));
+
+                if (package == null)
+                {
+                    File.WriteAllBytes(signedPackageFile.FullName, Array.Empty<byte>());
+                }
+                else
+                {
+                    using (var fileStream = signedPackageFile.Create())
+                    {
+                        fileStream.Write(package, 0, package.Length);
+                    }
+                }
+
+                signatureProvider = signatureProvider ?? Mock.Of<ISignatureProvider>();
+                var logger = new TestLogger();
+                var request = new AuthorSignPackageRequest(certificate, hashAlgorithm);
+                var overwrite = false;
+                var options = SigningOptions.CreateFromFilePaths(
+                    signedPackageFile.FullName,
+                    outputPackageFile.FullName,
+                    overwrite,
+                    signatureProvider,
+                    logger);
+
+                return new SignTest(
+                    request,
+                    directory,
+                    options,
+                    logger);
+            }
         }
 #endif
 
@@ -508,7 +699,6 @@ namespace NuGet.Packaging.Test
                 certificate,
                 Common.HashAlgorithmName.SHA256,
                 Common.HashAlgorithmName.SHA256,
-                SignaturePlacement.PrimarySignature,
                 v3ServiceIndexUrl,
                 packageOwners);
         }

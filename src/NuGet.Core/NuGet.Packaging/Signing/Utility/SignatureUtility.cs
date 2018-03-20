@@ -136,6 +136,27 @@ namespace NuGet.Packaging.Signing
                 includeChain: true);
         }
 
+        public static bool HasRepositoryCountersignature(PrimarySignature primarySignature)
+        {
+            if (primarySignature == null)
+            {
+                throw new ArgumentNullException(nameof(primarySignature));
+            }
+
+            var counterSignatures = primarySignature.SignerInfo.CounterSignerInfos;
+
+            foreach (var counterSignature in counterSignatures)
+            {
+                var countersignatureType = AttributeUtility.GetSignatureType(counterSignature.SignedAttributes);
+                if (countersignatureType == SignatureType.Repository)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         internal static IReadOnlyList<X509Certificate2> GetTimestampCertificates(
             SignedCms signedCms,
             SigningSpecifications signingSpecifications)

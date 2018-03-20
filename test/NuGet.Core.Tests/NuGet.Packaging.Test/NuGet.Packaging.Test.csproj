@@ -10,8 +10,7 @@
 
   <!-- Include internal DER encoding helpers for use in tests -->
   <ItemGroup>
-    <Compile Include="$(NuGetCoreSrcDirectory)NuGet.Packaging\Signing\DerEncoding\*.cs"
-             Exclude="$(NuGetCoreSrcDirectory)NuGet.Packaging\Signing\DerEncoding\DerGeneralizedTime.cs"/>
+    <Compile Include="$(NuGetCoreSrcDirectory)NuGet.Packaging\Signing\DerEncoding\*.cs" Exclude="$(NuGetCoreSrcDirectory)NuGet.Packaging\Signing\DerEncoding\DerGeneralizedTime.cs" />
   </ItemGroup>
 
   <ItemGroup>

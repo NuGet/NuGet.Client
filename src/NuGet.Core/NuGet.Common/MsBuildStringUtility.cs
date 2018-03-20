@@ -99,5 +99,18 @@ namespace NuGet.Common
                 }
             }
         }
+
+        /// <summary>
+        /// Convert the provided string to MSBuild style.
+        /// </summary>
+        public static string Convert(string value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            return value.Replace(',', ';');
+        }
     }
 }

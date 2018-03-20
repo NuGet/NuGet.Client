@@ -50,7 +50,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         private void Save(Stream stream)
         {
-            using (var writer = new KeyPairFileWriter(stream, leaveOpen: true))
+            using (var writer = new KeyPairFileWriter(stream, _signingSpecifications.Encoding, leaveOpen: true))
             {
                 writer.WritePair("Version", _signingSpecifications.Version);
                 writer.WriteSectionBreak();
@@ -102,7 +102,7 @@ namespace NuGet.Packaging.Signing
             var hashAlgorithm = HashAlgorithmName.Unknown;
             string hash = null;
 
-            using (var reader = new KeyPairFileReader(stream))
+            using (var reader = new KeyPairFileReader(stream, signingSpecifications.Encoding))
             {
                 // Read header-section.
                 var properties = reader.ReadSection();

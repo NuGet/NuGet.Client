@@ -9,12 +9,14 @@
     <OutputName>$(MSBuildProjectName)</OutputName>
     <OutputType>vsix</OutputType>
     <IsPackage>true</IsPackage>
+    <!-- We set this to false here so we can batch sign the vsix later -->
+    <MicroBuild_SigningEnabled>false</MicroBuild_SigningEnabled>
   </PropertyGroup>
 
   <PropertyGroup>
     <ReferenceOutputPath>$(ArtifactsDirectory)NuGet.VisualStudio.Client\15.0\bin\$(Configuration)\</ReferenceOutputPath>
     <NuGetTargetsPath>$(RepositoryRootDirectory)src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets</NuGetTargetsPath>
-    <XmlTransformPath>$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\</XmlTransformPath>
+    <XmlTransformPath>$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.2\lib\net40\</XmlTransformPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -23,14 +25,6 @@
     -->
     <PackagePreprocessorDefinitions>$(PackagePreprocessorDefinitions);ReferenceOutputPath=$(ReferenceOutputPath);NuGetTargetsPath=$(NuGetTargetsPath);XmlTransformPath=$(XmlTransformPath);BuildNumber=$(BuildNumber)</PackagePreprocessorDefinitions>
   </PropertyGroup>
-
-  <!-- Needed for the MicroBuild signing plugin -->
-  <ItemGroup>
-    <SigningTarget Include="$(OutputPath)$(OutputName)"/>
-    <FilesToSign Include="@(SigningTarget)">
-      <Authenticode>100040160</Authenticode>
-    </FilesToSign>
-  </ItemGroup>
 
   <ItemGroup>
     <Package Include="Microsoft.VisualStudio.NuGet.BuildTools.swr" />

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -61,6 +61,7 @@ namespace NuGet.Protocol
             yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV2FeedProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new PluginResourceProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new RepositorySignatureResourceProvider());
 
             // Local repository providers
             yield return new Lazy<INuGetResourceProvider>(() => new FindLocalPackagesResourceUnzippedProvider());

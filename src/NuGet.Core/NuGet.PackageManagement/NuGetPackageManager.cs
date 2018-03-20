@@ -1281,6 +1281,13 @@ namespace NuGet.PackageManagement
             return nuGetProjectActions;
         }
 
+        public async Task<IEnumerable<PackageDependencyInfo>> GetInstalledPackagesDependencyInfo(NuGetProject nuGetProject, CancellationToken token, bool includeUnresolved = false)
+        {
+            var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+            var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(token)).Select(pr => pr.PackageIdentity);
+            return await GetDependencyInfoFromPackagesFolder(installedPackageIdentities, targetFramework, includeUnresolved);
+        }
+
         /// <summary>
         /// Returns all installed packages in order of dependency. Packages with no dependencies come first.
         /// </summary>
@@ -1999,7 +2006,8 @@ namespace NuGet.PackageManagement
         }
 
         private async Task<IEnumerable<PackageDependencyInfo>> GetDependencyInfoFromPackagesFolder(IEnumerable<PackageIdentity> packageIdentities,
-            NuGetFramework nuGetFramework)
+            NuGetFramework nuGetFramework,
+            bool includeUnresolved = false)
         {
             try
             {
@@ -2014,6 +2022,10 @@ namespace NuGet.PackageManagement
                     if (packageDependencyInfo != null)
                     {
                         results.Add(packageDependencyInfo);
+                    }
+                    else if (includeUnresolved)
+                    {
+                        results.Add(new PackageDependencyInfo(package, null));
                     }
                 }
 
@@ -2709,10 +2721,29 @@ namespace NuGet.PackageManagement
                     }
                 }
 
+                var pathResolver = new FallbackPackagePathResolver(
+                    projectAction.RestoreResult.LockFile.PackageSpec.RestoreMetadata.PackagesPath,
+                    projectAction.RestoreResult.LockFile.PackageSpec.RestoreMetadata.FallbackFolders);
+
                 foreach (var originalAction in projectAction.OriginalActions.Where(e => !ignoreActions.Contains(e)))
                 {
                     if (originalAction.NuGetProjectActionType == NuGetProjectActionType.Install)
                     {
+                        if (buildIntegratedProject.ProjectStyle == ProjectStyle.PackageReference)
+                        {
+                            BuildIntegratedRestoreUtility.UpdatePackageReferenceMetadata(
+                                projectAction.RestoreResult.LockFile.PackageSpec,
+                                pathResolver,
+                                originalAction.PackageIdentity);
+
+                            var framework = projectAction.InstallationContext.SuccessfulFrameworks.FirstOrDefault();
+                            var resolvedAction = projectAction.RestoreResult.LockFile.PackageSpec.TargetFrameworks.FirstOrDefault(fm => fm.FrameworkName.Equals(framework))
+                                .Dependencies.First(dependency => dependency.Name.Equals(originalAction.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase));
+
+                            projectAction.InstallationContext.SuppressParent = resolvedAction.SuppressParent;
+                            projectAction.InstallationContext.IncludeType = resolvedAction.IncludeType;
+                        }
+
                         // Install the package to the project
                         await buildIntegratedProject.InstallPackageAsync(
                             originalAction.PackageIdentity.Id,
@@ -2732,8 +2763,6 @@ namespace NuGet.PackageManagement
 
                 var logger = new ProjectContextLogger(nuGetProjectContext);
                 var referenceContext = new DependencyGraphCacheContext(logger, Settings);
-                var pathContext = NuGetPathContext.Create(Settings);
-                var pathResolver = new FallbackPackagePathResolver(pathContext);
 
                 var now = DateTime.UtcNow;
                 Action<SourceCacheContext> cacheContextModifier = c => c.MaxAge = now;
@@ -3040,7 +3069,7 @@ namespace NuGet.PackageManagement
 
             // Step-2: Check if the package directory could be deleted
             if (!(nuGetProject is INuGetIntegratedProject)
-                && !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, SolutionManager, token))
+                && !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, SolutionManager, token, excludeIntegrated: true))
             {
                 packageWithDirectoriesToBeDeleted.Add(packageIdentity);
             }
@@ -3057,7 +3086,7 @@ namespace NuGet.PackageManagement
         /// project <paramref name="nuGetProject" /> is also installed in any
         /// other projects in the solution.
         /// </summary>
-        public static async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity, ISolutionManager solutionManager, CancellationToken token)
+        public static async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity, ISolutionManager solutionManager, CancellationToken token, bool excludeIntegrated= false)
         {
             if (nuGetProject == null)
             {
@@ -3079,14 +3108,19 @@ namespace NuGet.PackageManagement
             var nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             foreach (var otherNuGetProject in (await solutionManager.GetNuGetProjectsAsync()))
             {
-                var otherNuGetProjectName = NuGetProject.GetUniqueNameOrName(otherNuGetProject);
-                if (!otherNuGetProjectName.Equals(nuGetProjectName, StringComparison.OrdinalIgnoreCase))
+                if (excludeIntegrated && otherNuGetProject is INuGetIntegratedProject)
                 {
-                    var packageExistsInAnotherNuGetProject = (await otherNuGetProject.GetInstalledPackagesAsync(token)).Any(pr => pr.PackageIdentity.Equals(packageIdentity));
-                    if (packageExistsInAnotherNuGetProject)
-                    {
-                        return true;
-                    }
+                    continue;
+                }
+                var otherNuGetProjectName = NuGetProject.GetUniqueNameOrName(otherNuGetProject);
+                if (otherNuGetProjectName.Equals(nuGetProjectName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                var packageExistsInAnotherNuGetProject = (await otherNuGetProject.GetInstalledPackagesAsync(token)).Any(pr => pr.PackageIdentity.Equals(packageIdentity));
+                if (packageExistsInAnotherNuGetProject)
+                {
+                    return true;
                 }
             }
 

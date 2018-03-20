@@ -41,7 +41,7 @@ namespace NuGet.Packaging.Signing
 
             if (primarySignature.Type == SignatureType.Repository)
             {
-                throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureShouldNotHaveARepositoryCountersignature);
+                throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureMustNotHaveARepositoryCountersignature);
             }
 
             var countersignatures = primarySignature.SignerInfo.CounterSignerInfos;
@@ -75,7 +75,7 @@ namespace NuGet.Packaging.Signing
 
         public override byte[] GetSignatureValue()
         {
-            using (var nativeCms = NativeCms.Decode(_primarySignature.SignedCms.Encode()))
+            using (var nativeCms = NativeCms.Decode(_primarySignature.GetBytes()))
             {
                 return nativeCms.GetRepositoryCountersignatureSignatureValue();
             }
@@ -110,7 +110,7 @@ namespace NuGet.Packaging.Signing
 #else
         public static RepositoryCountersignature GetRepositoryCountersignature(PrimarySignature primarySignature)
         {
-            return null;
+            throw new NotSupportedException();
         }
 #endif
     }

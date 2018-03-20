@@ -1,17 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet.Test.Utility;
-using Test.Utility;
-using Xunit;
-using Xunit.Extensions;
 using NuGet.Common;
+using NuGet.Test.Utility;
+using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
@@ -24,7 +18,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Add",
                     "-Name",
@@ -32,7 +26,7 @@ namespace NuGet.CommandLine.Test
                     "-Source",
                     "http://test_source"
                 };
-                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
@@ -55,7 +49,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Add",
                     "-Name",
@@ -67,7 +61,7 @@ namespace NuGet.CommandLine.Test
                     "-Password",
                     "test_password"
                 };
-                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
@@ -102,7 +96,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Add",
                     "-Name",
@@ -158,7 +152,7 @@ namespace NuGet.CommandLine.Test
 <configuration>
 </configuration>");
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Add",
                     "-Name",
@@ -226,7 +220,7 @@ namespace NuGet.CommandLine.Test
   </disabledPackageSources>
 </configuration>");
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Enable",
                     "-Name",
@@ -301,7 +295,7 @@ namespace NuGet.CommandLine.Test
   </packageSources>
 </configuration>");
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Disable",
                     "-Name",
@@ -360,7 +354,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Add",
                     "-Name",
@@ -370,7 +364,7 @@ namespace NuGet.CommandLine.Test
                     "-Verbosity",
                     "Quiet"
                 };
-                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
@@ -385,6 +379,242 @@ namespace NuGet.CommandLine.Test
                 var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
                 var source = settings.GetValue("packageSources", "test_source");
                 Assert.Equal("http://test_source", source);
+            }
+        }
+
+        [Fact]
+        public void SourcesCommandTest_RemoveSourceWithTrust()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var configFileDirectory = TestDirectory.Create())
+            {
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                Util.CreateFile(configFileDirectory, configFileName,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://test_source"" />
+  </packageSources>
+  <trustedSources>
+    <test_source>
+      <add key=""3f9001ea83c560d712c24cf213c3d312cb3bff51ee89435d3430bd06b5d0eece"" value=""CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"" fingerprintAlgorithm=""SHA256"" />
+    </test_source>
+  </trustedSources>
+</configuration>");
+
+                var args = new string[] {
+                    "sources",
+                    "remove",
+                    "-Name",
+                    "test_source",
+                    "-ConfigFile",
+                    configFilePath,
+                    "-Trust"
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+
+                var settings = Configuration.Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                var trustedSources = settings.GetAllSubsections("TrustedSources");
+
+                Assert.Equal(0, sources.Count);
+                Assert.Equal(0, trustedSources.Count);
+            }
+        }
+
+        [Fact]
+        public void SourcesCommandTest_RemoveSourceWithTrusedSourceAndWithoutTrust()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var configFileDirectory = TestDirectory.Create())
+            {
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                Util.CreateFile(configFileDirectory, configFileName,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://test_source"" />
+  </packageSources>
+  <trustedSources>
+    <test_source>
+      <add key=""3f9001ea83c560d712c24cf213c3d312cb3bff51ee89435d3430bd06b5d0eece"" value=""CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"" fingerprintAlgorithm=""SHA256"" />
+    </test_source>
+  </trustedSources>
+</configuration>");
+
+                var args = new string[] {
+                    "sources",
+                    "remove",
+                    "-Name",
+                    "test_source",
+                    "-ConfigFile",
+                    configFilePath,
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+
+                var settings = Configuration.Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                var trustedSources = new Configuration.TrustedSourceProvider(settings).LoadTrustedSources();
+
+                var trustedSource = trustedSources.FirstOrDefault();
+
+                Assert.Equal(0, sources.Count);
+                Assert.Equal(1, trustedSources.Count());
+                Assert.NotNull(trustedSource);
+                Assert.Equal("http://test_source", trustedSource.ServiceIndex.Value);
+                Assert.Equal(1, trustedSource.Certificates.Count);
+                Assert.Equal("3f9001ea83c560d712c24cf213c3d312cb3bff51ee89435d3430bd06b5d0eece", trustedSource.Certificates.FirstOrDefault().Fingerprint);
+                Assert.Equal(HashAlgorithmName.SHA256, trustedSource.Certificates.FirstOrDefault().FingerprintAlgorithm);
+                Assert.Equal("CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US", trustedSource.Certificates.FirstOrDefault().SubjectName);
+            }
+        }
+
+        [Fact]
+        public void SourcesCommandTest_RemoveSource()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var configFileDirectory = TestDirectory.Create())
+            {
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                Util.CreateFile(configFileDirectory, configFileName,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://test_source"" />
+  </packageSources>
+</configuration>");
+
+                var args = new string[] {
+                    "sources",
+                    "remove",
+                    "-Name",
+                    "test_source",
+                    "-ConfigFile",
+                    configFilePath,
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+
+                var settings = Configuration.Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                Assert.Equal(0, sources.Count);
+            }
+        }
+
+        [Fact]
+        public void SourcesCommandTest_RemoveSourceWithTrusedSourceAndWithTrust()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var configFileDirectory = TestDirectory.Create())
+            {
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                Util.CreateFile(configFileDirectory, configFileName,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://test_source"" />
+  </packageSources>
+  <trustedSources>
+    <test_source>
+      <add key=""3f9001ea83c560d712c24cf213c3d312cb3bff51ee89435d3430bd06b5d0eece"" value=""CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"" fingerprintAlgorithm=""SHA256"" />
+    </test_source>
+  </trustedSources>
+</configuration>");
+
+                var args = new string[] {
+                    "sources",
+                    "remove",
+                    "-Name",
+                    "test_source",
+                    "-ConfigFile",
+                    configFilePath,
+                    "-Trust"
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+
+                var settings = Configuration.Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                var trustedSources = new Configuration.TrustedSourceProvider(settings).LoadTrustedSources();
+
+                var trustedSource = trustedSources.FirstOrDefault();
+
+                Assert.Equal(0, sources.Count);
+                Assert.Equal(0, trustedSources.Count());
             }
         }
     }

@@ -19,6 +19,7 @@ namespace NuGet.Packaging
         public ExtractionSource ExtractionSource => (ExtractionSource)base[nameof(ExtractionSource)];
 
         public string PackageId => (string)base[nameof(PackageId)];
+        public string PackageVersion => (string)base[nameof(PackageVersion)];
 
         public PackageExtractionTelemetryEvent(
             PackageSaveMode packageSaveMode,
@@ -32,7 +33,8 @@ namespace NuGet.Packaging
                     { nameof(PackageSaveMode), packageSaveMode }
                 })
         {
-            AddPiiData(nameof(PackageId), packageId.ToString());
+            AddPiiData(nameof(PackageId), packageId.Id.ToLowerInvariant());
+            AddPiiData(nameof(PackageVersion), packageId.Version.ToNormalizedString().ToLowerInvariant());
         }
     }
 }

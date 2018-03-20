@@ -51,7 +51,6 @@ namespace NuGet.Packaging.Test
                 var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA512);
 
                 Assert.Equal(SignatureType.Author, request.SignatureType);
-                Assert.Equal(SignaturePlacement.PrimarySignature, request.SignaturePlacement);
                 Assert.Same(certificate, request.Certificate);
                 Assert.Equal(HashAlgorithmName.SHA512, request.SignatureHashAlgorithm);
                 Assert.Equal(HashAlgorithmName.SHA512, request.TimestampHashAlgorithm);
@@ -110,7 +109,6 @@ namespace NuGet.Packaging.Test
                 var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA512, HashAlgorithmName.SHA256);
 
                 Assert.Equal(SignatureType.Author, request.SignatureType);
-                Assert.Equal(SignaturePlacement.PrimarySignature, request.SignaturePlacement);
                 Assert.Same(certificate, request.Certificate);
                 Assert.Equal(HashAlgorithmName.SHA512, request.SignatureHashAlgorithm);
                 Assert.Equal(HashAlgorithmName.SHA256, request.TimestampHashAlgorithm);

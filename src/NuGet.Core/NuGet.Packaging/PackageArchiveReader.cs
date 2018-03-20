@@ -240,15 +240,13 @@ namespace NuGet.Packaging
 
             if (await IsSignedAsync(token))
             {
-                using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
+                using (var bufferedStream = new ReadOnlyBufferedStream(ZipReadStream, leaveOpen: true))
+                using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
+                using (var stream = SignedPackageArchiveUtility.OpenPackageSignatureFileStream(reader))
                 {
-                    var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
-                    using (var signatureEntryStream = signatureEntry.Open())
-                    {
 #if IS_DESKTOP
-                        signature = PrimarySignature.Load(signatureEntryStream);
+                    signature = PrimarySignature.Load(stream);
 #endif
-                    }
                 }
             }
 
@@ -267,14 +265,17 @@ namespace NuGet.Packaging
             var isSigned = false;
 
 #if IS_DESKTOP
-            using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
+            if (RuntimeEnvironmentHelper.IsWindows)
             {
-                var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
-
-                if (signatureEntry != null &&
-                    string.Equals(signatureEntry.Name, SigningSpecifications.SignaturePath, StringComparison.Ordinal))
+                using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
                 {
-                    isSigned = true;
+                    var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
+
+                    if (signatureEntry != null &&
+                        string.Equals(signatureEntry.Name, SigningSpecifications.SignaturePath, StringComparison.Ordinal))
+                    {
+                        isSigned = true;
+                    }
                 }
             }
 #endif
@@ -296,10 +297,12 @@ namespace NuGet.Packaging
             }
 
 #if IS_DESKTOP
-            using (var reader = new BinaryReader(ZipReadStream, SigningSpecifications.Encoding, leaveOpen: true))
+            using (var bufferedStream = new ReadOnlyBufferedStream(ZipReadStream, leaveOpen: true))
+            using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
             using (var hashAlgorithm = signatureContent.HashAlgorithm.GetHashProvider())
             {
                 var expectedHash = Convert.FromBase64String(signatureContent.HashValue);
+
                 if (!SignedPackageArchiveUtility.VerifySignedPackageIntegrity(reader, hashAlgorithm, expectedHash))
                 {
                     throw new SignatureException(NuGetLogCode.NU3008, Strings.SignaturePackageIntegrityFailure, GetIdentity());

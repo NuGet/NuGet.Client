@@ -5361,13 +5361,13 @@ nuget locals global-packages -list</value>
     <value>Verify that the signer certificate matches with one of the specified SHA256 fingerprints. A certificate SHA256 fingerprint is a SHA256 hash of the certificate used to identify the certificate. Multiple inputs should be semicolon separated.</value>
   </data>
   <data name="VerifyCommandUsageExamples" xml:space="preserve">
-    <value>nuget verify -Signatures .\..\MyPackage.nupkg -Signer "86C0E8C51FF0EBDAD355315DF82AA6EC7049B542;BE36A4562FB2EE05DBB3D32323ADF445084ED656" -Verbosity detailed
+    <value>nuget verify -Signatures .\..\MyPackage.nupkg -CertificateFingerprint "CE40881FF5F0AD3E58965DA20A9F571EF1651A56933748E1BF1C99E537C4E039;5F874AAF47BCB268A19357364E7FBB09D6BF9E8A93E1229909AC5CAC865802E2" -Verbosity detailed
 
-nuget verify -Signatures c:\foo\MyPackage.nupkg -Signer BE36A4562FB2EE05DBB3D32323ADF445084ED656
+nuget verify -Signatures C:\packages\MyPackage.nupkg -CertificateFingerprint CE40881FF5F0AD3E58965DA20A9F571EF1651A56933748E1BF1C99E537C4E039
 
 nuget verify -Signatures MyPackage.nupkg -Verbosity quiet
 
-nuget verify-Signatures  .\*.nupkg</value>
+nuget verify -Signatures .\*.nupkg</value>
     <comment>Please don't localize this string</comment>
   </data>
   <data name="VerifyCommandUsageSummary" xml:space="preserve">
@@ -5469,6 +5469,9 @@ This option should be used when specifying the certificate via -CertificateSubje
   </data>
   <data name="VerifyCommandAllDescription" xml:space="preserve">
     <value>Specifies that all verifications possible should be performed to the package(s).</value>
+  </data>
+  <data name="SourcesCommandTrustDescription" xml:space="preserve">
+    <value>Make a source a trusted repository for repository signature verification.</value>
   </data>
   <data name="CommandNoServiceEndpointDescription" xml:space="preserve">
     <value>Does not append "api/v2/packages" to the source URL.</value>

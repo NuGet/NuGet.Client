@@ -15,6 +15,10 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -26,6 +30,9 @@ namespace NuGet.PackageManagement.UI
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly NuGetPackageManager _packageManager;
         private readonly INuGetLockService _lockService;
+
+        private const __VSCREATEWEBBROWSER CreateWebBrowserFlags = __VSCREATEWEBBROWSER.VSCWB_StartCustom | __VSCREATEWEBBROWSER.VSCWB_ReuseExisting | __VSCREATEWEBBROWSER.VSCWB_AutoShow;
+        private const string CreateWebBrowserOwnerGuidString = "192D4A62-3273-4C4F-9EB4-B53DAAFFCBFB";
 
         /// <summary>
         /// Create a UIActionEngine to perform installs/uninstalls
@@ -107,6 +114,91 @@ namespace NuGet.PackageManagement.UI
                 },
                 operationType,
                 token);
+        }
+
+        public async Task UpgradeNuGetProjectAsync(INuGetUI uiService, NuGetProject nuGetProject)
+        {
+            var context = uiService.UIContext;
+            // Restore the project before proceeding
+            var solutionDirectory = context.SolutionManager.SolutionDirectory;
+
+            await context.PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, uiService.ProjectContext, CancellationToken.None);
+
+            var packagesDependencyInfo = await context.PackageManager.GetInstalledPackagesDependencyInfo(nuGetProject, CancellationToken.None, includeUnresolved: true);
+            var upgradeInformationWindowModel = new NuGetProjectUpgradeWindowModel(nuGetProject, packagesDependencyInfo.ToList());
+
+            var result = uiService.ShowNuGetUpgradeWindow(upgradeInformationWindowModel);
+            if (!result)
+            {
+                // raise upgrade telemetry event with Cancelled status
+                var packagesCount = upgradeInformationWindowModel.UpgradeDependencyItems.Count;
+
+                var upgradeTelemetryEvent = VSTelemetryServiceUtility.GetUpgradeTelemetryEvent(
+                    uiService.Projects,
+                    NuGetOperationStatus.Cancelled,
+                    packagesCount);
+
+                TelemetryActivity.EmitTelemetryEvent(upgradeTelemetryEvent);
+
+                return;
+            }
+
+            var progressDialogData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage);
+            string backupPath;
+
+            using (var progressDialogSession = context.StartModalProgressDialog(Resources.WindowTitle_NuGetMigrator, progressDialogData, uiService))
+            {
+                backupPath = await PackagesConfigToPackageReferenceMigrator.DoUpgradeAsync(
+                    context,
+                    uiService,
+                    nuGetProject,
+                    upgradeInformationWindowModel.UpgradeDependencyItems,
+                    upgradeInformationWindowModel.NotFoundPackages,
+                    progressDialogSession.Progress,
+                    progressDialogSession.UserCancellationToken);
+            }
+
+            if (!string.IsNullOrEmpty(backupPath))
+            {
+                var htmlLogFile = GenerateUpgradeReport(nuGetProject, backupPath, upgradeInformationWindowModel);
+
+                OpenUrlInInternalWebBrowser(htmlLogFile);
+            }
+        }
+
+        private static void OpenUrlInInternalWebBrowser(string url)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var webBrowsingService = Package.GetGlobalService(typeof(SVsWebBrowsingService)) as IVsWebBrowsingService;
+            if (webBrowsingService == null)
+            {
+                return;
+            }
+
+            var createWebBrowserOwnerGuid = new Guid(CreateWebBrowserOwnerGuidString);
+
+            webBrowsingService.CreateWebBrowser((uint)CreateWebBrowserFlags, ref createWebBrowserOwnerGuid, null, url, null, out var browser, out var frame);
+        }
+
+        private static string GenerateUpgradeReport(NuGetProject nuGetProject, string backupPath, NuGetProjectUpgradeWindowModel upgradeInformationWindowModel)
+        {
+            var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
+            using (var upgradeLogger = new UpgradeLogger(projectName, backupPath))
+            {
+                var installedAsTopLevel = upgradeInformationWindowModel.UpgradeDependencyItems.Where(t => t.InstallAsTopLevel);
+                var transitiveDependencies = upgradeInformationWindowModel.TransitiveDependencies.Where(t => !t.InstallAsTopLevel);
+                foreach (var package in installedAsTopLevel)
+                {
+                    upgradeLogger.RegisterPackage(projectName, package.Id, package.Version, package.Issues, true);
+                }
+
+                foreach (var package in transitiveDependencies)
+                {
+                    upgradeLogger.RegisterPackage(projectName, package.Id, package.Version, package.Issues, false);
+                }
+
+                return upgradeLogger.GetHtmlFilePath();
+            }
         }
 
         /// <summary>

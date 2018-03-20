@@ -34,7 +34,7 @@ namespace NuGet.Packaging.Signing
         public SignedPackageVerifierSettings(
             bool allowUnsigned,
             bool allowUntrusted,
-            bool allowUntrustedSelfSignedCertificate,
+            bool allowUntrustedSelfIssuedCertificate,
             bool allowIgnoreTimestamp,
             bool allowMultipleTimestamps,
             bool allowNoTimestamp,
@@ -42,7 +42,7 @@ namespace NuGet.Packaging.Signing
         {
             AllowUnsigned = allowUnsigned;
             AllowUntrusted = allowUntrusted;
-            AllowUntrustedSelfIssuedCertificate = allowUntrustedSelfSignedCertificate;
+            AllowUntrustedSelfIssuedCertificate = allowUntrustedSelfIssuedCertificate;
             AllowIgnoreTimestamp = allowIgnoreTimestamp;
             AllowMultipleTimestamps = allowMultipleTimestamps;
             AllowNoTimestamp = allowNoTimestamp;
@@ -55,7 +55,7 @@ namespace NuGet.Packaging.Signing
         public static SignedPackageVerifierSettings AllowAll { get; } = new SignedPackageVerifierSettings(
             allowUnsigned: true,
             allowUntrusted: true,
-            allowUntrustedSelfSignedCertificate: true,
+            allowUntrustedSelfIssuedCertificate: true,
             allowIgnoreTimestamp: true,
             allowMultipleTimestamps: true,
             allowNoTimestamp: true,
@@ -72,7 +72,7 @@ namespace NuGet.Packaging.Signing
         public static SignedPackageVerifierSettings VSClientDefaultPolicy { get; } = new SignedPackageVerifierSettings(
             allowUnsigned: true,
             allowUntrusted: true,
-            allowUntrustedSelfSignedCertificate: true,
+            allowUntrustedSelfIssuedCertificate: true,
             allowIgnoreTimestamp: true,
             allowMultipleTimestamps: true,
             allowNoTimestamp: true,
@@ -84,7 +84,7 @@ namespace NuGet.Packaging.Signing
         public static SignedPackageVerifierSettings VerifyCommandDefaultPolicy { get; } = new SignedPackageVerifierSettings(
             allowUnsigned: false,
             allowUntrusted: false,
-            allowUntrustedSelfSignedCertificate: true,
+            allowUntrustedSelfIssuedCertificate: true,
             allowIgnoreTimestamp: false,
             allowMultipleTimestamps: true,
             allowNoTimestamp: true,

@@ -10,12 +10,18 @@
     <BuildNumber>$(SemanticVersion).$(BuildNumber)</BuildNumber>
     <TargetName>$(MSBuildProjectName)</TargetName>
     <DropFolder>$(VsixPublishDestination)</DropFolder>
+    <OutputPath Condition="'$(IsVsixBuild)' != 'true'">$(DropFolder)</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsVsixBuild)' == 'true'">
     <IsPackage>true</IsPackage>
     <FinalizeValidate>false</FinalizeValidate>
     <ValidateManifest>false</ValidateManifest>
+    <!-- We set this to false here so we can batch sign the vsix later -->
+    <MicroBuild_SigningEnabled>false</MicroBuild_SigningEnabled>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(IsVsixBuild)' == 'true'">
     <ProjectReference Include="Microsoft.VisualStudio.NuGet.BuildTools.swixproj" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
@@ -23,14 +29,12 @@
     <MergeManifest Include="$(OutputPath)$(MSBuildProjectName).json" />
   </ItemGroup>
 
-  <Target Name="CopyToDropFolder" AfterTargets="Build">
+  <Target Name="CopyToDropFolder" AfterTargets="Build" Condition="'$(IsVsixBuild)' == 'true'">
     <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).vsix" DestinationFolder="$(DropFolder)" />
     <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).json" DestinationFolder="$(DropFolder)" />
-    <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).vsman" DestinationFolder="$(DropFolder)" />
-    <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).vsmand" DestinationFolder="$(DropFolder)" />
   </Target>
 
   <Import Project="$(MicroBuildDirectory)MicroBuild.Core.targets" />
 
-  <Target Name="ValidateManifest" />
+  <Target Name="ValidateManifest" Condition="'$(IsVsixBuild)' == 'true'"/>
 </Project>

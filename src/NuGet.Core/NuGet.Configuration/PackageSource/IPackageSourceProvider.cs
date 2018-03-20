@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,5 +20,9 @@ namespace NuGet.Configuration
         string DefaultPushSource { get; }
 
         void SaveActivePackageSource(PackageSource source);
+
+        void SaveTrustedSources(IEnumerable<TrustedSource> trustedSources);
+
+        void DeleteTrustedSource(string sourceName);
     }
 }

@@ -21,7 +21,14 @@ namespace NuGet.Packaging.Rules
         internal static readonly string SampleManifestDependencyId = "SampleDependency";
         internal static readonly string SampleManifestDependencyVersion = "1.0";
 
-        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
+        public string MessageFormat { get; }
+
+        public DefaultManifestValuesRule(string messageFormat)
+        {
+            MessageFormat = messageFormat;
+        }
+
+        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
             if(builder == null)
             {
@@ -61,22 +68,12 @@ namespace NuGet.Packaging.Rules
             {
                 yield return CreateIssueFor("Dependency", dependency.ToString());
             }
-
-            if (dependency != null && dependency.VersionRange == VersionRange.All)
-            {
-                var issue = PackLogMessage.CreateWarning(String.Format(
-                    CultureInfo.CurrentCulture,
-                    AnalysisResources.UnspecifiedDependencyVersionWarning,
-                    dependency.Id),
-                    NuGetLogCode.NU5112);
-                yield return issue;
-            }
         }
 
-        private static PackLogMessage CreateIssueFor(string field, string value)
+        private PackagingLogMessage CreateIssueFor(string field, string value)
         {
-            return PackLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.DefaultSpecValueWarning, value, field),
+            return PackagingLogMessage.CreateWarning(
+                string.Format(CultureInfo.CurrentCulture, MessageFormat, value, field),
                 NuGetLogCode.NU5102);
         }
     }

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.ProjectSystem;
+using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.ProjectSystem.References;
 using NuGet.Commands;
 using NuGet.Common;
@@ -275,11 +276,26 @@ namespace NuGet.PackageManagement.VisualStudio
                         originalFramework = framework.GetShortFolderName();
                     }
 
-                    await conditionalService.AddAsync(
+                    var reference = await conditionalService.AddAsync(
                         packageId,
                         formattedRange,
                         TargetFrameworkCondition,
                         originalFramework);
+
+                    // SuppressParent could be set to All if developmentDependency flag is true in package nuspec file.
+                    if (installationContext.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent &&
+                        installationContext.IncludeType != LibraryIncludeFlags.All)
+                    {
+                        await SetPackagePropertyValueAsync(
+                            reference.Metadata,
+                            ProjectItemProperties.PrivateAssets,
+                            MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(installationContext.SuppressParent)));
+
+                        await SetPackagePropertyValueAsync(
+                            reference.Metadata,
+                            ProjectItemProperties.IncludeAssets,
+                            MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(installationContext.IncludeType)));
+                    }
                 }
             }
             else
@@ -298,9 +314,30 @@ namespace NuGet.PackageManagement.VisualStudio
                     var existingReference = result.Reference;
                     await existingReference.Metadata.SetPropertyValueAsync("Version", formattedRange);
                 }
+
+                if (installationContext.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent &&
+                    installationContext.IncludeType != LibraryIncludeFlags.All)
+                {
+                    await SetPackagePropertyValueAsync(
+                        result.Reference.Metadata,
+                        ProjectItemProperties.PrivateAssets,
+                        MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(installationContext.SuppressParent)));
+
+                    await SetPackagePropertyValueAsync(
+                        result.Reference.Metadata,
+                        ProjectItemProperties.IncludeAssets,
+                        MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(installationContext.IncludeType)));
+                }
             }
 
             return true;
+        }
+
+        private async Task SetPackagePropertyValueAsync(IProjectProperties metadata, string propertyName, string propertyValue)
+        {
+            await metadata.SetPropertyValueAsync(
+                propertyName,
+                propertyValue);
         }
 
         public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)

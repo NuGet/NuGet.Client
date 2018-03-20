@@ -98,6 +98,58 @@ namespace NuGet.Packaging.Test
             Assert.Equal("3b1efd3a66ea28b16697394703a72ca340a05bd5", certificates[2].Thumbprint, StringComparer.OrdinalIgnoreCase);
         }
 
+        [Fact]
+        public void HasRepositoryCountersignature_WithNullPrimarySignature_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => SignatureUtility.HasRepositoryCountersignature(primarySignature: null));
+
+            Assert.Equal("primarySignature", exception.ParamName);
+        }
+
+        [Fact]
+        public async Task HasRepositoryCountersignature_WithSignatureWithoutRepositoryCountersignature_ReturnsFalseAsync()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                var packageContext = new SimpleTestPackageContext();
+                var unsignedPackageStream = packageContext.CreateAsStream();
+
+                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(
+                    certificate,
+                    unsignedPackageStream);
+
+                var hasRepoCountersignature = SignatureUtility.HasRepositoryCountersignature(signature);
+
+                Assert.False(hasRepoCountersignature);
+            }
+        }
+
+        [Fact]
+        public async Task HasRepositoryCountersignature_WithSignatureWithRepositoryCountersignature_ReturnsTrueAsync()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            using (var repositoryCertificate = _fixture.GetDefaultCertificate())
+            {
+                var packageContext = new SimpleTestPackageContext();
+                var unsignedPackageStream = packageContext.CreateAsStream();
+
+                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(
+                    certificate,
+                    unsignedPackageStream);
+
+                var hashAlgorithm = Common.HashAlgorithmName.SHA256;
+                var v3ServiceIndexUri = new Uri("https://v3serviceIndex.test/api/index.json");
+                using (var request = new RepositorySignPackageRequest(repositoryCertificate, hashAlgorithm, hashAlgorithm, v3ServiceIndexUri, null))
+                {
+                    var reposignedSignature = await SignedArchiveTestUtility.RepositoryCountersignPrimarySignatureAsync(signature, request);
+                    var hasRepoCountersignature = SignatureUtility.HasRepositoryCountersignature(reposignedSignature);
+
+                    Assert.True(hasRepoCountersignature);
+                }
+            }
+        }
+
         private static PrimarySignature GeneratePrimarySignatureWithNoCertificates(PrimarySignature signature)
         {
             var certificateStore = X509StoreFactory.Create(

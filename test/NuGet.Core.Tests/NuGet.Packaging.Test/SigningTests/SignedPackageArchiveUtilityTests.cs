@@ -4,15 +4,95 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class SignedPackageArchiveUtilityTests
+    public class SignedPackageArchiveUtilityTests : IClassFixture<CertificatesFixture>
     {
+        private readonly CertificatesFixture _fixture;
+
+        public SignedPackageArchiveUtilityTests(CertificatesFixture fixture)
+        {
+            if (fixture == null)
+            {
+                throw new ArgumentNullException(nameof(fixture));
+            }
+
+            _fixture = fixture;
+        }
+
+        [Fact]
+        public void OpenPackageSignatureFileStream_WhenReaderIsNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => SignedPackageArchiveUtility.OpenPackageSignatureFileStream(reader: null));
+
+            Assert.Equal("reader", exception.ParamName);
+        }
+
+        [Fact]
+        public void OpenPackageSignatureFileStream_WithEmptyZip_Throws()
+        {
+            using (var test = new Test(GetEmptyZip()))
+            {
+                Assert.Throws<InvalidDataException>(
+                    () => SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader));
+            }
+        }
+
+        [Fact]
+        public void OpenPackageSignatureFileStream_WithIncorrectSignatureFileName_Throws()
+        {
+            using (var test = new Test(GetResource("SignatureFileWithUppercaseFileName.zip")))
+            {
+                var exception = Assert.Throws<SignatureException>(
+                    () => SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader));
+
+                Assert.Equal("The package does not contain a valid package signature file.", exception.Message);
+                Assert.Equal(NuGetLogCode.NU3005, exception.Code);
+            }
+        }
+
+        [Fact]
+        public void OpenPackageSignatureFileStream_WithCompressedSignatureFileEntry_Throws()
+        {
+            using (var test = new Test(GetResource("SignatureFileWithDeflateCompressionMethodAndDefaultCompressionLevel.zip")))
+            {
+                var exception = Assert.Throws<SignatureException>(
+                    () => SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader));
+
+                Assert.Equal("The package signature file entry is invalid.", exception.Message);
+                Assert.Equal(NuGetLogCode.NU3005, exception.Code);
+            }
+        }
+
+        [Fact]
+        public void OpenPackageSignatureFileStream_WithFakeContent_ReturnsContent()
+        {
+            using (var test = new Test(GetResource("SignatureFileWithFakeContent.zip")))
+            using (var stream = SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader))
+            {
+                Assert.False(stream.CanWrite);
+
+                using (var reader = new BinaryReader(stream))
+                {
+                    var expectedBytes = Encoding.ASCII.GetBytes("content");
+                    var actualBytes = reader.ReadBytes((int)reader.BaseStream.Length);
+
+                    Assert.Equal(expectedBytes, actualBytes);
+                }
+            }
+        }
+
         [Fact]
         public void IsSigned_WhenReaderIsNull_Throws()
         {
@@ -170,6 +250,180 @@ namespace NuGet.Packaging.Test
             }
         }
 
+#if IS_DESKTOP
+        [Fact]
+        public async Task RemoveRepositorySignaturesAsync_WithNullInput_Throws()
+        {
+            var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                () => SignedPackageArchiveUtility.RemoveRepositorySignaturesAsync(
+                    input: null,
+                    output: Stream.Null,
+                    cancellationToken: new CancellationToken()));
+
+            Assert.Equal("input", exception.ParamName);
+        }
+
+        [Fact]
+        public async Task RemoveRepositorySignaturesAsync_WithNullOutput_Throws()
+        {
+            var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                () => SignedPackageArchiveUtility.RemoveRepositorySignaturesAsync(
+                    Stream.Null,
+                    output: null,
+                    cancellationToken: new CancellationToken()));
+
+            Assert.Equal("output", exception.ParamName);
+        }
+
+        [Fact]
+        public async Task RemoveRepositorySignaturesAsync_WithCancelledToken_Throws()
+        {
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                () => SignedPackageArchiveUtility.RemoveRepositorySignaturesAsync(
+                    Stream.Null,
+                    Stream.Null,
+                    new CancellationToken(canceled: true)));
+        }
+
+        [Fact]
+        public async Task RemoveRepositorySignaturesAsync_WithUnsignedPackage_DoesNotChangePackage()
+        {
+            using (var test = new RemoveTest(_fixture))
+            using (var input = new MemoryStream(test.Zip.ToByteArray(), writable: false))
+            {
+                var wasSomethingRemoved = await SignedPackageArchiveUtility.RemoveRepositorySignaturesAsync(
+                    input,
+                    test.UnsignedPackage,
+                    CancellationToken.None);
+
+                Assert.False(wasSomethingRemoved);
+                Assert.Equal(0, test.UnsignedPackage.Length);
+            }
+        }
+
+        [Fact]
+        public async Task RemoveRepositorySignaturesAsync_WithAuthorPrimarySignature_DoesNotChangePackage()
+        {
+            using (var test = new RemoveTest(_fixture))
+            {
+                await test.AuthorSignAsync();
+
+                var wasSomethingRemoved = await SignedPackageArchiveUtility.RemoveRepositorySignaturesAsync(
+                    test.SignedPackage,
+                    test.UnsignedPackage,
+                    CancellationToken.None);
+
+                Assert.False(wasSomethingRemoved);
+                Assert.Equal(0, test.UnsignedPackage.Length);
+            }
+        }
+
+        [Fact]
+        public async Task RemoveRepositorySignaturesAsync_WithRepositoryPrimarySignature_ReturnsUnsignedPackage()
+        {
+            using (var test = new RemoveTest(_fixture))
+            {
+                await test.RepositorySignAsync();
+
+                var wasSomethingRemoved = await SignedPackageArchiveUtility.RemoveRepositorySignaturesAsync(
+                    test.SignedPackage,
+                    test.UnsignedPackage,
+                    CancellationToken.None);
+
+                Assert.True(wasSomethingRemoved);
+                Assert.Equal(test.Zip.ToByteArray(), test.UnsignedPackage.ToArray());
+            }
+        }
+
+        [Fact]
+        public async Task RemoveRepositorySignaturesAsync_WithRepositoryCountersignature_ReturnsPrimarySignedPackage()
+        {
+            using (var test = new RemoveTest(_fixture))
+            {
+                await test.AuthorSignAsync();
+
+                var expectedPackage = test.SignedPackage.ToArray();
+                var originalLastWriteTime = GetLastModifiedDateTimeOfPackageSignatureFile(test.SignedPackage);
+
+                await test.RepositoryCountersignAsync();
+
+                var wasSomethingRemoved = await SignedPackageArchiveUtility.RemoveRepositorySignaturesAsync(
+                    test.SignedPackage,
+                    test.UnsignedPackage,
+                    CancellationToken.None);
+
+                var actualPackage = test.UnsignedPackage.ToArray();
+                var newLastWriteTime = GetLastModifiedDateTimeOfPackageSignatureFile(test.UnsignedPackage);
+
+                Assert.True(wasSomethingRemoved);
+                Assert.InRange(newLastWriteTime, originalLastWriteTime, originalLastWriteTime.Add(TimeSpan.FromMinutes(5)));
+
+                ZeroPackageSignatureFileLastModifiedDateTimes(
+                    expectedPackage,
+                    actualPackage,
+                    offsetOfLocalFileHeaderLastModifiedDateTime: 0x1df,
+                    offsetOfCentralDirectoryHeaderLastModifiedDateTime: 0x851);
+
+                Assert.Equal(expectedPackage, actualPackage);
+            }
+        }
+
+        [Fact]
+        public async Task RemoveRepositorySignaturesAsync_WithMultipleCountersignatures_ReturnsSignedPackageWithoutRepositorySignatures()
+        {
+            using (var test = new RemoveTest(_fixture))
+            {
+                await test.AuthorSignAsync();
+                await test.CountersignAsync();
+
+                var expectedPackage = test.SignedPackage.ToArray();
+                var originalLastWriteTime = GetLastModifiedDateTimeOfPackageSignatureFile(test.SignedPackage);
+
+                await test.RepositoryCountersignAsync();
+                await test.RepositoryCountersignAsync();
+
+                var wasSomethingRemoved = await SignedPackageArchiveUtility.RemoveRepositorySignaturesAsync(
+                    test.SignedPackage,
+                    test.UnsignedPackage,
+                    CancellationToken.None);
+
+                var actualPackage = test.UnsignedPackage.ToArray();
+                var newLastWriteTime = GetLastModifiedDateTimeOfPackageSignatureFile(test.UnsignedPackage);
+
+                Assert.True(wasSomethingRemoved);
+                Assert.InRange(newLastWriteTime, originalLastWriteTime, originalLastWriteTime.Add(TimeSpan.FromMinutes(5)));
+
+                ZeroPackageSignatureFileLastModifiedDateTimes(
+                    expectedPackage,
+                    actualPackage,
+                    offsetOfLocalFileHeaderLastModifiedDateTime: 0x1df,
+                    offsetOfCentralDirectoryHeaderLastModifiedDateTime: 0xa7a);
+
+                Assert.Equal(expectedPackage, actualPackage);
+            }
+        }
+
+        private static void ZeroPackageSignatureFileLastModifiedDateTimes(
+            byte[] package1,
+            byte[] package2,
+            uint offsetOfLocalFileHeaderLastModifiedDateTime,
+            uint offsetOfCentralDirectoryHeaderLastModifiedDateTime)
+        {
+            // The two packages should be identical except for last modified datetime values
+            // in the package signature file's local file header and central directory header.
+            Assert.Equal(package1.Length, package2.Length);
+
+            for (var i = 0; i < 4; ++i)
+            {
+                package1.SetValue((byte)0, offsetOfLocalFileHeaderLastModifiedDateTime + i);
+                package1.SetValue((byte)0, offsetOfCentralDirectoryHeaderLastModifiedDateTime + i);
+
+                package2.SetValue((byte)0, offsetOfLocalFileHeaderLastModifiedDateTime + i);
+                package2.SetValue((byte)0, offsetOfCentralDirectoryHeaderLastModifiedDateTime + i);
+            }
+        }
+#endif
+
         private static byte[] GetEmptyZip()
         {
             using (var stream = new MemoryStream())
@@ -208,6 +462,16 @@ namespace NuGet.Packaging.Test
                 typeof(SignedPackageArchiveUtilityTests));
         }
 
+        private static DateTimeOffset GetLastModifiedDateTimeOfPackageSignatureFile(MemoryStream package)
+        {
+            using (var zipArchive = new ZipArchive(package, ZipArchiveMode.Read, leaveOpen: true))
+            {
+                var packageSignatureFile = zipArchive.GetEntry(SigningSpecifications.V1.SignaturePath);
+
+                return packageSignatureFile.LastWriteTime;
+            }
+        }
+
         private sealed class Test : IDisposable
         {
             private readonly MemoryStream _stream;
@@ -234,5 +498,171 @@ namespace NuGet.Packaging.Test
                 }
             }
         }
+
+#if IS_DESKTOP
+        private sealed class RemoveTest : IDisposable
+        {
+            private bool _isDisposed;
+
+            internal X509Certificate2 Certificate { get; }
+            internal Zip Zip { get; }
+            internal MemoryStream SignedPackage { get; private set; }
+            internal MemoryStream UnsignedPackage { get; }
+
+            internal RemoveTest(CertificatesFixture fixture)
+            {
+                Certificate = fixture.GetDefaultCertificate();
+
+                Zip = new Zip();
+
+                Zip.LocalFileHeaders.Add(Zip.ContentLocalFileHeader);
+                Zip.LocalFileHeaders.Add(Zip.NuspecLocalFileHeader);
+
+                Zip.CentralDirectoryHeaders.Add(Zip.ContentCentralDirectoryHeader);
+                Zip.CentralDirectoryHeaders.Add(Zip.NuspecCentralDirectoryHeader);
+
+                UnsignedPackage = new MemoryStream();
+            }
+
+            internal async Task AuthorSignAsync()
+            {
+                using (var request = new AuthorSignPackageRequest(
+                    new X509Certificate2(Certificate),
+                    HashAlgorithmName.SHA256,
+                    HashAlgorithmName.SHA256))
+                using (var originalPackage = new MemoryStream(Zip.ToByteArray(), writable: false))
+                using (var signedPackage = new MemoryStream())
+                {
+                    await SignedArchiveTestUtility.CreateSignedPackageAsync(request, originalPackage, signedPackage);
+
+                    SignedPackage = new MemoryStream(signedPackage.ToArray(), writable: false);
+                }
+
+                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(SignedPackage);
+
+                Assert.True(isSigned);
+            }
+
+            internal async Task RepositorySignAsync()
+            {
+                using (var request = new RepositorySignPackageRequest(
+                    new X509Certificate2(Certificate),
+                    HashAlgorithmName.SHA256,
+                    HashAlgorithmName.SHA256,
+                    new Uri("https://test.test"),
+                    packageOwners: null))
+                using (var originalPackage = new MemoryStream(Zip.ToByteArray(), writable: false))
+                using (var signedPackage = new MemoryStream())
+                {
+                    await SignedArchiveTestUtility.CreateSignedPackageAsync(request, originalPackage, signedPackage);
+
+                    SignedPackage = new MemoryStream(signedPackage.ToArray(), writable: false);
+                }
+
+                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(SignedPackage);
+
+                Assert.True(isSigned);
+            }
+
+            internal async Task RepositoryCountersignAsync()
+            {
+                PrimarySignature primarySignature;
+
+                using (var archiveReader = new PackageArchiveReader(SignedPackage))
+                {
+                    primarySignature = await archiveReader.GetPrimarySignatureAsync(CancellationToken.None);
+                }
+
+                using (var request = new RepositorySignPackageRequest(
+                    new X509Certificate2(Certificate),
+                    HashAlgorithmName.SHA256,
+                    HashAlgorithmName.SHA256,
+                    new Uri("https://test.test"),
+                    packageOwners: null))
+                {
+                    var cmsSigner = SigningUtility.CreateCmsSigner(request, NullLogger.Instance);
+                    var signedCms = primarySignature.SignedCms;
+
+                    signedCms.SignerInfos[0].ComputeCounterSignature(cmsSigner);
+
+                    primarySignature = PrimarySignature.Load(signedCms.Encode());
+                }
+
+                using (var originalPackage = new MemoryStream(Zip.ToByteArray(), writable: false))
+                using (var signedPackage = new MemoryStream())
+                using (var archive = new SignedPackageArchive(originalPackage, signedPackage))
+                using (var signatureStream = new MemoryStream(primarySignature.GetBytes()))
+                {
+                    await archive.AddSignatureAsync(signatureStream, CancellationToken.None);
+
+                    SignedPackage = new MemoryStream(signedPackage.ToArray(), writable: false);
+                }
+
+                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(SignedPackage);
+
+                Assert.True(isSigned);
+            }
+
+            internal async Task CountersignAsync()
+            {
+                PrimarySignature primarySignature;
+
+                using (var archiveReader = new PackageArchiveReader(SignedPackage))
+                {
+                    primarySignature = await archiveReader.GetPrimarySignatureAsync(CancellationToken.None);
+                }
+
+                using (var request = new UnknownSignPackageRequest(
+                    new X509Certificate2(Certificate),
+                    HashAlgorithmName.SHA256))
+                {
+                    var cmsSigner = SigningUtility.CreateCmsSigner(request, NullLogger.Instance);
+                    var signedCms = primarySignature.SignedCms;
+
+                    signedCms.SignerInfos[0].ComputeCounterSignature(cmsSigner);
+
+                    primarySignature = PrimarySignature.Load(signedCms.Encode());
+                }
+
+                using (var originalPackage = new MemoryStream(Zip.ToByteArray(), writable: false))
+                using (var signedPackage = new MemoryStream())
+                using (var archive = new SignedPackageArchive(originalPackage, signedPackage))
+                using (var signatureStream = new MemoryStream(primarySignature.GetBytes()))
+                {
+                    await archive.AddSignatureAsync(signatureStream, CancellationToken.None);
+
+                    SignedPackage = new MemoryStream(signedPackage.ToArray(), writable: false);
+                }
+
+                var isSigned = await SignedArchiveTestUtility.IsSignedAsync(SignedPackage);
+
+                Assert.True(isSigned);
+            }
+
+            public void Dispose()
+            {
+                if (!_isDisposed)
+                {
+                    Certificate.Dispose();
+                    SignedPackage?.Dispose();
+                    UnsignedPackage?.Dispose();
+
+                    GC.SuppressFinalize(this);
+
+                    _isDisposed = true;
+                }
+            }
+
+            private sealed class UnknownSignPackageRequest : SignPackageRequest
+            {
+                public override SignatureType SignatureType => SignatureType.Unknown;
+
+                internal UnknownSignPackageRequest(X509Certificate2 certificate, HashAlgorithmName hashAlgorithm) :
+                    base(certificate, hashAlgorithm, hashAlgorithm)
+                {
+                }
+            }
+        }
+#endif
     }
 }

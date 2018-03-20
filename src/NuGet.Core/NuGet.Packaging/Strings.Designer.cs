@@ -188,7 +188,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature contains multiple primary signatures..
+        ///   Looks up a localized string similar to The package signature file does not contain exactly one primary signature..
         /// </summary>
         internal static string Error_NotOnePrimarySignature {
             get {
@@ -206,11 +206,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A repository primary signature should not have a repository countersignatures..
+        ///   Looks up a localized string similar to A repository primary signature must not have a repository countersignature..
         /// </summary>
-        internal static string Error_RepositorySignatureShouldNotHaveARepositoryCountersignature {
+        internal static string Error_RepositorySignatureMustNotHaveARepositoryCountersignature {
             get {
-                return ResourceManager.GetString("Error_RepositorySignatureShouldNotHaveARepositoryCountersignature", resourceCulture);
+                return ResourceManager.GetString("Error_RepositorySignatureMustNotHaveARepositoryCountersignature", resourceCulture);
             }
         }
         
@@ -368,7 +368,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature is invalid..
+        ///   Looks up a localized string similar to The package signature is invalid or cannot be verified on this platform..
         /// </summary>
         internal static string ErrorPackageSignatureInvalid {
             get {
@@ -512,6 +512,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package contains an invalid package signature file..
+        /// </summary>
+        internal static string InvalidPackageSignatureFile {
+            get {
+                return ResourceManager.GetString("InvalidPackageSignatureFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package signature file entry is invalid..
         /// </summary>
         internal static string InvalidPackageSignatureFileEntry {
@@ -629,11 +638,29 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package contains multiple package signature files..
+        /// </summary>
+        internal static string MultiplePackageSignatureFiles {
+            get {
+                return ResourceManager.GetString("MultiplePackageSignatureFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; must contain an absolute path &apos;{1}&apos;..
         /// </summary>
         internal static string MustContainAbsolutePath {
             get {
                 return ResourceManager.GetString("MustContainAbsolutePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package does not contain a valid package signature file..
+        /// </summary>
+        internal static string NoPackageSignatureFile {
+            get {
+                return ResourceManager.GetString("NoPackageSignatureFile", resourceCulture);
             }
         }
         
@@ -746,6 +773,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Arguments {0} and {1} were out of bounds for the array..
+        /// </summary>
+        internal static string RangeOutOfBoundsForArray {
+            get {
+                return ResourceManager.GetString("RangeOutOfBoundsForArray", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package signature contains an invalid attribute: {0}.
         /// </summary>
         internal static string SignatureContainsInvalidAttribute {
@@ -827,6 +863,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package already contains a signature. Please remove the existing signature before adding a new signature..
+        /// </summary>
+        internal static string SignedPackageAlreadySigned {
+            get {
+                return ResourceManager.GetString("SignedPackageAlreadySigned", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package stream read position cannot be longer than the length of the stream..
         /// </summary>
         internal static string SignedPackageArchiveIOExtraRead {
@@ -863,11 +908,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package already contains a signature. Please remove the existing signature before adding a new signature..
+        ///   Looks up a localized string similar to The package already contains a repository countersignature. Please remove the existing signature before adding a new repository countersignature..
         /// </summary>
-        internal static string SignedPackagePackageAlreadySigned {
+        internal static string SignedPackagePackageAlreadyCountersigned {
             get {
-                return ResourceManager.GetString("SignedPackagePackageAlreadySigned", resourceCulture);
+                return ResourceManager.GetString("SignedPackagePackageAlreadyCountersigned", resourceCulture);
             }
         }
         
@@ -886,6 +931,15 @@ namespace NuGet.Packaging {
         internal static string SignFailureCertificateInvalidProviderType {
             get {
                 return ResourceManager.GetString("SignFailureCertificateInvalidProviderType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} and {1} should be different. Package signing cannot be done in place..
+        /// </summary>
+        internal static string SigningCannotBeDoneInPlace {
+            get {
+                return ResourceManager.GetString("SigningCannotBeDoneInPlace", resourceCulture);
             }
         }
         
@@ -976,6 +1030,24 @@ namespace NuGet.Packaging {
         internal static string SigningCertificateV2UnsupportedHashAlgorithm {
             get {
                 return ResourceManager.GetString("SigningCertificateV2UnsupportedHashAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The stream must be readable..
+        /// </summary>
+        internal static string StreamMustBeReadable {
+            get {
+                return ResourceManager.GetString("StreamMustBeReadable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The stream must be seekable..
+        /// </summary>
+        internal static string StreamMustBeSeekable {
+            get {
+                return ResourceManager.GetString("StreamMustBeSeekable", resourceCulture);
             }
         }
         
@@ -1129,6 +1201,15 @@ namespace NuGet.Packaging {
         internal static string UnableToReadPackageHashInformation {
             get {
                 return ResourceManager.GetString("UnableToReadPackageHashInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unexpected error occurred while verifying a package signature..
+        /// </summary>
+        internal static string UnexpectedPackageSignatureVerificationError {
+            get {
+                return ResourceManager.GetString("UnexpectedPackageSignatureVerificationError", resourceCulture);
             }
         }
         

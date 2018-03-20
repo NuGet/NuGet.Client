@@ -1,7 +1,7 @@
 use vs
 
 package name=Microsoft.VisualStudio.NuGet.BuildTools
-        version=15.0.40500.$(BuildNumber)
+        version=15.0.40700.$(BuildNumber)
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet 
         file source=$(NuGetTargetsPath)

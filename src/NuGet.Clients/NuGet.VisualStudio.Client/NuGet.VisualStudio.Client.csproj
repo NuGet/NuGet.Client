@@ -64,7 +64,7 @@
       <Link>Newtonsoft.Json.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="$(SolutionPackagesFolder)Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll">
+    <Content Include="$(SolutionPackagesFolder)Microsoft.Web.Xdt.2.1.2\lib\net40\Microsoft.Web.XmlTransform.dll">
       <Link>Microsoft.Web.XmlTransform.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -367,7 +367,7 @@
     </MSBuild>
     <ItemGroup>
       <VSIXSourceItem Include="@(LocalizedFilesForVsix)" />
-      <_LocalizedFiles Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll" />
+      <_LocalizedFiles Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.2\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll" />
       <_LocalizedFiles Include="$(ArtifactsDirectory)vsixlangpack\**\extension.vsixlangpack" />
       <_LocalizedFiles Include="$(ArtifactsDirectory)eulas\**\eula.rtf" />
       <_VsixLocFiles Include="@(_LocalizedFiles)">

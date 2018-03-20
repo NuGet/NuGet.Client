@@ -55,9 +55,9 @@ namespace NuGet.Packaging.Signing
                     {
                         // SignatureException generated while parsing signatures
                         var issues = new[] {
-                        SignatureLog.Issue(!_settings.AllowUntrusted, e.Code, e.Message),
-                        SignatureLog.DebugLog(e.ToString())
-                    };
+                            SignatureLog.Issue(!_settings.AllowUntrusted, e.Code, e.Message),
+                            SignatureLog.DebugLog(e.ToString())
+                        };
                         trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
                         valid = _settings.AllowUntrusted;
                     }
@@ -65,9 +65,9 @@ namespace NuGet.Packaging.Signing
                     {
                         // CryptographicException generated while parsing the SignedCms object
                         var issues = new[] {
-                        SignatureLog.Issue(!_settings.AllowUntrusted, NuGetLogCode.NU3003, Strings.ErrorPackageSignatureInvalid),
-                        SignatureLog.DebugLog(e.ToString())
-                    };
+                            SignatureLog.Issue(!_settings.AllowUntrusted, NuGetLogCode.NU3003, Strings.ErrorPackageSignatureInvalid),
+                            SignatureLog.DebugLog(e.ToString())
+                        };
                         trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
                         valid = _settings.AllowUntrusted;
                     }

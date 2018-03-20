@@ -244,7 +244,7 @@
   <data name="SignedPackageUnableToAccessSignature" xml:space="preserve">
     <value>The package was not opened correctly to perform signature operations. Please use a Stream-based constructor to have access to signature attributes of the package.</value>
   </data>
-  <data name="SignedPackagePackageAlreadySigned" xml:space="preserve">
+  <data name="SignedPackageAlreadySigned" xml:space="preserve">
     <value>The package already contains a signature. Please remove the existing signature before adding a new signature.</value>
   </data>
   <data name="SignedPackageNotSignedOnRemove" xml:space="preserve">
@@ -294,7 +294,7 @@ Valid from:</comment>
     <value>The package is not signed. Unable to verify signature from an unsigned package.</value>
   </data>
   <data name="ErrorPackageSignatureInvalid" xml:space="preserve">
-    <value>The package signature is invalid.</value>
+    <value>The package signature is invalid or cannot be verified on this platform.</value>
   </data>
   <data name="CommitmentTypeIndicationAttributeInvalidCombination" xml:space="preserve">
     <value>The commitment-type-indication attribute contains an invalid combination of values.</value>
@@ -349,7 +349,7 @@ Valid from:</comment>
     <value>Signed Zip64 packages are not supported.</value>
   </data>
   <data name="Error_NotOnePrimarySignature" xml:space="preserve">
-    <value>The package signature contains multiple primary signatures.</value>
+    <value>The package signature file does not contain exactly one primary signature.</value>
   </data>
   <data name="TimestampCertificateInvalid" xml:space="preserve">
     <value>The timestamp service's certificate has a valid time in the future: {0}</value>
@@ -529,10 +529,40 @@ Valid from:</comment>
     <value>nuget-v3-service-index-url: {0}</value>
     <comment>0- The nuget-v3-service-index-url value</comment>
   </data>
-  <data name="Error_RepositorySignatureShouldNotHaveARepositoryCountersignature" xml:space="preserve">
-    <value>A repository primary signature should not have a repository countersignatures.</value>
+  <data name="Error_RepositorySignatureMustNotHaveARepositoryCountersignature" xml:space="preserve">
+    <value>A repository primary signature must not have a repository countersignature.</value>
   </data>
   <data name="InvalidRepositoryCounterSignature" xml:space="preserve">
     <value>The repository countersignature is invalid.</value>
+  </data>
+  <data name="InvalidPackageSignatureFile" xml:space="preserve">
+    <value>The package contains an invalid package signature file.</value>
+  </data>
+  <data name="MultiplePackageSignatureFiles" xml:space="preserve">
+    <value>The package contains multiple package signature files.</value>
+  </data>
+  <data name="NoPackageSignatureFile" xml:space="preserve">
+    <value>The package does not contain a valid package signature file.</value>
+  </data>
+  <data name="SigningCannotBeDoneInPlace" xml:space="preserve">
+    <value>{0} and {1} should be different. Package signing cannot be done in place.</value>
+    <comment>0 - PackageFilePath parameter name
+1 - OutputFilePath parameter name</comment>
+  </data>
+  <data name="UnexpectedPackageSignatureVerificationError" xml:space="preserve">
+    <value>An unexpected error occurred while verifying a package signature.</value>
+  </data>
+  <data name="RangeOutOfBoundsForArray" xml:space="preserve">
+    <value>Arguments {0} and {1} were out of bounds for the array.</value>
+    <comment>{0} and {1} are parameter names</comment>
+  </data>
+  <data name="StreamMustBeReadable" xml:space="preserve">
+    <value>The stream must be readable.</value>
+  </data>
+  <data name="StreamMustBeSeekable" xml:space="preserve">
+    <value>The stream must be seekable.</value>
+  </data>
+  <data name="SignedPackagePackageAlreadyCountersigned" xml:space="preserve">
+    <value>The package already contains a repository countersignature. Please remove the existing signature before adding a new repository countersignature.</value>
   </data>
 </root>

@@ -35,6 +35,14 @@ namespace NuGet.Packaging.Signing
             IntPtr pRecipientInfo,
             IntPtr pStreamInfo);
 
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa380221(v=vs.85).aspx
+        [DllImport("crypt32.dll", SetLastError = true)]
+        public static extern bool CryptMsgCountersign(
+            SafeCryptMsgHandle hCryptMsg,
+            uint dwIndex,
+            int cCountersigners,
+            CMSG_SIGNER_ENCODE_INFO rgCountersigners);
+
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380219(v=vs.85).aspx
         [DllImport("crypt32.dll", SetLastError = true)]
         public static extern bool CryptMsgClose(IntPtr hCryptMsg);
@@ -206,6 +214,14 @@ namespace NuGet.Packaging.Signing
         internal uint cbSize;
         internal uint dwSignerIndex;
         internal CRYPT_INTEGER_BLOB BLOB;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct CMSG_CTRL_DEL_SIGNER_UNAUTH_ATTR_PARA
+    {
+        internal uint cbSize;
+        internal uint dwSignerIndex;
+        internal uint dwUnauthAttrIndex;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

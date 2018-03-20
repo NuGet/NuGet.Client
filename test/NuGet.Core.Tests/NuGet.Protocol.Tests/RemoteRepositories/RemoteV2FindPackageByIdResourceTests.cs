@@ -201,7 +201,7 @@ namespace NuGet.Protocol.Tests
             var serviceAddress = ProtocolUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "FindPackagesById()?id='a'", "204");
+            responses.Add(serviceAddress + "FindPackagesById()?id='a'&semVerLevel=2.0.0", "204");
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
             var logger = new TestLogger();
@@ -344,7 +344,7 @@ namespace NuGet.Protocol.Tests
                         })
                     },
                     {
-                        serviceAddress + "FindPackagesById()?id='XUNIT'",
+                        serviceAddress + "FindPackagesById()?id='XUNIT'&semVerLevel=2.0.0",
                         _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()))
@@ -402,7 +402,7 @@ namespace NuGet.Protocol.Tests
                         })
                     },
                     {
-                        serviceAddress + "FindPackagesById()?id='WINDOWSAZURE.STORAGE'",
+                        serviceAddress + "FindPackagesById()?id='WINDOWSAZURE.STORAGE'&semVerLevel=2.0.0",
                         _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()))
@@ -749,7 +749,7 @@ namespace NuGet.Protocol.Tests
                         })
                     },
                     {
-                        serviceAddress + $"FindPackagesById()?id='{packageIdentity.Id}'",
+                        serviceAddress + $"FindPackagesById()?id='{packageIdentity.Id}'&semVerLevel=2.0.0",
                         request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(
@@ -759,7 +759,7 @@ namespace NuGet.Protocol.Tests
                         })
                     },
                     {
-                        serviceAddress + $"FindPackagesById()?id='{packageIdentity.Id.ToUpper()}'",
+                        serviceAddress + $"FindPackagesById()?id='{packageIdentity.Id.ToUpper()}'&semVerLevel=2.0.0",
                         request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(
@@ -776,7 +776,7 @@ namespace NuGet.Protocol.Tests
                         })
                     },
                     {
-                        serviceAddress + $"FindPackagesById()?id='a'",
+                        serviceAddress + $"FindPackagesById()?id='a'&semVerLevel=2.0.0",
                         request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NoContent))
                     }
                 };

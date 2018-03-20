@@ -17,7 +17,14 @@ namespace NuGet.Packaging.Rules
         private const string ContentDirectory = "content";
         private const string ContentFilesDirectory = "contentFiles";
 
-        public IEnumerable<PackLogMessage> Validate(PackageArchiveReader builder)
+        public string MessageFormat { get; }
+
+        public MisplacedTransformFileRule(string messageFormat)
+        {
+            MessageFormat = messageFormat;
+        }
+
+        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
             foreach (var file in builder.GetFiles().Select(t => PathUtility.GetPathWithDirectorySeparator(t)))
             {
@@ -39,10 +46,10 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        private static PackLogMessage CreatePackageIssueForMisplacedContent(string path)
+        private PackagingLogMessage CreatePackageIssueForMisplacedContent(string path)
         {
-            return PackLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.MisplacedTransformFileWarning, path),
+            return PackagingLogMessage.CreateWarning(
+                String.Format(CultureInfo.CurrentCulture, MessageFormat, path),
                 NuGetLogCode.NU5108);
         }
     }

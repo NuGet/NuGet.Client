@@ -5,7 +5,9 @@ using System;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using AsyncLocalInt = System.Threading.AsyncLocal<int>;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -18,7 +20,18 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
-        private readonly AsyncLocal<int> _lockCount = new AsyncLocal<int>();
+        private readonly AsyncLocalInt _lockCount = new AsyncLocalInt();
+
+        private readonly JoinableTaskCollection _joinableTaskCollection;
+
+        private readonly JoinableTaskFactory _joinableTaskFactory;
+
+        [ImportingConstructor]
+        public NuGetLockService(JoinableTaskContext joinableTaskContext)
+        {
+            _joinableTaskCollection = joinableTaskContext.CreateCollection();
+            _joinableTaskFactory = joinableTaskContext.CreateFactory(_joinableTaskCollection);
+        }
 
         public bool IsLockHeld => _semaphore.CurrentCount == 0;
 
@@ -33,25 +46,31 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (_lockCount.Value == 0)
             {
-                await _semaphore.WaitAsync(token);
-
-                // Once this thread acquired the lock then increment lockCount
-                _lockCount.Value++;
-
-                try
+                return await _joinableTaskFactory.RunAsync(async delegate
                 {
-                    return await action();
-                }
-                finally
-                {
+                    using (_joinableTaskCollection.Join())
+                    {
+                        await _semaphore.WaitAsync(token);
+                    }
+
+                    // Once this thread acquired the lock then increment lockCount
+                    _lockCount.Value++;
+
                     try
                     {
-                        _semaphore.Release();
+                        return await action();
                     }
-                    catch (ObjectDisposedException) { }
+                    finally
+                    {
+                        try
+                        {
+                            _semaphore.Release();
+                        }
+                        catch (ObjectDisposedException) { }
 
-                    _lockCount.Value--;
-                }
+                        _lockCount.Value--;
+                    }
+                });
             }
             else
             {

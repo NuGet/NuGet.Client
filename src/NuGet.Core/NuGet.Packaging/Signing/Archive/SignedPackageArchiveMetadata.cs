@@ -18,12 +18,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Offset, in bytes, to the first file header relative to the start of the archive. Should typically be 0.
         /// </summary>
-        public long StartOfFileHeaders { get; set; }
-
-        /// <summary>
-        /// Offset, in bytes, to the end of last file header relative to the start of the archive.
-        /// </summary>
-        public long EndOfFileHeaders { get; set; }
+        public long StartOfLocalFileHeaders { get; set; }
 
         /// <summary>
         /// Offset, in bytes, to the end of central directory headers relative to the start of the archive.
@@ -36,9 +31,9 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public int SignatureCentralDirectoryHeaderIndex { get; set; }
 
-        /// <summary>
-        /// Offset, in bytes, to the start of "End of Central Directory Record" relative to the start of the archive.
-        /// </summary>
-        public long EndOfCentralDirectoryRecordPosition { get; set; }
+        public CentralDirectoryHeaderMetadata GetPackageSignatureFileCentralDirectoryHeaderMetadata()
+        {
+            return CentralDirectoryHeaders[SignatureCentralDirectoryHeaderIndex];
+        }
     }
 }

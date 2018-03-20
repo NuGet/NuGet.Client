@@ -29,8 +29,7 @@ namespace NuGet.Packaging.Signing
             : base(
                   certificate,
                   hashAlgorithm,
-                  hashAlgorithm,
-                  SignaturePlacement.PrimarySignature)
+                  hashAlgorithm)
         {
         }
 
@@ -53,8 +52,7 @@ namespace NuGet.Packaging.Signing
             : base(
                   certificate,
                   signatureHashAlgorithm,
-                  timestampHashAlgorithm,
-                  SignaturePlacement.PrimarySignature)
+                  timestampHashAlgorithm)
         {
         }
     }

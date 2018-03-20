@@ -16,11 +16,21 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Create a signature.
         /// </summary>
-        /// <param name="certificate">Certificate to be used while signing the package.</param>
+        /// <param name="request">Signing request with all the information needed to create signature.</param>
         /// <param name="signatureContent">SignatureContent containing the Hash of the package and the signature version.</param>
         /// <param name="logger">Logger</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>A signature for the package.</returns>
         Task<PrimarySignature> CreatePrimarySignatureAsync(SignPackageRequest request, SignatureContent signatureContent, ILogger logger, CancellationToken token);
+
+        /// <summary>
+        /// Create a repository countersignature.
+        /// </summary>
+        /// <param name="request">Signing request with all the information needed to create signature.</param>
+        /// <param name="primarySignature">Primary signature to be countersigned.</param>
+        /// <param name="logger">Logger</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>A signature for the package.</returns>
+        Task<PrimarySignature> CreateRepositoryCountersignatureAsync(RepositorySignPackageRequest request, PrimarySignature primarySignature, ILogger logger, CancellationToken token);
     }
 }

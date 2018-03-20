@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
@@ -51,7 +51,7 @@ namespace NuGet.CommandLine.Test.Caching
 
         public string GetFindPackagesByIdPath(string id)
         {
-            return $"/nuget/FindPackagesById()?id='{id}'";
+            return $"/nuget/FindPackagesById()?id='{id}'&semVerLevel=2.0.0";
         }
 
         public string GetODataUrl(PackageIdentity identity)
@@ -72,6 +72,11 @@ namespace NuGet.CommandLine.Test.Caching
         public string GetV3IndexPath()
         {
             return "/index.json";
+        }
+
+        public string GetRepoSignIndexPath()
+        {
+            return @"/v3-index/repository-signatures/index.json";
         }
 
         public string GetV2IndexPath()
@@ -183,6 +188,17 @@ namespace NuGet.CommandLine.Test.Caching
             };
         }
 
+        public MockResponse BuildRepoSignIndexResponse()
+        {
+            var repoSignIndex = Util.CreateRepoSignJson();
+
+            return new MockResponse
+            {
+                ContentType = "text/javascript",
+                Content = Encoding.UTF8.GetBytes(repoSignIndex.ToString())
+            };
+        }
+
         public MockResponse BuildFlatIndex(NuGetVersion version)
         {
             var flatIndex = JsonConvert.SerializeObject(new
@@ -206,6 +222,19 @@ namespace NuGet.CommandLine.Test.Caching
 
             Util.AddFlatContainerResource(indexJson, mockServer);
             Util.AddRegistrationResource(indexJson, mockServer);
+
+            return new MockResponse
+            {
+                ContentType = "text/javascript",
+                Content = Encoding.UTF8.GetBytes(indexJson.ToString())
+            };
+        }
+
+        public MockResponse BuildV3IndexWithRepoSignResponse(MockServer mockServer)
+        {
+            var indexJson = Util.CreateIndexJson();
+
+            Util.AddRepositorySignatureResource(indexJson, mockServer);
 
             return new MockResponse
             {

@@ -3,11 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
@@ -168,6 +171,117 @@ namespace NuGet.Packaging.Signing
 
             return signer;
         }
+
+        /// <summary>
+        /// Add a signature to a package.
+        /// </summary>
+        public static async Task SignAsync(SigningOptions options, SignPackageRequest signRequest, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            Verify(signRequest, options.Logger);
+
+            var tempPackageFile = new FileInfo(Path.GetTempFileName());
+            Stream unsignedPackageStream = null;
+            var signaturePlacement = SignaturePlacement.PrimarySignature;
+
+            try
+            {
+                PrimarySignature primarySignature;
+                var isSigned = false;
+
+                using (var package = new SignedPackageArchive(options.InputPackageStream, Stream.Null))
+                {
+                    if (await package.IsZip64Async(token))
+                    {
+                        throw new SignatureException(NuGetLogCode.NU3006, Strings.ErrorZip64NotSupported);
+                    }
+
+                    primarySignature = await package.GetPrimarySignatureAsync(token);
+                    isSigned = primarySignature != null;
+
+                    if (signRequest.SignatureType == SignatureType.Repository && primarySignature != null)
+                    {
+                        if (primarySignature.Type == SignatureType.Repository)
+                        {
+                            throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureMustNotHaveARepositoryCountersignature);
+                        }
+
+                        if (SignatureUtility.HasRepositoryCountersignature(primarySignature))
+                        {
+                            throw new SignatureException(NuGetLogCode.NU3032, Strings.SignedPackagePackageAlreadyCountersigned);
+                        }
+
+                        signaturePlacement = SignaturePlacement.Countersignature;
+                    }
+
+                    if (isSigned && !options.Overwrite && signaturePlacement != SignaturePlacement.Countersignature)
+                    {
+                        throw new SignatureException(NuGetLogCode.NU3001, Strings.SignedPackageAlreadySigned);
+                    }
+                }
+
+                var inputPackageStream = options.InputPackageStream;
+                if (isSigned)
+                {
+                    unsignedPackageStream = tempPackageFile.Open(FileMode.OpenOrCreate, FileAccess.ReadWrite);
+
+                    using (var package = new SignedPackageArchive(options.InputPackageStream, unsignedPackageStream))
+                    {
+                        await package.RemoveSignatureAsync(token);
+                    }
+
+                    inputPackageStream = unsignedPackageStream;
+                }
+
+                using (var package = new SignedPackageArchive(inputPackageStream, options.OutputPackageStream))
+                {
+                    PrimarySignature signature;
+                    if (signaturePlacement == SignaturePlacement.Countersignature)
+                    {
+                        signature = await options.SignatureProvider.CreateRepositoryCountersignatureAsync(
+                            signRequest as RepositorySignPackageRequest,
+                            primarySignature,
+                            options.Logger,
+                            token);
+                    }
+                    else
+                    {
+                        var hashAlgorithm = signRequest.SignatureHashAlgorithm;
+                        var zipArchiveHash = await package.GetArchiveHashAsync(hashAlgorithm, token);
+                        var signatureContent = GenerateSignatureContent(hashAlgorithm, zipArchiveHash);
+                        signature = await options.SignatureProvider.CreatePrimarySignatureAsync(signRequest, signatureContent, options.Logger, token);
+                    }
+                    
+                    using (var stream = new MemoryStream(signature.GetBytes()))
+                    {
+                        await package.AddSignatureAsync(stream, token);
+                    }
+                }
+            }
+            finally
+            {
+                if (unsignedPackageStream != null && !ReferenceEquals(unsignedPackageStream, options.InputPackageStream))
+                {
+                    unsignedPackageStream.Dispose();
+                }
+
+                FileUtility.Delete(tempPackageFile.FullName);
+            }
+        }
+
+        private static SignatureContent GenerateSignatureContent(Common.HashAlgorithmName hashAlgorithmName, byte[] zipArchiveHash)
+        {
+            var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
+
+            return new SignatureContent(SigningSpecifications.V1, hashAlgorithmName, base64ZipArchiveHash);
+        }
+#else
+
+        /// <summary>
+        /// Add a signature to a package.
+        /// </summary>
+        public static Task SignAsync(SigningOptions options, SignPackageRequest signRequest, CancellationToken token) => throw new NotImplementedException();
 #endif
     }
 }

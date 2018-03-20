@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -110,7 +111,7 @@ namespace NuGet.Test.Utility
             var tempStream = stream;
             var isUsingTempStream = false;
 
-            if (packageContext.AuthorSignatureCertificate != null)
+            if (packageContext.PrimarySignatureCertificate != null)
             {
                 tempStream = new MemoryStream();
                 isUsingTempStream = true;
@@ -237,11 +238,24 @@ namespace NuGet.Test.Utility
             {
                 using (var signPackage = new SignedPackageArchive(tempStream, stream))
                 {
-                    var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
-                    var signer = new Signer(signPackage, testSignatureProvider);
-                    var request = new AuthorSignPackageRequest(packageContext.AuthorSignatureCertificate, hashAlgorithm: HashAlgorithmName.SHA256);
+#if IS_DESKTOP
+                    using (var request = new AuthorSignPackageRequest(new X509Certificate2(packageContext.PrimarySignatureCertificate), HashAlgorithmName.SHA256))
+                    {
+                        AddSignatureToPackageAsync(signPackage, request, testLogger).Wait();
+                    }
 
-                    signer.SignAsync(request, testLogger, CancellationToken.None).Wait();
+                    if (packageContext.RepositoryCountersignatureCertificate != null && packageContext.V3ServiceIndexUrl != null)
+                    {
+                        using (var request = new RepositorySignPackageRequest(packageContext.RepositoryCountersignatureCertificate,
+                                                                                HashAlgorithmName.SHA256,
+                                                                                HashAlgorithmName.SHA256,
+                                                                                packageContext.V3ServiceIndexUrl,
+                                                                                packageContext.PackageOwners))
+                        {
+                            AddRepositoryCountersignatureToSignedPackageAsync(signPackage, request, testLogger).Wait();
+                        }
+                    }
+#endif
                 }
 
                 tempStream.Dispose();
@@ -249,6 +263,44 @@ namespace NuGet.Test.Utility
 
             // Reset position
             stream.Position = 0;
+        }
+
+        private static async Task AddSignatureToPackageAsync(ISignedPackage package, SignPackageRequest request, ILogger logger)
+        {
+            var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
+
+            var zipArchiveHash = await package.GetArchiveHashAsync(request.SignatureHashAlgorithm, CancellationToken.None);
+            var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
+            var signatureContent = new SignatureContent(SigningSpecifications.V1, request.SignatureHashAlgorithm, base64ZipArchiveHash);
+
+            var signature = await testSignatureProvider.CreatePrimarySignatureAsync(request, signatureContent, logger, CancellationToken.None);
+
+            using (var stream = new MemoryStream(signature.GetBytes()))
+            {
+#if IS_DESKTOP
+                await package.AddSignatureAsync(stream, CancellationToken.None);
+#endif
+            }
+        }
+
+        private static async Task AddRepositoryCountersignatureToSignedPackageAsync(ISignedPackage package, RepositorySignPackageRequest request, ILogger logger)
+        {
+#if IS_DESKTOP
+            var primarySignature = await package.GetPrimarySignatureAsync(CancellationToken.None);
+
+            if (primarySignature != null)
+            {
+                var testSignatureProvider = new X509SignatureProvider(timestampProvider: null);
+
+                var signature = await testSignatureProvider.CreateRepositoryCountersignatureAsync(request, primarySignature, logger, CancellationToken.None);
+
+                using (var stream = new MemoryStream(signature.GetBytes()))
+                {
+
+                    await package.AddSignatureAsync(stream, CancellationToken.None);
+                }
+            }
+#endif
         }
 
         /// <summary>

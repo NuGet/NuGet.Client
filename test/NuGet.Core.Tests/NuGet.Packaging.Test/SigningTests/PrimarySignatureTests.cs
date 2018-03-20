@@ -13,6 +13,8 @@ namespace NuGet.Packaging.Test
 {
     public class PrimarySignatureTests : IClassFixture<CertificatesFixture>
     {
+        private const string NotExactlyOnePrimarySignature = "The package signature file does not contain exactly one primary signature.";
+
         private readonly CertificatesFixture _fixture;
 
         public PrimarySignatureTests(CertificatesFixture fixture)
@@ -35,28 +37,37 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Load_WithMultiplePrimarySignatures_Throws()
+        public void Load_WitNoPrimarySignature_Throws()
         {
-            using (var certificate = _fixture.GetDefaultCertificate())
+            using (var test = new LoadTest(_fixture))
             {
-                var content = new SignatureContent(
-                    SigningSpecifications.V1,
-                    HashAlgorithmName.SHA256,
-                    hashValue: "hash");
-                var contentInfo = new ContentInfo(content.GetBytes());
-                var signedCms = new SignedCms(contentInfo);
-
-                var cmsSigner = new CmsSigner(certificate);
-                signedCms.ComputeSignature(cmsSigner);
-
-                cmsSigner = new CmsSigner(certificate);
-                signedCms.ComputeSignature(cmsSigner);
+                test.SignedCms.ComputeSignature(test.CmsSigner);
+                test.SignedCms.RemoveSignature(index: 0);
 
                 var exception = Assert.Throws<SignatureException>(
-                    () => PrimarySignature.Load(signedCms.Encode()));
+                    () => PrimarySignature.Load(test.SignedCms.Encode()));
 
                 Assert.Equal(NuGetLogCode.NU3009, exception.Code);
-                Assert.Equal("The package signature contains multiple primary signatures.", exception.Message);
+                Assert.Equal(NotExactlyOnePrimarySignature, exception.Message);
+            }
+        }
+
+        [Fact]
+        public void Load_WithMultiplePrimarySignatures_Throws()
+        {
+            using (var test = new LoadTest(_fixture))
+            {
+                test.SignedCms.ComputeSignature(test.CmsSigner);
+
+                var cmsSigner = new CmsSigner(test.Certificate);
+
+                test.SignedCms.ComputeSignature(cmsSigner);
+
+                var exception = Assert.Throws<SignatureException>(
+                    () => PrimarySignature.Load(test.SignedCms.Encode()));
+
+                Assert.Equal(NuGetLogCode.NU3009, exception.Code);
+                Assert.Equal(NotExactlyOnePrimarySignature, exception.Message);
             }
         }
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -110,7 +111,7 @@ namespace NuGet.Protocol
             var cacheFileDirectory = Path.GetDirectoryName(result.CacheFile);
 
             // Make sure the new cache file directory is created before writing a file to it.
-            Directory.CreateDirectory(newCacheFileDirectory);
+            DirectoryUtility.CreateSharedDirectory(newCacheFileDirectory);
 
             // The update of a cached file is divided into two steps:
             // 1) Delete the old file.
@@ -147,7 +148,7 @@ namespace NuGet.Protocol
             // Make sure the cache file directory is created before moving or writing a file to it.
             if (cacheFileDirectory != newCacheFileDirectory)
             {
-                Directory.CreateDirectory(cacheFileDirectory);
+                DirectoryUtility.CreateSharedDirectory(cacheFileDirectory);
             }
 
             // If the destination file doesn't exist, we can safely perform moving operation.

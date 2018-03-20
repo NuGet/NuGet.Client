@@ -19,7 +19,7 @@ namespace NuGet.ProjectManagement
 {
     public static class MSBuildNuGetProjectSystemUtility
     {
-        internal static FrameworkSpecificGroup GetMostCompatibleGroup(NuGetFramework projectTargetFramework,
+        public static FrameworkSpecificGroup GetMostCompatibleGroup(NuGetFramework projectTargetFramework,
             IEnumerable<FrameworkSpecificGroup> itemGroups)
         {
             var reducer = new FrameworkReducer();
@@ -44,7 +44,7 @@ namespace NuGet.ProjectManagement
         /// current OS.
         /// </summary>
         /// <remarks>If the group is null or contains only only _._ this method will return the same group.</remarks>
-        internal static FrameworkSpecificGroup Normalize(FrameworkSpecificGroup group)
+        public static FrameworkSpecificGroup Normalize(FrameworkSpecificGroup group)
         {
             // Default to returning the same group
             var result = group;
@@ -66,7 +66,7 @@ namespace NuGet.ProjectManagement
             return result;
         }
 
-        internal static bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)
+        public static bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)
         {
             if (frameworkSpecificGroup != null)
             {

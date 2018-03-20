@@ -32,7 +32,6 @@ namespace NuGet.Packaging.Signing
         /// <param name="certificate">The signing certificate.</param>
         /// <param name="signatureHashAlgorithm">The signature hash algorithm.</param>
         /// <param name="timestampHashAlgorithm">The timestamp hash algorithm.</param>
-        /// <param name="signaturePlacement">The signature placement.</param>
         /// <param name="v3ServiceIndexUrl">The V3 service index URL.</param>
         /// <param name="packageOwners">A read-only list of package owners.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" />
@@ -40,8 +39,6 @@ namespace NuGet.Packaging.Signing
         /// <exception cref="ArgumentException">Thrown if <paramref name="signatureHashAlgorithm" />
         /// is invalid.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="timestampHashAlgorithm" />
-        /// is invalid.</exception>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="signaturePlacement" />
         /// is invalid.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="v3ServiceIndexUrl" />
         /// is <c>null</c>.</exception>
@@ -53,14 +50,12 @@ namespace NuGet.Packaging.Signing
             X509Certificate2 certificate,
             HashAlgorithmName signatureHashAlgorithm,
             HashAlgorithmName timestampHashAlgorithm,
-            SignaturePlacement signaturePlacement,
             Uri v3ServiceIndexUrl,
             IReadOnlyList<string> packageOwners)
             : base(
                   certificate,
                   signatureHashAlgorithm,
-                  timestampHashAlgorithm,
-                  signaturePlacement)
+                  timestampHashAlgorithm)
         {
             if (v3ServiceIndexUrl == null)
             {
