@@ -248,6 +248,7 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: false,
+                allowUntrusted: false,
                 allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
@@ -294,6 +295,7 @@ namespace NuGet.Packaging.FuncTest
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: false,
+                allowUntrusted: false,
                 allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
@@ -390,12 +392,13 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowUntrusted_Warns()
+        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowIllegal_Warns()
         {
             // Arrange
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: true,
+                allowUntrusted: false,
                 allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
@@ -418,6 +421,7 @@ namespace NuGet.Packaging.FuncTest
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: false,
+                allowUntrusted: false,
                 allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
@@ -481,6 +485,7 @@ namespace NuGet.Packaging.FuncTest
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: false,
+                allowUntrusted: false,
                 allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
@@ -517,6 +522,7 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: false,
+                allowUntrusted: false,
                 allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
@@ -542,6 +548,7 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: false,
+                allowUntrusted: false,
                 allowUntrustedSelfIssuedCertificate: true,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
@@ -567,6 +574,7 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignedPackageVerifierSettings(
                allowUnsigned: false,
                allowIllegal: false,
+                allowUntrusted: false,
                allowUntrustedSelfIssuedCertificate: false,
                allowIgnoreTimestamp: false,
                allowMultipleTimestamps: false,
