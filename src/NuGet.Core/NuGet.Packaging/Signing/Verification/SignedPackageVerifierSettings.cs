@@ -14,7 +14,12 @@ namespace NuGet.Packaging.Signing
         public bool AllowUnsigned { get; }
 
         /// <summary>
-        /// Allow packages that are not trusted.
+        /// Allow packages with signatures that do not conform to the specification.
+        /// </summary>
+        public bool AllowIllegal { get; }
+
+        /// <summary>
+        /// Allow packages that have not been explicitly trusted by the consumer.
         /// </summary>
         public bool AllowUntrusted { get; }
 
@@ -33,6 +38,7 @@ namespace NuGet.Packaging.Signing
 
         public SignedPackageVerifierSettings(
             bool allowUnsigned,
+            bool allowIllegal,
             bool allowUntrusted,
             bool allowUntrustedSelfIssuedCertificate,
             bool allowIgnoreTimestamp,
@@ -41,6 +47,7 @@ namespace NuGet.Packaging.Signing
             bool allowUnknownRevocation)
         {
             AllowUnsigned = allowUnsigned;
+            AllowIllegal = allowIllegal;
             AllowUntrusted = allowUntrusted;
             AllowUntrustedSelfIssuedCertificate = allowUntrustedSelfIssuedCertificate;
             AllowIgnoreTimestamp = allowIgnoreTimestamp;
@@ -54,6 +61,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public static SignedPackageVerifierSettings AllowAll { get; } = new SignedPackageVerifierSettings(
             allowUnsigned: true,
+            allowIllegal: true,
             allowUntrusted: true,
             allowUntrustedSelfIssuedCertificate: true,
             allowIgnoreTimestamp: true,
@@ -71,6 +79,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public static SignedPackageVerifierSettings VSClientDefaultPolicy { get; } = new SignedPackageVerifierSettings(
             allowUnsigned: true,
+            allowIllegal: true,
             allowUntrusted: true,
             allowUntrustedSelfIssuedCertificate: true,
             allowIgnoreTimestamp: true,
@@ -83,6 +92,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public static SignedPackageVerifierSettings VerifyCommandDefaultPolicy { get; } = new SignedPackageVerifierSettings(
             allowUnsigned: false,
+            allowIllegal: false,
             allowUntrusted: false,
             allowUntrustedSelfIssuedCertificate: true,
             allowIgnoreTimestamp: false,

@@ -15,19 +15,25 @@ namespace NuGet.Packaging.Signing
         Unknown = 0,
 
         /// <summary>
-        /// Invalid signature.
+        /// Invalid package signature.
         /// </summary>
-        /// <remarks>This could happen for many reasons such as a tampered with package, invalid hash algorithm, or invalid signing data.</remarks>
-        Invalid = 1,
+        /// <remarks>This could happen because the package integrity check fails or the certificate is revoked.</remarks>
+        Suspect = 1,
 
         /// <summary>
-        /// Signature is NOT trusted.
+        /// Signature does not conform with NuGet signing specification.
         /// </summary>
-        Untrusted = 2,
+        Illegal = 2,
+
 
         /// <summary>
-        /// Signature is trusted.
+        /// Signature is not explicitly trusted by the consumer. 
         /// </summary>
-        Trusted = 3
+        Untrusted = 3,
+
+        /// <summary>
+        /// Signature is valid for the verification step.
+        /// </summary>
+        Valid = 4
     }
 }

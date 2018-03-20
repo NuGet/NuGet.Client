@@ -24,11 +24,21 @@ namespace NuGet.Packaging.FuncTest
 
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
+        private SignedPackageVerifierSettings _settings;
 
         public AllowListVerificationProviderTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedTestCert = _testFixture.TrustedTestCertificate;
+            _settings = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowIllegal: false,
+                allowUntrusted: false,
+                allowUntrustedSelfIssuedCertificate: true,
+                allowIgnoreTimestamp: true,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: true,
+                allowUnknownRevocation: true);
         }
 
         [CIOnlyFact]
@@ -52,7 +62,7 @@ namespace NuGet.Packaging.FuncTest
                     new AllowListVerificationProvider(allowList)
                 };
 
-                var verifier = new PackageSignatureVerifier(trustProviders, SignedPackageVerifierSettings.Default);
+                var verifier = new PackageSignatureVerifier(trustProviders, _settings);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -84,7 +94,7 @@ namespace NuGet.Packaging.FuncTest
                     new AllowListVerificationProvider(allowList)
                 };
 
-                var verifier = new PackageSignatureVerifier(trustProviders, SignedPackageVerifierSettings.Default);
+                var verifier = new PackageSignatureVerifier(trustProviders, _settings);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
@@ -99,6 +109,58 @@ namespace NuGet.Packaging.FuncTest
                     totalErrorIssues.Count().Should().Be(1);
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3003);
                     totalErrorIssues.First().Message.Should().Contain(_noCertInAllowList);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_VerifyWithoutCertificateInAllowListWithAllowUntrusted_Warn()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
+
+                var allowListHashes = new[] { "abc" };
+                var allowList = allowListHashes.Select(hash => new CertificateHashAllowListEntry(VerificationTarget.Primary, hash)).ToList();
+
+                var trustProviders = new[]
+                {
+                    new AllowListVerificationProvider(allowList)
+                };
+
+               var settings = new SignedPackageVerifierSettings(
+                    allowUnsigned: false,
+                    allowIllegal: false,
+                    allowUntrusted: true,
+                    allowUntrustedSelfIssuedCertificate: true,
+                    allowIgnoreTimestamp: true,
+                    allowMultipleTimestamps: true,
+                    allowNoTimestamp: true,
+                    allowUnknownRevocation: true);
+
+                var verifier = new PackageSignatureVerifier(trustProviders, settings);
+
+                using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                    var resultsWithWarnings = result.Results.Where(r => r.GetWarningIssues().Any());
+                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+                    var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
+
+                    // Assert
+                    result.Valid.Should().BeTrue();
+                    resultsWithErrors.Count().Should().Be(0);
+                    resultsWithWarnings.Count().Should().Be(1);
+                    totalErrorIssues.Count().Should().Be(0);
+                    totalWarningIssues.Count().Should().Be(1);
+                    totalWarningIssues.First().Code.Should().Be(NuGetLogCode.NU3003);
+                    totalWarningIssues.First().Message.Should().Contain(_noCertInAllowList);
                 }
             }
         }

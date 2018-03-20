@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Signing
                         {
                             // Verify that the signature is trusted
                             var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, _settings, token)));
-                            valid = IsValid(sigTrustResults, _settings.AllowUntrusted);
+                            valid = IsValid(sigTrustResults, _settings);
                             trustResults.AddRange(sigTrustResults);
                         }
                         else
@@ -55,21 +55,21 @@ namespace NuGet.Packaging.Signing
                     {
                         // SignatureException generated while parsing signatures
                         var issues = new[] {
-                            SignatureLog.Issue(!_settings.AllowUntrusted, e.Code, e.Message),
+                            SignatureLog.Issue(!_settings.AllowIllegal, e.Code, e.Message),
                             SignatureLog.DebugLog(e.ToString())
                         };
-                        trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
-                        valid = _settings.AllowUntrusted;
+                        trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Illegal, issues));
+                        valid = _settings.AllowIllegal;
                     }
                     catch (CryptographicException e)
                     {
                         // CryptographicException generated while parsing the SignedCms object
                         var issues = new[] {
-                            SignatureLog.Issue(!_settings.AllowUntrusted, NuGetLogCode.NU3003, Strings.ErrorPackageSignatureInvalid),
+                            SignatureLog.Issue(!_settings.AllowIllegal, NuGetLogCode.NU3003, Strings.ErrorPackageSignatureInvalid),
                             SignatureLog.DebugLog(e.ToString())
                         };
-                        trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Untrusted, issues));
-                        valid = _settings.AllowUntrusted;
+                        trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Illegal, issues));
+                        valid = _settings.AllowIllegal;
                     }
                 }
                 else if (_settings.AllowUnsigned)
@@ -80,7 +80,7 @@ namespace NuGet.Packaging.Signing
                 else
                 {
                     var issues = new[] { SignatureLog.Issue(fatal: true, code: NuGetLogCode.NU3004, message: Strings.ErrorPackageNotSigned) };
-                    trustResults.Add(new UnsignedPackageVerificationResult(SignatureVerificationStatus.Invalid, issues));
+                    trustResults.Add(new UnsignedPackageVerificationResult(SignatureVerificationStatus.Illegal, issues));
                     valid = false;
                 }
 
@@ -94,10 +94,13 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// True if a provider trusts the package signature.
         /// </summary>
-        private static bool IsValid(IEnumerable<PackageVerificationResult> trustResults, bool allowUntrusted)
+        private static bool IsValid(IEnumerable<PackageVerificationResult> verificationResults, SignedPackageVerifierSettings settings)
         {
-            var hasItems = trustResults.Any();
-            var valid = trustResults.All(e => e.Trust == SignatureVerificationStatus.Trusted || (allowUntrusted && SignatureVerificationStatus.Untrusted == e.Trust));
+            var hasItems = verificationResults.Any();
+            var valid = verificationResults.All(e =>
+                e.Trust == SignatureVerificationStatus.Valid ||
+                (settings.AllowIllegal && SignatureVerificationStatus.Illegal == e.Trust) ||
+                (settings.AllowUntrusted && SignatureVerificationStatus.Untrusted == e.Trust));
 
             return valid && hasItems;
         }

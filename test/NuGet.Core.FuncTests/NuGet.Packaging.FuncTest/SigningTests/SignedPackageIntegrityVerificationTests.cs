@@ -46,6 +46,7 @@ namespace NuGet.Packaging.FuncTest
 
             _settings = new SignedPackageVerifierSettings(
                 allowUnsigned: true,
+                allowIllegal: false,
                 allowUntrusted: false,
                 allowUntrustedSelfIssuedCertificate: true,
                 allowIgnoreTimestamp: true,
