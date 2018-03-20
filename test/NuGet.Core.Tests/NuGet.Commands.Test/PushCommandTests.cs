@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,7 +43,8 @@ namespace NuGet.Commands.Test
                     null, // symbols api key
                     0, // timeout
                     false, // disable buffering
-                    false, // no symbols
+                    false, // no symbols,
+                    false, // enable server endpoint
                     new TestLogger());
 
                 // Assert

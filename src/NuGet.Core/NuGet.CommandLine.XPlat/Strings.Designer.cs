@@ -646,6 +646,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to --no-service-endpoint does not append &quot;api/v2/packages&quot; to the source URL..
+        /// </summary>
+        internal static string NoServiceEndpoint_Description {
+            get {
+                return ResourceManager.GetString("NoServiceEndpoint_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to If a symbols package exists, it will not be pushed to a symbols server..
         /// </summary>
         internal static string NoSymbols_Description {

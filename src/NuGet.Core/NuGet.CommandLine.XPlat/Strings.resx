@@ -468,4 +468,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>{0} - Package Id
 {1} - Project path</comment>
   </data>
+  <data name="NoServiceEndpoint_Description" xml:space="preserve">
+    <value>--no-service-endpoint does not append "api/v2/packages" to the source URL.</value>
+  </data>
 </root>

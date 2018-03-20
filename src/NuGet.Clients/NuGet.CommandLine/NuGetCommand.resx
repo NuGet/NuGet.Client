@@ -5473,4 +5473,7 @@ This option should be used when specifying the certificate via -CertificateSubje
   <data name="SourcesCommandTrustDescription" xml:space="preserve">
     <value>Make a source a trusted repository for repository signature verification.</value>
   </data>
+  <data name="CommandNoServiceEndpointDescription" xml:space="preserve">
+    <value>Does not append "api/v2/packages" to the source URL.</value>
+  </data>
 </root>

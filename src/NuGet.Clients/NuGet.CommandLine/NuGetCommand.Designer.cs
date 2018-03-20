@@ -531,6 +531,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Does not append &quot;api/v2/packages&quot; to the source URL..
+        /// </summary>
+        internal static string CommandNoServiceEndpointDescription {
+            get {
+                return ResourceManager.GetString("CommandNoServiceEndpointDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies types of files to save after package installation: nuspec, nupkg, nuspec;nupkg..
         /// </summary>
         internal static string CommandPackageSaveMode {

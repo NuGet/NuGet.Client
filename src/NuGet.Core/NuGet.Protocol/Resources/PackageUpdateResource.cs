@@ -56,6 +56,7 @@ namespace NuGet.Protocol.Core.Types
             bool disableBuffering,
             Func<string, string> getApiKey,
             Func<string, string> getSymbolApiKey,
+            bool noServiceEndpoint,
             ILogger log)
         {
             // TODO: Figure out how to hook this up with the HTTP request
@@ -67,7 +68,7 @@ namespace NuGet.Protocol.Core.Types
                 tokenSource.CancelAfter(requestTimeout);
                 var apiKey = getApiKey(_source);
 
-                await PushPackage(packagePath, _source, apiKey, requestTimeout, log, tokenSource.Token);
+                await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, requestTimeout, log, tokenSource.Token);
 
                 // symbolSource is only set when:
                 // - The user specified it on the command line
@@ -76,7 +77,7 @@ namespace NuGet.Protocol.Core.Types
                 {
                     var symbolApiKey = getSymbolApiKey(symbolSource);
 
-                    await PushSymbols(packagePath, symbolSource, symbolApiKey, requestTimeout, log, tokenSource.Token);
+                    await PushSymbols(packagePath, symbolSource, symbolApiKey, noServiceEndpoint, requestTimeout, log, tokenSource.Token);
                 }
             }
         }
@@ -85,6 +86,7 @@ namespace NuGet.Protocol.Core.Types
             string packageVersion,
             Func<string, string> getApiKey,
             Func<string, bool> confirm,
+            bool noServiceEndpoint,
             ILogger log)
         {
             var sourceDisplayName = GetSourceDisplayName(_source);
@@ -104,7 +106,7 @@ namespace NuGet.Protocol.Core.Types
                     packageVersion,
                     sourceDisplayName
                     ));
-                await DeletePackage(_source, apiKey, packageId, packageVersion, log, CancellationToken.None);
+                await DeletePackage(_source, apiKey, packageId, packageVersion, noServiceEndpoint, log, CancellationToken.None);
                 log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.DeleteCommandDeletedPackage,
                     packageId,
@@ -119,6 +121,7 @@ namespace NuGet.Protocol.Core.Types
         private async Task PushSymbols(string packagePath,
             string source,
             string apiKey,
+            bool noServiceEndpoint,
             TimeSpan requestTimeout,
             ILogger log,
             CancellationToken token)
@@ -140,7 +143,7 @@ namespace NuGet.Protocol.Core.Types
                         Strings.DefaultSymbolServer));
                 }
 
-                await PushPackage(symbolPackagePath, source, apiKey, requestTimeout, log, token);
+                await PushPackage(symbolPackagePath, source, apiKey, noServiceEndpoint, requestTimeout, log, token);
             }
         }
 
@@ -157,6 +160,7 @@ namespace NuGet.Protocol.Core.Types
         private async Task PushPackage(string packagePath,
             string source,
             string apiKey,
+            bool noServiceEndpoint,
             TimeSpan requestTimeout,
             ILogger log,
             CancellationToken token)
@@ -176,13 +180,14 @@ namespace NuGet.Protocol.Core.Types
 
             foreach (var packageToPush in packagesToPush)
             {
-                await PushPackageCore(source, apiKey, packageToPush, requestTimeout, log, token);
+                await PushPackageCore(source, apiKey, packageToPush, noServiceEndpoint, requestTimeout, log, token);
             }
         }
 
         private async Task PushPackageCore(string source,
             string apiKey,
             string packageToPush,
+            bool noServiceEndpoint,
             TimeSpan requestTimeout,
             ILogger log,
             CancellationToken token)
@@ -202,7 +207,7 @@ namespace NuGet.Protocol.Core.Types
             else
             {
                 var length = new FileInfo(packageToPush).Length;
-                await PushPackageToServer(source, apiKey, packageToPush, length, requestTimeout, log, token);
+                await PushPackageToServer(source, apiKey, packageToPush, length, noServiceEndpoint, requestTimeout, log, token);
             }
 
             log.LogInformation(Strings.PushCommandPackagePushed);
@@ -234,11 +239,12 @@ namespace NuGet.Protocol.Core.Types
             string apiKey,
             string pathToPackage,
             long packageSize,
+            bool noServiceEndpoint,
             TimeSpan requestTimeout,
             ILogger logger,
             CancellationToken token)
         {
-            var serviceEndpointUrl = GetServiceEndpointUrl(source, string.Empty);
+            var serviceEndpointUrl = GetServiceEndpointUrl(source, string.Empty, noServiceEndpoint);
             var useTempApiKey = IsSourceNuGetSymbolServer(source);
 
             if (useTempApiKey)
@@ -258,7 +264,7 @@ namespace NuGet.Protocol.Core.Types
                             retry++;
                             success = true;
                             // If user push to https://nuget.smbsrc.net/, use temp api key.
-                            var tmpApiKey = await GetSecureApiKey(packageIdentity, apiKey, requestTimeout, logger, token);
+                            var tmpApiKey = await GetSecureApiKey(packageIdentity, apiKey, noServiceEndpoint, requestTimeout, logger, token);
 
                             await _httpSource.ProcessResponseAsync(
                                 new HttpSourceRequest(() => CreateRequest(serviceEndpointUrl, pathToPackage, tmpApiKey, logger))
@@ -391,17 +397,18 @@ namespace NuGet.Protocol.Core.Types
             string apiKey,
             string packageId,
             string packageVersion,
+            bool noServiceEndpoint,
             ILogger logger,
             CancellationToken token)
         {
-            var sourceUri = GetServiceEndpointUrl(source, string.Empty);
+            var sourceUri = GetServiceEndpointUrl(source, string.Empty, noServiceEndpoint);
             if (sourceUri.IsFile)
             {
                 DeletePackageFromFileSystem(source, packageId, packageVersion, logger);
             }
             else
             {
-                await DeletePackageFromServer(source, apiKey, packageId, packageVersion, logger, token);
+                await DeletePackageFromServer(source, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
             }
         }
 
@@ -410,11 +417,12 @@ namespace NuGet.Protocol.Core.Types
             string apiKey,
             string packageId,
             string packageVersion,
+            bool noServiceEndpoint,
             ILogger logger,
             CancellationToken token)
         {
             var url = string.Join("/", packageId, packageVersion);
-            var serviceEndpointUrl = GetServiceEndpointUrl(source, url);
+            var serviceEndpointUrl = GetServiceEndpointUrl(source, url, noServiceEndpoint);
 
             await _httpSource.ProcessResponseAsync(
                 new HttpSourceRequest(
@@ -502,11 +510,11 @@ namespace NuGet.Protocol.Core.Types
         }
 
         // Calculates the URL to the package to.
-        private Uri GetServiceEndpointUrl(string source, string path)
+        private Uri GetServiceEndpointUrl(string source, string path, bool noServiceEndpoint)
         {
             var baseUri = EnsureTrailingSlash(source);
             Uri requestUri;
-            if (string.IsNullOrEmpty(baseUri.AbsolutePath.TrimStart('/')))
+            if (string.IsNullOrEmpty(baseUri.AbsolutePath.TrimStart('/')) && !noServiceEndpoint)
             {
                 // If there's no host portion specified, append the url to the client.
                 requestUri = new Uri(baseUri, ServiceEndpoint + '/' + path);
@@ -565,6 +573,7 @@ namespace NuGet.Protocol.Core.Types
         private async Task<string> GetSecureApiKey(
             PackageIdentity packageIdentity,
             string apiKey,
+            bool noServiceEndpoint,
             TimeSpan requestTimeout,
             ILogger logger,
             CancellationToken token)
@@ -574,7 +583,7 @@ namespace NuGet.Protocol.Core.Types
                 return apiKey;
             }
             var serviceEndpointUrl = GetServiceEndpointUrl(NuGetConstants.DefaultGalleryServerUrl,
-                string.Format(TempApiKeyServiceEndpoint, packageIdentity.Id, packageIdentity.Version));
+                string.Format(TempApiKeyServiceEndpoint, packageIdentity.Id, packageIdentity.Version), noServiceEndpoint);
 
             try
             {
