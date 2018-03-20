@@ -15,13 +15,13 @@ namespace NuGet.Packaging.Signing
         Unknown = 0,
 
         /// <summary>
-        /// Invalid signature.
+        /// Invalid package signature.
         /// </summary>
         /// <remarks>This could happen because the package integrity check fails or the certificate is revoked.</remarks>
         Suspect = 1,
 
         /// <summary>
-        /// Signature does not conform with the specification.
+        /// Signature does not conform with NuGet signing specification.
         /// </summary>
         Illegal = 2,
 
