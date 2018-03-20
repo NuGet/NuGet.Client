@@ -588,8 +588,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Determine the restore output path -->
-    <PropertyGroup Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' OR '$(RestoreProjectStyle)' == 'ProjectJson' ">
+    <PropertyGroup Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' ">
+      <!-- NuGet writes .props and .targets files to the RestoreOutputPath for PackageReference projects.  MSBuild common
+           targets import these via the MSBuildProjectExtensionsPath, so that's what the RestoreOutputPath should be. -->
       <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(MSBuildProjectExtensionsPath)</RestoreOutputPath>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'ProjectJson' ">
+      <!-- For project.json projects, only the assets file cache goes in the RestoreOutputPath.  The assets file and the
+           generated .props and .targets go in the project folder.  So in that case use the BaseIntermediateOutputPath,
+           so that the assets file cache will respect a BaseIntermediateOutputPath set in the project body. -->
+      <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
     </PropertyGroup>
 
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' OR '$(RestoreProjectStyle)' == 'ProjectJson'">
