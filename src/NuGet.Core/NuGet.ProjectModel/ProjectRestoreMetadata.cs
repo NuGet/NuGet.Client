@@ -29,7 +29,11 @@ namespace NuGet.ProjectModel
         public string ProjectJsonPath { get; set; }
 
         /// <summary>
-        /// Assets file output path.
+        /// Restore Output Path.
+        /// In NuGet.targets, this is set to MSBuildProjectExtensionsPath.
+        /// For PackageReference, this is where the assets file, generated .props and .targets files, and assets file cache will be stored.
+        /// For project.json projects, the assets file and generated .props and .targets will go into the project folder, and this
+        /// property will only affect where the assets cache is stored.
         /// </summary>
         public string OutputPath { get; set; }
 
