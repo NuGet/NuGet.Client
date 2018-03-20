@@ -36,7 +36,7 @@ namespace NuGet.Packaging.Signing
             if (_allowList.Count() > 0 && !IsSignatureAllowed(signature))
             {
                 status = SignatureVerificationStatus.Untrusted;
-                issues.Add(SignatureLog.Issue(fatal: true, code: NuGetLogCode.NU3003, message: string.Format(CultureInfo.CurrentCulture, Strings.Error_NoMatchingCertificate, _fingerprintAlgorithm.ToString())));
+                issues.Add(SignatureLog.Issue(fatal: !settings.AllowUntrusted, code: NuGetLogCode.NU3003, message: string.Format(CultureInfo.CurrentCulture, Strings.Error_NoMatchingCertificate, _fingerprintAlgorithm.ToString())));
             }
 
             return new SignedPackageVerificationResult(status, signature, issues);
