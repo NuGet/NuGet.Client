@@ -17,7 +17,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandApiKey")]
         public string ApiKey { get; set; }
 
-        [Option(typeof(NuGetCommand), "DeleteCommandNoServiceEndpointDescription")]
+        [Option(typeof(NuGetCommand), "CommandNoServiceEndpointDescription")]
         public bool NoServiceEndpoint { get; set; }
 
         public override async Task ExecuteCommandAsync()

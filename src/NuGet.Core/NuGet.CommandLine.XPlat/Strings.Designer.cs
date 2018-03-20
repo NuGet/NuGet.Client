@@ -646,7 +646,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to --no-service-endpoint does not append &quot;api/v2/packages&quot; to the source url.
+        ///   Looks up a localized string similar to --no-service-endpoint does not append &quot;api/v2/packages&quot; to the source URL..
         /// </summary>
         internal static string NoServiceEndpoint_Description {
             get {

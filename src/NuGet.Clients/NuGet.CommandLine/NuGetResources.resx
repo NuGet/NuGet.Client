@@ -6158,4 +6158,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="ConsolePasswordProvider_PromptForPassword" xml:space="preserve">
     <value>Password: </value>
   </data>
+  <data name="SourcesCommandSourceNotSupportRepoSign" xml:space="preserve">
+    <value>Package source with name '{0}' cannot be added as a trusted repository because it does not support repository signing. To add the source anyway, please remove the '-Trust' option.</value>
+  </data>
 </root>

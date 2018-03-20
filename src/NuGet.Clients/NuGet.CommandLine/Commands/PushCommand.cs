@@ -35,7 +35,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PushCommandNoSymbolsDescription")]
         public bool NoSymbols { get; set; }
 
-        [Option(typeof(NuGetCommand), "PushCommandNoServiceEndpointDescription")]
+        [Option(typeof(NuGetCommand), "CommandNoServiceEndpointDescription")]
         public bool NoServiceEndpoint { get; set; }
 
         public override async Task ExecuteCommandAsync()

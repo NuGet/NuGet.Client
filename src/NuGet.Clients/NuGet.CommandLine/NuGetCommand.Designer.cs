@@ -531,6 +531,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Does not append &quot;api/v2/packages&quot; to the source url.
+        /// </summary>
+        internal static string CommandNoServiceEndpointDescription {
+            get {
+                return ResourceManager.GetString("CommandNoServiceEndpointDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies types of files to save after package installation: nuspec, nupkg, nuspec;nupkg..
         /// </summary>
         internal static string CommandPackageSaveMode {
@@ -1801,15 +1810,6 @@ namespace NuGet.CommandLine {
         internal static string DeleteCommandNoPromptDescription_trk {
             get {
                 return ResourceManager.GetString("DeleteCommandNoPromptDescription_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Does not append &quot;api/v2/packages&quot; to the source url.
-        /// </summary>
-        internal static string DeleteCommandNoServiceEndpointDescription {
-            get {
-                return ResourceManager.GetString("DeleteCommandNoServiceEndpointDescription", resourceCulture);
             }
         }
         
@@ -8961,15 +8961,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Does not append &quot;api/v2/packages&quot; to the source url.
-        /// </summary>
-        internal static string PushCommandNoServiceEndpointDescription {
-            get {
-                return ResourceManager.GetString("PushCommandNoServiceEndpointDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to If a symbols package exists, it will not be pushed to a symbol server..
         /// </summary>
         internal static string PushCommandNoSymbolsDescription {
@@ -12496,6 +12487,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Make a source a trusted repository for repository signature verification..
+        /// </summary>
+        internal static string SourcesCommandTrustDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandTrustDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &lt;List|Add|Remove|Enable|Disable|Update&gt; -Name [name] -Source [source].
         /// </summary>
         internal static string SourcesCommandUsageSummary {
@@ -14804,13 +14804,13 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget verify -Signatures .\..\MyPackage.nupkg -Signer &quot;86C0E8C51FF0EBDAD355315DF82AA6EC7049B542;BE36A4562FB2EE05DBB3D32323ADF445084ED656&quot; -Verbosity detailed
+        ///   Looks up a localized string similar to nuget verify -Signatures .\..\MyPackage.nupkg -CertificateFingerprint &quot;CE40881FF5F0AD3E58965DA20A9F571EF1651A56933748E1BF1C99E537C4E039;5F874AAF47BCB268A19357364E7FBB09D6BF9E8A93E1229909AC5CAC865802E2&quot; -Verbosity detailed
         ///
-        ///nuget verify -Signatures c:\foo\MyPackage.nupkg -Signer BE36A4562FB2EE05DBB3D32323ADF445084ED656
+        ///nuget verify -Signatures C:\packages\MyPackage.nupkg -CertificateFingerprint CE40881FF5F0AD3E58965DA20A9F571EF1651A56933748E1BF1C99E537C4E039
         ///
         ///nuget verify -Signatures MyPackage.nupkg -Verbosity quiet
         ///
-        ///nuget verify-Signatures  .\*.nupkg.
+        ///nuget verify -Signatures .\*.nupkg.
         /// </summary>
         internal static string VerifyCommandUsageExamples {
             get {
