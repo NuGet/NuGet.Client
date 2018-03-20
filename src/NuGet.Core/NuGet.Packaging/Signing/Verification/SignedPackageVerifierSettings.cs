@@ -14,7 +14,7 @@ namespace NuGet.Packaging.Signing
         public bool AllowUnsigned { get; }
 
         /// <summary>
-        /// Treat illegal packages as unsigned
+        /// Allow packages with signatures that do not conform to the specification.
         /// </summary>
         public bool AllowIllegal { get; }
 

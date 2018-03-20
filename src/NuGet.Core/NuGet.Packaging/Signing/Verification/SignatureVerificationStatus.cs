@@ -21,7 +21,7 @@ namespace NuGet.Packaging.Signing
         Suspect = 1,
 
         /// <summary>
-        /// Signature does not conform with the spec.
+        /// Signature does not conform with the specification.
         /// </summary>
         Illegal = 2,
 
