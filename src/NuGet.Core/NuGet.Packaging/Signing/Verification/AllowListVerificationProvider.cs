@@ -30,12 +30,12 @@ namespace NuGet.Packaging.Signing
 #if IS_DESKTOP
         private PackageVerificationResult VerifyAllowList(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
-            var status = SignatureVerificationStatus.Trusted;
+            var status = SignatureVerificationStatus.Valid;
             var issues = new List<SignatureLog>();
 
             if (_allowList.Count() > 0 && !IsSignatureAllowed(signature))
             {
-                status = SignatureVerificationStatus.Invalid;
+                status = SignatureVerificationStatus.Untrusted;
                 issues.Add(SignatureLog.Issue(fatal: true, code: NuGetLogCode.NU3003, message: string.Format(CultureInfo.CurrentCulture, Strings.Error_NoMatchingCertificate, _fingerprintAlgorithm.ToString())));
             }
 

@@ -171,7 +171,7 @@ namespace NuGet.Packaging.FuncTest
                     var trustProvider = result.Results.Single();
 
                     Assert.True(result.Valid);
-                    Assert.Equal(SignatureVerificationStatus.Trusted, trustProvider.Trust);
+                    Assert.Equal(SignatureVerificationStatus.Valid, trustProvider.Trust);
                     Assert.Equal(0, trustProvider.Issues.Count(issue => issue.Level == LogLevel.Error));
                     Assert.Equal(0, trustProvider.Issues.Count(issue => issue.Level == LogLevel.Warning));
                 }
@@ -228,7 +228,7 @@ namespace NuGet.Packaging.FuncTest
                     var result = results.Results.Single();
 
                     Assert.False(results.Valid);
-                    Assert.Equal(SignatureVerificationStatus.Untrusted, result.Trust);
+                    Assert.Equal(SignatureVerificationStatus.Illegal, result.Trust);
                     Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Error));
                     Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
 
@@ -247,7 +247,7 @@ namespace NuGet.Packaging.FuncTest
         {
             var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
-                allowUntrusted: false,
+                allowIllegal: false,
                 allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
@@ -293,7 +293,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
-                allowUntrusted: false,
+                allowIllegal: false,
                 allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
@@ -364,7 +364,7 @@ namespace NuGet.Packaging.FuncTest
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
-                SignatureVerificationStatus.Trusted,
+                SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
                 setting);
 
@@ -379,7 +379,7 @@ namespace NuGet.Packaging.FuncTest
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
-                SignatureVerificationStatus.Trusted,
+                SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
                 setting);
 
@@ -395,7 +395,7 @@ namespace NuGet.Packaging.FuncTest
             // Arrange
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
-                allowUntrusted: true,
+                allowIllegal: true,
                 allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
@@ -404,7 +404,7 @@ namespace NuGet.Packaging.FuncTest
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
-                SignatureVerificationStatus.Trusted,
+                SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
                 setting);
 
@@ -417,7 +417,7 @@ namespace NuGet.Packaging.FuncTest
             // Arrange
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
-                allowUntrusted: false,
+                allowIllegal: false,
                 allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
@@ -426,7 +426,7 @@ namespace NuGet.Packaging.FuncTest
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
-                SignatureVerificationStatus.Trusted,
+                SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
                 setting);
 
@@ -480,7 +480,7 @@ namespace NuGet.Packaging.FuncTest
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var setting = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
-                allowUntrusted: false,
+                allowIllegal: false,
                 allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
@@ -505,7 +505,7 @@ namespace NuGet.Packaging.FuncTest
                 var totalErrorIssues = result.GetErrorIssues();
 
                 // Assert
-                result.Trust.Should().Be(SignatureVerificationStatus.Invalid);
+                result.Trust.Should().Be(SignatureVerificationStatus.Illegal);
                 totalErrorIssues.Count().Should().Be(1);
                 totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3000);
             }
@@ -516,7 +516,7 @@ namespace NuGet.Packaging.FuncTest
         {
             var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
-                allowUntrusted: false,
+                allowIllegal: false,
                 allowUntrustedSelfIssuedCertificate: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
@@ -527,7 +527,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 var result = await test.Provider.GetTrustResultAsync(test.Package, test.PrimarySignature, settings, CancellationToken.None);
 
-                Assert.Equal(SignatureVerificationStatus.Untrusted, result.Trust);
+                Assert.Equal(SignatureVerificationStatus.Illegal, result.Trust);
                 Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Error));
                 Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
 
@@ -541,7 +541,7 @@ namespace NuGet.Packaging.FuncTest
         {
             var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
-                allowUntrusted: false,
+                allowIllegal: false,
                 allowUntrustedSelfIssuedCertificate: true,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
@@ -552,7 +552,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 var result = await test.Provider.GetTrustResultAsync(test.Package, test.PrimarySignature, settings, CancellationToken.None);
 
-                Assert.Equal(SignatureVerificationStatus.Trusted, result.Trust);
+                Assert.Equal(SignatureVerificationStatus.Valid, result.Trust);
                 Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Error));
                 Assert.Equal(2, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
 
@@ -566,7 +566,7 @@ namespace NuGet.Packaging.FuncTest
         {
             var settings = new SignedPackageVerifierSettings(
                allowUnsigned: false,
-               allowUntrusted: false,
+               allowIllegal: false,
                allowUntrustedSelfIssuedCertificate: false,
                allowIgnoreTimestamp: false,
                allowMultipleTimestamps: false,
@@ -577,7 +577,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 var result = await test.Provider.GetTrustResultAsync(test.Package, test.PrimarySignature, settings, CancellationToken.None);
 
-                Assert.Equal(SignatureVerificationStatus.Trusted, result.Trust);
+                Assert.Equal(SignatureVerificationStatus.Valid, result.Trust);
                 Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Error));
                 Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
 

@@ -122,13 +122,13 @@ namespace NuGet.Packaging.Signing
             }
             settings = settings ?? SignedPackageVerifierSettings.Default;
 
-            var treatIssueAsError = !settings.AllowUntrusted;
+            var treatIssueAsError = !settings.AllowIllegal;
             var certificate = SignerInfo.Certificate;
             if (certificate == null)
             {
                 issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3010, Strings.ErrorNoCertificate));
 
-                return SignatureVerificationStatus.Invalid;
+                return SignatureVerificationStatus.Illegal;
             }
 
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
@@ -144,7 +144,7 @@ namespace NuGet.Packaging.Signing
                 issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3012, Strings.ErrorSignatureVerificationFailed));
                 issues.Add(SignatureLog.DebugLog(e.ToString()));
 
-                return SignatureVerificationStatus.Invalid;
+                return SignatureVerificationStatus.Illegal;
             }
 
             if (VerificationUtility.IsSigningCertificateValid(certificate, treatIssueAsError, issues))
@@ -166,7 +166,7 @@ namespace NuGet.Packaging.Signing
 
                         if (chainBuildingSucceed)
                         {
-                            return SignatureVerificationStatus.Trusted;
+                            return SignatureVerificationStatus.Valid;
                         }
 
                         var chainBuildingHasIssues = false;
@@ -199,7 +199,7 @@ namespace NuGet.Packaging.Signing
 
                             issues.Add(SignatureLog.Error(NuGetLogCode.NU3012, status.StatusInformation));
 
-                            return SignatureVerificationStatus.Invalid;
+                            return SignatureVerificationStatus.Suspect;
                         }
 
                         if (isSelfSignedCertificate &&
@@ -209,7 +209,7 @@ namespace NuGet.Packaging.Signing
 
                             if (!chainBuildingHasIssues && settings.AllowUntrustedSelfIssuedCertificate)
                             {
-                                return SignatureVerificationStatus.Trusted;
+                                return SignatureVerificationStatus.Valid;
                             }
                         }
 
@@ -226,7 +226,7 @@ namespace NuGet.Packaging.Signing
 
                             if (!chainBuildingHasIssues && settings.AllowUnknownRevocation)
                             {
-                                return SignatureVerificationStatus.Trusted;
+                                return SignatureVerificationStatus.Valid;
                             }
 
                             chainBuildingHasIssues = true;
@@ -246,7 +246,7 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            return SignatureVerificationStatus.Untrusted;
+            return SignatureVerificationStatus.Illegal;
         }
 
         private void VerifySigningTimeAttribute(SignerInfo signerInfo)

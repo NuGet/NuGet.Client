@@ -21,7 +21,7 @@ namespace NuGet.Packaging.Signing
 #if IS_DESKTOP
         private async Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
-            var status = SignatureVerificationStatus.Untrusted;
+            var status = SignatureVerificationStatus.Illegal;
             var issues = new List<SignatureLog>();
 
             var validHashOids = SigningSpecifications.V1.AllowedHashAlgorithmOids;
@@ -33,18 +33,18 @@ namespace NuGet.Packaging.Signing
                 try
                 {
                     await package.ValidateIntegrityAsync(signature.SignatureContent, CancellationToken.None);
-                    status = SignatureVerificationStatus.Trusted;
+                    status = SignatureVerificationStatus.Valid;
                 }
                 catch (Exception e)
                 {
-                    status = SignatureVerificationStatus.Invalid;
+                    status = SignatureVerificationStatus.Suspect;
                     issues.Add(SignatureLog.Error(NuGetLogCode.NU3008, Strings.SignaturePackageIntegrityFailure));
                     issues.Add(SignatureLog.DebugLog(e.ToString()));
                 }
             }
             else
             {
-                issues.Add(SignatureLog.Issue(!settings.AllowUntrusted, NuGetLogCode.NU3016, Strings.SignatureFailureInvalidHashAlgorithmOid));
+                issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3016, Strings.SignatureFailureInvalidHashAlgorithmOid));
                 issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureDebug_HashOidFound, signatureHashOid)));
             }
 

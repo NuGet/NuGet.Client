@@ -46,7 +46,7 @@ namespace NuGet.Packaging.Signing
             }
             catch (TimestampException)
             {
-                return new SignedPackageVerificationResult(SignatureVerificationStatus.Invalid, signature, timestampIssues);
+                return new SignedPackageVerificationResult(SignatureVerificationStatus.Illegal, signature, timestampIssues);
             }
 
             var certificateExtraStore = signature.SignedCms.Certificates;
