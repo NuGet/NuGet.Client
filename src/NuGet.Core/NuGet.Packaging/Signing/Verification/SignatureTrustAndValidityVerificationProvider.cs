@@ -36,19 +36,43 @@ namespace NuGet.Packaging.Signing
             var issues = new List<SignatureLog>();
             var certificateExtraStore = signature.SignedCms.Certificates;
 
-            var primarySignatureStatus = VerifyValidityAndTrust(signature, settings, certificateExtraStore, issues);
+            var primarySignatureVerificationSummary = VerifyValidityAndTrust(signature, settings, certificateExtraStore, issues);
+            var status = primarySignatureVerificationSummary.Status;
 
-            var counterSignatureStatus = SignatureVerificationStatus.Trusted;
-            var counterSignature = RepositoryCountersignature.GetRepositoryCountersignature(signature);
-            if (counterSignature != null)
+            if (primarySignatureVerificationSummary.SignatureType == SignatureType.Repository &&
+                primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.SelfIssuedCertificate) &&
+                !IsSignaturePermittedToBeSelfIssued(signature))
             {
-                counterSignatureStatus = VerifyValidityAndTrust(counterSignature, settings, certificateExtraStore, issues);
+                return new SignedPackageVerificationResult(SignatureVerificationStatus.Illegal, signature, issues);
             }
 
-            return new SignedPackageVerificationResult((SignatureVerificationStatus)Math.Min((int)primarySignatureStatus, (int)counterSignatureStatus), signature, issues);
+            if (ShouldFallbackToRepositoryCountersignature(primarySignatureVerificationSummary))
+            {
+                var counterSignature = RepositoryCountersignature.GetRepositoryCountersignature(signature);
+                if (counterSignature != null)
+                {
+                    var countersignatureVerificationSummary = VerifyValidityAndTrust(counterSignature, settings, certificateExtraStore, issues);
+                    status = countersignatureVerificationSummary.Status;
+
+                    if (primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.SelfIssuedCertificate) &&
+                        !IsSignaturePermittedToBeSelfIssued(counterSignature))
+                    {
+                        status = SignatureVerificationStatus.Illegal;
+                    }
+                    else if (primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired))
+                    {
+                        if (!Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureVerificationSummary.Timestamp))
+                        {
+                            status = SignatureVerificationStatus.Illegal;
+                        }
+                    }
+                }
+            }
+
+            return new SignedPackageVerificationResult(status, signature, issues);
         }
 
-        private SignatureVerificationStatus VerifyValidityAndTrust(
+        private SignatureVerificationSummary VerifyValidityAndTrust(
             Signature signature,
             SignedPackageVerifierSettings settings,
             X509Certificate2Collection certificateExtraStore,
@@ -67,7 +91,8 @@ namespace NuGet.Packaging.Signing
             catch (TimestampException)
             {
                 issues.AddRange(timestampIssues);
-                return SignatureVerificationStatus.Illegal;
+
+                return new SignatureVerificationSummary(signature.Type, SignatureVerificationStatus.Illegal, SignatureVerificationStatusFlags.InvalidTimestamp);
             }
 
             var status = signature.Verify(
@@ -81,6 +106,20 @@ namespace NuGet.Packaging.Signing
 
             return status;
         }
+
+        private bool ShouldFallbackToRepositoryCountersignature(SignatureVerificationSummary primarySignatureVerificationSummary)
+        {
+            return primarySignatureVerificationSummary.SignatureType == SignatureType.Author &&
+                primarySignatureVerificationSummary.Status == SignatureVerificationStatus.Illegal &&
+                (primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired) ||
+                primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.GeneralChainBuildingIssues));
+        }
+
+        private bool IsSignaturePermittedToBeSelfIssued(Signature signature)
+        {
+            return true;
+        }
+
 #else
         private PackageVerificationResult VerifySignatureAndCounterSignature(
             PrimarySignature signature,

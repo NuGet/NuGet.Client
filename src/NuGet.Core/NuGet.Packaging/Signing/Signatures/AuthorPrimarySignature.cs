@@ -21,7 +21,7 @@ namespace NuGet.Packaging.Signing
         {
         }
 
-        internal override SignatureVerificationStatus Verify(
+        internal override SignatureVerificationSummary Verify(
             Timestamp timestamp,
             SignedPackageVerifierSettings settings,
             HashAlgorithmName fingerprintAlgorithm,

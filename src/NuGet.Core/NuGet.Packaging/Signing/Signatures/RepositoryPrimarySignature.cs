@@ -25,7 +25,7 @@ namespace NuGet.Packaging.Signing
             PackageOwners = AttributeUtility.GetNuGetPackageOwners(SignerInfo.SignedAttributes);
         }
 
-        internal override SignatureVerificationStatus Verify(
+        internal override SignatureVerificationSummary Verify(
             Timestamp timestamp,
             SignedPackageVerifierSettings settings,
             HashAlgorithmName fingerprintAlgorithm,

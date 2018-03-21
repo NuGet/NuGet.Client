@@ -86,7 +86,7 @@ namespace NuGet.Packaging.Signing
             throw new SignatureException(NuGetLogCode.NU3031, Strings.InvalidRepositoryCounterSignature);
         }
 
-        internal override SignatureVerificationStatus Verify(
+        internal override SignatureVerificationSummary Verify(
             Timestamp timestamp,
             SignedPackageVerifierSettings settings,
             HashAlgorithmName fingerprintAlgorithm,
