@@ -116,7 +116,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The assembly &apos;{0}&apos; is placed directly under the &apos;lib&apos; folder. This assembly won&apos;t be referenced by the project after migration..
+        ///   Looks up a localized string similar to The assembly &apos;lib\{0}&apos; will be ignored when the package is installed after the migration..
         /// </summary>
         public static string Migrator_AssemblyDirectlyUnderLibWarning {
             get {
@@ -125,7 +125,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package &apos;{0}&apos; contains &apos;content&apos; folder which will not be copied to the project directory after migration. The package may not work as expected after migration..
+        ///   Looks up a localized string similar to The package &apos;{0}&apos; contains &apos;content&apos; folder which will not be available when the package is installed after the migration..
         /// </summary>
         public static string Migrator_PackageHasContentFolder {
             get {
@@ -134,7 +134,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package &apos;{0}&apos; contains an install.ps1 script that will not be applied after migration..
+        ///   Looks up a localized string similar to The package &apos;{0}&apos; contains install.ps1 script which will be ignored when the package is installed after the migration..
         /// </summary>
         public static string Migrator_PackageHasInstallScript {
             get {
@@ -143,7 +143,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package &apos;{0}&apos; contains an xdt transform which will not be applied to the project after migration..
+        ///   Looks up a localized string similar to The XDT transform file &apos;{0}&apos; will not be applied when the package is installed after the migration..
         /// </summary>
         public static string Migrator_XdtTransformInPackage {
             get {

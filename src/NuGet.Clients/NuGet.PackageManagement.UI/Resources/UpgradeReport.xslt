@@ -142,7 +142,7 @@
         <meta content="en-us" http-equiv="Content-Language" />
         <meta content="text/html; charset=utf-16" http-equiv="Content-Type" />
         <title _locID="NuGetUpgradeReportTitle">
-          NuGet Upgrade Report
+          NuGetMigrationLog
         </title>
         <style>
           <xsl:text disable-output-escaping="yes">
@@ -316,16 +316,16 @@
             </a>
           </div>
           <div class="info-text">
-            <a href="https://aka.ms/nugetupgraderevertv1">Help me revert the NuGet project migration</a>
+            <a href="https://aka.ms/nuget-pc2pr-migrator-rollback">Help me rollback to packages.config</a>
           </div>
 
-          <h2 _locID="PackagesTitle">Packages Processed</h2>
-          <h3 _locID="IncludePackagesTitle">Top-level Dependencies:</h3>
+          <h2 _locID="PackagesTitle">Packages processed</h2>
+          <h3 _locID="IncludePackagesTitle">Top-level dependencies:</h3>
           <div class="issues">
             <xsl:apply-templates select="Projects" mode="IncludedPackages" />
           </div>
           <p />
-          <h3 _locID="IncludePackagesTitle">Transitive Dependencies:</h3>
+          <h3 _locID="IncludePackagesTitle">Transitive dependencies:</h3>
           <div class="issues">
             <xsl:apply-templates select="Projects" mode="ExcludedPackages" />
           </div>

@@ -136,16 +136,16 @@
     <value>The package version '{0}' uses SemVer 2.0.0 or components of SemVer 1.0.0 that are not supported on legacy clients. Change the package version to a SemVer 1.0.0 string. If the version contains a release label it must start with a letter. This message can be ignored if the package is not intended for older clients.</value>
   </data>
   <data name="Migrator_AssemblyDirectlyUnderLibWarning" xml:space="preserve">
-    <value>The assembly '{0}' is placed directly under the 'lib' folder. This assembly won't be referenced by the project after migration.</value>
+    <value>The assembly 'lib\{0}' will be ignored when the package is installed after the migration.</value>
   </data>
   <data name="Migrator_PackageHasContentFolder" xml:space="preserve">
-    <value>The package '{0}' contains 'content' folder which will not be copied to the project directory after migration. The package may not work as expected after migration.</value>
+    <value>The package '{0}' contains 'content' folder which will not be available when the package is installed after the migration.</value>
   </data>
   <data name="Migrator_PackageHasInstallScript" xml:space="preserve">
-    <value>The package '{0}' contains an install.ps1 script that will not be applied after migration.</value>
+    <value>The package '{0}' contains install.ps1 script which will be ignored when the package is installed after the migration.</value>
   </data>
   <data name="Migrator_XdtTransformInPackage" xml:space="preserve">
-    <value>The package '{0}' contains an xdt transform which will not be applied to the project after migration.</value>
+    <value>The XDT transform file '{0}' will not be applied when the package is installed after the migration.</value>
   </data>
   <data name="MisplacedInitScriptWarning" xml:space="preserve">
     <value>The file '{0}' will be ignored by NuGet because it is not directly under 'tools' folder. Place the file directly under 'tools' folder.</value>

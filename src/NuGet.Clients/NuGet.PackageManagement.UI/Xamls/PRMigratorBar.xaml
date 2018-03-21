@@ -9,6 +9,9 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
+      <BitmapImage
+        x:Key="BitmapImageInformation"
+        UriSource="/NuGet.PackageManagement.UI;component/Resources/statusinformation.16.16.png" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Border x:Name="MigratorBar" VerticalAlignment="Center" Visibility="Collapsed">
@@ -18,6 +21,12 @@
         <ColumnDefinition Width="Auto"/>
       </Grid.ColumnDefinitions>
       <StackPanel Margin="0,4,0,6" Grid.Column="0" Orientation="Horizontal">
+        <Image
+          Margin="3,0,0,0"
+          Source="{StaticResource BitmapImageInformation}"
+          Height="16"
+          Width="16"
+          VerticalAlignment="Center"/>
         <TextBlock
         x:Name="UpgradeMessage"
         Margin="5,0,5,0"
