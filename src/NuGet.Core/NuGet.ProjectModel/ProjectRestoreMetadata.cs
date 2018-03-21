@@ -30,7 +30,7 @@ namespace NuGet.ProjectModel
 
         /// <summary>
         /// Restore Output Path.
-        /// In NuGet.targets, this is set to MSBuildProjectExtensionsPath.
+        /// In NuGet.targets, this is set to MSBuildProjectExtensionsPath for PackageReference projects.
         /// For PackageReference, this is where the assets file, generated .props and .targets files, and assets file cache will be stored.
         /// For project.json projects, the assets file and generated .props and .targets will go into the project folder, and this
         /// property will only affect where the assets cache is stored.
@@ -58,9 +58,9 @@ namespace NuGet.ProjectModel
         public string PackagesPath { get; set; }
 
         /// <summary>
-        /// Cache file path
+        /// Cache file folder
         /// </summary>
-        public string CacheFilePath { get; set; }
+        public string AssetsCacheFolder { get; set; }
 
         /// <summary>
         /// Fallback folders.
@@ -189,7 +189,7 @@ namespace NuGet.ProjectModel
             clonedObject.ProjectName = ProjectName;
             clonedObject.ProjectUniqueName = ProjectUniqueName;
             clonedObject.PackagesPath = PackagesPath;
-            clonedObject.CacheFilePath = CacheFilePath;
+            clonedObject.AssetsCacheFolder = AssetsCacheFolder;
             clonedObject.CrossTargeting = CrossTargeting;
             clonedObject.LegacyPackagesDirectory = LegacyPackagesDirectory;
             clonedObject.SkipContentFileWrite = SkipContentFileWrite;

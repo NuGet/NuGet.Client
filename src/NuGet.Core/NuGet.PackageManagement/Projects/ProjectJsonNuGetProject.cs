@@ -151,12 +151,13 @@ namespace NuGet.ProjectManagement.Projects
             return packages;
         }
 
-        protected virtual Task<string> GetMSBuildProjectExtensionsPathAsync()
+        protected virtual Task<string> GetBaseIntermediateOutputPathAsync()
         {
-            // Extending class will implement the functionality (but this method can't be abstract as tests create it directly)
-            return Task.FromResult((string)null);
+            // Extending class will implement the functionality (but tests will use this implementation)
+            string baseIntermediateOutputPath = Path.Combine(Path.GetDirectoryName(MSBuildProjectPath), "obj");
+            return Task.FromResult((string)baseIntermediateOutputPath);
         }
-       
+
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
             PackageSpec packageSpec = null;
@@ -172,12 +173,12 @@ namespace NuGet.ProjectManagement.Projects
                 packageSpec.RestoreMetadata = metadata;
 
                 metadata.ProjectStyle = ProjectStyle.ProjectJson;
-                metadata.OutputPath = await GetMSBuildProjectExtensionsPathAsync();
+                metadata.OutputPath = Path.GetDirectoryName(MSBuildProjectPath);
                 metadata.ProjectPath = MSBuildProjectPath;
                 metadata.ProjectJsonPath = packageSpec.FilePath;
                 metadata.ProjectName = packageSpec.Name;
                 metadata.ProjectUniqueName = MSBuildProjectPath;
-                metadata.CacheFilePath = await GetCacheFilePathAsync();
+                metadata.AssetsCacheFolder = await GetBaseIntermediateOutputPathAsync();
 
                 // Reload the target framework from csproj and update the target framework in packageSpec for restore
                 await UpdateInternalTargetFrameworkAsync();

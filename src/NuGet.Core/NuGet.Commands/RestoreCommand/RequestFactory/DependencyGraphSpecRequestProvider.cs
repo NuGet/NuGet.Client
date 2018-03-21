@@ -153,11 +153,13 @@ namespace NuGet.Commands
                 ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle,
                 //  Project.json is special cased to put assets file and generated .props and targets in the project folder
                 RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
-                AssetsCachePath = projectPackageSpec.RestoreMetadata.OutputPath,
                 DependencyGraphSpec = projectDgSpec,
-                ParentId = restoreArgs.ParentId
+                ParentId = restoreArgs.ParentId,
             };
-            
+
+            request.AssetsCachePath = NoOpRestoreUtilities.GetCacheFilePath(request);
+
+
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
                 ?? DefaultRestoreLegacyPackagesDirectory;
             request.IsLowercasePackagesDirectory = !restoreLegacyPackagesDirectory;

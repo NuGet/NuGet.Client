@@ -331,11 +331,11 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The MSBuildProjectExtensionsPath MSBuild property could not be found for project &apos;{0}&apos;..
+        ///   Looks up a localized string similar to The {0} MSBuild property could not be found for project &apos;{1}&apos;..
         /// </summary>
-        public static string MSBuildProjectExtensionsPathNotFound {
+        public static string MSBuildPropertyNotFound {
             get {
-                return ResourceManager.GetString("MSBuildProjectExtensionsPathNotFound", resourceCulture);
+                return ResourceManager.GetString("MSBuildPropertyNotFound", resourceCulture);
             }
         }
         

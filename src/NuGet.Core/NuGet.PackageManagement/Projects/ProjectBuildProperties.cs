@@ -10,6 +10,7 @@ namespace NuGet.ProjectManagement
     public static class ProjectBuildProperties
     {
         public const string MSBuildProjectExtensionsPath = "MSBuildProjectExtensionsPath";
+        public const string BaseIntermediateOutputPath = "BaseIntermediateOutputPath";
         public const string PackageTargetFallback = "PackageTargetFallback";
         public const string AssetTargetFallback = "AssetTargetFallback";
         public const string PackageVersion = "PackageVersion";

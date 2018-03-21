@@ -35,8 +35,9 @@ namespace NuGet.Commands
                 || request.ProjectStyle == ProjectStyle.PackageReference
                 || request.ProjectStyle == ProjectStyle.Standalone)
             {
-                var cacheRoot = request.AssetsCachePath;
-                return request.Project.RestoreMetadata.CacheFilePath = GetProjectCacheFilePath(cacheRoot, request.Project.RestoreMetadata.ProjectPath);
+                var cacheRoot = request.Project.RestoreMetadata.AssetsCacheFolder;
+
+                return GetProjectCacheFilePath(cacheRoot, request.Project.RestoreMetadata.ProjectPath);
             }
 
             return null;
@@ -89,20 +90,17 @@ namespace NuGet.Commands
         /// </summary>
         internal static string GetCacheFilePath(RestoreRequest request, LockFile lockFile)
         {
-            var projectCacheFilePath = request.Project.RestoreMetadata?.CacheFilePath;
+            string projectCacheFilePath = null;
 
-            if (string.IsNullOrEmpty(projectCacheFilePath))
+            if (request.ProjectStyle == ProjectStyle.PackageReference
+                || request.ProjectStyle == ProjectStyle.Standalone
+                || request.ProjectStyle == ProjectStyle.ProjectJson)
             {
-                if (request.ProjectStyle == ProjectStyle.PackageReference
-                    || request.ProjectStyle == ProjectStyle.Standalone
-                    || request.ProjectStyle == ProjectStyle.ProjectJson)
-                {
-                    projectCacheFilePath = GetBuildIntegratedProjectCacheFilePath(request);
-                }
-                else if(request.ProjectStyle == ProjectStyle.DotnetCliTool)
-                {
-                    projectCacheFilePath = GetToolCacheFilePath(request, lockFile);
-                }
+                projectCacheFilePath = GetBuildIntegratedProjectCacheFilePath(request);
+            }
+            else if(request.ProjectStyle == ProjectStyle.DotnetCliTool)
+            {
+                projectCacheFilePath = GetToolCacheFilePath(request, lockFile);
             }
             return projectCacheFilePath != null ? Path.GetFullPath(projectCacheFilePath) : null;
         }
@@ -296,7 +294,7 @@ namespace NuGet.Commands
 
                 if (toolDirectory != null) // Only set the paths if a good enough match was found. 
                 {
-                    request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetToolCacheFilePath(toolDirectory, ToolRestoreUtility.GetToolIdOrNullFromSpec(request.Project));
+                    request.AssetsCachePath = NoOpRestoreUtilities.GetToolCacheFilePath(toolDirectory, ToolRestoreUtility.GetToolIdOrNullFromSpec(request.Project));
                     request.LockFilePath = toolPathResolver.GetLockFilePath(toolDirectory);
                 }
             }

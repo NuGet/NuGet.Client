@@ -103,7 +103,7 @@ namespace NuGet.Commands
                                 _request.ExistingLockFile,
                                 _request.ExistingLockFile.Path,
                                 cacheFile,
-                                _request.Project.RestoreMetadata.CacheFilePath,
+                                _request.AssetsCachePath,
                                 _request.ProjectStyle,
                                 restoreTime.Elapsed);
                         }
@@ -222,9 +222,9 @@ namespace NuGet.Commands
                 NoOpRestoreUtilities.UpdateRequestBestMatchingToolPathsIfAvailable(_request);
             }
 
-            if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
+            if (_request.AllowNoOp && File.Exists(_request.AssetsCachePath))
             {
-                cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
+                cacheFile = FileUtility.SafeRead(_request.AssetsCachePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
                 if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash))
                 {
@@ -254,7 +254,7 @@ namespace NuGet.Commands
                 {
                     // Clean up to preserve the pre no-op behavior. This should not be used, but we want to be cautious. 
                     _request.LockFilePath = null;
-                    _request.Project.RestoreMetadata.CacheFilePath = null;
+                    _request.AssetsCachePath = null;
                 }
             }
             return new KeyValuePair<CacheFile, bool>(cacheFile, noOp);

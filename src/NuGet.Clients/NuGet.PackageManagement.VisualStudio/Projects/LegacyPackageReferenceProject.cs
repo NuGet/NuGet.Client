@@ -91,14 +91,23 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var baseIntermediatePath = GetMSBuildProjectExtensionsPath(shouldThrow);
+            var msbuildProjectExtensionsPath = GetMSBuildProjectExtensionsPath(shouldThrow);
 
-            if (baseIntermediatePath == null)
+            if (msbuildProjectExtensionsPath == null)
             {
                 return null;
             }
 
-            return Path.Combine(baseIntermediatePath, LockFileFormat.AssetsFileName);
+            return Path.Combine(msbuildProjectExtensionsPath, LockFileFormat.AssetsFileName);
+        }
+
+        private async Task<string> GetAssetsCacheFolderAsync(bool shouldThrow)
+        {
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var msbuildProjectExtensionsPath = GetMSBuildProjectExtensionsPath(shouldThrow);
+
+            return msbuildProjectExtensionsPath;
         }
 
         #endregion BuildIntegratedNuGetProject
@@ -175,7 +184,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (shouldThrow)
                 {
                     throw new InvalidDataException(string.Format(
-                        Strings.MSBuildProjectExtensionsPathNotFound,
+                        Strings.MSBuildPropertyNotFound,
+                        ProjectBuildProperties.MSBuildProjectExtensionsPath,
                         _vsProjectAdapter.ProjectDirectory));
                 }
 
@@ -352,7 +362,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         }
                     },
                     SkipContentFileWrite = true,
-                    CacheFilePath = await GetCacheFilePathAsync(),
+                    AssetsCacheFolder = await GetAssetsCacheFolderAsync(true),
                     PackagesPath = GetPackagesPath(settings),
                     Sources = GetSources(settings),
                     FallbackFolders = GetFallbackFolders(settings),
