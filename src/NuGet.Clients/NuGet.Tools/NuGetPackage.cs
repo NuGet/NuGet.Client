@@ -46,15 +46,6 @@ namespace NuGetVSExtension
     [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)]
     [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
     [ProvideBindingPath] // Definition dll needs to be on VS binding path
-    // UI Context rule for a project that could be upgraded to packages.config being loaded (and experimental features turned on).
-    [ProvideUIContextRule(GuidList.guidUpgradeableProjectLoadedString,
-        "UpgradeableProjectLoaded",
-        "SolutionExistsAndFullyLoaded & (CSProject | VBProject) & !UnsupportedProjectCapabilities",
-        new[] { "SolutionExistsAndFullyLoaded", "CSProject", "VBProject", "UnsupportedProjectCapabilities" },
-        new[] { VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string,
-            "ActiveProjectFlavor:" + VsProjectTypes.CsharpProjectTypeGuid,
-            "ActiveProjectFlavor:" + VsProjectTypes.VbProjectTypeGuid,
-            "ActiveProjectCapability:SharedAssetsProject"})]
     [ProvideAutoLoad(GuidList.guidUpgradeableProjectLoadedString)]
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string)]
