@@ -24,6 +24,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 - [Windows 10 SDK](https://dev.windows.com/en-US/downloads/windows-10-sdk)
 - Git
 - Windows Powershell v3.0+
+- [.NET Core SDK 1.0.5](https://github.com/dotnet/core/blob/master/release-notes/download-archives/1.0.4-sdk-download.md)
 
 ### Steps to build NuGet client tools
 
