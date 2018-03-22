@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectServices = projectServices;
         }
 
-        protected async Task<string> GetBaseIntermediateOutputPathAsync()
+        protected override async Task<string> GetBaseIntermediateOutputPathAsync()
         {
             var baseIntermediateOutputPath = await ProjectServices.BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.BaseIntermediateOutputPath);
 

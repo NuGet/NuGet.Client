@@ -362,7 +362,7 @@ namespace NuGet.ProjectModel.Test
             originalProjectRestoreMetadata.ProjectName = "ProjectName";
             originalProjectRestoreMetadata.ProjectUniqueName = "ProjectUniqueName";
             originalProjectRestoreMetadata.PackagesPath = "PackagesPath";
-            originalProjectRestoreMetadata.CacheFilePath = "CacheFilePath";
+            originalProjectRestoreMetadata.AssetsCacheFolder = "AssetsCacheFolder";
             originalProjectRestoreMetadata.CrossTargeting = true;
             originalProjectRestoreMetadata.LegacyPackagesDirectory = true;
             originalProjectRestoreMetadata.ValidateRuntimeAssets = true;

@@ -284,10 +284,11 @@ namespace NuGet.SolutionRestoreManager
                         treatWarningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, TreatWarningsAsErrors, e => e),
                         warningsAsErrors: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, WarningsAsErrors, e => e),
                         noWarn: GetNonEvaluatedPropertyOrNull(projectRestoreInfo.TargetFrameworks, NoWarn, e => e)),
-                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: outputPath, projectPath: projectFullPath)
+                    AssetsCacheFolder = outputPath
                 },
                 RuntimeGraph = GetRuntimeGraph(projectRestoreInfo),
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
+
             };
 
             return packageSpec;
