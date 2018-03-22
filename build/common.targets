@@ -212,19 +212,19 @@
   <Target Name="GetNetCoreLocalizedFilesInProjectOutputPath" Returns="@(_LocalizedNetCoreDllsWithRelativeTargetPath)" Condition=" '$(PackProject)' == 'true' ">
     <ItemGroup>
       <_LocalizedDllsNetCoreApp Include="$(OutputPath)netcoreapp1.0\**\$(AssemblyName).resources.dll"/>
-      <_LocalizedDllsNetStandard13 Include="$(OutputPath)netstandard1.3\**\$(AssemblyName).resources.dll"/>
+      <_LocalizedDllsNetStandard13 Include="$(OutputPath)netstandard1.5\**\$(AssemblyName).resources.dll"/>
       <_LocalizedDllsNetStandard10 Include="$(OutputPath)netstandard1.0\**\$(AssemblyName).resources.dll"/>
 
       <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetCoreApp)" Condition=" '@(_LocalizedDllsNetCoreApp)' != '' ">
-        <RelativeTargetPath>netstandard1.3\%(_LocalizedDllsNetCoreApp.RecursiveDir)%(_LocalizedDllsNetCoreApp.FileName)%(_LocalizedDllsNetCoreApp.Extension)</RelativeTargetPath>
+        <RelativeTargetPath>netstandard1.5\%(_LocalizedDllsNetCoreApp.RecursiveDir)%(_LocalizedDllsNetCoreApp.FileName)%(_LocalizedDllsNetCoreApp.Extension)</RelativeTargetPath>
       </_LocalizedNetCoreDllsWithRelativeTargetPath>
 
       <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetStandard10)" Condition=" '@(_LocalizedDllsNetStandard10)' != '' ">
-        <RelativeTargetPath>netstandard1.3\%(_LocalizedDllsNetStandard10.RecursiveDir)%(_LocalizedDllsNetStandard10.FileName)%(_LocalizedDllsNetStandard10.Extension)</RelativeTargetPath>
+        <RelativeTargetPath>netstandard1.5\%(_LocalizedDllsNetStandard10.RecursiveDir)%(_LocalizedDllsNetStandard10.FileName)%(_LocalizedDllsNetStandard10.Extension)</RelativeTargetPath>
       </_LocalizedNetCoreDllsWithRelativeTargetPath>
 
       <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetStandard13)" Condition=" '@(_LocalizedDllsNetStandard13)' != '' ">
-        <RelativeTargetPath>netstandard1.3\%(_LocalizedDllsNetStandard13.RecursiveDir)%(_LocalizedDllsNetStandard13.FileName)%(_LocalizedDllsNetStandard13.Extension)</RelativeTargetPath>
+        <RelativeTargetPath>netstandard1.5\%(_LocalizedDllsNetStandard13.RecursiveDir)%(_LocalizedDllsNetStandard13.FileName)%(_LocalizedDllsNetStandard13.Extension)</RelativeTargetPath>
       </_LocalizedNetCoreDllsWithRelativeTargetPath>
     </ItemGroup>
   </Target>
