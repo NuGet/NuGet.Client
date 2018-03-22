@@ -285,35 +285,26 @@ namespace NuGet.PackageManagement.VisualStudio
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
-                await AddImportStatement(relativeTargetPath, location);
+                AddImportStatement(relativeTargetPath, location);
+                await SaveProjectAsync();
+
+                // notify the project system of the change
+                UpdateImportStamp(VsProjectAdapter);
             });
         }
 
-        private async Task AddImportStatement(string targetsPath, ImportLocation location)
+        private void AddImportStatement(string targetsPath, ImportLocation location)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            // running inside a writer lock to avoid MSBuild throwing "this collection is read-only" error
-            await ProjectHelper.DoWorkInWriterLockAsync(
-                VsProjectAdapter.Project,
-                VsProjectAdapter.VsHierarchy,
-                buildProject => MicrosoftBuildEvaluationProjectUtility.AddImportStatement(buildProject, targetsPath, location));
-
-            // notify the project system of the change
-            UpdateImportStamp(VsProjectAdapter);
+            // Need NOT be on the UI Thread
+            MicrosoftBuildEvaluationProjectUtility.AddImportStatement(
+                EnvDTEProjectUtility.AsMSBuildEvaluationProject(VsProjectAdapter.FullName), targetsPath, location);
         }
 
-        private async Task RemoveImportStatement(string targetsPath)
+        private void RemoveImportStatement(string targetsPath)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            await ProjectHelper.DoWorkInWriterLockAsync(
-                VsProjectAdapter.Project,
-                VsProjectAdapter.VsHierarchy,
-                buildProject => MicrosoftBuildEvaluationProjectUtility.RemoveImportStatement(buildProject, targetsPath));
-
-            // notify the project system of the change
-            UpdateImportStamp(VsProjectAdapter);
+            // Need NOT be on the UI Thread
+            MicrosoftBuildEvaluationProjectUtility.RemoveImportStatement(
+                EnvDTEProjectUtility.AsMSBuildEvaluationProject(VsProjectAdapter.FullName), targetsPath);
         }
 
         private static bool IsSamePath(string path1, string path2)
@@ -380,7 +371,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
-                await RemoveImportStatement(relativeTargetPath);
+                RemoveImportStatement(relativeTargetPath);
+
+                await SaveProjectAsync();
+
+                // notify the project system of the change
+                UpdateImportStamp(VsProjectAdapter);
             });
         }
 
