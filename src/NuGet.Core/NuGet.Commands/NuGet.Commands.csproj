@@ -26,8 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.ProjectModel\NuGet.ProjectModel.csproj" />
-    <ProjectReference Include="..\NuGet.Configuration\NuGet.Configuration.csproj" />
-    <ProjectReference Include="..\NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">

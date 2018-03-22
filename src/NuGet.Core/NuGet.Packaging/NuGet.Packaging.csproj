@@ -24,7 +24,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Common\NuGet.Common.csproj" />
     <ProjectReference Include="..\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj" />
   </ItemGroup>
 
