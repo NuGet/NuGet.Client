@@ -188,7 +188,7 @@ namespace NuGet.PackageManagement.UI
         private static string CreateBackup(MSBuildNuGetProject msBuildNuGetProject, string solutionDirectory)
         {
             var guid = Guid.NewGuid().ToString().Split('-').First();
-            var backupPath = Path.Combine(solutionDirectory, $"Backup_{guid}", NuGetProject.GetUniqueNameOrName(msBuildNuGetProject));
+            var backupPath = Path.Combine(solutionDirectory, "MigrationBackup", guid, NuGetProject.GetUniqueNameOrName(msBuildNuGetProject));
             Directory.CreateDirectory(backupPath);
 
             // Backup packages.config

@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                if(_notFoundPackages == null)
+                if (_notFoundPackages == null)
                 {
                     GetUpgradeDependencyItems();
                 }
@@ -129,8 +129,30 @@ namespace NuGet.PackageManagement.UI
                         }
                         issues.AddRange(foundIssues);
                     }
+
+                    if(!package.InstallAsTopLevel)
+                    {
+                        PromoteToTopLevelIfNeeded(reader, package);
+                    }
                 }
             }
+        }
+
+        /* The package will be installed as top level if :
+         * 1) The package contains build, buildCrossTargeting, contentFiles or analyzers folder.
+         * 2) The package has developmentDependency set to true.
+         */         
+        private void PromoteToTopLevelIfNeeded(PackageArchiveReader reader, NuGetProjectUpgradeDependencyItem item)
+        {
+            if(reader.GetDevelopmentDependency() ||
+                reader.GetFiles(PackagingConstants.Folders.Build).Any() ||
+                reader.GetFiles(PackagingConstants.Folders.BuildCrossTargeting).Any() ||
+                reader.GetFiles(PackagingConstants.Folders.ContentFiles).Any() ||
+                reader.GetFiles(PackagingConstants.Folders.Analyzers).Any())
+            {
+                item.InstallAsTopLevel = true;
+            }
+
         }
 
         private ObservableCollection<NuGetProjectUpgradeDependencyItem> GetUpgradeDependencyItems()
