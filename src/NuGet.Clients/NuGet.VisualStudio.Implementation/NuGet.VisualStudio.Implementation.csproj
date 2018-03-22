@@ -29,7 +29,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj" />
     <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
     <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
