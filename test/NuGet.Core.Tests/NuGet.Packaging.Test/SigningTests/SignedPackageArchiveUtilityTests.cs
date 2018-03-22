@@ -70,7 +70,7 @@ namespace NuGet.Packaging.Test
                 var exception = Assert.Throws<SignatureException>(
                     () => SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader));
 
-                Assert.Equal("The package signature file entry is invalid.", exception.Message);
+                Assert.Equal("The package signature file entry is invalid. The central directory header field 'compression method' has an invalid value (8).", exception.Message);
                 Assert.Equal(NuGetLogCode.NU3005, exception.Code);
             }
         }
