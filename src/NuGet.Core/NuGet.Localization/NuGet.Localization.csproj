@@ -8,7 +8,6 @@
     <PackProject Condition="!Exists('$(LocalizationRootDirectory)') OR '$(BuildRTM)' == 'true'">false</PackProject>
     <Description>NuGet localization package.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>

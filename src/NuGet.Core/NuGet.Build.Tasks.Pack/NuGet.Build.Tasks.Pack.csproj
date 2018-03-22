@@ -7,7 +7,6 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyName>NuGet.Build.Tasks.Pack</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <NoBuild>true</NoBuild>
