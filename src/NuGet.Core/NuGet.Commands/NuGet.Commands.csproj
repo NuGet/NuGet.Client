@@ -3,11 +3,11 @@
 
   <PropertyGroup>
     <Description>Complete commands common to command-line and GUI NuGet clients</Description>
-    <TargetFrameworks>netstandard1.5;net46</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.5</TargetFrameworks>
+    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.6</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1584;CS1658</NoWarn>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.5' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <PackProject>true</PackProject>
     <IncludeInVSIX>true</IncludeInVSIX>
     <Shipping>true</Shipping>
@@ -35,7 +35,7 @@
     <Reference Include="System.Security" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
     <PackageReference Include="System.Xml.XDocument" Version="4.0.11" />
   </ItemGroup>
   

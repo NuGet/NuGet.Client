@@ -2,11 +2,11 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.5;net46</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.5</TargetFrameworks>
+    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.6</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.5' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
@@ -22,7 +22,7 @@
     <ProjectReference Include="..\NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
     <PackageReference Include="System.Dynamic.Runtime" Version="4.0.11" />
     <PackageReference Include="System.Threading.Thread" Version="4.0.0" />
   </ItemGroup>

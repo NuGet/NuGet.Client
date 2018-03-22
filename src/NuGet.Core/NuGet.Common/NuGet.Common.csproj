@@ -2,11 +2,11 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.5;net46</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.5</TargetFrameworks>
+    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.6</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574</NoWarn>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.5' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
@@ -23,7 +23,7 @@
     <Reference Include="System.IO.Compression" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
     <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.2.0" />
     <PackageReference Include="System.Diagnostics.Process" Version="4.1.0" />
     <PackageReference Include="System.Threading.Thread" Version="4.0.0" />
