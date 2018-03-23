@@ -31,6 +31,10 @@ namespace NuGet.Packaging.Signing
 
         public bool AllowNoTimestamp { get; }
 
+        public bool AllowNoTrustedAuthors { get; }
+
+        public bool AllowNoTrustedSources { get; }
+
         /// <summary>
         /// Treat unknown revocation status as a warning instead of an error during verification.
         /// </summary>

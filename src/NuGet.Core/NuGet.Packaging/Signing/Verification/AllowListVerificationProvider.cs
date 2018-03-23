@@ -13,11 +13,19 @@ namespace NuGet.Packaging.Signing
 {
     public class AllowListVerificationProvider : ISignatureVerificationProvider
     {
-        private IReadOnlyList<VerificationAllowListEntry> _allowList;
+        private IEnumerable<CertificateHashAllowListEntry> _allowedCertificates;
+        private IEnumerable<TrustedSourceAllowListEntry> _allowedSources;
+        private IEnumerable<TrustedAuthorAllowListEntry> _allowedAuthors;
+
+        private Dictionary<HashAlgorithmName, string> _primarySignatureCertificateFingerprints;
+        private Dictionary<HashAlgorithmName, string> _countersignatureCertificateFingerprints;
+        private Lazy<RepositoryCountersignature> _repositoryCounterSignature;
 
         public AllowListVerificationProvider(IReadOnlyList<VerificationAllowListEntry> allowList)
         {
-            _allowList = allowList;
+            _allowedCertificates = allowList.Select(entry => entry as CertificateHashAllowListEntry).Where(entry => entry != null);
+            _allowedSources = allowList.Select(entry => entry as TrustedSourceAllowListEntry).Where(entry => entry != null);
+            _allowedAuthors = allowList.Select(entry => entry as TrustedAuthorAllowListEntry).Where(entry => entry != null);
         }
 
         public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings, CancellationToken token)
@@ -31,7 +39,12 @@ namespace NuGet.Packaging.Signing
             var status = SignatureVerificationStatus.Valid;
             var issues = new List<SignatureLog>();
 
-            if (_allowList.Count() > 0 && !IsSignatureAllowed(signature))
+            // Memoize repository countersignature and certificate fingerprints for primary signature and repository countersignature
+            _primarySignatureCertificateFingerprints = new Dictionary<HashAlgorithmName, string>();
+            _countersignatureCertificateFingerprints = new Dictionary<HashAlgorithmName, string>();
+            _repositoryCounterSignature = new Lazy<RepositoryCountersignature>(() => RepositoryCountersignature.GetRepositoryCountersignature(signature));
+
+            if (!IsSignatureAllowed(signature, settings))
             {
                 status = SignatureVerificationStatus.Untrusted;
                 issues.Add(SignatureLog.Issue(fatal: !settings.AllowUntrusted, code: NuGetLogCode.NU3003, message: Strings.Error_NoAllowedCertificate));
@@ -40,53 +53,114 @@ namespace NuGet.Packaging.Signing
             return new SignedPackageVerificationResult(status, signature, issues);
         }
 
-        private bool IsSignatureAllowed(PrimarySignature signature)
+        private bool IsSignatureAllowed(PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
-            // To avoid getting the countersignature more than once lets memoize it
-            var repositoryCounterSignature = new Lazy<RepositoryCountersignature>(() => RepositoryCountersignature.GetRepositoryCountersignature(signature));
-
-            // Also memoize certificate fingerprints for primary signature and repository countersignature
-            var signatureCertFingerprints = new Dictionary<HashAlgorithmName, string>();
-            var countersignatureCertFingerprints = new Dictionary<HashAlgorithmName, string>();
-
-            foreach (var allowedEntry in _allowList)
+            if (IsCertificateDisallowed(signature))
             {
-                // Verify the certificate hash allow list objects
-                var certHashEntry = allowedEntry as CertificateHashAllowListEntry;
-                if (certHashEntry != null)
-                {
-                    if (certHashEntry.Placement.HasFlag(SignaturePlacement.PrimarySignature))
-                    {
-                        if (!signatureCertFingerprints.TryGetValue(certHashEntry.FingerprintAlgorithm, out var signatureCertFingerprint))
-                        {
-                            signatureCertFingerprint = GetCertFingerprint(signature.SignerInfo.Certificate, certHashEntry.FingerprintAlgorithm);
-                            signatureCertFingerprints.Add(certHashEntry.FingerprintAlgorithm, signatureCertFingerprint);
-                        }
+                return false;
+            }
+            if (IsAuthorDisallowed(signature, !settings.AllowNoTrustedAuthors) && IsSourceDisallowed(signature, !settings.AllowNoTrustedSources))
+            {
+                return false;
+            }
 
-                        if (IsSignatureTargeted(certHashEntry.VerificationTarget, signature) &&
-                            StringComparer.OrdinalIgnoreCase.Equals(certHashEntry.CertificateFingerprint, signatureCertFingerprint))
-                        {
-                            return true;
-                        }
+            return true;
+        }
+
+        private bool IsCertificateDisallowed(PrimarySignature signature)
+        {
+            // We shouldn't explicitely disallow anything if we don't have an allowList
+            if (_allowedCertificates.Count() == 0)
+            {
+                return false;
+            }
+
+            foreach (var allowedEntry in _allowedCertificates)
+            {
+                if (MatchFingerprint(allowedEntry, signature, allowedEntry.FingerprintAlgorithm, allowedEntry.CertificateFingerprint))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool IsAuthorDisallowed(PrimarySignature signature, bool requireAllowedAuthorsList)
+        {
+            // We shouldn't explicitely disallow anything if we don't have an allowList and it is permitted
+            if (_allowedAuthors.Count() == 0 && !requireAllowedAuthorsList)
+            {
+                return false;
+            }
+
+            foreach(var author in _allowedAuthors)
+            {
+                // TODO: Check if the author is allowed
+            }
+
+            return true;
+        }
+
+        private bool IsSourceDisallowed(PrimarySignature signature, bool requireAllowedSourcesList)
+        {
+            // We shouldn't explicitely disallow anything if we don't have an allowList and it is permitted
+            if (_allowedSources.Count() == 0 && !requireAllowedSourcesList)
+            {
+                return false;
+            }
+
+            foreach (var allowedEntry in _allowedSources)
+            {
+                foreach(var cert in allowedEntry.Source.Certificates)
+                {
+                    if (MatchFingerprint(allowedEntry, signature, cert.FingerprintAlgorithm, cert.Fingerprint))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+
+        /// <summary>
+        /// Checks placements required by the trusted entry to compare provided fingerprint 
+        /// </summary>
+        /// <returns>true if any of the placements in the trusted entry match the provided fingerprint</returns>
+        private bool MatchFingerprint(VerificationAllowListEntry trustEntry, PrimarySignature signature, HashAlgorithmName fingerprintAlgorithm, string fingerprint)
+        {
+            if (trustEntry.Placement.HasFlag(SignaturePlacement.PrimarySignature))
+            {
+                if (!_primarySignatureCertificateFingerprints.TryGetValue(fingerprintAlgorithm, out var primarySignatureCertFingerprint))
+                {
+                    primarySignatureCertFingerprint = GetCertFingerprint(signature.SignerInfo.Certificate, fingerprintAlgorithm);
+                    _primarySignatureCertificateFingerprints.Add(fingerprintAlgorithm, primarySignatureCertFingerprint);
+                }
+
+                if (IsSignatureTargeted(trustEntry.VerificationTarget, signature) &&
+                    StringComparer.OrdinalIgnoreCase.Equals(fingerprint, primarySignatureCertFingerprint))
+                {
+                    return true;
+                }
+            }
+
+            if (trustEntry.Placement.HasFlag(SignaturePlacement.Countersignature))
+            {
+                // Check if a countersignature exists here to not even get the countersignature if there is no intention to verify it
+                if (_repositoryCounterSignature.Value != null)
+                {
+                    if (!_countersignatureCertificateFingerprints.TryGetValue(fingerprintAlgorithm, out var countersignatureCertFingerprint))
+                    {
+                        countersignatureCertFingerprint = GetCertFingerprint(_repositoryCounterSignature.Value.SignerInfo.Certificate, fingerprintAlgorithm);
+                        _countersignatureCertificateFingerprints.Add(fingerprintAlgorithm, countersignatureCertFingerprint);
                     }
 
-                    if (certHashEntry.Placement.HasFlag(SignaturePlacement.Countersignature))
+                    if (IsSignatureTargeted(trustEntry.VerificationTarget, _repositoryCounterSignature.Value) &&
+                        StringComparer.OrdinalIgnoreCase.Equals(fingerprint, countersignatureCertFingerprint))
                     {
-                        // Check if a countersignature exists here to not even get the countersignature if there is no intention to verify it
-                        if (repositoryCounterSignature.Value != null)
-                        {
-                            if (!countersignatureCertFingerprints.TryGetValue(certHashEntry.FingerprintAlgorithm, out var countersignatureCertFingerprint))
-                            {
-                                countersignatureCertFingerprint = GetCertFingerprint(repositoryCounterSignature.Value.SignerInfo.Certificate, certHashEntry.FingerprintAlgorithm);
-                                countersignatureCertFingerprints.Add(certHashEntry.FingerprintAlgorithm, countersignatureCertFingerprint);
-                            }
-
-                            if (IsSignatureTargeted(certHashEntry.VerificationTarget, repositoryCounterSignature.Value) &&
-                                StringComparer.OrdinalIgnoreCase.Equals(certHashEntry.CertificateFingerprint, countersignatureCertFingerprint))
-                            {
-                                return true;
-                            }
-                        }
+                        return true;
                     }
                 }
             }
