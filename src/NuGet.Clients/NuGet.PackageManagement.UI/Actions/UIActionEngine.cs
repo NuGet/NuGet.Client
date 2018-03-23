@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
@@ -115,6 +115,74 @@ namespace NuGet.PackageManagement.UI
                 operationType,
                 token);
         }
+
+        public async Task UpgradeNuGetProjectAsync(INuGetUI uiService, NuGetProject[] nuGetProjects)
+        {
+            var context = uiService.UIContext;
+
+            // Restore the project before proceeding
+            var solutionDirectory = context.SolutionManager.SolutionDirectory;
+
+            await context.PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, uiService.ProjectContext, CancellationToken.None);
+
+            var msBuildNuGetProjects = new List<NuGetProject>();
+
+            for (var i=0; i<nuGetProjects.Length; i++)
+            {
+                if (await NuGetProjectUpgradeHelper.IsNuGetProjectUpgradeableAsync(nuGetProjects[i]))
+                {
+                    msBuildNuGetProjects.Add(nuGetProjects[i]);
+                }
+            }
+
+            if (msBuildNuGetProjects.Count > 0)
+            {
+                var sortedProjects = TopologicalSortUtility.SortPackagesByDependencyOrder(
+                    items: msBuildNuGetProjects,
+                    comparer: PathUtility.GetStringComparerBasedOnOS(),
+                    getId: GetProjectId,
+                    getDependencies: GetProjectDependencyIds);
+
+                foreach (var nuGetProject in sortedProjects)
+                {
+                    var progressDialogData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage);
+
+                    using (var progressDialogSession = context.StartModalProgressDialog(Resources.WindowTitle_NuGetMigrator, progressDialogData, uiService))
+                    {
+                        var packagesDependencyInfo = await context.PackageManager.GetInstalledPackagesDependencyInfo(nuGetProject, CancellationToken.None, includeUnresolved: true);
+                        var upgradeInformationWindowModel = new NuGetProjectUpgradeWindowModel(nuGetProject, packagesDependencyInfo.ToList());
+
+                        await PackagesConfigToPackageReferenceMigrator.DoUpgradeAsync(
+                            context,
+                            uiService,
+                            nuGetProject,
+                            upgradeInformationWindowModel.UpgradeDependencyItems,
+                            upgradeInformationWindowModel.NotFoundPackages,
+                            progressDialogSession.Progress,
+                            progressDialogSession.UserCancellationToken);
+                    }
+                }
+            }
+        }
+
+        private string GetProjectId(NuGetProject project)
+        {
+            return NuGetProject.GetUniqueNameOrName(project);
+        }
+
+        private string[] GetProjectDependencyIds(NuGetProject project)
+        {
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                return (await project
+                    .ProjectServices
+                    .ReferencesReader
+                    .GetProjectReferencesAsync(NullLogger.Instance, CancellationToken.None))
+                    .Select(reference => reference.ProjectUniqueName)
+                    .ToArray();
+            });
+        }
+
 
         public async Task UpgradeNuGetProjectAsync(INuGetUI uiService, NuGetProject nuGetProject)
         {

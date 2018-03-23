@@ -236,6 +236,12 @@ namespace NuGetVSExtension
                     BeforeQueryStatusForUpgradePackagesConfig, upgradePackagesConfigCommandID);
                 _mcs.AddCommand(upgradePackagesConfigCommand);
 
+                // menu command for upgrading packages.config files to PackageReference - Solution context menu
+                var upgradePackagesConfigForSolutionCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpgradePackagesConfigForSolution);
+                var upgradePackagesConfigForSolutionCommand = new OleMenuCommand(ExecuteUpgradeNuGetProjectCommandForSolutionAsync, null,
+                    BeforeQueryStatusForUpgradePackagesConfigForSolution, upgradePackagesConfigForSolutionCommandID);
+                _mcs.AddCommand(upgradePackagesConfigForSolutionCommand);
+
                 // menu command for opening Package Manager Console
                 var toolwndCommandID = new CommandID(GuidList.guidNuGetConsoleCmdSet, PkgCmdIDList.cmdidPowerConsole);
                 var powerConsoleExecuteCommand = new OleMenuCommand(ExecutePowerConsoleCommand, null, BeforeQueryStatusForPowerConsole, toolwndCommandID);
@@ -536,6 +542,33 @@ namespace NuGetVSExtension
 
             await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject);
             uiController.UIContext.UserSettingsManager.PersistSettings();
+        }
+
+        private async void ExecuteUpgradeNuGetProjectCommandForSolutionAsync(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            await ThreadHelper.JoinableTaskFactory.RunAsync(ExecuteUpgradeNuGetProjectCommandForSolutionImplAsync);
+        }
+
+        private async Task ExecuteUpgradeNuGetProjectCommandForSolutionImplAsync()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Close NuGet Package Manager if it is open for this solution
+            var windowFrame = await FindExistingSolutionWindowFrameAsync();
+            windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
+
+            var projects = (await SolutionManager.Value.GetNuGetProjectsAsync()).ToArray();
+            if (projects.Length == 0)
+            {
+                MessageHelper.ShowWarningMessage(Resources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
+                return;
+            }
+
+            // pass empty array of NuGetProject
+            var uiController = UIFactory.Value.Create(projects);
+
+            await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, projects);
         }
 
         private static string GetProjectSettingsKey(NuGetProject nuGetProject)
@@ -848,11 +881,49 @@ namespace NuGetVSExtension
 
         }
 
+        private void BeforeQueryStatusForUpgradePackagesConfigForSolution(object sender, EventArgs args)
+        {
+            // Check whether to show context menu item on packages.config
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                if (ShouldMEFBeInitialized())
+                {
+                    await InitializeMEFAsync();
+                }
+
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var command = (OleMenuCommand)sender;
+
+                command.Visible = IsSolutionOpen && await IsAnyProjectUpgradeableAsync();
+                command.Enabled = !ConsoleStatus.Value.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && await SolutionManager.Value.DoesNuGetSupportsAnyProjectAsync();
+            });
+
+        }
+
         private bool IsSolutionOpen => _dte?.Solution != null && _dte.Solution.IsOpen;
 
-        private async  Task<bool> IsProjectUpgradeableAsync()
+        private async Task<bool> IsProjectUpgradeableAsync()
         {
             return await NuGetProjectUpgradeHelper.IsNuGetProjectUpgradeableAsync(null, EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection));
+        }
+
+        private async Task<bool> IsAnyProjectUpgradeableAsync()
+        {
+            var projects = await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(_dte);
+
+            var isSupported = false;
+            foreach (var project in projects)
+            {
+                isSupported = await NuGetProjectUpgradeHelper.IsNuGetProjectUpgradeableAsync(null, project);
+
+                if (isSupported)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool IsPackagesConfigSelected()
