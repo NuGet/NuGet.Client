@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.UI
 
         public async  Task<bool> IsNuGetProjectUpgradeable(NuGetProject project)
         {
-            return await NuGetProjectUpgradeHelper.IsNuGetProjectUpgradeableAsync(project);
+            return await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(project);
         }
 
         [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]

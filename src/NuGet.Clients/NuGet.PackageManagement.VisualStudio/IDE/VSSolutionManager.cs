@@ -701,6 +701,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 // This ensures we do not emit the events over and over while the solution is
                 // open.
                 TelemetryActivity.EmitTelemetryEvent(await VSTelemetryServiceUtility.GetProjectTelemetryEventAsync(nuGetProject));
+
+                // Emit telemetry event which tells if the current project is upgradable or not.
+                TelemetryActivity.EmitTelemetryEvent(await VSTelemetryServiceUtility.GetUpgradableProjectTelemetryEvent(nuGetProject));
             }
 
             if (string.IsNullOrEmpty(DefaultNuGetProjectName) ||

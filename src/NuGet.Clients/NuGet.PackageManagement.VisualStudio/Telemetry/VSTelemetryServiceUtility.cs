@@ -125,6 +125,19 @@ namespace NuGet.PackageManagement.Telemetry
             }
         }
 
+        public static async Task<TelemetryEvent> GetUpgradableProjectTelemetryEvent(NuGetProject project)
+        {
+            var telemetryEvent = new TelemetryEvent("ProjectUpgradable");
+
+            var projectId = project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+            var isUpgradable = await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(project);
+
+            telemetryEvent["ProjectId"] = projectId;
+            telemetryEvent["IsUpgradable"] = isUpgradable;
+
+            return telemetryEvent;
+        }
+
         public static TelemetryEvent GetUpgradeTelemetryEvent(
             IEnumerable<NuGetProject> projects,
             NuGetOperationStatus status,

@@ -852,12 +852,12 @@ namespace NuGetVSExtension
 
         private async  Task<bool> IsProjectUpgradeableAsync()
         {
-            return await NuGetProjectUpgradeHelper.IsNuGetProjectUpgradeableAsync(null, EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection));
+            return await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(null, EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection));
         }
 
         private bool IsPackagesConfigSelected()
         {
-            return NuGetProjectUpgradeHelper.IsPackagesConfigSelected(VsMonitorSelection);
+            return NuGetProjectUpgradeUtility.IsPackagesConfigSelected(VsMonitorSelection);
         }
 
         private void BeforeQueryStatusForAddPackageDialog(object sender, EventArgs args)

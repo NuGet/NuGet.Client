@@ -11,14 +11,12 @@ using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.PackageManagement;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
-namespace NuGet.PackageManagement.UI
+namespace NuGet.PackageManagement.VisualStudio
 {
-    public static class NuGetProjectUpgradeHelper
+    public class NuGetProjectUpgradeUtility
     {
         private static readonly HashSet<string> UpgradeableProjectTypes =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -38,7 +36,8 @@ namespace NuGet.PackageManagement.UI
 
         public static async Task<bool> IsNuGetProjectUpgradeableAsync(NuGetProject nuGetProject, Project envDTEProject = null)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             if (nuGetProject == null && envDTEProject == null)
             {
                 return false;
@@ -57,7 +56,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            if(!nuGetProject.ProjectServices.Capabilities.SupportsPackageReferences)
+            if (!nuGetProject.ProjectServices.Capabilities.SupportsPackageReferences)
             {
                 return false;
             }
@@ -85,7 +84,7 @@ namespace NuGet.PackageManagement.UI
             }
             var projectGuids = VsHierarchyUtility.GetProjectTypeGuids(envDTEProject);
 
-            if(projectGuids.Any(t => UnupgradeableProjectTypes.Contains(t)))
+            if (projectGuids.Any(t => UnupgradeableProjectTypes.Contains(t)))
             {
                 return false;
             }

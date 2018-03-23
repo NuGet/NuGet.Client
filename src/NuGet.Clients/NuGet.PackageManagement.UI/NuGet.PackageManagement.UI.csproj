@@ -113,7 +113,6 @@
     <Compile Include="UserInterfaceService\IModalProgressDialogSession.cs" />
     <Compile Include="UserInterfaceService\IUserSettingsManager.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="UserInterfaceService\NuGetProjectUpgradeHelper.cs" />
     <Compile Include="UserInterfaceService\VisualStudioProgress.cs" />
     <Compile Include="UserInterfaceService\VisualStudioProgressDialogSession.cs" />
     <Compile Include="Utility\VsUtility.cs" />
