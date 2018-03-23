@@ -1,11 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <Description>NuGet's client configuration settings implementation.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard2.0</TargetFrameworks>
     <TargetFramework />
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
@@ -27,7 +28,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.0.0" />
     <PackageReference Include="System.Xml.XDocument" Version="4.0.11" />
   </ItemGroup>
@@ -47,5 +48,6 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets" />
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

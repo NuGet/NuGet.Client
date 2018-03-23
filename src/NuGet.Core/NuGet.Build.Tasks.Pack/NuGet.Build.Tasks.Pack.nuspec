@@ -10,9 +10,9 @@
   <files>
     <file src="net46\ilmerge\NuGet.Build.Tasks.Pack.dll" target="Desktop\" />
     <file src="net46\ilmerge\NuGet.Build.Tasks.Pack.xml" target="Desktop\" />
-    <file src="netstandard1.6\ilmerge\NuGet.Build.Tasks.Pack.dll" target="CoreCLR\" />
-    <file src="netstandard1.6\ilmerge\NuGet.Build.Tasks.Pack.xml" target="CoreCLR\" />
-    <file src="netstandard1.6\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll" target="CoreCLR\" />
+    <file src="netstandard2.0\ilmerge\NuGet.Build.Tasks.Pack.dll" target="CoreCLR\" />
+    <file src="netstandard2.0\ilmerge\NuGet.Build.Tasks.Pack.xml" target="CoreCLR\" />
+    <file src="netstandard2.0\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll" target="CoreCLR\" />
     <file src="net46\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll" target="Desktop\" />
     <file src="net46\NuGet.Build.Tasks.Pack.targets" target="buildCrossTargeting\NuGet.Build.Tasks.Pack.targets" />
     <file src="net46\NuGet.Build.Tasks.Pack.targets" target="build\NuGet.Build.Tasks.Pack.targets" />
