@@ -27,7 +27,8 @@ namespace NuGet.Packaging.Rules
                 yield break;
             }
 
-            if (nuspecReader.GetVersion().IsPrerelease)
+            // If the package is stable, and has a prerelease dependency.
+            if (!nuspecReader.GetVersion().IsPrerelease)
             {
                 // If we are creating a production package, do not allow any of the dependencies to be a prerelease version.
                 var prereleaseDependency = nuspecReader.GetDependencyGroups().SelectMany(set => set.Packages).FirstOrDefault(IsPrereleaseDependency);
