@@ -436,7 +436,7 @@ namespace NuGet.Build.Tasks.Pack
 
                 var recursiveDir = packageFile.GetProperty("RecursiveDir");
                 // The below NuGetRecursiveDir workaround needs to be done due to msbuild bug https://github.com/Microsoft/msbuild/issues/3121
-                recursiveDir = string.IsNullOrEmpty(recursiveDir) ? packageFile.GetProperty("NuGetRecursiveDir") : string.Empty;
+                recursiveDir = string.IsNullOrEmpty(recursiveDir) ? packageFile.GetProperty("NuGetRecursiveDir") : recursiveDir;
                 if (!string.IsNullOrEmpty(recursiveDir))
                 {
                     var newTargetPaths = new List<string>();
