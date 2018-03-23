@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.LibraryModel\NuGet.LibraryModel.csproj" />
-    <ProjectReference Include="..\NuGet.Frameworks\NuGet.Frameworks.csproj" />
     <ProjectReference Include="..\NuGet.Protocol\NuGet.Protocol.csproj" />
   </ItemGroup>
 
