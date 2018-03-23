@@ -378,7 +378,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_GetTfmSpecificContentForPackage"
           DependsOnTargets="$(TargetsForTfmSpecificContentInPackage)"
-          Returns="@(TfmSpecificPackageFile)">
+          Returns="@(TfmSpecificPackageFileWithRecursiveDir)">
+    <!-- The below workaround needs to be done due to msbuild bug https://github.com/Microsoft/msbuild/issues/3121 -->
+    <ItemGroup>
+      <TfmSpecificPackageFileWithRecursiveDir Include="@(TfmSpecificPackageFile)">
+        <NuGetRecursiveDir>%(TfmSpecificPackageFile.RecursiveDir)</NuGetRecursiveDir>
+      </TfmSpecificPackageFileWithRecursiveDir>
+    </ItemGroup>
   </Target>
 
   <Target Name="_GetDebugSymbolsWithTfm"

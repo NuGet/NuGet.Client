@@ -1712,9 +1712,10 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                Directory.CreateDirectory(Path.Combine(workingDirectory, "Extensions"));
+                Directory.CreateDirectory(Path.Combine(workingDirectory, "Extensions", "cs"));
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "hello world");
                 File.WriteAllText(Path.Combine(workingDirectory, "Extensions", "ext.txt"), "hello world again");
+                File.WriteAllText(Path.Combine(workingDirectory, "Extensions", "cs", "ext.cs.txt"), "hello world again");
 
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
@@ -1727,6 +1728,9 @@ namespace ClassLibrary
         <PackagePath>mycontent/$(TargetFramework)</PackagePath>
       </TfmSpecificPackageFile>
       <TfmSpecificPackageFile Include=""Extensions/ext.txt"" Condition=""'$(TargetFramework)' == 'net46'"">
+        <PackagePath>net46content</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include=""Extensions/**/ext.cs.txt"" Condition=""'$(TargetFramework)' == 'net46'"">
         <PackagePath>net46content</PackagePath>
       </TfmSpecificPackageFile>  
     </ItemGroup>
@@ -1758,8 +1762,9 @@ namespace ClassLibrary
                         var net46files = nupkgReader.GetFiles("net46content");
                         if (tfms.Length > 1)
                         {
-                            Assert.Equal(1, net46files.Count());
+                            Assert.Equal(2, net46files.Count());
                             Assert.Contains("net46content/ext.txt", net46files);
+                            Assert.Contains("net46content/cs/ext.cs.txt", net46files);
                         }
                         else
                         {
