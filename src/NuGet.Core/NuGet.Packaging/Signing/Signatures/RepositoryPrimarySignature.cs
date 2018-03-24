@@ -44,6 +44,13 @@ namespace NuGet.Packaging.Signing
             {
                 issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetPackageOwners, string.Join(", ", PackageOwners))));
             }
+
+            // TODO: Check v3 endpoint
+            // if (v3 endpoint does not match)
+            //  return Suspect
+            // if it was not reachable
+            //  warn
+
             return base.Verify(timestamp, settings, fingerprintAlgorithm, certificateExtraStore, issues);
         }
 #endif

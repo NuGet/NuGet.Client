@@ -18,6 +18,7 @@ namespace NuGet.Packaging.Signing
 
         public SignatureTrustAndValidityVerificationProvider()
         {
+            // TODO: Add list of allowed untrusted root
             _fingerprintAlgorithm = HashAlgorithmName.SHA256;
         }
 
@@ -39,33 +40,43 @@ namespace NuGet.Packaging.Signing
             var primarySignatureVerificationSummary = VerifyValidityAndTrust(signature, settings, certificateExtraStore, issues);
             var status = primarySignatureVerificationSummary.Status;
 
-            if (primarySignatureVerificationSummary.SignatureType == SignatureType.Repository &&
-                primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.SelfIssuedCertificate) &&
-                !IsSignaturePermittedToBeSelfIssued(signature))
+            if (status == SignatureVerificationStatus.Illegal &&
+                primarySignatureVerificationSummary.Flags == SignatureVerificationStatusFlags.UntrustedRoot &&
+                IsSignaturePermittedToChainToUntrustedRoot(signature))
             {
-                return new SignedPackageVerificationResult(SignatureVerificationStatus.Illegal, signature, issues);
+                // TODO: Fix, if this is valid there should not be a warning added to the issues, maybe update the settings to allow it in verification?
+                status = SignatureVerificationStatus.Valid;
             }
 
-            if (ShouldFallbackToRepositoryCountersignature(primarySignatureVerificationSummary))
+            if (settings.AllowAlwaysVerifyingCountersignature || ShouldFallbackToRepositoryCountersignature(primarySignatureVerificationSummary))
             {
                 var counterSignature = RepositoryCountersignature.GetRepositoryCountersignature(signature);
                 if (counterSignature != null)
                 {
-                    var countersignatureVerificationSummary = VerifyValidityAndTrust(counterSignature, settings, certificateExtraStore, issues);
+                    var countersignatureIssues = new List<SignatureLog>();
+                    // TODO: Add a warning saying that we fallback to the countersignature?
+
+                    var countersignatureVerificationSummary = VerifyValidityAndTrust(counterSignature, settings, certificateExtraStore, countersignatureIssues);
                     status = countersignatureVerificationSummary.Status;
 
-                    if (primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.SelfIssuedCertificate) &&
-                        !IsSignaturePermittedToBeSelfIssued(counterSignature))
+                    if (status == SignatureVerificationStatus.Illegal &&
+                        countersignatureVerificationSummary.Flags == SignatureVerificationStatusFlags.UntrustedRoot &&
+                        IsSignaturePermittedToChainToUntrustedRoot(counterSignature))
                     {
-                        status = SignatureVerificationStatus.Illegal;
+                        // TODO: Fix, if this is valid there should not be a warning added to the issues, maybe update the settings to allow it in verification?
+                        status = SignatureVerificationStatus.Valid;
                     }
-                    else if (primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired))
+
+                    if (primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired))
                     {
                         if (!Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureVerificationSummary.Timestamp))
                         {
+                            issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3011, Strings.SignatureNotTimeValid));
                             status = SignatureVerificationStatus.Illegal;
                         }
                     }
+
+                    issues = countersignatureIssues;
                 }
             }
 
@@ -115,8 +126,9 @@ namespace NuGet.Packaging.Signing
                 primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.GeneralChainBuildingIssues));
         }
 
-        private bool IsSignaturePermittedToBeSelfIssued(Signature signature)
+        private bool IsSignaturePermittedToChainToUntrustedRoot(Signature signature)
         {
+            // TODO: Check if signature is in list of allowd untrusted root
             return true;
         }
 

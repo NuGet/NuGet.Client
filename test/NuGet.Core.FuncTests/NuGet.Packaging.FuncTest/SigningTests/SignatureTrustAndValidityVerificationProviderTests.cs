@@ -249,7 +249,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: false,
+                allowUntrustedRoot: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
@@ -296,7 +296,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: false,
+                allowUntrustedRoot: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: false,
@@ -362,7 +362,7 @@ namespace NuGet.Packaging.FuncTest
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInVSClient_Warns()
         {
             // Arrange
-            var setting = SignedPackageVerifierSettings.VSClientDefaultPolicy;
+            var setting = SignedPackageVerifierSettings.AcceptModeDefaultPolicy;
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
@@ -399,7 +399,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: true,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: false,
+                allowUntrustedRoot: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
@@ -422,7 +422,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: false,
+                allowUntrustedRoot: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
@@ -486,7 +486,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: false,
+                allowUntrustedRoot: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
@@ -523,7 +523,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: false,
+                allowUntrustedRoot: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: true,
@@ -549,7 +549,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: true,
+                allowUntrustedRoot: true,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: true,
@@ -575,7 +575,7 @@ namespace NuGet.Packaging.FuncTest
                allowUnsigned: false,
                allowIllegal: false,
                 allowUntrusted: false,
-               allowUntrustedSelfIssuedCertificate: false,
+               allowUntrustedRoot: false,
                allowIgnoreTimestamp: false,
                allowMultipleTimestamps: false,
                allowNoTimestamp: true,

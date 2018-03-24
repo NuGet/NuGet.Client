@@ -68,6 +68,8 @@ namespace NuGet.Packaging.Signing
         ///     NoIssuanceChainPolicy
         /// </summary>
         GeneralChainBuildingIssues,
+        // TODO: Should we split this errors to only have soft-illegal chain building issues?
+        // Are there any hard-illegal issues in this list currently?
 
         /// <summary>
         /// Signing certificate was revoked
@@ -77,7 +79,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Signing certificate 
         /// </summary>
-        SelfIssuedCertificate,
+        UntrustedRoot,
 
         /// <summary>
         /// Revocation information was unavailable or was offline for the signer certificate
