@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,6 +17,13 @@ namespace NuGet.SolutionRestoreManager
         /// Base intermediate path of the project.
         /// </summary>
         string BaseIntermediatePath { get; }
+
+        //  TODO: Update project-system to add this property, and figure out how to sync the updates
+        //  https://github.com/dotnet/project-system/blob/master/src/Microsoft.VisualStudio.ProjectSystem.Managed.VS/ProjectSystem/VS/NuGet/ProjectRestoreInfo.cs
+        /// <summary>
+        /// MSBuildProjectExtensionsPath of the project
+        /// </summary>
+        string MSBuildProjectExtensionsPath { get; }
 
         /// <summary>
         /// Target frameworks metadata.
