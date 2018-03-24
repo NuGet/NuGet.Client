@@ -115,15 +115,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The BaseIntermediateOutputPath MSBuild property could not be found for project &apos;{0}&apos;..
-        /// </summary>
-        public static string BaseIntermediateOutputPathNotFound {
-            get {
-                return ResourceManager.GetString("BaseIntermediateOutputPathNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to NuGet operation failed.
         /// </summary>
         public static string ConfigErrorDialogBoxTitle {
@@ -336,6 +327,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string InstallingPackage {
             get {
                 return ResourceManager.GetString("InstallingPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} MSBuild property could not be found for project &apos;{1}&apos;..
+        /// </summary>
+        public static string MSBuildPropertyNotFound {
+            get {
+                return ResourceManager.GetString("MSBuildPropertyNotFound", resourceCulture);
             }
         }
         

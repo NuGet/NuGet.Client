@@ -80,7 +80,6 @@ namespace Dotnet.Integration.Test
             var projectFileName = Path.Combine(workingDirectory, projectName + ".csproj");
 
             var restorePackagesPath = Path.Combine(workingDirectory, "tools", "packages");
-            var baseIntermediatepath = Path.Combine(workingDirectory);
             var restoreSolutionDirectory = workingDirectory;
             var packageReference = string.Empty;
             foreach (var package in packages) {
@@ -94,7 +93,6 @@ namespace Dotnet.Integration.Test
                 <RuntimeIdentifier>{rid} </RuntimeIdentifier> 
                 <!-- Things that do change-->
                 <RestorePackagesPath>{restorePackagesPath}</RestorePackagesPath>
-                <BaseIntermediateOutputPath>{baseIntermediatepath}</BaseIntermediateOutputPath>
                 <RestoreSolutionDirectory>{restoreSolutionDirectory}</RestoreSolutionDirectory>
     
                 <RestoreSources>{source}</RestoreSources>
