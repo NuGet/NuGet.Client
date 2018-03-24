@@ -15,10 +15,10 @@ namespace NuGet.Commands
 {
     public class NoOpRestoreResult : RestoreResult
     {
-        public NoOpRestoreResult(bool success, LockFile lockFile, LockFile previousLockFile, string lockFilePath, CacheFile cacheFile, string cacheFilePath, ProjectStyle projectStyle, TimeSpan elapsedTime) :
+        public NoOpRestoreResult(bool success, LockFile lockFile, LockFile previousLockFile, byte[] previousLockFileHash, string lockFilePath, CacheFile cacheFile, string cacheFilePath, ProjectStyle projectStyle, TimeSpan elapsedTime) :
             base(success : success, restoreGraphs : null, compatibilityCheckResults : new List<CompatibilityCheckResult>() , 
-                msbuildFiles : null, lockFile : lockFile, previousLockFile : previousLockFile, lockFilePath: lockFilePath,
-                cacheFile: cacheFile, cacheFilePath: cacheFilePath, projectStyle: projectStyle, elapsedTime: elapsedTime)
+                msbuildFiles : null, lockFile : lockFile, previousLockFile : previousLockFile, previousLockFileHash : previousLockFileHash,
+                lockFilePath: lockFilePath, cacheFile: cacheFile, cacheFilePath: cacheFilePath, projectStyle: projectStyle, elapsedTime: elapsedTime)
         {
         }
 

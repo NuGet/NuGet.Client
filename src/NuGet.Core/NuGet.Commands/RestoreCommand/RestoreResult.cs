@@ -3,9 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -52,6 +55,11 @@ namespace NuGet.Commands
         public LockFile PreviousLockFile { get; }
 
         /// <summary>
+        /// The SHA256 hash of the existing lock file. This is null if there is no previous lock file.
+        /// </summary>
+        public byte[] PreviousLockFileHash { get; }
+
+        /// <summary>
         /// Restore time
         /// </summary>
         public TimeSpan ElapsedTime { get; }
@@ -72,6 +80,7 @@ namespace NuGet.Commands
             IEnumerable<MSBuildOutputFile> msbuildFiles,
             LockFile lockFile,
             LockFile previousLockFile,
+            byte[] previousLockFileHash,
             string lockFilePath,
             CacheFile cacheFile,
             string cacheFilePath,
@@ -85,6 +94,7 @@ namespace NuGet.Commands
             LockFile = lockFile;
             LockFilePath = lockFilePath;
             PreviousLockFile = previousLockFile;
+            PreviousLockFileHash = previousLockFileHash;
             CacheFile = cacheFile;
             CacheFilePath = cacheFilePath;
             ProjectStyle = projectStyle;
@@ -142,7 +152,7 @@ namespace NuGet.Commands
                 toolCommit : isTool);
         }
 
-        private async Task CommitAssetsFileAsync(
+        private static async Task CommitAssetsFileAsync(
             LockFileFormat lockFileFormat,
             IRestoreResult result,
             ILogger log,
@@ -157,23 +167,63 @@ namespace NuGet.Commands
 
             BuildAssetsUtils.WriteFiles(buildFilesToWrite, log);
 
+            // Don't need to write the lock file out if it doesn't exist
+            var lockFileChanged = result.LockFilePath != null && result.LockFile != null;
+
             // Avoid writing out the lock file if it is the same to avoid triggering an intellisense
             // update on a restore with no actual changes.
-            if (result.PreviousLockFile == null
-                || !result.PreviousLockFile.Equals(result.LockFile))
+            if (lockFileChanged
+                && result.PreviousLockFile != null
+                && result.PreviousLockFile.Equals(result.LockFile))
             {
+                lockFileChanged = false;
+            }
+
+            var lockFileOutput = string.Empty;
+            if (lockFileChanged)
+            {
+                using (var stringWriter = new StringWriter())
+                {
+                    lockFileFormat.Write(stringWriter, result.LockFile);
+                    lockFileOutput = stringWriter.ToString();
+                }
+
+                if (result.PreviousLockFileHash != null)
+                {
+                    // There have been persistent bugs in LockFile.Equals, and the logic is fairly fragile
+                    // when extended. Given the fact that writing a lock file causes design-time builds,
+                    // which can be very expensive, we have a second line of defense -- even if we think the
+                    // lock files are not the same, check the hash of the two files to make extra sure it
+                    // really is dirty.
+                    using (var hasher = SHA256.Create())
+                    {
+                        var hash = hasher.ComputeHash(Encoding.ASCII.GetBytes(lockFileOutput));
+                        if (!hash.Zip(result.PreviousLockFileHash, (o, n) => o != n).Any(f => f))
+                        {
+                            lockFileChanged = false;
+                        }
+                    }
+                }
+            }
+
+            if (lockFileChanged)
+            {
+                void writer(string outputPath)
+                {
+                    // Create the directory if it does not exist
+                    var fileInfo = new FileInfo(outputPath);
+                    fileInfo.Directory.Create();
+
+                    File.WriteAllText(outputPath, lockFileOutput);
+                }
+
                 if (toolCommit)
                 {
-                    if (result.LockFilePath != null && result.LockFile != null)
-                    {   
-                        log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_ToolWritingLockFile,
                         result.LockFilePath));
 
-                        await FileUtility.ReplaceWithLock(
-                            (outputPath) => lockFileFormat.Write(outputPath, result.LockFile),
-                            result.LockFilePath);
-                    }
+                    await FileUtility.ReplaceWithLock(writer, result.LockFilePath);
                 }
                 else
                 {
@@ -181,25 +231,14 @@ namespace NuGet.Commands
                         Strings.Log_WritingLockFile,
                         result.LockFilePath));
 
-                    FileUtility.Replace(
-                        (outputPath) => lockFileFormat.Write(outputPath, result.LockFile),
-                        result.LockFilePath);
+                    FileUtility.Replace(writer, result.LockFilePath);
                 }
             }
             else
             {
-                if (toolCommit)
-                {
-                    log.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_ToolSkippingAssetsFile,
-                        result.LockFilePath));
-                }
-                else
-                {
-                    log.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_SkippingAssetsFile,
-                        result.LockFilePath));
-                }
+                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    toolCommit ? Strings.Log_ToolSkippingAssetsFile : Strings.Log_SkippingAssetsFile,
+                    result.LockFilePath));
             }
         }
 

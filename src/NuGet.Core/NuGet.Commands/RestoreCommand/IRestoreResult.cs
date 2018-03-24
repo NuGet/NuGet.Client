@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -25,6 +25,11 @@ namespace NuGet.Commands
         /// The existing lock file. This is null if no lock file was provided on the <see cref="RestoreRequest"/>.
         /// </summary>
         LockFile PreviousLockFile { get; }
+
+        /// <summary>
+        /// The SHA256 hash of the existing lock file. This is null if there is no previous lock file.
+        /// </summary>
+        byte[] PreviousLockFileHash { get; }
 
         /// <summary>
         /// Props and targets files to be written to disk.

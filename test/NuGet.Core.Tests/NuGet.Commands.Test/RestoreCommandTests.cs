@@ -382,9 +382,9 @@ namespace NuGet.Commands.Test
                     logger)
                 {
                     LockFilePath = lockFilePath,
-                    IsLowercasePackagesDirectory = isLowercase,
-                    ExistingLockFile = lockFileFormat.Read(lockFilePath)
+                    IsLowercasePackagesDirectory = isLowercase
                 };
+                requestB.SetExistingLockFile(lockFileFormat.Read(lockFilePath), null);
                 var commandB = new RestoreCommand(requestB);
                 var resultB = await commandB.ExecuteAsync();
                 await resultB.CommitAsync(logger, CancellationToken.None);

@@ -29,6 +29,7 @@ namespace NuGet.Commands.Test
                     compatibilityCheckResults: null,
                     lockFile: new LockFile(),
                     previousLockFile: null, // different lock file
+                    previousLockFileHash: null,
                     lockFilePath: path,
                     msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
                     cacheFile: null,
@@ -62,6 +63,7 @@ namespace NuGet.Commands.Test
                     compatibilityCheckResults: null,
                     lockFile: new LockFile(),
                     previousLockFile: new LockFile(), // same lock file
+                    previousLockFileHash: null,
                     lockFilePath: path,
                     msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
                     cacheFile: null,
@@ -96,6 +98,7 @@ namespace NuGet.Commands.Test
                     compatibilityCheckResults: null,
                     lockFile: new LockFile(),
                     previousLockFile: null, // different lock file
+                    previousLockFileHash: null,
                     lockFilePath: path,
                     msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
                     cacheFile: new CacheFile("NotSoRandomString"),
@@ -134,6 +137,7 @@ namespace NuGet.Commands.Test
                     success: true,
                     lockFile: new LockFile(),
                     previousLockFile: new LockFile(),
+                    previousLockFileHash: null,
                     lockFilePath: path,
                     cacheFile: new CacheFile("NotSoRandomString"),
                     cacheFilePath: cachePath,
