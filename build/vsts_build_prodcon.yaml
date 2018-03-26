@@ -1,0 +1,56 @@
+name: $(SourceBranchName)-$(Date:yyyyMMdd)-$(rev:rr)
+phases:
+
+- phase: Initialize_Build
+  queue:
+    name: VSEng-MicroBuildVS2017
+    timeoutInMinutes: 60
+    demands: 
+      - DotNetFramework
+      - msbuild
+  
+  steps:  
+  # - task: PowerShell@1
+  #   displayName: "Update Build Number"
+  #   name: "updatebuildnumber"
+  #   inputs:
+  #     scriptType: "inlineScript"
+  #     inlineScript: |
+  #       $revision = Get-Content $env:BUILDCOUNTERFILE
+  #       $newBuildCounter = [System.Decimal]::Parse($revision)
+  #       $newBuildCounter++
+  #       Set-Content $env:BUILDCOUNTERFILE $newBuildCounter
+  #       Write-Host "##vso[build.updatebuildnumber]$newBuildCounter"
+  #       Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
+
+  - task: PowerShell@1
+    displayName: "Find NuGet.Client Build"
+    inputs:
+      scriptType: "inlineScript"
+      arguments: "-PersonalAccessToken $(VstsPersonalAccessToken) -RootUrl $(VstsRestApiRootUrl)"
+      inlineScript: |
+        Param([string]$PersonalAccessToken,[string]$RootUrl)
+        $branchName = $env:NUGET_CLIENT_BRANCH
+        $buildNum = $env:NUGET_CLIENT_BUILD_NUMBER
+        $url = '{0}/build/builds?definitions=8117&statusFilter=completed&resultFilter=succeeded,partiallySucceeded&$top=1&tagFilters={1}&buildNumber={2}&api-version=2.0' -f $RootUrl, $branchName, $buildNum
+        $Base64Token = [System.Convert]::ToBase64String([char[]]":$PersonalAccessToken")
+        $Headers = @{ Authorization = 'Basic {0}' -f $Base64Token; }        
+        $builds = Invoke-RestMethod -Uri $url -Method GET -Headers $Headers
+        $desiredBuild =  $builds.value
+        Write-Host $desiredBuild
+        $sourceVersion = $desiredBuild.sourceVersion
+        $buildNum = $desiredBuild.buildNumber
+        Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_BUILDUNMBER]$buildNum"
+        Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_BRANCH]$branchName"
+        Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_SOURCEVERSION]$sourceVersion"
+        Write-Host $sourceVersion, $branchName, $buildNum
+        Write-Host "$env:DropRoot\$branchName\$buildNum\artifacts\VS15\Nupkgs"
+
+  - task: PowerShell@1
+    displayName: "Add Build Tags"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_BUILDUNMBER"
+        Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_BRANCH"
+        Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_SOURCEVERSION"
