@@ -28,19 +28,26 @@ phases:
         $sourceVersion = $desiredBuild.sourceVersion
         $buildNumber = $desiredBuild.buildNumber
         $NupkgDirectory = "$env:DropRoot\$branchName\$buildNumber\artifacts\VS15\Nupkgs"
-        Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_BUILDUNMBER]$buildNumber"
+        Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_BUILD_NUMBER]$buildNumber"
         Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_BRANCH]$branchName"
         Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_SOURCEVERSION]$sourceVersion"
         Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_NUPKGDIRECTORY]$NupkgDirectory"
         Write-Host $sourceVersion, $branchName, $buildNumber
         Write-Host $NupkgDirectory
+  
+  - task: PowerShell@1
+    displayName: "Print Environment Variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        gci env:* | sort-object name
 
   - task: PowerShell@1
     displayName: "Add Build Tags"
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_BUILDUNMBER"
+        Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_BUILD_NUMBER"
         Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_BRANCH"
         Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_SOURCEVERSION"
 
@@ -50,5 +57,5 @@ phases:
       solution: 'build\\publish.proj'
       msbuildVersion: 15.0
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/p:FeedUrl=$(PB_PublishBlobFeedUrl) /p:FeedApiKey=$(PB_PublishBlobFeedKey) /p:ManifestBranch=$(NUGET_CLIENT_BRANCH) /p:ManifestCommit=$(NUGET_CLIENT_SOURCEVERSION) /p:ManifestBuildId=$(NUGET_CLIENT_BUILDUNMBER)'
+      msbuildArguments: '/p:FeedUrl=$(PB_PublishBlobFeedUrl) /p:FeedApiKey=$(PB_PublishBlobFeedKey) /p:ManifestBranch=$(NUGET_CLIENT_BRANCH) /p:ManifestCommit=$(NUGET_CLIENT_SOURCEVERSION) /p:ManifestBuildId=$(NUGET_CLIENT_BUILD_NUMBER)'
     condition:  and(succeeded(), contains(variables['PB_PublishType'], 'blob')) 

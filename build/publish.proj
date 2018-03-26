@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <Target Name="Build">
-    <Error Text="Package output directory '$(NupkgOutputDirectory)' does not exist."
+    <Error Text="Package output directory '$(NUGET_CLIENT_NUPKGDIRECTORY)' does not exist."
           Condition="!Exists($(NUGET_CLIENT_NUPKGDIRECTORY))" />
 
     <Error Text="The FeedUrl property must be passed."
