@@ -420,7 +420,8 @@ Valid from:</comment>
     <value>The timestamp signing certificate is not yet valid.</value>
   </data>
   <data name="InvalidPackageSignatureFileEntry" xml:space="preserve">
-    <value>The package signature file entry is invalid.</value>
+    <value>The package signature file entry is invalid. {0}</value>
+    <comment>{0} - error message suffix containing the reason for failure.</comment>
   </data>
   <data name="InvalidPrimarySignature" xml:space="preserve">
     <value>The primary signature is invalid.</value>

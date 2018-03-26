@@ -521,7 +521,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature file entry is invalid..
+        ///   Looks up a localized string similar to The package signature file entry is invalid. {0}.
         /// </summary>
         internal static string InvalidPackageSignatureFileEntry {
             get {
