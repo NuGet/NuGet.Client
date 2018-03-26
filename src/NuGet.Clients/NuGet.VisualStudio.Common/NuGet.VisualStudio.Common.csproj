@@ -83,7 +83,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="15.0.198-pre" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj" />
     <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
   </ItemGroup>
   <ItemGroup>

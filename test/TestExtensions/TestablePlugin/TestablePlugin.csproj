@@ -1,18 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.0;net46</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
     <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
     <AssemblyName>Plugin.Testable</AssemblyName>
   </PropertyGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets" />
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj" />
   </ItemGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
