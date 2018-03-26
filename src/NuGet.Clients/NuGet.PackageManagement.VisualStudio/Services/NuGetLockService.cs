@@ -46,30 +46,33 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (_lockCount.Value == 0)
             {
-                return await _joinableTaskFactory.RunAsync(async delegate
+                return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    using (_joinableTaskCollection.Join())
+                    return await _joinableTaskFactory.RunAsync(async delegate
                     {
-                        await _semaphore.WaitAsync(token);
-                    }
+                        using (_joinableTaskCollection.Join())
+                        {
+                            await _semaphore.WaitAsync(token);
+                        }
 
-                    // Once this thread acquired the lock then increment lockCount
-                    _lockCount.Value++;
+                        // Once this thread acquired the lock then increment lockCount
+                        _lockCount.Value++;
 
-                    try
-                    {
-                        return await action();
-                    }
-                    finally
-                    {
                         try
                         {
-                            _semaphore.Release();
+                            return await action();
                         }
-                        catch (ObjectDisposedException) { }
+                        finally
+                        {
+                            try
+                            {
+                                _semaphore.Release();
+                            }
+                            catch (ObjectDisposedException) { }
 
-                        _lockCount.Value--;
-                    }
+                            _lockCount.Value--;
+                        }
+                    });
                 });
             }
             else

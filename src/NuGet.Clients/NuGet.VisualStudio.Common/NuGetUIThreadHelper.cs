@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using Microsoft;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -91,6 +92,14 @@ namespace NuGet.VisualStudio
                 var joinableTaskContext = new JoinableTaskContext(mainThread, synchronizationContext);
                 return joinableTaskContext.Factory;
             });
+        }
+
+        public static void SetCustomJoinableTaskFactory(JoinableTaskFactory joinableTaskFactory)
+        {
+            Assumes.Present(joinableTaskFactory);
+
+            // This is really just a test-hook
+            _joinableTaskFactory = new Lazy<JoinableTaskFactory>(() => joinableTaskFactory);
         }
 
         private static JoinableTaskFactory GetThreadHelperJoinableTaskFactorySafe()

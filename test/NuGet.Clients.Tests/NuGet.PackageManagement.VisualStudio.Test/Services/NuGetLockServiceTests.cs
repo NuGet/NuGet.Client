@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.VisualStudio;
 using Test.Utility.Threading;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
@@ -27,6 +28,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _jtf = fixture.JoinableTaskFactory;
 
             _lockService = new NuGetLockService(fixture.JoinableTaskFactory.Context);
+            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_jtf);
             Assert.False(_lockService.IsLockHeld);
         }
 
