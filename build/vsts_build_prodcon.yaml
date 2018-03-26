@@ -1,4 +1,4 @@
-name: $(SourceBranchName)-$(Date:yyyyMMdd)-$(rev:rr)
+name: $(rev:rr)
 phases:
 
 - phase: Initialize_Build
