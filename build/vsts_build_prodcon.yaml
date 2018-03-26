@@ -1,50 +1,39 @@
 name: $(rev:rr)
 phases:
 
-- phase: Initialize_Build
+- phase: NuGet_Client_Product_Construction
   queue:
     name: VSEng-MicroBuildVS2017
-    timeoutInMinutes: 60
+    timeoutInMinutes: 30
     demands: 
       - DotNetFramework
       - msbuild
   
-  steps:  
-  # - task: PowerShell@1
-  #   displayName: "Update Build Number"
-  #   name: "updatebuildnumber"
-  #   inputs:
-  #     scriptType: "inlineScript"
-  #     inlineScript: |
-  #       $revision = Get-Content $env:BUILDCOUNTERFILE
-  #       $newBuildCounter = [System.Decimal]::Parse($revision)
-  #       $newBuildCounter++
-  #       Set-Content $env:BUILDCOUNTERFILE $newBuildCounter
-  #       Write-Host "##vso[build.updatebuildnumber]$newBuildCounter"
-  #       Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
-
+  steps:
   - task: PowerShell@1
     displayName: "Find NuGet.Client Build"
     inputs:
       scriptType: "inlineScript"
-      arguments: "-PersonalAccessToken $(VstsPersonalAccessToken) -RootUrl $(VstsRestApiRootUrl)"
+      arguments: "-PersonalAccessToken $(VstsPersonalAccessToken) -RootUrl $(VstsRestApiRootUrl) -DefinitionId $(NuGetClientDefinitionId)"
       inlineScript: |
-        Param([string]$PersonalAccessToken,[string]$RootUrl)
+        Param([string]$PersonalAccessToken, [string]$RootUrl, [string]$DefinitionId)
         $branchName = $env:NUGET_CLIENT_BRANCH
-        $buildNum = $env:NUGET_CLIENT_BUILD_NUMBER
-        $url = '{0}/build/builds?definitions=8117&statusFilter=completed&resultFilter=succeeded,partiallySucceeded&$top=1&tagFilters={1}&buildNumber={2}&api-version=2.0' -f $RootUrl, $branchName, $buildNum
+        $buildNumber = $env:NUGET_CLIENT_BUILD_NUMBER
+        $url = '{0}/build/builds?definitions={1}&statusFilter=completed&resultFilter=succeeded,partiallySucceeded&$top=1&tagFilters={2}&buildNumber={3}&api-version=2.0' -f $RootUrl, $definitionId, $branchName, $buildNumber
         $Base64Token = [System.Convert]::ToBase64String([char[]]":$PersonalAccessToken")
         $Headers = @{ Authorization = 'Basic {0}' -f $Base64Token; }        
         $builds = Invoke-RestMethod -Uri $url -Method GET -Headers $Headers
         $desiredBuild =  $builds.value
         Write-Host $desiredBuild
         $sourceVersion = $desiredBuild.sourceVersion
-        $buildNum = $desiredBuild.buildNumber
-        Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_BUILDUNMBER]$buildNum"
+        $buildNumber = $desiredBuild.buildNumber
+        $NupkgDirectory = "$env:DropRoot\$branchName\$buildNumber\artifacts\VS15\Nupkgs"
+        Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_BUILDUNMBER]$buildNumber"
         Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_BRANCH]$branchName"
         Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_SOURCEVERSION]$sourceVersion"
-        Write-Host $sourceVersion, $branchName, $buildNum
-        Write-Host "$env:DropRoot\$branchName\$buildNum\artifacts\VS15\Nupkgs"
+        Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_NUPKGDIRECTORY]$NupkgDirectory"
+        Write-Host $sourceVersion, $branchName, $buildNumber
+        Write-Host $NupkgDirectory
 
   - task: PowerShell@1
     displayName: "Add Build Tags"
@@ -54,3 +43,12 @@ phases:
         Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_BUILDUNMBER"
         Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_BRANCH"
         Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_SOURCEVERSION"
+
+  - task: MSBuild@1
+    displayName: "Publish Artifacts to BlobFeed"
+    inputs:
+      solution: 'build\\publish.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/p:FeedUrl=$(PB_PublishBlobFeedUrl) /p:FeedApiKey=$(PB_PublishBlobFeedKey) /p:ManifestBranch=$(NUGET_CLIENT_BRANCH) /p:ManifestCommit=$(NUGET_CLIENT_SOURCEVERSION) /p:ManifestBuildId=$(NUGET_CLIENT_BUILDUNMBER)'
+    condition:  and(succeeded(), contains(variables['PB_PublishType'], 'blob')) 
