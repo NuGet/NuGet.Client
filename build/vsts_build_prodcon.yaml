@@ -49,6 +49,14 @@ phases:
       inlineScript: |
         gci env:* | sort-object name
 
+  - task: MSBuild@1
+    displayName: "Publish Artifacts to BlobFeed"
+    inputs:
+      solution: 'build\\publish.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/p:FeedUrl=$(PB_PublishBlobFeedUrl) /p:FeedApiKey=$(PB_PublishBlobFeedKey) /p:ManifestBranch=$(NUGET_CLIENT_BRANCH) /p:ManifestCommit=$(NUGET_CLIENT_SOURCEVERSION) /p:ManifestBuildId=$(NUGET_CLIENT_BUILD_NUMBER)'
+
   - task: PowerShell@1
     displayName: "Add Build Tags"
     inputs:
@@ -57,11 +65,3 @@ phases:
         Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_BUILD_NUMBER"
         Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_BRANCH"
         Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_SOURCEVERSION"
-
-  - task: MSBuild@1
-    displayName: "Publish Artifacts to BlobFeed"
-    inputs:
-      solution: 'build\\publish.proj'
-      msbuildVersion: 15.0
-      configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/p:FeedUrl=$(PB_PublishBlobFeedUrl) /p:FeedApiKey=$(PB_PublishBlobFeedKey) /p:ManifestBranch=$(NUGET_CLIENT_BRANCH) /p:ManifestCommit=$(NUGET_CLIENT_SOURCEVERSION) /p:ManifestBuildId=$(NUGET_CLIENT_BUILD_NUMBER)'
