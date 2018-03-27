@@ -168,7 +168,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
             {
-                var payload = new HandshakeRequest(ProtocolConstants.CurrentVersion, ProtocolConstants.CurrentVersion);
+                var payload = new HandshakeRequest(ProtocolConstants.PluginVersion100, ProtocolConstants.PluginVersion100);
                 var message = dispatcher.CreateMessage(
                     MessageType.Request,
                     MessageMethod.Handshake,

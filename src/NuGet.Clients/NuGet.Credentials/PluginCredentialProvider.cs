@@ -196,7 +196,7 @@ namespace NuGet.Credentials
             string stdOut = null;
             var exitCode = Execute(startInfo, cancellationToken, out stdOut);
 
-            PluginCredentialResponseExitCode status = (PluginCredentialResponseExitCode)exitCode;
+            var status = (PluginCredentialResponseExitCode)exitCode;
 
             PluginCredentialResponse credentialResponse;
             try

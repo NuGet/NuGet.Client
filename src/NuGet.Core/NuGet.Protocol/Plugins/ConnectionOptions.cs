@@ -144,7 +144,7 @@ namespace NuGet.Protocol.Plugins
 
             return new ConnectionOptions(
                 protocolVersion: ProtocolConstants.CurrentVersion,
-                minimumProtocolVersion: ProtocolConstants.CurrentVersion,
+                minimumProtocolVersion: ProtocolConstants.PluginVersion100,
                 handshakeTimeout: handshakeTimeout,
                 requestTimeout: requestTimeout);
         }

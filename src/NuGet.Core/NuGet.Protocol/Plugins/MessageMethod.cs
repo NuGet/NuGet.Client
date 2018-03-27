@@ -91,6 +91,11 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Set log level
         /// </summary>
-        SetLogLevel
+        SetLogLevel,
+
+        /// <summary>
+        /// Get operation claims
+        /// </summary>
+        GetAuthCredentials,
     }
 }

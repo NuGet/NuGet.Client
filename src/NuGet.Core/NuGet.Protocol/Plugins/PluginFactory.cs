@@ -137,6 +137,19 @@ namespace NuGet.Protocol.Plugins
             return new NoOpDisposePlugin(lazyTask.Value.Result);
         }
 
+        public void DisposePlugin(IPlugin plugin)
+        {
+            Lazy<Task<IPlugin>> val;
+            _plugins.TryRemove(plugin.FilePath, out val);
+            if (val.IsValueCreated)
+            {
+                if (val.Value.IsCompleted)  // nothing to dispose of if completed
+                {
+                    val.Value.Result.Dispose();
+                }
+            }
+        }
+
         private async Task<IPlugin> CreatePluginAsync(
             string filePath,
             IEnumerable<string> arguments,

@@ -11,7 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Credentials;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 
 namespace NuGet.Commands
 {
@@ -41,7 +43,34 @@ namespace NuGet.Commands
             return await RunAsync(restoreContext, CancellationToken.None);
         }
 
-        /// <summary>
+        private static async Task SetDefaultCredentialProvider(ILogger logger)
+        {
+            if (HttpHandlerResourceV3.CredentialService == null)
+            {
+                HttpHandlerResourceV3.CredentialService = new CredentialService(await GetCredentialProviders(logger), nonInteractive: false);
+            }
+        }
+
+        // Add only the secure plugin. This will be done when there's nothing set
+        private static async Task<IEnumerable<Credentials.ICredentialProvider>> GetCredentialProviders(ILogger logger )
+        {
+            var providers = new List<Credentials.ICredentialProvider>();
+
+            var securePluginProviders = await (new SecureCredentialProviderBuilder(logger)).BuildAll();
+
+            providers.AddRange(securePluginProviders);
+
+            if (securePluginProviders.Any())
+            {
+                if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
+                {
+                    providers.Add(new DefaultCredentialsCredentialProvider());
+                }
+            }
+            return providers;
+        }
+
+        // <summary>
         /// Execute and commit restore requests.
         /// </summary>
         private static async Task<IReadOnlyList<RestoreSummary>> RunAsync(
@@ -50,6 +79,8 @@ namespace NuGet.Commands
             CancellationToken token)
         {
             var maxTasks = GetMaxTaskCount(restoreContext);
+
+            await SetDefaultCredentialProvider(restoreContext.Log);
 
             var log = restoreContext.Log;
 
@@ -105,6 +136,8 @@ namespace NuGet.Commands
             RestoreArgs restoreContext)
         {
             var maxTasks = GetMaxTaskCount(restoreContext);
+
+            await SetDefaultCredentialProvider(restoreContext.Log);
 
             var log = restoreContext.Log;
 
