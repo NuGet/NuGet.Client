@@ -248,22 +248,11 @@ namespace NuGet.SolutionRestoreManager
                 crossTargeting = true;
             }
 
-            //  Fall back to BaseIntermediatePath if MSBuildProjectExtensionsPath isn't set
-            string outputPath;
-            if (string.IsNullOrEmpty(projectRestoreInfo.MSBuildProjectExtensionsPath))
-            {
-                outputPath = Path.GetFullPath(
+        
+            var outputPath = Path.GetFullPath(
                                 Path.Combine(
                                     projectDirectory,
                                     projectRestoreInfo.BaseIntermediatePath));
-            }
-            else
-            {
-                outputPath = Path.GetFullPath(
-                                Path.Combine(
-                                    projectDirectory,
-                                    projectRestoreInfo.MSBuildProjectExtensionsPath));
-            }
 
             var projectName = GetPackageId(projectNames, projectRestoreInfo.TargetFrameworks);
 
