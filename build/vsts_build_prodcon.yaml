@@ -64,4 +64,4 @@ phases:
       solution: 'build\\publish.proj'
       msbuildVersion: 15.0
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/p:FeedUrl=$(PB_PublishBlobFeedUrl) /p:FeedApiKey=$(dotnetfeed-storage-access-key-1) /p:ManifestBranch=$(NUGET_CLIENT_BRANCH) /p:ManifestCommit=$(NUGET_CLIENT_SOURCEVERSION) /p:ManifestBuildId=$(NUGET_CLIENT_BUILD_NUMBER)'
+      msbuildArguments: '/p:FeedUrl=$(PB_PublishBlobFeedUrl) /p:FeedApiKey=$(PB_PublishBlobFeedKey) /p:ManifestBranch=$(NUGET_CLIENT_BRANCH) /p:ManifestCommit=$(NUGET_CLIENT_SOURCEVERSION) /p:ManifestBuildId=$(NUGET_CLIENT_BUILD_NUMBER)'
