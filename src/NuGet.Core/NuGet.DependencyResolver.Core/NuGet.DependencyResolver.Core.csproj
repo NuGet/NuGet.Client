@@ -2,11 +2,10 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.6</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574</NoWarn>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <RootNamespace>NuGet.DependencyResolver</RootNamespace>
@@ -21,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.LibraryModel\NuGet.LibraryModel.csproj" />
-    <ProjectReference Include="..\NuGet.Frameworks\NuGet.Frameworks.csproj" />
     <ProjectReference Include="..\NuGet.Protocol\NuGet.Protocol.csproj" />
   </ItemGroup>
 
