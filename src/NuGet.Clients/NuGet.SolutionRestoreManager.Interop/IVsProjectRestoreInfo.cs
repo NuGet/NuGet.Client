@@ -14,16 +14,10 @@ namespace NuGet.SolutionRestoreManager
     public interface IVsProjectRestoreInfo
     {
         /// <summary>
-        /// Base intermediate path of the project.
+        /// The MSBuildProjectExtensionsPath of the project (originally BaseIntermediateOutputPath was used,
+        /// but rather than create a new interface, we changed the meaning of this property).
         /// </summary>
         string BaseIntermediatePath { get; }
-
-        //  TODO: Update project-system to add this property, and figure out how to sync the updates
-        //  https://github.com/dotnet/project-system/blob/master/src/Microsoft.VisualStudio.ProjectSystem.Managed.VS/ProjectSystem/VS/NuGet/ProjectRestoreInfo.cs
-        /// <summary>
-        /// MSBuildProjectExtensionsPath of the project
-        /// </summary>
-        string MSBuildProjectExtensionsPath { get; }
 
         /// <summary>
         /// Target frameworks metadata.
