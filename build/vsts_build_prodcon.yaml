@@ -16,7 +16,7 @@ phases:
       scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
       arguments: "-Force -CI"
     displayName: "Run Configure.ps1"
-    
+
   - task: PowerShell@1
     displayName: "Find NuGet.Client Build"
     inputs:
@@ -34,7 +34,7 @@ phases:
         Write-Host $desiredBuild
         $sourceVersion = $desiredBuild.sourceVersion
         $buildNumber = $desiredBuild.buildNumber
-        $NupkgDirectory = "$env:DropRoot\$branchName\$buildNumber\artifacts\VS15\Nupkgs"
+        $NupkgDirectory = "$env:DropRoot\$branchName\$buildNumber\artifacts\VS15\Nupkgs\"
         Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_BUILD_NUMBER]$buildNumber"
         Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_BRANCH]$branchName"
         Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_SOURCEVERSION]$sourceVersion"
