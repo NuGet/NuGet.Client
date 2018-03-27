@@ -10,6 +10,13 @@ phases:
       - msbuild
   
   steps:
+
+  - task: PowerShell@1
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
+      arguments: "-Force -CI"
+    displayName: "Run Configure.ps1"
+    
   - task: PowerShell@1
     displayName: "Find NuGet.Client Build"
     inputs:
