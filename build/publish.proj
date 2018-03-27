@@ -12,16 +12,16 @@
   <Import Project="$(BuildCommonDirectory)common.targets" />
 
   <ItemGroup>
-    <ItemsToPush Include="$(NupkgOutputDirectory)*.nupkg" />
+    <ItemsToPush Include="$(NUGET_CLIENT_NUPKGDIRECTORY)*.nupkg" />
   </ItemGroup>
   
   <PropertyGroup>
     <PublishOverwrite Condition="'$(PublishOverwrite)' == ''">false</PublishOverwrite>
   </PropertyGroup>
 
-  <Target Name="Build" Condition=" '$(BuildRTM)' != 'true'">
-    <Error Text="Package output directory '$(NupkgOutputDirectory)' does not exist."
-          Condition="!Exists($(NupkgOutputDirectory))" />
+  <Target Name="Build">
+    <Error Text="Package output directory '$(NUGET_CLIENT_NUPKGDIRECTORY)' does not exist."
+          Condition="!Exists($(NUGET_CLIENT_NUPKGDIRECTORY))" />
 
     <Error Text="The FeedUrl property must be passed."
           Condition="'$(FeedUrl)' == ''" />
