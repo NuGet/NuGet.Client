@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\NuGet.Clients\NuGet.Credentials\NuGet.Credentials.csproj" />
     <ProjectReference Include="..\NuGet.ProjectModel\NuGet.ProjectModel.csproj" />
   </ItemGroup>
 
