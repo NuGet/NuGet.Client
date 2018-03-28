@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
@@ -11,21 +10,28 @@ using NuGet.Protocol.Plugins;
 
 namespace NuGet.Credentials
 {
+    /// <summary>
+    /// Builder for credential providers that are based on the secure plugin model (Version 2.0.0)
+    /// </summary>
     public class SecureCredentialProviderBuilder
     {
         private Common.ILogger _logger;
 
         public SecureCredentialProviderBuilder(Common.ILogger logger)
         {
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        /// <summary>
+        /// Creates credential providers for each valid plugin (regardless if it supports authentication or not)
+        /// </summary>
+        /// <returns>credential providers</returns>
         public async Task<IEnumerable<ICredentialProvider>> BuildAll()
         {
-           var availablePlugins =  await PluginManager.Instance.FindAvailablePlugins(CancellationToken.None);
+            var availablePlugins = await PluginManager.Instance.FindAvailablePluginsAsync(CancellationToken.None);
 
             var plugins = new List<ICredentialProvider>();
-            foreach(var pluginDiscoveryResult in availablePlugins)
+            foreach (var pluginDiscoveryResult in availablePlugins)
             {
                 if (pluginDiscoveryResult.PluginFile.State == PluginFileState.Valid)
                 {

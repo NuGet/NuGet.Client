@@ -2,25 +2,39 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Plugins;
-using System.Linq;
 
 namespace NuGet.Credentials
 {
-    public class SecurePluginCredentialProvider : ICredentialProvider
+    public sealed class SecurePluginCredentialProvider : ICredentialProvider
     {
+        /// <summary>
+        /// Plugin that this provider will use to acquire credentials
+        /// </summary>
+        private readonly PluginDiscoveryResult _discoveredPlugin;
 
-        private PluginDiscoveryResult DiscoveredPlugin { get; set; }
-        private Common.ILogger Logger { get; set; }
+        /// <summary>
+        /// logger
+        /// </summary>
+        private readonly Common.ILogger _logger;
 
         // We use this to avoid needlessly instantiating plugins if they don't support authentication.
-        private bool IsAnAuthenticationPlugin { get; set; } = true;
+        private bool _isAnAuthenticationPlugin = true;
 
+        /// <summary>
+        /// Create a credential provider based on provided plugin
+        /// </summary>
+        /// <param name="pluginDiscoveryResult"></param>
+        /// <param name="logger"></param>
+        /// <exception cref="ArgumentNullException">if PluginDiscoveryResult is null</exception>
+        /// <exception cref="ArgumentNullException">if logger is null</exception>
+        /// <exception cref="ArgumentException">if plugin file is not valid</exception>
         public SecurePluginCredentialProvider(PluginDiscoveryResult pluginDiscoveryResult, Common.ILogger logger)
         {
             if (pluginDiscoveryResult == null)
@@ -29,11 +43,10 @@ namespace NuGet.Credentials
             }
             if (pluginDiscoveryResult.PluginFile.State != PluginFileState.Valid)
             {
-                throw new ArgumentException("Cannot create a provider from an invalid plugin. Plugin state: " + pluginDiscoveryResult.PluginFile.State + " " + pluginDiscoveryResult.Message);
-
+                throw new ArgumentException(string.Format(Resources.SecureCredentialProvider_InvalidPluginFile, pluginDiscoveryResult.PluginFile.State, pluginDiscoveryResult.Message), nameof(pluginDiscoveryResult));
             }
-            DiscoveredPlugin = pluginDiscoveryResult;
-            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _discoveredPlugin = pluginDiscoveryResult;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             Id = $"{nameof(SecurePluginCredentialProvider)}_{pluginDiscoveryResult.PluginFile.Path}";
         }
 
@@ -54,31 +67,30 @@ namespace NuGet.Credentials
         /// <param name="message">A message provided by NuGet to show to the user when prompting.</param>
         /// <param name="nonInteractive">If true, the plugin must not prompt for credentials.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A credential object.  If </returns>
-
+        /// <returns>A credential object.</returns>
         public async Task<CredentialResponse> GetAsync(Uri uri, IWebProxy proxy, CredentialRequestType type, string message, bool isRetry, bool nonInteractive, CancellationToken cancellationToken)
         {
             CredentialResponse taskResponse = null;
-            if (type == CredentialRequestType.Proxy || !IsAnAuthenticationPlugin)
+            if (type == CredentialRequestType.Proxy || !_isAnAuthenticationPlugin)
             {
                 taskResponse = new CredentialResponse(CredentialStatus.ProviderNotApplicable);
                 return taskResponse;
             }
 
-            var plugin = await PluginManager.Instance.CreateSourceAgnosticPluginAsync(DiscoveredPlugin, cancellationToken);
+            var plugin = await PluginManager.Instance.CreateSourceAgnosticPluginAsync(_discoveredPlugin, cancellationToken);
 
-            IsAnAuthenticationPlugin = plugin.Claims.Contains(OperationClaim.Authentication);
+            _isAnAuthenticationPlugin = plugin.Claims.Contains(OperationClaim.Authentication);
 
-            if (IsAnAuthenticationPlugin)
+            if (_isAnAuthenticationPlugin)
             {
 
                 var request = new GetAuthenticationCredentialsRequest(uri, isRetry, nonInteractive);
 
                 var credentialResponse = await plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
-                    MessageMethod.GetAuthCredentials,
+                    MessageMethod.GetAuthenticationCredentials,
                     request,
                     cancellationToken);
-                taskResponse = GetCredentialResponseToCredentiaResponse(credentialResponse);
+                taskResponse = GetAuthenticationCredentialsResponseToCredentialResponse(credentialResponse);
 
             }
             else
@@ -87,7 +99,7 @@ namespace NuGet.Credentials
             }
 
             // Don't explicitly dispose of a plugin that's not an authentication plugin, or that has more than 1 capability
-            if (plugin.Claims.Count == 1 && IsAnAuthenticationPlugin)
+            if (plugin.Claims.Count == 1 && _isAnAuthenticationPlugin)
             {
                 await PluginManager.Instance.DisposeOfPlugin(plugin.Plugin);
             }
@@ -95,15 +107,20 @@ namespace NuGet.Credentials
             return taskResponse;
         }
 
-        private static CredentialResponse GetCredentialResponseToCredentiaResponse(GetAuthenticationCredentialsResponse credentialResponse)
+        /// <summary>
+        /// Convert from Plugin CredentialResponse to the CredentialResponse model used by the ICredentialService
+        /// </summary>
+        /// <param name="credentialResponse"></param>
+        /// <returns>credential response</returns>
+        private static CredentialResponse GetAuthenticationCredentialsResponseToCredentialResponse(GetAuthenticationCredentialsResponse credentialResponse)
         {
             CredentialResponse taskResponse;
             if (credentialResponse.IsValid)
             {
                 ICredentials result = new NetworkCredential(credentialResponse.Username, credentialResponse.Password);
-                if (credentialResponse.AuthTypes != null)
+                if (credentialResponse.AuthenticationTypes != null)
                 {
-                    result = new AuthTypeFilteredCredentials(result, credentialResponse.AuthTypes);
+                    result = new AuthTypeFilteredCredentials(result, credentialResponse.AuthenticationTypes);
                 }
 
                 taskResponse = new CredentialResponse(result);

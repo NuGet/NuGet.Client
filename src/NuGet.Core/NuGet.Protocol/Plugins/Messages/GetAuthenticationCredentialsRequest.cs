@@ -8,7 +8,7 @@ namespace NuGet.Protocol.Plugins
 {
 
 
-    public class GetAuthenticationCredentialsRequest
+    public sealed class GetAuthenticationCredentialsRequest
     {
         [JsonRequired]
         public Uri Uri { get;}
@@ -17,14 +17,14 @@ namespace NuGet.Protocol.Plugins
         public bool IsRetry { get; }
 
         [JsonRequired]
-        public bool NonInteractive { get; }
+        public bool IsNonInteractive { get; }
 
         [JsonConstructor]
         public GetAuthenticationCredentialsRequest(Uri uri, bool isRetry, bool nonInteractive)
         {
             Uri = uri ?? throw new ArgumentNullException(nameof(uri));
             IsRetry = isRetry;
-            NonInteractive = nonInteractive;
+            IsNonInteractive = nonInteractive;
         }
     }
 }

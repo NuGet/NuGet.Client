@@ -85,12 +85,12 @@ namespace NuGet.Protocol.Core.Types
             return Task.CompletedTask;
         }
 
-        public async Task<IEnumerable<PluginDiscoveryResult>> FindAvailablePlugins(CancellationToken cancellationToken)
+        public async Task<IEnumerable<PluginDiscoveryResult>> FindAvailablePluginsAsync(CancellationToken cancellationToken)
         {
             return await _discoverer.Value.DiscoverAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<PluginCreationResult>> TryCreate(
+        public async Task<IEnumerable<PluginCreationResult>> TryCreateAsync(
             SourceRepository source,
             CancellationToken cancellationToken)
         {
@@ -111,12 +111,12 @@ namespace NuGet.Protocol.Core.Types
                 {
                     var serviceIndexJson = JObject.Parse(serviceIndex.Json);
 
-                    var results = await FindAvailablePlugins(cancellationToken);
+                    var results = await FindAvailablePluginsAsync(cancellationToken);
 
                     foreach (var result in results)
                     {
                         var pluginCreationResult = await CreatePluginAsync(result, new PluginRequestKey(result.PluginFile.Path, source.PackageSource.Source), source.PackageSource.Source, serviceIndexJson, cancellationToken);
-                        
+
                         pluginCreationResults.Add(pluginCreationResult);
                     }
                 }
@@ -142,7 +142,7 @@ namespace NuGet.Protocol.Core.Types
                     _connectionOptions,
                     cancellationToken);
 
-                var utilities = await PerformOneTimePluginInitialization(plugin, cancellationToken);
+                var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
 
                 plugin.Connection.ProtocolVersion.Equals(Plugins.ProtocolConstants.CurrentVersion);
 
@@ -171,7 +171,7 @@ namespace NuGet.Protocol.Core.Types
         }
 
 
-        private async Task<Lazy<IPluginMulticlientUtilities>> PerformOneTimePluginInitialization(IPlugin plugin, CancellationToken cancellationToken)
+        private async Task<Lazy<IPluginMulticlientUtilities>> PerformOneTimePluginInitializationAsync(IPlugin plugin, CancellationToken cancellationToken)
         {
             var utilities = _pluginUtilities.GetOrAdd(
                                 plugin.Id,
@@ -237,9 +237,9 @@ namespace NuGet.Protocol.Core.Types
             JObject serviceIndex,
             CancellationToken cancellationToken)
         {
-            if (plugin.Connection.ProtocolVersion.Equals(Plugins.ProtocolConstants.PluginVersion100) && (string.IsNullOrEmpty(packageSourceRepository) || serviceIndex == null))
+            if (plugin.Connection.ProtocolVersion.Equals(Plugins.ProtocolConstants.Version100) && (string.IsNullOrEmpty(packageSourceRepository) || serviceIndex == null))
             {
-                throw new ArgumentException("Cannot invoke get operation claims with null arguments on a " + Plugins.ProtocolConstants.PluginVersion100 + " plugin");
+                throw new ArgumentException("Cannot invoke get operation claims with null arguments on a " + Plugins.ProtocolConstants.Version100 + " plugin");
             }
 
             var payload = new GetOperationClaimsRequest(packageSourceRepository, serviceIndex);
@@ -250,7 +250,7 @@ namespace NuGet.Protocol.Core.Types
                 cancellationToken);
             if (response == null)
             {
-                return new List<OperationClaim>();
+                return Array.Empty<OperationClaim>();
             }
 
             return response.Claims;

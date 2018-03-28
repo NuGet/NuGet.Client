@@ -159,7 +159,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var options = ConnectionOptions.CreateDefault();
 
-            Assert.Equal(ProtocolConstants.PluginVersion100, options.MinimumProtocolVersion);
+            Assert.Equal(ProtocolConstants.Version100, options.MinimumProtocolVersion);
         }
 
         [Fact]

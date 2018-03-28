@@ -386,7 +386,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     .Returns(ConnectionOptions.CreateDefault());
 
                 _connection.SetupGet(x => x.ProtocolVersion)
-                    .Returns(ProtocolConstants.PluginVersion100);
+                    .Returns(ProtocolConstants.Version100);
 
                 _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<MonitorNuGetProcessExitRequest, MonitorNuGetProcessExitResponse>(
                         It.Is<MessageMethod>(m => m == MessageMethod.MonitorNuGetProcessExit),

@@ -81,7 +81,7 @@ namespace NuGet.Credentials
         /// <param name="message">A message provided by NuGet to show to the user when prompting.</param>
         /// <param name="nonInteractive">If true, the plugin must not prompt for credentials.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A credential object.  If </returns>
+        /// <returns>A credential object.</returns>
         public Task<CredentialResponse> GetAsync(
             Uri uri,
             IWebProxy proxy,

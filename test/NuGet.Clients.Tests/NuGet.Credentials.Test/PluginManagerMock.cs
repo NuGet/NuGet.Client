@@ -24,8 +24,8 @@ namespace NuGet.Credentials.Test
         public ConnectionOptions ClientConnectionOptions { get; }
         public SemanticVersion PluginVersion { get; }
         public Uri Uri { get; }
-        public string AuthUsername { get; }
-        public string AuthPassword { get; }
+        public string AuthenticationUsername { get; }
+        public string AuthenticationPassword { get; }
         public bool Success { get; }
         public bool DisposeCanBeCalled { get; }
 
@@ -33,11 +33,11 @@ namespace NuGet.Credentials.Test
             string serviceIndexJson,
             string sourceUri,
             IEnumerable<OperationClaim> operationClaims,
-            ConnectionOptions options,
+            ConnectionOptions connectionOptions,
             SemanticVersion pluginVersion,
             Uri uri,
-            string authUsername,
-            string authPassword,
+            string authenticationUsername,
+            string authenticationPassword,
             bool success,
             bool disposeCanBeCaleld
             )
@@ -47,11 +47,11 @@ namespace NuGet.Credentials.Test
 
             OperationClaims = operationClaims;
             OperationClaimsSourceRepository = sourceUri;
-            ClientConnectionOptions = options;
+            ClientConnectionOptions = connectionOptions;
             PluginVersion = pluginVersion;
             Uri = uri;
-            AuthUsername = authUsername;
-            AuthPassword = authPassword;
+            AuthenticationUsername = authenticationUsername;
+            AuthenticationPassword = authenticationPassword;
             Success = success;
             DisposeCanBeCalled = disposeCanBeCaleld;
         }
@@ -59,11 +59,6 @@ namespace NuGet.Credentials.Test
 
     internal sealed class PluginManagerMock : IDisposable
     {
-        private const string _pluginPathsEnvironmentVariable = "NUGET_PLUGIN_PATHS";
-        private const string _pluginRequestTimeoutEnvironmentVariable = "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS";
-        private const string _pluginHandshakeTimeoutEnvironmentVariable = "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS";
-        private const string _pluginIdleTimeoutEnvironmentVariable = "NUGET_PLUGIN_IDLE_TIMEOUT_IN_SECONDS";
-
         private readonly Mock<IConnection> _connection;
         private readonly TestExpectation _expectations;
         private readonly Mock<IPluginFactory> _factory;
@@ -78,8 +73,7 @@ namespace NuGet.Credentials.Test
         internal PluginManagerMock(
                             string pluginFilePath,
                             PluginFileState pluginFileState,
-                TestExpectation expectations
-            )
+                TestExpectation expectations)
         {
             _expectations = expectations;
 
@@ -116,10 +110,10 @@ namespace NuGet.Credentials.Test
             if (_expectations.Success)
             {
                 _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
-                    It.Is<MessageMethod>(m => m == MessageMethod.GetAuthCredentials),
+                    It.Is<MessageMethod>(m => m == MessageMethod.GetAuthenticationCredentials),
                     It.Is<GetAuthenticationCredentialsRequest>(e => e.Uri.Equals(expectations.Uri)),
                     It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new GetAuthenticationCredentialsResponse(expectations.AuthUsername, expectations.AuthPassword, null, null, MessageResponseCode.Success));
+                .ReturnsAsync(new GetAuthenticationCredentialsResponse(expectations.AuthenticationUsername, expectations.AuthenticationPassword, null, null, MessageResponseCode.Success));
             }
 
             PluginManager = PluginManager.Instance;
@@ -143,9 +137,10 @@ namespace NuGet.Credentials.Test
                     g => g.PackageSourceRepository == null), // The source repository should be null in the context of credential plugins
                 It.IsAny<CancellationToken>()), Times.Once());
 
-            if (_expectations.Success) { 
+            if (_expectations.Success)
+            {
                 _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
-                        It.Is<MessageMethod>(m => m == MessageMethod.GetAuthCredentials),
+                        It.Is<MessageMethod>(m => m == MessageMethod.GetAuthenticationCredentials),
                         It.IsAny<GetAuthenticationCredentialsRequest>(),
                         It.IsAny<CancellationToken>()), Times.Once());
             }
@@ -154,7 +149,8 @@ namespace NuGet.Credentials.Test
             {
                 _factory.Verify(x => x.DisposePlugin(It.IsNotNull<IPlugin>()), Times.Once());
             }
-else            {
+            else
+            {
                 _factory.Verify(x => x.DisposePlugin(It.IsNotNull<IPlugin>()), Times.Never());
             }
             _connection.Verify();
@@ -167,16 +163,16 @@ else            {
         private void EnsureAllEnvironmentVariablesAreCalled(string pluginFilePath)
         {
             _reader.Setup(x => x.GetEnvironmentVariable(
-                    It.Is<string>(value => value == _pluginPathsEnvironmentVariable)))
+                    It.Is<string>(value => value == CredentialTestConstants.PluginPathsEnvironmentVariable)))
                 .Returns(pluginFilePath);
             _reader.Setup(x => x.GetEnvironmentVariable(
-                    It.Is<string>(value => value == _pluginRequestTimeoutEnvironmentVariable)))
+                    It.Is<string>(value => value == CredentialTestConstants.PluginRequestTimeoutEnvironmentVariable)))
                         .Returns("RequestTimeout");
             _reader.Setup(x => x.GetEnvironmentVariable(
-                    It.Is<string>(value => value == _pluginIdleTimeoutEnvironmentVariable)))
+                    It.Is<string>(value => value == CredentialTestConstants.PluginIdleTimeoutEnvironmentVariable)))
                         .Returns("IdleTimeout");
             _reader.Setup(x => x.GetEnvironmentVariable(
-                    It.Is<string>(value => value == _pluginHandshakeTimeoutEnvironmentVariable)))
+                    It.Is<string>(value => value == CredentialTestConstants.PluginHandshakeTimeoutEnvironmentVariable)))
                         .Returns("HandshakeTimeout");
         }
 
@@ -228,7 +224,5 @@ else            {
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_plugin.Object);
         }
-
     }
-
 }

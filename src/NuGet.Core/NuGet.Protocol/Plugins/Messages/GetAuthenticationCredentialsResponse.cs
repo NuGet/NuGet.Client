@@ -8,26 +8,46 @@ using Newtonsoft.Json;
 
 namespace NuGet.Protocol.Plugins
 {
-    public class GetAuthenticationCredentialsResponse
+    public sealed class GetAuthenticationCredentialsResponse
     {
+        /// <summary>
+        /// Username
+        /// </summary>
         public string Username { get; }
 
+        /// <summary>
+        /// password token
+        /// </summary>
         public string Password { get; }
 
+        /// <summary>
+        /// message - optional, can be used as a way to communicate to NuGet why the authentication faled.
+        /// </summary>
         public string Message { get; }
 
         /// <summary>
         /// Gets or sets the list of authentication types this credential is applicable to. Useful values include
         /// <c>basic</c>, <c>digest</c>, <c>negotiate</c>, and <c>ntlm</c>
         /// </summary>
-        public IList<string> AuthTypes { get; }
+        public IList<string> AuthenticationTypes { get; }
 
+        /// <summary>
+        /// ResponseCode - status of the credentials
+        /// </summary>
         [JsonRequired]
         public MessageResponseCode ResponseCode { get; }
 
-
+        /// <summary>
+        /// Create a response object
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="password"></param>
+        /// <param name="message"></param>
+        /// <param name="authenticationTypes"></param>
+        /// <param name="responseCode"></param>
+        /// <exception cref="ArgumentException">If MessageResponseCode is not defined on this runtime</exception>
         [JsonConstructor]
-        public GetAuthenticationCredentialsResponse(string username, string password, string message, IList<string> authTypes, MessageResponseCode responseCode)
+        public GetAuthenticationCredentialsResponse(string username, string password, string message, IList<string> authenticationTypes, MessageResponseCode responseCode)
         {
 
             if (!Enum.IsDefined(typeof(MessageResponseCode), responseCode))
@@ -43,7 +63,7 @@ namespace NuGet.Protocol.Plugins
             Username = username;
             Password = password;
             Message = message;
-            AuthTypes = authTypes;
+            AuthenticationTypes = authenticationTypes;
             ResponseCode = responseCode;
         }
 
@@ -55,6 +75,6 @@ namespace NuGet.Protocol.Plugins
         /// one element
         /// </remarks>
         public bool IsValid => ResponseCode == MessageResponseCode.Success && (!string.IsNullOrWhiteSpace(Username) || !string.IsNullOrWhiteSpace(Password))
-                               && (AuthTypes == null || AuthTypes.Any());
+                               && (AuthenticationTypes == null || AuthenticationTypes.Any());
     }
 }

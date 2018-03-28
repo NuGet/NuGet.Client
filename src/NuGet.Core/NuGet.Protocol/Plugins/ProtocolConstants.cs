@@ -17,9 +17,9 @@ namespace NuGet.Protocol.Plugins
         public static readonly SemanticVersion CurrentVersion = new SemanticVersion(major: 2, minor: 0, patch: 0);
 
         /// <summary>
-        /// The current protocol version.
+        /// The minimum supported protocol version.
         /// </summary>
-        public static readonly SemanticVersion PluginVersion100 = new SemanticVersion(major: 1, minor: 0, patch: 0);
+        public static readonly SemanticVersion Version100 = new SemanticVersion(major: 1, minor: 0, patch: 0);
 
         /// <summary>
         /// The default handshake timeout.

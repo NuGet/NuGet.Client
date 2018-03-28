@@ -43,6 +43,7 @@ namespace NuGet.Credentials.Test
         {
             var exception = Assert.Throws<ArgumentException>(
                 () => new SecurePluginCredentialProvider(CreatePluginDiscoveryResult(PluginFileState.InvalidFilePath), NullLogger.Instance));
+            Assert.Equal("pluginDiscoveryResult", exception.ParamName);
         }
 
         [Fact]
@@ -73,16 +74,16 @@ namespace NuGet.Credentials.Test
             var authUsername = "username";
             var authPassword = "password";
             var expectation = new TestExpectation(
-                null,
-                null,
-                new[] { OperationClaim.Authentication },
-                ConnectionOptions.CreateDefault(),
-                Protocol.Plugins.ProtocolConstants.CurrentVersion,
-                uri,
-                authUsername,
-                authPassword,
-                true,
-                true
+                serviceIndexJson: null,
+                sourceUri: null,
+                operationClaims: new[] { OperationClaim.Authentication },
+                connectionOptions: ConnectionOptions.CreateDefault(),
+                pluginVersion: Protocol.Plugins.ProtocolConstants.CurrentVersion,
+                uri: uri,
+                authenticationUsername: authUsername,
+                authenticationPassword: authPassword,
+                success: true,
+                disposeCanBeCaleld: true
                 );
 
             using (var test = new PluginManagerMock(
@@ -115,17 +116,18 @@ namespace NuGet.Credentials.Test
             var uri = new Uri("https://api.nuget.org/v3/index.json");
             var authUsername = "username";
             var authPassword = "password";
+
             var expectation = new TestExpectation(
-                null,
-                null,
-                new[] { OperationClaim.DownloadPackage },
-                ConnectionOptions.CreateDefault(),
-                Protocol.Plugins.ProtocolConstants.CurrentVersion,
-                uri,
-                authUsername,
-                authPassword,
-                false,
-                false
+                serviceIndexJson: null,
+                sourceUri: null,
+                operationClaims: new[] { OperationClaim.DownloadPackage },
+                connectionOptions: ConnectionOptions.CreateDefault(),
+                pluginVersion: Protocol.Plugins.ProtocolConstants.CurrentVersion,
+                uri: uri,
+                authenticationUsername: authUsername,
+                authenticationPassword: authPassword,
+                success: false,
+                disposeCanBeCaleld: false
                 );
 
             using (var test = new PluginManagerMock(
@@ -160,16 +162,16 @@ namespace NuGet.Credentials.Test
             var authUsername = "username";
             var authPassword = "password";
             var expectation = new TestExpectation(
-                null,
-                null,
-                new[] { OperationClaim.Authentication, OperationClaim.DownloadPackage },
-                ConnectionOptions.CreateDefault(),
-                Protocol.Plugins.ProtocolConstants.CurrentVersion,
-                uri,
-                authUsername,
-                authPassword,
-                true,
-                false
+                serviceIndexJson: null,
+                sourceUri: null,
+                operationClaims: new[] { OperationClaim.Authentication, OperationClaim.DownloadPackage },
+                connectionOptions: ConnectionOptions.CreateDefault(),
+                pluginVersion: Protocol.Plugins.ProtocolConstants.CurrentVersion,
+                uri: uri,
+                authenticationUsername: authUsername,
+                authenticationPassword: authPassword,
+                success: true,
+                disposeCanBeCaleld: false
                 );
 
             using (var test = new PluginManagerMock(

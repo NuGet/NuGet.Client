@@ -43,16 +43,16 @@ namespace NuGet.Commands
             return await RunAsync(restoreContext, CancellationToken.None);
         }
 
-        private static async Task SetDefaultCredentialProvider(ILogger logger)
+        private static async Task SetDefaultCredentialProviderAsync(ILogger logger)
         {
             if (HttpHandlerResourceV3.CredentialService == null)
             {
-                HttpHandlerResourceV3.CredentialService = new CredentialService(await GetCredentialProviders(logger), nonInteractive: false);
+                HttpHandlerResourceV3.CredentialService = new CredentialService(await GetCredentialProvidersAsync(logger), nonInteractive: false);
             }
         }
 
         // Add only the secure plugin. This will be done when there's nothing set
-        private static async Task<IEnumerable<Credentials.ICredentialProvider>> GetCredentialProviders(ILogger logger )
+        private static async Task<IEnumerable<Credentials.ICredentialProvider>> GetCredentialProvidersAsync(ILogger logger )
         {
             var providers = new List<Credentials.ICredentialProvider>();
 
@@ -80,7 +80,7 @@ namespace NuGet.Commands
         {
             var maxTasks = GetMaxTaskCount(restoreContext);
 
-            await SetDefaultCredentialProvider(restoreContext.Log);
+            await SetDefaultCredentialProviderAsync(restoreContext.Log);
 
             var log = restoreContext.Log;
 
@@ -137,7 +137,7 @@ namespace NuGet.Commands
         {
             var maxTasks = GetMaxTaskCount(restoreContext);
 
-            await SetDefaultCredentialProvider(restoreContext.Log);
+            await SetDefaultCredentialProviderAsync(restoreContext.Log);
 
             var log = restoreContext.Log;
 

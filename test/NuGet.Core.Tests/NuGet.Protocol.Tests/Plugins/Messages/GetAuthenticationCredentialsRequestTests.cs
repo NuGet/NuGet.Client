@@ -16,9 +16,9 @@ namespace NuGet.Protocol.Tests.Plugins.Messages
             Uri uri = null;
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new GetAuthenticationCredentialsRequest(
-                    uri,
-                    false,
-                    false
+                    uri: uri,
+                    isRetry: false,
+                    nonInteractive: false
                     ));
             Assert.Equal("uri", exception.ParamName);
         }

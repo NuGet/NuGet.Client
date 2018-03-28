@@ -16,11 +16,13 @@ namespace NuGet.Credentials.Test
 {
     public class SecurePluginCredentialProviderBuilderTests
     {
-        private const string _pluginHandshakeTimeoutEnvironmentVariable = "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS";
-        private const string _pluginIdleTimeoutEnvironmentVariable = "NUGET_PLUGIN_IDLE_TIMEOUT_IN_SECONDS";
-        private const string _pluginPathsEnvironmentVariable = "NUGET_PLUGIN_PATHS";
-        private const string _pluginRequestTimeoutEnvironmentVariable = "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS";
-        private const string _sourceUri = "https://unit.test";
+        [Fact]
+        public void CredentialProviderBuilder_ThrowsExceptionForNullLogger()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SecureCredentialProviderBuilder(null));
+            Assert.Equal("logger", exception.ParamName);
+        }
 
         [Fact]
         public async Task BuildAll_BuildsZero()
@@ -77,17 +79,17 @@ namespace NuGet.Credentials.Test
                 var reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
 
                 reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginPathsEnvironmentVariable)))
+                        It.Is<string>(value => value == CredentialTestConstants.PluginPathsEnvironmentVariable)))
                     .Returns(string.Join(";", plugins.Select(e => e.Key)));
 
                 reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginRequestTimeoutEnvironmentVariable)))
+                        It.Is<string>(value => value == CredentialTestConstants.PluginRequestTimeoutEnvironmentVariable)))
                     .Returns("b");
                 reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginIdleTimeoutEnvironmentVariable)))
+                        It.Is<string>(value => value == CredentialTestConstants.PluginIdleTimeoutEnvironmentVariable)))
                     .Returns("c");
                 reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginHandshakeTimeoutEnvironmentVariable)))
+                        It.Is<string>(value => value == CredentialTestConstants.PluginHandshakeTimeoutEnvironmentVariable)))
                     .Returns("d");
 
                 var pluginDiscoverer = new Mock<IPluginDiscoverer>(MockBehavior.Strict);
