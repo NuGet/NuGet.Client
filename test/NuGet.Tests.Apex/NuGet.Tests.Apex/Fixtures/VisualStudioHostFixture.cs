@@ -53,5 +53,27 @@ namespace NuGet.Tests.Apex
                 _visualStudioHost = null;
             }
         }
+
+        public void SetHostEnvironment(string name, string value)
+        {
+            if (value == null)
+            {
+                base.VisualStudioHostConfiguration.Environment.Remove(name);
+            }
+            else
+            {
+                base.VisualStudioHostConfiguration.Environment[name] = value;
+            }
+        }
+
+        public string GetHostEnvironment(string name)
+        {
+            if (!base.VisualStudioHostConfiguration.Environment.ContainsKey(name))
+            {
+                return null;
+            }
+
+            return base.VisualStudioHostConfiguration.Environment[name];
+        }
     }
 }

@@ -12,6 +12,9 @@ using Xunit.Abstractions;
 
 namespace NuGet.Tests.Apex
 {
+    /// <summary>
+    /// Define the test collection for NuGet test and the associated fixture
+    /// </summary>
     [CollectionDefinition("SharedVSHost")]
     public sealed class SharedVisualStudioHostTestCollectionDefinition : ICollectionFixture<VisualStudioHostFixtureFactory>
     {
@@ -21,6 +24,10 @@ namespace NuGet.Tests.Apex
         }
     }
 
+    /// <summary>
+    /// Base clase for a normal test. Runs in a Test Collection
+    /// that reuse the product context for performance during betched runs.
+    /// </summary>
     [Collection("SharedVSHost")]
     public abstract class SharedVisualStudioHostTestClass : ApexBaseTestClass
     {
@@ -31,7 +38,6 @@ namespace NuGet.Tests.Apex
         /// ITestOutputHelper wrapper
         /// </summary>
         public XunitLogger XunitLogger { get; }
-
         protected SharedVisualStudioHostTestClass(IVisualStudioHostFixtureFactory contextFixtureFactory, ITestOutputHelper output)
         {
             XunitLogger = new XunitLogger(output);
@@ -40,6 +46,21 @@ namespace NuGet.Tests.Apex
             _hostFixture = new Lazy<VisualStudioHostFixture>(() =>
             {
                 return _contextFixtureFactory.GetVisualStudioHostFixture();
+            });
+        }
+
+        protected SharedVisualStudioHostTestClass(IVisualStudioHostFixtureFactory contextFixtureFactory)
+        {
+            this._contextFixtureFactory = contextFixtureFactory;
+            this._hostFixture = new Lazy<VisualStudioHostFixture>(() =>
+            {
+                if (this.CurrentContext == null)
+                {
+                    throw new InvalidOperationException("Attempted to access hostFixture before Context was set. Integration tests require a context to build a Visual Studio host fixture.");
+                }
+
+                VisualStudioHostFixture hostFixture = this._contextFixtureFactory.GetVisualStudioHostFixtureForContext(this.CurrentContext);
+                return hostFixture;
             });
         }
 
@@ -53,6 +74,11 @@ namespace NuGet.Tests.Apex
         public override void EnsureVisualStudioHost()
         {
             _hostFixture.Value.EnsureHost();
+        }
+
+        public override void EnsureVisualStudioHostForContext()
+        {
+            this._hostFixture.Value.EnsureHost();
         }
 
         public override void CloseVisualStudioHost()
@@ -77,6 +103,16 @@ namespace NuGet.Tests.Apex
             XunitLogger.LogInformation("GetConsole complete");
 
             return nugetConsole;
+        }
+
+        public override void SetHostEnvironment(string name, string value)
+        {
+            this._hostFixture.Value.SetHostEnvironment(name, value);
+        }
+
+        public override string GetHostEnvironment(string name)
+        {
+            return this._hostFixture.Value.GetHostEnvironment(name);
         }
 
         public IOperations Operations => _hostFixture.Value.Operations;
