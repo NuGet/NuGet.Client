@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -111,16 +111,6 @@ namespace Test.Utility
         }
 
         public void SaveActivePackageSource(PackageSource source)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SaveTrustedSources(IEnumerable<TrustedSource> trustedSources)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void DeleteTrustedSource(string sourceName)
         {
             throw new NotImplementedException();
         }

@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Protocol;
 
 namespace NuGet.CommandLine
 {
@@ -36,10 +32,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "SourcesCommandFormatDescription")]
         public SourcesListFormat Format { get; set; }
 
-        [Option(typeof(NuGetCommand), "SourcesCommandTrustDescription")]
-        public bool Trust { get; set; }
-
-        public override async Task ExecuteCommandAsync()
+        public override void ExecuteCommand()
         {
             if (SourceProvider == null)
             {
@@ -50,7 +43,7 @@ namespace NuGet.CommandLine
             var action = Arguments.FirstOrDefault();
 
             // TODO: Change these in to switches so we don't have to parse them here.
-            if (string.IsNullOrEmpty(action) || action.Equals("List", StringComparison.OrdinalIgnoreCase))
+            if (String.IsNullOrEmpty(action) || action.Equals("List", StringComparison.OrdinalIgnoreCase))
             {
                 switch (Format)
                 {
@@ -64,7 +57,7 @@ namespace NuGet.CommandLine
             }
             else if (action.Equals("Add", StringComparison.OrdinalIgnoreCase))
             {
-                await AddNewSourceAsync();
+                AddNewSource();
             }
             else if (action.Equals("Remove", StringComparison.OrdinalIgnoreCase))
             {
@@ -80,19 +73,19 @@ namespace NuGet.CommandLine
             }
             else if (action.Equals("Update", StringComparison.OrdinalIgnoreCase))
             {
-                await UpdatePackageSourceAsync();
+                UpdatePackageSource();
             }
         }
 
         private void EnableOrDisableSource(bool enabled)
         {
-            if (string.IsNullOrEmpty(Name))
+            if (String.IsNullOrEmpty(Name))
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNameRequired"));
             }
 
             var sourceList = SourceProvider.LoadPackageSources().ToList();
-            var existingSource = sourceList.Where(ps => string.Equals(Name, ps.Name, StringComparison.OrdinalIgnoreCase));
+            var existingSource = sourceList.Where(ps => String.Equals(Name, ps.Name, StringComparison.OrdinalIgnoreCase));
             if (!existingSource.Any())
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNoMatchingSourcesFound"), Name);
@@ -111,26 +104,16 @@ namespace NuGet.CommandLine
 
         private void RemoveSource()
         {
-            if (string.IsNullOrEmpty(Name))
+            if (String.IsNullOrEmpty(Name))
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNameRequired"));
             }
             // Check to see if we already have a registered source with the same name or source
             var sourceList = SourceProvider.LoadPackageSources().ToList();
-            var matchingSources = sourceList.Where(ps => string.Equals(Name, ps.Name, StringComparison.OrdinalIgnoreCase)).ToList();
+            var matchingSources = sourceList.Where(ps => String.Equals(Name, ps.Name, StringComparison.OrdinalIgnoreCase)).ToList();
             if (!matchingSources.Any())
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNoMatchingSourcesFound"), Name);
-            }
-
-            if (Trust)
-            {
-                matchingSources.ForEach(p => SourceProvider.DeleteTrustedSource(p.Name));
-            }
-            else
-            {
-                var trustedSourceList = matchingSources.Where(p => p.TrustedSource != null).Select(p => UpdateServiceIndexTrustedSource(p));
-                SourceProvider.SaveTrustedSources(trustedSourceList);
             }
 
             sourceList.RemoveAll(matchingSources.Contains);
@@ -138,30 +121,17 @@ namespace NuGet.CommandLine
             Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully"), Name);
         }
 
-        private TrustedSource UpdateServiceIndexTrustedSource(PackageSource source)
+        private void AddNewSource()
         {
-            if (source.TrustedSource != null)
-            {
-                var trustedSource = source.TrustedSource;
-                trustedSource.ServiceIndex = new ServiceIndexTrustEntry(source.Source);
-
-                return trustedSource;
-            }
-
-            return null;
-        }
-
-        private async Task AddNewSourceAsync()
-        {
-            if (string.IsNullOrEmpty(Name))
+            if (String.IsNullOrEmpty(Name))
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNameRequired"));
             }
-            if (string.Equals(Name, LocalizedResourceManager.GetString("ReservedPackageNameAll")))
+            if (String.Equals(Name, LocalizedResourceManager.GetString("ReservedPackageNameAll")))
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandAllNameIsReserved"));
             }
-            if (string.IsNullOrEmpty(Source))
+            if (String.IsNullOrEmpty(Source))
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandSourceRequired"));
             }
@@ -175,12 +145,12 @@ namespace NuGet.CommandLine
 
             // Check to see if we already have a registered source with the same name or source
             var sourceList = SourceProvider.LoadPackageSources().ToList();
-            var hasName = sourceList.Any(ps => string.Equals(Name, ps.Name, StringComparison.OrdinalIgnoreCase));
+            bool hasName = sourceList.Any(ps => String.Equals(Name, ps.Name, StringComparison.OrdinalIgnoreCase));
             if (hasName)
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandUniqueName"));
             }
-            var hasSource = sourceList.Any(ps => string.Equals(Source, ps.Source, StringComparison.OrdinalIgnoreCase));
+            bool hasSource = sourceList.Any(ps => String.Equals(Source, ps.Source, StringComparison.OrdinalIgnoreCase));
             if (hasSource)
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandUniqueSource"));
@@ -194,32 +164,27 @@ namespace NuGet.CommandLine
                 newPackageSource.Credentials = credentials;
             }
 
-            if (Trust)
-            {
-                await UpdateTrustedSourceAsync(newPackageSource);
-            }
-
             sourceList.Add(newPackageSource);
             SourceProvider.SavePackageSources(sourceList);
             Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandSourceAddedSuccessfully"), Name);
         }
 
-        private async Task UpdatePackageSourceAsync()
+        private void UpdatePackageSource()
         {
-            if (string.IsNullOrEmpty(Name))
+            if (String.IsNullOrEmpty(Name))
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNameRequired"));
             }
 
             var sourceList = SourceProvider.LoadPackageSources().ToList();
-            var existingSourceIndex = sourceList.FindIndex(ps => Name.Equals(ps.Name, StringComparison.OrdinalIgnoreCase));
+            int existingSourceIndex = sourceList.FindIndex(ps => Name.Equals(ps.Name, StringComparison.OrdinalIgnoreCase));
             if (existingSourceIndex == -1)
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNoMatchingSourcesFound"), Name);
             }
             var existingSource = sourceList[existingSourceIndex];
 
-            if (!string.IsNullOrEmpty(Source) && !existingSource.Source.Equals(Source, StringComparison.OrdinalIgnoreCase))
+            if (!String.IsNullOrEmpty(Source) && !existingSource.Source.Equals(Source, StringComparison.OrdinalIgnoreCase))
             {
                 if (!PathValidator.IsValidSource(Source))
                 {
@@ -227,7 +192,7 @@ namespace NuGet.CommandLine
                 }
 
                 // If the user is updating the source, verify we don't have a duplicate.
-                var duplicateSource = sourceList.Any(ps => string.Equals(Source, ps.Source, StringComparison.OrdinalIgnoreCase));
+                bool duplicateSource = sourceList.Any(ps => String.Equals(Source, ps.Source, StringComparison.OrdinalIgnoreCase));
                 if (duplicateSource)
                 {
                     throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandUniqueSource"));
@@ -238,11 +203,6 @@ namespace NuGet.CommandLine
             ValidateCredentials();
 
             sourceList.RemoveAt(existingSourceIndex);
-
-            if (Trust)
-            {
-                await UpdateTrustedSourceAsync(existingSource);
-            }
 
             if (!string.IsNullOrEmpty(UserName))
             {
@@ -256,29 +216,10 @@ namespace NuGet.CommandLine
             Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandUpdateSuccessful"), Name);
         }
 
-        private async Task UpdateTrustedSourceAsync(PackageSource packageSource)
-        {
-            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
-            var repositorySignatureResource = await sourceRepositoryProvider.CreateRepository(packageSource).GetResourceAsync<RepositorySignatureResource>() ??
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandSourceNotSupportRepoSign"), packageSource.Name);
-
-            var trustedSource = new TrustedSource(packageSource.Name);
-
-            foreach (var cert in repositorySignatureResource.RepositoryCertificateInfos)
-            {
-                foreach (var fingerprint in cert.Fingerprints)
-                {
-                    trustedSource.Certificates.Add(new CertificateTrustEntry(fingerprint.Value, cert.Subject, CryptoHashUtility.OidToHashAlgorithmName(fingerprint.Key)));
-                }
-            }
-
-            packageSource.TrustedSource = trustedSource;
-        }
-
         private void ValidateCredentials()
         {
-            var userNameEmpty = string.IsNullOrEmpty(UserName);
-            var passwordEmpty = string.IsNullOrEmpty(Password);
+            bool userNameEmpty = String.IsNullOrEmpty(UserName);
+            bool passwordEmpty = String.IsNullOrEmpty(Password);
 
             if (userNameEmpty ^ passwordEmpty)
             {
@@ -315,12 +256,12 @@ namespace NuGet.CommandLine
             }
             Console.PrintJustified(0, LocalizedResourceManager.GetString("SourcesCommandRegisteredSources"));
             Console.WriteLine();
-            var sourcePadding = new string(' ', 6);
-            for (var i = 0; i < sourcesList.Count; i++)
+            var sourcePadding = new String(' ', 6);
+            for (int i = 0; i < sourcesList.Count; i++)
             {
                 var source = sourcesList[i];
                 var indexNumber = i + 1;
-                var namePadding = new string(' ', i >= 9 ? 1 : 2);
+                var namePadding = new String(' ', i >= 9 ? 1 : 2);
                 Console.WriteLine(
                     "  {0}.{1}{2} [{3}]",
                     indexNumber,

@@ -12701,15 +12701,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source with name &apos;{0}&apos; cannot be added as a trusted repository because it does not support repository signing. To add the source anyway, please remove the &apos;-Trust&apos; option..
-        /// </summary>
-        public static string SourcesCommandSourceNotSupportRepoSign {
-            get {
-                return ResourceManager.GetString("SourcesCommandSourceNotSupportRepoSign", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package source with Name: {0} removed successfully..
         /// </summary>
         public static string SourcesCommandSourceRemovedSuccessfully {
