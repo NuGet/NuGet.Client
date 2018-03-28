@@ -416,6 +416,25 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+    EnableIntermediateOutputPathMismatchWarning
+    If using PackageReference, enable an MSBuild warning if BaseIntermediateOutputPath is set to something different
+    than MSBuildProjectExtensionsPath, because it may be unexpected that the assets and related files wouldn't be written
+    to the BaseIntermediateOutputPath.
+    ============================================================
+  -->
+
+  <Target Name="EnableIntermediateOutputPathMismatchWarning" DependsOnTargets="_GetRestoreProjectStyle"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+          Condition="'$(RestoreProjectStyle)' == 'PackageReference'">
+    
+    <PropertyGroup Condition="'$(EnableBaseIntermediateOutputPathMismatchWarning)' == ''">
+      <EnableBaseIntermediateOutputPathMismatchWarning>true</EnableBaseIntermediateOutputPathMismatchWarning>
+    </PropertyGroup>
+  
+  </Target>
+  
+  <!--
+    ============================================================
     _GetRestoreTargetFrameworksOutput
     Read target frameworks from the project.
     Non-NETCore project frameworks will be returned.
@@ -569,13 +588,27 @@ Copyright (c) .NET Foundation. All rights reserved.
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Determine the restore output path -->
-    <PropertyGroup Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' OR '$(RestoreProjectStyle)' == 'ProjectJson' ">
-      <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
+    <PropertyGroup Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' ">
+      <!-- NuGet writes .props and .targets files to the RestoreOutputPath for PackageReference projects.  MSBuild common
+           targets import these via the MSBuildProjectExtensionsPath, so that's what the RestoreOutputPath should be. -->
+      <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(MSBuildProjectExtensionsPath)</RestoreOutputPath>
     </PropertyGroup>
 
-    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' OR '$(RestoreProjectStyle)' == 'ProjectJson'">
+    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' ">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
+    
+    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'ProjectJson' ">
+      <!-- For project.json projects, the restore output path is the project directory.  The assets file cache
+           goes in BaseIntermediateOutputPath. -->
+      <RestoreAssetsCacheFolder Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreAssetsCacheFolder>
+    </PropertyGroup>
+
+    <ConvertToAbsolutePath Paths="$(RestoreAssetsCacheFolder)" Condition=" '$(RestoreProjectStyle)' == 'ProjectJson'">
+      <Output TaskParameter="AbsolutePaths" PropertyName="RestoreAssetsCacheFolder" />
+    </ConvertToAbsolutePath>
+
+    
 
     <!--
       Determine project name for the assets file.
@@ -626,6 +659,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
         <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
+        <AssetsCacheFolder>$(RestoreOutputAbsolutePath)</AssetsCacheFolder>
         <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
         <RuntimeIdentifiers>$(RuntimeIdentifiers);$(RuntimeIdentifier)</RuntimeIdentifiers>
         <RuntimeSupports>$(RuntimeSupports)</RuntimeSupports>
@@ -648,7 +682,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
         <ProjectName>$(_RestoreProjectName)</ProjectName>
         <Sources>$(_OutputSources)</Sources>
-        <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
+        <OutputPath>$(MSBuildProjectDirectory)</OutputPath>
+        <AssetsCacheFolder>$(RestoreAssetsCacheFolder)</AssetsCacheFolder>
         <FallbackFolders>$(_OutputFallbackFolders)</FallbackFolders>
         <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
         <ProjectJsonPath>$(_CurrentProjectJsonPath)</ProjectJsonPath>

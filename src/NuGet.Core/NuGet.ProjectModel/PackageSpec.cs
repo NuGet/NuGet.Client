@@ -59,9 +59,9 @@ namespace NuGet.ProjectModel
 
         public string ReleaseNotes { get; set; }
 
-        public string[] Authors { get; set; } = new string[0];
+        public string[] Authors { get; set; } = Array.Empty<string>();
 
-        public string[] Owners { get; set; } = new string[0];
+        public string[] Owners { get; set; } = Array.Empty<string>();
 
         public string ProjectUrl { get; set; }
 
@@ -77,7 +77,7 @@ namespace NuGet.ProjectModel
 
         public BuildOptions BuildOptions { get; set; }
 
-        public string[] Tags { get; set; } = new string[0];
+        public string[] Tags { get; set; } = Array.Empty<string>();
 
         public IList<string> ContentFiles { get; set; } = new List<string>();
 

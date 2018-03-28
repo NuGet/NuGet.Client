@@ -39,23 +39,24 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectServices = projectServices;
         }
 
-        protected override async Task<string> GetBaseIntermediatePathAsync()
+        protected override async Task<string> GetBaseIntermediateOutputPathAsync()
         {
-            var baseIntermediatePath = await ProjectServices.BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.BaseIntermediateOutputPath);
+            var baseIntermediateOutputPath = await ProjectServices.BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.BaseIntermediateOutputPath);
 
-            if (string.IsNullOrEmpty(baseIntermediatePath))
+            if (string.IsNullOrEmpty(baseIntermediateOutputPath))
             {
                 throw new InvalidDataException(string.Format(
-                    Strings.BaseIntermediateOutputPathNotFound,
+                    Strings.MSBuildPropertyNotFound,
+                    ProjectBuildProperties.BaseIntermediateOutputPath,
                     MSBuildProjectPath));
             }
 
-            return UriUtility.GetAbsolutePathFromFile(MSBuildProjectPath, baseIntermediatePath);
+            return UriUtility.GetAbsolutePathFromFile(MSBuildProjectPath, baseIntermediateOutputPath);
         }
 
         public override async Task<string> GetCacheFilePathAsync()
         {
-            return NoOpRestoreUtilities.GetProjectCacheFilePath(await GetBaseIntermediatePathAsync(), MSBuildProjectPath);
+            return NoOpRestoreUtilities.GetProjectCacheFilePath(await GetBaseIntermediateOutputPathAsync(), MSBuildProjectPath);
         }
 
         protected override async Task UpdateInternalTargetFrameworkAsync()

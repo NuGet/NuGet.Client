@@ -141,7 +141,7 @@ namespace NuGet.Packaging
         {
             foreach (var package in packages)
             {
-                var dependencies = package.DependencyIds ?? new string[0];
+                var dependencies = package.DependencyIds ?? Array.Empty<string>();
 
                 foreach (var id in dependencies)
                 {

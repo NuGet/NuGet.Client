@@ -132,16 +132,15 @@ namespace NuGet.Commands
         public ProjectStyle ProjectStyle { get; set; } = ProjectStyle.Unknown;
 
         /// <summary>
-        /// Restore output path
+        /// RestoreOutputPath, which is where the restore output (assets file and generated props and targets) will go
         /// </summary>
         public string RestoreOutputPath { get; set; }
 
         /// <summary>
-        /// Base Intermediate output path
+        /// AssetsCachePath, which is where the no-op restore cache will go
         /// </summary>
-        public string BaseIntermediateOutputPath { get; set; }
+        public string AssetsCachePath { get; set; }
 
-        
         /// <summary>
         /// Compatibility options
         /// </summary>

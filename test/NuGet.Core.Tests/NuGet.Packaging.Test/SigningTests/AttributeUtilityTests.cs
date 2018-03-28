@@ -566,7 +566,7 @@ namespace NuGet.Packaging.Test
         public void CreateNuGetPackageOwners_WhenPackageOwnersEmpty_Throws()
         {
             var exception = Assert.Throws<ArgumentException>(
-                () => AttributeUtility.CreateNuGetPackageOwners(new string[0]));
+                () => AttributeUtility.CreateNuGetPackageOwners(Array.Empty<string>()));
 
             Assert.Equal("packageOwners", exception.ParamName);
             Assert.StartsWith("The argument cannot be null or empty.", exception.Message);

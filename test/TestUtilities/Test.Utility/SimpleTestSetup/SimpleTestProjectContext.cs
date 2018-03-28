@@ -60,7 +60,7 @@ namespace NuGet.Test.Utility
         public string ProjectPath { get; set; }
 
         /// <summary>
-        /// Base intermediate directory path
+        /// MSBuildProjectExtensionsPath
         /// </summary>
         public string OutputPath { get; set; }
 
@@ -396,7 +396,7 @@ namespace NuGet.Test.Utility
             ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
             {
                 { "ProjectGuid", "{" + ProjectGuid.ToString() + "}" },
-                { "BaseIntermediateOutputPath", OutputPath },
+                { "MSBuildProjectExtensionsPath", OutputPath },
                 { "AssemblyName", ProjectName }
             });
 

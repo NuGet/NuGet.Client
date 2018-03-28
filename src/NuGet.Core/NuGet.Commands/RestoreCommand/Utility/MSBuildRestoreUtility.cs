@@ -219,6 +219,7 @@ namespace NuGet.Commands
                     result.RestoreMetadata.PackagesPath = specItem.GetProperty("PackagesPath");
 
                     result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
+                    result.RestoreMetadata.AssetsCacheFolder = specItem.GetProperty("AssetsCacheFolder");
                 }
 
                 // Read package references for netcore, tools, and standalone

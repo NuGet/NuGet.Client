@@ -22,9 +22,9 @@ namespace NuGet.VisualStudio
         string AssetTargetFallback { get; }
 
         /// <summary>
-        /// BaseIntermediateOutputPath project property (e.g. c:\projFoo\obj)
+        /// MSBuildProjectExtensionsPath project property (e.g. c:\projFoo\obj)
         /// </summary>
-        string BaseIntermediateOutputPath { get; }
+        string MSBuildProjectExtensionsPath { get; }
 
         IProjectBuildProperties BuildProperties { get; }
 
