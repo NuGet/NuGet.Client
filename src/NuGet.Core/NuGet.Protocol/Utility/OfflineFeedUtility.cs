@@ -195,15 +195,14 @@ namespace NuGet.Protocol.Core.Types
                             ? PackageSaveMode.Defaultv3
                             : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
 
-                        var signedPackageVerifier = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
+                        var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
                         var packageExtractionContext = new PackageExtractionContext(
                             packageSaveMode,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             logger,
-                            signedPackageVerifier);
+                            signedPackageVerifier,
+                            SignedPackageVerifierSettings.Default);
 
                         var versionFolderPathResolver = new VersionFolderPathResolver(source);
 

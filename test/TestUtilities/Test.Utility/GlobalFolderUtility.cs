@@ -27,15 +27,18 @@ namespace NuGet.Test.Utility
         {
             using (var reader = new PackageArchiveReader(packagePath))
             {
-                var signedPackageVerifier = requireSignVerify ? new PackageSignatureVerifier(
-                           SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                           SignedPackageVerifierSettings.Default) : null;
+                var signedPackageVerifier = requireSignVerify ?
+                    new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders()) :
+                    null;
+
+                var signedPackageVerifierSettings = requireSignVerify ? SignedPackageVerifierSettings.Default : null;
 
                 var pathContext = new PackageExtractionContext(
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                     logger: Common.NullLogger.Instance,
-                    signedPackageVerifier: signedPackageVerifier);
+                    signedPackageVerifier: signedPackageVerifier,
+                    signedPackageVerifierSettings: signedPackageVerifierSettings);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(globalFolder);
 

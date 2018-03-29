@@ -53,7 +53,6 @@ namespace NuGet.Packaging
                 using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
                 {
                     var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(CancellationToken.None);
-
                     var installPath = packagePathResolver.GetInstallPath(packageIdentityFromNuspec);
                     var packageDirectoryInfo = Directory.CreateDirectory(installPath);
                     var packageDirectory = packageDirectoryInfo.FullName;
@@ -980,6 +979,7 @@ namespace NuGet.Packaging
             {
                 var verifyResult = await packageExtractionContext.SignedPackageVerifier.VerifySignaturesAsync(
                        signedPackageReader,
+                       packageExtractionContext.SignedPackageVerifierSettings,
                        token,
                        parentId);
 

@@ -17,18 +17,22 @@ namespace NuGet.Packaging
 
         public IPackageSignatureVerifier SignedPackageVerifier { get; set; }
 
+        public SignedPackageVerifierSettings SignedPackageVerifierSettings { get; set; }
+
         public bool CopySatelliteFiles { get; set; } = true;
 
         public PackageExtractionContext(
             PackageSaveMode packageSaveMode,
             XmlDocFileSaveMode xmlDocFileSaveMode,
             ILogger logger,
-            IPackageSignatureVerifier signedPackageVerifier)
+            IPackageSignatureVerifier signedPackageVerifier,
+            SignedPackageVerifierSettings signedPackageVerifierSettings)
         {
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             PackageSaveMode = packageSaveMode;
             XmlDocFileSaveMode = xmlDocFileSaveMode;
             SignedPackageVerifier = signedPackageVerifier;
+            SignedPackageVerifierSettings = signedPackageVerifierSettings;
         }
     }
 }

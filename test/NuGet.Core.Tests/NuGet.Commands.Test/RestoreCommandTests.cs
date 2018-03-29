@@ -994,6 +994,7 @@ namespace NuGet.Commands.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
+                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(SignedPackageVerifierSettings.Default)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -1062,6 +1063,7 @@ namespace NuGet.Commands.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
+                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(SignedPackageVerifierSettings.Default)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));

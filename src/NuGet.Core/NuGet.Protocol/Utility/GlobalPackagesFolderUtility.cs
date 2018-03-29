@@ -97,9 +97,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(globalPackagesFolder));
             }
 
-            var signedPackageVerifier = new PackageSignatureVerifier(
-                          SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                          SignedPackageVerifierSettings.Default);
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
             // The following call adds it to the global packages folder.
             // Addition is performed using ConcurrentUtils, such that,
@@ -109,7 +107,8 @@ namespace NuGet.Protocol
                 PackageSaveMode.Defaultv3,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 logger,
-                signedPackageVerifier);
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.Default);
 
             var versionFolderPathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 

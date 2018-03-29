@@ -143,15 +143,14 @@ namespace NuGet.Commands
 
         private PackageExtractionContext GetPathContext()
         {
-            var signedPackageVerifier = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
             return new PackageExtractionContext(
                 _request.PackageSaveMode,
                 _request.XmlDocFileSaveMode,
                 _request.Log,
-                signedPackageVerifier);
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.Default);
         }
 
         private static PackageIdentity GetPackageIdentity(RemoteMatch remoteMatch)

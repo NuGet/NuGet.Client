@@ -43,13 +43,13 @@ namespace NuGet.Commands
                     new CertificateHashAllowListEntry(VerificationTarget.Primary, fingerprint)).ToList();
 
                 var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs(allowListEntries));
-                var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                var verifier = new PackageSignatureVerifier(verificationProviders);
 
                 foreach (var package in packagesToVerify)
                 {
                     try
                     {
-                        errorCount += await VerifySignatureForPackageAsync(package, verifyArgs.Logger, verifier);
+                        errorCount += await VerifySignatureForPackageAsync(package, verifyArgs.Logger, verifier, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
                     }
                     catch (InvalidDataException e)
                     {
@@ -62,12 +62,12 @@ namespace NuGet.Commands
             return errorCount == 0 ? SuccessCode : FailureCode;
         }
 
-        private async Task<int> VerifySignatureForPackageAsync(string packagePath, ILogger logger, PackageSignatureVerifier verifier)
+        private async Task<int> VerifySignatureForPackageAsync(string packagePath, ILogger logger, PackageSignatureVerifier verifier, SignedPackageVerifierSettings verifierSettings)
         {
             var result = 0;
             using (var packageReader = new PackageArchiveReader(packagePath))
             {
-                var verificationResult = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                var verificationResult = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
 
                 var packageIdentity = packageReader.GetIdentity();
 

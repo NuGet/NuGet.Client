@@ -1,12 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using NuGet.Shared;
+
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
     /// Feed settings used to verify packages.
     /// </summary>
-    public sealed class SignedPackageVerifierSettings
+    public class SignedPackageVerifierSettings
     {
         /// <summary>
         /// Allow packages that do not contain signatures.
@@ -23,6 +26,9 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public bool AllowUntrusted { get; }
 
+        /// <summary>
+        /// Allow packages that do not chain to a trusted root certificate.
+        /// </summary>
         public bool AllowUntrustedSelfIssuedCertificate { get; }
 
         public bool AllowIgnoreTimestamp { get; }
@@ -75,7 +81,7 @@ namespace NuGet.Packaging.Signing
         public static SignedPackageVerifierSettings Default { get; } = AllowAll;
 
         /// <summary>
-        /// Default policy for scenarios in VS
+        /// Default policy for scenarios in VS.
         /// </summary>
         public static SignedPackageVerifierSettings VSClientDefaultPolicy { get; } = new SignedPackageVerifierSettings(
             allowUnsigned: true,
@@ -88,7 +94,7 @@ namespace NuGet.Packaging.Signing
             allowUnknownRevocation: true);
 
         /// <summary>
-        /// Default policy for nuget.exe verify --signatures command
+        /// Default policy for nuget.exe verify --signatures command.
         /// </summary>
         public static SignedPackageVerifierSettings VerifyCommandDefaultPolicy { get; } = new SignedPackageVerifierSettings(
             allowUnsigned: false,

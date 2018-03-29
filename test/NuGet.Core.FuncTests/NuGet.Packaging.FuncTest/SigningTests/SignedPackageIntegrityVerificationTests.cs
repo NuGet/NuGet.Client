@@ -74,12 +74,12 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignatureTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, entryCount - 1, entryCount - 1);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
@@ -101,12 +101,12 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignatureTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, 0, 0);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
@@ -135,12 +135,12 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignatureTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, entryCount - 1, 0);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
@@ -169,12 +169,12 @@ namespace NuGet.Packaging.FuncTest
 
                 await SignatureTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, 0, entryCount - 1);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
@@ -204,12 +204,12 @@ namespace NuGet.Packaging.FuncTest
                 var middleEntry = (entryCount - 1) / 2;
                 await SignatureTestUtility.ShiftSignatureMetadataAsync(_specification, signedPackagePath, dir, middleEntry - 1, middleEntry + 1);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
@@ -240,11 +240,11 @@ namespace NuGet.Packaging.FuncTest
                     }
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
                 using (var packageReader = new PackageArchiveReader(packageStream))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -304,11 +304,11 @@ namespace NuGet.Packaging.FuncTest
                     }
                 }
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
                 using (var packageReader = new PackageArchiveReader(packageStream))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -402,11 +402,11 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((ushort)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                    var verifier = new PackageSignatureVerifier(_trustProviders);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
-                        var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                        var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                         var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -510,11 +510,11 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((uint)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                    var verifier = new PackageSignatureVerifier(_trustProviders);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
-                        var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                        var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                         var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -586,11 +586,11 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((uint)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                    var verifier = new PackageSignatureVerifier(_trustProviders);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
-                        var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                        var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                         var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -662,11 +662,11 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((ushort)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                    var verifier = new PackageSignatureVerifier(_trustProviders);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
-                        var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                        var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                         var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -738,11 +738,11 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((ushort)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                    var verifier = new PackageSignatureVerifier(_trustProviders);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
-                        var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                        var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                         var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -814,11 +814,11 @@ namespace NuGet.Packaging.FuncTest
                         writer.Write((uint)1);
                     }
 
-                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                    var verifier = new PackageSignatureVerifier(_trustProviders);
                     using (var packageReader = new PackageArchiveReader(packageWriteStream))
                     {
                         // Act
-                        var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                        var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                         var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -893,11 +893,11 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var packageStream = new FileStream(signedPackagePath, FileMode.Open))
                 {
-                    var verifier = new PackageSignatureVerifier(_trustProviders, _settings);
+                    var verifier = new PackageSignatureVerifier(_trustProviders);
                     using (var packageReader = new PackageArchiveReader(packageStream))
                     {
                         // Act
-                        var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                        var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                         var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 

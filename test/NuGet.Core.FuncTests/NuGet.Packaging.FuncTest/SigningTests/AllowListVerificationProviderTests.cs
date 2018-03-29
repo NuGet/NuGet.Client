@@ -4,6 +4,7 @@
 #if IS_DESKTOP
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -62,12 +63,12 @@ namespace NuGet.Packaging.FuncTest
                     new AllowListVerificationProvider(allowList)
                 };
 
-                var verifier = new PackageSignatureVerifier(trustProviders, _settings);
+                var verifier = new PackageSignatureVerifier(trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
 
                     // Assert
                     result.Valid.Should().BeTrue();
@@ -94,12 +95,12 @@ namespace NuGet.Packaging.FuncTest
                     new AllowListVerificationProvider(allowList)
                 };
 
-                var verifier = new PackageSignatureVerifier(trustProviders, _settings);
+                var verifier = new PackageSignatureVerifier(trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _settings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -142,12 +143,12 @@ namespace NuGet.Packaging.FuncTest
                     allowNoTimestamp: true,
                     allowUnknownRevocation: true);
 
-                var verifier = new PackageSignatureVerifier(trustProviders, settings);
+                var verifier = new PackageSignatureVerifier(trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, settings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var resultsWithWarnings = result.Results.Where(r => r.GetWarningIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
