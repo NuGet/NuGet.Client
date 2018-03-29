@@ -862,7 +862,7 @@ namespace NuGet.Commands
             if (!_packArgs.NoDefaultExcludes)
             {
                 // The user has not explicitly disabled default filtering.
-                var excludedFiles = PathResolver.FilterPackageFiles(packageFiles, ResolvePath, _defaultExcludes);
+                var excludedFiles = PathResolver.GetFilteredPackageFiles(packageFiles, ResolvePath, _defaultExcludes);
                 if(excludedFiles != null)
                 {
                     foreach (var file in excludedFiles)
