@@ -2,15 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Moq;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Plugins;
 using NuGet.Test.Utility;
@@ -24,16 +19,24 @@ namespace NuGet.Credentials.Test
         public void Create_ThrowsForNullPlugin()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SecurePluginCredentialProvider(null, NullLogger.Instance));
+                () => new SecurePluginCredentialProvider(CreateDefaultPluginManager(), null, NullLogger.Instance));
 
             Assert.Equal("pluginDiscoveryResult", exception.ParamName);
+        }
+
+        public void Create_ThrowsForNullPluginManager()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SecurePluginCredentialProvider(null, CreatePluginDiscoveryResult(), NullLogger.Instance));
+
+            Assert.Equal("pluginManager", exception.ParamName);
         }
 
         [Fact]
         public void Create_ThrowsForNullLogger()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SecurePluginCredentialProvider(CreatePluginDiscoveryResult(), null));
+                () => new SecurePluginCredentialProvider(CreateDefaultPluginManager(), CreatePluginDiscoveryResult(), null));
 
             Assert.Equal("logger", exception.ParamName);
         }
@@ -42,14 +45,14 @@ namespace NuGet.Credentials.Test
         public void Create_ThrowsForInvalidPlugin()
         {
             var exception = Assert.Throws<ArgumentException>(
-                () => new SecurePluginCredentialProvider(CreatePluginDiscoveryResult(PluginFileState.InvalidFilePath), NullLogger.Instance));
+                () => new SecurePluginCredentialProvider(null, CreatePluginDiscoveryResult(PluginFileState.InvalidFilePath), NullLogger.Instance));
             Assert.Equal("pluginDiscoveryResult", exception.ParamName);
         }
 
         [Fact]
         public void Type_IsICredentialProvider()
         {
-            var provider = new SecurePluginCredentialProvider(CreatePluginDiscoveryResult(), NullLogger.Instance);
+            var provider = new SecurePluginCredentialProvider(CreateDefaultPluginManager(), CreatePluginDiscoveryResult(), NullLogger.Instance);
             Assert.True(provider is ICredentialProvider);
         }
 
@@ -57,14 +60,8 @@ namespace NuGet.Credentials.Test
         public void Provider_IdContainsPath()
         {
             var pluginResult = CreatePluginDiscoveryResult();
-            var provider = new SecurePluginCredentialProvider(pluginResult, NullLogger.Instance);
+            var provider = new SecurePluginCredentialProvider(CreateDefaultPluginManager(), pluginResult, NullLogger.Instance);
             Assert.Contains(pluginResult.PluginFile.Path, provider.Id);
-        }
-
-
-        private static PluginDiscoveryResult CreatePluginDiscoveryResult(PluginFileState pluginState = PluginFileState.Valid)
-        {
-            return new PluginDiscoveryResult(new PluginFile(@"C:\random\path\plugin.exe", pluginState));
         }
 
         [PlatformFact(Platform.Windows)]
@@ -92,7 +89,7 @@ namespace NuGet.Credentials.Test
                 expectations: expectation))
             {
                 var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", PluginFileState.Valid));
-                var provider = new SecurePluginCredentialProvider(discoveryResult, NullLogger.Instance);
+                var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, NullLogger.Instance);
 
                 System.Net.IWebProxy proxy = null;
                 var credType = CredentialRequestType.Unauthorized;
@@ -136,7 +133,7 @@ namespace NuGet.Credentials.Test
                 expectations: expectation))
             {
                 var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", PluginFileState.Valid));
-                var provider = new SecurePluginCredentialProvider(discoveryResult, NullLogger.Instance);
+                var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, NullLogger.Instance);
 
                 System.Net.IWebProxy proxy = null;
                 var credType = CredentialRequestType.Unauthorized;
@@ -180,7 +177,7 @@ namespace NuGet.Credentials.Test
                 expectations: expectation))
             {
                 var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", PluginFileState.Valid));
-                var provider = new SecurePluginCredentialProvider(discoveryResult, NullLogger.Instance);
+                var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, NullLogger.Instance);
 
                 System.Net.IWebProxy proxy = null;
                 var credType = CredentialRequestType.Unauthorized;
@@ -195,6 +192,19 @@ namespace NuGet.Credentials.Test
                 Assert.Equal(authUsername, credentialResponse.Credentials.GetCredential(uri, null).UserName);
                 Assert.Equal(authPassword, credentialResponse.Credentials.GetCredential(uri, null).Password);
             }
+        }
+
+        private static PluginDiscoveryResult CreatePluginDiscoveryResult(PluginFileState pluginState = PluginFileState.Valid)
+        {
+            return new PluginDiscoveryResult(new PluginFile(@"C:\random\path\plugin.exe", pluginState));
+        }
+
+        private static PluginManager CreateDefaultPluginManager()
+        {
+            return new PluginManager(
+                reader: Mock.Of<IEnvironmentVariableReader>(),
+                pluginDiscoverer: new Lazy<IPluginDiscoverer>(),
+                pluginFactoryCreator: (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>());
         }
     }
 }

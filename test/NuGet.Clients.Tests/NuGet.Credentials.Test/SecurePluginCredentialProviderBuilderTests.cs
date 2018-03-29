@@ -20,8 +20,16 @@ namespace NuGet.Credentials.Test
         public void CredentialProviderBuilder_ThrowsExceptionForNullLogger()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SecureCredentialProviderBuilder(null));
+                () => new SecureCredentialProviderBuilder(CreateDefaultPluginManager(), null));
             Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
+        public void CredentialProviderBuilder_ThrowsExceptionForNullPluginManager()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SecureCredentialProviderBuilder(null, NullLogger.Instance));
+            Assert.Equal("pluginManager", exception.ParamName);
         }
 
         [Fact]
@@ -29,7 +37,7 @@ namespace NuGet.Credentials.Test
         {
             var plugins = new List<KeyValuePair<string, PluginFileState>>();
             var pluginManager = new PluginManagerBuilderMock(plugins);
-            var builder = new SecureCredentialProviderBuilder(NullLogger.Instance);
+            var builder = new SecureCredentialProviderBuilder(pluginManager.PluginManager, NullLogger.Instance);
 
             var credentialProviders = await builder.BuildAll();
             Assert.Equal(0, credentialProviders.Count());
@@ -44,7 +52,7 @@ namespace NuGet.Credentials.Test
             plugins.Add(new KeyValuePair<string, PluginFileState>("c", PluginFileState.Valid));
 
             var pluginManager = new PluginManagerBuilderMock(plugins);
-            var builder = new SecureCredentialProviderBuilder(NullLogger.Instance);
+            var builder = new SecureCredentialProviderBuilder(pluginManager.PluginManager, NullLogger.Instance);
 
             var credentialProviders = (await builder.BuildAll()).ToArray();
             Assert.Equal(3, credentialProviders.Count());
@@ -64,7 +72,7 @@ namespace NuGet.Credentials.Test
 
 
             var pluginManager = new PluginManagerBuilderMock(plugins);
-            var builder = new SecureCredentialProviderBuilder(NullLogger.Instance);
+            var builder = new SecureCredentialProviderBuilder(pluginManager.PluginManager, NullLogger.Instance);
 
             var credentialProviders = (await builder.BuildAll()).ToArray();
             Assert.Equal(1, credentialProviders.Count());
@@ -73,7 +81,7 @@ namespace NuGet.Credentials.Test
 
         private sealed class PluginManagerBuilderMock
         {
-
+            internal PluginManager PluginManager { get; }
             internal PluginManagerBuilderMock(List<KeyValuePair<string, PluginFileState>> plugins)
             {
                 var reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
@@ -98,7 +106,7 @@ namespace NuGet.Credentials.Test
                 pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
                     .ReturnsAsync(pluginDiscoveryResults);
 
-                PluginManager.Instance.Reinitialize(
+                PluginManager = new PluginManager(
                     reader.Object,
                     new Lazy<IPluginDiscoverer>(() => pluginDiscoverer.Object),
                     (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>());
@@ -117,5 +125,12 @@ namespace NuGet.Credentials.Test
             }
         }
 
+        private static PluginManager CreateDefaultPluginManager()
+        {
+            return new PluginManager(
+                reader: Mock.Of<IEnvironmentVariableReader>(),
+                pluginDiscoverer: new Lazy<IPluginDiscoverer>(),
+                pluginFactoryCreator: (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>());
+        }
     }
 }

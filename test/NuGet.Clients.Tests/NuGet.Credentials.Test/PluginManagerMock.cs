@@ -68,8 +68,6 @@ namespace NuGet.Credentials.Test
 
         internal PluginManager PluginManager { get; }
 
-
-
         internal PluginManagerMock(
                             string pluginFilePath,
                             PluginFileState pluginFileState,
@@ -116,9 +114,8 @@ namespace NuGet.Credentials.Test
                 .ReturnsAsync(new GetAuthenticationCredentialsResponse(expectations.AuthenticationUsername, expectations.AuthenticationPassword, null, null, MessageResponseCode.Success));
             }
 
-            PluginManager = PluginManager.Instance;
-            PluginManager.Reinitialize(
-                _reader.Object,
+            PluginManager = new PluginManager(
+                                _reader.Object,
                                 new Lazy<IPluginDiscoverer>(() => _pluginDiscoverer.Object),
                                 (TimeSpan idleTimeout) => _factory.Object);
         }

@@ -48,6 +48,16 @@ namespace NuGet.Protocol.Core.Types
         public IEnvironmentVariableReader EnvironmentVariableReader { get; private set; }
 
 
+        public PluginManager(IEnvironmentVariableReader reader,
+            Lazy<IPluginDiscoverer> pluginDiscoverer,
+            Func<TimeSpan, IPluginFactory> pluginFactoryCreator)
+        {
+            Reinitialize(
+                reader,
+                pluginDiscoverer,
+                pluginFactoryCreator);
+        }
+
         /// <summary>
         /// Initializes a new <see cref="PluginManager" /> class.
         /// </summary>
@@ -206,7 +216,7 @@ namespace NuGet.Protocol.Core.Types
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="pluginFactoryCreator" />
         /// is <c>null</c>.</exception>
-        public void Reinitialize(IEnvironmentVariableReader reader,
+        private void Reinitialize(IEnvironmentVariableReader reader,
             Lazy<IPluginDiscoverer> pluginDiscoverer,
             Func<TimeSpan, IPluginFactory> pluginFactoryCreator)
         {

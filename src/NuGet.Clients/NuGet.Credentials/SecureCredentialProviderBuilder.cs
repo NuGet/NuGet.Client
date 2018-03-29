@@ -16,9 +16,18 @@ namespace NuGet.Credentials
     public class SecureCredentialProviderBuilder
     {
         private Common.ILogger _logger;
+        private PluginManager _pluginManager;
 
-        public SecureCredentialProviderBuilder(Common.ILogger logger)
+        /// <summary>
+        /// Create a credential provider builders
+        /// </summary>
+        /// <param name="pluginManager"></param>
+        /// <param name="logger"></param>
+        /// <exception cref="ArgumentNullException">if <paramref name="logger"/> is null</exception>
+        /// <exception cref="ArgumentNullException">if <paramref name="pluginManager"/> is null</exception>
+        public SecureCredentialProviderBuilder(PluginManager pluginManager, Common.ILogger logger)
         {
+            _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -28,7 +37,7 @@ namespace NuGet.Credentials
         /// <returns>credential providers</returns>
         public async Task<IEnumerable<ICredentialProvider>> BuildAll()
         {
-            var availablePlugins = await PluginManager.Instance.FindAvailablePluginsAsync(CancellationToken.None);
+            var availablePlugins = await _pluginManager.FindAvailablePluginsAsync(CancellationToken.None);
 
             var plugins = new List<ICredentialProvider>();
             foreach (var pluginDiscoveryResult in availablePlugins)
@@ -36,7 +45,7 @@ namespace NuGet.Credentials
                 if (pluginDiscoveryResult.PluginFile.State == PluginFileState.Valid)
                 {
                     _logger.LogDebug($"Will attempt to use {pluginDiscoveryResult.PluginFile.Path} as a credential provider");
-                    plugins.Add(new SecurePluginCredentialProvider(pluginDiscoveryResult, _logger));
+                    plugins.Add(new SecurePluginCredentialProvider(_pluginManager, pluginDiscoveryResult, _logger));
                 }
                 else
                 {

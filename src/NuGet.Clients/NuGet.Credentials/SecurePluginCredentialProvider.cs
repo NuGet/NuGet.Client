@@ -24,6 +24,8 @@ namespace NuGet.Credentials
         /// </summary>
         private readonly Common.ILogger _logger;
 
+        private readonly PluginManager _pluginManager;
+
         // We use this to avoid needlessly instantiating plugins if they don't support authentication.
         private bool _isAnAuthenticationPlugin = true;
 
@@ -32,10 +34,11 @@ namespace NuGet.Credentials
         /// </summary>
         /// <param name="pluginDiscoveryResult"></param>
         /// <param name="logger"></param>
-        /// <exception cref="ArgumentNullException">if PluginDiscoveryResult is null</exception>
-        /// <exception cref="ArgumentNullException">if logger is null</exception>
+        /// <exception cref="ArgumentNullException">if <paramref name="pluginDiscoveryResult"/> is null</exception>
+        /// <exception cref="ArgumentNullException">if <paramref name="logger"/> is null</exception>
+        /// <exception cref="ArgumentNullException">if <paramref name="pluginManager"/> is null</exception>
         /// <exception cref="ArgumentException">if plugin file is not valid</exception>
-        public SecurePluginCredentialProvider(PluginDiscoveryResult pluginDiscoveryResult, Common.ILogger logger)
+        public SecurePluginCredentialProvider(PluginManager pluginManager, PluginDiscoveryResult pluginDiscoveryResult, Common.ILogger logger)
         {
             if (pluginDiscoveryResult == null)
             {
@@ -45,6 +48,7 @@ namespace NuGet.Credentials
             {
                 throw new ArgumentException(string.Format(Resources.SecureCredentialProvider_InvalidPluginFile, pluginDiscoveryResult.PluginFile.State, pluginDiscoveryResult.Message), nameof(pluginDiscoveryResult));
             }
+            _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
             _discoveredPlugin = pluginDiscoveryResult;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             Id = $"{nameof(SecurePluginCredentialProvider)}_{pluginDiscoveryResult.PluginFile.Path}";
@@ -77,7 +81,7 @@ namespace NuGet.Credentials
                 return taskResponse;
             }
 
-            var plugin = await PluginManager.Instance.CreateSourceAgnosticPluginAsync(_discoveredPlugin, cancellationToken);
+            var plugin = await _pluginManager.CreateSourceAgnosticPluginAsync(_discoveredPlugin, cancellationToken);
 
             _isAnAuthenticationPlugin = plugin.Claims.Contains(OperationClaim.Authentication);
 
@@ -101,7 +105,7 @@ namespace NuGet.Credentials
             // Don't explicitly dispose of a plugin that's not an authentication plugin, or that has more than 1 capability
             if (plugin.Claims.Count == 1 && _isAnAuthenticationPlugin)
             {
-                await PluginManager.Instance.DisposeOfPlugin(plugin.Plugin);
+                await _pluginManager.DisposeOfPlugin(plugin.Plugin);
             }
 
             return taskResponse;

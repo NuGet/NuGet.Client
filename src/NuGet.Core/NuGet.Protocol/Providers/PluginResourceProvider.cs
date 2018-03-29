@@ -24,10 +24,17 @@ namespace NuGet.Protocol.Core.Types
     public class PluginResourceProvider : ResourceProvider
     {
 
+        private readonly PluginManager _pluginManager;
 
-        public PluginResourceProvider()
+        public PluginResourceProvider() : this(PluginManager.Instance)
+        {
+        }
+
+        // To be used for testing purposes only
+        public PluginResourceProvider(PluginManager pluginManager)
             : base(typeof(PluginResource), nameof(PluginResourceProvider))
         {
+            _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
         }
 
         /// <summary>
@@ -53,7 +60,7 @@ namespace NuGet.Protocol.Core.Types
 
             PluginResource resource = null;
 
-            var pluginCreationResults = await PluginManager.Instance.TryCreateAsync(source, cancellationToken);
+            var pluginCreationResults = await _pluginManager.TryCreateAsync(source, cancellationToken);
 
             if (pluginCreationResults != null && pluginCreationResults.Any())
             {

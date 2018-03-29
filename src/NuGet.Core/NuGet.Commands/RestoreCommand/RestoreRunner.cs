@@ -14,6 +14,7 @@ using NuGet.Configuration;
 using NuGet.Credentials;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Commands
 {
@@ -56,7 +57,7 @@ namespace NuGet.Commands
         {
             var providers = new List<Credentials.ICredentialProvider>();
 
-            var securePluginProviders = await (new SecureCredentialProviderBuilder(logger)).BuildAll();
+            var securePluginProviders = await (new SecureCredentialProviderBuilder(PluginManager.Instance, logger)).BuildAll();
 
             providers.AddRange(securePluginProviders);
 
