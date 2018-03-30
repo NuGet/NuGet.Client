@@ -474,63 +474,6 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetNetCoreTemplates))]
-        public void NetCoreAutoReferenceCannotBeUpdatedInPMC(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-            var packageName = "TestPackage";
-            var packageVersion1 = "1.0.0";
-            var packageVersion2 = "2.0.0";
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
-            {
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
-
-                //Preconditions
-                var nugetConsole = GetConsole(testContext.Project);
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
-                testContext.Project.Build();
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);
-                testContext.Project.Unload();
-
-                testContext.SolutionService.SaveAll();
-                
-                // edit with msbuild
-                var project = GetProject(testContext.Project.FullPath);
-                var packageReferences = GetPackageReferences(project, packageName);
-                packageReferences.Single().SetMetadataValue("IsImplicitlyDefined", "true");
-                project.Save();
-                
-                Microsoft.Build.Evaluation.ProjectCollection.GlobalProjectCollection.UnloadProject(project);
-
-                testContext.Project.Load();
-                testContext.SolutionService.Build();
-                //Act
-                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
-                testContext.SolutionService.Build();
-
-                //Assert
-                Utils.AssertPackageIsInstalled(GetNuGetTestService(), testContext.Project, packageName, packageVersion1);;
-            }
-        }
-
-        private static Project GetProject(string projectCSProjPath)
-        {
-            return new Project(ProjectRootElement.Open(projectCSProjPath, Microsoft.Build.Evaluation.ProjectCollection.GlobalProjectCollection, preserveFormatting: true));
-        }
-
-        private static IEnumerable<ProjectItem> GetPackageReferences(Project project, string packageId)
-        {
-            return project.AllEvaluatedItems
-                .Where(item => item.ItemType.Equals("PackageReference", StringComparison.OrdinalIgnoreCase) &&
-                               item.EvaluatedInclude.Equals(packageId, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
         // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
         public static IEnumerable<object[]> GetNetCoreTemplates()

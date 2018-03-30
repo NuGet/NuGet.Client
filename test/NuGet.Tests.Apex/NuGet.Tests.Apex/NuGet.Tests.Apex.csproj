@@ -56,7 +56,6 @@
       <Version>15.0.27006.00</Version>
     </PackageReference>
     <PackageReference Include="Xunit.StaFact" Version="0.2.9" />
-    <PackageReference Include="Microsoft.Build.Runtime" Version="15.3.409" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
