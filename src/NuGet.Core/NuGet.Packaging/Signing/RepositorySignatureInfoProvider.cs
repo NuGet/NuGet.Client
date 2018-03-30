@@ -15,29 +15,24 @@ namespace NuGet.Packaging
 
         public static RepositorySignatureInfoProvider Instance { get; } = new RepositorySignatureInfoProvider();
 
-        private RepositorySignatureInfoProvider()
-        {
-        }
-
         /// <summary>
         /// Try to get repository signature information for the source.
         /// </summary>
-        /// <param name="source"></param>
-        /// <returns>Null if can't find the repository signature information for the source.</returns>
-        public RepositorySignatureInfo TryGetRepositorySignatureInfo(string source)
+        /// <param name="source">Package source URL.</param>
+        /// <param name="repositorySignatureInfo">Contains the RepositorySignatureInfo when the method returns. It is null if repository signature information is unavailable.</param>
+        /// <returns>True if the repository signature information was found. Otherwise, False.</returns>
+        public bool TryGetRepositorySignatureInfo(string source, out RepositorySignatureInfo repositorySignatureInfo)
         {
-            RepositorySignatureInfo repositorySignatureInfo = null;
+            repositorySignatureInfo = null;
 
-            _dict.TryGetValue(source, out repositorySignatureInfo);
-
-            return repositorySignatureInfo;
+            return _dict.TryGetValue(source, out repositorySignatureInfo);
         }
 
         /// <summary>
         /// Add or update the repository signature information for the source.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="repositorySignatureInfo"></param>
+        /// <param name="source">Package source URL.</param>
+        /// <param name="repositorySignatureInfo">RepositorySignatureInfo for the source url.</param>
         public void AddOrUpdateRepositorySignatureInfo(string source, RepositorySignatureInfo repositorySignatureInfo)
         {
             _dict[source] = repositorySignatureInfo ?? throw new ArgumentNullException(nameof(repositorySignatureInfo));

@@ -16,6 +16,9 @@ namespace NuGet.Packaging
 {
     public static class PackageExtractor
     {
+        private static Lazy<RepositorySignatureInfoProvider> _repositorySignatureInfoProvider =
+            new Lazy<RepositorySignatureInfoProvider>(() => RepositorySignatureInfoProvider.Instance);
+
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
             string source,
             Stream packageStream,
@@ -62,6 +65,7 @@ namespace NuGet.Packaging
                         telemetry.StartIntervalMeasure();
 
                         await VerifyPackageSignatureAsync(
+                         source,
                          telemetry.OperationId,
                          packageIdentityFromNuspec,
                          packageExtractionContext,
@@ -183,6 +187,7 @@ namespace NuGet.Packaging
                     telemetry.StartIntervalMeasure();
 
                     await VerifyPackageSignatureAsync(
+                         source,
                          telemetry.OperationId,
                          packageIdentityFromNuspec,
                          packageExtractionContext,
@@ -291,6 +296,7 @@ namespace NuGet.Packaging
                     telemetry.StartIntervalMeasure();
 
                     await VerifyPackageSignatureAsync(
+                        source,
                         telemetry.OperationId,
                         packageIdentityFromNuspec,
                         packageExtractionContext,
@@ -469,6 +475,7 @@ namespace NuGet.Packaging
                                             telemetry.StartIntervalMeasure();
 
                                             await VerifyPackageSignatureAsync(
+                                                source,
                                                 telemetry.OperationId,
                                                 packageIdentity,
                                                 packageExtractionContext,
@@ -595,6 +602,7 @@ namespace NuGet.Packaging
         }
 
         public static async Task<bool> InstallFromSourceAsync(
+            string source,
             PackageIdentity packageIdentity,
             IPackageDownloader packageDownloader,
             VersionFolderPathResolver versionFolderPathResolver,
@@ -681,6 +689,7 @@ namespace NuGet.Packaging
                                     telemetry.StartIntervalMeasure();
 
                                     await VerifyPackageSignatureAsync(
+                                        source,
                                         telemetry.OperationId,
                                         packageIdentity,
                                         packageExtractionContext,
@@ -969,6 +978,7 @@ namespace NuGet.Packaging
         }
 
         private static async Task VerifyPackageSignatureAsync(
+            string source,
             Guid parentId,
             PackageIdentity package,
             PackageExtractionContext packageExtractionContext,
@@ -977,6 +987,8 @@ namespace NuGet.Packaging
         {
             if (packageExtractionContext.SignedPackageVerifier != null)
             {
+                var verifierSettings = GetSignedPackageVerifierSettings(source, packageExtractionContext.SignedPackageVerifierSettings);
+
                 var verifyResult = await packageExtractionContext.SignedPackageVerifier.VerifySignaturesAsync(
                        signedPackageReader,
                        packageExtractionContext.SignedPackageVerifierSettings,
@@ -988,6 +1000,35 @@ namespace NuGet.Packaging
                     throw new SignatureException(verifyResult.Results, package);
                 }
             }
+        }
+
+        private static SignedPackageVerifierSettings GetSignedPackageVerifierSettings(string source, SignedPackageVerifierSettings commonSignedPackageVerifierSettings)
+        {
+            var repoSignatureInfo = GetRepositorySignatureInfo(source);
+
+            if (repoSignatureInfo == null)
+            {
+                return commonSignedPackageVerifierSettings;
+            }
+            else
+            {
+                return new SignedPackageVerifierSettings(
+                    allowUnsigned: !repoSignatureInfo.AllRepositorySigned,
+                    allowIllegal: commonSignedPackageVerifierSettings.AllowIllegal,
+                    allowUntrusted: commonSignedPackageVerifierSettings.AllowUntrusted,
+                    allowUntrustedSelfIssuedCertificate: commonSignedPackageVerifierSettings.AllowUntrustedSelfIssuedCertificate,
+                    allowIgnoreTimestamp: commonSignedPackageVerifierSettings.AllowIgnoreTimestamp,
+                    allowMultipleTimestamps: commonSignedPackageVerifierSettings.AllowMultipleTimestamps,
+                    allowNoTimestamp: commonSignedPackageVerifierSettings.AllowNoTimestamp,
+                    allowUnknownRevocation: commonSignedPackageVerifierSettings.AllowUnknownRevocation);
+            }
+        }
+
+        private static RepositorySignatureInfo GetRepositorySignatureInfo(string source)
+        {
+            _repositorySignatureInfoProvider.Value.TryGetRepositorySignatureInfo(source, out var repositorySignatureInfo);
+
+            return repositorySignatureInfo;
         }
     }
 }
