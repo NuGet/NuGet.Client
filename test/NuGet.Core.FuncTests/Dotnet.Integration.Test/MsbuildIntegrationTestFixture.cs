@@ -81,6 +81,7 @@ namespace Dotnet.Integration.Test
 
             var restorePackagesPath = Path.Combine(workingDirectory, "tools", "packages");
             var restoreSolutionDirectory = workingDirectory;
+            var msbuildProjectExtensionsPath = Path.Combine(workingDirectory);
             var packageReference = string.Empty;
             foreach (var package in packages) {
                 packageReference = string.Concat(packageReference, Environment.NewLine, $@"<PackageReference Include=""{ package.Id }"" Version=""{ package.Version.ToString()}""/>");
@@ -94,7 +95,7 @@ namespace Dotnet.Integration.Test
                 <!-- Things that do change-->
                 <RestorePackagesPath>{restorePackagesPath}</RestorePackagesPath>
                 <RestoreSolutionDirectory>{restoreSolutionDirectory}</RestoreSolutionDirectory>
-    
+                <MSBuildProjectExtensionsPath>{msbuildProjectExtensionsPath}</MSBuildProjectExtensionsPath>
                 <RestoreSources>{source}</RestoreSources>
                 <!--Things that don't change -->
                 <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>

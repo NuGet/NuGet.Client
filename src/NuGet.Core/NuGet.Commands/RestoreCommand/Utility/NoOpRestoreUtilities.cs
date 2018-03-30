@@ -35,18 +35,7 @@ namespace NuGet.Commands
                 || request.ProjectStyle == ProjectStyle.PackageReference
                 || request.ProjectStyle == ProjectStyle.Standalone)
             {
-                //  Project.json is special cased to put assets file and generated .props and targets in the project folder
-                //  This means RestoreOutputPath is actually the project folder in that case, so use MSBuildProjectExtensionsPath instead
-                string cacheRoot;
-                if (request.ProjectStyle == ProjectStyle.ProjectJson)
-                {
-                    cacheRoot = request.MSBuildProjectExtensionsPath;
-                }
-                else
-                {
-                    cacheRoot = request.RestoreOutputPath;
-                }
-
+                var cacheRoot = request.MSBuildProjectExtensionsPath ?? request.RestoreOutputPath;
                 return request.Project.RestoreMetadata.CacheFilePath = GetProjectCacheFilePath(cacheRoot, request.Project.RestoreMetadata.ProjectPath);
             }
 

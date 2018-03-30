@@ -111,7 +111,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 Assert.True(result.Item1 == 0, result.AllOutput);
                 // Verify the assets file
-                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "obj", "project.assets.json"), NullLogger.Instance);
+                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);
                 Assert.Equal(2, lockFile.Targets.Count);
                 var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(rid, StringComparison.CurrentCultureIgnoreCase) : false);
@@ -195,7 +195,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 Assert.True(result.Item1 == 0, result.AllOutput);
                 // Verify the assets file
-                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "obj", "project.assets.json"), NullLogger.Instance);
+                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);
                 Assert.Equal(2, lockFile.Targets.Count);
                 var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(rid, StringComparison.CurrentCultureIgnoreCase) : false);
@@ -243,7 +243,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 Assert.True(result.Item1 == 0, result.AllOutput);
                 // Verify the assets file
-                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "obj", "project.assets.json"), NullLogger.Instance);
+                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);
                 Assert.Equal(2, lockFile.Targets.Count);
                 var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(projectRID, StringComparison.CurrentCultureIgnoreCase) : false);
@@ -384,7 +384,7 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 Assert.True(result.Item1 == 0, result.AllOutput);
-                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "obj", "project.assets.json"), NullLogger.Instance);
+                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);
                 Assert.Equal(2, lockFile.Targets.Count);
                 var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(projectRid, StringComparison.CurrentCultureIgnoreCase) : false);
@@ -504,7 +504,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 Assert.True(result.Item1 == 0, result.AllOutput);
                 // Verify the assets file
-                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "obj", "project.assets.json"), NullLogger.Instance);
+                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);
                 Assert.Equal(2, lockFile.Targets.Count);
                 var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(rid, StringComparison.CurrentCultureIgnoreCase) : false);

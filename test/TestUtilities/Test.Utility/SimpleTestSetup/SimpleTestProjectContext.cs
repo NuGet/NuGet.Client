@@ -396,8 +396,9 @@ namespace NuGet.Test.Utility
             //  MSBuildProjectExtensionsPath needs to be set before Microsoft.Common.props is imported, so add a new
             //  PropertyGroup as the first element under the Project
             var ns = xml.Root.GetDefaultNamespace();
-            xml.Root.AddFirst(new XElement(ns + "PropertyGroup"),
-                new XElement(ns + "MSBuildProjectExtensionsPath", OutputPath));
+            var propertyGroup = new XElement(ns + "PropertyGroup");
+            propertyGroup.Add(new XElement(ns + "MSBuildProjectExtensionsPath", OutputPath));
+            xml.Root.AddFirst(propertyGroup);
 
             ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
             {
