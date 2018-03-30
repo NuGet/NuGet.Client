@@ -151,7 +151,7 @@ namespace NuGet.ProjectManagement.Projects
             return packages;
         }
 
-        protected virtual Task<string> GetBaseIntermediatePathAsync()
+        protected virtual Task<string> GetMSBuildProjectExtensionsPathAsync()
         {
             // Extending class will implement the functionality.
             return Task.FromResult((string) null);
@@ -172,7 +172,7 @@ namespace NuGet.ProjectManagement.Projects
                 packageSpec.RestoreMetadata = metadata;
 
                 metadata.ProjectStyle = ProjectStyle.ProjectJson;
-                metadata.OutputPath = await GetBaseIntermediatePathAsync();
+                metadata.OutputPath = await GetMSBuildProjectExtensionsPathAsync();
                 metadata.ProjectPath = MSBuildProjectPath;
                 metadata.ProjectJsonPath = packageSpec.FilePath;
                 metadata.ProjectName = packageSpec.Name;

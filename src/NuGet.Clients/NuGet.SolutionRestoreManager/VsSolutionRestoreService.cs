@@ -247,10 +247,12 @@ namespace NuGet.SolutionRestoreManager
                 // cross-targeting is always ON even in case of a single tfm in the list.
                 crossTargeting = true;
             }
+
+        
             var outputPath = Path.GetFullPath(
-                        Path.Combine(
-                            projectDirectory,
-                            projectRestoreInfo.BaseIntermediatePath));
+                                Path.Combine(
+                                    projectDirectory,
+                                    projectRestoreInfo.BaseIntermediatePath));
 
             var projectName = GetPackageId(projectNames, projectRestoreInfo.TargetFrameworks);
 

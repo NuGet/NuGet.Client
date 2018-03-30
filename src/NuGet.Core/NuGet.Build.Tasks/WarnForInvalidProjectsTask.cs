@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -28,8 +29,8 @@ namespace NuGet.Build.Tasks
             var log = new MSBuildLogger(Log);
 
             // item -> string
-            var all = AllProjects?.Select(e => e.ItemSpec).ToArray() ?? new string[0];
-            var valid = ValidProjects?.Select(e => e.ItemSpec).ToArray() ?? new string[0];
+            var all = AllProjects?.Select(e => e.ItemSpec).ToArray() ?? Array.Empty<string>();
+            var valid = ValidProjects?.Select(e => e.ItemSpec).ToArray() ?? Array.Empty<string>();
 
             // log inputs
             BuildTasksUtility.LogInputParam(log, nameof(AllProjects), all);

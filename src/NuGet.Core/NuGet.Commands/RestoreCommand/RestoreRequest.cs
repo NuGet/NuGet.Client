@@ -137,9 +137,9 @@ namespace NuGet.Commands
         public string RestoreOutputPath { get; set; }
 
         /// <summary>
-        /// Base Intermediate output path
+        /// MSBuildProjectExtensionsPath
         /// </summary>
-        public string BaseIntermediateOutputPath { get; set; }
+        public string MSBuildProjectExtensionsPath { get; set; }
 
         
         /// <summary>

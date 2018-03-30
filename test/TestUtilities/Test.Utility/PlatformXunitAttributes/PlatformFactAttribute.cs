@@ -68,12 +68,12 @@ namespace NuGet.Test.Utility
 
         private string[] GetAllPlatforms()
         {
-            var platforms = new HashSet<string>(Platforms ?? new string[0], StringComparer.OrdinalIgnoreCase)
+            var platforms = new HashSet<string>(Platforms ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase)
             {
                 Platform
             };
 
-            var skipPlatforms = new HashSet<string>(SkipPlatforms ?? new string[0], StringComparer.OrdinalIgnoreCase)
+            var skipPlatforms = new HashSet<string>(SkipPlatforms ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase)
             {
                 SkipPlatform
             };

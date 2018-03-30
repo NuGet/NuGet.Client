@@ -361,7 +361,7 @@ namespace NuGet.PackageManagement.Test
                     .Returns(userPackageFolder);
                 NuGetPathContext
                     .Setup(x => x.FallbackPackageFolders)
-                    .Returns(new string[0]);
+                    .Returns(Array.Empty<string>());
 
                 NuspecReader
                     .Setup(p => p.GetIdentity())

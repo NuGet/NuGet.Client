@@ -317,7 +317,7 @@ namespace NuGet.ProjectModel.Test
             lockFile.ProjectFileDependencyGroups.Add(
                 new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
             lockFile.ProjectFileDependencyGroups.Add(
-                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, Array.Empty<string>()));
 
             // Act
             var lockFileFormat = new LockFileFormat();
@@ -547,7 +547,7 @@ namespace NuGet.ProjectModel.Test
             lockFile.ProjectFileDependencyGroups.Add(
                 new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
             lockFile.ProjectFileDependencyGroups.Add(
-                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, Array.Empty<string>()));
 
             lockFile.LogMessages = new List<IAssetsLogMessage>
             {
@@ -658,7 +658,7 @@ namespace NuGet.ProjectModel.Test
             lockFile.ProjectFileDependencyGroups.Add(
                 new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
             lockFile.ProjectFileDependencyGroups.Add(
-                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, Array.Empty<string>()));
 
             lockFile.LogMessages = new List<IAssetsLogMessage>
             {
@@ -774,7 +774,7 @@ namespace NuGet.ProjectModel.Test
             lockFile.ProjectFileDependencyGroups.Add(
                 new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
             lockFile.ProjectFileDependencyGroups.Add(
-                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, Array.Empty<string>()));
 
             lockFile.LogMessages = new List<IAssetsLogMessage>
             {
@@ -893,7 +893,7 @@ namespace NuGet.ProjectModel.Test
             lockFile.ProjectFileDependencyGroups.Add(
                 new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
             lockFile.ProjectFileDependencyGroups.Add(
-                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, Array.Empty<string>()));
             lockFile.PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>())
             {
                 RestoreMetadata = new ProjectRestoreMetadata()
@@ -1006,7 +1006,7 @@ namespace NuGet.ProjectModel.Test
             lockFile.ProjectFileDependencyGroups.Add(
                 new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
             lockFile.ProjectFileDependencyGroups.Add(
-                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, Array.Empty<string>()));
 
             lockFile.LogMessages = new List<IAssetsLogMessage>
             {

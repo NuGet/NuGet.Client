@@ -200,9 +200,9 @@
   <data name="ProjectNotLoaded_RestoreFailed" xml:space="preserve">
     <value>The operation failed as details for project {0} could not be loaded.</value>
   </data>
-  <data name="BaseIntermediateOutputPathNotFound" xml:space="preserve">
-    <value>The BaseIntermediateOutputPath MSBuild property could not be found for project '{0}'.</value>
-    <comment>{0} is the full path to the project.</comment>
+  <data name="MSBuildPropertyNotFound" xml:space="preserve">
+    <value>The {0} MSBuild property could not be found for project '{1}'.</value>
+    <comment>{0} is the name of the property that was not set.  {1} is the full path to the project.</comment>
   </data>
   <data name="ProjectCouldNotBeCastedToBuildPropertyStorage" xml:space="preserve">
     <value>The project '{0}' could not be cast to a build property storage interface, which is required to get MSBuild properties inside Visual Studio.</value>

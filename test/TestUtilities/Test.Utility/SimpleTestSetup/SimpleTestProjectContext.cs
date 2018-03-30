@@ -60,7 +60,7 @@ namespace NuGet.Test.Utility
         public string ProjectPath { get; set; }
 
         /// <summary>
-        /// Base intermediate directory path
+        /// MSBuildProjectExtensionsPath
         /// </summary>
         public string OutputPath { get; set; }
 
@@ -393,10 +393,15 @@ namespace NuGet.Test.Utility
             var s = ResourceTestUtility.GetResource(sampleCSProjPath, typeof(SimpleTestProjectContext));
             var xml = XDocument.Parse(s);
 
+            //  MSBuildProjectExtensionsPath needs to be set before Microsoft.Common.props is imported, so add a new
+            //  PropertyGroup as the first element under the Project
+            var ns = xml.Root.GetDefaultNamespace();
+            xml.Root.AddFirst(new XElement(ns + "PropertyGroup"),
+                new XElement(ns + "MSBuildProjectExtensionsPath", OutputPath));
+
             ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
             {
                 { "ProjectGuid", "{" + ProjectGuid.ToString() + "}" },
-                { "BaseIntermediateOutputPath", OutputPath },
                 { "AssemblyName", ProjectName }
             });
 
