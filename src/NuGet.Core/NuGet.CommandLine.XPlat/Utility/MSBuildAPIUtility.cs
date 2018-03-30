@@ -10,7 +10,6 @@ using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using NuGet.Commands;
 using NuGet.Common;
-using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 
 namespace NuGet.CommandLine.XPlat
@@ -23,8 +22,6 @@ namespace NuGet.CommandLine.XPlat
         private const string FRAMEWORKS_TAG = "TargetFrameworks";
         private const string UPDATE_OPERATION = "Update";
         private const string REMOVE_OPERATION = "Remove";
-        private const string IncludeAssets = "IncludeAssets";
-        private const string PrivateAssets = "PrivateAssets";
 
         public ILogger Logger { get; }
 
@@ -68,20 +65,20 @@ namespace NuGet.CommandLine.XPlat
         /// Remove all package references to the project.
         /// </summary>
         /// <param name="projectPath">Path to the csproj file of the project.</param>
-        /// <param name="libraryDependency">Package Dependency of the package to be removed.</param>
-        public int RemovePackageReference(string projectPath, LibraryDependency libraryDependency)
+        /// <param name="packageDependency">Package Dependency of the package to be removed.</param>
+        public int RemovePackageReference(string projectPath, PackageDependency packageDependency)
         {
             var project = GetProject(projectPath);
 
             var existingPackageReferences = project.ItemsIgnoringCondition
                 .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
-                               item.EvaluatedInclude.Equals(libraryDependency.Name, StringComparison.OrdinalIgnoreCase));
+                               item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase));
 
             if (existingPackageReferences.Any())
             {
                 // We validate that the operation does not remove any imported items
                 // If it does then we throw a user friendly exception without making any changes
-                ValidateNoImportedItemsAreUpdated(existingPackageReferences, libraryDependency, REMOVE_OPERATION);
+                ValidateNoImportedItemsAreUpdated(existingPackageReferences, packageDependency, REMOVE_OPERATION);
 
                 project.RemoveItems(existingPackageReferences);
                 project.Save();
@@ -94,7 +91,7 @@ namespace NuGet.CommandLine.XPlat
                 Logger.LogError(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_UpdatePkgNoSuchPackage,
                     project.FullPath,
-                    libraryDependency.Name,
+                    packageDependency.Id,
                     REMOVE_OPERATION));
                 ProjectCollection.GlobalProjectCollection.UnloadProject(project);
 
@@ -106,16 +103,16 @@ namespace NuGet.CommandLine.XPlat
         /// Add an unconditional package reference to the project.
         /// </summary>
         /// <param name="projectPath">Path to the csproj file of the project.</param>
-        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
-        public void AddPackageReference(string projectPath, LibraryDependency libraryDependency)
+        /// <param name="packageDependency">Package Dependency of the package to be added.</param>
+        public void AddPackageReference(string projectPath, PackageDependency packageDependency)
         {
             var project = GetProject(projectPath);
 
             // Here we get package references for any framework.
             // If the project has a conditional reference, then an unconditional reference is not added.
 
-            var existingPackageReferences = GetPackageReferencesForAllFrameworks(project, libraryDependency);
-            AddPackageReference(project, libraryDependency, existingPackageReferences);
+            var existingPackageReferences = GetPackageReferencesForAllFrameworks(project, packageDependency);
+            AddPackageReference(project, packageDependency, existingPackageReferences);
             ProjectCollection.GlobalProjectCollection.UnloadProject(project);
         }
 
@@ -123,9 +120,9 @@ namespace NuGet.CommandLine.XPlat
         /// Add conditional package reference to the project per target framework.
         /// </summary>
         /// <param name="projectPath">Path to the csproj file of the project.</param>
-        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
+        /// <param name="packageDependency">Package Dependency of the package to be added.</param>
         /// <param name="frameworks">Target Frameworks for which the package reference should be added.</param>
-        public void AddPackageReferencePerTFM(string projectPath, LibraryDependency libraryDependency,
+        public void AddPackageReferencePerTFM(string projectPath, PackageDependency packageDependency,
             IEnumerable<string> frameworks)
         {
             foreach (var framework in frameworks)
@@ -133,14 +130,14 @@ namespace NuGet.CommandLine.XPlat
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 { { "TargetFramework", framework } };
                 var project = GetProject(projectPath, globalProperties);
-                var existingPackageReferences = GetPackageReferences(project, libraryDependency);
-                AddPackageReference(project, libraryDependency, existingPackageReferences, framework);
+                var existingPackageReferences = GetPackageReferences(project, packageDependency);
+                AddPackageReference(project, packageDependency, existingPackageReferences, framework);
                 ProjectCollection.GlobalProjectCollection.UnloadProject(project);
             }
         }
 
         private void AddPackageReference(Project project,
-            LibraryDependency libraryDependency,
+            PackageDependency packageDependency,
             IEnumerable<ProjectItem> existingPackageReferences,
             string framework = null)
         {
@@ -150,12 +147,12 @@ namespace NuGet.CommandLine.XPlat
             {
                 // Add packageReference only if it does not exist.
                 var itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
-                AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency);
+                AddPackageReferenceIntoItemGroup(itemGroup, packageDependency);
             }
             else
             {
                 // If the package already has a reference then try to update the reference.
-                UpdatePackageReferenceItems(existingPackageReferences, libraryDependency);
+                UpdatePackageReferenceItems(existingPackageReferences, packageDependency);
             }
             project.Save();
         }
@@ -198,69 +195,43 @@ namespace NuGet.CommandLine.XPlat
         }
 
         private void UpdatePackageReferenceItems(IEnumerable<ProjectItem> packageReferencesItems,
-            LibraryDependency libraryDependency)
+            PackageDependency packageDependency)
         {
             // We validate that the operation does not update any imported items
             // If it does then we throw a user friendly exception without making any changes
-            ValidateNoImportedItemsAreUpdated(packageReferencesItems, libraryDependency, UPDATE_OPERATION);
+            ValidateNoImportedItemsAreUpdated(packageReferencesItems, packageDependency, UPDATE_OPERATION);
 
             foreach (var packageReferenceItem in packageReferencesItems)
             {
-                var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
-                    libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
-
+                var packageVersion = packageDependency.VersionRange.OriginalString ??
+                    packageDependency.VersionRange.MinVersion.ToString();
                 packageReferenceItem.SetMetadataValue(VERSION_TAG, packageVersion);
-
-                if (libraryDependency.IncludeType != LibraryIncludeFlags.All)
-                {
-                    var includeFlags = MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(libraryDependency.IncludeType));
-                    packageReferenceItem.SetMetadataValue(IncludeAssets, includeFlags);
-                }
-
-                if (libraryDependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent)
-                {
-                    var suppressParent = MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(libraryDependency.SuppressParent));
-                    packageReferenceItem.SetMetadataValue(PrivateAssets, suppressParent);
-                }
-
                 Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.Info_AddPkgUpdated,
-                    libraryDependency.Name,
+                    packageDependency.Id,
                     packageVersion,
                     packageReferenceItem.Xml.ContainingProject.FullPath));
             }
         }
 
         private void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup,
-            LibraryDependency libraryDependency)
+            PackageDependency packageDependency)
         {
-            var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
-                libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
+            var packageVersion = packageDependency.VersionRange.OriginalString ??
+                packageDependency.VersionRange.MinVersion.ToString();
 
-            var item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
+            var item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, packageDependency.Id);
             item.AddMetadata(VERSION_TAG, packageVersion, expressAsAttribute: true);
-
-            if (libraryDependency.IncludeType != LibraryIncludeFlags.All)
-            {
-                var includeFlags = MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(libraryDependency.IncludeType));
-                item.AddMetadata(IncludeAssets, includeFlags, expressAsAttribute: false);
-            }
-
-            if (libraryDependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent)
-            {
-                var suppressParent = MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(libraryDependency.SuppressParent));
-                item.AddMetadata(PrivateAssets, suppressParent, expressAsAttribute: false);
-            }
 
             Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.Info_AddPkgAdded,
-                libraryDependency.Name,
+                packageDependency.Id,
                 packageVersion,
                 itemGroup.ContainingProject.FullPath));
         }
 
         private static void ValidateNoImportedItemsAreUpdated(IEnumerable<ProjectItem> packageReferencesItems,
-            LibraryDependency libraryDependency,
+            PackageDependency packageDependency,
             string operationType)
         {
             var importedPackageReferences = packageReferencesItems
@@ -282,7 +253,7 @@ namespace NuGet.CommandLine.XPlat
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AddPkgFailOnImportEdit,
                     operationType,
-                    libraryDependency.Name,
+                    packageDependency.Id,
                     Environment.NewLine,
                     errors));
             }
@@ -294,13 +265,13 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="project">Project for which the package references have to be obtained.
         /// The project should have the global property set to have a specific framework</param>
-        /// <param name="libraryDependency">Dependency of the package.</param>
+        /// <param name="packageDependency">Dependency of the package.</param>
         /// <returns>List of Items containing the package reference for the package.</returns>
-        private static IEnumerable<ProjectItem> GetPackageReferences(Project project, LibraryDependency libraryDependency)
+        private static IEnumerable<ProjectItem> GetPackageReferences(Project project, PackageDependency packageDependency)
         {
             return project.AllEvaluatedItems
                 .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
-                               item.EvaluatedInclude.Equals(libraryDependency.Name, StringComparison.OrdinalIgnoreCase))
+                               item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 
@@ -310,21 +281,20 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="project">Project for which the package references have to be obtained.
         /// The project should have the global property set to have a specific framework</param>
-        /// <param name="libraryDependency">Dependency of the package.</param>
+        /// <param name="packageDependency">Dependency of the package.</param>
         /// <returns>List of Items containing the package reference for the package.</returns>
         private static IEnumerable<ProjectItem> GetPackageReferencesForAllFrameworks(Project project,
-            LibraryDependency libraryDependency)
+            PackageDependency packageDependency)
         {
             var frameworks = GetProjectFrameworks(project);
             var mergedPackageReferences = new List<ProjectItem>();
-
             foreach (var framework in frameworks)
             {
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 { { "TargetFramework", framework } };
                 var projectPerFramework = GetProject(project.FullPath, globalProperties);
 
-                mergedPackageReferences.AddRange(GetPackageReferences(projectPerFramework, libraryDependency));
+                mergedPackageReferences.AddRange(GetPackageReferences(projectPerFramework, packageDependency));
                 ProjectCollection.GlobalProjectCollection.UnloadProject(projectPerFramework);
             }
             return mergedPackageReferences;
