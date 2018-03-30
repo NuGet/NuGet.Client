@@ -32,7 +32,7 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(issues));
             }
-            settings = settings ?? SignedPackageVerifierSettings.Default;
+            settings = settings ?? SignedPackageVerifierSettings.Default();
 
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
             return base.Verify(timestamp, settings, fingerprintAlgorithm, certificateExtraStore, issues);

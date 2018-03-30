@@ -504,9 +504,8 @@ Valid from:</comment>
   <data name="InvalidArgument" xml:space="preserve">
     <value>The argument is invalid.</value>
   </data>
-  <data name="Error_NoMatchingCertificate" xml:space="preserve">
-    <value>No certificate matching the provided {0} fingerprint(s) was found in the signature.</value>
-    <comment>0 - Hash algorithm name used for fingerprint</comment>
+  <data name="Error_NoMatchingCertificate_Client" xml:space="preserve">
+    <value>The package signature certificate fingerprint does not match any certificate fingerprint in client allow list.</value>
   </data>
   <data name="CertUtilityCertificateHash" xml:space="preserve">
     <value>{0} hash: {1}</value>
@@ -574,5 +573,8 @@ Valid from:</comment>
   </data>
   <data name="UnrelatedSignatures" xml:space="preserve">
     <value>The primary signature and repository countersignature are unrelated.</value>
+  </data>
+  <data name="Error_NoMatchingCertificate_Repo" xml:space="preserve">
+    <value>The package signature certificate fingerprint does not match any certificate fingerprint in repository allow list.</value>
   </data>
 </root>

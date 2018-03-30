@@ -72,7 +72,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(issues));
             }
             var timestamps = Timestamps;
-            settings = settings ?? SignedPackageVerifierSettings.Default;
+            settings = settings ?? SignedPackageVerifierSettings.Default();
 
             if (timestamps.Count == 0)
             {
@@ -120,7 +120,7 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(issues));
             }
-            settings = settings ?? SignedPackageVerifierSettings.Default;
+            settings = settings ?? SignedPackageVerifierSettings.Default();
 
             var treatIssueAsError = !settings.AllowIllegal;
             var certificate = SignerInfo.Certificate;

@@ -160,7 +160,7 @@ namespace NuGet.Commands
         /// <summary>
         /// SignedPackageVerifierSettings to be used when verifying signed packages.
         /// </summary>
-        public SignedPackageVerifierSettings SignedPackageVerifierSettings { get; set; } = SignedPackageVerifierSettings.Default;
+        public SignedPackageVerifierSettings SignedPackageVerifierSettings { get; set; } = SignedPackageVerifierSettings.Default();
 
         public Guid ParentId { get; set;}
     }

@@ -368,7 +368,7 @@ namespace NuGet.CommandLine
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             Console,
                             signedPackageVerifier,
-                            SignedPackageVerifierSettings.Default)
+                            SignedPackageVerifierSettings.Default())
                     };
 
                     if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)

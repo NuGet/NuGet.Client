@@ -202,7 +202,7 @@ namespace NuGet.Protocol.Core.Types
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             logger,
                             signedPackageVerifier,
-                            SignedPackageVerifierSettings.Default);
+                            SignedPackageVerifierSettings.Default());
 
                         var versionFolderPathResolver = new VersionFolderPathResolver(source);
 

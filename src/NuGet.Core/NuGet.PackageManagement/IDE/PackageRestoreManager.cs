@@ -313,7 +313,7 @@ namespace NuGet.PackageManagement
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     new LoggerAdapter(nuGetProjectContext),
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.Default);
+                    SignedPackageVerifierSettings.Default());
             }
 
             nuGetProjectContext.PackageExtractionContext.CopySatelliteFiles = false;

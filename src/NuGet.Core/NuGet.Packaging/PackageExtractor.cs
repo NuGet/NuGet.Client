@@ -1018,6 +1018,8 @@ namespace NuGet.Packaging
             }
             else
             {
+                var repositoryAllowList = repoSignatureInfo.RepositoryCertificateInfos;
+
                 return new SignedPackageVerifierSettings(
                     allowUnsigned: !repoSignatureInfo.AllRepositorySigned,
                     allowIllegal: commonSignedPackageVerifierSettings.AllowIllegal,

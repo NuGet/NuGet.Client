@@ -31,7 +31,7 @@ namespace NuGet.Test.Utility
                     new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders()) :
                     null;
 
-                var signedPackageVerifierSettings = requireSignVerify ? SignedPackageVerifierSettings.Default : null;
+                var signedPackageVerifierSettings = requireSignVerify ? SignedPackageVerifierSettings.Default() : null;
 
                 var pathContext = new PackageExtractionContext(
                     packageSaveMode: PackageSaveMode.Defaultv3,
