@@ -12487,15 +12487,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Make a source a trusted repository for repository signature verification..
-        /// </summary>
-        internal static string SourcesCommandTrustDescription {
-            get {
-                return ResourceManager.GetString("SourcesCommandTrustDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &lt;List|Add|Remove|Enable|Disable|Update&gt; -Name [name] -Source [source].
         /// </summary>
         internal static string SourcesCommandUsageSummary {

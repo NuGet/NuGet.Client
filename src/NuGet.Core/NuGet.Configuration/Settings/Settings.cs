@@ -676,18 +676,14 @@ namespace NuGet.Configuration
                 sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
             }
 
-            if (sectionElement != null)
+            UpdateSection(sectionElement, subsection, valuesToWrite);
+
+            if (!sectionElement.HasElements)
             {
-
-                UpdateSection(sectionElement, subsection, valuesToWrite);
-
-                if (!sectionElement.HasElements)
-                {
-                    DeleteSectionFromRoot(ConfigXDocument.Root, section);
-                }
-
-                Save();
+                DeleteSectionFromRoot(ConfigXDocument.Root, section);
             }
+
+            Save();
 
             if (_next != null)
             {

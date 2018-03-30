@@ -74,11 +74,6 @@ namespace NuGet.CommandLine.Test.Caching
             return "/index.json";
         }
 
-        public string GetRepoSignIndexPath()
-        {
-            return @"/v3-index/repository-signatures/index.json";
-        }
-
         public string GetV2IndexPath()
         {
             return "/nuget";
@@ -188,17 +183,6 @@ namespace NuGet.CommandLine.Test.Caching
             };
         }
 
-        public MockResponse BuildRepoSignIndexResponse()
-        {
-            var repoSignIndex = Util.CreateRepoSignJson();
-
-            return new MockResponse
-            {
-                ContentType = "text/javascript",
-                Content = Encoding.UTF8.GetBytes(repoSignIndex.ToString())
-            };
-        }
-
         public MockResponse BuildFlatIndex(NuGetVersion version)
         {
             var flatIndex = JsonConvert.SerializeObject(new
@@ -222,19 +206,6 @@ namespace NuGet.CommandLine.Test.Caching
 
             Util.AddFlatContainerResource(indexJson, mockServer);
             Util.AddRegistrationResource(indexJson, mockServer);
-
-            return new MockResponse
-            {
-                ContentType = "text/javascript",
-                Content = Encoding.UTF8.GetBytes(indexJson.ToString())
-            };
-        }
-
-        public MockResponse BuildV3IndexWithRepoSignResponse(MockServer mockServer)
-        {
-            var indexJson = Util.CreateIndexJson();
-
-            Util.AddRepositorySignatureResource(indexJson, mockServer);
 
             return new MockResponse
             {
