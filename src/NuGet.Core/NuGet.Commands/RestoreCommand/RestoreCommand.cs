@@ -39,6 +39,8 @@ namespace NuGet.Commands
 
         public RestoreCommand(RestoreRequest request)
         {
+            Debugger.Launch();
+
             _request = request ?? throw new ArgumentNullException(nameof(request));
 
             // Validate the lock file version requested

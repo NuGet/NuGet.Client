@@ -475,7 +475,7 @@ namespace NuGet.Packaging
                                             telemetry.StartIntervalMeasure();
 
                                             await VerifyPackageSignatureAsync(
-                                                source,
+                                                null,
                                                 telemetry.OperationId,
                                                 packageIdentity,
                                                 packageExtractionContext,
@@ -602,7 +602,6 @@ namespace NuGet.Packaging
         }
 
         public static async Task<bool> InstallFromSourceAsync(
-            string source,
             PackageIdentity packageIdentity,
             IPackageDownloader packageDownloader,
             VersionFolderPathResolver versionFolderPathResolver,
@@ -689,7 +688,7 @@ namespace NuGet.Packaging
                                     telemetry.StartIntervalMeasure();
 
                                     await VerifyPackageSignatureAsync(
-                                        source,
+                                        null,
                                         telemetry.OperationId,
                                         packageIdentity,
                                         packageExtractionContext,
@@ -1002,8 +1001,15 @@ namespace NuGet.Packaging
             }
         }
 
-        private static SignedPackageVerifierSettings GetSignedPackageVerifierSettings(string source, SignedPackageVerifierSettings commonSignedPackageVerifierSettings)
+        private static SignedPackageVerifierSettings GetSignedPackageVerifierSettings(
+            string source,
+            SignedPackageVerifierSettings commonSignedPackageVerifierSettings)
         {
+            if (string.IsNullOrEmpty(source))
+            {
+                return commonSignedPackageVerifierSettings;
+            }
+
             var repoSignatureInfo = GetRepositorySignatureInfo(source);
 
             if (repoSignatureInfo == null)

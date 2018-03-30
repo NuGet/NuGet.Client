@@ -106,7 +106,7 @@ namespace NuGet.Protocol.Tests
 
             // Assert
 
-            var repositorySignatureInfo = RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source);
+            RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source, out var repositorySignatureInfo);
 
             Assert.False(repositorySignatureInfo.AllRepositorySigned);
             Assert.NotNull(repositorySignatureInfo.RepositoryCertificateInfos);
@@ -141,9 +141,9 @@ namespace NuGet.Protocol.Tests
             await Task.WhenAll(findPackageByIdResourceTasks);
 
             // Assert
-            var repositorySignatureInfo1 = RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source1);
-            var repositorySignatureInfo2 = RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source2);
-            var repositorySignatureInfo3 = RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source3);
+            RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source1, out var repositorySignatureInfo1);
+            RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source2, out var repositorySignatureInfo2);
+            RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source3, out var repositorySignatureInfo3);
 
             var repositorySignatureInfos = new List<RepositorySignatureInfo>() { repositorySignatureInfo1, repositorySignatureInfo2, repositorySignatureInfo3 };
 

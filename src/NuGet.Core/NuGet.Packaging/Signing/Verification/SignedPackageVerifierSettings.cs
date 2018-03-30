@@ -31,16 +31,25 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public bool AllowUntrustedSelfIssuedCertificate { get; }
 
+        /// <summary>
+        /// Allow ignoring timestamp.
+        /// </summary>
         public bool AllowIgnoreTimestamp { get; }
 
+        /// <summary>
+        /// Allow more than one timestamp.
+        /// </summary>
         public bool AllowMultipleTimestamps { get; }
 
+        /// <summary>
+        /// Allow no timestamp.
+        /// </summary>
         public bool AllowNoTimestamp { get; }
 
         /// <summary>
         /// Treat unknown revocation status as a warning instead of an error during verification.
         /// </summary>
-        public bool AllowUnknownRevocation { get; }
+        public bool AllowUnknownRevocation { get; }       
 
         public SignedPackageVerifierSettings(
             bool allowUnsigned,
