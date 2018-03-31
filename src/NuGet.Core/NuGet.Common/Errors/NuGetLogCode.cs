@@ -4,7 +4,7 @@
 namespace NuGet.Common
 {
     /// <summary>
-    /// This enum is used to quantify NuGet error and wanring codes. 
+    /// This enum is used to quantify NuGet error and warning codes. 
     /// Format - NUxyzw where NU is the profix indicating NuGet and xyzw is a 4 digit code
     ///
     /// Numbers - xyzw

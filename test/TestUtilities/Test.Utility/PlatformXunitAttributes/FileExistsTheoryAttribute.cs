@@ -55,7 +55,7 @@ namespace NuGet.Test.Utility
 
         private string[] GetPaths()
         {
-            var paths = new HashSet<string>(Paths ?? new string[0], StringComparer.OrdinalIgnoreCase)
+            var paths = new HashSet<string>(Paths ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase)
             {
                 Path
             };

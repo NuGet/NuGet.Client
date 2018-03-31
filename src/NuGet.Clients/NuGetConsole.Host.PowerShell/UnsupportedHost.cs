@@ -46,7 +46,7 @@ namespace NuGetConsole.Host
 
         public string[] GetPackageSources()
         {
-            return new string[0];
+            return Array.Empty<string>();
         }
 
         public string DefaultProject
@@ -60,7 +60,7 @@ namespace NuGetConsole.Host
 
         public string[] GetAvailableProjects()
         {
-            return new string[0];
+            return Array.Empty<string>();
         }
 
         public void SetDefaultRunspace()

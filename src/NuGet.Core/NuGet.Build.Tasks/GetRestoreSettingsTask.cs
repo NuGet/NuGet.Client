@@ -131,7 +131,7 @@ namespace NuGet.Build.Tasks
                 // Sources
                 var currentSources = RestoreSettingsUtils.GetValue(
                     () => RestoreSourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => GetGlobalAbsolutePath(e)).ToArray(),
-                    () => MSBuildRestoreUtility.ContainsClearKeyword(RestoreSources) ? new string[0] : null,
+                    () => MSBuildRestoreUtility.ContainsClearKeyword(RestoreSources) ? Array.Empty<string>() : null,
                     () => RestoreSources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray(),
                     () => (new PackageSourceProvider(settings)).LoadPackageSources().Where(e => e.IsEnabled).Select(e => e.Source).ToArray());
 
@@ -148,7 +148,7 @@ namespace NuGet.Build.Tasks
                 // Fallback folders
                 var currentFallbackFolders = RestoreSettingsUtils.GetValue(
                     () => RestoreFallbackFoldersOverride?.Select(e => GetGlobalAbsolutePath(e)).ToArray(),
-                    () => MSBuildRestoreUtility.ContainsClearKeyword(RestoreFallbackFolders) ? new string[0] : null,
+                    () => MSBuildRestoreUtility.ContainsClearKeyword(RestoreFallbackFolders) ? Array.Empty<string>() : null,
                     () => RestoreFallbackFolders?.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray(),
                     () => SettingsUtility.GetFallbackPackageFolders(settings).ToArray());
 
