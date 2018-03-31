@@ -24,6 +24,8 @@ namespace NuGet.Packaging.Test
 {
     public class PackageExtractorTests
     {
+        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.Default();
+
         [Fact]
         public async Task InstallFromSourceAsync_StressTest()
         {
@@ -1999,7 +2001,7 @@ namespace NuGet.Packaging.Test
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.Default;
+                var signedPackageVerifierSettings = _defaultSettings;
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2051,7 +2053,7 @@ namespace NuGet.Packaging.Test
                 var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.Default;
+                var signedPackageVerifierSettings = _defaultSettings;
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2096,7 +2098,7 @@ namespace NuGet.Packaging.Test
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.Default;
+                var signedPackageVerifierSettings = _defaultSettings;
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2147,7 +2149,7 @@ namespace NuGet.Packaging.Test
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.Default;
+                var signedPackageVerifierSettings = _defaultSettings;
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2195,7 +2197,7 @@ namespace NuGet.Packaging.Test
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.Default;
+                var signedPackageVerifierSettings = _defaultSettings;
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2243,7 +2245,7 @@ namespace NuGet.Packaging.Test
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.Default;
+                var signedPackageVerifierSettings = _defaultSettings;
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2285,7 +2287,7 @@ namespace NuGet.Packaging.Test
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.Default;
+                var signedPackageVerifierSettings = _defaultSettings;
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2333,7 +2335,7 @@ namespace NuGet.Packaging.Test
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.Default;
+                var signedPackageVerifierSettings = _defaultSettings;
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2377,7 +2379,7 @@ namespace NuGet.Packaging.Test
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.Default;
+                var signedPackageVerifierSettings = _defaultSettings;
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2425,7 +2427,7 @@ namespace NuGet.Packaging.Test
             {
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.Default;
+                var signedPackageVerifierSettings = _defaultSettings;
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2469,7 +2471,7 @@ namespace NuGet.Packaging.Test
             {
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.Default;
+                var signedPackageVerifierSettings = _defaultSettings;
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2519,7 +2521,7 @@ namespace NuGet.Packaging.Test
             {
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.Default;
+                var signedPackageVerifierSettings = _defaultSettings;
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),

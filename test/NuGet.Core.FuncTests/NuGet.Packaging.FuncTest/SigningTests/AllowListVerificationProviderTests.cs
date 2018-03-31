@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -36,8 +35,6 @@ namespace NuGet.Packaging.FuncTest
         [CIOnlyFact]
         public async Task GetTrustResultAsync_VerifyWithCertificateInClientAllowList_Success()
         {
-            Debugger.Launch();
-
             // Arrange
             var nupkg = new SimpleTestPackageContext();
 

@@ -21,8 +21,9 @@ namespace NuGet.Packaging.Signing
         {
             var issues = new List<SignatureLog>();
             var status = SignatureVerificationStatus.Valid;
-            var clientAllowListStatus = VerifyAllowList(signature, settings, issues, settings.ClientAllowListEntries, Strings.Error_NoMatchingCertificate_Client);
-            var repoAllowListStatus = VerifyAllowList(signature, settings, issues, settings.RepositoryAllowListEntries, Strings.Error_NoMatchingCertificate_Repo);
+            var fatalFailures = !settings.AllowUntrusted;
+            var clientAllowListStatus = VerifyAllowList(signature, issues, settings.ClientAllowListEntries, fatalFailures, Strings.Error_NoMatchingCertificate_Client);
+            var repoAllowListStatus = VerifyAllowList(signature, issues, settings.RepositoryAllowListEntries, fatalFailures, Strings.Error_NoMatchingCertificate_Repo);
 
             if (clientAllowListStatus != SignatureVerificationStatus.Valid ||
                 repoAllowListStatus != SignatureVerificationStatus.Valid)
@@ -34,25 +35,25 @@ namespace NuGet.Packaging.Signing
         }
 
         private SignatureVerificationStatus VerifyAllowList(
-            PrimarySignature signature,
-            SignedPackageVerifierSettings settings,
+            Signature signature,
             List<SignatureLog> issues,
             IReadOnlyList<VerificationAllowListEntry> allowList,
+            bool fatalFailures,
             string errorMessage)
         {
             var status = SignatureVerificationStatus.Valid;
 
-            if (allowList != null && allowList.Count > 0 && !IsSignatureAllowed(signature, allowList))
+            if (allowList?.Count > 0 && !IsSignatureAllowed(signature, allowList))
             {
                 status = SignatureVerificationStatus.Untrusted;
-                issues.Add(SignatureLog.Issue(fatal: !settings.AllowUntrusted, code: NuGetLogCode.NU3003, message: errorMessage));
+                issues.Add(SignatureLog.Issue(fatal: fatalFailures, code: NuGetLogCode.NU3003, message: errorMessage));
             }
 
             return status;
         }
 
         private bool IsSignatureAllowed(
-            PrimarySignature signature,
+            Signature signature,
             IReadOnlyList<VerificationAllowListEntry> allowList)
         {
             foreach (var allowedEntry in allowList)

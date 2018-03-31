@@ -8,10 +8,15 @@ namespace NuGet.Packaging.Core
     public interface IRepositoryCertificateInfo
     {
         string ContentUrl { get; }
+
         Fingerprints Fingerprints { get; }
+
         string Issuer { get; }
+
         DateTimeOffset NotAfter { get; }
+
         DateTimeOffset NotBefore { get; }
+
         string Subject { get; }
     }
 }

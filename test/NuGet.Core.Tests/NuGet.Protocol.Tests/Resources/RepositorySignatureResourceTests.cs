@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -28,8 +31,8 @@ namespace NuGet.Protocol.Tests
             // Arrange
             var source = $"http://unit.test/{Guid.NewGuid()}/v3-with-flat-container/index.json";
             var responses = new Dictionary<string, string>();
-            responses.Add(source, JsonData.repoSignIndexJsonData);
-            responses.Add("https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.repoSignData);
+            responses.Add(source, JsonData.RepoSignIndexJsonData);
+            responses.Add("https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignData);
 
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
 
@@ -69,7 +72,7 @@ namespace NuGet.Protocol.Tests
             var source = "http://unit.test1/v3-with-flat-container/index.json";
             var responses = new Dictionary<string, string>();
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
-            var jobject = JObject.Parse(JsonData.repoSignDataNoAllRepositorySigned);
+            var jobject = JObject.Parse(JsonData.RepoSignDataNoAllRepositorySigned);
 
 
             // Act & Assert
@@ -83,7 +86,7 @@ namespace NuGet.Protocol.Tests
             var source = "http://unit.test1/v3-with-flat-container/index.json";
             var responses = new Dictionary<string, string>();
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
-            var jobject = JObject.Parse(JsonData.repoSignDataNoCertInfo);
+            var jobject = JObject.Parse(JsonData.RepoSignDataNoCertInfo);
 
             // Act & Assert
             Assert.Throws<FatalProtocolException>(() => new RepositorySignatureResource(jobject, repo));
@@ -95,8 +98,8 @@ namespace NuGet.Protocol.Tests
             // Arrange
             var source = $"http://unit.test/{Guid.NewGuid()}/v3-with-flat-container/index.json";
             var responses = new Dictionary<string, string>();
-            responses.Add(source, JsonData.repoSignIndexJsonData);
-            responses.Add("https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.repoSignData);
+            responses.Add(source, JsonData.RepoSignIndexJsonData);
+            responses.Add("https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignData);
 
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
 
@@ -127,11 +130,11 @@ namespace NuGet.Protocol.Tests
             var sources = new List<string>() { source1, source2, source3 };
 
             var responses = new Dictionary<string, string>();
-            responses.Add(source1, JsonData.repoSignIndexJsonData);
-            responses.Add(source2, JsonData.repoSignIndexJsonData);
-            responses.Add(source3, JsonData.repoSignIndexJsonData);
+            responses.Add(source1, JsonData.RepoSignIndexJsonData);
+            responses.Add(source2, JsonData.RepoSignIndexJsonData);
+            responses.Add(source3, JsonData.RepoSignIndexJsonData);
 
-            responses.Add("https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.repoSignData);
+            responses.Add("https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignData);
 
             var repos = sources.Select(p => StaticHttpHandler.CreateSource(p, Repository.Provider.GetCoreV3(), responses));
 

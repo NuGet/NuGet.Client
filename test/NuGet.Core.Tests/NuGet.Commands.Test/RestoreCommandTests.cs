@@ -25,6 +25,8 @@ namespace NuGet.Commands.Test
 {
     public class RestoreCommandTests
     {
+        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.Default();
+
         [Fact]
         public async Task RestoreCommand_VerifyRuntimeSpecificAssetsAreNotIncludedForCompile_RuntimeOnly()
         {
@@ -994,7 +996,7 @@ namespace NuGet.Commands.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(SignedPackageVerifierSettings.Default)),
+                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(_defaultSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -1063,7 +1065,7 @@ namespace NuGet.Commands.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(SignedPackageVerifierSettings.Default)),
+                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(_defaultSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));

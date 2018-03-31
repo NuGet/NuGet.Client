@@ -688,7 +688,7 @@ namespace NuGet.Packaging
                                     telemetry.StartIntervalMeasure();
 
                                     await VerifyPackageSignatureAsync(
-                                        null,
+                                        packageDownloader.Source,
                                         telemetry.OperationId,
                                         packageIdentity,
                                         packageExtractionContext,
@@ -986,7 +986,11 @@ namespace NuGet.Packaging
         {
             if (packageExtractionContext.SignedPackageVerifier != null)
             {
-                var verifierSettings = GetSignedPackageVerifierSettings(source, packageExtractionContext.SignedPackageVerifierSettings);
+                var repositorySignatureInfo = GetRepositorySignatureInfo(source);
+
+                var verifierSettings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(
+                    repositorySignatureInfo,
+                    packageExtractionContext.SignedPackageVerifierSettings);
 
                 var verifyResult = await packageExtractionContext.SignedPackageVerifier.VerifySignaturesAsync(
                        signedPackageReader,
@@ -1001,40 +1005,14 @@ namespace NuGet.Packaging
             }
         }
 
-        private static SignedPackageVerifierSettings GetSignedPackageVerifierSettings(
-            string source,
-            SignedPackageVerifierSettings commonSignedPackageVerifierSettings)
-        {
-            if (string.IsNullOrEmpty(source))
-            {
-                return commonSignedPackageVerifierSettings;
-            }
-
-            var repoSignatureInfo = GetRepositorySignatureInfo(source);
-
-            if (repoSignatureInfo == null)
-            {
-                return commonSignedPackageVerifierSettings;
-            }
-            else
-            {
-                var repositoryAllowList = repoSignatureInfo.RepositoryCertificateInfos;
-
-                return new SignedPackageVerifierSettings(
-                    allowUnsigned: !repoSignatureInfo.AllRepositorySigned,
-                    allowIllegal: commonSignedPackageVerifierSettings.AllowIllegal,
-                    allowUntrusted: commonSignedPackageVerifierSettings.AllowUntrusted,
-                    allowUntrustedSelfIssuedCertificate: commonSignedPackageVerifierSettings.AllowUntrustedSelfIssuedCertificate,
-                    allowIgnoreTimestamp: commonSignedPackageVerifierSettings.AllowIgnoreTimestamp,
-                    allowMultipleTimestamps: commonSignedPackageVerifierSettings.AllowMultipleTimestamps,
-                    allowNoTimestamp: commonSignedPackageVerifierSettings.AllowNoTimestamp,
-                    allowUnknownRevocation: commonSignedPackageVerifierSettings.AllowUnknownRevocation);
-            }
-        }
-
         private static RepositorySignatureInfo GetRepositorySignatureInfo(string source)
         {
-            _repositorySignatureInfoProvider.Value.TryGetRepositorySignatureInfo(source, out var repositorySignatureInfo);
+            RepositorySignatureInfo repositorySignatureInfo = null;
+
+            if (!string.IsNullOrEmpty(source))
+            {
+                _repositorySignatureInfoProvider.Value.TryGetRepositorySignatureInfo(source, out repositorySignatureInfo);
+            }
 
             return repositorySignatureInfo;
         }
