@@ -33,7 +33,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 "3.5.0-beta2",
                 "15e9591f-9391-4ddf-a246-ca9e0351277d",
                 projectType,
-                3);
+                3,
+                true);
             var target = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -43,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             telemetrySession.Verify(x => x.PostEvent(It.IsAny<TelemetryEvent>()), Times.Once);
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal("ProjectInformation", lastTelemetryEvent.Name);
-            Assert.Equal(4, lastTelemetryEvent.Count);
+            Assert.Equal(5, lastTelemetryEvent.Count);
 
             var nuGetVersion = lastTelemetryEvent["NuGetVersion"];
             Assert.NotNull(nuGetVersion);
@@ -64,6 +65,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.NotNull(installedPackageCount);
             Assert.IsType<int>(installedPackageCount);
             Assert.Equal(projectInformation.InstalledPackageCount, installedPackageCount);
+
+            var isPRUpgradable = lastTelemetryEvent["IsPRUpgradable"];
+            Assert.NotNull(isPRUpgradable);
+            Assert.IsType<bool>(isPRUpgradable);
+            Assert.Equal(projectInformation.IsProjectPRUpgradable, isPRUpgradable);
         }
     }
 }

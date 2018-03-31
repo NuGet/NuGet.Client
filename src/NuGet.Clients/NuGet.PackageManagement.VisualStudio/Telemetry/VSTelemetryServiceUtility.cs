@@ -106,11 +106,14 @@ namespace NuGet.PackageManagement.Telemetry
                     0 :
                     (await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None)).Count();
 
+                var isUpgradable = await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject);
+
                 return new ProjectTelemetryEvent(
                     NuGetVersion.Value,
                     projectId,
                     projectType,
-                    installedPackagesCount);
+                    installedPackagesCount,
+                    isUpgradable);
             }
             catch (Exception ex)
             {
@@ -123,19 +126,6 @@ namespace NuGet.PackageManagement.Telemetry
                 Debug.Fail(message);
                 return null;
             }
-        }
-
-        public static async Task<TelemetryEvent> GetUpgradableProjectTelemetryEvent(NuGetProject project)
-        {
-            var telemetryEvent = new TelemetryEvent("ProjectUpgradable");
-
-            var projectId = project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
-            var isUpgradable = await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(project);
-
-            telemetryEvent["ProjectId"] = projectId;
-            telemetryEvent["IsUpgradable"] = isUpgradable;
-
-            return telemetryEvent;
         }
 
         public static TelemetryEvent GetUpgradeTelemetryEvent(
