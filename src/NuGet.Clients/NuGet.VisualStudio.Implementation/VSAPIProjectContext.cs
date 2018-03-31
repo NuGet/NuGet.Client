@@ -31,7 +31,7 @@ namespace NuGet.VisualStudio
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 new LoggerAdapter(this),
                 signedPackageVerifier,
-                SignedPackageVerifierSettings.Default);
+                SignedPackageVerifierSettings.Default());
 
             SourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
             SkipAssemblyReferences = skipAssemblyReferences;

@@ -66,7 +66,7 @@ namespace NuGet.Packaging.Signing
                     var primarySignatureCertificateFingerprintString = BitConverter.ToString(primarySignatureCertificateFingerprint).Replace("-", "");
 
                     if (certificateHashEntry.VerificationTarget.HasFlag(VerificationTarget.Primary) &&
-                        StringComparer.OrdinalIgnoreCase.Equals(certificateHashEntry.FingerprintAlgorithm, primarySignatureCertificateFingerprintString))
+                        StringComparer.OrdinalIgnoreCase.Equals(certificateHashEntry.Fingerprint, primarySignatureCertificateFingerprintString))
                     {
                         return true;
                     }

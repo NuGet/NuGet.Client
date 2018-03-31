@@ -48,15 +48,15 @@ namespace NuGet.Packaging.FuncTest
         {
             if (StringComparer.Ordinal.Equals(policyString, "command"))
             {
-                return SignedPackageVerifierSettings.VerifyCommandDefaultPolicy;
+                return SignedPackageVerifierSettings.VerifyCommandDefaultPolicy();
             }
 
             if (StringComparer.Ordinal.Equals(policyString, "vs"))
             {
-                return SignedPackageVerifierSettings.VSClientDefaultPolicy;
+                return SignedPackageVerifierSettings.VSClientDefaultPolicy();
             }
 
-            return SignedPackageVerifierSettings.Default;
+            return SignedPackageVerifierSettings.Default();
         }
 
         [CIOnlyTheory]
