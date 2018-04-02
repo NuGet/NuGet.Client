@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.Protocol;
@@ -39,8 +40,7 @@ namespace NuGet.Commands
                 var packagesToVerify = LocalFolderUtility.ResolvePackageFromPath(verifyArgs.PackagePath);
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
 
-                var allowListEntries = verifyArgs.CertificateFingerprint.Select(fingerprint =>
-                    new CertificateHashAllowListEntry(VerificationTarget.Primary, fingerprint)).ToList();
+                var allowListEntries = GetAllowList(verifyArgs);
 
                 var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs(allowListEntries));
                 var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
@@ -91,7 +91,7 @@ namespace NuGet.Commands
 
                 if (verificationResult.Valid)
                 {
-                    logger.LogInformation(Environment.NewLine + Strings.VerifyCommand_Success);
+                    logger.LogInformation(Environment.NewLine + string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_Success, packageIdentity.ToString()));
                 }
                 else
                 {
@@ -100,6 +100,23 @@ namespace NuGet.Commands
 
                 return result;
             }
+        }
+
+        private List<VerificationAllowListEntry> GetAllowList(VerifyArgs verifyArgs)
+        {
+            var entries = new List<VerificationAllowListEntry>();
+
+            entries.AddRange(verifyArgs.CertificateFingerprint.Select(fingerprint =>
+                new CertificateHashAllowListEntry(SignaturePlacement.PrimarySignature, VerificationTarget.Author | VerificationTarget.Repository, fingerprint)));
+
+            entries.AddRange(
+                verifyArgs.TrustedSources
+                .Select(source =>
+                    new TrustedSourceAllowListEntry(source)));
+
+            // TODO: Add entries for trusted authors
+
+            return entries;
         }
 
         private bool ShouldExecuteVerification(VerifyArgs args, Verification v)

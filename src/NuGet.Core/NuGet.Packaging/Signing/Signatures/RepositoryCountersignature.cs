@@ -39,11 +39,6 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(primarySignature));
             }
 
-            if (primarySignature.Type == SignatureType.Repository)
-            {
-                throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureMustNotHaveARepositoryCountersignature);
-            }
-
             var countersignatures = primarySignature.SignerInfo.CounterSignerInfos;
             RepositoryCountersignature repositoryCountersignature = null;
 
@@ -57,6 +52,11 @@ namespace NuGet.Packaging.Signing
                     if (repositoryCountersignature != null)
                     {
                         throw new SignatureException(NuGetLogCode.NU3032, Strings.Error_NotOneRepositoryCounterSignature);
+                    }
+
+                    if (primarySignature.Type == SignatureType.Repository)
+                    {
+                        throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureMustNotHaveARepositoryCountersignature);
                     }
 
                     var v3ServiceIndexUrl = AttributeUtility.GetNuGetV3ServiceIndexUrl(countersignature.SignedAttributes);
@@ -86,7 +86,7 @@ namespace NuGet.Packaging.Signing
             throw new SignatureException(NuGetLogCode.NU3031, Strings.InvalidRepositoryCounterSignature);
         }
 
-        internal override SignatureVerificationStatus Verify(
+        internal override SignatureVerificationSummary Verify(
             Timestamp timestamp,
             SignedPackageVerifierSettings settings,
             HashAlgorithmName fingerprintAlgorithm,
@@ -105,6 +105,13 @@ namespace NuGet.Packaging.Signing
             {
                 issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetPackageOwners, string.Join(", ", PackageOwners))));
             }
+
+            // TODO: Check v3 endpoint
+            // if (v3 endpoint does not match)
+            //  return Suspect
+            // if it was not reachable
+            //  warn
+
             return base.Verify(timestamp, settings, fingerprintAlgorithm, certificateExtraStore, issues);
         }
 #else

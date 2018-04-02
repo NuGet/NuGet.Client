@@ -249,7 +249,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: false,
+                allowUntrustedRoot: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
@@ -296,7 +296,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: false,
+                allowUntrustedRoot: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: false,
@@ -362,7 +362,7 @@ namespace NuGet.Packaging.FuncTest
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInVSClient_Warns()
         {
             // Arrange
-            var setting = SignedPackageVerifierSettings.VSClientDefaultPolicy;
+            var setting = SignedPackageVerifierSettings.AcceptModeDefaultPolicy;
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
@@ -399,7 +399,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: true,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: false,
+                allowUntrustedRoot: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
@@ -422,7 +422,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: false,
+                allowUntrustedRoot: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
@@ -486,7 +486,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: false,
+                allowUntrustedRoot: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
@@ -523,7 +523,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: false,
+                allowUntrustedRoot: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: true,
@@ -549,7 +549,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: true,
+                allowUntrustedRoot: true,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: true,
@@ -575,7 +575,7 @@ namespace NuGet.Packaging.FuncTest
                allowUnsigned: false,
                allowIllegal: false,
                 allowUntrusted: false,
-               allowUntrustedSelfIssuedCertificate: false,
+               allowUntrustedRoot: false,
                allowIgnoreTimestamp: false,
                allowMultipleTimestamps: false,
                allowNoTimestamp: true,
@@ -590,6 +590,81 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
 
                 AssertTimestampMissing(result.Issues, LogLevel.Warning);
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithSignedAndCountersignedPackage_Succeeds()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var trusted = SigningTestUtility.GenerateTrustedTestCertificate())
+            using (var counterCertificate = new X509Certificate2(trusted.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    testCertificate,
+                    nupkg,
+                    dir);
+
+                var repositorySignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                    counterCertificate,
+                    signedPackagePath,
+                    dir,
+                    new Uri("https://v3ServiceIndex.test/api/index"));
+
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                using (var packageReader = new PackageArchiveReader(repositorySignedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+
+                    // Assert
+                    result.Valid.Should().BeTrue();
+                    resultsWithErrors.Count().Should().Be(0);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithSignedTimestampedCountersignedAndCountersignatureTimestampedPackage_Succeeds()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var trusted = SigningTestUtility.GenerateTrustedTestCertificate())
+            using (var counterCertificate = new X509Certificate2(trusted.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    testCertificate,
+                    nupkg,
+                    dir,
+                    timestampService.Url);
+
+                var repositorySignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                    counterCertificate,
+                    signedPackagePath,
+                    dir,
+                    new Uri("https://v3ServiceIndex.test/api/index"),
+                    timestampService.Url);
+
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                using (var packageReader = new PackageArchiveReader(repositorySignedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+
+                    // Assert
+                    result.Valid.Should().BeTrue();
+                    resultsWithErrors.Count().Should().Be(0);
+                }
             }
         }
 
@@ -614,7 +689,7 @@ namespace NuGet.Packaging.FuncTest
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3027 &&
                 issue.Level == logLevel &&
-                issue.Message == "The primary signature should be timestamped to enable long-term signature validity after the certificate has expired.");
+                issue.Message == "The signature should be timestamped to enable long-term signature validity after the certificate has expired.");
         }
 
         private static void AssertUntrustedRoot(IEnumerable<SignatureLog> issues, LogLevel logLevel)

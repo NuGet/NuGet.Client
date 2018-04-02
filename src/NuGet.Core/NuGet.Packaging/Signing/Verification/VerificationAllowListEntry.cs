@@ -7,9 +7,12 @@ namespace NuGet.Packaging.Signing
     {
         public VerificationTarget VerificationTarget { get; }
 
-        public VerificationAllowListEntry(VerificationTarget target)
+        public SignaturePlacement Placement { get; }
+
+        public VerificationAllowListEntry(VerificationTarget target, SignaturePlacement placement)
         {
             VerificationTarget = target;
+            Placement = placement;
         }
     }
 }

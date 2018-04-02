@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Commands;
 using static NuGet.Commands.VerifyArgs;
@@ -39,12 +40,17 @@ namespace NuGet.CommandLine
                 throw new ArgumentNullException(nameof(PackagePath));
             }
 
+            var trustedSources = SourceProvider.LoadPackageSources()
+                .Where(source => source.TrustedSource != null)
+                .Select(source => source.TrustedSource);
+
             var verifyArgs = new VerifyArgs()
             {
                 Verifications = GetVerificationTypes(),
                 PackagePath = PackagePath,
                 CertificateFingerprint = CertificateFingerprint,
-                Logger = Console
+                Logger = Console,
+                TrustedSources = trustedSources
             };
 
             switch (Verbosity)

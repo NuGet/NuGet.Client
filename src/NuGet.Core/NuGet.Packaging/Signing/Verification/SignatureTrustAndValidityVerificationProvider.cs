@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,19 +18,76 @@ namespace NuGet.Packaging.Signing
 
         public SignatureTrustAndValidityVerificationProvider()
         {
+            // TODO: Add list of allowed untrusted root
             _fingerprintAlgorithm = HashAlgorithmName.SHA256;
         }
 
         public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-
-            var result = VerifyValidityAndTrust(signature, settings);
+            var result = VerifySignatureAndCounterSignature(signature, settings);
             return Task.FromResult(result);
         }
 
 #if IS_DESKTOP
-        private PackageVerificationResult VerifyValidityAndTrust(PrimarySignature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifySignatureAndCounterSignature(
+            PrimarySignature signature,
+            SignedPackageVerifierSettings settings)
+        {
+            var issues = new List<SignatureLog>();
+            var certificateExtraStore = signature.SignedCms.Certificates;
+
+            var primarySignatureVerificationSummary = VerifyValidityAndTrust(signature, settings, certificateExtraStore, issues);
+            var status = primarySignatureVerificationSummary.Status;
+
+            if (status == SignatureVerificationStatus.Illegal &&
+                primarySignatureVerificationSummary.Flags == SignatureVerificationStatusFlags.UntrustedRoot &&
+                IsSignaturePermittedToChainToUntrustedRoot(signature))
+            {
+                // TODO: Fix, if this is valid there should not be a warning added to the issues, maybe update the settings to allow it in verification?
+                status = SignatureVerificationStatus.Valid;
+            }
+
+            if (settings.AllowAlwaysVerifyingCountersignature || ShouldFallbackToRepositoryCountersignature(primarySignatureVerificationSummary))
+            {
+                var counterSignature = RepositoryCountersignature.GetRepositoryCountersignature(signature);
+                if (counterSignature != null)
+                {
+                    var countersignatureIssues = new List<SignatureLog>();
+                    // TODO: Add a warning saying that we fallback to the countersignature?
+
+                    var countersignatureVerificationSummary = VerifyValidityAndTrust(counterSignature, settings, certificateExtraStore, countersignatureIssues);
+                    status = countersignatureVerificationSummary.Status;
+
+                    if (status == SignatureVerificationStatus.Illegal &&
+                        countersignatureVerificationSummary.Flags == SignatureVerificationStatusFlags.UntrustedRoot &&
+                        IsSignaturePermittedToChainToUntrustedRoot(counterSignature))
+                    {
+                        // TODO: Fix, if this is valid there should not be a warning added to the issues, maybe update the settings to allow it in verification?
+                        status = SignatureVerificationStatus.Valid;
+                    }
+
+                    if (primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired))
+                    {
+                        if (!Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureVerificationSummary.Timestamp))
+                        {
+                            issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3011, Strings.SignatureNotTimeValid));
+                            status = SignatureVerificationStatus.Illegal;
+                        }
+                    }
+
+                    issues = countersignatureIssues;
+                }
+            }
+
+            return new SignedPackageVerificationResult(status, signature, issues);
+        }
+
+        private SignatureVerificationSummary VerifyValidityAndTrust(
+            Signature signature,
+            SignedPackageVerifierSettings settings,
+            X509Certificate2Collection certificateExtraStore,
+            List<SignatureLog> issues)
         {
             var timestampIssues = new List<SignatureLog>();
 
@@ -46,25 +101,41 @@ namespace NuGet.Packaging.Signing
             }
             catch (TimestampException)
             {
-                return new SignedPackageVerificationResult(SignatureVerificationStatus.Illegal, signature, timestampIssues);
-            }
+                issues.AddRange(timestampIssues);
 
-            var certificateExtraStore = signature.SignedCms.Certificates;
-            var signatureIssues = new List<SignatureLog>();
+                return new SignatureVerificationSummary(signature.Type, SignatureVerificationStatus.Illegal, SignatureVerificationStatusFlags.InvalidTimestamp);
+            }
 
             var status = signature.Verify(
                 validTimestamp,
                 settings,
                 _fingerprintAlgorithm,
                 certificateExtraStore,
-                signatureIssues);
+                issues);
 
-            signatureIssues.AddRange(timestampIssues);
+            issues.AddRange(timestampIssues);
 
-            return new SignedPackageVerificationResult(status, signature, signatureIssues);
+            return status;
         }
+
+        private bool ShouldFallbackToRepositoryCountersignature(SignatureVerificationSummary primarySignatureVerificationSummary)
+        {
+            return primarySignatureVerificationSummary.SignatureType == SignatureType.Author &&
+                primarySignatureVerificationSummary.Status == SignatureVerificationStatus.Illegal &&
+                (primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired) ||
+                primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.GeneralChainBuildingIssues));
+        }
+
+        private bool IsSignaturePermittedToChainToUntrustedRoot(Signature signature)
+        {
+            // TODO: Check if signature is in list of allowd untrusted root
+            return true;
+        }
+
 #else
-        private PackageVerificationResult VerifyValidityAndTrust(PrimarySignature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifySignatureAndCounterSignature(
+            PrimarySignature signature,
+            SignedPackageVerifierSettings settings)
         {
             throw new NotSupportedException();
         }

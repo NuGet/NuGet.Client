@@ -48,7 +48,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: true,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: true,
+                allowUntrustedRoot: true,
                 allowIgnoreTimestamp: true,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,

@@ -408,7 +408,7 @@ Valid from:</comment>
     <value>Multiple timestamps are not accepted.</value>
   </data>
   <data name="ErrorNoTimestamp" xml:space="preserve">
-    <value>The primary signature should be timestamped to enable long-term signature validity after the certificate has expired.</value>
+    <value>The signature should be timestamped to enable long-term signature validity after the certificate has expired.</value>
   </data>
   <data name="TimestampNoCertificate" xml:space="preserve">
     <value>The timestamp signature does not have a signing certificate.</value>
@@ -504,8 +504,8 @@ Valid from:</comment>
   <data name="InvalidArgument" xml:space="preserve">
     <value>The argument is invalid.</value>
   </data>
-  <data name="Error_NoMatchingCertificate" xml:space="preserve">
-    <value>No certificate matching the provided {0} fingerprint(s) was found in the signature.</value>
+  <data name="Error_NoAllowedCertificate" xml:space="preserve">
+    <value>No allowed certificate was found in the signature.</value>
     <comment>0 - Hash algorithm name used for fingerprint</comment>
   </data>
   <data name="CertUtilityCertificateHash" xml:space="preserve">
