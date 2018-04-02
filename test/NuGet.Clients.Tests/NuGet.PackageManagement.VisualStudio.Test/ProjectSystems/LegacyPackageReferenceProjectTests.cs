@@ -636,17 +636,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectServices,
                     _threadingService);
 
-                var buildIntegratedInstallationContext = new BuildIntegratedInstallationContext(
-                    Enumerable.Empty<NuGetFramework>(),
-                    Enumerable.Empty<NuGetFramework>(),
-                    new Dictionary<NuGetFramework, string>());
-
                 // Act
                 var result = await testProject.InstallPackageAsync(
                     "packageA",
                     VersionRange.Parse("1.*"),
                     null,
-                    buildIntegratedInstallationContext,
+                    null,
                     CancellationToken.None);
 
                 // Assert

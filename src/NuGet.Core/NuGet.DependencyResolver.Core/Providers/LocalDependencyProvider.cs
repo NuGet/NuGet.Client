@@ -163,6 +163,5 @@ namespace NuGet.DependencyResolver
         {
             throw new NotImplementedException();
         }
-
     }
 }

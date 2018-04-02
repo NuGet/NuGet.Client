@@ -2261,66 +2261,6 @@ namespace ClassLibrary
         }
 
         [PlatformFact(Platform.Windows)]
-        public void PackCommand_ManualAddPackage_DevelopmentDependency()
-        {
-            // Arrange
-            using (var testDirectory = TestDirectory.Create())
-            {
-                var projectName = "ClassLibrary1";
-                var workingDirectory = Path.Combine(testDirectory, projectName);
-                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
-
-                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
-                {
-                    var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net45");
-
-                    var attributes = new Dictionary<string, string>();
-
-                    attributes["Version"] = "1.0.2";
-                    ProjectFileUtils.AddItem(
-                        xml,
-                        "PackageReference",
-                        "StyleCop.Analyzers",
-                        "net45",
-                        new Dictionary<string, string>(),
-                        attributes);
-
-                    ProjectFileUtils.WriteXmlToFile(xml, stream);
-                }
-
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-
-                // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
-
-                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
-                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
-                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
-                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
-
-                // Assert
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-
-                    var dependencyGroups = nuspecReader
-                        .GetDependencyGroups()
-                        .OrderBy(x => x.TargetFramework,
-                            new NuGetFrameworkSorter())
-                        .ToList();
-
-                    Assert.Equal(1,
-                        dependencyGroups.Count);
-
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[0].TargetFramework);
-                    Assert.Equal(1, dependencyGroups[0].Packages.Count());
-                }
-            }
-        }
-
-        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackWithSourceControlInformation_Unsupported_VerifyNuspec()
         {
             using (var testDirectory = TestDirectory.Create())

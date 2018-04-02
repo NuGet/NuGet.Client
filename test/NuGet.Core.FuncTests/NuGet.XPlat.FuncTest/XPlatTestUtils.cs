@@ -185,8 +185,7 @@ namespace NuGet.XPlat.FuncTest
         public static SimpleTestPackageContext CreatePackage(string packageId = "packageX",
             string packageVersion = "1.0.0",
             string frameworkString = null,
-            PackageType packageType = null,
-            bool developmentDependency = false)
+            PackageType packageType = null)
         {
             var package = new SimpleTestPackageContext()
             {
@@ -206,7 +205,7 @@ namespace NuGet.XPlat.FuncTest
                 .ForEach(f => package.AddFile($"lib/{f}/a.dll"));
 
             // To ensure that the nuspec does not have System.Runtime.dll
-            package.Nuspec = GetNetCoreNuspec(packageId, packageVersion, developmentDependency);
+            package.Nuspec = GetNetCoreNuspec(packageId, packageVersion);
 
             return package;
         }
@@ -239,21 +238,8 @@ namespace NuGet.XPlat.FuncTest
             };
         }
 
-        public static XDocument GetNetCoreNuspec(string package, string packageVersion, bool developmentDependency = false)
+        public static XDocument GetNetCoreNuspec(string package, string packageVersion)
         {
-            if (developmentDependency)
-            {
-                return XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <package>
-                        <metadata>
-                            <id>{package}</id>
-                            <version>{packageVersion}</version>
-                            <developmentDependency>true</developmentDependency>
-                            <title />
-                        </metadata>
-                        </package>");
-            }
-
             return XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package>
                         <metadata>
@@ -266,7 +252,7 @@ namespace NuGet.XPlat.FuncTest
 
         // Assert Helper Methods
 
-        public static bool ValidateReference(XElement root, string packageId, string version, PackageType packageType = null, bool developmentDependency = false)
+        public static bool ValidateReference(XElement root, string packageId, string version, PackageType packageType = null)
         {
 
             var packageReferences = root
@@ -287,26 +273,6 @@ namespace NuGet.XPlat.FuncTest
             {
                 return false;
             }
-
-            if (developmentDependency)
-            {
-                var privateAssets = packageReferences.First().Element("PrivateAssets");
-
-                if (privateAssets == null ||
-                    !privateAssets.Value.Equals("all", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                var includeAssets = packageReferences.First().Element("IncludeAssets");
-
-                if (includeAssets == null ||
-                    !includeAssets.Value.Equals("compile; build; native; contentfiles; analyzers", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-
             return true;
         }
 
