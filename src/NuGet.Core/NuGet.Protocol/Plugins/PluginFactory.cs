@@ -136,23 +136,6 @@ namespace NuGet.Protocol.Plugins
             // Manage plugin lifetime by its idleness.  Thus, don't allow callers to prematurely dispose of a plugin.
             return new NoOpDisposePlugin(lazyTask.Value.Result);
         }
-        /// <summary>
-        /// Disposes of a plugin
-        /// </summary>
-        /// <param name="plugin"></param>
-        public void DisposePlugin(IPlugin plugin)
-        {
-            if(plugin!= null) { 
-                Lazy<Task<IPlugin>> val;
-                if (_plugins.TryRemove(plugin.FilePath, out val) && val.IsValueCreated)
-                {
-                    if (val.Value.IsCompleted)
-                    {
-                        val.Value.Result.Dispose();
-                    }
-                }
-            }
-        }
 
         private async Task<IPlugin> CreatePluginAsync(
             string filePath,

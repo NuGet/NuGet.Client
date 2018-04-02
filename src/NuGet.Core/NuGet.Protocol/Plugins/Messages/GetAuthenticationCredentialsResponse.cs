@@ -21,7 +21,7 @@ namespace NuGet.Protocol.Plugins
         public string Password { get; }
 
         /// <summary>
-        /// message - optional, can be used as a way to communicate to NuGet why the authentication faled.
+        /// message - optional, can be used as a way to communicate to NuGet why the authentication failed.
         /// </summary>
         public string Message { get; }
 

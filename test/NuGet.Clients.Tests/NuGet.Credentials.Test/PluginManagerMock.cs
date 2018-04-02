@@ -142,14 +142,6 @@ namespace NuGet.Credentials.Test
                         It.IsAny<CancellationToken>()), Times.Once());
             }
 
-            if (_expectations.DisposeCanBeCalled)
-            {
-                _factory.Verify(x => x.DisposePlugin(It.IsNotNull<IPlugin>()), Times.Once());
-            }
-            else
-            {
-                _factory.Verify(x => x.DisposePlugin(It.IsNotNull<IPlugin>()), Times.Never());
-            }
             _connection.Verify();
 
             _plugin.Verify();
@@ -212,7 +204,6 @@ namespace NuGet.Credentials.Test
         private void EnsureFactorySetupCalls(string pluginFilePath)
         {
             _factory.Setup(x => x.Dispose());
-            _factory.Setup(x => x.DisposePlugin(It.IsNotNull<IPlugin>()));
             _factory.Setup(x => x.GetOrCreateAsync(
                     It.Is<string>(p => p == pluginFilePath),
                     It.IsNotNull<IEnumerable<string>>(),

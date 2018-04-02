@@ -42,11 +42,5 @@ namespace NuGet.Protocol.Plugins
             IRequestHandlers requestHandlers,
             ConnectionOptions options,
             CancellationToken sessionCancellationToken);
-
-        /// <summary>
-        /// Dispose of that plugin if possible
-        /// </summary>
-        /// <param name="plugin"></param>
-        void DisposePlugin(IPlugin plugin);
     }
 }

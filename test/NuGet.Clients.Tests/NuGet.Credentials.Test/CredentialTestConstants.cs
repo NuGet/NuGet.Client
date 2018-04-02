@@ -3,7 +3,7 @@
 
 namespace NuGet.Credentials.Test
 {
-    class CredentialTestConstants
+    internal static class CredentialTestConstants
     {
         public static string PluginHandshakeTimeoutEnvironmentVariable = "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS";
         public static string PluginIdleTimeoutEnvironmentVariable = "NUGET_PLUGIN_IDLE_TIMEOUT_IN_SECONDS";

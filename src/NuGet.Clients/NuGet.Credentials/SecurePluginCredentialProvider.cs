@@ -24,6 +24,9 @@ namespace NuGet.Credentials
         /// </summary>
         private readonly Common.ILogger _logger;
 
+        /// <summary>
+        /// pluginManager
+        /// </summary>
         private readonly PluginManager _pluginManager;
 
         // We use this to avoid needlessly instantiating plugins if they don't support authentication.
@@ -32,6 +35,7 @@ namespace NuGet.Credentials
         /// <summary>
         /// Create a credential provider based on provided plugin
         /// </summary>
+        /// <param name="pluginManager"></param>
         /// <param name="pluginDiscoveryResult"></param>
         /// <param name="logger"></param>
         /// <exception cref="ArgumentNullException">if <paramref name="pluginDiscoveryResult"/> is null</exception>
@@ -100,12 +104,6 @@ namespace NuGet.Credentials
             else
             {
                 taskResponse = new CredentialResponse(CredentialStatus.ProviderNotApplicable);
-            }
-
-            // Don't explicitly dispose of a plugin that's not an authentication plugin, or that has more than 1 capability
-            if (plugin.Claims.Count == 1 && _isAnAuthenticationPlugin)
-            {
-                await _pluginManager.DisposeOfPlugin(plugin.Plugin);
             }
 
             return taskResponse;
