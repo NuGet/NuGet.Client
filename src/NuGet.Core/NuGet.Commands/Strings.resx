@@ -663,7 +663,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>{0} is the number of errors produced and {1} is the number of warnings.</comment>
   </data>
   <data name="VerifyCommand_Success" xml:space="preserve">
-    <value>The package '{0}' was successfully verified.</value>
+    <value>Successfully verified package '{0}'.</value>
     <comment>0 - package id</comment>
   </data>
   <data name="VerifyCommand_VerifyingPackage" xml:space="preserve">

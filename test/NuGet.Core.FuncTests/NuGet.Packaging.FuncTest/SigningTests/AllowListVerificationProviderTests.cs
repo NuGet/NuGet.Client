@@ -36,7 +36,10 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: true,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
-                allowUnknownRevocation: true);
+                allowUnknownRevocation: true,
+                allowNoTrustedAuthors: true,
+                allowNoTrustedSources: true,
+                allowAlwaysVerifyingCountersignature: true);
         }
 
         [CIOnlyFact]
@@ -140,7 +143,10 @@ namespace NuGet.Packaging.FuncTest
                     allowIgnoreTimestamp: true,
                     allowMultipleTimestamps: true,
                     allowNoTimestamp: true,
-                    allowUnknownRevocation: true);
+                    allowUnknownRevocation: true,
+                    allowNoTrustedAuthors: true,
+                    allowNoTrustedSources: true,
+                    allowAlwaysVerifyingCountersignature: true);
 
                 var verifier = new PackageSignatureVerifier(trustProviders, settings);
 

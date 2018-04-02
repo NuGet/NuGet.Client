@@ -25,12 +25,12 @@ namespace NuGet.Packaging.Signing
         public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            var result = VerifySignatureAndCounterSignature(signature, settings);
+            var result = VerifySignatureAndCountersignature(signature, settings);
             return Task.FromResult(result);
         }
 
 #if IS_DESKTOP
-        private PackageVerificationResult VerifySignatureAndCounterSignature(
+        private PackageVerificationResult VerifySignatureAndCountersignature(
             PrimarySignature signature,
             SignedPackageVerifierSettings settings)
         {
@@ -133,7 +133,7 @@ namespace NuGet.Packaging.Signing
         }
 
 #else
-        private PackageVerificationResult VerifySignatureAndCounterSignature(
+        private PackageVerificationResult VerifySignatureAndCountersignature(
             PrimarySignature signature,
             SignedPackageVerifierSettings settings)
         {
