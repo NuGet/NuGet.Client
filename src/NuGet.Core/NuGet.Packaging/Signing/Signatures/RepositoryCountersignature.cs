@@ -83,7 +83,7 @@ namespace NuGet.Packaging.Signing
 
         protected override void ThrowForInvalidSignature()
         {
-            throw new SignatureException(NuGetLogCode.NU3031, Strings.InvalidRepositoryCounterSignature);
+            throw new SignatureException(NuGetLogCode.NU3031, Strings.InvalidRepositoryCountersignature);
         }
 
         internal override SignatureVerificationStatus Verify(
@@ -106,6 +106,16 @@ namespace NuGet.Packaging.Signing
                 issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetPackageOwners, string.Join(", ", PackageOwners))));
             }
             return base.Verify(timestamp, settings, fingerprintAlgorithm, certificateExtraStore, issues);
+        }
+
+        internal bool IsRelated(PrimarySignature primarySignature)
+        {
+            if (primarySignature == null)
+            {
+                throw new ArgumentNullException(nameof(primarySignature));
+            }
+
+            return ReferenceEquals(_primarySignature, primarySignature);
         }
 #else
         public static RepositoryCountersignature GetRepositoryCountersignature(PrimarySignature primarySignature)

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 
@@ -40,8 +39,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public abstract SignatureType SignatureType { get; }
 
-
-        internal IReadOnlyList<X509Certificate2> Chain { get; private set; }
+        internal IX509CertificateChain Chain { get; private set; }
 
 #if IS_DESKTOP
         /// <summary>
@@ -86,6 +84,8 @@ namespace NuGet.Packaging.Signing
             if (!_isDisposed)
             {
                 Certificate?.Dispose();
+                Chain?.Dispose();
+
 #if IS_DESKTOP
                 PrivateKey?.Dispose();
 #endif

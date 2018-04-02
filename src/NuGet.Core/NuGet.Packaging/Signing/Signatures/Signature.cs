@@ -277,13 +277,14 @@ namespace NuGet.Packaging.Signing
                     var timestampCms = new SignedCms();
                     timestampCms.Decode(attribute.Values[0].RawData);
 
-                    var certificates = SignatureUtility.GetTimestampCertificates(
+                    using (var certificates = SignatureUtility.GetTimestampCertificates(
                         timestampCms,
-                        SigningSpecifications.V1);
-
-                    if (certificates == null || certificates.Count == 0)
+                        SigningSpecifications.V1))
                     {
-                        throw new SignatureException(NuGetLogCode.NU3029, Strings.InvalidTimestampSignature);
+                        if (certificates == null || certificates.Count == 0)
+                        {
+                            throw new SignatureException(NuGetLogCode.NU3029, Strings.InvalidTimestampSignature);
+                        }
                     }
 
                     timestampList.Add(new Timestamp(timestampCms));

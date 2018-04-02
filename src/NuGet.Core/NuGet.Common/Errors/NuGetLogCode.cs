@@ -386,6 +386,16 @@ namespace NuGet.Common
         NU3033 = 3033,
 
         /// <summary>
+        /// The repository countersignature does not have a signing certificate.
+        /// </summary>
+        NU3034 = 3034,
+
+        /// <summary>
+        /// Chain building failed for the repository countersignature.
+        /// </summary>
+        NU3035 = 3035,
+
+        /// <summary>
         /// Undefined Package Error.
         /// </summary>
         NU5000 = 5000,
