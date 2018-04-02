@@ -16,8 +16,10 @@ using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
+using NuGet.Shared;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -1864,8 +1866,11 @@ namespace NuGet.Packaging.Test
                 .ReturnsAsync("hash");
             packageDownloader.SetupGet(x => x.CoreReader)
                 .Returns(coreReader.Object);
-            packageDownloader.SetupGet(x => x.SignedPackageReader).Returns(signedReader.Object);
+            packageDownloader.SetupGet(x => x.SignedPackageReader)
+                .Returns(signedReader.Object);
             packageDownloader.Setup(x => x.Dispose());
+            packageDownloader.SetupGet(x => x.Source)
+                .Returns(string.Empty);
 
             coreReader.Setup(x => x.GetNuspecFileAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(nuspecFileName);
@@ -1934,8 +1939,11 @@ namespace NuGet.Packaging.Test
                 .ReturnsAsync("hash");
             packageDownloader.SetupGet(x => x.CoreReader)
                 .Returns(coreReader.Object);
-            packageDownloader.SetupGet(x => x.SignedPackageReader).Returns(signedReader.Object);
+            packageDownloader.SetupGet(x => x.SignedPackageReader)
+                .Returns(signedReader.Object);
             packageDownloader.Setup(x => x.Dispose());
+            packageDownloader.SetupGet(x => x.Source)
+                .Returns(string.Empty);
 
             coreReader.Setup(x => x.GetNuspecFileAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(actualNuspecFileName);
@@ -2005,7 +2013,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>( s => s.Equals(signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
@@ -2057,7 +2065,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2102,7 +2110,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2153,7 +2161,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
@@ -2201,7 +2209,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2249,7 +2257,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2291,7 +2299,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
@@ -2339,7 +2347,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2383,7 +2391,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
@@ -2431,7 +2439,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2475,7 +2483,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
@@ -2510,7 +2518,6 @@ namespace NuGet.Packaging.Test
                     Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "a.dll")));
                 }
             }
-
         }
 
         [Fact]
@@ -2525,7 +2532,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => s.Equals(signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2554,6 +2561,123 @@ namespace NuGet.Packaging.Test
                             resolver,
                             packageExtractionContext,
                             CancellationToken.None));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                var signedPackageVerifier = new Mock<IPackageSignatureVerifier>();
+                var signedPackageVerifierSettings = _defaultSettings;
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
+                    It.IsAny<ISignedPackageReader>(),
+                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.IsAny<CancellationToken>(),
+                    It.IsAny<Guid>())).
+                    ReturnsAsync(new VerifySignaturesResult(true));
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier.Object,
+                        signedPackageVerifierSettings);
+
+                    // Act
+                    await PackageExtractor.ExtractPackageAsync(
+                        root,
+                        packageReader,
+                        packageStream,
+                        resolver,
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    signedPackageVerifier.Verify(mock => mock.VerifySignaturesAsync(
+                        It.Is<ISignedPackageReader>(p => p.Equals(packageReader)),
+                        It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                        It.Is<CancellationToken>(t => t.Equals(CancellationToken.None)),
+                        It.IsAny<Guid>()));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                var signedPackageVerifier = new Mock<IPackageSignatureVerifier>();
+                var signedPackageVerifierSettings = _defaultSettings;
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
+                    It.IsAny<ISignedPackageReader>(),
+                    It.IsAny<SignedPackageVerifierSettings>(),
+                    It.IsAny<CancellationToken>(),
+                    It.IsAny<Guid>())).
+                    ReturnsAsync(new VerifySignaturesResult(true));
+
+                var repositorySignatureInfoAndAllowList = CreateTestRepositorySignatureInfoAndExpectedAllowList();
+                var repositorySignatureInfo = repositorySignatureInfoAndAllowList.Item1;
+                var expectedAllowList = repositorySignatureInfoAndAllowList.Item2;
+                var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
+
+                repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(root, repositorySignatureInfo);
+
+                var expectedVerifierSettings = new SignedPackageVerifierSettings(
+                    allowUnsigned: false,
+                    allowIllegal: true,
+                    allowUntrusted: false,
+                    allowUntrustedSelfIssuedCertificate: true,
+                    allowIgnoreTimestamp: true,
+                    allowMultipleTimestamps: true,
+                    allowNoTimestamp: true,
+                    allowUnknownRevocation: true,
+                    repoAllowListEntries: expectedAllowList,
+                    clientAllowListEntries: null);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier.Object,
+                        signedPackageVerifierSettings);
+
+                    // Act
+                    await PackageExtractor.ExtractPackageAsync(
+                        root,
+                        packageReader,
+                        packageStream,
+                        resolver,
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    signedPackageVerifier.Verify(mock => mock.VerifySignaturesAsync(
+                        It.Is<ISignedPackageReader>(p => p.Equals(packageReader)),
+                        It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, expectedVerifierSettings)),
+                        It.Is<CancellationToken>(t => t.Equals(CancellationToken.None)),
+                        It.IsAny<Guid>()));
                 }
             }
         }
@@ -2826,6 +2950,113 @@ namespace NuGet.Packaging.Test
                 }
 
                 return nupkgFilePath;
+            }
+        }
+
+        private static Tuple<RepositorySignatureInfo, List<CertificateHashAllowListEntry>> CreateTestRepositorySignatureInfoAndExpectedAllowList()
+        {
+            var target = VerificationTarget.Primary | VerificationTarget.Repository;
+            var allSigned = true;
+            var firstCertFingerprints = new Dictionary<string, string>()
+            {
+                { HashAlgorithmName.SHA256.ConvertToOidString(), $"{HashAlgorithmName.SHA256.ToString()}_first" },
+                { HashAlgorithmName.SHA384.ConvertToOidString(), $"{HashAlgorithmName.SHA384.ToString()}_first" },
+                { HashAlgorithmName.SHA512.ConvertToOidString(), $"{HashAlgorithmName.SHA512.ToString()}_first" }
+            };
+
+            var secondCertFingerprints = new Dictionary<string, string>()
+            {
+                { HashAlgorithmName.SHA256.ConvertToOidString(), $"{HashAlgorithmName.SHA256.ToString()}_second"},
+            };
+
+            var repoCertificateInfo = new List<IRepositoryCertificateInfo>()
+            {
+                new TestRepositoryCertificateInfo()
+                {
+                    ContentUrl = @"http://unit.test/1",
+                    Fingerprints = new Fingerprints(firstCertFingerprints),
+                    Issuer = "CN=Issuer1",
+                    Subject = "CN=Subject1",
+                    NotBefore = DateTimeOffset.UtcNow,
+                    NotAfter = DateTimeOffset.UtcNow
+                },
+                new TestRepositoryCertificateInfo()
+                {
+                    ContentUrl = @"http://unit.test/2",
+                    Fingerprints = new Fingerprints(secondCertFingerprints),
+                    Issuer = "CN=Issuer2",
+                    Subject = "CN=Subject2",
+                    NotBefore = DateTimeOffset.UtcNow,
+                    NotAfter = DateTimeOffset.UtcNow
+                }
+            };
+
+            var repositorySignatureInfo = new RepositorySignatureInfo(allSigned, repoCertificateInfo);
+
+            var expectedAllowList = new List<CertificateHashAllowListEntry>()
+            {
+                new CertificateHashAllowListEntry(target, $"{HashAlgorithmName.SHA256.ToString()}_first", HashAlgorithmName.SHA256),
+                new CertificateHashAllowListEntry(target, $"{HashAlgorithmName.SHA384.ToString()}_first", HashAlgorithmName.SHA384),
+                new CertificateHashAllowListEntry(target, $"{HashAlgorithmName.SHA512.ToString()}_first", HashAlgorithmName.SHA512),
+                new CertificateHashAllowListEntry(target, $"{HashAlgorithmName.SHA256.ToString()}_second", HashAlgorithmName.SHA256)
+            };
+
+            return Tuple.Create(repositorySignatureInfo, expectedAllowList);
+        }
+
+        private static bool AreVerifierSettingsEqual(SignedPackageVerifierSettings first, SignedPackageVerifierSettings second)
+        {
+            return first.AllowIgnoreTimestamp == second.AllowIgnoreTimestamp &&
+                first.AllowIllegal == second.AllowIllegal &&
+                first.AllowMultipleTimestamps == second.AllowMultipleTimestamps &&
+                first.AllowNoTimestamp == second.AllowNoTimestamp &&
+                first.AllowUnknownRevocation == second.AllowUnknownRevocation &&
+                first.AllowUnsigned == second.AllowUnsigned &&
+                first.AllowUntrusted == second.AllowUntrusted &&
+                first.AllowUntrustedSelfIssuedCertificate == second.AllowUntrustedSelfIssuedCertificate &&
+                AreCertificateHashAllowListEqual(first.ClientAllowListEntries, second.ClientAllowListEntries) &&
+                AreCertificateHashAllowListEqual(first.RepositoryAllowListEntries, second.RepositoryAllowListEntries);
+        }
+
+        private static bool AreCertificateHashAllowListEqual(IReadOnlyList<VerificationAllowListEntry> first, IReadOnlyList<VerificationAllowListEntry> second)
+        {
+            return (first as IEnumerable<CertificateHashAllowListEntry>).
+                SequenceEqualWithNullCheck((second as IEnumerable<CertificateHashAllowListEntry>), new CertificateHashAllowListEntryComparer());
+        }
+
+        private class CertificateHashAllowListEntryComparer : IEqualityComparer<CertificateHashAllowListEntry>
+        {
+            public bool Equals(CertificateHashAllowListEntry x, CertificateHashAllowListEntry y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x == null || y == null)
+                {
+                    return false;
+                }
+
+                return x.VerificationTarget == y.VerificationTarget &&
+                    x.FingerprintAlgorithm == y.FingerprintAlgorithm &&
+                    string.Equals(x.Fingerprint, y.Fingerprint, StringComparison.Ordinal);
+            }
+
+            public int GetHashCode(CertificateHashAllowListEntry obj)
+            {
+                if (obj == null)
+                {
+                    return 0;
+                }
+
+                var combiner = new HashCodeCombiner();
+
+                combiner.AddObject(obj.VerificationTarget);
+                combiner.AddObject(obj.Fingerprint);
+                combiner.AddObject(obj.FingerprintAlgorithm);
+
+                return combiner.CombinedHash;
             }
         }
     }

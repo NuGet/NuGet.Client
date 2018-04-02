@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
 
   <PropertyGroup>
@@ -15,9 +15,10 @@
 
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
+    <Compile Include="$(SharedDirectory)\*.cs" /> <!--add NuGet.Shared for EqualityUtility-->
     <EmbeddedResource Include="compiler\resources\*" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
   </ItemGroup>

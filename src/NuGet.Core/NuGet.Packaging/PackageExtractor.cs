@@ -994,7 +994,7 @@ namespace NuGet.Packaging
 
                 var verifyResult = await packageExtractionContext.SignedPackageVerifier.VerifySignaturesAsync(
                        signedPackageReader,
-                       packageExtractionContext.SignedPackageVerifierSettings,
+                       verifierSettings,
                        token,
                        parentId);
 
