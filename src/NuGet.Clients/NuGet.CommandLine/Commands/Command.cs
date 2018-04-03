@@ -192,9 +192,7 @@ namespace NuGet.CommandLine
             var securePluginProviders =  (new SecureCredentialProviderBuilder(PluginManager.Instance, Console)).BuildAll().Result;
 
             providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
-
             providers.AddRange(securePluginProviders);
-
             providers.AddRange(pluginProviders);
 
             if (pluginProviders.Any() || securePluginProviders.Any())
@@ -204,7 +202,6 @@ namespace NuGet.CommandLine
                     providers.Add(new DefaultCredentialsCredentialProvider());
                 }
             }
-
             providers.Add(new ConsoleCredentialProvider(Console));
 
             return providers;

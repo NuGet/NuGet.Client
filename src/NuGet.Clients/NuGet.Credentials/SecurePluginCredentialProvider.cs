@@ -91,7 +91,6 @@ namespace NuGet.Credentials
 
             if (_isAnAuthenticationPlugin)
             {
-
                 var request = new GetAuthenticationCredentialsRequest(uri, isRetry, nonInteractive);
 
                 var credentialResponse = await plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
@@ -99,7 +98,6 @@ namespace NuGet.Credentials
                     request,
                     cancellationToken);
                 taskResponse = GetAuthenticationCredentialsResponseToCredentialResponse(credentialResponse);
-
             }
             else
             {

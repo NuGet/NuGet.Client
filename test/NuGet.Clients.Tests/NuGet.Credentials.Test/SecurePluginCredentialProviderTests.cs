@@ -79,8 +79,7 @@ namespace NuGet.Credentials.Test
                 uri: uri,
                 authenticationUsername: authUsername,
                 authenticationPassword: authPassword,
-                success: true,
-                disposeCanBeCaleld: true
+                success: true
                 );
 
             using (var test = new PluginManagerMock(
@@ -123,8 +122,7 @@ namespace NuGet.Credentials.Test
                 uri: uri,
                 authenticationUsername: authUsername,
                 authenticationPassword: authPassword,
-                success: false,
-                disposeCanBeCaleld: false
+                success: false
                 );
 
             using (var test = new PluginManagerMock(
@@ -167,8 +165,7 @@ namespace NuGet.Credentials.Test
                 uri: uri,
                 authenticationUsername: authUsername,
                 authenticationPassword: authPassword,
-                success: true,
-                disposeCanBeCaleld: false
+                success: true
                 );
 
             using (var test = new PluginManagerMock(

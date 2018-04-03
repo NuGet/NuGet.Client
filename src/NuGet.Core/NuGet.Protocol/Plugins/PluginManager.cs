@@ -45,7 +45,26 @@ namespace NuGet.Protocol.Core.Types
         /// <remarks>This is non-private only to facilitate testing.</remarks>
         public IEnvironmentVariableReader EnvironmentVariableReader { get; private set; }
 
+        private PluginManager()
+        {
+            Reinitialize(
+                new EnvironmentVariableWrapper(),
+                new Lazy<IPluginDiscoverer>(InitializeDiscoverer),
+                (TimeSpan idleTimeout) => new PluginFactory(idleTimeout));
+        }
 
+        /// <summary>
+        /// Creates a new plugin manager
+        /// </summary>
+        /// <remarks>This is public to facilitate unit testing. This should not be called from product code</remarks>
+        /// <param name="reader">An environment variable reader.</param>
+        /// <param name="pluginDiscoverer">A lazy plugin discoverer.</param>
+        /// <param name="pluginFactoryCreator">A plugin factory creator.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="pluginDiscoverer" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="pluginFactoryCreator" />
+        /// is <c>null</c>.</exception>
         public PluginManager(IEnvironmentVariableReader reader,
             Lazy<IPluginDiscoverer> pluginDiscoverer,
             Func<TimeSpan, IPluginFactory> pluginFactoryCreator)
@@ -54,17 +73,6 @@ namespace NuGet.Protocol.Core.Types
                 reader,
                 pluginDiscoverer,
                 pluginFactoryCreator);
-        }
-
-        /// <summary>
-        /// Initializes a new <see cref="PluginManager" /> class.
-        /// </summary>
-        private PluginManager()
-        {
-            Reinitialize(
-                new EnvironmentVariableWrapper(),
-                new Lazy<IPluginDiscoverer>(InitializeDiscoverer),
-                (TimeSpan idleTimeout) => new PluginFactory(idleTimeout));
         }
 
         /// <summary>
@@ -87,11 +95,23 @@ namespace NuGet.Protocol.Core.Types
             }
         }
 
+        /// <summary>
+        /// Find all available plugins on the machine
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns>PluginDiscoveryResults</returns>
         public async Task<IEnumerable<PluginDiscoveryResult>> FindAvailablePluginsAsync(CancellationToken cancellationToken)
         {
             return await _discoverer.Value.DiscoverAsync(cancellationToken);
         }
 
+        /// <summary>
+        /// Try creating a plugin appropriate for the given source
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="ArgumentNullException">Throw if <paramref name="source"/> is null </exception>
+        /// <returns>A PluginCreationResult</returns>
         public async Task<IEnumerable<PluginCreationResult>> TryCreateAsync(
             SourceRepository source,
             CancellationToken cancellationToken)
@@ -126,9 +146,20 @@ namespace NuGet.Protocol.Core.Types
             return pluginCreationResults;
         }
 
-        public Task<PluginCreationResult> CreateSourceAgnosticPluginAsync(PluginDiscoveryResult result, CancellationToken cancellationToken)
+        /// <summary>
+        /// Creates a plugin from the given pluginDiscoveryResult.
+        /// This plugin's operations will be source agnostic ones
+        /// </summary>
+        /// <param name="pluginDiscoveryResult"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>A PluginCreationResult</returns>
+        public Task<PluginCreationResult> CreateSourceAgnosticPluginAsync(PluginDiscoveryResult pluginDiscoveryResult, CancellationToken cancellationToken)
         {
-            return CreatePluginAsync(result, new PluginRequestKey(result.PluginFile.Path, "Source-Agnostic"), null, null, cancellationToken);
+            if(pluginDiscoveryResult == null)
+            {
+                throw new ArgumentNullException(nameof(pluginDiscoveryResult));
+            }
+            return CreatePluginAsync(pluginDiscoveryResult, new PluginRequestKey(pluginDiscoveryResult.PluginFile.Path, "Source-Agnostic"), null, null, cancellationToken);
         }
 
         private async Task<PluginCreationResult> CreatePluginAsync(PluginDiscoveryResult result, PluginRequestKey requestKey, string packageSourceRepository, JObject serviceIndex, CancellationToken cancellationToken)
@@ -195,19 +226,6 @@ namespace NuGet.Protocol.Core.Types
             return utilities;
         }
 
-        /// <summary>
-        /// Reinitializes static state.
-        /// </summary>
-        /// <remarks>This is non-private only to facilitate unit testing.
-        /// This should not be called by product code.</remarks>
-        /// <param name="reader">An environment variable reader.</param>
-        /// <param name="pluginDiscoverer">A lazy plugin discoverer.</param>
-        /// <param name="pluginFactoryCreator">A plugin factory creator.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader" /> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="pluginDiscoverer" />
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="pluginFactoryCreator" />
-        /// is <c>null</c>.</exception>
         private void Reinitialize(IEnvironmentVariableReader reader,
             Lazy<IPluginDiscoverer> pluginDiscoverer,
             Func<TimeSpan, IPluginFactory> pluginFactoryCreator)

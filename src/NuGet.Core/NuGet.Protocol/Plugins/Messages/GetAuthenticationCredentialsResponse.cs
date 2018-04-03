@@ -8,6 +8,9 @@ using Newtonsoft.Json;
 
 namespace NuGet.Protocol.Plugins
 {
+    /// <summary>
+    /// A get authentication credentials response
+    /// </summary>
     public sealed class GetAuthenticationCredentialsResponse
     {
         /// <summary>

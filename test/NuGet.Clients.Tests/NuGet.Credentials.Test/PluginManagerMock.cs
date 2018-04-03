@@ -27,7 +27,6 @@ namespace NuGet.Credentials.Test
         public string AuthenticationUsername { get; }
         public string AuthenticationPassword { get; }
         public bool Success { get; }
-        public bool DisposeCanBeCalled { get; }
 
         internal TestExpectation(
             string serviceIndexJson,
@@ -38,8 +37,7 @@ namespace NuGet.Credentials.Test
             Uri uri,
             string authenticationUsername,
             string authenticationPassword,
-            bool success,
-            bool disposeCanBeCaleld
+            bool success
             )
         {
             var serviceIndex = string.IsNullOrEmpty(serviceIndexJson)
@@ -53,7 +51,6 @@ namespace NuGet.Credentials.Test
             AuthenticationUsername = authenticationUsername;
             AuthenticationPassword = authenticationPassword;
             Success = success;
-            DisposeCanBeCalled = disposeCanBeCaleld;
         }
     }
 

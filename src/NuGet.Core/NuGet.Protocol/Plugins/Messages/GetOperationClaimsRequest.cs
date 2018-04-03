@@ -28,6 +28,7 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         /// <param name="packageSourceRepository">The package source location.</param>
         /// <param name="serviceIndex">The service index (index.json).</param>
+        /// <remarks>Both packageSourceRepository and service index can be null. If they are, the operation claims request is considered as source agnostic</remarks>
         [JsonConstructor]
         public GetOperationClaimsRequest(string packageSourceRepository, JObject serviceIndex)
         {
