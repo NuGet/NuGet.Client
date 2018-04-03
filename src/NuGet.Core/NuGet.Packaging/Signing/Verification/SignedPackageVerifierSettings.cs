@@ -23,8 +23,6 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public bool AllowUntrusted { get; }
 
-        public bool AllowUntrustedRoot { get; }
-
         public bool AllowIgnoreTimestamp { get; }
 
         public bool AllowMultipleTimestamps { get; }
@@ -46,7 +44,6 @@ namespace NuGet.Packaging.Signing
             bool allowUnsigned,
             bool allowIllegal,
             bool allowUntrusted,
-            bool allowUntrustedRoot,
             bool allowIgnoreTimestamp,
             bool allowMultipleTimestamps,
             bool allowNoTimestamp,
@@ -58,7 +55,6 @@ namespace NuGet.Packaging.Signing
             AllowUnsigned = allowUnsigned;
             AllowIllegal = allowIllegal;
             AllowUntrusted = allowUntrusted;
-            AllowUntrustedRoot = allowUntrustedRoot;
             AllowIgnoreTimestamp = allowIgnoreTimestamp;
             AllowMultipleTimestamps = allowMultipleTimestamps;
             AllowNoTimestamp = allowNoTimestamp;
@@ -75,7 +71,6 @@ namespace NuGet.Packaging.Signing
             allowUnsigned: true,
             allowIllegal: true,
             allowUntrusted: true,
-            allowUntrustedRoot: true,
             allowIgnoreTimestamp: true,
             allowMultipleTimestamps: true,
             allowNoTimestamp: true,
@@ -96,7 +91,6 @@ namespace NuGet.Packaging.Signing
             allowUnsigned: true,
             allowIllegal: true,
             allowUntrusted: true,
-            allowUntrustedRoot: true, // TODO: Maybe delete it?
             allowIgnoreTimestamp: true,
             allowMultipleTimestamps: true,
             allowNoTimestamp: true,
@@ -112,7 +106,6 @@ namespace NuGet.Packaging.Signing
             allowUnsigned: false,
             allowIllegal: false,
             allowUntrusted: false,
-            allowUntrustedRoot: true, // TODO: Maybe delete it?
             allowIgnoreTimestamp: true,
             allowMultipleTimestamps: true,
             allowNoTimestamp: true,
@@ -128,7 +121,6 @@ namespace NuGet.Packaging.Signing
             allowUnsigned: false,
             allowIllegal: false,
             allowUntrusted: false,
-            allowUntrustedRoot: true, // TODO: Maybe delete it?
             allowIgnoreTimestamp: false,
             allowMultipleTimestamps: true,
             allowNoTimestamp: true,

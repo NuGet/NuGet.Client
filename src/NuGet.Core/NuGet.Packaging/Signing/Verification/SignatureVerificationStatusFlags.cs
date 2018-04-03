@@ -49,27 +49,27 @@ namespace NuGet.Packaging.Signing
         CertificateExpired,
 
         /// <summary>
-        /// Any chain building issue that is not specified falls in this category. This includes:
-        ///     NotSignatureValid
-        ///     NotValidForUsage
-        ///     UntrustedRoot
-        ///     Cyclic
-        ///     InvalidExtension
-        ///     InvalidPolicyConstraints
-        ///     InvalidBasicConstraints
-        ///     InvalidNameConstraints
-        ///     HasNotSupportedNameConstraint
-        ///     HasNotDefinedNameConstraint
-        ///     HasNotPermittedNameConstraint
-        ///     HasExcludedNameConstraint
-        ///     PartialChain
+        /// Chain building issues that are found because signature is not conformant with the NuGet Package Signature Spec. This includes:
         ///     CtlNotSignatureValid
         ///     CtlNotValidForUsage
+        ///     Cyclic
+        ///     ExplicitDistrust
+        ///     HasExcludedNameConstraint
+        ///     HasNotDefinedNameConstraint
+        ///     HasNotPermittedNameConstraint
+        ///     HasNotSupportedCriticalExtension
+        ///     HasNotSupportedNameConstraint
+        ///     HasWeakSignature
+        ///     InvalidBasicConstraints
+        ///     InvalidExtension
+        ///     InvalidNameConstraints
+        ///     InvalidPolicyConstraints
         ///     NoIssuanceChainPolicy
+        ///     NotSignatureValid
+        ///     NotValidForUsage
+        ///     PartialChain
         /// </summary>
-        GeneralChainBuildingIssues,
-        // TODO: Should we split this errors to only have soft-illegal chain building issues?
-        // Are there any hard-illegal issues in this list currently?
+        ChainBuildingNotConformantWithSpec,
 
         /// <summary>
         /// Signing certificate was revoked

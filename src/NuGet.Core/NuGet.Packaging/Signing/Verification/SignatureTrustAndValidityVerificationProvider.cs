@@ -18,7 +18,6 @@ namespace NuGet.Packaging.Signing
 
         public SignatureTrustAndValidityVerificationProvider()
         {
-            // TODO: Add list of allowed untrusted root
             _fingerprintAlgorithm = HashAlgorithmName.SHA256;
         }
 
@@ -40,14 +39,6 @@ namespace NuGet.Packaging.Signing
             var primarySignatureVerificationSummary = VerifyValidityAndTrust(signature, settings, certificateExtraStore, issues);
             var status = primarySignatureVerificationSummary.Status;
 
-            if (status == SignatureVerificationStatus.Illegal &&
-                primarySignatureVerificationSummary.Flags == SignatureVerificationStatusFlags.UntrustedRoot &&
-                IsSignaturePermittedToChainToUntrustedRoot(signature))
-            {
-                // TODO: Fix, if this is valid there should not be a warning added to the issues, maybe update the settings to allow it in verification?
-                status = SignatureVerificationStatus.Valid;
-            }
-
             if (settings.AllowAlwaysVerifyingCountersignature || ShouldFallbackToRepositoryCountersignature(primarySignatureVerificationSummary))
             {
                 var counterSignature = RepositoryCountersignature.GetRepositoryCountersignature(signature);
@@ -59,21 +50,10 @@ namespace NuGet.Packaging.Signing
                     var countersignatureVerificationSummary = VerifyValidityAndTrust(counterSignature, settings, certificateExtraStore, countersignatureIssues);
                     status = countersignatureVerificationSummary.Status;
 
-                    if (status == SignatureVerificationStatus.Illegal &&
-                        countersignatureVerificationSummary.Flags == SignatureVerificationStatusFlags.UntrustedRoot &&
-                        IsSignaturePermittedToChainToUntrustedRoot(counterSignature))
+                    if (!Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureVerificationSummary.Timestamp))
                     {
-                        // TODO: Fix, if this is valid there should not be a warning added to the issues, maybe update the settings to allow it in verification?
-                        status = SignatureVerificationStatus.Valid;
-                    }
-
-                    if (primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired))
-                    {
-                        if (!Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureVerificationSummary.Timestamp))
-                        {
-                            issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3011, Strings.SignatureNotTimeValid));
-                            status = SignatureVerificationStatus.Illegal;
-                        }
+                        issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3011, Strings.SignatureNotTimeValid));
+                        status = SignatureVerificationStatus.Illegal;
                     }
 
                     issues = countersignatureIssues;
@@ -106,9 +86,14 @@ namespace NuGet.Packaging.Signing
                 return new SignatureVerificationSummary(signature.Type, SignatureVerificationStatus.Illegal, SignatureVerificationStatusFlags.InvalidTimestamp);
             }
 
+            var verifySettings = new SignatureVerifySettings(
+                treatIssueAsError: !settings.AllowIllegal,
+                allowUntrustedRoot: true,
+                allowUnknownRevocation: settings.AllowUntrustedRoot);
+
             var status = signature.Verify(
                 validTimestamp,
-                settings,
+                verifySettings,
                 _fingerprintAlgorithm,
                 certificateExtraStore,
                 issues);
@@ -122,14 +107,7 @@ namespace NuGet.Packaging.Signing
         {
             return primarySignatureVerificationSummary.SignatureType == SignatureType.Author &&
                 primarySignatureVerificationSummary.Status == SignatureVerificationStatus.Illegal &&
-                (primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired) ||
-                primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.GeneralChainBuildingIssues));
-        }
-
-        private bool IsSignaturePermittedToChainToUntrustedRoot(Signature signature)
-        {
-            // TODO: Check if signature is in list of allowd untrusted root
-            return true;
+                primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired);
         }
 
 #else

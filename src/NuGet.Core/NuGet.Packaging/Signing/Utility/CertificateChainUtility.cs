@@ -202,7 +202,6 @@ namespace NuGet.Packaging.Signing
             (~X509ChainStatusFlags.CtlNotTimeValid) &
             (~X509ChainStatusFlags.OfflineRevocation) &
             (~X509ChainStatusFlags.UntrustedRoot);
-        // TODO: Add special cases for not conformat with the spec
 
         internal static bool ChainStatusListIncludesStatus(X509ChainStatus[] chainStatuses, X509ChainStatusFlags status, out IEnumerable<X509ChainStatus> chainStatus)
         {
