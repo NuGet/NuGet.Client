@@ -236,12 +236,12 @@ namespace NuGet.Packaging.Signing
                                 string.Join(", ", chainStatuses.Select(x => x.Status.ToString())))));
                     }
 
-                    var signatureExpired = Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(certificate, timestamp);
-                    if (!signatureExpired && !chainBuildingHasIssues)
+                    var signatureTimeValid = Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(certificate, timestamp);
+                    if (signatureTimeValid && !chainBuildingHasIssues)
                     {
                         return new SignatureVerificationSummary(Type, SignatureVerificationStatus.Valid, flags, timestamp);
                     }
-                    else if (signatureExpired)
+                    else if (!signatureTimeValid)
                     {
                         issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3011, Strings.SignatureNotTimeValid));
                         flags |= SignatureVerificationStatusFlags.CertificateExpired;
