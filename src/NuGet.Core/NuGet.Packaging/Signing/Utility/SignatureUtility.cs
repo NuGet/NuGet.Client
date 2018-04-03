@@ -47,6 +47,19 @@ namespace NuGet.Packaging.Signing
                 includeChain: true);
         }
 
+        /// <summary>
+        /// Gets certificates in the certificate chain for the repository countersignature.
+        /// </summary>
+        /// <param name="primarySignature">The primary signature.</param>
+        /// <param name="repositoryCountersignature">The repository countersignature.</param>
+        /// <returns>A non-empty, read-only list of X.509 certificates ordered from signing certificate to root.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="primarySignature" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="repositoryCountersignature" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="repositoryCountersignature" /> is
+        /// unrelated to <paramref name="primarySignature" />.</exception>
+        /// <remarks>
+        /// WARNING:  This method does not perform revocation, trust, or certificate validity checking.
+        /// </remarks>
         public static IX509CertificateChain GetCertificateChain(
             PrimarySignature primarySignature,
             RepositoryCountersignature repositoryCountersignature)
@@ -63,7 +76,7 @@ namespace NuGet.Packaging.Signing
 
             if (!repositoryCountersignature.IsRelated(primarySignature))
             {
-                throw new ArgumentException();
+                throw new ArgumentException(Strings.UnrelatedSignatures, nameof(repositoryCountersignature));
             }
 
             return GetRepositoryCountersignatureCertificates(
@@ -137,6 +150,8 @@ namespace NuGet.Packaging.Signing
         /// <param name="primarySignature">The primary signature.</param>
         /// <returns>A non-empty, read-only list of X.509 certificates ordered from signing certificate to root.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="primarySignature" /> is <c>null</c>.</exception>
+        /// <exception cref="SignatureException">Thrown if <paramref name="primarySignature" /> does not have a valid
+        /// timestamp.</exception>
         /// <remarks>
         /// WARNING:  This method does not perform revocation, trust, or certificate validity checking.
         /// </remarks>
@@ -152,7 +167,7 @@ namespace NuGet.Packaging.Signing
 
             if (timestamp == null)
             {
-                throw new SignatureException(NuGetLogCode.NU3029, Strings.PrimarySignatureHasNoTimestamp);
+                throw new SignatureException(NuGetLogCode.NU3000, Strings.PrimarySignatureHasNoTimestamp);
             }
 
             return GetTimestampCertificates(
@@ -169,6 +184,8 @@ namespace NuGet.Packaging.Signing
         /// <returns>A non-empty, read-only list of X.509 certificates ordered from signing certificate to root.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="primarySignature" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="repositoryCountersignature" /> is <c>null</c>.</exception>
+        /// <exception cref="SignatureException">Thrown if <paramref name="repositoryCountersignature" /> does not have a valid
+        /// timestamp.</exception>
         /// <remarks>
         /// WARNING:  This method does not perform revocation, trust, or certificate validity checking.
         /// </remarks>
@@ -188,14 +205,14 @@ namespace NuGet.Packaging.Signing
 
             if (!repositoryCountersignature.IsRelated(primarySignature))
             {
-                throw new ArgumentException(nameof(repositoryCountersignature));
+                throw new ArgumentException(Strings.UnrelatedSignatures, nameof(repositoryCountersignature));
             }
 
             var timestamp = repositoryCountersignature.Timestamps.FirstOrDefault();
 
             if (timestamp == null)
             {
-                throw new SignatureException(NuGetLogCode.NU3029, Strings.RepositoryCountersignatureHasNoTimestamp);
+                throw new SignatureException(NuGetLogCode.NU3000, Strings.RepositoryCountersignatureHasNoTimestamp);
             }
 
             return GetTimestampCertificates(

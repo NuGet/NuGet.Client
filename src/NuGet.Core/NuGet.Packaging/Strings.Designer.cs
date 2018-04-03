@@ -1232,6 +1232,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The primary signature and repository countersignature are unrelated..
+        /// </summary>
+        internal static string UnrelatedSignatures {
+            get {
+                return ResourceManager.GetString("UnrelatedSignatures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The ASN.1 data is unsupported..
         /// </summary>
         internal static string UnsupportedAsn1 {

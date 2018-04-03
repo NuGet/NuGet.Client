@@ -572,4 +572,7 @@ Valid from:</comment>
   <data name="RepositoryCountersignatureHasNoTimestamp" xml:space="preserve">
     <value>The repository countersignature does not have a timestamp.</value>
   </data>
+  <data name="UnrelatedSignatures" xml:space="preserve">
+    <value>The primary signature and repository countersignature are unrelated.</value>
+  </data>
 </root>

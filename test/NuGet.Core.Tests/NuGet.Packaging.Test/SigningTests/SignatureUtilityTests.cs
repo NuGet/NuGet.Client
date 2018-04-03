@@ -6,8 +6,12 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Asn1.Cms;
+using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Cms;
 using Org.BouncyCastle.X509.Store;
 using Test.Utility.Signing;
@@ -79,6 +83,21 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void GetCertificateChain_WithUnrelatedRepositoryCountersignature_Throws()
+        {
+            var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
+            var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
+
+            primarySignature = RemoveRepositoryCountersignature(primarySignature);
+
+            var exception = Assert.Throws<ArgumentException>(
+                () => SignatureUtility.GetCertificateChain(primarySignature, repositoryCountersignature));
+
+            Assert.Equal("repositoryCountersignature", exception.ParamName);
+            Assert.StartsWith("The primary signature and repository countersignature are unrelated.", exception.Message);
+        }
+
+        [Fact]
         public void GetCertificateChain_WithRepositoryCountersignature_ReturnsCertificates()
         {
             var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
@@ -103,6 +122,20 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void GetTimestampCertificateChain_WithoutTimestamp_Throws()
+        {
+            var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
+
+            primarySignature = RemoveTimestamp(primarySignature);
+
+            var exception = Assert.Throws<SignatureException>(
+                () => SignatureUtility.GetTimestampCertificateChain(primarySignature));
+
+            Assert.Equal(NuGetLogCode.NU3000, exception.Code);
+            Assert.Equal("The primary signature does not have a timestamp.", exception.Message);
+        }
+
+        [Fact]
         public void GetTimestampCertificateChain_WithAuthorSignatureTimestamp_ReturnsCertificates()
         {
             var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
@@ -114,6 +147,37 @@ namespace NuGet.Packaging.Test
                 Assert.Equal("c5e93f93089bd49dc1d8e2b657093b9e29132dcf", certificates[1].Thumbprint, StringComparer.OrdinalIgnoreCase);
                 Assert.Equal("a0e355c9f370a3069823afa3ce22b14a91475e77", certificates[2].Thumbprint, StringComparer.OrdinalIgnoreCase);
             }
+        }
+
+        [Fact]
+        public void GetTimestampCertificateChain_WithUnrelatedRepositoryCountersignature_Throws()
+        {
+            var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
+            var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
+
+            primarySignature = RemoveRepositoryCountersignature(primarySignature);
+
+            var exception = Assert.Throws<ArgumentException>(
+                () => SignatureUtility.GetTimestampCertificateChain(primarySignature, repositoryCountersignature));
+
+            Assert.Equal("repositoryCountersignature", exception.ParamName);
+            Assert.StartsWith("The primary signature and repository countersignature are unrelated.", exception.Message);
+        }
+
+        [Fact]
+        public void GetTimestampCertificateChain_WithRepositoryCountersignatureWithoutTimestamp_Throws()
+        {
+            var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
+
+            primarySignature = RemoveRepositoryCountersignatureTimestamp(primarySignature);
+
+            var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
+
+            var exception = Assert.Throws<SignatureException>(
+                () => SignatureUtility.GetTimestampCertificateChain(primarySignature, repositoryCountersignature));
+
+            Assert.Equal(NuGetLogCode.NU3000, exception.Code);
+            Assert.Equal("The repository countersignature does not have a timestamp.", exception.Message);
         }
 
         [Fact]
@@ -205,6 +269,69 @@ namespace NuGet.Packaging.Test
 
                 return PrimarySignature.Load(writeStream.ToArray());
             }
+        }
+
+        private static PrimarySignature RemoveTimestamp(PrimarySignature signature)
+        {
+            return RemoveUnsignedAttribute(
+                signature,
+                attributes => attributes.Remove(PkcsObjectIdentifiers.IdAASignatureTimeStampToken));
+        }
+
+        private static PrimarySignature RemoveRepositoryCountersignature(PrimarySignature signature)
+        {
+            return RemoveUnsignedAttribute(
+                signature,
+                attributes => attributes.Remove(new DerObjectIdentifier(Oids.Countersignature)));
+        }
+
+        private static PrimarySignature RemoveRepositoryCountersignatureTimestamp(PrimarySignature signature)
+        {
+            var bytes = signature.GetBytes();
+            var signedData = new CmsSignedData(bytes);
+            var signerInfos = signedData.GetSignerInfos();
+            var signerInfo = GetFirstSignerInfo(signerInfos);
+
+            var countersignerInfos = signerInfo.GetCounterSignatures();
+            var countersignerInfo = GetFirstSignerInfo(countersignerInfos);
+            var updatedCountersignerAttributes = countersignerInfo.UnsignedAttributes.Remove(new DerObjectIdentifier(Oids.SignatureTimeStampTokenAttribute));
+            var updatedCountersignerInfo = SignerInformation.ReplaceUnsignedAttributes(countersignerInfo, updatedCountersignerAttributes);
+            var updatedSignerAttributes = signerInfo.UnsignedAttributes.Remove(new DerObjectIdentifier(Oids.Countersignature));
+
+            updatedSignerAttributes = updatedSignerAttributes.Add(CmsAttributes.CounterSignature, updatedCountersignerInfo.ToSignerInfo());
+
+            var updatedSignerInfo = SignerInformation.ReplaceUnsignedAttributes(signerInfo, updatedSignerAttributes);
+
+            var updatedSignerInfos = new SignerInformationStore(updatedSignerInfo);
+            var updatedSignedData = CmsSignedData.ReplaceSigners(signedData, updatedSignerInfos);
+
+            return PrimarySignature.Load(updatedSignedData.GetEncoded());
+        }
+
+        private static PrimarySignature RemoveUnsignedAttribute(PrimarySignature signature, Func<AttributeTable, AttributeTable> remover)
+        {
+            var bytes = signature.GetBytes();
+            var signedData = new CmsSignedData(bytes);
+            var signerInfos = signedData.GetSignerInfos();
+            var signerInfo = GetFirstSignerInfo(signerInfos);
+
+            var updatedAttributes = remover(signerInfo.UnsignedAttributes);
+            var updatedSignerInfo = SignerInformation.ReplaceUnsignedAttributes(signerInfo, updatedAttributes);
+            var updatedSignerInfos = new SignerInformationStore(updatedSignerInfo);
+
+            var updatedSignedData = CmsSignedData.ReplaceSigners(signedData, updatedSignerInfos);
+
+            return PrimarySignature.Load(updatedSignedData.GetEncoded());
+        }
+
+        private static SignerInformation GetFirstSignerInfo(SignerInformationStore store)
+        {
+            var signers = store.GetSigners();
+            var enumerator = signers.GetEnumerator();
+
+            enumerator.MoveNext();
+
+            return (SignerInformation)enumerator.Current;
         }
     }
 }
