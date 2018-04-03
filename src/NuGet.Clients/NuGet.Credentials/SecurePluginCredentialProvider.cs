@@ -27,7 +27,7 @@ namespace NuGet.Credentials
         /// <summary>
         /// pluginManager
         /// </summary>
-        private readonly PluginManager _pluginManager;
+        private readonly IPluginManager _pluginManager;
 
         // We use this to avoid needlessly instantiating plugins if they don't support authentication.
         private bool _isAnAuthenticationPlugin = true;
@@ -42,7 +42,7 @@ namespace NuGet.Credentials
         /// <exception cref="ArgumentNullException">if <paramref name="logger"/> is null</exception>
         /// <exception cref="ArgumentNullException">if <paramref name="pluginManager"/> is null</exception>
         /// <exception cref="ArgumentException">if plugin file is not valid</exception>
-        public SecurePluginCredentialProvider(PluginManager pluginManager, PluginDiscoveryResult pluginDiscoveryResult, Common.ILogger logger)
+        public SecurePluginCredentialProvider(IPluginManager pluginManager, PluginDiscoveryResult pluginDiscoveryResult, Common.ILogger logger)
         {
             if (pluginDiscoveryResult == null)
             {

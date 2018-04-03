@@ -6,12 +6,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol.Plugins;
 using NuGet.Shared;
@@ -23,10 +21,10 @@ namespace NuGet.Protocol.Core.Types
     /// Invoked in by both the credential provider and the PluginResourceProvider
     /// </summary>
     /// <remarks>This is unsealed only to facilitate testing.</remarks>
-    public class PluginManager : IDisposable
+    public class PluginManager : IPluginManager, IDisposable
     {
-        private static readonly Lazy<PluginManager> Lazy = new Lazy<PluginManager>(() => new PluginManager());
-        public static PluginManager Instance { get { return Lazy.Value; } }
+        private static readonly Lazy<IPluginManager> Lazy = new Lazy<IPluginManager>(() => new PluginManager());
+        public static IPluginManager Instance => Lazy.Value;
 
         private const string _idleTimeoutEnvironmentVariable = "NUGET_PLUGIN_IDLE_TIMEOUT_IN_SECONDS";
         private const string _pluginPathsEnvironmentVariable = "NUGET_PLUGIN_PATHS";

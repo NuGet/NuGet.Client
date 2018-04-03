@@ -24,14 +24,14 @@ namespace NuGet.Protocol.Core.Types
     public class PluginResourceProvider : ResourceProvider
     {
 
-        private readonly PluginManager _pluginManager;
+        private readonly IPluginManager _pluginManager;
 
         public PluginResourceProvider() : this(PluginManager.Instance)
         {
         }
 
         // To be used for testing purposes only
-        public PluginResourceProvider(PluginManager pluginManager)
+        public PluginResourceProvider(IPluginManager pluginManager)
             : base(typeof(PluginResource), nameof(PluginResourceProvider))
         {
             _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
