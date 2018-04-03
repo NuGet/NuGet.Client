@@ -34,10 +34,6 @@
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Security" />
   </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="System.Xml.XDocument" Version="4.0.11" />
-  </ItemGroup>
   
   <ItemGroup>
     <Compile Update="Strings.Designer.cs">
