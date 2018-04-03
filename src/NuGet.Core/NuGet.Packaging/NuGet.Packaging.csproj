@@ -42,9 +42,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
-    <PackageReference Include="System.ObjectModel" Version="4.0.12" />
     <PackageReference Include="System.Dynamic.Runtime" Version="4.0.11" />
-    <PackageReference Include="System.IO.Compression" Version="4.1.0" />
   </ItemGroup>
 
   <ItemGroup>
