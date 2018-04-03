@@ -128,15 +128,17 @@ namespace NuGet.Packaging.FuncTest
                 {
                     // Act
                     var result = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
-                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
-                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any()).ToList();
+                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues()).ToList();
 
                     // Assert
                     result.Valid.Should().BeFalse();
-                    resultsWithErrors.Count().Should().Be(1);
-                    totalErrorIssues.Count().Should().Be(1);
-                    totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3003);
-                    totalErrorIssues.First().Message.Should().Contain(_noCertInAllowList);
+                    resultsWithErrors.Count.Should().Be(1);
+                    totalErrorIssues.Count.Should().Be(2);
+                    totalErrorIssues[0].Code.Should().Be(NuGetLogCode.NU3003);
+                    totalErrorIssues[0].Message.Should().Contain(_noCertInAllowList);
+                    totalErrorIssues[1].Code.Should().Be(NuGetLogCode.NU3003);
+                    totalErrorIssues[1].Message.Should().Contain(_noCertInAllowList);
                 }
             }
         }
@@ -196,7 +198,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithoutAllowListWithAllowUntrusted_Warn()
+        public async Task GetTrustResultAsync_VerifyWithoutAllowListWithAllowUntrusted_NoWarn()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -237,11 +239,9 @@ namespace NuGet.Packaging.FuncTest
                     // Assert
                     result.Valid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
-                    resultsWithWarnings.Count().Should().Be(1);
+                    resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(0);
-                    totalWarningIssues.Count().Should().Be(1);
-                    totalWarningIssues.First().Code.Should().Be(NuGetLogCode.NU3003);
-                    totalWarningIssues.First().Message.Should().Contain(_noCertInAllowList);
+                    totalWarningIssues.Count().Should().Be(0);
                 }
             }
         }

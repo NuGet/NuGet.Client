@@ -10,6 +10,7 @@ using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
+using NuGet.Shared;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
@@ -541,6 +542,62 @@ namespace Test.Utility.Signing
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
             return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+        }
+
+        public static bool AreVerifierSettingsEqual(SignedPackageVerifierSettings first, SignedPackageVerifierSettings second)
+        {
+            return first.AllowIgnoreTimestamp == second.AllowIgnoreTimestamp &&
+                first.AllowIllegal == second.AllowIllegal &&
+                first.AllowMultipleTimestamps == second.AllowMultipleTimestamps &&
+                first.AllowNoTimestamp == second.AllowNoTimestamp &&
+                first.AllowUnknownRevocation == second.AllowUnknownRevocation &&
+                first.AllowUnsigned == second.AllowUnsigned &&
+                first.AllowUntrusted == second.AllowUntrusted &&
+                first.AllowUntrustedSelfIssuedCertificate == second.AllowUntrustedSelfIssuedCertificate &&
+                AreCertificateHashAllowListEqual(first.ClientAllowListEntries, second.ClientAllowListEntries) &&
+                AreCertificateHashAllowListEqual(first.RepositoryAllowListEntries, second.RepositoryAllowListEntries);
+        }
+
+        private static bool AreCertificateHashAllowListEqual(IReadOnlyList<VerificationAllowListEntry> first, IReadOnlyList<VerificationAllowListEntry> second)
+        {
+            return (first as IEnumerable<CertificateHashAllowListEntry>).
+                SequenceEqualWithNullCheck((second as IEnumerable<CertificateHashAllowListEntry>), new CertificateHashAllowListEntryComparer());
+        }
+
+        private class CertificateHashAllowListEntryComparer : IEqualityComparer<CertificateHashAllowListEntry>
+        {
+            public bool Equals(CertificateHashAllowListEntry x, CertificateHashAllowListEntry y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x == null || y == null)
+                {
+                    return false;
+                }
+
+                return x.VerificationTarget == y.VerificationTarget &&
+                    x.FingerprintAlgorithm == y.FingerprintAlgorithm &&
+                    string.Equals(x.Fingerprint, y.Fingerprint, StringComparison.Ordinal);
+            }
+
+            public int GetHashCode(CertificateHashAllowListEntry obj)
+            {
+                if (obj == null)
+                {
+                    return 0;
+                }
+
+                var combiner = new HashCodeCombiner();
+
+                combiner.AddObject(obj.VerificationTarget);
+                combiner.AddObject(obj.Fingerprint);
+                combiner.AddObject(obj.FingerprintAlgorithm);
+
+                return combiner.CombinedHash;
+            }
         }
 
 #if IS_DESKTOP

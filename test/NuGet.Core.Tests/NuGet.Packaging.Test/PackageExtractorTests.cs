@@ -16,7 +16,6 @@ using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
-using NuGet.Shared;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility.Signing;
@@ -2013,7 +2012,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
@@ -2065,7 +2064,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2110,7 +2109,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2161,7 +2160,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
@@ -2209,7 +2208,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2257,7 +2256,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2299,7 +2298,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
@@ -2347,7 +2346,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2391,7 +2390,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
@@ -2439,7 +2438,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2483,7 +2482,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
@@ -2532,7 +2531,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -2580,7 +2579,7 @@ namespace NuGet.Packaging.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
@@ -2607,7 +2606,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     signedPackageVerifier.Verify(mock => mock.VerifySignaturesAsync(
                         It.Is<ISignedPackageReader>(p => p.Equals(packageReader)),
-                        It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
+                        It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                         It.Is<CancellationToken>(t => t.Equals(CancellationToken.None)),
                         It.IsAny<Guid>()));
                 }
@@ -2675,7 +2674,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     signedPackageVerifier.Verify(mock => mock.VerifySignaturesAsync(
                         It.Is<ISignedPackageReader>(p => p.Equals(packageReader)),
-                        It.Is<SignedPackageVerifierSettings>(s => AreVerifierSettingsEqual(s, expectedVerifierSettings)),
+                        It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, expectedVerifierSettings)),
                         It.Is<CancellationToken>(t => t.Equals(CancellationToken.None)),
                         It.IsAny<Guid>()));
                 }
@@ -3002,62 +3001,6 @@ namespace NuGet.Packaging.Test
             };
 
             return Tuple.Create(repositorySignatureInfo, expectedAllowList);
-        }
-
-        private static bool AreVerifierSettingsEqual(SignedPackageVerifierSettings first, SignedPackageVerifierSettings second)
-        {
-            return first.AllowIgnoreTimestamp == second.AllowIgnoreTimestamp &&
-                first.AllowIllegal == second.AllowIllegal &&
-                first.AllowMultipleTimestamps == second.AllowMultipleTimestamps &&
-                first.AllowNoTimestamp == second.AllowNoTimestamp &&
-                first.AllowUnknownRevocation == second.AllowUnknownRevocation &&
-                first.AllowUnsigned == second.AllowUnsigned &&
-                first.AllowUntrusted == second.AllowUntrusted &&
-                first.AllowUntrustedSelfIssuedCertificate == second.AllowUntrustedSelfIssuedCertificate &&
-                AreCertificateHashAllowListEqual(first.ClientAllowListEntries, second.ClientAllowListEntries) &&
-                AreCertificateHashAllowListEqual(first.RepositoryAllowListEntries, second.RepositoryAllowListEntries);
-        }
-
-        private static bool AreCertificateHashAllowListEqual(IReadOnlyList<VerificationAllowListEntry> first, IReadOnlyList<VerificationAllowListEntry> second)
-        {
-            return (first as IEnumerable<CertificateHashAllowListEntry>).
-                SequenceEqualWithNullCheck((second as IEnumerable<CertificateHashAllowListEntry>), new CertificateHashAllowListEntryComparer());
-        }
-
-        private class CertificateHashAllowListEntryComparer : IEqualityComparer<CertificateHashAllowListEntry>
-        {
-            public bool Equals(CertificateHashAllowListEntry x, CertificateHashAllowListEntry y)
-            {
-                if (ReferenceEquals(x, y))
-                {
-                    return true;
-                }
-
-                if (x == null || y == null)
-                {
-                    return false;
-                }
-
-                return x.VerificationTarget == y.VerificationTarget &&
-                    x.FingerprintAlgorithm == y.FingerprintAlgorithm &&
-                    string.Equals(x.Fingerprint, y.Fingerprint, StringComparison.Ordinal);
-            }
-
-            public int GetHashCode(CertificateHashAllowListEntry obj)
-            {
-                if (obj == null)
-                {
-                    return 0;
-                }
-
-                var combiner = new HashCodeCombiner();
-
-                combiner.AddObject(obj.VerificationTarget);
-                combiner.AddObject(obj.Fingerprint);
-                combiner.AddObject(obj.FingerprintAlgorithm);
-
-                return combiner.CombinedHash;
-            }
         }
     }
 }
