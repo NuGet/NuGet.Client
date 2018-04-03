@@ -248,7 +248,7 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: false,
-                allowUntrustedRoot: false,
+                allowUntrusted: false,
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
@@ -363,10 +363,143 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInVSClient_Warns()
+        public async Task GetTrustResultAsync_SettingsRequireExactlyOneTimestamp_MultipleTimestamps_Fails()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var testLogger = new TestLogger();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var setting = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowIllegal: false,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: false,
+                allowMultipleTimestamps: false,
+                allowNoTimestamp: false,
+                allowUnknownRevocation: false,
+                allowNoTrustedAuthors: true,
+                allowNoTrustedSources: true,
+                allowAlwaysVerifyingCountersignature: false);
+            var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
+            var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
+
+            using (var package = new PackageArchiveReader(nupkg.CreateAsStream(), leaveStreamOpen: false))
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var signatureRequest = new AuthorSignPackageRequest(testCertificate, HashAlgorithmName.SHA256))
+            {
+                var signature = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(package, signatureRequest);
+                var timestampedSignature = await SignedArchiveTestUtility.TimestampSignature(timestampProvider, signature, signatureRequest.TimestampHashAlgorithm, SignaturePlacement.PrimarySignature, testLogger);
+                var reTimestampedSignature = await SignedArchiveTestUtility.TimestampSignature(timestampProvider, timestampedSignature, signatureRequest.TimestampHashAlgorithm, SignaturePlacement.PrimarySignature, testLogger);
+
+                timestampedSignature.Timestamps.Count.Should().Be(1);
+                reTimestampedSignature.Timestamps.Count.Should().Be(2);
+
+                // Act
+                var result = await verificationProvider.GetTrustResultAsync(package, reTimestampedSignature, setting, CancellationToken.None);
+                var totalErrorIssues = result.GetErrorIssues();
+
+                // Assert
+                result.Trust.Should().Be(SignatureVerificationStatus.Illegal);
+                totalErrorIssues.Count().Should().Be(1);
+                totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3000);
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithSignedAndCountersignedPackage_Succeeds()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var trusted = SigningTestUtility.GenerateTrustedTestCertificate())
+            using (var counterCertificate = new X509Certificate2(trusted.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    testCertificate,
+                    nupkg,
+                    dir);
+
+                var repositorySignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                    counterCertificate,
+                    signedPackagePath,
+                    dir,
+                    new Uri("https://v3ServiceIndex.test/api/index"));
+
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                using (var packageReader = new PackageArchiveReader(repositorySignedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+
+                    // Assert
+                    result.Valid.Should().BeTrue();
+                    resultsWithErrors.Count().Should().Be(0);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithSignedTimestampedCountersignedAndCountersignatureTimestampedPackage_Succeeds()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var trusted = SigningTestUtility.GenerateTrustedTestCertificate())
+            using (var counterCertificate = new X509Certificate2(trusted.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    testCertificate,
+                    nupkg,
+                    dir,
+                    timestampService.Url);
+
+                var repositorySignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                    counterCertificate,
+                    signedPackagePath,
+                    dir,
+                    new Uri("https://v3ServiceIndex.test/api/index"),
+                    timestampService.Url);
+
+                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                using (var packageReader = new PackageArchiveReader(repositorySignedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+
+                    // Assert
+                    result.Valid.Should().BeTrue();
+                    resultsWithErrors.Count().Should().Be(0);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInAcceptMode_Warns()
         {
             // Arrange
             var setting = SignedPackageVerifierSettings.AcceptModeDefaultPolicy;
+
+            // Act & Assert
+            var matchingIssues = await VerifyUnavailableRevocationInfo(
+                SignatureVerificationStatus.Valid,
+                LogLevel.Warning,
+                setting);
+
+            Assert.Empty(matchingIssues);
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInRequireMode_Warns()
+        {
+            // Arrange
+            var setting = SignedPackageVerifierSettings.RequireModeDefaultPolicy;
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
@@ -483,207 +616,6 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
-        public async Task GetTrustResultAsync_SettingsRequireExactlyOneTimestamp_MultipleTimestamps_Fails()
-        {
-            // Arrange
-            var nupkg = new SimpleTestPackageContext();
-            var testLogger = new TestLogger();
-            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
-            var setting = new SignedPackageVerifierSettings(
-                allowUnsigned: false,
-                allowIllegal: false,
-                allowUntrusted: false,
-                allowIgnoreTimestamp: false,
-                allowMultipleTimestamps: false,
-                allowNoTimestamp: false,
-                allowUnknownRevocation: false,
-                allowNoTrustedAuthors: true,
-                allowNoTrustedSources: true,
-                allowAlwaysVerifyingCountersignature: false);
-            var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
-            var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
-
-            using (var package = new PackageArchiveReader(nupkg.CreateAsStream(), leaveStreamOpen: false))
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            using (var signatureRequest = new AuthorSignPackageRequest(testCertificate, HashAlgorithmName.SHA256))
-            {
-                var signature = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(package, signatureRequest);
-                var timestampedSignature = await SignedArchiveTestUtility.TimestampSignature(timestampProvider, signature, signatureRequest.TimestampHashAlgorithm, SignaturePlacement.PrimarySignature, testLogger);
-                var reTimestampedSignature = await SignedArchiveTestUtility.TimestampSignature(timestampProvider, timestampedSignature, signatureRequest.TimestampHashAlgorithm, SignaturePlacement.PrimarySignature, testLogger);
-
-                timestampedSignature.Timestamps.Count.Should().Be(1);
-                reTimestampedSignature.Timestamps.Count.Should().Be(2);
-
-                // Act
-                var result = await verificationProvider.GetTrustResultAsync(package, reTimestampedSignature, setting, CancellationToken.None);
-                var totalErrorIssues = result.GetErrorIssues();
-
-                // Assert
-                result.Trust.Should().Be(SignatureVerificationStatus.Illegal);
-                totalErrorIssues.Count().Should().Be(1);
-                totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3000);
-            }
-        }
-
-        [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithUntrustedSelfSignedCertificateAndNotAllowUntrustedSelfSignedCertificate_Fails()
-        {
-            var settings = new SignedPackageVerifierSettings(
-                allowUnsigned: false,
-                allowIllegal: false,
-                allowUntrusted: false,
-                allowIgnoreTimestamp: false,
-                allowMultipleTimestamps: false,
-                allowNoTimestamp: true,
-                allowUnknownRevocation: false,
-                allowNoTrustedAuthors: true,
-                allowNoTrustedSources: true,
-                allowAlwaysVerifyingCountersignature: false);
-
-            using (var test = await GetTrustResultAsyncTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
-            {
-                var result = await test.Provider.GetTrustResultAsync(test.Package, test.PrimarySignature, settings, CancellationToken.None);
-
-                Assert.Equal(SignatureVerificationStatus.Illegal, result.Trust);
-                Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Error));
-                Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
-
-                AssertUntrustedRoot(result.Issues, LogLevel.Error);
-                AssertTimestampMissing(result.Issues, LogLevel.Warning);
-            }
-        }
-
-        [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithUntrustedSelfSignedCertificateAndAllowUntrustedSelfSignedCertificate_Warns()
-        {
-            var settings = new SignedPackageVerifierSettings(
-                allowUnsigned: false,
-                allowIllegal: false,
-                allowUntrusted: false,
-                allowIgnoreTimestamp: false,
-                allowMultipleTimestamps: false,
-                allowNoTimestamp: true,
-                allowUnknownRevocation: false,
-                allowNoTrustedAuthors: true,
-                allowNoTrustedSources: true,
-                allowAlwaysVerifyingCountersignature: true);
-
-            using (var test = await GetTrustResultAsyncTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
-            {
-                var result = await test.Provider.GetTrustResultAsync(test.Package, test.PrimarySignature, settings, CancellationToken.None);
-
-                Assert.Equal(SignatureVerificationStatus.Valid, result.Trust);
-                Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Error));
-                Assert.Equal(2, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
-
-                AssertUntrustedRoot(result.Issues, LogLevel.Warning);
-                AssertTimestampMissing(result.Issues, LogLevel.Warning);
-            }
-        }
-
-        [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithTrustedSelfSignedCertificateAndNotAllowUntrustedSelfSignedCertificate_Warns()
-        {
-            var settings = new SignedPackageVerifierSettings(
-                allowUnsigned: false,
-                allowIllegal: false,
-                allowUntrusted: false,
-                allowIgnoreTimestamp: false,
-                allowMultipleTimestamps: false,
-                allowNoTimestamp: true,
-                allowUnknownRevocation: false,
-                allowNoTrustedAuthors: true,
-                allowNoTrustedSources: true,
-                allowAlwaysVerifyingCountersignature: true);
-
-            using (var test = await GetTrustResultAsyncTest.CreateAsync(settings, _trustedTestCert.Source.Cert))
-            {
-                var result = await test.Provider.GetTrustResultAsync(test.Package, test.PrimarySignature, settings, CancellationToken.None);
-
-                Assert.Equal(SignatureVerificationStatus.Valid, result.Trust);
-                Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Error));
-                Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
-
-                AssertTimestampMissing(result.Issues, LogLevel.Warning);
-            }
-        }
-
-        [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithSignedAndCountersignedPackage_Succeeds()
-        {
-            // Arrange
-            var nupkg = new SimpleTestPackageContext();
-
-            using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            using (var trusted = SigningTestUtility.GenerateTrustedTestCertificate())
-            using (var counterCertificate = new X509Certificate2(trusted.Source.Cert))
-            {
-                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
-                    testCertificate,
-                    nupkg,
-                    dir);
-
-                var repositorySignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
-                    counterCertificate,
-                    signedPackagePath,
-                    dir,
-                    new Uri("https://v3ServiceIndex.test/api/index"));
-
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
-                using (var packageReader = new PackageArchiveReader(repositorySignedPackagePath))
-                {
-                    // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
-                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
-
-                    // Assert
-                    result.Valid.Should().BeTrue();
-                    resultsWithErrors.Count().Should().Be(0);
-                }
-            }
-        }
-
-        [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithSignedTimestampedCountersignedAndCountersignatureTimestampedPackage_Succeeds()
-        {
-            // Arrange
-            var nupkg = new SimpleTestPackageContext();
-            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
-
-            using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            using (var trusted = SigningTestUtility.GenerateTrustedTestCertificate())
-            using (var counterCertificate = new X509Certificate2(trusted.Source.Cert))
-            {
-                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
-                    testCertificate,
-                    nupkg,
-                    dir,
-                    timestampService.Url);
-
-                var repositorySignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
-                    counterCertificate,
-                    signedPackagePath,
-                    dir,
-                    new Uri("https://v3ServiceIndex.test/api/index"),
-                    timestampService.Url);
-
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
-                using (var packageReader = new PackageArchiveReader(repositorySignedPackagePath))
-                {
-                    // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
-                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
-
-                    // Assert
-                    result.Valid.Should().BeTrue();
-                    resultsWithErrors.Count().Should().Be(0);
-                }
-            }
-        }
-
         private static void AssertOfflineRevocation(IEnumerable<SignatureLog> issues, LogLevel logLevel)
         {
             Assert.Contains(issues, issue =>
@@ -698,22 +630,6 @@ namespace NuGet.Packaging.FuncTest
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
                 issue.Message == "The revocation function was unable to check revocation for the certificate.");
-        }
-
-        private static void AssertTimestampMissing(IEnumerable<SignatureLog> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3027 &&
-                issue.Level == logLevel &&
-                issue.Message == "The signature should be timestamped to enable long-term signature validity after the certificate has expired.");
-        }
-
-        private static void AssertUntrustedRoot(IEnumerable<SignatureLog> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
         }
 
         private static byte[] GetResource(string name)

@@ -108,8 +108,9 @@ namespace NuGet.Packaging.Signing
         /// <param name="fingerprintAlgorithm">Algorithm used to calculate and display the certificate's fingerprint.</param>
         /// <param name="certificateExtraStore">Collection of certificates to help the chain building engine as an extra store.</param>
         /// <param name="issues">List of log messages.</param>
+        /// <remarks>This is only public for ease of testing</remarks>
         /// <returns>Status of trust for signature.</returns>
-        internal virtual SignatureVerificationSummary Verify(
+        public virtual SignatureVerificationSummary Verify(
             Timestamp timestamp,
             SignatureVerifySettings settings,
             HashAlgorithmName fingerprintAlgorithm,

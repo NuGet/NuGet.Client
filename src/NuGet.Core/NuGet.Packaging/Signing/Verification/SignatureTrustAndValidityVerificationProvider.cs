@@ -89,7 +89,7 @@ namespace NuGet.Packaging.Signing
             var verifySettings = new SignatureVerifySettings(
                 treatIssueAsError: !settings.AllowIllegal,
                 allowUntrustedRoot: true,
-                allowUnknownRevocation: settings.AllowUntrustedRoot);
+                allowUnknownRevocation: settings.AllowUnknownRevocation);
 
             var status = signature.Verify(
                 validTimestamp,
