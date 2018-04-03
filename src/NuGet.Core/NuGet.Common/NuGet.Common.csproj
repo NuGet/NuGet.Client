@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.2.0" />
     <PackageReference Include="System.Diagnostics.Process" Version="4.1.0" />
     <PackageReference Include="System.Threading.Thread" Version="4.0.0" />
   </ItemGroup>

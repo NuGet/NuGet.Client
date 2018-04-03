@@ -29,7 +29,6 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.0.0" />
-    <PackageReference Include="System.Xml.XDocument" Version="4.0.11" />
   </ItemGroup>
   
   <ItemGroup>
