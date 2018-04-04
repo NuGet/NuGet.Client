@@ -16,8 +16,7 @@ namespace NuGet.Packaging
 {
     public static class PackageExtractor
     {
-        private static Lazy<RepositorySignatureInfoProvider> _repositorySignatureInfoProvider =
-            new Lazy<RepositorySignatureInfoProvider>(() => RepositorySignatureInfoProvider.Instance);
+        private static RepositorySignatureInfoProvider _repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
 
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
             string source,
@@ -988,12 +987,6 @@ namespace NuGet.Packaging
             {
                 var repositorySignatureInfo = GetRepositorySignatureInfo(source);
 
-                if (repositorySignatureInfo?.AllRepositorySigned == true &&
-                    repositorySignatureInfo?.RepositoryCertificateInfos?.Count() == 0)
-                {
-
-                }
-
                 var verifierSettings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(
                     repositorySignatureInfo,
                     packageExtractionContext.SignedPackageVerifierSettings);
@@ -1017,7 +1010,7 @@ namespace NuGet.Packaging
 
             if (!string.IsNullOrEmpty(source))
             {
-                _repositorySignatureInfoProvider.Value.TryGetRepositorySignatureInfo(source, out repositorySignatureInfo);
+                _repositorySignatureInfoProvider.TryGetRepositorySignatureInfo(source, out repositorySignatureInfo);
             }
 
             return repositorySignatureInfo;

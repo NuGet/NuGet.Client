@@ -104,7 +104,7 @@ namespace NuGet.Packaging.Signing
             HashAlgorithmName fingerprintAlgorithm,
             List<SignatureLog> issues)
         {
-            settings = settings ?? SignedPackageVerifierSettings.Default();
+            settings = settings ?? SignedPackageVerifierSettings.GetDefault();
 
             if (signature == null)
             {

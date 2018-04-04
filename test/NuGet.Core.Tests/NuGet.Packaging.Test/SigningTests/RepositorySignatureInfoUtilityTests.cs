@@ -14,8 +14,8 @@ namespace NuGet.Packaging.Test
 {
     public class RepositorySignatureInfoUtilityTests
     {
-        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.Default();
-        private static SignedPackageVerifierSettings _verifyCommandDefaultSettings = SignedPackageVerifierSettings.VerifyCommandDefaultPolicy();
+        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault();
+        private static SignedPackageVerifierSettings _verifyCommandDefaultSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
 
         [Fact]
         public void GetSignedPackageVerifierSettings_NullCommonSettingsThrows()

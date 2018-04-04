@@ -25,8 +25,8 @@ namespace NuGet.Packaging.Test
 {
     public class PackageExtractorTests
     {
-        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.Default();
-        private static SignedPackageVerifierSettings _defaultVerifyCommandSettings = SignedPackageVerifierSettings.VerifyCommandDefaultPolicy();
+        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault();
+        private static SignedPackageVerifierSettings _defaultVerifyCommandSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
 
         [Fact]
         public async Task InstallFromSourceAsync_StressTest()

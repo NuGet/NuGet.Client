@@ -42,7 +42,7 @@ namespace NuGet.Commands
                 var allowListEntries = verifyArgs.CertificateFingerprint.Select(fingerprint =>
                     new CertificateHashAllowListEntry(VerificationTarget.Primary, fingerprint, _defaultFingerprintAlgorithm)).ToList();
 
-                var verifierSettings = SignedPackageVerifierSettings.VerifyCommandDefaultPolicy(clientAllowListEntries: allowListEntries);
+                var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(clientAllowListEntries: allowListEntries);
                 var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders();
                 var verifier = new PackageSignatureVerifier(verificationProviders);
 

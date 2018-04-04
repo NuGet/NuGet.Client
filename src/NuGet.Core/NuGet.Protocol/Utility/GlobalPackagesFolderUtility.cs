@@ -108,7 +108,7 @@ namespace NuGet.Protocol
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 logger,
                 signedPackageVerifier,
-                SignedPackageVerifierSettings.Default());
+                SignedPackageVerifierSettings.GetDefault());
 
             var versionFolderPathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 

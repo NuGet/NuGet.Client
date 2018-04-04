@@ -150,7 +150,7 @@ namespace NuGet.Commands
                 _request.XmlDocFileSaveMode,
                 _request.Log,
                 signedPackageVerifier,
-                SignedPackageVerifierSettings.Default());
+                SignedPackageVerifierSettings.GetDefault());
         }
 
         private static PackageIdentity GetPackageIdentity(RemoteMatch remoteMatch)

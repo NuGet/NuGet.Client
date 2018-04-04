@@ -27,9 +27,9 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class SignatureTrustAndValidityVerificationProviderTests
     {
-        private SignedPackageVerifierSettings _verifyCommandSettings => SignedPackageVerifierSettings.VerifyCommandDefaultPolicy();
-        private SignedPackageVerifierSettings _vsClientDefaultSettings => SignedPackageVerifierSettings.VSClientDefaultPolicy();
-        private SignedPackageVerifierSettings _defaultSettings => SignedPackageVerifierSettings.Default();
+        private SignedPackageVerifierSettings _verifyCommandSettings => SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
+        private SignedPackageVerifierSettings _vsClientDefaultSettings => SignedPackageVerifierSettings.GetVSClientDefaultPolicy();
+        private SignedPackageVerifierSettings _defaultSettings => SignedPackageVerifierSettings.GetDefault();
         private SigningSpecifications _specification => SigningSpecifications.V1;
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;

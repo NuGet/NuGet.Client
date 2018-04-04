@@ -126,7 +126,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Default settings.
         /// </summary>
-        public static SignedPackageVerifierSettings Default(
+        public static SignedPackageVerifierSettings GetDefault(
             IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries = null)
         {
@@ -148,7 +148,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Allow all.
         /// </summary>
-        public static SignedPackageVerifierSettings AllowAll(
+        public static SignedPackageVerifierSettings GetAllowAll(
             IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries = null)
         {
@@ -170,7 +170,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Default policy for scenarios in VS.
         /// </summary>
-        public static SignedPackageVerifierSettings VSClientDefaultPolicy(
+        public static SignedPackageVerifierSettings GetVSClientDefaultPolicy(
             IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries = null)
         {
@@ -192,7 +192,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Default policy for nuget.exe verify --signatures command.
         /// </summary>
-        public static SignedPackageVerifierSettings VerifyCommandDefaultPolicy(
+        public static SignedPackageVerifierSettings GetVerifyCommandDefaultPolicy(
             IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries = null)
         {

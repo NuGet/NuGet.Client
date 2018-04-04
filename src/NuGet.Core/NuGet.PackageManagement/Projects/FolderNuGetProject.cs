@@ -150,7 +150,7 @@ namespace NuGet.ProjectManagement
                     {
                         var signedPackageVerifier = !downloadResourceResult.SignatureVerified ? new PackageSignatureVerifier(
                             SignatureVerificationProviderFactory.GetSignatureVerificationProviders()) : null;
-                        var signedPackageVerifierSettings = !downloadResourceResult.SignatureVerified ? SignedPackageVerifierSettings.Default() : null;
+                        var signedPackageVerifierSettings = !downloadResourceResult.SignatureVerified ? SignedPackageVerifierSettings.GetDefault() : null;
 
                         packageExtractionContext = new PackageExtractionContext(
                             PackageSaveMode.Defaultv2,
@@ -424,7 +424,7 @@ namespace NuGet.ProjectManagement
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     new LoggerAdapter(nuGetProjectContext),
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.Default());
+                    SignedPackageVerifierSettings.GetDefault());
             }
 
             var copiedSatelliteFiles = await PackageExtractor.CopySatelliteFilesAsync(

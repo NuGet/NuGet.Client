@@ -313,7 +313,7 @@ namespace NuGet.CommandLine
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         collectorLogger,
                         signedPackageVerifier,
-                        SignedPackageVerifierSettings.Default())
+                        SignedPackageVerifierSettings.GetDefault())
             };
 
             if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
