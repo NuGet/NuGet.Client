@@ -87,7 +87,7 @@ namespace NuGet.CommandLine.Test
                 {
                     Assert.True(_successCode == result.ExitCode, result.AllOutput);
                     Assert.True(result.Success);
-                    Assert.Contains("Successfully verified package(s).", result.AllOutput);
+                    Assert.Contains("Successfully verified package", result.AllOutput);
                 }
             }
         }

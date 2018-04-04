@@ -11,7 +11,7 @@ namespace NuGet.Packaging.Signing
 {
     public static class VerificationUtility
     {
-        internal static bool IsSigningCertificateValid(X509Certificate2 certificate, bool treatIssuesAsErrors, List<SignatureLog> issues)
+        internal static SignatureVerificationStatusFlags ValidateSigningCertificate(X509Certificate2 certificate, bool treatIssuesAsErrors, List<SignatureLog> issues)
         {
             if (certificate == null)
             {
@@ -23,33 +23,33 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(issues));
             }
 
-            var isValid = true;
+            var validationFlags = SignatureVerificationStatusFlags.NoErrors;
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(certificate))
             {
                 issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3013, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm));
-                isValid = false;
+                validationFlags |= SignatureVerificationStatusFlags.SignatureAlgorithmUnsupported;
             }
 
             if (!CertificateUtility.IsCertificatePublicKeyValid(certificate))
             {
                 issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement));
-                isValid = false;
+                validationFlags |= SignatureVerificationStatusFlags.CertificatePublicKeyInvalid;
             }
 
             if (CertificateUtility.HasExtendedKeyUsage(certificate, Oids.LifetimeSigningEku))
             {
                 issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSigningEKU));
-                isValid = false;
+                validationFlags |= SignatureVerificationStatusFlags.HasLifetimeSigningEku;
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate))
             {
                 issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3017, Strings.SignatureNotYetValid));
-                isValid = false;
+                validationFlags |= SignatureVerificationStatusFlags.CertificateValidityInTheFuture;
             }
 
-            return isValid;
+            return validationFlags;
         }
 
 #if IS_DESKTOP

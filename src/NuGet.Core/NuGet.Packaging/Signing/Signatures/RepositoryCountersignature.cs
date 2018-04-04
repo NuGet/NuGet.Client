@@ -39,11 +39,6 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(primarySignature));
             }
 
-            if (primarySignature.Type == SignatureType.Repository)
-            {
-                throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureMustNotHaveARepositoryCountersignature);
-            }
-
             var countersignatures = primarySignature.SignerInfo.CounterSignerInfos;
             RepositoryCountersignature repositoryCountersignature = null;
 
@@ -57,6 +52,11 @@ namespace NuGet.Packaging.Signing
                     if (repositoryCountersignature != null)
                     {
                         throw new SignatureException(NuGetLogCode.NU3032, Strings.Error_NotOneRepositoryCounterSignature);
+                    }
+
+                    if (primarySignature.Type == SignatureType.Repository)
+                    {
+                        throw new SignatureException(NuGetLogCode.NU3033, Strings.Error_RepositorySignatureMustNotHaveARepositoryCountersignature);
                     }
 
                     var v3ServiceIndexUrl = AttributeUtility.GetNuGetV3ServiceIndexUrl(countersignature.SignedAttributes);
@@ -86,9 +86,9 @@ namespace NuGet.Packaging.Signing
             throw new SignatureException(NuGetLogCode.NU3031, Strings.InvalidRepositoryCountersignature);
         }
 
-        internal override SignatureVerificationStatus Verify(
+        public override SignatureVerificationSummary Verify(
             Timestamp timestamp,
-            SignedPackageVerifierSettings settings,
+            SignatureVerifySettings settings,
             HashAlgorithmName fingerprintAlgorithm,
             X509Certificate2Collection certificateExtraStore,
             List<SignatureLog> issues)
@@ -97,7 +97,7 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(issues));
             }
-            settings = settings ?? SignedPackageVerifierSettings.GetDefault();
+            settings = settings ?? SignatureVerifySettings.Default;
 
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, V3ServiceIndexUrl.ToString())));

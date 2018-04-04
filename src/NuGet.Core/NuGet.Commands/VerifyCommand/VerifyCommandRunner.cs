@@ -92,7 +92,7 @@ namespace NuGet.Commands
 
                 if (verificationResult.Valid)
                 {
-                    logger.LogInformation(Environment.NewLine + Strings.VerifyCommand_Success);
+                    logger.LogInformation(Environment.NewLine + string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_Success, packageIdentity.ToString()));
                 }
                 else
                 {

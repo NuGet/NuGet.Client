@@ -2645,13 +2645,13 @@ namespace NuGet.Packaging.Test
                     allowUnsigned: false,
                     allowIllegal: true,
                     allowUntrusted: true,
-                    allowUntrustedSelfIssuedCertificate: true,
                     allowIgnoreTimestamp: true,
                     allowMultipleTimestamps: true,
                     allowNoTimestamp: true,
                     allowUnknownRevocation: true,
                     allowNoClientCertificateList: true,
                     allowNoRepositoryCertificateList: false,
+                    allowAlwaysVerifyingCountersignature: true,
                     repoAllowListEntries: expectedAllowList,
                     clientAllowListEntries: null);
 
@@ -2715,13 +2715,13 @@ namespace NuGet.Packaging.Test
                     allowUnsigned: false,
                     allowIllegal: false,
                     allowUntrusted: false,
-                    allowUntrustedSelfIssuedCertificate: true,
                     allowIgnoreTimestamp: false,
                     allowMultipleTimestamps: true,
                     allowNoTimestamp: true,
                     allowUnknownRevocation: true,
                     allowNoClientCertificateList: true,
                     allowNoRepositoryCertificateList: false,
+                    allowAlwaysVerifyingCountersignature: true,
                     repoAllowListEntries: expectedAllowList,
                     clientAllowListEntries: null);
 

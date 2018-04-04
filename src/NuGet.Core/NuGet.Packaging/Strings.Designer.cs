@@ -368,7 +368,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The primary signature should be timestamped to enable long-term signature validity after the certificate has expired..
+        ///   Looks up a localized string similar to The signature should be timestamped to enable long-term signature validity after the certificate has expired..
         /// </summary>
         internal static string ErrorNoTimestamp {
             get {

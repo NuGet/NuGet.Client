@@ -51,11 +51,11 @@ namespace NuGet.Packaging.Test
             settings.AllowUnsigned.Should().BeFalse();
             settings.AllowIllegal.Should().BeTrue();
             settings.AllowUntrusted.Should().BeTrue();
-            settings.AllowUntrustedSelfIssuedCertificate.Should().BeTrue();
             settings.AllowIgnoreTimestamp.Should().BeTrue();
             settings.AllowNoTimestamp.Should().BeTrue();
             settings.AllowMultipleTimestamps.Should().BeTrue();
             settings.AllowUnknownRevocation.Should().BeTrue();
+            settings.AllowAlwaysVerifyingCountersignature.Should().BeTrue();
         }
 
         [Fact]
@@ -72,13 +72,13 @@ namespace NuGet.Packaging.Test
             settings.AllowUnsigned.Should().BeFalse();
             settings.AllowIllegal.Should().BeFalse();
             settings.AllowUntrusted.Should().BeFalse();
-            settings.AllowUntrustedSelfIssuedCertificate.Should().BeTrue();
             settings.AllowIgnoreTimestamp.Should().BeFalse();
             settings.AllowNoTimestamp.Should().BeTrue();
             settings.AllowMultipleTimestamps.Should().BeTrue();
             settings.AllowUnknownRevocation.Should().BeTrue();
             settings.AllowNoClientCertificateList.Should().BeTrue();
             settings.AllowNoRepositoryCertificateList.Should().BeFalse();
+            settings.AllowAlwaysVerifyingCountersignature.Should().BeTrue();
         }
 
         [Fact]
@@ -266,13 +266,13 @@ namespace NuGet.Packaging.Test
                 allowUnsigned: true,
                 allowIllegal: true,
                 allowUntrusted: true,
-                allowUntrustedSelfIssuedCertificate: true,
                 allowIgnoreTimestamp: true,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
                 allowNoRepositoryCertificateList: true,
                 allowNoClientCertificateList: false,
+                allowAlwaysVerifyingCountersignature: true,
                 repoAllowListEntries: null,
                 clientAllowListEntries: expectedClientAllowList);
 

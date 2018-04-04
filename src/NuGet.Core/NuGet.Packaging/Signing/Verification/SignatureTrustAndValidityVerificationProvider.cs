@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,13 +24,50 @@ namespace NuGet.Packaging.Signing
         public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-
-            var result = VerifyValidityAndTrust(signature, settings);
+            var result = VerifySignatureAndCountersignature(signature, settings);
             return Task.FromResult(result);
         }
 
 #if IS_DESKTOP
-        private PackageVerificationResult VerifyValidityAndTrust(PrimarySignature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifySignatureAndCountersignature(
+            PrimarySignature signature,
+            SignedPackageVerifierSettings settings)
+        {
+            var issues = new List<SignatureLog>();
+            var certificateExtraStore = signature.SignedCms.Certificates;
+
+            var primarySignatureVerificationSummary = VerifyValidityAndTrust(signature, settings, certificateExtraStore, issues);
+            var status = primarySignatureVerificationSummary.Status;
+
+            if (settings.AllowAlwaysVerifyingCountersignature || ShouldFallbackToRepositoryCountersignature(primarySignatureVerificationSummary))
+            {
+                var counterSignature = RepositoryCountersignature.GetRepositoryCountersignature(signature);
+                if (counterSignature != null)
+                {
+                    var countersignatureIssues = new List<SignatureLog>();
+                    // TODO: Add a warning saying that we fallback to the countersignature?
+
+                    var countersignatureVerificationSummary = VerifyValidityAndTrust(counterSignature, settings, certificateExtraStore, countersignatureIssues);
+                    status = countersignatureVerificationSummary.Status;
+
+                    if (!Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureVerificationSummary.Timestamp))
+                    {
+                        issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3011, Strings.SignatureNotTimeValid));
+                        status = SignatureVerificationStatus.Illegal;
+                    }
+
+                    issues = countersignatureIssues;
+                }
+            }
+
+            return new SignedPackageVerificationResult(status, signature, issues);
+        }
+
+        private SignatureVerificationSummary VerifyValidityAndTrust(
+            Signature signature,
+            SignedPackageVerifierSettings settings,
+            X509Certificate2Collection certificateExtraStore,
+            List<SignatureLog> issues)
         {
             var timestampIssues = new List<SignatureLog>();
 
@@ -46,25 +81,39 @@ namespace NuGet.Packaging.Signing
             }
             catch (TimestampException)
             {
-                return new SignedPackageVerificationResult(SignatureVerificationStatus.Illegal, signature, timestampIssues);
+                issues.AddRange(timestampIssues);
+
+                return new SignatureVerificationSummary(signature.Type, SignatureVerificationStatus.Illegal, SignatureVerificationStatusFlags.InvalidTimestamp);
             }
 
-            var certificateExtraStore = signature.SignedCms.Certificates;
-            var signatureIssues = new List<SignatureLog>();
+            var verifySettings = new SignatureVerifySettings(
+                treatIssueAsError: !settings.AllowIllegal,
+                allowUntrustedRoot: true,
+                allowUnknownRevocation: settings.AllowUnknownRevocation);
 
             var status = signature.Verify(
                 validTimestamp,
-                settings,
+                verifySettings,
                 _fingerprintAlgorithm,
                 certificateExtraStore,
-                signatureIssues);
+                issues);
 
-            signatureIssues.AddRange(timestampIssues);
+            issues.AddRange(timestampIssues);
 
-            return new SignedPackageVerificationResult(status, signature, signatureIssues);
+            return status;
         }
+
+        private bool ShouldFallbackToRepositoryCountersignature(SignatureVerificationSummary primarySignatureVerificationSummary)
+        {
+            return primarySignatureVerificationSummary.SignatureType == SignatureType.Author &&
+                primarySignatureVerificationSummary.Status == SignatureVerificationStatus.Illegal &&
+                primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired);
+        }
+
 #else
-        private PackageVerificationResult VerifyValidityAndTrust(PrimarySignature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifySignatureAndCountersignature(
+            PrimarySignature signature,
+            SignedPackageVerifierSettings settings)
         {
             throw new NotSupportedException();
         }

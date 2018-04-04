@@ -43,13 +43,13 @@ namespace NuGet.Packaging.Signing
                     allowUnsigned: allowUnsigned,
                     allowIllegal: fallbackSettings.AllowIllegal,
                     allowUntrusted: fallbackSettings.AllowUntrusted,
-                    allowUntrustedSelfIssuedCertificate: fallbackSettings.AllowUntrustedSelfIssuedCertificate,
                     allowIgnoreTimestamp: fallbackSettings.AllowIgnoreTimestamp,
                     allowMultipleTimestamps: fallbackSettings.AllowMultipleTimestamps,
                     allowNoTimestamp: fallbackSettings.AllowNoTimestamp,
                     allowUnknownRevocation: fallbackSettings.AllowUnknownRevocation,
                     allowNoRepositoryCertificateList: allowNoRepositoryCertificateList,
                     allowNoClientCertificateList: fallbackSettings.AllowNoClientCertificateList,
+                    allowAlwaysVerifyingCountersignature: fallbackSettings.AllowAlwaysVerifyingCountersignature,
                     repoAllowListEntries: repositoryAllowList?.AsReadOnly(),
                     clientAllowListEntries: fallbackSettings.ClientCertificateList);
             }

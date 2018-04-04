@@ -910,13 +910,13 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: allowUnsigned,
                 allowIllegal: true,
                 allowUntrusted: allowUntrusted,
-                allowUntrustedSelfIssuedCertificate: true,
                 allowIgnoreTimestamp: true,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
                 allowNoClientCertificateList: allowNoClientCertificateList,
                 allowNoRepositoryCertificateList: allowNoRepositoryCertificateList,
+                allowAlwaysVerifyingCountersignature: true,
                 repoAllowListEntries: repoAllowList,
                 clientAllowListEntries: clientAllowList);
         }

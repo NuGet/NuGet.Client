@@ -48,13 +48,13 @@ namespace NuGet.Packaging.FuncTest
                 allowUnsigned: true,
                 allowIllegal: false,
                 allowUntrusted: false,
-                allowUntrustedSelfIssuedCertificate: true,
                 allowIgnoreTimestamp: true,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
                 allowNoClientCertificateList: true,
-                allowNoRepositoryCertificateList: true);
+                allowNoRepositoryCertificateList: true,
+                allowAlwaysVerifyingCountersignature: false);
         }
 
         [CIOnlyFact]
