@@ -34,7 +34,7 @@ namespace NuGet.Packaging.Signing
                 var repositoryAllowList = GetRepositoryAllowList(repoSignatureInfo.RepositoryCertificateInfos);
 
                 // Allow unsigned only if the common settings allow it and repository does not have all packages signed
-                var allowUnsigned = !repoSignatureInfo.AllRepositorySigned && commonSignedPackageVerifierSettings.AllowUnsigned;
+                var allowUnsigned = commonSignedPackageVerifierSettings.AllowUnsigned && !repoSignatureInfo.AllRepositorySigned;
 
                 // Allow an empty repository certificate list only if the repository does not have all packages signed
                 var allowNoRepositoryCertificateList = !repoSignatureInfo.AllRepositorySigned;

@@ -36,7 +36,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithCertificateInClientAllowList_Success_NoWarn()
+        public async Task GetTrustResultAsync_VerifyWithCertificateInClientAllowList_Success_NoWarnAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -74,7 +74,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithCertificateInRepoAllowList_Success_NoWarn()
+        public async Task GetTrustResultAsync_VerifyWithCertificateInRepoAllowList_Success_NoWarnAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -112,7 +112,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithoutClientCertificateAllowList_ErrorsWhenRequiredAndNotAllowUntrusted()
+        public async Task GetTrustResultAsync_VerifyWithoutClientCertificateAllowList_ErrorsWhenRequiredAndNotAllowUntrustedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -154,7 +154,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithEmptyClientCertificateAllowList_ErrorsWhenRequiredAndNotAllowUntrusted()
+        public async Task GetTrustResultAsync_VerifyWithEmptyClientCertificateAllowList_ErrorsWhenRequiredAndNotAllowUntrustedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -196,7 +196,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithoutRepositoryCertificateAllowList_ErrorsWhenRequiredAndNotAllowUntrusted()
+        public async Task GetTrustResultAsync_VerifyWithoutRepositoryCertificateAllowList_ErrorsWhenRequiredAndNotAllowUntrustedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -238,7 +238,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithEmptyRepositoryCertificateAllowList_ErrorsWhenRequiredAndNotAllowUntrusted()
+        public async Task GetTrustResultAsync_VerifyWithEmptyRepositoryCertificateAllowList_ErrorsWhenRequiredAndNotAllowUntrustedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -280,7 +280,95 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithoutClientCertificateAllowList_WarnsWhenRequiredAndAllowUntrusted()
+        public async Task GetTrustResultAsync_VerifyWithoutRepositoryAndClientCertificateAllowList_ErrorsWhenRequiredAndNotAllowUntrustedAsync()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
+
+                var trustProviders = new[]
+                {
+                    new AllowListVerificationProvider()
+                };
+
+                var verifier = new PackageSignatureVerifier(trustProviders);
+                var verifierSettings = GetSettings(
+                    allowUnsigned: true,
+                    allowUntrusted: false,
+                    allowNoClientCertificateList: false,
+                    allowNoRepositoryCertificateList: false,
+                    clientAllowList: null,
+                    repoAllowList: null);
+
+                using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues()).ToList();
+
+                    // Assert
+                    result.Valid.Should().BeFalse();
+                    resultsWithErrors.Count().Should().Be(1);
+                    totalErrorIssues.Count().Should().Be(2);
+                    totalErrorIssues[0].Code.Should().Be(NuGetLogCode.NU3034);
+                    totalErrorIssues[0].Message.Should().Be(_noClientAllowList);
+                    totalErrorIssues[1].Code.Should().Be(NuGetLogCode.NU3034);
+                    totalErrorIssues[1].Message.Should().Be(_noRepoAllowList);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_VerifyWithEmptyRepositoryAndClientCertificateAllowList_ErrorsWhenRequiredAndNotAllowUntrustedAsync()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
+
+                var trustProviders = new[]
+                {
+                    new AllowListVerificationProvider()
+                };
+
+                var verifier = new PackageSignatureVerifier(trustProviders);
+                var verifierSettings = GetSettings(
+                    allowUnsigned: true,
+                    allowUntrusted: false,
+                    allowNoClientCertificateList: false,
+                    allowNoRepositoryCertificateList: false,
+                    clientAllowList: new List<CertificateHashAllowListEntry>(),
+                    repoAllowList: new List<CertificateHashAllowListEntry>());
+
+                using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                    var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues()).ToList();
+
+                    // Assert
+                    result.Valid.Should().BeFalse();
+                    resultsWithErrors.Count().Should().Be(1);
+                    totalErrorIssues.Count().Should().Be(2);
+                    totalErrorIssues[0].Code.Should().Be(NuGetLogCode.NU3034);
+                    totalErrorIssues[0].Message.Should().Be(_noClientAllowList);
+                    totalErrorIssues[1].Code.Should().Be(NuGetLogCode.NU3034);
+                    totalErrorIssues[1].Message.Should().Be(_noRepoAllowList);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_VerifyWithoutClientCertificateAllowList_WarnsWhenRequiredAndAllowUntrustedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -321,7 +409,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithEmptyClientCertificateAllowList_WarnsWhenRequiredAndAllowUntrusted()
+        public async Task GetTrustResultAsync_VerifyWithEmptyClientCertificateAllowList_WarnsWhenRequiredAndAllowUntrustedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -362,7 +450,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithoutRepositoryCertificateAllowList_WarnsWhenRequiredAndAllowUntrusted()
+        public async Task GetTrustResultAsync_VerifyWithoutRepositoryCertificateAllowList_WarnsWhenRequiredAndAllowUntrustedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -403,7 +491,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithEmptyRepositoryCertificateAllowList_WarnsWhenRequiredAndAllowUntrusted()
+        public async Task GetTrustResultAsync_VerifyWithEmptyRepositoryCertificateAllowList_WarnsWhenRequiredAndAllowUntrustedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -444,7 +532,93 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithoutRepositoryCertificateAllowList_PassesWhenNotRequired()
+        public async Task GetTrustResultAsync_VerifyWithoutRepositoryAndClientCertificateAllowList_WarnsWhenRequiredAndAllowUntrustedAsync()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
+
+                var trustProviders = new[]
+                {
+                    new AllowListVerificationProvider()
+                };
+
+                var verifier = new PackageSignatureVerifier(trustProviders);
+                var verifierSettings = GetSettings(
+                    allowUnsigned: true,
+                    allowUntrusted: true,
+                    allowNoClientCertificateList: false,
+                    allowNoRepositoryCertificateList: false,
+                    clientAllowList: null,
+                    repoAllowList: null);
+
+                using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
+                    var resultsWithWarnings = result.Results.Where(r => r.GetWarningIssues().Any());
+                    var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues()).ToList();
+
+                    // Assert
+                    result.Valid.Should().BeTrue();
+                    totalWarningIssues.Count().Should().Be(2);
+                    totalWarningIssues[0].Code.Should().Be(NuGetLogCode.NU3034);
+                    totalWarningIssues[0].Message.Should().Be(_noClientAllowList);
+                    totalWarningIssues[1].Code.Should().Be(NuGetLogCode.NU3034);
+                    totalWarningIssues[1].Message.Should().Be(_noRepoAllowList);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_VerifyWithEmptyRepositoryAndClientCertificateAllowList_WarnsWhenRequiredAndAllowUntrustedAsync()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
+
+                var trustProviders = new[]
+                {
+                    new AllowListVerificationProvider()
+                };
+
+                var verifier = new PackageSignatureVerifier(trustProviders);
+                var verifierSettings = GetSettings(
+                    allowUnsigned: true,
+                    allowUntrusted: true,
+                    allowNoClientCertificateList: false,
+                    allowNoRepositoryCertificateList: false,
+                    clientAllowList: new List<CertificateHashAllowListEntry>(),
+                    repoAllowList: new List<CertificateHashAllowListEntry>());
+
+                using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
+                    var resultsWithWarnings = result.Results.Where(r => r.GetWarningIssues().Any());
+                    var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues()).ToList();
+
+                    // Assert
+                    result.Valid.Should().BeTrue();
+                    totalWarningIssues.Count().Should().Be(2);
+                    totalWarningIssues[0].Code.Should().Be(NuGetLogCode.NU3034);
+                    totalWarningIssues[0].Message.Should().Be(_noClientAllowList);
+                    totalWarningIssues[1].Code.Should().Be(NuGetLogCode.NU3034);
+                    totalWarningIssues[1].Message.Should().Be(_noRepoAllowList);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_VerifyWithoutRepositoryCertificateAllowList_PassesWhenNotRequiredAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -483,7 +657,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithEmptyRepositoryCertificateAllowList_PassesWhenNotRequired()
+        public async Task GetTrustResultAsync_VerifyWithEmptyRepositoryCertificateAllowList_PassesWhenNotRequiredAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -522,7 +696,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithoutCertificateInClientAllowList_WarnsWhenAllowUntrusted()
+        public async Task GetTrustResultAsync_VerifyWithoutCertificateInClientAllowList_WarnsWhenAllowUntrustedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -569,7 +743,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithoutCertificateInClientAllowList_ErrorsWhenNotAllowUntrusted()
+        public async Task GetTrustResultAsync_VerifyWithoutCertificateInClientAllowList_ErrorsWhenNotAllowUntrustedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -616,7 +790,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithoutCertificateInRepoAllowList_WarnsWhenAllowUntrusted()
+        public async Task GetTrustResultAsync_VerifyWithoutCertificateInRepoAllowList_WarnsWhenAllowUntrustedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -663,7 +837,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_VerifyWithoutCertificateInRepoAllowList_ErrorsWhenNotAllowUntrusted()
+        public async Task GetTrustResultAsync_VerifyWithoutCertificateInRepoAllowList_ErrorsWhenNotAllowUntrustedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
