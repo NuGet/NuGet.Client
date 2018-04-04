@@ -41,7 +41,8 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignatureVerifySettings(
                 treatIssuesAsErrors: true,
                 allowUntrustedRoot: false,
-                allowUnknownRevocation: false);
+                allowUnknownRevocation: false,
+                logOnSignatureExpired: true);
 
             using (var test = await VerifyTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
@@ -61,7 +62,8 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignatureVerifySettings(
                 treatIssuesAsErrors: true,
                 allowUntrustedRoot: true,
-                allowUnknownRevocation: false);
+                allowUnknownRevocation: false,
+                logOnSignatureExpired: true);
 
             using (var test = await VerifyTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {

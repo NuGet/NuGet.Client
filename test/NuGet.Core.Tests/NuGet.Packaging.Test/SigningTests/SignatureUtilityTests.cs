@@ -199,7 +199,7 @@ namespace NuGet.Packaging.Test
         public void HasRepositoryCountersignature_WithNullPrimarySignature_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => SignatureUtility.HasRepositoryCountersignature(primarySignature: null));
+                () => SignatureUtility.HasRepositoryCountersignature(signature: null));
 
             Assert.Equal("primarySignature", exception.ParamName);
         }
