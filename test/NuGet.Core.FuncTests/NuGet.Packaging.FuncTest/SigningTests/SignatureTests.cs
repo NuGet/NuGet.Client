@@ -39,7 +39,7 @@ namespace NuGet.Packaging.FuncTest
         public async Task Verify_WithUntrustedSelfSignedCertificateAndNotAllowUntrustedSelfSignedCertificate_FailsAsync()
         {
             var settings = new SignatureVerifySettings(
-                treatIssueAsError: true,
+                treatIssuesAsErrors: true,
                 allowUntrustedRoot: false,
                 allowUnknownRevocation: false);
 
@@ -59,7 +59,7 @@ namespace NuGet.Packaging.FuncTest
         public async Task Verify_WithUntrustedSelfSignedCertificateAndAllowUntrustedSelfSignedCertificate_SucceedsAsync()
         {
             var settings = new SignatureVerifySettings(
-                treatIssueAsError: true,
+                treatIssuesAsErrors: true,
                 allowUntrustedRoot: true,
                 allowUnknownRevocation: false);
 

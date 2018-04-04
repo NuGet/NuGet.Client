@@ -44,7 +44,7 @@ namespace NuGet.Packaging.Signing
 
             if (CertificateUtility.HasExtendedKeyUsage(request.Certificate, Oids.LifetimeSigningEku))
             {
-                throw new SignatureException(NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSigningEKU);
+                throw new SignatureException(NuGetLogCode.NU3015, Strings.VerifyErrorCertificateHasLifetimeSigningEKU);
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(request.Certificate))

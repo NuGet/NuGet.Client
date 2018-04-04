@@ -112,7 +112,7 @@ namespace NuGet.Packaging.Signing
 
             var errors = new Errors(
                 noCertificate: NuGetLogCode.NU3010,
-                noCertificateString: Strings.ErrorNoCertificate,
+                noCertificateString: Strings.Verify_ErrorNoCertificate,
                 invalidSignature: NuGetLogCode.NU3011,
                 invalidSignatureString: Strings.InvalidPrimarySignature,
                 chainBuildingFailed: NuGetLogCode.NU3018);
@@ -256,21 +256,24 @@ namespace NuGet.Packaging.Signing
                 includeChain);
         }
 
-        public static bool HasRepositoryCountersignature(PrimarySignature primarySignature)
+        public static bool HasRepositoryCountersignature(Signature signature)
         {
-            if (primarySignature == null)
+            if (signature == null)
             {
-                throw new ArgumentNullException(nameof(primarySignature));
+                throw new ArgumentNullException(nameof(signature));
             }
 
-            var counterSignatures = primarySignature.SignerInfo.CounterSignerInfos;
-
-            foreach (var counterSignature in counterSignatures)
+            if (signature is AuthorPrimarySignature)
             {
-                var countersignatureType = AttributeUtility.GetSignatureType(counterSignature.SignedAttributes);
-                if (countersignatureType == SignatureType.Repository)
+                var counterSignatures = signature.SignerInfo.CounterSignerInfos;
+
+                foreach (var counterSignature in counterSignatures)
                 {
-                    return true;
+                    var countersignatureType = AttributeUtility.GetSignatureType(counterSignature.SignedAttributes);
+                    if (countersignatureType == SignatureType.Repository)
+                    {
+                        return true;
+                    }
                 }
             }
 

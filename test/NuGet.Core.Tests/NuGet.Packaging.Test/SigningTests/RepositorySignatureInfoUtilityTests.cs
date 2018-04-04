@@ -55,7 +55,7 @@ namespace NuGet.Packaging.Test
             settings.AllowNoTimestamp.Should().BeTrue();
             settings.AllowMultipleTimestamps.Should().BeTrue();
             settings.AllowUnknownRevocation.Should().BeTrue();
-            settings.AllowAlwaysVerifyingCountersignature.Should().BeTrue();
+            settings.AlwaysVerifyCountersignature.Should().BeTrue();
         }
 
         [Fact]
@@ -78,7 +78,7 @@ namespace NuGet.Packaging.Test
             settings.AllowUnknownRevocation.Should().BeTrue();
             settings.AllowNoClientCertificateList.Should().BeTrue();
             settings.AllowNoRepositoryCertificateList.Should().BeFalse();
-            settings.AllowAlwaysVerifyingCountersignature.Should().BeTrue();
+            settings.AlwaysVerifyCountersignature.Should().BeTrue();
         }
 
         [Fact]
@@ -272,7 +272,7 @@ namespace NuGet.Packaging.Test
                 allowUnknownRevocation: true,
                 allowNoRepositoryCertificateList: true,
                 allowNoClientCertificateList: false,
-                allowAlwaysVerifyingCountersignature: true,
+                alwaysVerifyCountersignature: true,
                 repoAllowListEntries: null,
                 clientAllowListEntries: expectedClientAllowList);
 

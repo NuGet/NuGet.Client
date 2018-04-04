@@ -2651,7 +2651,7 @@ namespace NuGet.Packaging.Test
                     allowUnknownRevocation: true,
                     allowNoClientCertificateList: true,
                     allowNoRepositoryCertificateList: false,
-                    allowAlwaysVerifyingCountersignature: true,
+                    alwaysVerifyCountersignature: true,
                     repoAllowListEntries: expectedAllowList,
                     clientAllowListEntries: null);
 
@@ -2721,7 +2721,7 @@ namespace NuGet.Packaging.Test
                     allowUnknownRevocation: true,
                     allowNoClientCertificateList: true,
                     allowNoRepositoryCertificateList: false,
-                    allowAlwaysVerifyingCountersignature: true,
+                    alwaysVerifyCountersignature: true,
                     repoAllowListEntries: expectedAllowList,
                     clientAllowListEntries: null);
 

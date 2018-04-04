@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,28 +36,43 @@ namespace NuGet.Packaging.Signing
         {
             var issues = new List<SignatureLog>();
             var certificateExtraStore = signature.SignedCms.Certificates;
+            var primarySignatureHasCountersignature = SignatureUtility.HasRepositoryCountersignature(signature);
 
-            var primarySignatureVerificationSummary = VerifyValidityAndTrust(signature, settings, certificateExtraStore, issues);
+            // Only accept untrusted root if the signature has a countersignature that we can validate against
+            var verifySettings = new SignatureVerifySettings(
+                treatIssuesAsErrors: !settings.AllowIllegal,
+                allowUntrustedRoot: primarySignatureHasCountersignature,
+                allowUnknownRevocation: settings.AllowUnknownRevocation,
+                logOnSignatureExpired: !primarySignatureHasCountersignature);
+
+            var primarySignatureVerificationSummary = VerifyValidityAndTrust(signature, settings, verifySettings, certificateExtraStore, issues);
             var status = primarySignatureVerificationSummary.Status;
 
-            if (settings.AllowAlwaysVerifyingCountersignature || ShouldFallbackToRepositoryCountersignature(primarySignatureVerificationSummary))
+            if (primarySignatureHasCountersignature)
             {
-                var counterSignature = RepositoryCountersignature.GetRepositoryCountersignature(signature);
-                if (counterSignature != null)
+                if (settings.AlwaysVerifyCountersignature || ShouldFallbackToRepositoryCountersignature(primarySignatureVerificationSummary))
                 {
-                    var countersignatureIssues = new List<SignatureLog>();
-                    // TODO: Add a warning saying that we fallback to the countersignature?
+                    var counterSignature = RepositoryCountersignature.GetRepositoryCountersignature(signature);
+                    verifySettings = new SignatureVerifySettings(
+                        treatIssuesAsErrors: !settings.AllowIllegal,
+                        allowUntrustedRoot: false,
+                        allowUnknownRevocation: settings.AllowUnknownRevocation,
+                        logOnSignatureExpired: true);
 
-                    var countersignatureVerificationSummary = VerifyValidityAndTrust(counterSignature, settings, certificateExtraStore, countersignatureIssues);
+                    var countersignatureVerificationSummary = VerifyValidityAndTrust(counterSignature, settings, verifySettings, certificateExtraStore, issues);
                     status = countersignatureVerificationSummary.Status;
 
                     if (!Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureVerificationSummary.Timestamp))
                     {
-                        issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3011, Strings.SignatureNotTimeValid));
+                        issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3011, string.Format(CultureInfo.CurrentCulture, Strings.SignatureNotTimeValid, nameof(AuthorPrimarySignature))));
                         status = SignatureVerificationStatus.Illegal;
                     }
-
-                    issues = countersignatureIssues;
+                }
+                else if (primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired))
+                {
+                    // We are not adding this log if the primary signature has a countersignature to check the expiration against the countersignature's timestamp.
+                    // If the countersignature shouldn't be check and the primary signature was expired, add this log.
+                    issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3011, string.Format(CultureInfo.CurrentCulture, Strings.SignatureNotTimeValid, nameof(AuthorPrimarySignature))));
                 }
             }
 
@@ -65,7 +81,8 @@ namespace NuGet.Packaging.Signing
 
         private SignatureVerificationSummary VerifyValidityAndTrust(
             Signature signature,
-            SignedPackageVerifierSettings settings,
+            SignedPackageVerifierSettings timestampSettings,
+            SignatureVerifySettings settings,
             X509Certificate2Collection certificateExtraStore,
             List<SignatureLog> issues)
         {
@@ -75,7 +92,7 @@ namespace NuGet.Packaging.Signing
             try
             {
                 validTimestamp = signature.GetValidTimestamp(
-                    settings,
+                    timestampSettings,
                     _fingerprintAlgorithm,
                     timestampIssues);
             }
@@ -86,14 +103,9 @@ namespace NuGet.Packaging.Signing
                 return new SignatureVerificationSummary(signature.Type, SignatureVerificationStatus.Illegal, SignatureVerificationStatusFlags.InvalidTimestamp);
             }
 
-            var verifySettings = new SignatureVerifySettings(
-                treatIssueAsError: !settings.AllowIllegal,
-                allowUntrustedRoot: true,
-                allowUnknownRevocation: settings.AllowUnknownRevocation);
-
             var status = signature.Verify(
                 validTimestamp,
-                verifySettings,
+                settings,
                 _fingerprintAlgorithm,
                 certificateExtraStore,
                 issues);
@@ -107,7 +119,7 @@ namespace NuGet.Packaging.Signing
         {
             return primarySignatureVerificationSummary.SignatureType == SignatureType.Author &&
                 primarySignatureVerificationSummary.Status == SignatureVerificationStatus.Illegal &&
-                primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired);
+                primarySignatureVerificationSummary.Flags == SignatureVerificationStatusFlags.CertificateExpired;
         }
 
 #else

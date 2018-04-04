@@ -49,7 +49,7 @@ namespace NuGet.Packaging.Signing
                     allowUnknownRevocation: fallbackSettings.AllowUnknownRevocation,
                     allowNoRepositoryCertificateList: allowNoRepositoryCertificateList,
                     allowNoClientCertificateList: fallbackSettings.AllowNoClientCertificateList,
-                    allowAlwaysVerifyingCountersignature: fallbackSettings.AllowAlwaysVerifyingCountersignature,
+                    alwaysVerifyCountersignature: fallbackSettings.AlwaysVerifyCountersignature,
                     repoAllowListEntries: repositoryAllowList?.AsReadOnly(),
                     clientAllowListEntries: fallbackSettings.ClientCertificateList);
             }

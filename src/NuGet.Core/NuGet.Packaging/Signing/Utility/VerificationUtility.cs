@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
@@ -11,7 +12,7 @@ namespace NuGet.Packaging.Signing
 {
     public static class VerificationUtility
     {
-        internal static SignatureVerificationStatusFlags ValidateSigningCertificate(X509Certificate2 certificate, bool treatIssuesAsErrors, List<SignatureLog> issues)
+        internal static SignatureVerificationStatusFlags ValidateSigningCertificate(X509Certificate2 certificate, bool treatIssuesAsErrors, string signatureType, List<SignatureLog> issues)
         {
             if (certificate == null)
             {
@@ -27,25 +28,25 @@ namespace NuGet.Packaging.Signing
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(certificate))
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3013, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm));
+                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3013, string.Format(CultureInfo.CurrentCulture, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm, signatureType)));
                 validationFlags |= SignatureVerificationStatusFlags.SignatureAlgorithmUnsupported;
             }
 
             if (!CertificateUtility.IsCertificatePublicKeyValid(certificate))
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement));
+                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3014, string.Format(CultureInfo.CurrentCulture, Strings.SigningCertificateFailsPublicKeyLengthRequirement, signatureType)));
                 validationFlags |= SignatureVerificationStatusFlags.CertificatePublicKeyInvalid;
             }
 
             if (CertificateUtility.HasExtendedKeyUsage(certificate, Oids.LifetimeSigningEku))
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSigningEKU));
+                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3015, string.Format(CultureInfo.CurrentCulture, Strings.VerifyErrorCertificateHasLifetimeSigningEKU, signatureType)));
                 validationFlags |= SignatureVerificationStatusFlags.HasLifetimeSigningEku;
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate))
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3017, Strings.SignatureNotYetValid));
+                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3017, string.Format(CultureInfo.CurrentCulture, Strings.SignatureNotYetValid, signatureType)));
                 validationFlags |= SignatureVerificationStatusFlags.CertificateValidityInTheFuture;
             }
 

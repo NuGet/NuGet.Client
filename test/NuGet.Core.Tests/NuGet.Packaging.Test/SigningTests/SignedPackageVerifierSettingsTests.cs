@@ -26,7 +26,7 @@ namespace NuGet.Packaging.Test
                 allowUnknownRevocation: initialValue,
                 allowNoRepositoryCertificateList: initialValue,
                 allowNoClientCertificateList: initialValue,
-                allowAlwaysVerifyingCountersignature: initialValue);
+                alwaysVerifyCountersignature: initialValue);
 
             // Assert
             settings.AllowUnsigned.Should().Be(initialValue);
@@ -38,7 +38,7 @@ namespace NuGet.Packaging.Test
             settings.AllowUnknownRevocation.Should().Be(initialValue);
             settings.AllowNoRepositoryCertificateList.Should().Be(initialValue);
             settings.AllowNoClientCertificateList.Should().Be(initialValue);
-            settings.AllowAlwaysVerifyingCountersignature.Should().Be(initialValue);
+            settings.AlwaysVerifyCountersignature.Should().Be(initialValue);
         }
 
         [Theory]
@@ -61,7 +61,7 @@ namespace NuGet.Packaging.Test
                 allowUnknownRevocation: initialValue,
                 allowNoRepositoryCertificateList: initialValue,
                 allowNoClientCertificateList: initialValue,
-                allowAlwaysVerifyingCountersignature: initialValue,
+                alwaysVerifyCountersignature: initialValue,
                 repoAllowListEntries: repoList,
                 clientAllowListEntries: clientList);
 
@@ -75,7 +75,7 @@ namespace NuGet.Packaging.Test
             settings.AllowUnknownRevocation.Should().Be(initialValue);
             settings.AllowNoRepositoryCertificateList.Should().Be(initialValue);
             settings.AllowNoClientCertificateList.Should().Be(initialValue);
-            settings.AllowAlwaysVerifyingCountersignature.Should().Be(initialValue);
+            settings.AlwaysVerifyCountersignature.Should().Be(initialValue);
             settings.RepositoryCertificateList.Should().BeSameAs(repoList);
             settings.ClientCertificateList.Should().BeSameAs(clientList);
         }
@@ -101,7 +101,7 @@ namespace NuGet.Packaging.Test
             settings.AllowUnknownRevocation.Should().Be(defaultValue);
             settings.AllowNoRepositoryCertificateList.Should().Be(defaultValue);
             settings.AllowNoClientCertificateList.Should().Be(defaultValue);
-            settings.AllowAlwaysVerifyingCountersignature.Should().Be(defaultValue);
+            settings.AlwaysVerifyCountersignature.Should().Be(defaultValue);
             settings.RepositoryCertificateList.Should().BeSameAs(repoList);
             settings.ClientCertificateList.Should().BeSameAs(clientList);
         }
@@ -127,7 +127,7 @@ namespace NuGet.Packaging.Test
             settings.AllowUnknownRevocation.Should().Be(defaultValue);
             settings.AllowNoRepositoryCertificateList.Should().Be(defaultValue);
             settings.AllowNoClientCertificateList.Should().Be(defaultValue);
-            settings.AllowAlwaysVerifyingCountersignature.Should().Be(false);
+            settings.AlwaysVerifyCountersignature.Should().Be(false);
             settings.RepositoryCertificateList.Should().BeSameAs(repoList);
             settings.ClientCertificateList.Should().BeSameAs(clientList);
         }
@@ -153,7 +153,7 @@ namespace NuGet.Packaging.Test
             settings.AllowUnknownRevocation.Should().Be(true);
             settings.AllowNoRepositoryCertificateList.Should().Be(false);
             settings.AllowNoClientCertificateList.Should().Be(false);
-            settings.AllowAlwaysVerifyingCountersignature.Should().Be(false);
+            settings.AlwaysVerifyCountersignature.Should().Be(false);
             settings.RepositoryCertificateList.Should().BeSameAs(repoList);
             settings.ClientCertificateList.Should().BeSameAs(clientList);
         }
@@ -178,7 +178,7 @@ namespace NuGet.Packaging.Test
             settings.AllowUnknownRevocation.Should().Be(true);
             settings.AllowNoRepositoryCertificateList.Should().Be(true);
             settings.AllowNoClientCertificateList.Should().Be(true);
-            settings.AllowAlwaysVerifyingCountersignature.Should().Be(true);
+            settings.AlwaysVerifyCountersignature.Should().Be(true);
             settings.RepositoryCertificateList.Should().BeSameAs(repoList);
             settings.ClientCertificateList.Should().BeSameAs(clientList);
         }

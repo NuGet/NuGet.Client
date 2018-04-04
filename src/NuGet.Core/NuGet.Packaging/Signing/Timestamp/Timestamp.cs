@@ -196,7 +196,7 @@ namespace NuGet.Packaging.Signing
                         SignatureLog.DebugLog(
                             string.Format(
                                 CultureInfo.CurrentCulture,
-                                Strings.ErrorInvalidCertificateChain,
+                                Strings.VerifyErrorInvalidCertificateChain,
                                 string.Join(", ", chainStatusList.Select(x => x.Status.ToString())))));
                 }
             }

@@ -54,7 +54,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnknownRevocation: true,
                 allowNoClientCertificateList: true,
                 allowNoRepositoryCertificateList: true,
-                allowAlwaysVerifyingCountersignature: false);
+                alwaysVerifyCountersignature: false);
         }
 
         [CIOnlyFact]

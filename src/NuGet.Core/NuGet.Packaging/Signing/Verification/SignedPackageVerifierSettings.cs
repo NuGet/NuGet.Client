@@ -40,7 +40,10 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public bool AllowNoTimestamp { get; }
 
-        public bool AllowAlwaysVerifyingCountersignature { get; }
+        /// <summary>
+        /// Always verify the countersignature if present
+        /// </summary>
+        public bool AlwaysVerifyCountersignature { get; }
 
         /// <summary>
         /// Treat unknown revocation status as a warning instead of an error during verification.
@@ -77,7 +80,7 @@ namespace NuGet.Packaging.Signing
             bool allowUnknownRevocation,
             bool allowNoRepositoryCertificateList,
             bool allowNoClientCertificateList,
-            bool allowAlwaysVerifyingCountersignature)
+            bool alwaysVerifyCountersignature)
             : this (
                   allowUnsigned,
                   allowIllegal,
@@ -88,7 +91,7 @@ namespace NuGet.Packaging.Signing
                   allowUnknownRevocation,
                   allowNoRepositoryCertificateList,
                   allowNoClientCertificateList,
-                  allowAlwaysVerifyingCountersignature,
+                  alwaysVerifyCountersignature,
                   repoAllowListEntries: null,
                   clientAllowListEntries: null)
         {
@@ -104,7 +107,7 @@ namespace NuGet.Packaging.Signing
             bool allowUnknownRevocation,
             bool allowNoRepositoryCertificateList,
             bool allowNoClientCertificateList,
-            bool allowAlwaysVerifyingCountersignature,
+            bool alwaysVerifyCountersignature,
             IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries)
         {
@@ -117,7 +120,7 @@ namespace NuGet.Packaging.Signing
             AllowUnknownRevocation = allowUnknownRevocation;
             AllowNoRepositoryCertificateList = allowNoRepositoryCertificateList;
             AllowNoClientCertificateList = allowNoClientCertificateList;
-            AllowAlwaysVerifyingCountersignature = allowAlwaysVerifyingCountersignature;
+            AlwaysVerifyCountersignature = alwaysVerifyCountersignature;
             RepositoryCertificateList = repoAllowListEntries;
             ClientCertificateList = clientAllowListEntries;
         }
@@ -139,7 +142,7 @@ namespace NuGet.Packaging.Signing
                 allowUnknownRevocation: true,
                 allowNoRepositoryCertificateList: true,
                 allowNoClientCertificateList: true,
-                allowAlwaysVerifyingCountersignature: true,
+                alwaysVerifyCountersignature: true,
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
@@ -161,7 +164,7 @@ namespace NuGet.Packaging.Signing
                 allowUnknownRevocation: true,
                 allowNoRepositoryCertificateList: true,
                 allowNoClientCertificateList: true,
-                allowAlwaysVerifyingCountersignature: false,
+                alwaysVerifyCountersignature: false,
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
@@ -183,7 +186,7 @@ namespace NuGet.Packaging.Signing
                 allowUnknownRevocation: true,
                 allowNoRepositoryCertificateList: false,
                 allowNoClientCertificateList: false,
-                allowAlwaysVerifyingCountersignature: false,
+                alwaysVerifyCountersignature: false,
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
@@ -205,7 +208,7 @@ namespace NuGet.Packaging.Signing
                 allowUnknownRevocation: true,
                 allowNoRepositoryCertificateList: true,
                 allowNoClientCertificateList: true,
-                allowAlwaysVerifyingCountersignature: true,
+                alwaysVerifyCountersignature: true,
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }

@@ -916,7 +916,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnknownRevocation: true,
                 allowNoClientCertificateList: allowNoClientCertificateList,
                 allowNoRepositoryCertificateList: allowNoRepositoryCertificateList,
-                allowAlwaysVerifyingCountersignature: true,
+                alwaysVerifyCountersignature: true,
                 repoAllowListEntries: repoAllowList,
                 clientAllowListEntries: clientAllowList);
         }

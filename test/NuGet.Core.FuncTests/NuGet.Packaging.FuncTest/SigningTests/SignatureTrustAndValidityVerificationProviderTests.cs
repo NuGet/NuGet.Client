@@ -257,7 +257,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnknownRevocation: false,
                 allowNoClientCertificateList: true,
                 allowNoRepositoryCertificateList: true,
-                allowAlwaysVerifyingCountersignature: false);
+                alwaysVerifyCountersignature: false);
 
             using (var directory = TestDirectory.Create())
             using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -304,7 +304,7 @@ namespace NuGet.Packaging.FuncTest
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: false,
                 allowUnknownRevocation: false,
-                allowAlwaysVerifyingCountersignature: false,
+                alwaysVerifyCountersignature: false,
                 allowNoClientCertificateList: true,
                 allowNoRepositoryCertificateList: true);
 
@@ -381,7 +381,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnknownRevocation: false,
                 allowNoClientCertificateList: true,
                 allowNoRepositoryCertificateList: true,
-                allowAlwaysVerifyingCountersignature: false);
+                alwaysVerifyCountersignature: false);
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
 
@@ -545,7 +545,7 @@ namespace NuGet.Packaging.FuncTest
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
                 allowUnknownRevocation: true,
-                allowAlwaysVerifyingCountersignature: false,
+                alwaysVerifyCountersignature: false,
                 allowNoClientCertificateList: true,
                 allowNoRepositoryCertificateList: true);
 
@@ -572,7 +572,7 @@ namespace NuGet.Packaging.FuncTest
                 allowUnknownRevocation: true,
                 allowNoClientCertificateList: true,
                 allowNoRepositoryCertificateList: true,
-                allowAlwaysVerifyingCountersignature: false);
+                alwaysVerifyCountersignature: false);
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(

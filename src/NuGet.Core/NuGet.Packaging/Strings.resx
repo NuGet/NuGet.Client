@@ -274,9 +274,10 @@
   <data name="CertUtilityMultipleCertificatesHeader" xml:space="preserve">
     <value>The following certificates meet all given criteria:</value>
   </data>
-  <data name="VerificationAuthorCertDisplay" xml:space="preserve">
-    <value>Verifying signature with author certificate: {0}</value>
-    <comment>0 -  X509Certificate2 details in the following format -
+  <data name="VerificationCertDisplay" xml:space="preserve">
+    <value>Verifying {0} with certificate: {1}</value>
+    <comment>0 - Signature Type
+1 -  X509Certificate2 details in the following format -
 Subject Name:
 SHA1 hash:
 Issued by:
@@ -309,14 +310,18 @@ Valid from:</comment>
   <data name="ErrorByteSignatureTooBig" xml:space="preserve">
     <value>Byte signature too big to seek in current stream position.</value>
   </data>
-  <data name="ErrorInvalidCertificateChain" xml:space="preserve">
-    <value>Certificate chain validation failed with error(s): {0}</value>
+  <data name="VerifyErrorInvalidCertificateChain" xml:space="preserve">
+    <value>{0}'s certificate chain validation failed with error(s): {1}</value>
+    <comment>0 - Signature type
+1 - error list</comment>
   </data>
-  <data name="ErrorNoCertificate" xml:space="preserve">
-    <value>The primary signature does not have a signing certificate.</value>
+  <data name="Verify_ErrorNoCertificate" xml:space="preserve">
+    <value>The {0} does not have a signing certificate.</value>
+    <comment>{0} signature type</comment>
   </data>
-  <data name="ErrorSignatureVerificationFailed" xml:space="preserve">
-    <value>Primary signature validation failed.</value>
+  <data name="VerifyErrorSignatureVerificationFailed" xml:space="preserve">
+    <value>{0} validation failed.</value>
+    <comment>0 - Signature type</comment>
   </data>
   <data name="SignatureDebug_HashOidFound" xml:space="preserve">
     <value>Signature hash OID found: {0}</value>
@@ -339,8 +344,9 @@ Valid from:</comment>
   <data name="TimestampValue" xml:space="preserve">
     <value>Timestamp: {0}</value>
   </data>
-  <data name="ErrorCertificateHasLifetimeSigningEKU" xml:space="preserve">
-    <value>The lifetime signing EKU is not supported.</value>
+  <data name="VerifyErrorCertificateHasLifetimeSigningEKU" xml:space="preserve">
+    <value>The lifetime signing EKU in the {0} is not supported.</value>
+    <comment>0 - Signature type</comment>
   </data>
   <data name="ErrorInvalidPackageArchive" xml:space="preserve">
     <value>Invalid package archive.</value>
@@ -378,10 +384,12 @@ Valid from:</comment>
     <value>The argument cannot be null or empty.</value>
   </data>
   <data name="SigningCertificateHasUnsupportedSignatureAlgorithm" xml:space="preserve">
-    <value>The signing certificate has an unsupported signature algorithm.</value>
+    <value>The {0}'s signing certificate has an unsupported signature algorithm.</value>
+    <comment>0 - Signature type</comment>
   </data>
   <data name="SigningCertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
-    <value>The signing certificate does not meet a minimum public key length requirement.</value>
+    <value>The {0}'s signing certificate does not meet a minimum public key length requirement.</value>
+    <comment>0 - Signature type</comment>
   </data>
   <data name="InvalidPackageSignatureFileEntryCentralDirectoryHeader" xml:space="preserve">
     <value>The central directory header field '{0}' has an invalid value ({1}).</value>
@@ -414,7 +422,8 @@ Valid from:</comment>
     <value>The timestamp signature does not have a signing certificate.</value>
   </data>
   <data name="SignatureNotYetValid" xml:space="preserve">
-    <value>The signing certificate is not yet valid.</value>
+    <value>The {0}'s signing certificate is not yet valid.</value>
+    <comment>0 - Signature type</comment>
   </data>
   <data name="TimestampNotYetValid" xml:space="preserve">
     <value>The timestamp signing certificate is not yet valid.</value>
@@ -469,7 +478,7 @@ Valid from:</comment>
     <value>The commitment-type-indication attribute is invalid.</value>
   </data>
   <data name="SignatureNotTimeValid" xml:space="preserve">
-    <value>The primary signature validity period has expired.</value>
+    <value>The {0} validity period has expired.</value>
   </data>
   <data name="SigningCertificateV1OrV2AttributeMustBePresent" xml:space="preserve">
     <value>Either the signing-certificate or signing-certificate-v2 attribute must be present.</value>
@@ -582,5 +591,10 @@ Valid from:</comment>
   </data>
   <data name="Error_NoMatchingRepositoryCertificate" xml:space="preserve">
     <value>The package signature certificate fingerprint does not match any certificate fingerprint in repository allow list.</value>
+  </data>
+  <data name="VerifyChainBuildingIssue" xml:space="preserve">
+    <value>{0} chain building issue: {1}</value>
+    <comment>0 - Signature type
+1 - issue message</comment>
   </data>
 </root>

@@ -5,26 +5,31 @@ namespace NuGet.Packaging.Signing
 {
     public class SignatureVerifySettings
     {
-        public bool TreatIssueAsError { get; }
+        public bool TreatIssuesAsErrors { get; }
 
         public bool AllowUntrustedRoot { get; }
 
         public bool AllowUnknownRevocation { get; }
 
+        public bool LogOnSignatureExpired { get; }
+
         public SignatureVerifySettings(
-            bool treatIssueAsError,
+            bool treatIssuesAsErrors,
             bool allowUntrustedRoot,
-            bool allowUnknownRevocation)
+            bool allowUnknownRevocation,
+            bool logOnSignatureExpired)
         {
-            TreatIssueAsError = treatIssueAsError;
+            TreatIssuesAsErrors = treatIssuesAsErrors;
             AllowUntrustedRoot = allowUntrustedRoot;
             AllowUnknownRevocation = allowUnknownRevocation;
+            LogOnSignatureExpired = logOnSignatureExpired;
         }
 
         public static SignatureVerifySettings Default { get; } = new SignatureVerifySettings(
-            treatIssueAsError: false,
+            treatIssuesAsErrors: false,
             allowUntrustedRoot: true,
-            allowUnknownRevocation: true);
+            allowUnknownRevocation: true,
+            logOnSignatureExpired: true);
 
     }
 }
