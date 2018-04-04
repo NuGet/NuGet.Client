@@ -117,7 +117,7 @@ namespace NuGet.Packaging.Test
             settings.AllowNoTimestamp.Should().BeTrue();
             settings.AllowMultipleTimestamps.Should().BeTrue();
             settings.AllowUnknownRevocation.Should().BeTrue();
-            settings.RepositoryAllowListEntries.Should().NotBeNull();
+            settings.RepositoryCertificateList.Should().NotBeNull();
         }
 
         [Fact]
@@ -165,8 +165,8 @@ namespace NuGet.Packaging.Test
             // Assert
             settings.AllowUnsigned.Should().BeFalse();
             settings.AllowUntrusted.Should().BeFalse();
-            settings.RepositoryAllowListEntries.Should().NotBeNull();
-            settings.RepositoryAllowListEntries.ShouldBeEquivalentTo(expectedAllowList);
+            settings.RepositoryCertificateList.Should().NotBeNull();
+            settings.RepositoryCertificateList.ShouldBeEquivalentTo(expectedAllowList);
         }
 
         [Fact]
@@ -226,8 +226,8 @@ namespace NuGet.Packaging.Test
             // Assert
             settings.AllowUnsigned.Should().BeFalse();
             settings.AllowUntrusted.Should().BeFalse();
-            settings.RepositoryAllowListEntries.Should().NotBeNull();
-            settings.RepositoryAllowListEntries.ShouldBeEquivalentTo(expectedAllowList);
+            settings.RepositoryCertificateList.Should().NotBeNull();
+            settings.RepositoryCertificateList.ShouldBeEquivalentTo(expectedAllowList);
         }
     }
 }

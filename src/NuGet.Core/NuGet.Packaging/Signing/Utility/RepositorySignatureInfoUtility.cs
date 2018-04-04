@@ -32,20 +32,26 @@ namespace NuGet.Packaging.Signing
             else
             {
                 var repositoryAllowList = GetRepositoryAllowList(repoSignatureInfo.RepositoryCertificateInfos);
-                var allowUnsigned = !repoSignatureInfo.AllRepositorySigned;
-                var allowUntrusted = repositoryAllowList?.Count > 0 ? false : commonSignedPackageVerifierSettings.AllowUntrusted;
+
+                // Allow unsigned only if the common settings allow it and repository does not have all packages signed
+                var allowUnsigned = !repoSignatureInfo.AllRepositorySigned && commonSignedPackageVerifierSettings.AllowUnsigned;
+
+                // Allow an empty repository certificate list only if the repository does not have all packages signed
+                var allowNoRepositoryCertificateList = !repoSignatureInfo.AllRepositorySigned;
 
                 return new SignedPackageVerifierSettings(
                     allowUnsigned: allowUnsigned,
                     allowIllegal: commonSignedPackageVerifierSettings.AllowIllegal,
-                    allowUntrusted: allowUntrusted,
+                    allowUntrusted: commonSignedPackageVerifierSettings.AllowUntrusted,
                     allowUntrustedSelfIssuedCertificate: commonSignedPackageVerifierSettings.AllowUntrustedSelfIssuedCertificate,
                     allowIgnoreTimestamp: commonSignedPackageVerifierSettings.AllowIgnoreTimestamp,
                     allowMultipleTimestamps: commonSignedPackageVerifierSettings.AllowMultipleTimestamps,
                     allowNoTimestamp: commonSignedPackageVerifierSettings.AllowNoTimestamp,
                     allowUnknownRevocation: commonSignedPackageVerifierSettings.AllowUnknownRevocation,
+                    allowNoRepositoryCertificateList: allowNoRepositoryCertificateList,
+                    allowNoClientCertificateList: commonSignedPackageVerifierSettings.AllowNoClientCertificateList,
                     repoAllowListEntries: repositoryAllowList?.AsReadOnly(),
-                    clientAllowListEntries: null);
+                    clientAllowListEntries: commonSignedPackageVerifierSettings.ClientCertificateList);
             }
         }
 
@@ -59,7 +65,7 @@ namespace NuGet.Packaging.Signing
 
                 foreach (var certInfo in repositoryCertificateInfos)
                 {
-                    var verificationTarget = VerificationTarget.Repository | VerificationTarget.Primary;
+                    var verificationTarget = VerificationTarget.Repository;
 
                     AddCertificateFingerprintIntoAllowList(verificationTarget, HashAlgorithmName.SHA256, certInfo, repositoryAllowList);
                     AddCertificateFingerprintIntoAllowList(verificationTarget, HashAlgorithmName.SHA384, certInfo, repositoryAllowList);

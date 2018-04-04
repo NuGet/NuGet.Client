@@ -52,7 +52,9 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: true,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
-                allowUnknownRevocation: true);
+                allowUnknownRevocation: true,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
         }
 
         [CIOnlyFact]

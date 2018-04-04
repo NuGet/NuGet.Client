@@ -988,6 +988,12 @@ namespace NuGet.Packaging
             {
                 var repositorySignatureInfo = GetRepositorySignatureInfo(source);
 
+                if (repositorySignatureInfo?.AllRepositorySigned == true &&
+                    repositorySignatureInfo?.RepositoryCertificateInfos?.Count() == 0)
+                {
+
+                }
+
                 var verifierSettings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(
                     repositorySignatureInfo,
                     packageExtractionContext.SignedPackageVerifierSettings);

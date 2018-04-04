@@ -255,7 +255,9 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
-                allowUnknownRevocation: false);
+                allowUnknownRevocation: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             using (var directory = TestDirectory.Create())
             using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -302,7 +304,9 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: false,
-                allowUnknownRevocation: false);
+                allowUnknownRevocation: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -405,7 +409,9 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
-                allowUnknownRevocation: true);
+                allowUnknownRevocation: true,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
@@ -428,7 +434,9 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
-                allowUnknownRevocation: true);
+                allowUnknownRevocation: true,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
@@ -496,7 +504,10 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
-                allowUnknownRevocation: false);
+                allowUnknownRevocation: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
+
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
 
@@ -533,7 +544,9 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: true,
-                allowUnknownRevocation: false);
+                allowUnknownRevocation: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             using (var test = await GetTrustResultAsyncTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
@@ -559,7 +572,9 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: true,
-                allowUnknownRevocation: false);
+                allowUnknownRevocation: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             using (var test = await GetTrustResultAsyncTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
@@ -585,7 +600,9 @@ namespace NuGet.Packaging.FuncTest
                allowIgnoreTimestamp: false,
                allowMultipleTimestamps: false,
                allowNoTimestamp: true,
-               allowUnknownRevocation: false);
+               allowUnknownRevocation: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             using (var test = await GetTrustResultAsyncTest.CreateAsync(settings, _trustedTestCert.Source.Cert))
             {

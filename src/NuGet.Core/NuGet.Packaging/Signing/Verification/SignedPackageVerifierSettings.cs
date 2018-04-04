@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using NuGet.Shared;
 
 namespace NuGet.Packaging.Signing
 {
@@ -50,17 +48,27 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Treat unknown revocation status as a warning instead of an error during verification.
         /// </summary>
-        public bool AllowUnknownRevocation { get; }       
+        public bool AllowUnknownRevocation { get; }
+
+        /// <summary>
+        /// Allow an empty or null RepositoryCertificateList.
+        /// </summary>
+        public bool AllowNoRepositoryCertificateList { get; }
+
+        /// <summary>
+        /// Allow an empty or null ClientCertificateList.
+        /// </summary>
+        public bool AllowNoClientCertificateList { get; }
 
         /// <summary>
         /// Allowlist of repository certificates hashes.
         /// </summary>
-        public IReadOnlyList<VerificationAllowListEntry> RepositoryAllowListEntries { get; }
+        public IReadOnlyList<VerificationAllowListEntry> RepositoryCertificateList { get; }
 
         /// <summary>
         /// Allowlist of client side certificate hashes.
         /// </summary>
-        public IReadOnlyList<VerificationAllowListEntry> ClientAllowListEntries { get; }
+        public IReadOnlyList<VerificationAllowListEntry> ClientCertificateList { get; }
 
 
         public SignedPackageVerifierSettings(
@@ -71,7 +79,9 @@ namespace NuGet.Packaging.Signing
             bool allowIgnoreTimestamp,
             bool allowMultipleTimestamps,
             bool allowNoTimestamp,
-            bool allowUnknownRevocation)
+            bool allowUnknownRevocation,
+            bool allowNoRepositoryCertificateList,
+            bool allowNoClientCertificateList)
         {
             AllowUnsigned = allowUnsigned;
             AllowIllegal = allowIllegal;
@@ -81,6 +91,8 @@ namespace NuGet.Packaging.Signing
             AllowMultipleTimestamps = allowMultipleTimestamps;
             AllowNoTimestamp = allowNoTimestamp;
             AllowUnknownRevocation = allowUnknownRevocation;
+            AllowNoRepositoryCertificateList = AllowNoRepositoryCertificateList;
+            AllowNoClientCertificateList = allowNoClientCertificateList;
         }
 
         public SignedPackageVerifierSettings(
@@ -92,6 +104,8 @@ namespace NuGet.Packaging.Signing
             bool allowMultipleTimestamps,
             bool allowNoTimestamp,
             bool allowUnknownRevocation,
+            bool allowNoRepositoryCertificateList,
+            bool allowNoClientCertificateList,
             IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries)
         {
@@ -103,8 +117,10 @@ namespace NuGet.Packaging.Signing
             AllowMultipleTimestamps = allowMultipleTimestamps;
             AllowNoTimestamp = allowNoTimestamp;
             AllowUnknownRevocation = allowUnknownRevocation;
-            RepositoryAllowListEntries = repoAllowListEntries;
-            ClientAllowListEntries = clientAllowListEntries;
+            AllowNoRepositoryCertificateList = allowNoRepositoryCertificateList;
+            AllowNoClientCertificateList = allowNoClientCertificateList;
+            RepositoryCertificateList = repoAllowListEntries;
+            ClientCertificateList = clientAllowListEntries;
         }
 
         /// <summary>
@@ -123,6 +139,8 @@ namespace NuGet.Packaging.Signing
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
+                allowNoRepositoryCertificateList: true,
+                allowNoClientCertificateList: true,
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
@@ -143,6 +161,8 @@ namespace NuGet.Packaging.Signing
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
+                allowNoRepositoryCertificateList: true,
+                allowNoClientCertificateList: true,
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
@@ -163,6 +183,8 @@ namespace NuGet.Packaging.Signing
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
+                allowNoRepositoryCertificateList: true,
+                allowNoClientCertificateList: true,
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
@@ -183,6 +205,8 @@ namespace NuGet.Packaging.Signing
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
+                allowNoRepositoryCertificateList: true,
+                allowNoClientCertificateList: true,
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }

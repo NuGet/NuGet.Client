@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -21,9 +22,25 @@ namespace NuGet.Packaging.Signing
         {
             var issues = new List<SignatureLog>();
             var status = SignatureVerificationStatus.Valid;
-            var fatalFailures = !settings.AllowUntrusted;
-            var clientAllowListStatus = VerifyAllowList(signature, issues, settings.ClientAllowListEntries, fatalFailures, Strings.Error_NoMatchingCertificate_Client);
-            var repoAllowListStatus = VerifyAllowList(signature, issues, settings.RepositoryAllowListEntries, fatalFailures, Strings.Error_NoMatchingCertificate_Repo);
+            var issuesAreFatal = !settings.AllowUntrusted;
+
+            var clientAllowListStatus = VerifyAllowList(
+                signature,
+                issues,
+                settings.ClientCertificateList,
+                !settings.AllowNoClientCertificateList,
+                issuesAreFatal,
+                Strings.Error_NoClientAllowList,
+                Strings.Error_NoMatchingClientCertificate);
+
+            var repoAllowListStatus = VerifyAllowList(
+                signature,
+                issues,
+                settings.RepositoryCertificateList,
+                !settings.AllowNoRepositoryCertificateList,
+                issuesAreFatal,
+                Strings.Error_NoRepoAllowList,
+                Strings.Error_NoMatchingRepositoryCertificate);
 
             if (clientAllowListStatus != SignatureVerificationStatus.Valid ||
                 repoAllowListStatus != SignatureVerificationStatus.Valid)
@@ -38,15 +55,25 @@ namespace NuGet.Packaging.Signing
             Signature signature,
             List<SignatureLog> issues,
             IReadOnlyList<VerificationAllowListEntry> allowList,
-            bool fatalFailures,
-            string errorMessage)
+            bool requireAllowList,
+            bool issuesAreFatal,
+            string noListErrorMessage,
+            string noMatchErrorMessage)
         {
             var status = SignatureVerificationStatus.Valid;
 
-            if (allowList?.Count > 0 && !IsSignatureAllowed(signature, allowList))
+            if (allowList == null || allowList.Count == 0)
+            {
+                if (requireAllowList)
+                {
+                    status = SignatureVerificationStatus.Untrusted;
+                    issues.Add(SignatureLog.Issue(fatal: issuesAreFatal, code: NuGetLogCode.NU3034, message: noListErrorMessage));
+                }
+            }
+            else if (!IsSignatureAllowed(signature, allowList))
             {
                 status = SignatureVerificationStatus.Untrusted;
-                issues.Add(SignatureLog.Issue(fatal: fatalFailures, code: NuGetLogCode.NU3003, message: errorMessage));
+                issues.Add(SignatureLog.Issue(fatal: issuesAreFatal, code: NuGetLogCode.NU3034, message: noMatchErrorMessage));
             }
 
             return status;
@@ -56,6 +83,13 @@ namespace NuGet.Packaging.Signing
             Signature signature,
             IReadOnlyList<VerificationAllowListEntry> allowList)
         {
+            var target = VerificationTarget.Primary;
+
+            if (signature.Type == SignatureType.Repository)
+            {
+                target = VerificationTarget.Repository;
+            }
+
             foreach (var allowedEntry in allowList)
             {
                 // Verify the certificate hash allow list objects
@@ -66,7 +100,7 @@ namespace NuGet.Packaging.Signing
                     var primarySignatureCertificateFingerprint = CertificateUtility.GetHash(signature.SignerInfo.Certificate, certificateHashEntry.FingerprintAlgorithm);
                     var primarySignatureCertificateFingerprintString = BitConverter.ToString(primarySignatureCertificateFingerprint).Replace("-", "");
 
-                    if (certificateHashEntry.VerificationTarget.HasFlag(VerificationTarget.Primary) &&
+                    if (certificateHashEntry.VerificationTarget.HasFlag(target) &&
                         StringComparer.OrdinalIgnoreCase.Equals(certificateHashEntry.Fingerprint, primarySignatureCertificateFingerprintString))
                     {
                         return true;

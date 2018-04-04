@@ -179,20 +179,38 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package signature certificate cannot be trusted as no client allow list found..
+        /// </summary>
+        internal static string Error_NoClientAllowList {
+            get {
+                return ResourceManager.GetString("Error_NoClientAllowList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any certificate fingerprint in client allow list..
         /// </summary>
-        internal static string Error_NoMatchingCertificate_Client {
+        internal static string Error_NoMatchingClientCertificate {
             get {
-                return ResourceManager.GetString("Error_NoMatchingCertificate_Client", resourceCulture);
+                return ResourceManager.GetString("Error_NoMatchingClientCertificate", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any certificate fingerprint in repository allow list..
         /// </summary>
-        internal static string Error_NoMatchingCertificate_Repo {
+        internal static string Error_NoMatchingRepositoryCertificate {
             get {
-                return ResourceManager.GetString("Error_NoMatchingCertificate_Repo", resourceCulture);
+                return ResourceManager.GetString("Error_NoMatchingRepositoryCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package signature certificate cannot be trusted as no repository allow list found..
+        /// </summary>
+        internal static string Error_NoRepoAllowList {
+            get {
+                return ResourceManager.GetString("Error_NoRepoAllowList", resourceCulture);
             }
         }
         
