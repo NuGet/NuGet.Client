@@ -85,7 +85,7 @@ namespace NuGet.Packaging.FuncTest
                 var authorSignedCms = signature.SignedCms;
                 var timestamp = signature.Timestamps.First();
                 var timestampCms = timestamp.SignedCms;
-                IReadOnlyList<X509Certificate2> chainCertificates = new List<X509Certificate2>();
+                IX509CertificateChain certificateChain;
                 var chainBuildSuccess = true;
 
                 // rebuild the chain to get the list of certificates
@@ -101,26 +101,30 @@ namespace NuGet.Packaging.FuncTest
 
                     var timestampSignerCertificate = timestampCms.SignerInfos[0].Certificate;
                     chainBuildSuccess = chain.Build(timestampSignerCertificate);
-                    chainCertificates = CertificateChainUtility.GetCertificateListFromChain(chain);
+                    certificateChain = CertificateChainUtility.GetCertificateChain(chain);
                 }
 
-                // Assert
-                authorSignedCms.Should().NotBeNull();
-                authorSignedCms.Detached.Should().BeFalse();
-                authorSignedCms.ContentInfo.Should().NotBeNull();
-                authorSignedCms.SignerInfos.Count.Should().Be(1);
-                authorSignedCms.SignerInfos[0].UnsignedAttributes.Count.Should().Be(1);
-                authorSignedCms.SignerInfos[0].UnsignedAttributes[0].Oid.Value.Should().Be(Oids.SignatureTimeStampTokenAttribute);
-
-                timestampCms.Should().NotBeNull();
-                timestampCms.Detached.Should().BeFalse();
-                timestampCms.ContentInfo.Should().NotBeNull();
-
-                chainBuildSuccess.Should().BeTrue();
-                chainCertificates.Count.Should().Be(timestampCms.Certificates.Count);
-                foreach (var cert in chainCertificates)
+                using (certificateChain)
                 {
-                    timestampCms.Certificates.Contains(cert).Should().BeTrue();
+                    // Assert
+                    authorSignedCms.Should().NotBeNull();
+                    authorSignedCms.Detached.Should().BeFalse();
+                    authorSignedCms.ContentInfo.Should().NotBeNull();
+                    authorSignedCms.SignerInfos.Count.Should().Be(1);
+                    authorSignedCms.SignerInfos[0].UnsignedAttributes.Count.Should().Be(1);
+                    authorSignedCms.SignerInfos[0].UnsignedAttributes[0].Oid.Value.Should().Be(Oids.SignatureTimeStampTokenAttribute);
+
+                    timestampCms.Should().NotBeNull();
+                    timestampCms.Detached.Should().BeFalse();
+                    timestampCms.ContentInfo.Should().NotBeNull();
+
+                    chainBuildSuccess.Should().BeTrue();
+                    certificateChain.Count.Should().Be(timestampCms.Certificates.Count);
+
+                    foreach (var cert in certificateChain)
+                    {
+                        timestampCms.Certificates.Contains(cert).Should().BeTrue();
+                    }
                 }
             }
         }

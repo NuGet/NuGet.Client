@@ -533,7 +533,7 @@ Valid from:</comment>
   <data name="Error_RepositorySignatureMustNotHaveARepositoryCountersignature" xml:space="preserve">
     <value>A repository primary signature must not have a repository countersignature.</value>
   </data>
-  <data name="InvalidRepositoryCounterSignature" xml:space="preserve">
+  <data name="InvalidRepositoryCountersignature" xml:space="preserve">
     <value>The repository countersignature is invalid.</value>
   </data>
   <data name="InvalidPackageSignatureFile" xml:space="preserve">
@@ -565,5 +565,14 @@ Valid from:</comment>
   </data>
   <data name="SignedPackagePackageAlreadyCountersigned" xml:space="preserve">
     <value>The package already contains a repository countersignature. Please remove the existing signature before adding a new repository countersignature.</value>
+  </data>
+  <data name="RepositoryCountersignatureHasNoCertificate" xml:space="preserve">
+    <value>The repository countersignature does not have a signing certificate.</value>
+  </data>
+  <data name="RepositoryCountersignatureHasNoTimestamp" xml:space="preserve">
+    <value>The repository countersignature does not have a timestamp.</value>
+  </data>
+  <data name="UnrelatedSignatures" xml:space="preserve">
+    <value>The primary signature and repository countersignature are unrelated.</value>
   </data>
 </root>

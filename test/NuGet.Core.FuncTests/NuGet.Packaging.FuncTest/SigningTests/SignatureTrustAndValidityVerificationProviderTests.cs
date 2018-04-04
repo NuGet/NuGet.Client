@@ -452,25 +452,29 @@ namespace NuGet.Packaging.FuncTest
             {
                 // Read a signature that is valid in every way except that the CRL information is unavailable.
                 var signature = await package.GetPrimarySignatureAsync(CancellationToken.None);
-                var rootCertificate = SignatureUtility.GetPrimarySignatureCertificates(signature).Last();
 
-                // Trust the root CA of the signing certificate.
-                using (var testCertificate = TrustedTestCert.Create(
-                    rootCertificate,
-                    StoreName.Root,
-                    StoreLocation.LocalMachine,
-                    maximumValidityPeriod: TimeSpan.MaxValue))
+                using (var certificateChain = SignatureUtility.GetCertificateChain(signature))
                 {
-                    // Act
-                    var result = await verificationProvider.GetTrustResultAsync(package, signature, setting, CancellationToken.None);
+                    var rootCertificate = certificateChain.Last();
 
-                    // Assert
-                    Assert.Equal(expectedStatus, result.Trust);
-                    return result
-                        .Issues
-                        .Where(x => x.Level >= expectedLogLevel)
-                        .OrderBy(x => x.Message)
-                        .ToList();
+                    // Trust the root CA of the signing certificate.
+                    using (var testCertificate = TrustedTestCert.Create(
+                        new X509Certificate2(rootCertificate),
+                        StoreName.Root,
+                        StoreLocation.LocalMachine,
+                        maximumValidityPeriod: TimeSpan.MaxValue))
+                    {
+                        // Act
+                        var result = await verificationProvider.GetTrustResultAsync(package, signature, setting, CancellationToken.None);
+
+                        // Assert
+                        Assert.Equal(expectedStatus, result.Trust);
+                        return result
+                            .Issues
+                            .Where(x => x.Level >= expectedLogLevel)
+                            .OrderBy(x => x.Message)
+                            .ToList();
+                    }
                 }
             }
         }

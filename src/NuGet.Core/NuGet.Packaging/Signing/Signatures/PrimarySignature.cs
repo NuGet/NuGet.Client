@@ -131,14 +131,15 @@ namespace NuGet.Packaging.Signing
             SignerInfo signerInfo,
             SigningSpecifications signingSpecifications)
         {
-            var certificates = SignatureUtility.GetPrimarySignatureCertificates(
+            using (var certificates = SignatureUtility.GetCertificateChain(
                 signedCms,
                 signerInfo,
-                signingSpecifications);
-
-            if (certificates == null || certificates.Count == 0)
+                signingSpecifications))
             {
-                ThrowForInvalidPrimarySignature();
+                if (certificates == null || certificates.Count == 0)
+                {
+                    ThrowForInvalidPrimarySignature();
+                }
             }
         }
 

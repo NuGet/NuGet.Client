@@ -559,9 +559,9 @@ namespace NuGet.Packaging {
         /// <summary>
         ///   Looks up a localized string similar to The repository countersignature is invalid..
         /// </summary>
-        internal static string InvalidRepositoryCounterSignature {
+        internal static string InvalidRepositoryCountersignature {
             get {
-                return ResourceManager.GetString("InvalidRepositoryCounterSignature", resourceCulture);
+                return ResourceManager.GetString("InvalidRepositoryCountersignature", resourceCulture);
             }
         }
         
@@ -778,6 +778,24 @@ namespace NuGet.Packaging {
         internal static string RangeOutOfBoundsForArray {
             get {
                 return ResourceManager.GetString("RangeOutOfBoundsForArray", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The repository countersignature does not have a signing certificate..
+        /// </summary>
+        internal static string RepositoryCountersignatureHasNoCertificate {
+            get {
+                return ResourceManager.GetString("RepositoryCountersignatureHasNoCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The repository countersignature does not have a timestamp..
+        /// </summary>
+        internal static string RepositoryCountersignatureHasNoTimestamp {
+            get {
+                return ResourceManager.GetString("RepositoryCountersignatureHasNoTimestamp", resourceCulture);
             }
         }
         
@@ -1210,6 +1228,15 @@ namespace NuGet.Packaging {
         internal static string UnexpectedPackageSignatureVerificationError {
             get {
                 return ResourceManager.GetString("UnexpectedPackageSignatureVerificationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The primary signature and repository countersignature are unrelated..
+        /// </summary>
+        internal static string UnrelatedSignatures {
+            get {
+                return ResourceManager.GetString("UnrelatedSignatures", resourceCulture);
             }
         }
         

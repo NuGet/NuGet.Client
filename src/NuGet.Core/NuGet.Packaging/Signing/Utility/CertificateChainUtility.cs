@@ -20,13 +20,14 @@ namespace NuGet.Packaging.Signing
         /// for chain building.</param>
         /// <param name="logger">A logger.</param>
         /// <param name="certificateType">The certificate type.</param>
+        /// <returns>A certificate chain.</returns>
         /// <remarks>This is intended to be used only during signing and timestamping operations,
         /// not verification.</remarks>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="extraStore" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="certificateType" /> is undefined.</exception>
-        public static IReadOnlyList<X509Certificate2> GetCertificateChain(
+        public static IX509CertificateChain GetCertificateChain(
             X509Certificate2 certificate,
             X509Certificate2Collection extraStore,
             ILogger logger,
@@ -64,7 +65,7 @@ namespace NuGet.Packaging.Signing
 
                 if (chain.Build(certificate))
                 {
-                    return GetCertificateListFromChain(chain);
+                    return GetCertificateChain(chain);
                 }
 
                 X509ChainStatusFlags errorStatusFlags;
@@ -98,25 +99,25 @@ namespace NuGet.Packaging.Signing
                     throw new SignatureException(logCode, Strings.CertificateChainValidationFailed);
                 }
 
-                return GetCertificateListFromChain(chain);
+                return GetCertificateChain(chain);
             }
         }
 
         /// <summary>
         /// Create an ordered list of certificates. The leaf node is returned first.
         /// </summary>
-        /// <param name="certChain">Certificate chain to be converted to list.</param>
+        /// <param name="x509Chain">Certificate chain to be converted to list.</param>
         /// <remarks>This does not check validity or trust. It returns the chain as-is.</remarks>
-        public static IReadOnlyList<X509Certificate2> GetCertificateListFromChain(X509Chain certChain)
+        public static IX509CertificateChain GetCertificateChain(X509Chain x509Chain)
         {
-            if (certChain == null)
+            if (x509Chain == null)
             {
-                throw new ArgumentNullException(nameof(certChain));
+                throw new ArgumentNullException(nameof(x509Chain));
             }
 
-            var certs = new List<X509Certificate2>();
+            var certs = new X509CertificateChain();
 
-            foreach (var item in certChain.ChainElements)
+            foreach (var item in x509Chain.ChainElements)
             {
                 // Return a new certificate object.
                 // This allows the chain and its chain element certificates to be disposed

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -203,22 +202,21 @@ namespace NuGet.Commands
 
         private static bool IsValid(X509Certificate2 certificate, X509Certificate2Collection extraStore)
         {
-            IReadOnlyList<X509Certificate2> chain;
-
             try
             {
-                chain = CertificateChainUtility.GetCertificateChain(
+                using (var chain = CertificateChainUtility.GetCertificateChain(
                     certificate,
                     extraStore,
                     NullLogger.Instance,
-                    CertificateType.Signature);
+                    CertificateType.Signature))
+                {
+                    return chain != null && chain.Count > 0;
+                }
             }
             catch (SignatureException)
             {
                 return false;
             }
-
-            return chain != null && chain.Count > 0;
         }
     }
 }

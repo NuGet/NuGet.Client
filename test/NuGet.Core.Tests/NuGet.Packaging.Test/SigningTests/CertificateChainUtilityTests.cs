@@ -120,15 +120,16 @@ namespace NuGet.Packaging.Test
             {
                 var logger = new TestLogger();
 
-                var chain = CertificateChainUtility.GetCertificateChain(
+                using (var chain = CertificateChainUtility.GetCertificateChain(
                     certificate,
                     new X509Certificate2Collection(),
                     logger,
-                    CertificateType.Signature);
-
-                Assert.Equal(1, chain.Count);
-                Assert.NotSame(certificate, chain[0]);
-                Assert.True(certificate.RawData.SequenceEqual(chain[0].RawData));
+                    CertificateType.Signature))
+                {
+                    Assert.Equal(1, chain.Count);
+                    Assert.NotSame(certificate, chain[0]);
+                    Assert.True(certificate.RawData.SequenceEqual(chain[0].RawData));
+                }
 
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Warnings);
@@ -143,16 +144,16 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetCertificateListFromChain_WhenCertChainNull_Throws()
+        public void GetCertificateChain_WhenCertChainNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => CertificateChainUtility.GetCertificateListFromChain(certChain: null));
+                () => CertificateChainUtility.GetCertificateChain(x509Chain: null));
 
-            Assert.Equal("certChain", exception.ParamName);
+            Assert.Equal("x509Chain", exception.ParamName);
         }
 
         [Fact]
-        public void GetCertificateListFromChain_ReturnsCertificatesInOrder()
+        public void GetCertificateChain_ReturnsCertificatesInOrder()
         {
             using (var chainHolder = new X509ChainHolder())
             using (var rootCertificate = SignTestUtility.GetCertificate("root.crt"))
@@ -166,12 +167,13 @@ namespace NuGet.Packaging.Test
 
                 chain.Build(leafCertificate);
 
-                var certificateChain = CertificateChainUtility.GetCertificateListFromChain(chain);
-
-                Assert.Equal(3, certificateChain.Count);
-                Assert.Equal(leafCertificate.Thumbprint, certificateChain[0].Thumbprint);
-                Assert.Equal(intermediateCertificate.Thumbprint, certificateChain[1].Thumbprint);
-                Assert.Equal(rootCertificate.Thumbprint, certificateChain[2].Thumbprint);
+                using (var certificateChain = CertificateChainUtility.GetCertificateChain(chain))
+                {
+                    Assert.Equal(3, certificateChain.Count);
+                    Assert.Equal(leafCertificate.Thumbprint, certificateChain[0].Thumbprint);
+                    Assert.Equal(intermediateCertificate.Thumbprint, certificateChain[1].Thumbprint);
+                    Assert.Equal(rootCertificate.Thumbprint, certificateChain[2].Thumbprint);
+                }
             }
         }
 

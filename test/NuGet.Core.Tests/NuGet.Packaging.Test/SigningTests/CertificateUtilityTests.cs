@@ -111,7 +111,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetCertificateListFromChain_ReturnsCertificatesInOrder()
+        public void GetCertificateChain_ReturnsCertificatesInOrder()
         {
             using (var chainHolder = new X509ChainHolder())
             using (var rootCertificate = SignTestUtility.GetCertificate("root.crt"))
@@ -125,12 +125,13 @@ namespace NuGet.Packaging.Test
 
                 chain.Build(leafCertificate);
 
-                var certificateList = CertificateChainUtility.GetCertificateListFromChain(chain);
-
-                Assert.Equal(3, certificateList.Count);
-                Assert.Equal(leafCertificate.Thumbprint, certificateList[0].Thumbprint);
-                Assert.Equal(intermediateCertificate.Thumbprint, certificateList[1].Thumbprint);
-                Assert.Equal(rootCertificate.Thumbprint, certificateList[2].Thumbprint);
+                using (var certificateChain = CertificateChainUtility.GetCertificateChain(chain))
+                {
+                    Assert.Equal(3, certificateChain.Count);
+                    Assert.Equal(leafCertificate.Thumbprint, certificateChain[0].Thumbprint);
+                    Assert.Equal(intermediateCertificate.Thumbprint, certificateChain[1].Thumbprint);
+                    Assert.Equal(rootCertificate.Thumbprint, certificateChain[2].Thumbprint);
+                }
             }
         }
 
