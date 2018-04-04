@@ -50,10 +50,8 @@ namespace NuGet.Packaging.FuncTest
 
                 Assert.Equal(SignatureVerificationStatus.Illegal, result.Status);
                 Assert.Equal(1, issues.Count(issue => issue.Level == LogLevel.Error));
-                Assert.Equal(1, issues.Count(issue => issue.Level == LogLevel.Warning));
 
                 AssertUntrustedRoot(issues, LogLevel.Error);
-                AssertTimestampMissing(issues, LogLevel.Warning);
             }
         }
 
@@ -72,18 +70,7 @@ namespace NuGet.Packaging.FuncTest
 
                 Assert.Equal(SignatureVerificationStatus.Valid, result.Status);
                 Assert.Equal(0, issues.Count(issue => issue.Level == LogLevel.Error));
-                Assert.Equal(1, issues.Count(issue => issue.Level == LogLevel.Warning));
-
-                AssertTimestampMissing(issues, LogLevel.Warning);
             }
-        }
-
-        private static void AssertTimestampMissing(IEnumerable<SignatureLog> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3027 &&
-                issue.Level == logLevel &&
-                issue.Message == "The signature should be timestamped to enable long-term signature validity after the certificate has expired.");
         }
 
         private static void AssertUntrustedRoot(IEnumerable<SignatureLog> issues, LogLevel logLevel)

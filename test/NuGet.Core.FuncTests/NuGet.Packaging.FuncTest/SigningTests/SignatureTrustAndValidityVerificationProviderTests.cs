@@ -483,7 +483,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInAcceptMode_Warns()
+        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInAcceptMode_DoesNotWarn()
         {
             // Arrange
             var setting = SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy();
@@ -509,7 +509,10 @@ namespace NuGet.Packaging.FuncTest
                 LogLevel.Warning,
                 setting);
 
-            Assert.Empty(matchingIssues);
+            Assert.Equal(2, matchingIssues.Count);
+
+            AssertOfflineRevocation(matchingIssues, LogLevel.Warning);
+            AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning);
         }
 
         [CIOnlyFact]
