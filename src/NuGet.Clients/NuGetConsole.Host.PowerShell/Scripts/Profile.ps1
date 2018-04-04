@@ -87,10 +87,10 @@ function _TabExpansionPath($line)
 
 <#
 .SYNOPSIS
-    Get an explict interface on an object so that you can invoke the interface members.
+    Get an explicit interface on an object so that you can invoke the interface members.
     
 .DESCRIPTION
-    PowerShell object adapter does not provide explict interface members. For COM objects
+    PowerShell object adapter does not provide explicit interface members. For COM objects
     it only makes IDispatch members available.
     
     This function helps access interface members on an object through reflection. A new
