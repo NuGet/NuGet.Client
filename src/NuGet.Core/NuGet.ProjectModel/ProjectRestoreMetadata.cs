@@ -156,17 +156,17 @@ namespace NuGet.ProjectModel
             }
 
             return ProjectStyle == other.ProjectStyle &&
-                   ProjectPath == other.ProjectPath &&
-                   ProjectJsonPath == other.ProjectJsonPath &&
-                   OutputPath == other.OutputPath &&
-                   ProjectName == other.ProjectName &&
-                   ProjectUniqueName == other.ProjectUniqueName &&
-                   Sources.OrderedEquals(other.Sources.Distinct(), source => source.Source, StringComparer.Ordinal) &&
-                   PackagesPath == other.PackagesPath &&
-                   EqualityUtility.SequenceEqualWithNullCheck(ConfigFilePaths, other.ConfigFilePaths) &&
-                   EqualityUtility.SequenceEqualWithNullCheck(FallbackFolders, other.FallbackFolders) &&
+                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectPath, other.ProjectPath) &&
+                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectJsonPath, other.ProjectJsonPath) &&
+                   PathUtility.GetStringComparerBasedOnOS().Equals(OutputPath, other.OutputPath) &&
+                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectName, other.ProjectName) &&
+                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectUniqueName, other.ProjectUniqueName) &&
+                   Sources.OrderedEquals(other.Sources.Distinct(), source => source.Source, PathUtility.GetStringComparerBasedOnOS()) &&
+                   PathUtility.GetStringComparerBasedOnOS().Equals(PackagesPath, other.PackagesPath) &&
+                   ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, filePath => filePath, PathUtility.GetStringComparerBasedOnOS()) &&
+                   FallbackFolders.OrderedEquals(other.FallbackFolders, fallbackFolder => fallbackFolder, PathUtility.GetStringComparerBasedOnOS()) &&
                    EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
-                   EqualityUtility.SequenceEqualWithNullCheck(OriginalTargetFrameworks, other.OriginalTargetFrameworks) &&
+                   OriginalTargetFrameworks.OrderedEquals(other.OriginalTargetFrameworks, fw => fw, StringComparer.OrdinalIgnoreCase) &&
                    CrossTargeting == other.CrossTargeting &&
                    LegacyPackagesDirectory == other.LegacyPackagesDirectory &&
                    ValidateRuntimeAssets == other.ValidateRuntimeAssets &&
