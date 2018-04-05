@@ -27,7 +27,7 @@ namespace NuGet.Packaging.Rules
                 {
                     var issue = new List<PackagingLogMessage>();
                     issue.Add(PackagingLogMessage.CreateWarning(
-                        string.Format(MessageFormat, builder.GetIdentity().Id), NuGetLogCode.NU5120));
+                        string.Format(MessageFormat), NuGetLogCode.NU5120));
                     return issue;
                 }
             }

@@ -162,7 +162,12 @@ namespace NuGet.PackageManagement.UI
             {
                 var htmlLogFile = GenerateUpgradeReport(nuGetProject, backupPath, upgradeInformationWindowModel);
 
-                OpenUrlInInternalWebBrowser(htmlLogFile);
+                Process process = null;
+                try
+                {
+                    process = Process.Start(htmlLogFile);
+                }
+                catch { }
             }
         }
 

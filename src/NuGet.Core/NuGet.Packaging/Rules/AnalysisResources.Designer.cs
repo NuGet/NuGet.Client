@@ -125,7 +125,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package &apos;{0}&apos; contains &apos;content&apos; folder which will not be available when the package is installed after the migration..
+        ///   Looks up a localized string similar to &apos;content&apos; assets will not be available when the package is installed after the migration..
         /// </summary>
         public static string Migrator_PackageHasContentFolder {
             get {
@@ -134,7 +134,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package &apos;{0}&apos; contains install.ps1 script which will be ignored when the package is installed after the migration..
+        ///   Looks up a localized string similar to install.ps1 script will be ignored when the package is installed after the migration..
         /// </summary>
         public static string Migrator_PackageHasInstallScript {
             get {
@@ -143,7 +143,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The XDT transform file &apos;{0}&apos; will not be applied when the package is installed after the migration..
+        ///   Looks up a localized string similar to XDT transform file &apos;{0}&apos; will not be applied when the package is installed after the migration..
         /// </summary>
         public static string Migrator_XdtTransformInPackage {
             get {

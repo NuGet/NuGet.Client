@@ -139,13 +139,13 @@
     <value>The assembly 'lib\{0}' will be ignored when the package is installed after the migration.</value>
   </data>
   <data name="Migrator_PackageHasContentFolder" xml:space="preserve">
-    <value>The package '{0}' contains 'content' folder which will not be available when the package is installed after the migration.</value>
+    <value>'content' assets will not be available when the package is installed after the migration.</value>
   </data>
   <data name="Migrator_PackageHasInstallScript" xml:space="preserve">
-    <value>The package '{0}' contains install.ps1 script which will be ignored when the package is installed after the migration.</value>
+    <value>install.ps1 script will be ignored when the package is installed after the migration.</value>
   </data>
   <data name="Migrator_XdtTransformInPackage" xml:space="preserve">
-    <value>The XDT transform file '{0}' will not be applied when the package is installed after the migration.</value>
+    <value>XDT transform file '{0}' will not be applied when the package is installed after the migration.</value>
   </data>
   <data name="MisplacedInitScriptWarning" xml:space="preserve">
     <value>The file '{0}' will be ignored by NuGet because it is not directly under 'tools' folder. Place the file directly under 'tools' folder.</value>
