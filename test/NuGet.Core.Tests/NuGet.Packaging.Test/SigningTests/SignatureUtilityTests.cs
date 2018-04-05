@@ -196,12 +196,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void HasRepositoryCountersignature_WithNullPrimarySignature_Throws()
+        public void HasRepositoryCountersignature_WithNullSignature_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => SignatureUtility.HasRepositoryCountersignature(signature: null));
 
-            Assert.Equal("primarySignature", exception.ParamName);
+            Assert.Equal("signature", exception.ParamName);
         }
 
         [Fact]

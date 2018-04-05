@@ -345,7 +345,7 @@ Valid from:</comment>
     <value>Timestamp: {0}</value>
   </data>
   <data name="VerifyErrorCertificateHasLifetimeSigningEKU" xml:space="preserve">
-    <value>The lifetime signing EKU in the {0} is not supported.</value>
+    <value>The lifetime signing EKU in the {0}'s certificate is not supported.</value>
     <comment>0 - Signature type</comment>
   </data>
   <data name="ErrorInvalidPackageArchive" xml:space="preserve">
@@ -384,11 +384,11 @@ Valid from:</comment>
     <value>The argument cannot be null or empty.</value>
   </data>
   <data name="SigningCertificateHasUnsupportedSignatureAlgorithm" xml:space="preserve">
-    <value>The {0}'s signing certificate has an unsupported signature algorithm.</value>
+    <value>The {0}'s certificate has an unsupported signature algorithm.</value>
     <comment>0 - Signature type</comment>
   </data>
   <data name="SigningCertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
-    <value>The {0}'s signing certificate does not meet a minimum public key length requirement.</value>
+    <value>The {0}'s certificate does not meet a minimum public key length requirement.</value>
     <comment>0 - Signature type</comment>
   </data>
   <data name="InvalidPackageSignatureFileEntryCentralDirectoryHeader" xml:space="preserve">
@@ -422,7 +422,7 @@ Valid from:</comment>
     <value>The timestamp signature does not have a signing certificate.</value>
   </data>
   <data name="SignatureNotYetValid" xml:space="preserve">
-    <value>The {0}'s signing certificate is not yet valid.</value>
+    <value>The {0}'s certificate is not yet valid.</value>
     <comment>0 - Signature type</comment>
   </data>
   <data name="TimestampNotYetValid" xml:space="preserve">

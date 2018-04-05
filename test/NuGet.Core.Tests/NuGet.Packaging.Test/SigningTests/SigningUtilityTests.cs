@@ -61,7 +61,7 @@ namespace NuGet.Packaging.Test
                     () => SigningUtility.Verify(request, NullLogger.Instance));
 
                 Assert.Equal(NuGetLogCode.NU3013, exception.Code);
-                Assert.Equal("The signing certificate has an unsupported signature algorithm.", exception.Message);
+                Assert.Contains("certificate has an unsupported signature algorithm.", exception.Message);
             }
         }
 
@@ -75,7 +75,8 @@ namespace NuGet.Packaging.Test
                     () => SigningUtility.Verify(request, NullLogger.Instance));
 
                 Assert.Equal(NuGetLogCode.NU3015, exception.Code);
-                Assert.Equal("The lifetime signing EKU is not supported.", exception.Message);
+                Assert.Contains("The lifetime signing EKU", exception.Message);
+                Assert.Contains("is not supported", exception.Message);
             }
         }
 
@@ -89,7 +90,7 @@ namespace NuGet.Packaging.Test
                     () => SigningUtility.Verify(request, NullLogger.Instance));
 
                 Assert.Equal(NuGetLogCode.NU3017, exception.Code);
-                Assert.Equal("The signing certificate is not yet valid.", exception.Message);
+                Assert.Contains("certificate is not yet valid.", exception.Message);
             }
         }
 
@@ -469,7 +470,7 @@ namespace NuGet.Packaging.Test
                     () => SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3013, exception.Code);
-                Assert.Equal("The signing certificate has an unsupported signature algorithm.", exception.Message);
+                Assert.Contains("has an unsupported signature algorithm.", exception.Message);
             }
         }
 
@@ -486,7 +487,7 @@ namespace NuGet.Packaging.Test
                     () => SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3014, exception.Code);
-                Assert.Equal("The signing certificate does not meet a minimum public key length requirement.", exception.Message);
+                Assert.Contains("certificate does not meet a minimum public key length requirement.", exception.Message);
             }
         }
 

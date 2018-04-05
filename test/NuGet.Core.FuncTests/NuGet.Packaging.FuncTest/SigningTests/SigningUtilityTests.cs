@@ -124,7 +124,7 @@ namespace NuGet.Packaging.FuncTest
                     () => SigningUtility.SignAsync(test.Options, test.AuthorRequest, CancellationToken.None));
 
                 Assert.Equal(NuGetLogCode.NU3017, exception.Code);
-                Assert.Contains("The signing certificate is not yet valid", exception.Message);
+                Assert.Contains("certificate is not yet valid", exception.Message);
 
                 var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.Options.InputPackageStream);
                 Assert.False(isSigned);

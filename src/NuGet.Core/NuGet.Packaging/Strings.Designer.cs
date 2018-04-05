@@ -845,7 +845,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0}&apos;s signing certificate is not yet valid..
+        ///   Looks up a localized string similar to The {0}&apos;s certificate is not yet valid..
         /// </summary>
         internal static string SignatureNotYetValid {
             get {
@@ -971,7 +971,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0}&apos;s signing certificate does not meet a minimum public key length requirement..
+        ///   Looks up a localized string similar to The {0}&apos;s certificate does not meet a minimum public key length requirement..
         /// </summary>
         internal static string SigningCertificateFailsPublicKeyLengthRequirement {
             get {
@@ -980,7 +980,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0}&apos;s signing certificate has an unsupported signature algorithm..
+        ///   Looks up a localized string similar to The {0}&apos;s certificate has an unsupported signature algorithm..
         /// </summary>
         internal static string SigningCertificateHasUnsupportedSignatureAlgorithm {
             get {
@@ -1286,7 +1286,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The lifetime signing EKU in the {0} is not supported..
+        ///   Looks up a localized string similar to The lifetime signing EKU in the {0}&apos;s certificate is not supported..
         /// </summary>
         internal static string VerifyErrorCertificateHasLifetimeSigningEKU {
             get {

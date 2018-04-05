@@ -135,7 +135,7 @@ namespace NuGet.Packaging.FuncTest
                     () => PrimarySignature.Load(signedCms));
 
                 Assert.Equal(NuGetLogCode.NU3010, exception.Code);
-                Assert.Equal("The primary signature does not have a signing certificate.", exception.Message);
+                Assert.Contains("does not have a signing certificate.", exception.Message);
             }
         }
 

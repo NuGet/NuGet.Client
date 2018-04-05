@@ -80,7 +80,7 @@ namespace NuGet.Packaging.FuncTest
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
+                issue.Message.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
         }
 
         private sealed class VerifyTest : IDisposable

@@ -183,7 +183,7 @@ namespace NuGet.Packaging.Signing
                         {
                             foreach (var message in messages)
                             {
-                                issues.Add(SignatureLog.Issue(settings.TreatIssuesAsErrors, NuGetLogCode.NU3012, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, message, signatureType)));
+                                issues.Add(SignatureLog.Issue(settings.TreatIssuesAsErrors, NuGetLogCode.NU3012, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, signatureType, message)));
                             }
 
                             chainBuildingHasIssues = true;
@@ -195,7 +195,7 @@ namespace NuGet.Packaging.Signing
                         // if we are combining checks for more than one, then we have to use the whole list.
                         if (CertificateChainUtility.TryGetStatusMessage(chainStatuses, X509ChainStatusFlags.Revoked, out messages))
                         {
-                            issues.Add(SignatureLog.Error(NuGetLogCode.NU3012, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, messages.First(), signatureType)));
+                            issues.Add(SignatureLog.Error(NuGetLogCode.NU3012, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, signatureType, messages.First())));
                             flags |= SignatureVerificationStatusFlags.CertificateRevoked;
 
                             return new SignatureVerificationSummary(Type, SignatureVerificationStatus.Suspect, flags, timestamp);
@@ -203,7 +203,7 @@ namespace NuGet.Packaging.Signing
 
                         if (!settings.AllowUntrustedRoot && CertificateChainUtility.TryGetStatusMessage(chainStatuses, X509ChainStatusFlags.UntrustedRoot, out messages))
                         {
-                            issues.Add(SignatureLog.Issue(settings.TreatIssuesAsErrors, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, messages.First(), signatureType)));
+                            issues.Add(SignatureLog.Issue(settings.TreatIssuesAsErrors, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, signatureType, messages.First())));
 
                             chainBuildingHasIssues = true;
                             flags |= SignatureVerificationStatusFlags.UntrustedRoot;
@@ -216,7 +216,7 @@ namespace NuGet.Packaging.Signing
                             {
                                 foreach (var message in messages)
                                 {
-                                    issues.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, message, signatureType)));
+                                    issues.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, signatureType, message)));
                                 }
                             }
 

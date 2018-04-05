@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 #if IS_DESKTOP
@@ -32,24 +33,27 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            // This method is intended to be a generic verification before signing, therefore we need to use a generic signature type.
+            var signatureType = "signature";
+
             if (!CertificateUtility.IsSignatureAlgorithmSupported(request.Certificate))
             {
-                throw new SignatureException(NuGetLogCode.NU3013, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm);
+                throw new SignatureException(NuGetLogCode.NU3013, string.Format(CultureInfo.CurrentCulture, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm, signatureType));
             }
 
             if (!CertificateUtility.IsCertificatePublicKeyValid(request.Certificate))
             {
-                throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
+                throw new SignatureException(NuGetLogCode.NU3014, string.Format(CultureInfo.CurrentCulture, Strings.SigningCertificateFailsPublicKeyLengthRequirement, signatureType));
             }
 
             if (CertificateUtility.HasExtendedKeyUsage(request.Certificate, Oids.LifetimeSigningEku))
             {
-                throw new SignatureException(NuGetLogCode.NU3015, Strings.VerifyErrorCertificateHasLifetimeSigningEKU);
+                throw new SignatureException(NuGetLogCode.NU3015, string.Format(CultureInfo.CurrentCulture, Strings.VerifyErrorCertificateHasLifetimeSigningEKU, signatureType));
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(request.Certificate))
             {
-                throw new SignatureException(NuGetLogCode.NU3017, Strings.SignatureNotYetValid);
+                throw new SignatureException(NuGetLogCode.NU3017, string.Format(CultureInfo.CurrentCulture, Strings.SignatureNotYetValid, signatureType));
             }
 
             request.BuildSigningCertificateChainOnce(logger);

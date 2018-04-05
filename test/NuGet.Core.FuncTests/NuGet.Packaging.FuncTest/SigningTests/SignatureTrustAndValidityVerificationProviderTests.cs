@@ -237,7 +237,7 @@ namespace NuGet.Packaging.FuncTest
                     Assert.Contains(result.Issues, issue =>
                         issue.Code == NuGetLogCode.NU3011 &&
                         issue.Level == LogLevel.Error &&
-                        issue.Message == "The primary signature validity period has expired.");
+                        issue.Message.Contains("validity period has expired."));
                 }
             }
         }
@@ -359,7 +359,7 @@ namespace NuGet.Packaging.FuncTest
                     var issue = result.Issues.FirstOrDefault(log => log.Code == NuGetLogCode.NU3012);
 
                     Assert.NotNull(issue);
-                    Assert.Equal("Primary signature validation failed.", issue.Message);
+                    Assert.Contains("validation failed.", issue.Message);
                 }
             }
         }
@@ -630,7 +630,7 @@ namespace NuGet.Packaging.FuncTest
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == "The revocation function was unable to check revocation because the revocation server was offline.");
+                issue.Message.Contains("The revocation function was unable to check revocation because the revocation server was offline."));
         }
 
         private static void AssertRevocationStatusUnknown(IEnumerable<SignatureLog> issues, LogLevel logLevel)
@@ -638,7 +638,7 @@ namespace NuGet.Packaging.FuncTest
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == "The revocation function was unable to check revocation for the certificate.");
+                issue.Message.Contains("The revocation function was unable to check revocation for the certificate."));
         }
 
         private static byte[] GetResource(string name)
