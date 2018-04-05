@@ -70,7 +70,6 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public IReadOnlyList<VerificationAllowListEntry> ClientCertificateList { get; }
 
-
         public SignedPackageVerifierSettings(
             bool allowUnsigned,
             bool allowIllegal,
@@ -82,17 +81,20 @@ namespace NuGet.Packaging.Signing
             bool allowUnknownRevocation,
             bool allowNoRepositoryCertificateList,
             bool allowNoClientCertificateList)
+            : this (
+                  allowUnsigned,
+                  allowIllegal,
+                  allowUntrusted,
+                  allowUntrustedSelfIssuedCertificate,
+                  allowIgnoreTimestamp,
+                  allowMultipleTimestamps,
+                  allowNoTimestamp,
+                  allowUnknownRevocation,
+                  allowNoRepositoryCertificateList,
+                  allowNoClientCertificateList,
+                  repoAllowListEntries: null,
+                  clientAllowListEntries: null)
         {
-            AllowUnsigned = allowUnsigned;
-            AllowIllegal = allowIllegal;
-            AllowUntrusted = allowUntrusted;
-            AllowUntrustedSelfIssuedCertificate = allowUntrustedSelfIssuedCertificate;
-            AllowIgnoreTimestamp = allowIgnoreTimestamp;
-            AllowMultipleTimestamps = allowMultipleTimestamps;
-            AllowNoTimestamp = allowNoTimestamp;
-            AllowUnknownRevocation = allowUnknownRevocation;
-            AllowNoRepositoryCertificateList = AllowNoRepositoryCertificateList;
-            AllowNoClientCertificateList = allowNoClientCertificateList;
         }
 
         public SignedPackageVerifierSettings(
