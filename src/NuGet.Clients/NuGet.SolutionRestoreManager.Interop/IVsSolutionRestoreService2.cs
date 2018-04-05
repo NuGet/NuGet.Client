@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace NuGet.SolutionRestoreManager
     public interface IVsSolutionRestoreService2
     {
         /// <summary>
-        /// An entry point used by CPS to indicate given project needs to be restored.
+        /// An entry point which allows non-NETCore SDK based projects to indicate given project needs to be restored.
         /// </summary>
         /// <param name="projectUniqueName">
         /// Unique identificator of the project. Should be a full path to project file.
