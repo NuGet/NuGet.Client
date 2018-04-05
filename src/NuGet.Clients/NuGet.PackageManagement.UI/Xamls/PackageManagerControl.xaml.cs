@@ -125,8 +125,6 @@ namespace NuGet.PackageManagement.UI
 
             AddRestartRequestBar(vsShell);
 
-            AddMigratorBar();
-
             _packageDetail.Control = this;
             _packageDetail.Visibility = Visibility.Hidden;
 
