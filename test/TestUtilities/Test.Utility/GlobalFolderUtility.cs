@@ -34,11 +34,11 @@ namespace NuGet.Test.Utility
                 var signedPackageVerifierSettings = requireSignVerify ? SignedPackageVerifierSettings.GetDefault() : null;
 
                 var pathContext = new PackageExtractionContext(
-                    packageSaveMode: PackageSaveMode.Defaultv3,
-                    xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                    logger: Common.NullLogger.Instance,
-                    signedPackageVerifier: signedPackageVerifier,
-                    signedPackageVerifierSettings: signedPackageVerifierSettings);
+                    PackageSaveMode.Defaultv3,
+                    XmlDocFileSaveMode.None,
+                    Common.NullLogger.Instance,
+                    signedPackageVerifier,
+                    signedPackageVerifierSettings);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(globalFolder);
 

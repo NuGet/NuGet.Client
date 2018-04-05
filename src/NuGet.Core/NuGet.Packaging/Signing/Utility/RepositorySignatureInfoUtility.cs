@@ -14,44 +14,44 @@ namespace NuGet.Packaging.Signing
         /// Gets SignedPackageVerifierSettings from a given RepositorySignatureInfo. 
         /// </summary>
         /// <param name="repoSignatureInfo">RepositorySignatureInfo to be used.</param>
-        /// <param name="commonSignedPackageVerifierSettings">SignedPackageVerifierSettings to be used if RepositorySignatureInfo is unavailable.</param>
+        /// <param name="fallbackSettings">SignedPackageVerifierSettings to be used if RepositorySignatureInfo is unavailable.</param>
         /// <returns>SignedPackageVerifierSettings based on the RepositorySignatureInfo and SignedPackageVerifierSettings.</returns>
         public static SignedPackageVerifierSettings GetSignedPackageVerifierSettings(
             RepositorySignatureInfo repoSignatureInfo,
-            SignedPackageVerifierSettings commonSignedPackageVerifierSettings)
+            SignedPackageVerifierSettings fallbackSettings)
         {
-            if (commonSignedPackageVerifierSettings == null)
+            if (fallbackSettings == null)
             {
-                throw new ArgumentNullException(nameof(commonSignedPackageVerifierSettings));
+                throw new ArgumentNullException(nameof(fallbackSettings));
             }
 
             if (repoSignatureInfo == null)
             {
-                return commonSignedPackageVerifierSettings;
+                return fallbackSettings;
             }
             else
             {
                 var repositoryAllowList = GetRepositoryAllowList(repoSignatureInfo.RepositoryCertificateInfos);
 
                 // Allow unsigned only if the common settings allow it and repository does not have all packages signed
-                var allowUnsigned = commonSignedPackageVerifierSettings.AllowUnsigned && !repoSignatureInfo.AllRepositorySigned;
+                var allowUnsigned = fallbackSettings.AllowUnsigned && !repoSignatureInfo.AllRepositorySigned;
 
                 // Allow an empty repository certificate list only if the repository does not have all packages signed
                 var allowNoRepositoryCertificateList = !repoSignatureInfo.AllRepositorySigned;
 
                 return new SignedPackageVerifierSettings(
                     allowUnsigned: allowUnsigned,
-                    allowIllegal: commonSignedPackageVerifierSettings.AllowIllegal,
-                    allowUntrusted: commonSignedPackageVerifierSettings.AllowUntrusted,
-                    allowUntrustedSelfIssuedCertificate: commonSignedPackageVerifierSettings.AllowUntrustedSelfIssuedCertificate,
-                    allowIgnoreTimestamp: commonSignedPackageVerifierSettings.AllowIgnoreTimestamp,
-                    allowMultipleTimestamps: commonSignedPackageVerifierSettings.AllowMultipleTimestamps,
-                    allowNoTimestamp: commonSignedPackageVerifierSettings.AllowNoTimestamp,
-                    allowUnknownRevocation: commonSignedPackageVerifierSettings.AllowUnknownRevocation,
+                    allowIllegal: fallbackSettings.AllowIllegal,
+                    allowUntrusted: fallbackSettings.AllowUntrusted,
+                    allowUntrustedSelfIssuedCertificate: fallbackSettings.AllowUntrustedSelfIssuedCertificate,
+                    allowIgnoreTimestamp: fallbackSettings.AllowIgnoreTimestamp,
+                    allowMultipleTimestamps: fallbackSettings.AllowMultipleTimestamps,
+                    allowNoTimestamp: fallbackSettings.AllowNoTimestamp,
+                    allowUnknownRevocation: fallbackSettings.AllowUnknownRevocation,
                     allowNoRepositoryCertificateList: allowNoRepositoryCertificateList,
-                    allowNoClientCertificateList: commonSignedPackageVerifierSettings.AllowNoClientCertificateList,
+                    allowNoClientCertificateList: fallbackSettings.AllowNoClientCertificateList,
                     repoAllowListEntries: repositoryAllowList?.AsReadOnly(),
-                    clientAllowListEntries: commonSignedPackageVerifierSettings.ClientCertificateList);
+                    clientAllowListEntries: fallbackSettings.ClientCertificateList);
             }
         }
 

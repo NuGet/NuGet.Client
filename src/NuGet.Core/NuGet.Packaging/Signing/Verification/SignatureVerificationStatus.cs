@@ -26,7 +26,7 @@ namespace NuGet.Packaging.Signing
         Illegal = 2,
 
         /// <summary>
-        /// Signature certificate does not match the repository or client certificates. 
+        /// Signature certificate does not match known allowlists.
         /// </summary>
         Untrusted = 3,
 

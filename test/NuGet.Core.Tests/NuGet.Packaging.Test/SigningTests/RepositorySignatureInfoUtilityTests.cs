@@ -18,38 +18,34 @@ namespace NuGet.Packaging.Test
         private static SignedPackageVerifierSettings _verifyCommandDefaultSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
 
         [Fact]
-        public void GetSignedPackageVerifierSettings_NullCommonSettingsThrows()
+        public void GetSignedPackageVerifierSettings_NullFallbackSettingsThrows()
         {
             // Arrange & Act
-            Action action = () => RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(null, null);
+            Action action = () => RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo: null, fallbackSettings: null);
 
             // Assert
             action.ShouldThrow<ArgumentNullException>();
         }
 
         [Fact]
-        public void GetSignedPackageVerifierSettings_NullRepoSignatureInfoReturnsCommonSettings()
+        public void GetSignedPackageVerifierSettings_NullRepoSignatureInfoReturnsFallbackSettings()
         {
-            // Arrange
-            var commonSettings = _defaultSettings;
-
-            // Act
-            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(null, commonSettings);
+            // Arrange & Act
+            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo: null, fallbackSettings: _defaultSettings);
 
             // Assert
-            settings.Should().Be(commonSettings);
+            settings.Should().Be(_defaultSettings);
         }
 
         [Fact]
         public void GetSignedPackageVerifierSettings_RepoSignatureInfoTrueAllSignedClearsAllowUnsignedIfSet()
         {
             // Arrange
-            var commonSettings = _defaultSettings;
             var allSigned = true;
-            var repoSignatureInfo = new RepositorySignatureInfo(allSigned, null);
+            var repoSignatureInfo = new RepositorySignatureInfo(allSigned, repositoryCertificateInfos: null);
 
             // Act
-            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, commonSettings);
+            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, _defaultSettings);
 
             // Assert
             settings.AllowUnsigned.Should().BeFalse();
@@ -66,12 +62,11 @@ namespace NuGet.Packaging.Test
         public void GetSignedPackageVerifierSettings_RepoSignatureInfoTrueAllSignedClearsAllowUnsignedIfNotSet()
         {
             // Arrange
-            var commonSettings = _verifyCommandDefaultSettings;
             var allSigned = true;
-            var repoSignatureInfo = new RepositorySignatureInfo(allSigned, null);
+            var repoSignatureInfo = new RepositorySignatureInfo(allSigned, repositoryCertificateInfos: null);
 
             // Act
-            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, commonSettings);
+            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, _verifyCommandDefaultSettings);
 
             // Assert
             settings.AllowUnsigned.Should().BeFalse();
@@ -90,30 +85,27 @@ namespace NuGet.Packaging.Test
         public void GetSignedPackageVerifierSettings_RepoSignatureInfoFalseAllSignedDoesNotSetAllowUnsigned()
         {
             // Arrange
-            var commonSettings = _defaultSettings;
-            var allSigned = false;
-            var repoSignatureInfo = new RepositorySignatureInfo(allSigned, null);
+            var repoSignatureInfo = new RepositorySignatureInfo(allRepositorySigned: false, repositoryCertificateInfos: null);
 
             // Act
-            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, commonSettings);
+            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, _defaultSettings);
 
             // Assert
-            settings.ShouldBeEquivalentTo(commonSettings);
+            settings.ShouldBeEquivalentTo(_defaultSettings);
         }
 
         [Fact]
         public void GetSignedPackageVerifierSettings_RepoSignatureInfoFalseAllSignedDoesNotClearAllowUnsigned()
         {
             // Arrange
-            var commonSettings = _verifyCommandDefaultSettings;
-            var allSigned = false;
-            var repoSignatureInfo = new RepositorySignatureInfo(allSigned, null);
+            var repoSignatureInfo = new RepositorySignatureInfo(allRepositorySigned: false, repositoryCertificateInfos: null);
+
 
             // Act
-            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, commonSettings);
+            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, _verifyCommandDefaultSettings);
 
             // Assert
-            settings.ShouldBeEquivalentTo(commonSettings);
+            settings.ShouldBeEquivalentTo(_verifyCommandDefaultSettings);
         }
 
         [Fact]
@@ -121,7 +113,6 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             var target = VerificationTarget.Repository;
-            var commonSettings = _defaultSettings;
             var allSigned = true;
             var certFingerprints = new Dictionary<string, string>()
             {
@@ -133,7 +124,7 @@ namespace NuGet.Packaging.Test
 
             var testCertInfo = new TestRepositoryCertificateInfo()
             {
-                ContentUrl = @"http://unit.test",
+                ContentUrl = @"https://unit.test",
                 Fingerprints = new Fingerprints(certFingerprints),
                 Issuer = "CN=Issuer",
                 Subject = "CN=Subject",
@@ -156,7 +147,7 @@ namespace NuGet.Packaging.Test
             var repoSignatureInfo = new RepositorySignatureInfo(allSigned, repoCertificateInfo);
 
             // Act
-            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, commonSettings);
+            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, _defaultSettings);
 
             // Assert
             settings.AllowUnsigned.Should().BeFalse();
@@ -171,7 +162,6 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             var target = VerificationTarget.Repository;
-            var commonSettings = _defaultSettings;
             var allSigned = true;
             var firstCertFingerprints = new Dictionary<string, string>()
             {
@@ -189,7 +179,7 @@ namespace NuGet.Packaging.Test
             {
                 new TestRepositoryCertificateInfo()
                 {
-                    ContentUrl = @"http://unit.test/1",
+                    ContentUrl = @"https://unit.test/1",
                     Fingerprints = new Fingerprints(firstCertFingerprints),
                     Issuer = "CN=Issuer1",
                     Subject = "CN=Subject1",
@@ -198,7 +188,7 @@ namespace NuGet.Packaging.Test
                 },
                 new TestRepositoryCertificateInfo()
                 {
-                    ContentUrl = @"http://unit.test/2",
+                    ContentUrl = @"https://unit.test/2",
                     Fingerprints = new Fingerprints(secondCertFingerprints),
                     Issuer = "CN=Issuer2",
                     Subject = "CN=Subject2",
@@ -218,7 +208,7 @@ namespace NuGet.Packaging.Test
             var repoSignatureInfo = new RepositorySignatureInfo(allSigned, repoCertificateInfo);
 
             // Act
-            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, commonSettings);
+            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, _defaultSettings);
 
             // Assert
             settings.AllowUnsigned.Should().BeFalse();
@@ -244,7 +234,7 @@ namespace NuGet.Packaging.Test
 
             var testCertInfo = new TestRepositoryCertificateInfo()
             {
-                ContentUrl = @"http://unit.test",
+                ContentUrl = @"https://unit.test",
                 Fingerprints = new Fingerprints(certFingerprints),
                 Issuer = "CN=Issuer",
                 Subject = "CN=Subject",
@@ -272,7 +262,7 @@ namespace NuGet.Packaging.Test
 
             var repoSignatureInfo = new RepositorySignatureInfo(allSigned, repoCertificateInfo);
 
-            var commonSettings = new SignedPackageVerifierSettings(
+            var fallbackSettings = new SignedPackageVerifierSettings(
                 allowUnsigned: true,
                 allowIllegal: true,
                 allowUntrusted: true,
@@ -287,7 +277,7 @@ namespace NuGet.Packaging.Test
                 clientAllowListEntries: expectedClientAllowList);
 
             // Act
-            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, commonSettings);
+            var settings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(repoSignatureInfo, fallbackSettings);
 
             // Assert
             settings.AllowUnsigned.Should().BeFalse();

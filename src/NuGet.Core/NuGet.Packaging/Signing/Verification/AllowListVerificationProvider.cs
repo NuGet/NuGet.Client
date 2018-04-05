@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -22,14 +21,14 @@ namespace NuGet.Packaging.Signing
         {
             var issues = new List<SignatureLog>();
             var status = SignatureVerificationStatus.Valid;
-            var issuesAreFatal = !settings.AllowUntrusted;
+            var treatIssuesAsErrors = !settings.AllowUntrusted;
 
             var clientAllowListStatus = VerifyAllowList(
                 signature,
                 issues,
                 settings.ClientCertificateList,
                 !settings.AllowNoClientCertificateList,
-                issuesAreFatal,
+                treatIssuesAsErrors,
                 Strings.Error_NoClientAllowList,
                 Strings.Error_NoMatchingClientCertificate);
 
@@ -38,7 +37,7 @@ namespace NuGet.Packaging.Signing
                 issues,
                 settings.RepositoryCertificateList,
                 !settings.AllowNoRepositoryCertificateList,
-                issuesAreFatal,
+                treatIssuesAsErrors,
                 Strings.Error_NoRepoAllowList,
                 Strings.Error_NoMatchingRepositoryCertificate);
 
@@ -52,11 +51,11 @@ namespace NuGet.Packaging.Signing
         }
 
         private SignatureVerificationStatus VerifyAllowList(
-            Signature signature,
+            PrimarySignature signature,
             List<SignatureLog> issues,
             IReadOnlyList<VerificationAllowListEntry> allowList,
             bool requireAllowList,
-            bool issuesAreFatal,
+            bool treatIssuesAsErrors,
             string noListErrorMessage,
             string noMatchErrorMessage)
         {
@@ -67,20 +66,20 @@ namespace NuGet.Packaging.Signing
                 if (requireAllowList)
                 {
                     status = SignatureVerificationStatus.Untrusted;
-                    issues.Add(SignatureLog.Issue(fatal: issuesAreFatal, code: NuGetLogCode.NU3034, message: noListErrorMessage));
+                    issues.Add(SignatureLog.Issue(fatal: treatIssuesAsErrors, code: NuGetLogCode.NU3034, message: noListErrorMessage));
                 }
             }
             else if (!IsSignatureAllowed(signature, allowList))
             {
                 status = SignatureVerificationStatus.Untrusted;
-                issues.Add(SignatureLog.Issue(fatal: issuesAreFatal, code: NuGetLogCode.NU3034, message: noMatchErrorMessage));
+                issues.Add(SignatureLog.Issue(fatal: treatIssuesAsErrors, code: NuGetLogCode.NU3034, message: noMatchErrorMessage));
             }
 
             return status;
         }
 
         private bool IsSignatureAllowed(
-            Signature signature,
+            PrimarySignature signature,
             IReadOnlyList<VerificationAllowListEntry> allowList)
         {
             var target = VerificationTarget.Primary;

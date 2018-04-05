@@ -18,8 +18,8 @@ namespace NuGet.Packaging.Signing
         /// <param name="package">Package to be verified.</param>
         /// <param name="settings">SignedPackageVerifierSettings to be used when verifying the package.</param>
         /// <param name="token">Cancellation Token.</param>
-        /// <param name="parentId">Guid of the parent event.</param>
-        /// <returns></returns>
-        Task<VerifySignaturesResult> VerifySignaturesAsync(ISignedPackageReader package, SignedPackageVerifierSettings settings, CancellationToken token, Guid parentId);
+        /// <param name="telemetryOperationId">Guid of the parent event.</param>
+        /// <returns>VerifySignaturesResult containing the result of the verify operation.</returns>
+        Task<VerifySignaturesResult> VerifySignaturesAsync(ISignedPackageReader package, SignedPackageVerifierSettings settings, CancellationToken token, Guid telemetryOperationId);
     }
 }
