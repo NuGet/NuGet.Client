@@ -16,8 +16,6 @@ namespace NuGet.Packaging
 {
     public static class PackageExtractor
     {
-        private static RepositorySignatureInfoProvider _repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
-
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
             string source,
             Stream packageStream,
@@ -474,7 +472,7 @@ namespace NuGet.Packaging
                                             telemetry.StartIntervalMeasure();
 
                                             await VerifyPackageSignatureAsync(
-                                                null,
+                                                source,
                                                 telemetry.OperationId,
                                                 packageIdentity,
                                                 packageExtractionContext,
@@ -1010,7 +1008,7 @@ namespace NuGet.Packaging
 
             if (!string.IsNullOrEmpty(source))
             {
-                _repositorySignatureInfoProvider.TryGetRepositorySignatureInfo(source, out repositorySignatureInfo);
+                RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source, out repositorySignatureInfo);
             }
 
             return repositorySignatureInfo;

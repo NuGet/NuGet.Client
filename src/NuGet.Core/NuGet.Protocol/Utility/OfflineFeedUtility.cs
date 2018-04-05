@@ -214,12 +214,12 @@ namespace NuGet.Protocol.Core.Types
                         {
                             // Set Empty parentId here.
                             await PackageExtractor.InstallFromSourceAsync(
-                                packageIdentity: packageIdentity,
-                                packageDownloader: packageDownloader,
-                                versionFolderPathResolver: versionFolderPathResolver,
-                                packageExtractionContext: packageExtractionContext,
-                                token: token,
-                                 parentId: Guid.Empty);
+                                packageIdentity,
+                                packageDownloader,
+                                versionFolderPathResolver,
+                                packageExtractionContext,
+                                token,
+                                parentId: Guid.Empty);
                         }
 
                         var message = string.Format(

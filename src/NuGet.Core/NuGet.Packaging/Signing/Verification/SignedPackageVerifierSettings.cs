@@ -8,7 +8,7 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// Feed settings used to verify packages.
     /// </summary>
-    public class SignedPackageVerifierSettings
+    public sealed class SignedPackageVerifierSettings
     {
         /// <summary>
         /// Allow packages that do not contain signatures.
@@ -127,28 +127,6 @@ namespace NuGet.Packaging.Signing
         /// Default settings.
         /// </summary>
         public static SignedPackageVerifierSettings GetDefault(
-            IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,
-            IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries = null)
-        {
-            return new SignedPackageVerifierSettings(
-                allowUnsigned: true,
-                allowIllegal: true,
-                allowUntrusted: true,
-                allowUntrustedSelfIssuedCertificate: true,
-                allowIgnoreTimestamp: true,
-                allowMultipleTimestamps: true,
-                allowNoTimestamp: true,
-                allowUnknownRevocation: true,
-                allowNoRepositoryCertificateList: true,
-                allowNoClientCertificateList: true,
-                repoAllowListEntries: repoAllowListEntries,
-                clientAllowListEntries: clientAllowListEntries);
-        }
-
-        /// <summary>
-        /// Allow all.
-        /// </summary>
-        public static SignedPackageVerifierSettings GetAllowAll(
             IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries = null)
         {
