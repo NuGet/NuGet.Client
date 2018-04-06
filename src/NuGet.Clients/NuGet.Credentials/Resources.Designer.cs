@@ -159,5 +159,14 @@ namespace NuGet.Credentials {
                 return ResourceManager.GetString("ProviderException_MalformedResponse", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot create a provider from an invalid plugin. Plugin state: {0} Reason: {1}.
+        /// </summary>
+        internal static string SecureCredentialProvider_InvalidPluginFile {
+            get {
+                return ResourceManager.GetString("SecureCredentialProvider_InvalidPluginFile", resourceCulture);
+            }
+        }
     }
 }

@@ -150,4 +150,7 @@
   <data name="ProviderException_MalformedResponse" xml:space="preserve">
     <value>Credential provider gave an invalid response.</value>
   </data>
+  <data name="SecureCredentialProvider_InvalidPluginFile" xml:space="preserve">
+    <value>Cannot create a provider from an invalid plugin. Plugin state: {0} Reason: {1}</value>
+  </data>
 </root>

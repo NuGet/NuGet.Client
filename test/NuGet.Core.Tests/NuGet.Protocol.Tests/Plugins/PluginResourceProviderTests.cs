@@ -207,7 +207,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var provider = new PluginResourceProvider();
             var exception = Assert.Throws<ArgumentNullException>(
-                () => provider.Reinitialize(
+                () => new PluginManager(
                     reader: null,
                     pluginDiscoverer: new Lazy<IPluginDiscoverer>(),
                     pluginFactoryCreator: (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>()));
@@ -220,7 +220,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var provider = new PluginResourceProvider();
             var exception = Assert.Throws<ArgumentNullException>(
-                () => provider.Reinitialize(
+                () => new PluginManager(
                     Mock.Of<IEnvironmentVariableReader>(),
                     pluginDiscoverer: null,
                     pluginFactoryCreator: (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>()));
@@ -233,7 +233,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var provider = new PluginResourceProvider();
             var exception = Assert.Throws<ArgumentNullException>(
-                () => provider.Reinitialize(
+                () => new PluginManager(
                     Mock.Of<IEnvironmentVariableReader>(),
                     new Lazy<IPluginDiscoverer>(() => Mock.Of<IPluginDiscoverer>()),
                     pluginFactoryCreator: null));
@@ -245,14 +245,13 @@ namespace NuGet.Protocol.Plugins.Tests
         public void Reinitialize_SetsNewReader()
         {
             var reader = Mock.Of<IEnvironmentVariableReader>();
-            var provider = new PluginResourceProvider();
 
-            provider.Reinitialize(
+            var pluginManager = new PluginManager(
                 reader,
                 new Lazy<IPluginDiscoverer>(() => Mock.Of<IPluginDiscoverer>()),
                 (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>());
 
-            Assert.Same(reader, provider.EnvironmentVariableReader);
+            Assert.Same(reader, pluginManager.EnvironmentVariableReader);
         }
 
         private static SourceRepository CreateSourceRepository(
@@ -308,12 +307,13 @@ namespace NuGet.Protocol.Plugins.Tests
                 pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
                     .ReturnsAsync(pluginDiscoveryResults);
 
-                Provider = new PluginResourceProvider();
 
-                Provider.Reinitialize(
+                var pluginManager = new PluginManager(
                     reader.Object,
                     new Lazy<IPluginDiscoverer>(() => pluginDiscoverer.Object),
                     (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>());
+                Provider = new PluginResourceProvider(pluginManager);
+
             }
 
             private static IEnumerable<PluginDiscoveryResult> GetPluginDiscoveryResults(string pluginPaths)
@@ -347,6 +347,7 @@ namespace NuGet.Protocol.Plugins.Tests
             private readonly Mock<IEnvironmentVariableReader> _reader;
 
             internal PluginResourceProvider Provider { get; }
+            internal PluginManager PluginManager { get; }
 
             internal PluginResourceProviderPositiveTest(
                 string pluginFilePath,
@@ -384,6 +385,9 @@ namespace NuGet.Protocol.Plugins.Tests
                 _connection.Setup(x => x.Dispose());
                 _connection.SetupGet(x => x.Options)
                     .Returns(ConnectionOptions.CreateDefault());
+
+                _connection.SetupGet(x => x.ProtocolVersion)
+                    .Returns(ProtocolConstants.Version100);
 
                 _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<MonitorNuGetProcessExitRequest, MonitorNuGetProcessExitResponse>(
                         It.Is<MessageMethod>(m => m == MessageMethod.MonitorNuGetProcessExit),
@@ -436,17 +440,18 @@ namespace NuGet.Protocol.Plugins.Tests
                         It.IsAny<CancellationToken>()))
                     .ReturnsAsync(_plugin.Object);
 
-                Provider = new PluginResourceProvider();
-
-                Provider.Reinitialize(
+                PluginManager = new PluginManager(
                     _reader.Object,
                     new Lazy<IPluginDiscoverer>(() => _pluginDiscoverer.Object),
                     (TimeSpan idleTimeout) => _factory.Object);
+                Provider = new PluginResourceProvider(PluginManager);
+
+                
             }
 
             public void Dispose()
             {
-                Provider.Dispose();
+                PluginManager.Dispose();
                 GC.SuppressFinalize(this);
 
                 _reader.Verify();
