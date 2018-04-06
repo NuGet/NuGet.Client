@@ -724,7 +724,9 @@ namespace Dotnet.Integration.Test
                 var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
 
                 // Assert
-                var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
+                var lockFilePath = Path.Combine(testDirectory, projectName, "project.assets.json");
+                Assert.True(File.Exists(lockFilePath), result.AllOutput);
+                var lockFile = LockFileUtilities.GetLockFile(lockFilePath,  NullLogger.Instance);
                 Assert.NotNull(lockFile);
                 Assert.Equal(2, lockFile.Targets.Count);
                 var ridTargets = lockFile.Targets.Where(e => e.RuntimeIdentifier != null ? e.RuntimeIdentifier.Equals(rid, StringComparison.CurrentCultureIgnoreCase) : false);

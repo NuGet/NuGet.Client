@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,26 +13,6 @@ namespace NuGet.Protocol.Plugins.Tests
         private static readonly string _packageSourceRepository = "A";
         private static readonly A _serviceIndex = new A() { B = "C" };
         private static readonly JObject _serviceIndexJson = JObject.FromObject(_serviceIndex);
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void Constructor_ThrowsForNullOrEmptyPackageSourceRepository(string packageSourceRepository)
-        {
-            var exception = Assert.Throws<ArgumentException>(
-                () => new GetOperationClaimsRequest(packageSourceRepository, _serviceIndexJson));
-
-            Assert.Equal("packageSourceRepository", exception.ParamName);
-        }
-
-        [Fact]
-        public void Constructor_ThrowsForNullServiceIndex()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new GetOperationClaimsRequest(_packageSourceRepository, serviceIndex: null));
-
-            Assert.Equal("serviceIndex", exception.ParamName);
-        }
 
         [Fact]
         public void Constructor_InitializesProperties()
@@ -62,30 +42,6 @@ namespace NuGet.Protocol.Plugins.Tests
 
             Assert.Equal("A", request.PackageSourceRepository);
             Assert.Equal(serviceIndex, request.ServiceIndex.ToString(Formatting.None));
-        }
-
-
-        [Theory]
-        [InlineData("{\"ServiceIndex\":{}}")]
-        [InlineData("{\"PackageSourceRepository\":null,\"ServiceIndex\":{}}")]
-        [InlineData("{\"PackageSourceRepository\":\"\",\"ServiceIndex\":{}}")]
-        public void JsonDeserialization_ThrowsForInvalidPackageSourceRepository(string json)
-        {
-            var exception = Assert.Throws<ArgumentException>(
-                () => JsonSerializationUtilities.Deserialize<GetOperationClaimsRequest>(json));
-
-            Assert.Equal("packageSourceRepository", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData("{\"PackageSourceRepository\":\"A\"}")]
-        [InlineData("{\"PackageSourceRepository\":\"A\",\"ServiceIndex\":null}")]
-        public void JsonDeserialization_ThrowsForInvalidServiceIndex(string json)
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => JsonSerializationUtilities.Deserialize<GetOperationClaimsRequest>(json));
-
-            Assert.Equal("serviceIndex", exception.ParamName);
         }
 
         [Theory]
