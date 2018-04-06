@@ -296,7 +296,6 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void SignCommandArgParsing_ValidArgs_CertFingerprintAsync()
         {
-            //Debugger.Launch();
             // Arrange
             var packagePath = @"\\path\package.nupkg";
             var timestamper = "https://timestamper.test";
@@ -350,7 +349,6 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void SignCommandArgParsing_ValidArgs_CertSubjectNameAsync()
         {
-            //Debugger.Launch();
             // Arrange
             var packagePath = @"\\path\package.nupkg";
             var timestamper = "https://timestamper.test";
@@ -404,7 +402,6 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void SignCommandArgParsing_ValidArgs_CertPathAsync()
         {
-            //Debugger.Launch();
             // Arrange
             var packagePath = @"\\path\package.nupkg";
             var timestamper = "https://timestamper.test";

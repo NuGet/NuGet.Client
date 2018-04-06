@@ -304,9 +304,7 @@ namespace NuGet.CommandLine
 
             var collectorLogger = new RestoreCollectorLogger(Console);
 
-            var signedPackageVerifier = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
             var projectContext = new ConsoleProjectContext(collectorLogger)
             {
@@ -314,7 +312,8 @@ namespace NuGet.CommandLine
                         Packaging.PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         collectorLogger,
-                        signedPackageVerifier)
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault())
             };
 
             if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)

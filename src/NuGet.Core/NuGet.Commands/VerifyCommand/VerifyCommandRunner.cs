@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -23,6 +22,7 @@ namespace NuGet.Commands
     {
         private const int SuccessCode = 0;
         private const int FailureCode = 1;
+        private const HashAlgorithmName _defaultFingerprintAlgorithm = HashAlgorithmName.SHA256;
 
         public async Task<int> ExecuteCommandAsync(VerifyArgs verifyArgs)
         {
@@ -40,16 +40,17 @@ namespace NuGet.Commands
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
 
                 var allowListEntries = verifyArgs.CertificateFingerprint.Select(fingerprint =>
-                    new CertificateHashAllowListEntry(VerificationTarget.Primary, fingerprint)).ToList();
+                    new CertificateHashAllowListEntry(VerificationTarget.Primary, fingerprint, _defaultFingerprintAlgorithm)).ToList();
 
-                var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders(new SignatureVerificationProviderArgs(allowListEntries));
-                var verifier = new PackageSignatureVerifier(verificationProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(clientAllowListEntries: allowListEntries);
+                var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders();
+                var verifier = new PackageSignatureVerifier(verificationProviders);
 
                 foreach (var package in packagesToVerify)
                 {
                     try
                     {
-                        errorCount += await VerifySignatureForPackageAsync(package, verifyArgs.Logger, verifier);
+                        errorCount += await VerifySignatureForPackageAsync(package, verifyArgs.Logger, verifier, verifierSettings);
                     }
                     catch (InvalidDataException e)
                     {
@@ -62,12 +63,12 @@ namespace NuGet.Commands
             return errorCount == 0 ? SuccessCode : FailureCode;
         }
 
-        private async Task<int> VerifySignatureForPackageAsync(string packagePath, ILogger logger, PackageSignatureVerifier verifier)
+        private async Task<int> VerifySignatureForPackageAsync(string packagePath, ILogger logger, PackageSignatureVerifier verifier, SignedPackageVerifierSettings verifierSettings)
         {
             var result = 0;
             using (var packageReader = new PackageArchiveReader(packagePath))
             {
-                var verificationResult = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                var verificationResult = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
 
                 var packageIdentity = packageReader.GetIdentity();
 

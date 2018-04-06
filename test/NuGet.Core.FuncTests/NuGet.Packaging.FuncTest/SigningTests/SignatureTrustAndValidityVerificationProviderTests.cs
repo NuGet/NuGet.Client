@@ -27,8 +27,10 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class SignatureTrustAndValidityVerificationProviderTests
     {
+        private SignedPackageVerifierSettings _verifyCommandSettings => SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
+        private SignedPackageVerifierSettings _vsClientDefaultSettings => SignedPackageVerifierSettings.GetVSClientDefaultPolicy();
+        private SignedPackageVerifierSettings _defaultSettings => SignedPackageVerifierSettings.GetDefault();
         private SigningSpecifications _specification => SigningSpecifications.V1;
-
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TestCertificate _untrustedTestCertificate;
@@ -55,11 +57,11 @@ namespace NuGet.Packaging.FuncTest
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _verifyCommandSettings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
@@ -84,11 +86,11 @@ namespace NuGet.Packaging.FuncTest
                     nupkg,
                     dir,
                     timestampService.Url);
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _verifyCommandSettings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
@@ -114,10 +116,10 @@ namespace NuGet.Packaging.FuncTest
                     timestampService.Url,
                     signatureHashAlgorithm: HashAlgorithmName.SHA512);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _verifyCommandSettings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     result.Valid.Should().BeTrue();
@@ -162,11 +164,11 @@ namespace NuGet.Packaging.FuncTest
 
                 Assert.True(DateTime.UtcNow > notAfter);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, _verifyCommandSettings, CancellationToken.None);
 
                     var trustProvider = result.Results.Single();
 
@@ -220,11 +222,11 @@ namespace NuGet.Packaging.FuncTest
 
                 Assert.True(DateTime.UtcNow > issueOptions.NotAfter);
 
-                var verifier = new PackageSignatureVerifier(_trustProviders, SignedPackageVerifierSettings.VerifyCommandDefaultPolicy);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
-                    var results = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var results = await verifier.VerifySignaturesAsync(packageReader, _verifyCommandSettings, CancellationToken.None);
                     var result = results.Results.Single();
 
                     Assert.False(results.Valid);
@@ -253,7 +255,9 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
-                allowUnknownRevocation: false);
+                allowUnknownRevocation: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             using (var directory = TestDirectory.Create())
             using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -264,11 +268,11 @@ namespace NuGet.Packaging.FuncTest
                     directory,
                     unsignedPackageFile,
                     certificate);
-                var verifier = new PackageSignatureVerifier(_trustProviders, settings);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackageFile.FullName))
                 {
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, settings, CancellationToken.None);
 
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
@@ -292,7 +296,7 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var setting = new SignedPackageVerifierSettings(
+            var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
@@ -300,17 +304,19 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: false,
-                allowUnknownRevocation: false);
+                allowUnknownRevocation: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
-                var verifier = new PackageSignatureVerifier(_trustProviders, setting);
+                var verifier = new PackageSignatureVerifier(_trustProviders);
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, settings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -347,7 +353,7 @@ namespace NuGet.Packaging.FuncTest
                     var result = await provider.GetTrustResultAsync(
                         packageReader,
                         invalidSignature,
-                        SignedPackageVerifierSettings.Default,
+                        _defaultSettings,
                         CancellationToken.None);
 
                     var issue = result.Issues.FirstOrDefault(log => log.Code == NuGetLogCode.NU3012);
@@ -362,7 +368,7 @@ namespace NuGet.Packaging.FuncTest
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInVSClient_Warns()
         {
             // Arrange
-            var setting = SignedPackageVerifierSettings.VSClientDefaultPolicy;
+            var setting = _vsClientDefaultSettings;
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
@@ -377,7 +383,7 @@ namespace NuGet.Packaging.FuncTest
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInVerify_Warns()
         {
             // Arrange
-            var setting = SignedPackageVerifierSettings.VerifyCommandDefaultPolicy;
+            var setting = _verifyCommandSettings;
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
@@ -403,7 +409,9 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
-                allowUnknownRevocation: true);
+                allowUnknownRevocation: true,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
@@ -426,7 +434,9 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
-                allowUnknownRevocation: true);
+                allowUnknownRevocation: true,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfo(
@@ -494,7 +504,10 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: false,
-                allowUnknownRevocation: false);
+                allowUnknownRevocation: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
+
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
 
@@ -531,7 +544,9 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: true,
-                allowUnknownRevocation: false);
+                allowUnknownRevocation: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             using (var test = await GetTrustResultAsyncTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
@@ -557,7 +572,9 @@ namespace NuGet.Packaging.FuncTest
                 allowIgnoreTimestamp: false,
                 allowMultipleTimestamps: false,
                 allowNoTimestamp: true,
-                allowUnknownRevocation: false);
+                allowUnknownRevocation: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             using (var test = await GetTrustResultAsyncTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
@@ -583,7 +600,9 @@ namespace NuGet.Packaging.FuncTest
                allowIgnoreTimestamp: false,
                allowMultipleTimestamps: false,
                allowNoTimestamp: true,
-               allowUnknownRevocation: false);
+               allowUnknownRevocation: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
 
             using (var test = await GetTrustResultAsyncTest.CreateAsync(settings, _trustedTestCert.Source.Cert))
             {

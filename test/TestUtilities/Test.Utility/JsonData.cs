@@ -4189,14 +4189,14 @@ namespace Test.Utility
         #endregion
         
         #region TempApiKeyResponse
-        public const string tempApiKeyJsonData = @"{{
+        public const string TempApiKeyJsonData = @"{{
             ""Key"": ""{0}"",
             ""Expires"": ""2017-03-09T16:47:16""
             }}";
         #endregion
 
         #region RepoSignIndexJson
-        public const string repoSignIndexJsonData = @"{
+        public const string RepoSignIndexJsonData = @"{
   ""version"": ""3.0.0"",
   ""resources"": [
     {
@@ -4394,7 +4394,7 @@ namespace Test.Utility
         #endregion
 
         #region repoSignResponse
-        public const string repoSignData = @"{
+        public const string RepoSignData = @"{
   ""allRepositorySigned"": false,
   ""signingCertificates"": [
     {
@@ -4413,7 +4413,7 @@ namespace Test.Utility
 
         #region repoSignResponseWithoutAllRepositorySigned
 
-        public const string repoSignDataNoAllRepositorySigned = @"{
+        public const string RepoSignDataNoAllRepositorySigned = @"{
   ""signingCertificates"": [
     {
       ""fingerprints"": {
@@ -4431,7 +4431,7 @@ namespace Test.Utility
 
         #region repoSignResponseWithoutCertInfo
 
-        public const string repoSignDataNoCertInfo = @"{
+        public const string RepoSignDataNoCertInfo = @"{
   ""allRepositorySigned"": false
 }";
         #endregion

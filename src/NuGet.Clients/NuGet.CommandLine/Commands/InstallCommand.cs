@@ -359,9 +359,7 @@ namespace NuGet.CommandLine
                 }
                 else
                 {
-                    var signedPackageVerifier = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
+                    var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
                     var projectContext = new ConsoleProjectContext(Console)
                     {
@@ -369,7 +367,8 @@ namespace NuGet.CommandLine
                             Packaging.PackageSaveMode.Defaultv2,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             Console,
-                            signedPackageVerifier)
+                            signedPackageVerifier,
+                            SignedPackageVerifierSettings.GetDefault())
                     };
 
                     if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)

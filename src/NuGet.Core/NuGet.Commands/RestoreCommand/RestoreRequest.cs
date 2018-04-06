@@ -155,9 +155,12 @@ namespace NuGet.Commands
         /// <summary>
         /// Package Signature verifier
         /// </summary>
-        public IPackageSignatureVerifier PackageSignatureVerifier { get; set; } = new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                            SignedPackageVerifierSettings.Default);
+        public IPackageSignatureVerifier PackageSignatureVerifier { get; set; } = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+        /// <summary>
+        /// SignedPackageVerifierSettings to be used when verifying signed packages.
+        /// </summary>
+        public SignedPackageVerifierSettings SignedPackageVerifierSettings { get; set; } = SignedPackageVerifierSettings.GetDefault();
 
         public Guid ParentId { get; set;}
     }

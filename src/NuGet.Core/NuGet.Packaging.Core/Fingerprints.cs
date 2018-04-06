@@ -23,8 +23,10 @@ namespace NuGet.Packaging.Core
                 if (key != null)
                 {
                     _keyValuePairs.TryGetValue(key, out var value);
+
                     return value;
                 }
+
                 return null;
             }
         }

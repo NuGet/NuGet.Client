@@ -11,22 +11,27 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
-    /// <summary>
-    /// Loads trust providers and verifies package signatures.
-    /// </summary>
     public class PackageSignatureVerifier : IPackageSignatureVerifier
     {
         private readonly List<ISignatureVerificationProvider> _verificationProviders;
-        private readonly SignedPackageVerifierSettings _settings;
 
-        public PackageSignatureVerifier(IEnumerable<ISignatureVerificationProvider> verificationProviders, SignedPackageVerifierSettings settings)
+        public PackageSignatureVerifier(IEnumerable<ISignatureVerificationProvider> verificationProviders)
         {
             _verificationProviders = verificationProviders?.ToList() ?? throw new ArgumentNullException(nameof(verificationProviders));
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public async Task<VerifySignaturesResult> VerifySignaturesAsync(ISignedPackageReader package, CancellationToken token, Guid parentId = default(Guid))
+        public async Task<VerifySignaturesResult> VerifySignaturesAsync(ISignedPackageReader package, SignedPackageVerifierSettings settings, CancellationToken token, Guid parentId = default(Guid))
         {
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             var valid = false;
             var trustResults = new List<PackageVerificationResult>();
 
@@ -42,8 +47,8 @@ namespace NuGet.Packaging.Signing
                         if (signature != null)
                         {
                             // Verify that the signature is trusted
-                            var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, _settings, token)));
-                            valid = IsValid(sigTrustResults, _settings);
+                            var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, settings, token)));
+                            valid = IsValid(sigTrustResults, settings);
                             trustResults.AddRange(sigTrustResults);
                         }
                         else
@@ -55,24 +60,24 @@ namespace NuGet.Packaging.Signing
                     {
                         // SignatureException generated while parsing signatures
                         var issues = new[] {
-                            SignatureLog.Issue(!_settings.AllowIllegal, e.Code, e.Message),
+                            SignatureLog.Issue(!settings.AllowIllegal, e.Code, e.Message),
                             SignatureLog.DebugLog(e.ToString())
                         };
                         trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Illegal, issues));
-                        valid = _settings.AllowIllegal;
+                        valid = settings.AllowIllegal;
                     }
                     catch (CryptographicException e)
                     {
                         // CryptographicException generated while parsing the SignedCms object
                         var issues = new[] {
-                            SignatureLog.Issue(!_settings.AllowIllegal, NuGetLogCode.NU3003, Strings.ErrorPackageSignatureInvalid),
+                            SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3003, Strings.ErrorPackageSignatureInvalid),
                             SignatureLog.DebugLog(e.ToString())
                         };
                         trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Illegal, issues));
-                        valid = _settings.AllowIllegal;
+                        valid = settings.AllowIllegal;
                     }
                 }
-                else if (_settings.AllowUnsigned)
+                else if (settings.AllowUnsigned)
                 {
                     // An unsigned package is valid only if unsigned packages are allowed.
                     valid = true;

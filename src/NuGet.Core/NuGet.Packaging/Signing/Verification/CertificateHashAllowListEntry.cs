@@ -1,16 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Common;
+
 namespace NuGet.Packaging.Signing
 {
     public class CertificateHashAllowListEntry : VerificationAllowListEntry
     {
-        public string CertificateFingerprint { get; }
+        public string Fingerprint { get; }
 
-        public CertificateHashAllowListEntry(VerificationTarget target, string fingerprint)
+        public HashAlgorithmName FingerprintAlgorithm { get; }
+
+        public CertificateHashAllowListEntry(VerificationTarget target, string fingerprint, HashAlgorithmName algorithm)
             : base(target)
         {
-            CertificateFingerprint = fingerprint;
+            Fingerprint = fingerprint;
+            FingerprintAlgorithm = algorithm;
         }
     }
 }

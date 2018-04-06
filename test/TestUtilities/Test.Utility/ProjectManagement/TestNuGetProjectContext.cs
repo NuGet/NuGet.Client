@@ -33,7 +33,8 @@ namespace Test.Utility
                         PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         NullLogger.Instance,
-                        signedPackageVerifier: null);
+                        signedPackageVerifier: null,
+                        signedPackageVerifierSettings: null);
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; set; }
 

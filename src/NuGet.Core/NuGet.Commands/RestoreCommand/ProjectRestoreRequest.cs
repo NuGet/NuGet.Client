@@ -24,7 +24,12 @@ namespace NuGet.Commands
             PackageSaveMode = request.PackageSaveMode;
             Project = packageSpec;
             XmlDocFileSaveMode = request.XmlDocFileSaveMode;
-            PackageExtractionContext = new PackageExtractionContext(request.PackageSaveMode, request.XmlDocFileSaveMode, log, request.PackageSignatureVerifier);
+            PackageExtractionContext = new PackageExtractionContext(
+                request.PackageSaveMode,
+                request.XmlDocFileSaveMode,
+                log,
+                request.PackageSignatureVerifier,
+                request.SignedPackageVerifierSettings);
         }
 
         public SourceCacheContext CacheContext { get; }

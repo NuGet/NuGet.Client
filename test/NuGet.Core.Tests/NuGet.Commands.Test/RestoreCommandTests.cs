@@ -19,12 +19,15 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Commands.Test
 {
     public class RestoreCommandTests
     {
+        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault();
+
         [Fact]
         public async Task RestoreCommand_VerifyRuntimeSpecificAssetsAreNotIncludedForCompile_RuntimeOnly()
         {
@@ -994,6 +997,7 @@ namespace NuGet.Commands.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, _defaultSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
@@ -1062,6 +1066,7 @@ namespace NuGet.Commands.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, _defaultSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));

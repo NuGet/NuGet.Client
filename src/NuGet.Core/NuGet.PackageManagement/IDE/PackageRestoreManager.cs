@@ -306,15 +306,14 @@ namespace NuGet.PackageManagement
             // and not have to determine if the package is a satellite package beforehand
             if (nuGetProjectContext.PackageExtractionContext == null)
             {
-                var signedPackageVerifier = new PackageSignatureVerifier(
-                           SignatureVerificationProviderFactory.GetSignatureVerificationProviders(),
-                           SignedPackageVerifierSettings.Default);
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
                 nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     new LoggerAdapter(nuGetProjectContext),
-                    signedPackageVerifier);
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault());
             }
 
             nuGetProjectContext.PackageExtractionContext.CopySatelliteFiles = false;

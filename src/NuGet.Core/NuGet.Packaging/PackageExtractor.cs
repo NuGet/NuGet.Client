@@ -53,7 +53,6 @@ namespace NuGet.Packaging
                 using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
                 {
                     var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(CancellationToken.None);
-
                     var installPath = packagePathResolver.GetInstallPath(packageIdentityFromNuspec);
                     var packageDirectoryInfo = Directory.CreateDirectory(installPath);
                     var packageDirectory = packageDirectoryInfo.FullName;
@@ -63,6 +62,7 @@ namespace NuGet.Packaging
                         telemetry.StartIntervalMeasure();
 
                         await VerifyPackageSignatureAsync(
+                         source,
                          telemetry.OperationId,
                          packageIdentityFromNuspec,
                          packageExtractionContext,
@@ -184,6 +184,7 @@ namespace NuGet.Packaging
                     telemetry.StartIntervalMeasure();
 
                     await VerifyPackageSignatureAsync(
+                         source,
                          telemetry.OperationId,
                          packageIdentityFromNuspec,
                          packageExtractionContext,
@@ -292,6 +293,7 @@ namespace NuGet.Packaging
                     telemetry.StartIntervalMeasure();
 
                     await VerifyPackageSignatureAsync(
+                        source,
                         telemetry.OperationId,
                         packageIdentityFromNuspec,
                         packageExtractionContext,
@@ -470,6 +472,7 @@ namespace NuGet.Packaging
                                             telemetry.StartIntervalMeasure();
 
                                             await VerifyPackageSignatureAsync(
+                                                source,
                                                 telemetry.OperationId,
                                                 packageIdentity,
                                                 packageExtractionContext,
@@ -682,6 +685,7 @@ namespace NuGet.Packaging
                                     telemetry.StartIntervalMeasure();
 
                                     await VerifyPackageSignatureAsync(
+                                        packageDownloader.Source,
                                         telemetry.OperationId,
                                         packageIdentity,
                                         packageExtractionContext,
@@ -970,6 +974,7 @@ namespace NuGet.Packaging
         }
 
         private static async Task VerifyPackageSignatureAsync(
+            string source,
             Guid parentId,
             PackageIdentity package,
             PackageExtractionContext packageExtractionContext,
@@ -978,8 +983,15 @@ namespace NuGet.Packaging
         {
             if (packageExtractionContext.SignedPackageVerifier != null)
             {
+                var repositorySignatureInfo = GetRepositorySignatureInfo(source);
+
+                var verifierSettings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(
+                    repositorySignatureInfo,
+                    packageExtractionContext.SignedPackageVerifierSettings);
+
                 var verifyResult = await packageExtractionContext.SignedPackageVerifier.VerifySignaturesAsync(
                        signedPackageReader,
+                       verifierSettings,
                        token,
                        parentId);
 
@@ -988,6 +1000,18 @@ namespace NuGet.Packaging
                     throw new SignatureException(verifyResult.Results, package);
                 }
             }
+        }
+
+        private static RepositorySignatureInfo GetRepositorySignatureInfo(string source)
+        {
+            RepositorySignatureInfo repositorySignatureInfo = null;
+
+            if (!string.IsNullOrEmpty(source))
+            {
+                RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source, out repositorySignatureInfo);
+            }
+
+            return repositorySignatureInfo;
         }
     }
 }
