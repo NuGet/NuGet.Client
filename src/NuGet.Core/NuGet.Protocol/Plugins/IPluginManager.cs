@@ -13,13 +13,13 @@ namespace NuGet.Protocol.Plugins
     public interface IPluginManager
     {
         /// <summary>
-        /// Try creating a plugin appropriate for the given source
+        /// Create plugins appropriate for the given source
         /// </summary>
         /// <param name="source"></param>
         /// <param name="cancellationToken"></param>
         /// <exception cref="ArgumentNullException">Throw if <paramref name="source"/> is null </exception>
-        /// <returns>A PluginCreationResult</returns>
-        Task<IEnumerable<PluginCreationResult>> TryCreateAsync(
+        /// <returns>PluginCreationResults</returns>
+        Task<IEnumerable<PluginCreationResult>> CreatePluginsAsync(
             SourceRepository source,
             CancellationToken cancellationToken);
 

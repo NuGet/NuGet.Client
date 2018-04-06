@@ -20,8 +20,7 @@ namespace NuGet.Protocol.Core.Types
     /// A plugin manager. This manages all the live plugins and their operation claims.
     /// Invoked in by both the credential provider and the PluginResourceProvider
     /// </summary>
-    /// <remarks>This is unsealed only to facilitate testing.</remarks>
-    public class PluginManager : IPluginManager, IDisposable
+    public sealed class PluginManager : IPluginManager, IDisposable
     {
         private static readonly Lazy<IPluginManager> Lazy = new Lazy<IPluginManager>(() => new PluginManager());
         public static IPluginManager Instance => Lazy.Value;
@@ -47,7 +46,7 @@ namespace NuGet.Protocol.Core.Types
 
         private PluginManager()
         {
-            Reinitialize(
+            Initialize(
                 new EnvironmentVariableWrapper(),
                 new Lazy<IPluginDiscoverer>(InitializeDiscoverer),
                 (TimeSpan idleTimeout) => new PluginFactory(idleTimeout));
@@ -69,7 +68,7 @@ namespace NuGet.Protocol.Core.Types
             Lazy<IPluginDiscoverer> pluginDiscoverer,
             Func<TimeSpan, IPluginFactory> pluginFactoryCreator)
         {
-            Reinitialize(
+            Initialize(
                 reader,
                 pluginDiscoverer,
                 pluginFactoryCreator);
@@ -77,6 +76,9 @@ namespace NuGet.Protocol.Core.Types
 
         /// <summary>
         /// Disposes of this instance.
+        /// This should not be called in production code as this is a singleton instance.
+        /// The pattern is implemented because the plugin manager transitively owns objects
+        /// that need to implement IDisposable because they potentially have managed and unmanaged resources.
         /// </summary>
         public void Dispose()
         {
@@ -106,13 +108,13 @@ namespace NuGet.Protocol.Core.Types
         }
 
         /// <summary>
-        /// Try creating a plugin appropriate for the given source
+        /// Create plugins appropriate for the given source
         /// </summary>
         /// <param name="source"></param>
         /// <param name="cancellationToken"></param>
         /// <exception cref="ArgumentNullException">Throw if <paramref name="source"/> is null </exception>
-        /// <returns>A PluginCreationResult</returns>
-        public async Task<IEnumerable<PluginCreationResult>> TryCreateAsync(
+        /// <returns>PluginCreationResults</returns>
+        public async Task<IEnumerable<PluginCreationResult>> CreatePluginsAsync(
             SourceRepository source,
             CancellationToken cancellationToken)
         {
@@ -226,7 +228,7 @@ namespace NuGet.Protocol.Core.Types
             return utilities;
         }
 
-        private void Reinitialize(IEnvironmentVariableReader reader,
+        private void Initialize(IEnvironmentVariableReader reader,
             Lazy<IPluginDiscoverer> pluginDiscoverer,
             Func<TimeSpan, IPluginFactory> pluginFactoryCreator)
         {
@@ -354,10 +356,7 @@ namespace NuGet.Protocol.Core.Types
                     return false;
                 }
 
-                return string.Equals(
-                        PluginFilePath,
-                        other.PluginFilePath,
-                        StringComparison.OrdinalIgnoreCase)
+                return PathUtility.GetStringComparerBasedOnOS().Equals(PluginFilePath, other.PluginFilePath)
                     && string.Equals(
                         PackageSourceRepository,
                         other.PackageSourceRepository,
