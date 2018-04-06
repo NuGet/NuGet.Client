@@ -44,9 +44,9 @@ namespace NuGet.Packaging.Signing
                 }
             };
 
-            var allowlistResults = await Task.WhenAll(certificateListVertificationRequests.Select(r => VerifyAllowList(r)));
+            var allowListResults = await Task.WhenAll(certificateListVertificationRequests.Select(r => VerifyAllowList(r)));
 
-            return new SignedPackageVerificationResult(GetValidity(allowlistResults), signature, GetIssues(allowlistResults));
+            return new SignedPackageVerificationResult(GetValidity(allowListResults), signature, GetIssues(allowListResults));
         }
 
         private Task<SignedPackageVerificationResult> VerifyAllowList(CertificateListVerificationRequest request)
