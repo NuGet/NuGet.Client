@@ -82,6 +82,8 @@ namespace NuGet.Packaging.Signing
                 target = VerificationTarget.Repository;
             }
 
+            var primarySignatureCertificateFingerprintLookUp = new Dictionary<HashAlgorithmName, string>();
+
             foreach (var allowedEntry in allowList)
             {
                 // Verify the certificate hash allow list objects
@@ -89,11 +91,13 @@ namespace NuGet.Packaging.Signing
                 if (certificateHashEntry != null)
                 {
                     // Get information needed for allow list verification
-                    var primarySignatureCertificateFingerprint = CertificateUtility.GetHash(signature.SignerInfo.Certificate, certificateHashEntry.FingerprintAlgorithm);
-                    var primarySignatureCertificateFingerprintString = BitConverter.ToString(primarySignatureCertificateFingerprint).Replace("-", "");
+                    var primarySignatureCertificateFingerprint = GetCertificateFingerprint(
+                        signature,
+                        certificateHashEntry.FingerprintAlgorithm,
+                        primarySignatureCertificateFingerprintLookUp);
 
                     if (certificateHashEntry.VerificationTarget.HasFlag(target) &&
-                        StringComparer.OrdinalIgnoreCase.Equals(certificateHashEntry.Fingerprint, primarySignatureCertificateFingerprintString))
+                        StringComparer.OrdinalIgnoreCase.Equals(certificateHashEntry.Fingerprint, primarySignatureCertificateFingerprint))
                     {
                         return true;
                     }
@@ -101,6 +105,21 @@ namespace NuGet.Packaging.Signing
             }
 
             return false;
+        }
+
+        private static string GetCertificateFingerprint(
+            PrimarySignature signature,
+            HashAlgorithmName fingerprintAlgorithm,
+            IDictionary<HashAlgorithmName, string> CertificateFingerprintLookUp)
+        {
+            if (!CertificateFingerprintLookUp.TryGetValue(fingerprintAlgorithm, out var fingerprintString))
+            {
+                var primarySignatureCertificateFingerprint = CertificateUtility.GetHash(signature.SignerInfo.Certificate, fingerprintAlgorithm);
+                fingerprintString = BitConverter.ToString(primarySignatureCertificateFingerprint).Replace("-", "");
+                CertificateFingerprintLookUp[fingerprintAlgorithm] = fingerprintString;
+            }
+            
+            return fingerprintString;
         }
 
         private static SignatureVerificationStatus GetValidity(IEnumerable<PackageVerificationResult> verificationResults)
