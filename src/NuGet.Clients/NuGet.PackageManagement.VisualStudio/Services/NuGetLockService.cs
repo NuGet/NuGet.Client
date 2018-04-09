@@ -44,9 +44,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public async Task<T> ExecuteNuGetOperationAsync<T>(Func<Task<T>> action, CancellationToken token)
         {
-            if (_lockCount.Value == 0)
+            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                if (_lockCount.Value == 0)
                 {
                     return await _joinableTaskFactory.RunAsync(async delegate
                     {
@@ -73,12 +73,13 @@ namespace NuGet.PackageManagement.VisualStudio
                             _lockCount.Value--;
                         }
                     });
-                });
-            }
-            else
-            {
-                return await action();
-            }
+                
+                }
+                else
+                {
+                    return await action();
+                }
+            });
         }
 
         public Task ExecuteNuGetOperationAsync(Func<Task> action, CancellationToken token)
