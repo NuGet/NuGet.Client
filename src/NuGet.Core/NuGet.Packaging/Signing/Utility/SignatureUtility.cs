@@ -256,24 +256,26 @@ namespace NuGet.Packaging.Signing
                 includeChain);
         }
 
-        public static bool HasRepositoryCountersignature(Signature signature)
+        public static bool HasRepositoryCountersignature(PrimarySignature primarySignature)
         {
-            if (signature == null)
+            if (primarySignature == null)
             {
-                throw new ArgumentNullException(nameof(signature));
+                throw new ArgumentNullException(nameof(primarySignature));
             }
 
-            if (signature is AuthorPrimarySignature)
+            if (primarySignature is RepositoryPrimarySignature)
             {
-                var counterSignatures = signature.SignerInfo.CounterSignerInfos;
+                return false;
+            }
 
-                foreach (var counterSignature in counterSignatures)
+            var counterSignatures = primarySignature.SignerInfo.CounterSignerInfos;
+
+            foreach (var counterSignature in counterSignatures)
+            {
+                var countersignatureType = AttributeUtility.GetSignatureType(counterSignature.SignedAttributes);
+                if (countersignatureType == SignatureType.Repository)
                 {
-                    var countersignatureType = AttributeUtility.GetSignatureType(counterSignature.SignedAttributes);
-                    if (countersignatureType == SignatureType.Repository)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 

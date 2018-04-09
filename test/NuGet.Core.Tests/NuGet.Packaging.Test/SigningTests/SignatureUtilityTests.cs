@@ -199,9 +199,9 @@ namespace NuGet.Packaging.Test
         public void HasRepositoryCountersignature_WithNullSignature_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => SignatureUtility.HasRepositoryCountersignature(signature: null));
+                () => SignatureUtility.HasRepositoryCountersignature(primarySignature: null));
 
-            Assert.Equal("signature", exception.ParamName);
+            Assert.Equal("primarySignature", exception.ParamName);
         }
 
         [Fact]
@@ -239,8 +239,8 @@ namespace NuGet.Packaging.Test
                 var v3ServiceIndexUri = new Uri("https://v3serviceIndex.test/api/index.json");
                 using (var request = new RepositorySignPackageRequest(repositoryCertificate, hashAlgorithm, hashAlgorithm, v3ServiceIndexUri, null))
                 {
-                    var reposignedSignature = await SignedArchiveTestUtility.RepositoryCountersignPrimarySignatureAsync(signature, request);
-                    var hasRepoCountersignature = SignatureUtility.HasRepositoryCountersignature(reposignedSignature);
+                    var repoCountersignedSignature = await SignedArchiveTestUtility.RepositoryCountersignPrimarySignatureAsync(signature, request);
+                    var hasRepoCountersignature = SignatureUtility.HasRepositoryCountersignature(repoCountersignedSignature);
 
                     Assert.True(hasRepoCountersignature);
                 }

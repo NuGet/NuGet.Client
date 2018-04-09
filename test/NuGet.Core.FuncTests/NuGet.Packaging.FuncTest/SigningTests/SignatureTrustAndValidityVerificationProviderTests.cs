@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -325,6 +326,244 @@ namespace NuGet.Packaging.FuncTest
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3027);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifySignaturesAsync_SettingsNotRequireCheckCountersiganture_WithValidPrimarySignatureAndInvalidCountersignature_Succeeds()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var settings = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowIllegal: false,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: true,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: true,
+                allowUnknownRevocation: true,
+                alwaysVerifyCountersignature: false,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var repoTestCertificate = new X509Certificate2(_untrustedTestCertificate.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    testCertificate,
+                    nupkg,
+                    dir,
+                    timestampService.Url);
+
+                var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoTestCertificate, signedPackagePath, dir, new Uri("https://v3serviceIndex.test/api/index.json"), timestampService.Url);
+
+                var verifier = new PackageSignatureVerifier(_trustProviders);
+                using (var packageReader = new PackageArchiveReader(countersignedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, settings, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+
+                    // Assert
+                    result.Valid.Should().BeTrue();
+                    resultsWithErrors.Count().Should().Be(0);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifySignaturesAsync_SettingsRequireCheckCountersiganture_WithValidPrimarySignatureAndInvalidCountersignature_Fails()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var settings = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowIllegal: false,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: true,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: true,
+                allowUnknownRevocation: true,
+                alwaysVerifyCountersignature: true,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var repoTestCertificate = new X509Certificate2(_untrustedTestCertificate.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    testCertificate,
+                    nupkg,
+                    dir,
+                    timestampService.Url);
+
+                var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoTestCertificate, signedPackagePath, dir, new Uri("https://v3serviceIndex.test/api/index.json"), timestampService.Url);
+
+                var verifier = new PackageSignatureVerifier(_trustProviders);
+                using (var packageReader = new PackageArchiveReader(countersignedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, settings, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+
+                    // Assert
+                    result.Valid.Should().BeFalse();
+                    resultsWithErrors.Count().Should().Be(1);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifySignaturesAsync_SettingsRequireCheckCountersiganture_WithValidPrimarySignatureAndValidCountersignature_Succeeds()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var settings = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowIllegal: false,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: true,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: true,
+                allowUnknownRevocation: true,
+                alwaysVerifyCountersignature: true,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var repoTestCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    testCertificate,
+                    nupkg,
+                    dir,
+                    timestampService.Url);
+
+                var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoTestCertificate, signedPackagePath, dir, new Uri("https://v3serviceIndex.test/api/index.json"), timestampService.Url);
+
+                var verifier = new PackageSignatureVerifier(_trustProviders);
+                using (var packageReader = new PackageArchiveReader(countersignedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, settings, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+
+                    // Assert
+                    result.Valid.Should().BeTrue();
+                    resultsWithErrors.Count().Should().Be(0);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifySignaturesAsync_WithExpiredPrimarySignature_ValidCountersignature_AndPrimarySignatureValidAtCountersignTime_Succeeds()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var settings = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowIllegal: false,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: true,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: true,
+                allowUnknownRevocation: true,
+                alwaysVerifyCountersignature: true,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
+            var certExpiry = new Stopwatch();
+
+            using (var dir = TestDirectory.Create())
+            using (var willExpireCert = new X509Certificate2(_testFixture.TrustedTestCertificateWillExpireIn5Seconds.Source.Cert))
+            using (var repoTestCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                certExpiry.Start();
+
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    willExpireCert,
+                    nupkg,
+                    dir);
+
+                var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoTestCertificate, signedPackagePath, dir, new Uri("https://v3serviceIndex.test/api/index.json"), timestampService.Url);
+
+                // Wait for cert to expire
+                while (certExpiry.ElapsedMilliseconds < 5000)
+                {
+                    Thread.Sleep(100);
+                }
+                certExpiry.Stop();
+
+                var verifier = new PackageSignatureVerifier(_trustProviders);
+                using (var packageReader = new PackageArchiveReader(countersignedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, settings, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+
+                    // Assert
+                    result.Valid.Should().BeTrue();
+                    resultsWithErrors.Count().Should().Be(0);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifySignaturesAsync_WithExpiredPrimarySignature_ValidCountersignature_AndPrimarySignatureExpiredAtCountersignTime_Fails()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var settings = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowIllegal: false,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: true,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: true,
+                allowUnknownRevocation: true,
+                alwaysVerifyCountersignature: true,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true);
+            var certExpiry = new Stopwatch();
+
+            using (var dir = TestDirectory.Create())
+            using (var willExpireCert = new X509Certificate2(_testFixture.TrustedTestCertificateWillExpireIn5Seconds.Source.Cert))
+            using (var repoTestCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                certExpiry.Start();
+
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    willExpireCert,
+                    nupkg,
+                    dir);
+
+                // Wait for cert to expire
+                while (certExpiry.ElapsedMilliseconds < 5000)
+                {
+                    Thread.Sleep(100);
+                }
+                certExpiry.Stop();
+
+                var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoTestCertificate, signedPackagePath, dir, new Uri("https://v3serviceIndex.test/api/index.json"), timestampService.Url);
+
+                var verifier = new PackageSignatureVerifier(_trustProviders);
+                using (var packageReader = new PackageArchiveReader(countersignedPackagePath))
+                {
+                    // Act
+                    var result = await verifier.VerifySignaturesAsync(packageReader, settings, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+
+                    // Assert
+                    result.Valid.Should().BeFalse();
+                    resultsWithErrors.Count().Should().Be(1);
                 }
             }
         }
