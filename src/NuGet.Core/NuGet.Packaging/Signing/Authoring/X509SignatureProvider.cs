@@ -124,7 +124,7 @@ namespace NuGet.Packaging.Signing
 
         private static PrimarySignature CreatePrimarySignature(CmsSigner cmsSigner, byte[] signingData, CngKey privateKey)
         {
-            var cms = NativeUtilities.NativeSign(cmsSigner, signingData, privateKey);
+            var cms = NativeUtility.NativeSign(cmsSigner, signingData, privateKey);
 
             return PrimarySignature.Load(cms);
         }

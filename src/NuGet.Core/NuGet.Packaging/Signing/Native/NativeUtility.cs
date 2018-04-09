@@ -10,7 +10,7 @@ using System.Security.Cryptography.Pkcs;
 
 namespace NuGet.Packaging.Signing
 {
-    internal static class NativeUtilities
+    internal static class NativeUtility
     {
         internal static void SafeFree(IntPtr ptr)
         {

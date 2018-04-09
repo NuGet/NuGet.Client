@@ -38,7 +38,7 @@ namespace NuGet.Packaging.Signing
         {
             uint valueLength = 0;
 
-            NativeUtilities.ThrowIfFailed(NativeMethods.CryptMsgGetParam(
+            NativeUtility.ThrowIfFailed(NativeMethods.CryptMsgGetParam(
                 _handle,
                 param,
                 index,
@@ -47,7 +47,7 @@ namespace NuGet.Packaging.Signing
 
             var data = new byte[(int)valueLength];
 
-            NativeUtilities.ThrowIfFailed(NativeMethods.CryptMsgGetParam(
+            NativeUtility.ThrowIfFailed(NativeMethods.CryptMsgGetParam(
                 _handle,
                 param,
                 index,
@@ -83,7 +83,7 @@ namespace NuGet.Packaging.Signing
             uint unsignedAttributeCount = 0;
             var pointer = IntPtr.Zero;
 
-            NativeUtilities.ThrowIfFailed(NativeMethods.CryptMsgGetParam(
+            NativeUtility.ThrowIfFailed(NativeMethods.CryptMsgGetParam(
                 _handle,
                 CMSG_GETPARAM_TYPE.CMSG_SIGNER_UNAUTH_ATTR_PARAM,
                 primarySignerInfoIndex,
@@ -99,7 +99,7 @@ namespace NuGet.Packaging.Signing
             {
                 pointer = retainer.Alloc((int)unsignedAttributeCount);
 
-                NativeUtilities.ThrowIfFailed(NativeMethods.CryptMsgGetParam(
+                NativeUtility.ThrowIfFailed(NativeMethods.CryptMsgGetParam(
                     _handle,
                     CMSG_GETPARAM_TYPE.CMSG_SIGNER_UNAUTH_ATTR_PARAM,
                     primarySignerInfoIndex,
@@ -126,7 +126,7 @@ namespace NuGet.Packaging.Signing
                         var attributeValue = Marshal.PtrToStructure<CRYPT_INTEGER_BLOB>(attributeValuePointer);
                         uint cbSignerInfo = 0;
 
-                        NativeUtilities.ThrowIfFailed(NativeMethods.CryptDecodeObject(
+                        NativeUtility.ThrowIfFailed(NativeMethods.CryptDecodeObject(
                             CMSG_ENCODING.Any,
                             new IntPtr(NativeMethods.PKCS7_SIGNER_INFO),
                             attributeValue.pbData,
@@ -137,7 +137,7 @@ namespace NuGet.Packaging.Signing
 
                         var counterSignerInfoPointer = retainer.Alloc((int)cbSignerInfo);
 
-                        NativeUtilities.ThrowIfFailed(NativeMethods.CryptDecodeObject(
+                        NativeUtility.ThrowIfFailed(NativeMethods.CryptDecodeObject(
                             CMSG_ENCODING.Any,
                             new IntPtr(NativeMethods.PKCS7_SIGNER_INFO),
                             attributeValue.pbData,
@@ -265,9 +265,9 @@ namespace NuGet.Packaging.Signing
         {
             using (var hb = new HeapBlockRetainer())
             {
-                var signerInfo = NativeUtilities.CreateSignerInfo(cmsSigner, privateKey, hb);
+                var signerInfo = NativeUtility.CreateSignerInfo(cmsSigner, privateKey, hb);
 
-                NativeUtilities.ThrowIfFailed(NativeMethods.CryptMsgCountersign(
+                NativeUtility.ThrowIfFailed(NativeMethods.CryptMsgCountersign(
                     _handle,
                     dwIndex: 0,
                     cCountersigners: 1,

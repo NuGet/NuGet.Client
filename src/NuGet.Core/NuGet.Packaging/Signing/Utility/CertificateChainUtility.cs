@@ -200,7 +200,6 @@ namespace NuGet.Packaging.Signing
             (~X509ChainStatusFlags.NotTimeNested) &           // Deprecated and therefore ignored.
             (~X509ChainStatusFlags.Revoked) &
             (~X509ChainStatusFlags.RevocationStatusUnknown) &
-            (~X509ChainStatusFlags.CtlNotTimeValid) &
             (~X509ChainStatusFlags.OfflineRevocation);
 
         internal static bool ChainStatusListIncludesStatus(X509ChainStatus[] chainStatuses, X509ChainStatusFlags status, out IEnumerable<X509ChainStatus> chainStatus)
