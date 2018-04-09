@@ -121,7 +121,7 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(issues));
             }
-            settings = settings ?? SignatureVerifySettings.Default;
+            settings = settings ?? SignatureVerifySettings.GetDefault();
             var flags = SignatureVerificationStatusFlags.NoErrors;
             var signatureType = GetType().Name;
 
@@ -201,11 +201,14 @@ namespace NuGet.Packaging.Signing
                             return new SignatureVerificationSummary(Type, SignatureVerificationStatus.Suspect, flags, timestamp);
                         }
 
-                        if (!settings.AllowUntrustedRoot && CertificateChainUtility.TryGetStatusMessage(chainStatuses, X509ChainStatusFlags.UntrustedRoot, out messages))
+                        if (CertificateChainUtility.TryGetStatusMessage(chainStatuses, X509ChainStatusFlags.UntrustedRoot, out messages))
                         {
-                            issues.Add(SignatureLog.Issue(settings.TreatIssuesAsErrors, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, signatureType, messages.First())));
+                            if (!settings.AllowUntrustedRoot)
+                            {
+                                issues.Add(SignatureLog.Issue(settings.TreatIssuesAsErrors, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, signatureType, messages.First())));
 
-                            chainBuildingHasIssues = true;
+                                chainBuildingHasIssues = true;
+                            }
                             flags |= SignatureVerificationStatusFlags.UntrustedRoot;
                         }
 

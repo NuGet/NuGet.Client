@@ -33,7 +33,12 @@ namespace NuGet.Packaging.Signing
         /// <remarks>This field will only be set if the flag CertificateExpired is present Flags</remarks>
         public DateTime? ExpirationTime { get; }
 
-        public SignatureVerificationSummary(SignatureType signatureType, SignatureVerificationStatus status, SignatureVerificationStatusFlags flags, Timestamp timestamp, DateTime? expirationTime)
+        public SignatureVerificationSummary(
+            SignatureType signatureType,
+            SignatureVerificationStatus status,
+            SignatureVerificationStatusFlags flags,
+            Timestamp timestamp,
+            DateTime? expirationTime)
         {
             SignatureType = signatureType;
             Status = status;
@@ -42,13 +47,20 @@ namespace NuGet.Packaging.Signing
             ExpirationTime = expirationTime;
         }
 
-        public SignatureVerificationSummary(SignatureType signatureType, SignatureVerificationStatus status, SignatureVerificationStatusFlags flags, Timestamp timestamp)
-            : this(signatureType, status, flags, timestamp, null)
+        public SignatureVerificationSummary(
+            SignatureType signatureType,
+            SignatureVerificationStatus status,
+            SignatureVerificationStatusFlags flags,
+            Timestamp timestamp)
+            : this(signatureType, status, flags, timestamp, expirationTime: null)
         {
         }
 
-        public SignatureVerificationSummary(SignatureType signatureType, SignatureVerificationStatus status, SignatureVerificationStatusFlags flags)
-            : this(signatureType, status, flags, null, null)
+        public SignatureVerificationSummary(
+            SignatureType signatureType,
+            SignatureVerificationStatus status,
+            SignatureVerificationStatusFlags flags)
+            : this(signatureType, status, flags, timestamp: null, expirationTime: null)
         {
         }
     }

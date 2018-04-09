@@ -97,7 +97,7 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(issues));
             }
-            settings = settings ?? SignatureVerifySettings.Default;
+            settings = settings ?? SignatureVerifySettings.GetDefault();
 
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, V3ServiceIndexUrl.ToString())));

@@ -118,8 +118,10 @@ namespace NuGet.Packaging.Signing
         private bool ShouldFallbackToRepositoryCountersignature(SignatureVerificationSummary primarySignatureVerificationSummary)
         {
             return primarySignatureVerificationSummary.SignatureType == SignatureType.Author &&
-                primarySignatureVerificationSummary.Status == SignatureVerificationStatus.Illegal &&
-                primarySignatureVerificationSummary.Flags == SignatureVerificationStatusFlags.CertificateExpired;
+                ((primarySignatureVerificationSummary.Status == SignatureVerificationStatus.Illegal &&
+                primarySignatureVerificationSummary.Flags == SignatureVerificationStatusFlags.CertificateExpired) ||
+                (primarySignatureVerificationSummary.Status == SignatureVerificationStatus.Valid &&
+                primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.UntrustedRoot)));
         }
 
 #else
