@@ -40,7 +40,11 @@ namespace NuGet.Commands
                 LocalFolderUtility.EnsurePackageFileExists(verifyArgs.PackagePath, packagesToVerify);
 
                 var allowListEntries = verifyArgs.CertificateFingerprint.Select(fingerprint =>
-                    new CertificateHashAllowListEntry(VerificationTarget.Primary, fingerprint, _defaultFingerprintAlgorithm)).ToList();
+                    new CertificateHashAllowListEntry(
+                        VerificationTarget.Author | VerificationTarget.Repository,
+                        SignaturePlacement.PrimarySignature,
+                        fingerprint,
+                        _defaultFingerprintAlgorithm)).ToList();
 
                 var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(clientAllowListEntries: allowListEntries);
                 var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders();

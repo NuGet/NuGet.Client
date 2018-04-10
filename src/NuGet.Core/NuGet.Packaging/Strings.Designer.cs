@@ -188,7 +188,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature certificate cannot be trusted as no client allow list found..
+        ///   Looks up a localized string similar to The client allow list is required and was empty or not found..
         /// </summary>
         internal static string Error_NoClientAllowList {
             get {
@@ -215,7 +215,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature certificate cannot be trusted as no repository allow list found..
+        ///   Looks up a localized string similar to The repository allow list is required and was empty or not found..
         /// </summary>
         internal static string Error_NoRepoAllowList {
             get {
@@ -247,6 +247,15 @@ namespace NuGet.Packaging {
         internal static string Error_RepositorySignatureMustNotHaveARepositoryCountersignature {
             get {
                 return ResourceManager.GetString("Error_RepositorySignatureMustNotHaveARepositoryCountersignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot target author signatures that are countersignatures..
+        /// </summary>
+        internal static string ErrorAuthorTargetCannotBeACountersignature {
+            get {
+                return ResourceManager.GetString("ErrorAuthorTargetCannotBeACountersignature", resourceCulture);
             }
         }
         

@@ -5,10 +5,23 @@ using System;
 
 namespace NuGet.Packaging.Signing
 {
+    /// <summary>
+    /// Indicates the type of signature a verification is targeting
+    /// </summary>
+    /// <remarks>This target makes no assumption about the placement of the signature.
+    /// It only refers to author or repository type of signature.
+    /// If a specific placement is needed use the SignaturePlacement class.</remarks>
     [Flags]
     public enum VerificationTarget
     {
-        Primary     = 0x000001,
-        Repository  = 0x000010
+        /// <summary>
+        /// Target Author signatures
+        /// </summary>
+        Author      = 0x01,
+
+        /// <summary>
+        /// Target Repository signatures
+        /// </summary>
+        Repository  = 0x10
     }
 }

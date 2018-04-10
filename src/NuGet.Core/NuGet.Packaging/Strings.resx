@@ -593,10 +593,10 @@ Valid from:</comment>
     <value>The primary signature and repository countersignature are unrelated.</value>
   </data>
   <data name="Error_NoRepoAllowList" xml:space="preserve">
-    <value>The package signature certificate cannot be trusted as no repository allow list found.</value>
+    <value>The repository allow list is required and was empty or not found.</value>
   </data>
   <data name="Error_NoClientAllowList" xml:space="preserve">
-    <value>The package signature certificate cannot be trusted as no client allow list found.</value>
+    <value>The client allow list is required and was empty or not found.</value>
   </data>
   <data name="Error_NoMatchingRepositoryCertificate" xml:space="preserve">
     <value>The package signature certificate fingerprint does not match any certificate fingerprint in repository allow list.</value>
@@ -655,5 +655,8 @@ Valid from:</comment>
   </data>
   <data name="SignError_TimestampUnsupportedSignatureAlgorithm" xml:space="preserve">
     <value>The timestamp certificate has an unsupported signature algorithm.</value>
+  </data>
+  <data name="ErrorAuthorTargetCannotBeACountersignature" xml:space="preserve">
+    <value>Cannot target author signatures that are countersignatures.</value>
   </data>
 </root>
