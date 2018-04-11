@@ -106,7 +106,6 @@
       <DependentUpon>PackageSourcesOptionsControl.cs</DependentUpon>
     </Compile>
     <Compile Include="PackageManagerWindowPane.cs" />
-    <Compile Include="Resources\Domain.cs" />
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>
     </Compile>
