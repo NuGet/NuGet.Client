@@ -74,7 +74,7 @@ namespace NuGet.Packaging.Signing
                 }
                 catch (Exception ex)
                 {
-                    throw new TimestampException(NuGetLogCode.NU3021, Strings.TimestampSignatureValidationFailed, ex);
+                    throw new TimestampException(NuGetLogCode.NU3021, Strings.VerifyError_TimestampSignatureValidationFailed, ex);
                 }
 
                 TstInfo = tstInfo;
@@ -86,7 +86,7 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                throw new TimestampException(NuGetLogCode.NU3021, Strings.TimestampSignatureValidationFailed);
+                throw new TimestampException(NuGetLogCode.NU3021, Strings.VerifyError_TimestampSignatureValidationFailed);
             }
         }
 
@@ -122,7 +122,7 @@ namespace NuGet.Packaging.Signing
             {
                 flags |= SignatureVerificationStatusFlags.NoCertificate;
 
-                issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3020, string.Format(CultureInfo.CurrentCulture, Strings.TimestampNoCertificate, signature.FriendlyName)));
+                issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3020, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampNoCertificate, signature.FriendlyName)));
                 return flags;
             }
 
@@ -167,7 +167,7 @@ namespace NuGet.Packaging.Signing
                     {
                         foreach (var message in messages)
                         {
-                            issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.TimestampVerifyChainBuildingIssue, signature.FriendlyName, message)));
+                            issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampVerifyChainBuildingIssue, signature.FriendlyName, message)));
                         }
 
                         flags |= SignatureVerificationStatusFlags.ChainBuildingFailure;
@@ -185,7 +185,7 @@ namespace NuGet.Packaging.Signing
                         {
                             foreach (var message in messages)
                             {
-                                issues.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.TimestampVerifyChainBuildingIssue, signature.FriendlyName, message)));
+                                issues.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampVerifyChainBuildingIssue, signature.FriendlyName, message)));
                             }
                         }
 
@@ -200,7 +200,7 @@ namespace NuGet.Packaging.Signing
 
                     if (CertificateChainUtility.TryGetStatusMessage(chainStatusList, X509ChainStatusFlags.Revoked, out messages))
                     {
-                        issues.Add(SignatureLog.Error(NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.TimestampVerifyChainBuildingIssue, signature.FriendlyName, messages.First())));
+                        issues.Add(SignatureLog.Error(NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampVerifyChainBuildingIssue, signature.FriendlyName, messages.First())));
                         flags |= SignatureVerificationStatusFlags.CertificateRevoked;
 
                         return flags;

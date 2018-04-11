@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Signing
             SignerInfo = signerInfo;
             Type = type;
 
-            _timestamps = new Lazy<IReadOnlyList<Timestamp>>(() => GetTimestamps(SignerInfo));
+            _timestamps = new Lazy<IReadOnlyList<Timestamp>>(() => GetTimestamps(SignerInfo, FriendlyName));
 
             if (Type != SignatureType.Unknown)
             {
@@ -291,7 +291,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="signer"></param>
         /// <returns></returns>
-        private static IReadOnlyList<Timestamp> GetTimestamps(SignerInfo signer)
+        private static IReadOnlyList<Timestamp> GetTimestamps(SignerInfo signer, string signatureFriendlyName)
         {
             var unsignedAttributes = signer.UnsignedAttributes;
 
@@ -306,7 +306,8 @@ namespace NuGet.Packaging.Signing
 
                     using (var certificates = SignatureUtility.GetTimestampCertificates(
                         timestampCms,
-                        SigningSpecifications.V1))
+                        SigningSpecifications.V1,
+                        signatureFriendlyName))
                     {
                         if (certificates == null || certificates.Count == 0)
                         {

@@ -962,6 +962,60 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The timestamp certificate does not meet a minimum public key length requirement..
+        /// </summary>
+        internal static string SignError_TimestampCertificateFailsPublicKeyLengthRequirement {
+            get {
+                return ResourceManager.GetString("SignError_TimestampCertificateFailsPublicKeyLengthRequirement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp integrity check failed..
+        /// </summary>
+        internal static string SignError_TimestampIntegrityCheckFailed {
+            get {
+                return ResourceManager.GetString("SignError_TimestampIntegrityCheckFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp does not have a signing certificate..
+        /// </summary>
+        internal static string SignError_TimestampNoCertificate {
+            get {
+                return ResourceManager.GetString("SignError_TimestampNoCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp signing certificate is not yet valid..
+        /// </summary>
+        internal static string SignError_TimestampNotYetValid {
+            get {
+                return ResourceManager.GetString("SignError_TimestampNotYetValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp signature validation failed..
+        /// </summary>
+        internal static string SignError_TimestampSignatureValidationFailed {
+            get {
+                return ResourceManager.GetString("SignError_TimestampSignatureValidationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp certificate has an unsupported signature algorithm..
+        /// </summary>
+        internal static string SignError_TimestampUnsupportedSignatureAlgorithm {
+            get {
+                return ResourceManager.GetString("SignError_TimestampUnsupportedSignatureAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The following certificate cannot be used for package signing as the private key provider is unsupported:.
         /// </summary>
         internal static string SignFailureCertificateInvalidProviderType {
@@ -1115,15 +1169,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0}&apos;s timestamp certificate does not meet a minimum public key length requirement..
-        /// </summary>
-        internal static string TimestampCertificateFailsPublicKeyLengthRequirement {
-            get {
-                return ResourceManager.GetString("TimestampCertificateFailsPublicKeyLengthRequirement", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The timestamp service&apos;s certificate has a valid time in the future: {0}.
         /// </summary>
         internal static string TimestampCertificateInvalid {
@@ -1151,51 +1196,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0}&apos;s timestamp integrity check failed..
-        /// </summary>
-        internal static string TimestampIntegrityCheckFailed {
-            get {
-                return ResourceManager.GetString("TimestampIntegrityCheckFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The {0} contains an invalid timestamp..
-        /// </summary>
-        internal static string TimestampInvalid {
-            get {
-                return ResourceManager.GetString("TimestampInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The {0} timestamp&apos;s message imprint uses an unsupported hash algorithm..
-        /// </summary>
-        internal static string TimestampMessageImprintUnsupportedHashAlgorithm {
-            get {
-                return ResourceManager.GetString("TimestampMessageImprintUnsupportedHashAlgorithm", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The {0}&apos;s timestamp does not have a signing certificate..
-        /// </summary>
-        internal static string TimestampNoCertificate {
-            get {
-                return ResourceManager.GetString("TimestampNoCertificate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The {0}&apos;s timestamp signing certificate is not yet valid..
-        /// </summary>
-        internal static string TimestampNotYetValid {
-            get {
-                return ResourceManager.GetString("TimestampNotYetValid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Timestamp service&apos;s response does not meet the NuGet package signature specification: &apos;{0}&apos;..
         /// </summary>
         internal static string TimestampResponseExceptionGeneral {
@@ -1205,38 +1205,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0}&apos;s timestamp signature validation failed..
-        /// </summary>
-        internal static string TimestampSignatureValidationFailed {
-            get {
-                return ResourceManager.GetString("TimestampSignatureValidationFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The {0}&apos;s timestamp certificate has an unsupported signature algorithm..
-        /// </summary>
-        internal static string TimestampUnsupportedSignatureAlgorithm {
-            get {
-                return ResourceManager.GetString("TimestampUnsupportedSignatureAlgorithm", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Timestamp: {0}.
         /// </summary>
         internal static string TimestampValue {
             get {
                 return ResourceManager.GetString("TimestampValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The {0}&apos;s timestamp found a chain building issue: {1}.
-        /// </summary>
-        internal static string TimestampVerifyChainBuildingIssue {
-            get {
-                return ResourceManager.GetString("TimestampVerifyChainBuildingIssue", resourceCulture);
             }
         }
         
@@ -1399,6 +1372,87 @@ namespace NuGet.Packaging {
         internal static string VerifyError_SignatureVerificationFailed {
             get {
                 return ResourceManager.GetString("VerifyError_SignatureVerificationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s timestamp certificate does not meet a minimum public key length requirement..
+        /// </summary>
+        internal static string VerifyError_TimestampCertificateFailsPublicKeyLengthRequirement {
+            get {
+                return ResourceManager.GetString("VerifyError_TimestampCertificateFailsPublicKeyLengthRequirement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s timestamp integrity check failed..
+        /// </summary>
+        internal static string VerifyError_TimestampIntegrityCheckFailed {
+            get {
+                return ResourceManager.GetString("VerifyError_TimestampIntegrityCheckFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} contains an invalid timestamp..
+        /// </summary>
+        internal static string VerifyError_TimestampInvalid {
+            get {
+                return ResourceManager.GetString("VerifyError_TimestampInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} timestamp&apos;s message imprint uses an unsupported hash algorithm..
+        /// </summary>
+        internal static string VerifyError_TimestampMessageImprintUnsupportedHashAlgorithm {
+            get {
+                return ResourceManager.GetString("VerifyError_TimestampMessageImprintUnsupportedHashAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s timestamp does not have a signing certificate..
+        /// </summary>
+        internal static string VerifyError_TimestampNoCertificate {
+            get {
+                return ResourceManager.GetString("VerifyError_TimestampNoCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s timestamp signing certificate is not yet valid..
+        /// </summary>
+        internal static string VerifyError_TimestampNotYetValid {
+            get {
+                return ResourceManager.GetString("VerifyError_TimestampNotYetValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s timestamp signature validation failed..
+        /// </summary>
+        internal static string VerifyError_TimestampSignatureValidationFailed {
+            get {
+                return ResourceManager.GetString("VerifyError_TimestampSignatureValidationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s timestamp certificate has an unsupported signature algorithm..
+        /// </summary>
+        internal static string VerifyError_TimestampUnsupportedSignatureAlgorithm {
+            get {
+                return ResourceManager.GetString("VerifyError_TimestampUnsupportedSignatureAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s timestamp found a chain building issue: {1}.
+        /// </summary>
+        internal static string VerifyError_TimestampVerifyChainBuildingIssue {
+            get {
+                return ResourceManager.GetString("VerifyError_TimestampVerifyChainBuildingIssue", resourceCulture);
             }
         }
     }

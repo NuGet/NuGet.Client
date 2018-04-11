@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -484,6 +483,8 @@ namespace NuGet.Packaging.FuncTest
             using (var willExpireCert = new X509Certificate2(_testFixture.TrustedTestCertificateWillExpireIn5Seconds.Source.Cert))
             using (var repoTestCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
+                DateTimeOffset certExpiration = DateTime.SpecifyKind(willExpireCert.NotAfter, DateTimeKind.Local);
+
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                     willExpireCert,
                     nupkg,
@@ -492,7 +493,7 @@ namespace NuGet.Packaging.FuncTest
                 var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoTestCertificate, signedPackagePath, dir, new Uri("https://v3serviceIndex.test/api/index.json"), timestampService.Url);
 
                 // Wait for cert to expire
-                while (willExpireCert.NotAfter < DateTime.Now)
+                while (certExpiration > DateTimeOffset.Now)
                 {
                     Thread.Sleep(100);
                 }
@@ -533,6 +534,7 @@ namespace NuGet.Packaging.FuncTest
             using (var willExpireCert = new X509Certificate2(_testFixture.TrustedTestCertificateWillExpireIn5Seconds.Source.Cert))
             using (var repoTestCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
+                DateTimeOffset certExpiration = DateTime.SpecifyKind(willExpireCert.NotAfter, DateTimeKind.Local);
 
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                     willExpireCert,
@@ -540,7 +542,7 @@ namespace NuGet.Packaging.FuncTest
                     dir);
 
                 // Wait for cert to expire
-                while (willExpireCert.NotAfter < DateTime.Now)
+                while (certExpiration > DateTimeOffset.Now)
                 {
                     Thread.Sleep(100);
                 }

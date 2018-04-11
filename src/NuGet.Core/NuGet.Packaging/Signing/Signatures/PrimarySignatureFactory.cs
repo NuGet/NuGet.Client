@@ -3,6 +3,7 @@
 
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
+using NuGet.Common;
 #endif
 
 namespace NuGet.Packaging.Signing
