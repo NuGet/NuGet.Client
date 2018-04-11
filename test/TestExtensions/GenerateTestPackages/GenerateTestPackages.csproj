@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
@@ -47,4 +47,6 @@
     <Message Text="$(TargetPath) -&gt; $(PublishDestination)" Importance="high" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
   </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
