@@ -21,7 +21,7 @@ namespace NuGet.Packaging.Signing
         {
         }
 
-        public override string FriendlyName => "author primary signature";
+        public override string FriendlyName => Strings.AuthorPrimarySignatureFriendlyName;
 
         public override SignatureVerificationSummary Verify(
             Timestamp timestamp,

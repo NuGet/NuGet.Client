@@ -20,7 +20,7 @@ namespace NuGet.Packaging.Signing
         public Uri V3ServiceIndexUrl { get; }
         public IReadOnlyList<string> PackageOwners { get; }
 
-        public override string FriendlyName => "repository countersignature";
+        public override string FriendlyName => Strings.RepositoryCountersignatureFriendlyName;
 
         private RepositoryCountersignature(
             PrimarySignature primarySignature,

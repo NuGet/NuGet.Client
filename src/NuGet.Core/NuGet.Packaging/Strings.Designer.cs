@@ -71,6 +71,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to author primary signature.
+        /// </summary>
+        internal static string AuthorPrimarySignatureFriendlyName {
+            get {
+                return ResourceManager.GetString("AuthorPrimarySignatureFriendlyName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A complete certificate chain could not be built for the signing certificate..
         /// </summary>
         internal static string CertificateChainBuildFailed {
@@ -755,6 +764,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to primary signature.
+        /// </summary>
+        internal static string PrimarySignatureFriendlyName {
+            get {
+                return ResourceManager.GetString("PrimarySignatureFriendlyName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The primary signature does not have a timestamp..
         /// </summary>
         internal static string PrimarySignatureHasNoTimestamp {
@@ -773,6 +791,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to repository countersignature.
+        /// </summary>
+        internal static string RepositoryCountersignatureFriendlyName {
+            get {
+                return ResourceManager.GetString("RepositoryCountersignatureFriendlyName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The repository countersignature does not have a signing certificate..
         /// </summary>
         internal static string RepositoryCountersignatureHasNoCertificate {
@@ -787,6 +814,15 @@ namespace NuGet.Packaging {
         internal static string RepositoryCountersignatureHasNoTimestamp {
             get {
                 return ResourceManager.GetString("RepositoryCountersignatureHasNoTimestamp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to repository primary signature.
+        /// </summary>
+        internal static string RepositoryPrimarySignatureFriendlyName {
+            get {
+                return ResourceManager.GetString("RepositoryPrimarySignatureFriendlyName", resourceCulture);
             }
         }
         
@@ -814,6 +850,15 @@ namespace NuGet.Packaging {
         internal static string SignatureFailureInvalidHashAlgorithmOid {
             get {
                 return ResourceManager.GetString("SignatureFailureInvalidHashAlgorithmOid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to signature.
+        /// </summary>
+        internal static string SignatureFriendlyName {
+            get {
+                return ResourceManager.GetString("SignatureFriendlyName", resourceCulture);
             }
         }
         

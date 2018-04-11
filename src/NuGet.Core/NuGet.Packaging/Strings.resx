@@ -623,4 +623,19 @@ Valid from:</comment>
     <comment>0 - Signature friendly name
 1 - issue message</comment>
   </data>
+  <data name="AuthorPrimarySignatureFriendlyName" xml:space="preserve">
+    <value>author primary signature</value>
+  </data>
+  <data name="PrimarySignatureFriendlyName" xml:space="preserve">
+    <value>primary signature</value>
+  </data>
+  <data name="RepositoryCountersignatureFriendlyName" xml:space="preserve">
+    <value>repository countersignature</value>
+  </data>
+  <data name="RepositoryPrimarySignatureFriendlyName" xml:space="preserve">
+    <value>repository primary signature</value>
+  </data>
+  <data name="SignatureFriendlyName" xml:space="preserve">
+    <value>signature</value>
+  </data>
 </root>

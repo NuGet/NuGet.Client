@@ -53,7 +53,7 @@ namespace NuGet.Packaging.Signing
 
         protected abstract void ThrowForInvalidSignature();
 
-        public virtual string FriendlyName => "signature";
+        public virtual string FriendlyName => Strings.SignatureFriendlyName;
 
         /// <summary>
         /// 

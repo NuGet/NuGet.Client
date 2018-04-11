@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Signing
         public Uri V3ServiceIndexUrl { get; }
         public IReadOnlyList<string> PackageOwners { get; }
 
-        public override string FriendlyName => "repository primary signature";
+        public override string FriendlyName => Strings.RepositoryPrimarySignatureFriendlyName;
 
         public RepositoryPrimarySignature(SignedCms signedCms)
             : base(signedCms, SignatureType.Repository)
