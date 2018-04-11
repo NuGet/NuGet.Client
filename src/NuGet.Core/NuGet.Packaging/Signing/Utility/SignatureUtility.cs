@@ -44,6 +44,7 @@ namespace NuGet.Packaging.Signing
                 primarySignature.SignedCms,
                 primarySignature.SignerInfo,
                 SigningSpecifications.V1,
+                primarySignature.FriendlyName,
                 includeChain: true);
         }
 
@@ -89,15 +90,17 @@ namespace NuGet.Packaging.Signing
         internal static IX509CertificateChain GetCertificateChain(
             SignedCms signedCms,
             SignerInfo signerInfo,
-            SigningSpecifications signingSpecifications)
+            SigningSpecifications signingSpecifications,
+            string signatureFriendlyName)
         {
-            return GetPrimarySignatureCertificates(signedCms, signerInfo, signingSpecifications, includeChain: false);
+            return GetPrimarySignatureCertificates(signedCms, signerInfo, signingSpecifications, signatureFriendlyName, includeChain: false);
         }
 
         private static IX509CertificateChain GetPrimarySignatureCertificates(
             SignedCms signedCms,
             SignerInfo signerInfo,
             SigningSpecifications signingSpecifications,
+            string signatureFriendlyName,
             bool includeChain)
         {
             if (signedCms == null)
@@ -112,7 +115,7 @@ namespace NuGet.Packaging.Signing
 
             var errors = new Errors(
                 noCertificate: NuGetLogCode.NU3010,
-                noCertificateString: Strings.ErrorNoCertificate,
+                noCertificateString: string.Format(CultureInfo.CurrentCulture, Strings.Verify_ErrorNoCertificate, signatureFriendlyName),
                 invalidSignature: NuGetLogCode.NU3011,
                 invalidSignatureString: Strings.InvalidPrimarySignature,
                 chainBuildingFailed: NuGetLogCode.NU3018);
@@ -173,6 +176,7 @@ namespace NuGet.Packaging.Signing
             return GetTimestampCertificates(
                 timestamp.SignedCms,
                 SigningSpecifications.V1,
+                primarySignature.FriendlyName,
                 includeChain: true);
         }
 
@@ -218,6 +222,7 @@ namespace NuGet.Packaging.Signing
             return GetTimestampCertificates(
                 timestamp.SignedCms,
                 SigningSpecifications.V1,
+                primarySignature.FriendlyName,
                 includeChain: true);
         }
 
@@ -263,6 +268,11 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(primarySignature));
             }
 
+            if (primarySignature is RepositoryPrimarySignature)
+            {
+                return false;
+            }
+
             var counterSignatures = primarySignature.SignerInfo.CounterSignerInfos;
 
             foreach (var counterSignature in counterSignatures)
@@ -279,24 +289,27 @@ namespace NuGet.Packaging.Signing
 
         internal static IX509CertificateChain GetTimestampCertificates(
             SignedCms signedCms,
-            SigningSpecifications signingSpecifications)
+            SigningSpecifications signingSpecifications,
+            string signatureFriendlyName)
         {
             return GetTimestampCertificates(
               signedCms,
               signingSpecifications,
+              signatureFriendlyName,
               includeChain: false);
         }
 
         private static IX509CertificateChain GetTimestampCertificates(
             SignedCms signedCms,
             SigningSpecifications signingSpecifications,
+            string signatureFriendlyName,
             bool includeChain)
         {
             var errors = new Errors(
                 noCertificate: NuGetLogCode.NU3020,
-                noCertificateString: Strings.TimestampNoCertificate,
+                noCertificateString: string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampNoCertificate, signatureFriendlyName),
                 invalidSignature: NuGetLogCode.NU3021,
-                invalidSignatureString: Strings.TimestampInvalid,
+                invalidSignatureString: string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampInvalid, signatureFriendlyName),
                 chainBuildingFailed: NuGetLogCode.NU3028);
 
             if (signedCms.SignerInfos.Count != 1)

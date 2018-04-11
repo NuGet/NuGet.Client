@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 #if IS_DESKTOP
@@ -34,22 +35,22 @@ namespace NuGet.Packaging.Signing
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(request.Certificate))
             {
-                throw new SignatureException(NuGetLogCode.NU3013, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm);
+                throw new SignatureException(NuGetLogCode.NU3013, Strings.SigningError_CertificateHasUnsupportedSignatureAlgorithm);
             }
 
             if (!CertificateUtility.IsCertificatePublicKeyValid(request.Certificate))
             {
-                throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement);
+                throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningError_CertificateFailsPublicKeyLengthRequirement);
             }
 
             if (CertificateUtility.HasExtendedKeyUsage(request.Certificate, Oids.LifetimeSigningEku))
             {
-                throw new SignatureException(NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSigningEKU);
+                throw new SignatureException(NuGetLogCode.NU3015, Strings.SigningError_CertificateHasLifetimeSigningEKU);
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(request.Certificate))
             {
-                throw new SignatureException(NuGetLogCode.NU3017, Strings.SignatureNotYetValid);
+                throw new SignatureException(NuGetLogCode.NU3017, Strings.SigningError_NotYetValid);
             }
 
             request.BuildSigningCertificateChainOnce(logger);

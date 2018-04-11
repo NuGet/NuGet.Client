@@ -219,11 +219,13 @@
   <data name="InvalidPackageSignature" xml:space="preserve">
     <value>Package {0} signature is invalid.</value>
   </data>
-  <data name="TimestampIntegrityCheckFailed" xml:space="preserve">
-    <value>The timestamp integrity check failed.</value>
+  <data name="VerifyError_TimestampIntegrityCheckFailed" xml:space="preserve">
+    <value>The {0}'s timestamp integrity check failed.</value>
+    <comment>0 -Signature friendly name</comment>
   </data>
-  <data name="TimestampUnsupportedSignatureAlgorithm" xml:space="preserve">
-    <value>The timestamp certificate has an unsupported signature algorithm.</value>
+  <data name="VerifyError_TimestampUnsupportedSignatureAlgorithm" xml:space="preserve">
+    <value>The {0}'s timestamp certificate has an unsupported signature algorithm.</value>
+    <comment>0 - Signature friendly name</comment>
   </data>
   <data name="TimestampFailureInvalidHttpScheme" xml:space="preserve">
     <value>The timestamper URL '{0}' has an invalid URI scheme. The supported schemes are '{1}' and '{2}'.</value>
@@ -238,8 +240,9 @@
     <value>Timestamp service's response does not meet the NuGet package signature specification: '{0}'.</value>
     <comment>0 - Reason for failure</comment>
   </data>
-  <data name="TimestampSignatureValidationFailed" xml:space="preserve">
-    <value>Timestamp signature validation failed.</value>
+  <data name="VerifyError_TimestampSignatureValidationFailed" xml:space="preserve">
+    <value>The {0}'s timestamp signature validation failed.</value>
+    <comment>0 - Signature friendly name</comment>
   </data>
   <data name="SignedPackageUnableToAccessSignature" xml:space="preserve">
     <value>The package was not opened correctly to perform signature operations. Please use a Stream-based constructor to have access to signature attributes of the package.</value>
@@ -274,17 +277,19 @@
   <data name="CertUtilityMultipleCertificatesHeader" xml:space="preserve">
     <value>The following certificates meet all given criteria:</value>
   </data>
-  <data name="VerificationAuthorCertDisplay" xml:space="preserve">
-    <value>Verifying signature with author certificate: {0}</value>
-    <comment>0 -  X509Certificate2 details in the following format -
+  <data name="VerificationCertDisplay" xml:space="preserve">
+    <value>Verifying the {0} with certificate: {1}</value>
+    <comment>0 - Signature friendly
+1 -  X509Certificate2 details in the following format -
 Subject Name:
 SHA1 hash:
 Issued by:
 Valid from:</comment>
   </data>
   <data name="VerificationTimestamperCertDisplay" xml:space="preserve">
-    <value>Verifying timestamp with timestamping service certificate: {0}</value>
-    <comment>0 -  X509Certificate2 details in the following format -
+    <value>Verifying {0}'s timestamp with timestamping service certificate: {1}</value>
+    <comment>0 - signature friendly name
+1 -  X509Certificate2 details in the following format -
 Subject Name:
 SHA1 hash:
 Issued by:
@@ -309,14 +314,18 @@ Valid from:</comment>
   <data name="ErrorByteSignatureTooBig" xml:space="preserve">
     <value>Byte signature too big to seek in current stream position.</value>
   </data>
-  <data name="ErrorInvalidCertificateChain" xml:space="preserve">
-    <value>Certificate chain validation failed with error(s): {0}</value>
+  <data name="VerifyError_InvalidCertificateChain" xml:space="preserve">
+    <value>The {0}'s certificate chain validation failed with error(s): {1}</value>
+    <comment>0 - Signature friendly name
+1 - error list</comment>
   </data>
-  <data name="ErrorNoCertificate" xml:space="preserve">
-    <value>The primary signature does not have a signing certificate.</value>
+  <data name="Verify_ErrorNoCertificate" xml:space="preserve">
+    <value>The {0} does not have a signing certificate.</value>
+    <comment>0 - signature friendly name</comment>
   </data>
-  <data name="ErrorSignatureVerificationFailed" xml:space="preserve">
-    <value>Primary signature validation failed.</value>
+  <data name="VerifyError_SignatureVerificationFailed" xml:space="preserve">
+    <value>The {0} validation failed.</value>
+    <comment>0 - Signature friendly name</comment>
   </data>
   <data name="SignatureDebug_HashOidFound" xml:space="preserve">
     <value>Signature hash OID found: {0}</value>
@@ -333,14 +342,16 @@ Valid from:</comment>
   <data name="SignatureType" xml:space="preserve">
     <value>Signature type: {0}</value>
   </data>
-  <data name="TimestampInvalid" xml:space="preserve">
-    <value>The signature contains an invalid timestamp.</value>
+  <data name="VerifyError_TimestampInvalid" xml:space="preserve">
+    <value>The {0} contains an invalid timestamp.</value>
+    <comment>0 - Signature friendly name</comment>
   </data>
   <data name="TimestampValue" xml:space="preserve">
     <value>Timestamp: {0}</value>
   </data>
-  <data name="ErrorCertificateHasLifetimeSigningEKU" xml:space="preserve">
-    <value>The lifetime signing EKU is not supported.</value>
+  <data name="VerifyError_CertificateHasLifetimeSigningEKU" xml:space="preserve">
+    <value>The lifetime signing EKU in the {0}'s certificate is not supported.</value>
+    <comment>0 - Signature friendly name</comment>
   </data>
   <data name="ErrorInvalidPackageArchive" xml:space="preserve">
     <value>Invalid package archive.</value>
@@ -377,11 +388,13 @@ Valid from:</comment>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>The argument cannot be null or empty.</value>
   </data>
-  <data name="SigningCertificateHasUnsupportedSignatureAlgorithm" xml:space="preserve">
-    <value>The signing certificate has an unsupported signature algorithm.</value>
+  <data name="VerifyError_CertificateHasUnsupportedSignatureAlgorithm" xml:space="preserve">
+    <value>The {0}'s certificate has an unsupported signature algorithm.</value>
+    <comment>0 - Signature friendly name</comment>
   </data>
-  <data name="SigningCertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
-    <value>The signing certificate does not meet a minimum public key length requirement.</value>
+  <data name="VerifyError_CertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
+    <value>The {0}'s certificate does not meet a minimum public key length requirement.</value>
+    <comment>0 - Signature friendly name</comment>
   </data>
   <data name="InvalidPackageSignatureFileEntryCentralDirectoryHeader" xml:space="preserve">
     <value>The central directory header field '{0}' has an invalid value ({1}).</value>
@@ -408,16 +421,18 @@ Valid from:</comment>
     <value>Multiple timestamps are not accepted.</value>
   </data>
   <data name="ErrorNoTimestamp" xml:space="preserve">
-    <value>The primary signature should be timestamped to enable long-term signature validity after the certificate has expired.</value>
+    <value>The signature should be timestamped to enable long-term signature validity after the certificate has expired.</value>
   </data>
-  <data name="TimestampNoCertificate" xml:space="preserve">
-    <value>The timestamp signature does not have a signing certificate.</value>
+  <data name="VerifyError_TimestampNoCertificate" xml:space="preserve">
+    <value>The {0}'s timestamp does not have a signing certificate.</value>
+    <comment>0 -Signature friendly name</comment>
   </data>
-  <data name="SignatureNotYetValid" xml:space="preserve">
-    <value>The signing certificate is not yet valid.</value>
+  <data name="VerifyError_CertificateNotYetValid" xml:space="preserve">
+    <value>The {0}'s certificate is not yet valid.</value>
+    <comment>0 - Signature friendly name</comment>
   </data>
-  <data name="TimestampNotYetValid" xml:space="preserve">
-    <value>The timestamp signing certificate is not yet valid.</value>
+  <data name="VerifyError_TimestampNotYetValid" xml:space="preserve">
+    <value>The {0}'s timestamp signing certificate is not yet valid.</value>
   </data>
   <data name="InvalidPackageSignatureFileEntry" xml:space="preserve">
     <value>The package signature file entry is invalid. {0}</value>
@@ -462,14 +477,16 @@ Valid from:</comment>
   <data name="UnsupportedAsn1" xml:space="preserve">
     <value>The ASN.1 data is unsupported.</value>
   </data>
-  <data name="TimestampCertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
-    <value>The timestamp certificate does not meet a minimum public key length requirement.</value>
+  <data name="VerifyError_TimestampCertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
+    <value>The {0}'s timestamp certificate does not meet a minimum public key length requirement.</value>
+    <comment>0 -Signature friendly name</comment>
   </data>
   <data name="CommitmentTypeIndicationAttributeInvalid" xml:space="preserve">
     <value>The commitment-type-indication attribute is invalid.</value>
   </data>
-  <data name="SignatureNotTimeValid" xml:space="preserve">
-    <value>The primary signature validity period has expired.</value>
+  <data name="VerifyError_SignatureNotTimeValid" xml:space="preserve">
+    <value>The {0} validity period has expired.</value>
+    <comment>0 - Signature friendly name</comment>
   </data>
   <data name="SigningCertificateV1OrV2AttributeMustBePresent" xml:space="preserve">
     <value>Either the signing-certificate or signing-certificate-v2 attribute must be present.</value>
@@ -515,8 +532,9 @@ Valid from:</comment>
   <data name="CertificateChainValidationFailed" xml:space="preserve">
     <value>Certificate chain validation failed.</value>
   </data>
-  <data name="TimestampMessageImprintUnsupportedHashAlgorithm" xml:space="preserve">
-    <value>The timestamp's message imprint uses an unsupported hash algorithm.</value>
+  <data name="VerifyError_TimestampMessageImprintUnsupportedHashAlgorithm" xml:space="preserve">
+    <value>The {0} timestamp's message imprint uses an unsupported hash algorithm.</value>
+    <comment>0 -Signature friendly name</comment>
   </data>
   <data name="Error_NotOneRepositoryCounterSignature" xml:space="preserve">
     <value>The package signature contains multiple repository countersignatures.</value>
@@ -582,5 +600,60 @@ Valid from:</comment>
   </data>
   <data name="Error_NoMatchingRepositoryCertificate" xml:space="preserve">
     <value>The package signature certificate fingerprint does not match any certificate fingerprint in repository allow list.</value>
+  </data>
+  <data name="VerifyChainBuildingIssue" xml:space="preserve">
+    <value>The {0} found a chain building issue: {1}</value>
+    <comment>0 - Signature friendly name
+1 - issue message</comment>
+  </data>
+  <data name="SigningError_CertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
+    <value>The signing certificate does not meet a minimum public key length requirement.</value>
+  </data>
+  <data name="SigningError_CertificateHasLifetimeSigningEKU" xml:space="preserve">
+    <value>The lifetime signing EKU in the signing certificate is not supported.</value>
+  </data>
+  <data name="SigningError_CertificateHasUnsupportedSignatureAlgorithm" xml:space="preserve">
+    <value>The signing certificate has an unsupported signature algorithm.</value>
+  </data>
+  <data name="SigningError_NotYetValid" xml:space="preserve">
+    <value>The signing certificate is not yet valid.</value>
+  </data>
+  <data name="VerifyError_TimestampVerifyChainBuildingIssue" xml:space="preserve">
+    <value>The {0}'s timestamp found a chain building issue: {1}</value>
+    <comment>0 - Signature friendly name
+1 - issue message</comment>
+  </data>
+  <data name="AuthorPrimarySignatureFriendlyName" xml:space="preserve">
+    <value>author primary signature</value>
+  </data>
+  <data name="PrimarySignatureFriendlyName" xml:space="preserve">
+    <value>primary signature</value>
+  </data>
+  <data name="RepositoryCountersignatureFriendlyName" xml:space="preserve">
+    <value>repository countersignature</value>
+  </data>
+  <data name="RepositoryPrimarySignatureFriendlyName" xml:space="preserve">
+    <value>repository primary signature</value>
+  </data>
+  <data name="SignatureFriendlyName" xml:space="preserve">
+    <value>signature</value>
+  </data>
+  <data name="SignError_TimestampCertificateFailsPublicKeyLengthRequirement" xml:space="preserve">
+    <value>The timestamp certificate does not meet a minimum public key length requirement.</value>
+  </data>
+  <data name="SignError_TimestampIntegrityCheckFailed" xml:space="preserve">
+    <value>The timestamp integrity check failed.</value>
+  </data>
+  <data name="SignError_TimestampNoCertificate" xml:space="preserve">
+    <value>The timestamp does not have a signing certificate.</value>
+  </data>
+  <data name="SignError_TimestampNotYetValid" xml:space="preserve">
+    <value>The timestamp signing certificate is not yet valid.</value>
+  </data>
+  <data name="SignError_TimestampSignatureValidationFailed" xml:space="preserve">
+    <value>The timestamp signature validation failed.</value>
+  </data>
+  <data name="SignError_TimestampUnsupportedSignatureAlgorithm" xml:space="preserve">
+    <value>The timestamp certificate has an unsupported signature algorithm.</value>
   </data>
 </root>

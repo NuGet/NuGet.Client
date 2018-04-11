@@ -1512,7 +1512,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Successfully verified package(s)..
+        ///   Looks up a localized string similar to Successfully verified package &apos;{0}&apos;..
         /// </summary>
         internal static string VerifyCommand_Success {
             get {

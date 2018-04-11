@@ -68,7 +68,7 @@ namespace NuGet.Packaging.Signing
 
             if (accuracyInMilliseconds < 0)
             {
-                throw new InvalidDataException(Strings.TimestampInvalid);
+                throw new InvalidDataException(Strings.VerifyError_TimestampInvalid);
             }
 
             return accuracyInMilliseconds;
