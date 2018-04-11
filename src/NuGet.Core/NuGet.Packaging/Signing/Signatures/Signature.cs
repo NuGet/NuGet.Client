@@ -56,13 +56,13 @@ namespace NuGet.Packaging.Signing
         public virtual string FriendlyName => Strings.SignatureFriendlyName;
 
         /// <summary>
-        /// 
+        /// Get a valid timestamp from the unsigned attributes if present
         /// </summary>
-        /// <param name="settings"></param>
-        /// <param name="fingerprintAlgorithm"></param>
-        /// <param name="issues"></param>
-        /// <param name="verificationFlags"></param>
-        /// <param name="validTimestamp"></param>
+        /// <param name="settings">Specify what is allowed in the validation for timestamp</param>
+        /// <param name="fingerprintAlgorithm">fingerprint algorithm for displaying timestamp's certificate information</param>
+        /// <param name="issues">List of log messages.</param>
+        /// <param name="verificationFlags">Flags that specify the status of the verification</param>
+        /// <param name="validTimestamp">TTimestamp found in the signature that passes validation with the given <see cref="settings"/></param>
         /// <remarks>If <see cref="SignedPackageVerifierSettings.AllowNoTimestamp" /> is set to true this method return true with a <see cref="validTimestamp" /> set to null.</remarks>
         /// <returns>true if a valid timestamp was found</returns>
         internal bool TryGetValidTimestamp(
