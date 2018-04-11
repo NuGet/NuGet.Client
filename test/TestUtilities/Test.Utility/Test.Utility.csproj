@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFrameworks>net46;netstandard1.6</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn Condition="'$(TargetFramework)' == 'netstandard1.6'">$(NoWarn);CS1998</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
   </PropertyGroup>
