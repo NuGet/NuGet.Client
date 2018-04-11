@@ -95,7 +95,7 @@ namespace NuGet.Packaging.FuncTest
                     var policy = chain.ChainPolicy;
 
                     policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEku));
-                    policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
+                    policy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
                     policy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
                     policy.RevocationMode = X509RevocationMode.Online;
 

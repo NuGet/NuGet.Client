@@ -356,7 +356,7 @@ namespace NuGet.Packaging.Signing
 
         public void Dispose()
         {
-            NativeUtilities.SafeFree(pbData);
+            NativeUtility.SafeFree(pbData);
         }
     }
 

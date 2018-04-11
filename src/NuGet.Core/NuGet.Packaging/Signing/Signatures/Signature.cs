@@ -156,8 +156,8 @@ namespace NuGet.Packaging.Signing
                     {
                         var chain = chainHolder.Chain;
 
-                        // These flags should only be set for verification scenarios not signing
-                        chain.ChainPolicy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid | X509VerificationFlags.IgnoreCtlNotTimeValid;
+                        // This flag should only be set for verification scenarios, not signing.
+                        chain.ChainPolicy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
 
                         CertificateChainUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestamp.UpperLimit.LocalDateTime, CertificateType.Signature);
                         var chainBuildingSucceed = CertificateChainUtility.BuildCertificateChain(chain, certificate, out var chainStatuses);
