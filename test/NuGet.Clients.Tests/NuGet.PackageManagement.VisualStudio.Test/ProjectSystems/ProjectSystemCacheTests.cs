@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Moq;
@@ -152,16 +152,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
 
             // Assert
-            DependencyGraphSpec actual;
-            ProjectNames names;
-
-            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
-            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out names);
+            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out var actual);
+            var getProjectNameFromUniqueNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out var names1);
+            var getProjectNameFromFullNameSuccess = target.TryGetProjectNames(projectNames.FullName, out var names2);
 
             Assert.True(getPackageSpecSuccess);
-            Assert.True(getProjectNameSuccess);
+            Assert.True(getProjectNameFromUniqueNameSuccess);
+            Assert.True(getProjectNameFromFullNameSuccess);
             Assert.Same(projectRestoreInfo, actual);
-            Assert.Equal(@"folder\project", names.CustomUniqueName);
+            Assert.Equal(@"folder\project", names1.CustomUniqueName);
+            Assert.Equal(@"folder\project", names2.CustomUniqueName);
         }
 
         [Fact]
