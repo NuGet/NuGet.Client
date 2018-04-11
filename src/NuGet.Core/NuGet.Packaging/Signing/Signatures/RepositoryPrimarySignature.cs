@@ -18,6 +18,8 @@ namespace NuGet.Packaging.Signing
         public Uri V3ServiceIndexUrl { get; }
         public IReadOnlyList<string> PackageOwners { get; }
 
+        public override string FriendlyName => Strings.RepositoryPrimarySignatureFriendlyName;
+
         public RepositoryPrimarySignature(SignedCms signedCms)
             : base(signedCms, SignatureType.Repository)
         {
@@ -25,9 +27,9 @@ namespace NuGet.Packaging.Signing
             PackageOwners = AttributeUtility.GetNuGetPackageOwners(SignerInfo.SignedAttributes);
         }
 
-        internal override SignatureVerificationStatus Verify(
+        public override SignatureVerificationSummary Verify(
             Timestamp timestamp,
-            SignedPackageVerifierSettings settings,
+            SignatureVerifySettings settings,
             HashAlgorithmName fingerprintAlgorithm,
             X509Certificate2Collection certificateExtraStore,
             List<SignatureLog> issues)
@@ -36,7 +38,7 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(issues));
             }
-            settings = settings ?? SignedPackageVerifierSettings.GetDefault();
+            settings = settings ?? SignatureVerifySettings.Default;
 
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, V3ServiceIndexUrl.ToString())));

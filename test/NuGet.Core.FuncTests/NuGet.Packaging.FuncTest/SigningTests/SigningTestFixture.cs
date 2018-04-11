@@ -18,6 +18,7 @@ namespace NuGet.Packaging.FuncTest
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
+        private TrustedTestCert<TestCertificate> _trustedTestCertWillExpireIn5Seconds;
         private TrustedTestCert<X509Certificate2> _trustedServerRoot;
         private TestCertificate _untrustedTestCert;
         private IReadOnlyList<TrustedTestCert<TestCertificate>> _trustedTestCertificateWithReissuedCertificate;
@@ -74,6 +75,9 @@ namespace NuGet.Packaging.FuncTest
                 return _trustedTestCertNotYetValid;
             }
         }
+
+        // We should not memoize this call because it is a time sensitive operation
+        public TrustedTestCert<TestCertificate> TrustedTestCertificateWillExpireIn5Seconds => SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn5Seconds();
 
         public IReadOnlyList<TrustedTestCert<TestCertificate>> TrustedTestCertificateWithReissuedCertificate
         {

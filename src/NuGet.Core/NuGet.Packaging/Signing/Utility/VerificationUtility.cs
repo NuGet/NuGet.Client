@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
@@ -11,7 +12,7 @@ namespace NuGet.Packaging.Signing
 {
     public static class VerificationUtility
     {
-        internal static bool IsSigningCertificateValid(X509Certificate2 certificate, bool treatIssuesAsErrors, List<SignatureLog> issues)
+        internal static SignatureVerificationStatusFlags ValidateSigningCertificate(X509Certificate2 certificate, bool treatIssuesAsErrors, string signatureFriendlyName, List<SignatureLog> issues)
         {
             if (certificate == null)
             {
@@ -23,37 +24,37 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(issues));
             }
 
-            var isValid = true;
+            var validationFlags = SignatureVerificationStatusFlags.NoErrors;
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(certificate))
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3013, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm));
-                isValid = false;
+                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3013, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_CertificateHasUnsupportedSignatureAlgorithm, signatureFriendlyName)));
+                validationFlags |= SignatureVerificationStatusFlags.SignatureAlgorithmUnsupported;
             }
 
             if (!CertificateUtility.IsCertificatePublicKeyValid(certificate))
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3014, Strings.SigningCertificateFailsPublicKeyLengthRequirement));
-                isValid = false;
+                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3014, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_CertificateFailsPublicKeyLengthRequirement, signatureFriendlyName)));
+                validationFlags |= SignatureVerificationStatusFlags.CertificatePublicKeyInvalid;
             }
 
             if (CertificateUtility.HasExtendedKeyUsage(certificate, Oids.LifetimeSigningEku))
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3015, Strings.ErrorCertificateHasLifetimeSigningEKU));
-                isValid = false;
+                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3015, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_CertificateHasLifetimeSigningEKU, signatureFriendlyName)));
+                validationFlags |= SignatureVerificationStatusFlags.HasLifetimeSigningEku;
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate))
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3017, Strings.SignatureNotYetValid));
-                isValid = false;
+                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3017, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_CertificateNotYetValid, signatureFriendlyName)));
+                validationFlags |= SignatureVerificationStatusFlags.CertificateValidityInTheFuture;
             }
 
-            return isValid;
+            return validationFlags;
         }
 
 #if IS_DESKTOP
-        internal static bool IsTimestampValid(Timestamp timestamp, Signature signature, bool treatIssuesAsErrors, List<SignatureLog> issues, SigningSpecifications spec)
+        internal static SignatureVerificationStatusFlags ValidateTimestamp(Timestamp timestamp, Signature signature, bool treatIssuesAsErrors, List<SignatureLog> issues, SigningSpecifications spec)
         {
             if (timestamp == null)
             {
@@ -71,7 +72,7 @@ namespace NuGet.Packaging.Signing
             // Default to specification v1
             spec = spec ?? SigningSpecifications.V1;
 
-            var isValid = true;
+            var validationFlags = SignatureVerificationStatusFlags.NoErrors;
             var signerInfo = timestamp.SignerInfo;
 
             if (timestamp.SignerInfo.Certificate != null)
@@ -82,27 +83,27 @@ namespace NuGet.Packaging.Signing
                 }
                 catch (Exception e)
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3021, Strings.TimestampSignatureValidationFailed));
+                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3021, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampSignatureValidationFailed, signature.FriendlyName)));
                     issues.Add(SignatureLog.DebugLog(e.ToString()));
-                    isValid = false;
+                    validationFlags |= SignatureVerificationStatusFlags.SignatureCheckFailed;
                 }
 
                 if (!CertificateUtility.IsSignatureAlgorithmSupported(signerInfo.Certificate))
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3022, Strings.TimestampUnsupportedSignatureAlgorithm));
-                    isValid = false;
+                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3022, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampUnsupportedSignatureAlgorithm, signature.FriendlyName)));
+                    validationFlags |= SignatureVerificationStatusFlags.SignatureAlgorithmUnsupported;
                 }
 
                 if (!CertificateUtility.IsCertificatePublicKeyValid(signerInfo.Certificate))
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3023, Strings.TimestampCertificateFailsPublicKeyLengthRequirement));
-                    isValid = false;
+                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3023, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampCertificateFailsPublicKeyLengthRequirement, signature.FriendlyName)));
+                    validationFlags |= SignatureVerificationStatusFlags.CertificatePublicKeyInvalid;
                 }
 
                 if (!spec.AllowedHashAlgorithmOids.Contains(signerInfo.DigestAlgorithm.Value))
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3024, Strings.TimestampUnsupportedSignatureAlgorithm));
-                    isValid = false;
+                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3024, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampUnsupportedSignatureAlgorithm, signature.FriendlyName)));
+                    validationFlags |= SignatureVerificationStatusFlags.HashAlgorithmUnsupported;
                 }
 
                 try
@@ -113,30 +114,30 @@ namespace NuGet.Packaging.Signing
 
                     if (!timestamp.TstInfo.HasMessageHash(messageHash))
                     {
-                        issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed));
-                        isValid = false;
+                        issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3019, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampIntegrityCheckFailed, signature.FriendlyName)));
+                        validationFlags |= SignatureVerificationStatusFlags.IntegrityCheckFailed;
                     }
                 }
                 catch
                 {
                     // If the hash algorithm is not supported OidToHashAlgorithmName will throw
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3030, Strings.TimestampMessageImprintUnsupportedHashAlgorithm));
-                    isValid = false;
+                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3030, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampMessageImprintUnsupportedHashAlgorithm, signature.FriendlyName)));
+                    validationFlags |= SignatureVerificationStatusFlags.MessageImprintUnsupportedAlgorithm;
                 }
 
                 if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(signerInfo.Certificate))
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3025, Strings.TimestampNotYetValid));
-                    isValid = false;
+                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3025, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampNotYetValid, signature.FriendlyName)));
+                    validationFlags |= SignatureVerificationStatusFlags.CertificateValidityInTheFuture;
                 }
             }
             else
             {
-                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3020, Strings.TimestampNoCertificate));
-                isValid = false;
+                issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3020, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampNoCertificate, signature.FriendlyName)));
+                validationFlags |= SignatureVerificationStatusFlags.NoCertificate;
             }
 
-            return isValid;
+            return validationFlags;
         }
 #endif
     }

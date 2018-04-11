@@ -553,9 +553,9 @@ namespace Test.Utility.Signing
                 first.AllowUnknownRevocation == second.AllowUnknownRevocation &&
                 first.AllowUnsigned == second.AllowUnsigned &&
                 first.AllowUntrusted == second.AllowUntrusted &&
-                first.AllowUntrustedSelfIssuedCertificate == second.AllowUntrustedSelfIssuedCertificate &&
                 first.AllowNoRepositoryCertificateList == second.AllowNoRepositoryCertificateList &&
                 first.AllowNoClientCertificateList == second.AllowNoClientCertificateList &&
+                first.AlwaysVerifyCountersignature == second.AlwaysVerifyCountersignature &&
                 AreCertificateHashAllowListEqual(first.ClientCertificateList, second.ClientCertificateList) &&
                 AreCertificateHashAllowListEqual(first.RepositoryCertificateList, second.RepositoryCertificateList);
         }

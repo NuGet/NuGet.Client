@@ -239,8 +239,8 @@ namespace NuGet.Packaging.Test
                 var v3ServiceIndexUri = new Uri("https://v3serviceIndex.test/api/index.json");
                 using (var request = new RepositorySignPackageRequest(repositoryCertificate, hashAlgorithm, hashAlgorithm, v3ServiceIndexUri, null))
                 {
-                    var reposignedSignature = await SignedArchiveTestUtility.RepositoryCountersignPrimarySignatureAsync(signature, request);
-                    var hasRepoCountersignature = SignatureUtility.HasRepositoryCountersignature(reposignedSignature);
+                    var repoCountersignedSignature = await SignedArchiveTestUtility.RepositoryCountersignPrimarySignatureAsync(signature, request);
+                    var hasRepoCountersignature = SignatureUtility.HasRepositoryCountersignature(repoCountersignedSignature);
 
                     Assert.True(hasRepoCountersignature);
                 }

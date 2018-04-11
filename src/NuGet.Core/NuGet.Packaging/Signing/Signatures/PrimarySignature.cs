@@ -24,6 +24,8 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public SignatureContent SignatureContent { get; }
 
+        public override string FriendlyName => Strings.PrimarySignatureFriendlyName;
+
         /// <summary>
         /// Save the signed cms signature to a stream.
         /// </summary>
@@ -126,6 +128,7 @@ namespace NuGet.Packaging.Signing
             throw new SignatureException(NuGetLogCode.NU3011, Strings.InvalidPrimarySignature);
         }
 
+
         private static void VerifySigningCertificate(
             SignedCms signedCms,
             SignerInfo signerInfo,
@@ -134,7 +137,8 @@ namespace NuGet.Packaging.Signing
             using (var certificates = SignatureUtility.GetCertificateChain(
                 signedCms,
                 signerInfo,
-                signingSpecifications))
+                signingSpecifications,
+                Strings.PrimarySignatureFriendlyName))
             {
                 if (certificates == null || certificates.Count == 0)
                 {

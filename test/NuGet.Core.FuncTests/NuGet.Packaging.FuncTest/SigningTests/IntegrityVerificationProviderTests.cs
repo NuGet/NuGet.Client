@@ -53,7 +53,7 @@ namespace NuGet.Packaging.FuncTest
 
             if (StringComparer.Ordinal.Equals(policyString, "vs"))
             {
-                return SignedPackageVerifierSettings.GetVSClientDefaultPolicy();
+                return SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy();
             }
 
             return SignedPackageVerifierSettings.GetDefault();

@@ -151,32 +151,32 @@ namespace NuGet.Packaging.Signing
             }
             catch (Exception e)
             {
-                throw new TimestampException(NuGetLogCode.NU3021, Strings.TimestampSignatureValidationFailed, e);
+                throw new TimestampException(NuGetLogCode.NU3021, Strings.SignError_TimestampSignatureValidationFailed, e);
             }
 
             if (signerInfo.Certificate == null)
             {
-                throw new TimestampException(NuGetLogCode.NU3020, Strings.TimestampNoCertificate);
+                throw new TimestampException(NuGetLogCode.NU3020, Strings.SignError_TimestampNoCertificate);
             }
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(signerInfo.Certificate))
             {
-                throw new TimestampException(NuGetLogCode.NU3022, Strings.TimestampUnsupportedSignatureAlgorithm);
+                throw new TimestampException(NuGetLogCode.NU3022, Strings.SignError_TimestampUnsupportedSignatureAlgorithm);
             }
 
             if (!CertificateUtility.IsCertificatePublicKeyValid(signerInfo.Certificate))
             {
-                throw new TimestampException(NuGetLogCode.NU3023, Strings.TimestampCertificateFailsPublicKeyLengthRequirement);
+                throw new TimestampException(NuGetLogCode.NU3023, Strings.SignError_TimestampCertificateFailsPublicKeyLengthRequirement);
             }
 
             if (!spec.AllowedHashAlgorithmOids.Contains(signerInfo.DigestAlgorithm.Value))
             {
-                throw new TimestampException(NuGetLogCode.NU3024, Strings.TimestampUnsupportedSignatureAlgorithm);
+                throw new TimestampException(NuGetLogCode.NU3024, Strings.SignError_TimestampUnsupportedSignatureAlgorithm);
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(signerInfo.Certificate))
             {
-                throw new TimestampException(NuGetLogCode.NU3025, Strings.TimestampNotYetValid);
+                throw new TimestampException(NuGetLogCode.NU3025, Strings.SignError_TimestampNotYetValid);
             }
         }
 
@@ -189,7 +189,7 @@ namespace NuGet.Packaging.Signing
 
             if (!timestampToken.TokenInfo.HasMessageHash(messageHash))
             {
-                throw new TimestampException(NuGetLogCode.NU3019, Strings.TimestampIntegrityCheckFailed);
+                throw new TimestampException(NuGetLogCode.NU3019, Strings.SignError_TimestampIntegrityCheckFailed);
             }
         }
 
