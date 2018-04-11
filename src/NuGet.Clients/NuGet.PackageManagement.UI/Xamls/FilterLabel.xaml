@@ -47,7 +47,7 @@
           CornerRadius="2"
           Margin="3,0"
           Padding="3,0"
-          Visibility="{Binding Source={x:Static nuget:Domain.CollapsedWhenNotInDesignMode}}"
+          Visibility="Collapsed"
           HorizontalAlignment="Center"
           VerticalAlignment="Center"
           Background="{DynamicResource {x:Static nuget:Brushes.ContentSelectedBrushKey}}">
@@ -66,7 +66,7 @@
       Grid.Row="1"
       Margin="0"
       Height="3"
-      Visibility="{Binding Source={x:Static nuget:Domain.HiddenWhenNotInDesignMode}}"
+      Visibility="{Binding Selected ,Converter={StaticResource BooleanToVisibilityConverter}}"
       Fill="{DynamicResource {x:Static nuget:Brushes.ContentSelectedBrushKey}}"/>
   </Grid>
 </UserControl>
