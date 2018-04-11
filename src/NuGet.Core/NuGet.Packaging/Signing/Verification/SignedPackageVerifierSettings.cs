@@ -148,7 +148,7 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Default policy for scenarios in VS in accept mode
+        /// The aceept mode policy.
         /// </summary>
         public static SignedPackageVerifierSettings GetAcceptModeDefaultPolicy(
             IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,
@@ -170,7 +170,7 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
-        /// Default policy for scenarios in VS in require mode
+        /// The require mode policy.
         /// </summary>
         public static SignedPackageVerifierSettings GetRequireModeDefaultPolicy(
             IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,

@@ -11,85 +11,88 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// There was no error found
         /// </summary>
-        NoErrors = 0,
+        NoErrors                            = 0,
+
+        /// <summary>
+        /// A siganture was not found
+        /// </summary>
+        NoSignature                         = 1,
 
         /// <summary>
         /// Signer certificate was not found
         /// </summary>
-        NoCertificate,
+        NoCertificate                       = 2,
+
+        /// <summary>
+        /// Multiple signatures where found
+        /// </summary>
+        MultupleSignatures                  = 4,
 
         /// <summary>
         /// A call to SignedCms.CheckSignature failed
         /// </summary>
-        SignatureCheckFailed,
+        SignatureCheckFailed                = 8,
 
         /// <summary>
         /// Signature Algorithm is not supported
         /// </summary>
-        SignatureAlgorithmUnsupported,
+        SignatureAlgorithmUnsupported       = 16,
 
         /// <summary>
         /// Public key does not conform with the requirements of the spec
         /// </summary>
-        CertificatePublicKeyInvalid,
+        CertificatePublicKeyInvalid         = 32,
 
         /// <summary>
         /// Signing certificate has lifetimeSigningEku
         /// </summary>
-        HasLifetimeSigningEku,
+        HasLifetimeSigningEku               = 64,
 
         /// <summary>
         /// Signer certificate's validity is in the future
         /// </summary>
-        CertificateValidityInTheFuture,
+        CertificateValidityInTheFuture      = 128,
 
         /// <summary>
         /// Signing certificate has expired
         /// </summary>
-        CertificateExpired,
+        CertificateExpired                  = 256,
 
         /// <summary>
-        /// Chain building issues that are found because signature is not conformant with the NuGet Package Signature Spec. This includes:
-        ///     CtlNotSignatureValid
-        ///     CtlNotValidForUsage
-        ///     Cyclic
-        ///     ExplicitDistrust
-        ///     HasExcludedNameConstraint
-        ///     HasNotDefinedNameConstraint
-        ///     HasNotPermittedNameConstraint
-        ///     HasNotSupportedCriticalExtension
-        ///     HasNotSupportedNameConstraint
-        ///     HasWeakSignature
-        ///     InvalidBasicConstraints
-        ///     InvalidExtension
-        ///     InvalidNameConstraints
-        ///     InvalidPolicyConstraints
-        ///     NoIssuanceChainPolicy
-        ///     NotSignatureValid
-        ///     NotValidForUsage
-        ///     PartialChain
+        /// Hashing algorithm is not supported
         /// </summary>
-        ChainBuildingNotConformantWithSpec,
+        HashAlgorithmUnsupported            = 512,
 
         /// <summary>
-        /// Signing certificate was revoked
+        /// Message imprint uses a hash algorithm that is not supported
         /// </summary>
-        CertificateRevoked,
+        MessageImprintUnsupportedAlgorithm  = 1024,
 
         /// <summary>
-        /// Signing certificate 
+        /// Integrity check of the signature failed
         /// </summary>
-        UntrustedRoot,
+        IntegrityCheckFailed                = 2048,
+
+        /// <summary>
+        /// Chain building failures.
+        /// Some specific chain building failures (like revocation, revocation status unavailable, certificate expired, etc.)
+        /// are not covered by this flag because they are covered specially by another status flag.
+        /// </summary>
+        ChainBuildingFailure                = 4096,
 
         /// <summary>
         /// Revocation information was unavailable or was offline for the signer certificate
         /// </summary>
-        UnknownRevocation,
+        UnknownRevocation                   = 8192,
 
         /// <summary>
-        /// The signature timestamp was not conforming to the policy or was not valid
+        /// Signing certificate was revoked
         /// </summary>
-        /// <remarks>This wrror is because the settings are strict enough to not permit a timestamp error that was present</remarks>
-        InvalidTimestamp
+        CertificateRevoked                  = 16384,
+
+        /// <summary>
+        /// Signing certificate chains to a certificate untrusted by the computer performing the verification
+        /// </summary>
+        UntrustedRoot                       = 32768
     }
 }

@@ -40,18 +40,18 @@ namespace NuGet.Packaging.Signing
                 var allowNoRepositoryCertificateList = !repoSignatureInfo.AllRepositorySigned;
 
                 return new SignedPackageVerifierSettings(
-                    allowUnsigned: allowUnsigned,
-                    allowIllegal: fallbackSettings.AllowIllegal,
-                    allowUntrusted: fallbackSettings.AllowUntrusted,
-                    allowIgnoreTimestamp: fallbackSettings.AllowIgnoreTimestamp,
-                    allowMultipleTimestamps: fallbackSettings.AllowMultipleTimestamps,
-                    allowNoTimestamp: fallbackSettings.AllowNoTimestamp,
-                    allowUnknownRevocation: fallbackSettings.AllowUnknownRevocation,
-                    allowNoRepositoryCertificateList: allowNoRepositoryCertificateList,
-                    allowNoClientCertificateList: fallbackSettings.AllowNoClientCertificateList,
-                    alwaysVerifyCountersignature: fallbackSettings.AlwaysVerifyCountersignature,
-                    repoAllowListEntries: repositoryAllowList?.AsReadOnly(),
-                    clientAllowListEntries: fallbackSettings.ClientCertificateList);
+                    allowUnsigned,
+                    fallbackSettings.AllowIllegal,
+                    fallbackSettings.AllowUntrusted,
+                    fallbackSettings.AllowIgnoreTimestamp,
+                    fallbackSettings.AllowMultipleTimestamps,
+                    fallbackSettings.AllowNoTimestamp,
+                    fallbackSettings.AllowUnknownRevocation,
+                    allowNoRepositoryCertificateList,
+                    fallbackSettings.AllowNoClientCertificateList,
+                    fallbackSettings.AlwaysVerifyCountersignature,
+                    repositoryAllowList?.AsReadOnly(),
+                    fallbackSettings.ClientCertificateList);
             }
         }
 

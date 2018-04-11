@@ -29,9 +29,9 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetRepositoryCounterSignature_WithoutCountersignature_ReturnsNull()
+        public void GetRepositoryCountersignature_WithoutCountersignature_ReturnsNull()
         {
-            using (var test = new LoadTest(_fixture))
+            using (var test = new Test(_fixture))
             {
                 test.CreateValidAuthorPrimarySignature();
                 var primarySignature = PrimarySignature.Load(test.PrimarySignedCms.Encode());
@@ -44,9 +44,9 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetRepositoryCounterSignature_WithNonRepositoryCountersignature_ReturnsNull()
+        public void GetRepositoryCountersignature_WithNonRepositoryCountersignature_ReturnsNull()
         {
-            using (var test = new LoadTest(_fixture))
+            using (var test = new Test(_fixture))
             {
                 test.CreateValidAuthorPrimarySignature();
 
@@ -72,9 +72,9 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetRepositoryCounterSignature_WithRepositoryPrimarySignature_Throws()
+        public void GetRepositoryCountersignature_WithRepositoryPrimarySignature_Throws()
         {
-            using (var test = new LoadTest(_fixture))
+            using (var test = new Test(_fixture))
             {
                 test.CreateValidRepositoryPrimarySignature();
 
@@ -104,9 +104,9 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetRepositoryCounterSignature_WithMultipleRepositoryCountersignatures_Throws()
+        public void GetRepositoryCountersignature_WithMultipleRepositoryCountersignatures_Throws()
         {
-            using (var test = new LoadTest(_fixture))
+            using (var test = new Test(_fixture))
             {
                 test.CreateValidAuthorPrimarySignature();
 
@@ -152,9 +152,9 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetRepositoryCounterSignature_WithRepositoryCountersignatureWithoutV3ServiceIndexUrl_Throws()
+        public void GetRepositoryCountersignature_WithRepositoryCountersignatureWithoutV3ServiceIndexUrl_Throws()
         {
-            using (var test = new LoadTest(_fixture))
+            using (var test = new Test(_fixture))
             {
                 test.CreateValidAuthorPrimarySignature();
 
@@ -182,9 +182,9 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetRepositoryCounterSignature_WithRepositoryCountersignatureWithInvalidV3ServiceIndexUrl_Throws()
+        public void GetRepositoryCountersignature_WithRepositoryCountersignatureWithInvalidV3ServiceIndexUrl_Throws()
         {
-            using (var test = new LoadTest(_fixture))
+            using (var test = new Test(_fixture))
             {
                 test.CreateValidAuthorPrimarySignature();
 
@@ -223,9 +223,9 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetRepositoryCounterSignature_WithRepositoryCountersignatureWithInvalidPackageOwners_Throws()
+        public void GetRepositoryCountersignature_WithRepositoryCountersignatureWithInvalidPackageOwners_Throws()
         {
-            using (var test = new LoadTest(_fixture))
+            using (var test = new Test(_fixture))
             {
                 test.CreateValidAuthorPrimarySignature();
 
@@ -265,9 +265,9 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetRepositoryCounterSignature_WithRepositoryCountersignatureWithoutPackageOwners_ReturnsRepositoryCountersignature()
+        public void GetRepositoryCountersignature_WithRepositoryCountersignatureWithoutPackageOwners_ReturnsRepositoryCountersignature()
         {
-            using (var test = new LoadTest(_fixture))
+            using (var test = new Test(_fixture))
             {
                 test.CreateValidAuthorPrimarySignature();
 
@@ -295,9 +295,9 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetRepositoryCounterSignature_WithValidRepositoryCountersignature_ReturnsRepositoryCountersignature()
+        public void GetRepositoryCountersignature_WithValidRepositoryCountersignature_ReturnsRepositoryCountersignature()
         {
-            using (var test = new LoadTest(_fixture))
+            using (var test = new Test(_fixture))
             {
                 test.CreateValidAuthorPrimarySignature();
 
@@ -326,7 +326,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        private sealed class LoadTest : IDisposable
+        private sealed class Test : IDisposable
         {
             private bool _isDisposed;
 
@@ -335,7 +335,7 @@ namespace NuGet.Packaging.Test
 
             internal SignedCms PrimarySignedCms { get; }
 
-            internal LoadTest(CertificatesFixture fixture)
+            internal Test(CertificatesFixture fixture)
             {
                 Certificate = fixture.GetDefaultCertificate();
 

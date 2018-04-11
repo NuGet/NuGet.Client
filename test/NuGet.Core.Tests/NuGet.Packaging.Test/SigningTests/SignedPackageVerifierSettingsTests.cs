@@ -107,7 +107,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetVSAcceptModePolicy_InitializesProperties()
+        public void GetAcceptModeDefaultPolicy_InitializesProperties()
         {
             // Arrange
             var repoList = new List<CertificateHashAllowListEntry>();
@@ -134,7 +134,7 @@ namespace NuGet.Packaging.Test
 
 
         [Fact]
-        public void GetVSRequireModePolicy_InitializesProperties()
+        public void GetRequireModeDefaultPolicy_InitializesProperties()
         {
             // Arrange
             var repoList = new List<CertificateHashAllowListEntry>();

@@ -21,6 +21,8 @@ namespace NuGet.Packaging.Signing
         {
         }
 
+        public override string FriendlyName => "author primary signature";
+
         public override SignatureVerificationSummary Verify(
             Timestamp timestamp,
             SignatureVerifySettings settings,
@@ -33,7 +35,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(issues));
             }
 
-            settings = settings ?? SignatureVerifySettings.GetDefault();
+            settings = settings ?? SignatureVerifySettings.Default;
 
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
             return base.Verify(timestamp, settings, fingerprintAlgorithm, certificateExtraStore, issues);

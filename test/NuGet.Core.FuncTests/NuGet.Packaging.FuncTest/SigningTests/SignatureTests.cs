@@ -36,7 +36,7 @@ namespace NuGet.Packaging.FuncTest
 
 
         [CIOnlyFact]
-        public async Task Verify_WithUntrustedSelfSignedCertificateAndNotAllowUntrustedSelfSignedCertificate_FailsAsync()
+        public async Task Verify_WithUntrustedSelfSignedCertificateAndNotAllowUntrustedRoot_FailsAsync()
         {
             var settings = new SignatureVerifySettings(
                 treatIssuesAsErrors: true,
@@ -47,7 +47,12 @@ namespace NuGet.Packaging.FuncTest
             using (var test = await VerifyTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
                 var issues = new List<SignatureLog>();
-                var result = test.PrimarySignature.Verify(null, settings, HashAlgorithmName.SHA256, test.PrimarySignature.SignedCms.Certificates, issues);
+                var result = test.PrimarySignature.Verify(
+                    timestamp: null,
+                    settings: settings,
+                    fingerprintAlgorithm: HashAlgorithmName.SHA256,
+                    certificateExtraStore: test.PrimarySignature.SignedCms.Certificates,
+                    issues: issues);
 
                 Assert.Equal(SignatureVerificationStatus.Illegal, result.Status);
                 Assert.Equal(1, issues.Count(issue => issue.Level == LogLevel.Error));
@@ -57,7 +62,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task Verify_WithUntrustedSelfSignedCertificateAndAllowUntrustedSelfSignedCertificate_SucceedsAsync()
+        public async Task Verify_WithUntrustedSelfSignedCertificateAndAllowUntrustedRoot_SucceedsAsync()
         {
             var settings = new SignatureVerifySettings(
                 treatIssuesAsErrors: true,
@@ -68,7 +73,12 @@ namespace NuGet.Packaging.FuncTest
             using (var test = await VerifyTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
                 var issues = new List<SignatureLog>();
-                var result = test.PrimarySignature.Verify(null, settings, HashAlgorithmName.SHA256, test.PrimarySignature.SignedCms.Certificates, issues);
+                var result = test.PrimarySignature.Verify(
+                    timestamp: null,
+                    settings: settings,
+                    fingerprintAlgorithm: HashAlgorithmName.SHA256,
+                    certificateExtraStore: test.PrimarySignature.SignedCms.Certificates,
+                    issues: issues);
 
                 Assert.Equal(SignatureVerificationStatus.Valid, result.Status);
                 Assert.Equal(0, issues.Count(issue => issue.Level == LogLevel.Error));
@@ -80,7 +90,7 @@ namespace NuGet.Packaging.FuncTest
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
+                issue.Message.Contains("The primary signature found a chain building issue: A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
         }
 
         private sealed class VerifyTest : IDisposable

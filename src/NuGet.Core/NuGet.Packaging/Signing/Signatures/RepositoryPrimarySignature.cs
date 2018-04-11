@@ -18,6 +18,8 @@ namespace NuGet.Packaging.Signing
         public Uri V3ServiceIndexUrl { get; }
         public IReadOnlyList<string> PackageOwners { get; }
 
+        public override string FriendlyName => "repository primary signature";
+
         public RepositoryPrimarySignature(SignedCms signedCms)
             : base(signedCms, SignatureType.Repository)
         {
@@ -36,7 +38,7 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentNullException(nameof(issues));
             }
-            settings = settings ?? SignatureVerifySettings.GetDefault();
+            settings = settings ?? SignatureVerifySettings.Default;
 
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, V3ServiceIndexUrl.ToString())));

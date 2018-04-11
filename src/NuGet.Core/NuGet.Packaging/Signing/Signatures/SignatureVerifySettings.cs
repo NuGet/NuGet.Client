@@ -6,7 +6,7 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// Settings to customize Signature.Verify behavior. 
     /// </summary>
-    public class SignatureVerifySettings
+    public sealed class SignatureVerifySettings
     {
         /// <summary>
         /// Treat any issue as fatal.
@@ -20,8 +20,8 @@ namespace NuGet.Packaging.Signing
         public bool AllowUntrustedRoot { get; }
 
         /// <summary>
-        /// Specifies that a signing certificate's chain with unkown revocation is allowed.
-        /// Set this to true if offline revocation should be allowed.
+        /// Specifies that a signing certificate's chain with unknown revocation is allowed.
+        /// If set to true, offline revocation is allowed.
         /// </summary>
         public bool AllowUnknownRevocation { get; }
 
@@ -46,13 +46,10 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Get default settings values for relaxed verification on a signature
         /// </summary>
-        public static SignatureVerifySettings GetDefault()
-        {
-            return new SignatureVerifySettings(
+        public static SignatureVerifySettings Default { get; } = new SignatureVerifySettings(
              treatIssuesAsErrors: false,
              allowUntrustedRoot: true,
              allowUnknownRevocation: true,
              logOnSignatureExpired: true);
-        }
     }
 }

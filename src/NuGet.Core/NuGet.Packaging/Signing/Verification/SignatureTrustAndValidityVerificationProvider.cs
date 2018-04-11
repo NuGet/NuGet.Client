@@ -37,6 +37,7 @@ namespace NuGet.Packaging.Signing
             var issues = new List<SignatureLog>();
             var certificateExtraStore = signature.SignedCms.Certificates;
             var primarySignatureHasCountersignature = SignatureUtility.HasRepositoryCountersignature(signature);
+            var status = SignatureVerificationStatus.Illegal;
 
             // Only accept untrusted root if the signature has a countersignature that we can validate against
             var verifySettings = new SignatureVerifySettings(
@@ -45,34 +46,37 @@ namespace NuGet.Packaging.Signing
                 allowUnknownRevocation: settings.AllowUnknownRevocation,
                 logOnSignatureExpired: !primarySignatureHasCountersignature);
 
-            var primarySignatureVerificationSummary = VerifyValidityAndTrust(signature, settings, verifySettings, certificateExtraStore, issues);
-            var status = primarySignatureVerificationSummary.Status;
-
-            if (primarySignatureHasCountersignature)
+            var primarySummary = VerifyValidityAndTrust(signature, settings, verifySettings, certificateExtraStore, issues);
+            if (primarySummary != null)
             {
-                if (settings.AlwaysVerifyCountersignature || ShouldFallbackToRepositoryCountersignature(primarySignatureVerificationSummary))
+                status = primarySummary.Status;
+
+                if (primarySignatureHasCountersignature)
                 {
-                    var counterSignature = RepositoryCountersignature.GetRepositoryCountersignature(signature);
-                    verifySettings = new SignatureVerifySettings(
-                        treatIssuesAsErrors: !settings.AllowIllegal,
-                        allowUntrustedRoot: false,
-                        allowUnknownRevocation: settings.AllowUnknownRevocation,
-                        logOnSignatureExpired: true);
-
-                    var countersignatureVerificationSummary = VerifyValidityAndTrust(counterSignature, settings, verifySettings, certificateExtraStore, issues);
-                    status = countersignatureVerificationSummary.Status;
-
-                    if (!Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureVerificationSummary.Timestamp))
+                    if (settings.AlwaysVerifyCountersignature || ShouldFallbackToRepositoryCountersignature(primarySummary))
                     {
-                        issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3011, string.Format(CultureInfo.CurrentCulture, Strings.SignatureNotTimeValid, nameof(AuthorPrimarySignature))));
-                        status = SignatureVerificationStatus.Illegal;
+                        var countersignature = RepositoryCountersignature.GetRepositoryCountersignature(signature);
+                        verifySettings = new SignatureVerifySettings(
+                            treatIssuesAsErrors: !settings.AllowIllegal,
+                            allowUntrustedRoot: false,
+                            allowUnknownRevocation: settings.AllowUnknownRevocation,
+                            logOnSignatureExpired: true);
+
+                        var counterSummary = VerifyValidityAndTrust(countersignature, settings, verifySettings, certificateExtraStore, issues);
+                        status = counterSummary.Status;
+
+                        if (!Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, counterSummary.Timestamp))
+                        {
+                            issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3011, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_SignatureNotTimeValid, signature.FriendlyName)));
+                            status = SignatureVerificationStatus.Illegal;
+                        }
                     }
-                }
-                else if (primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired))
-                {
-                    // We are not adding this log if the primary signature has a countersignature to check the expiration against the countersignature's timestamp.
-                    // If the countersignature shouldn't be check and the primary signature was expired, add this log.
-                    issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3011, string.Format(CultureInfo.CurrentCulture, Strings.SignatureNotTimeValid, nameof(AuthorPrimarySignature))));
+                    else if (primarySummary.Flags.HasFlag(SignatureVerificationStatusFlags.CertificateExpired))
+                    {
+                        // We are not adding this log if the primary signature has a countersignature to check the expiration against the countersignature's timestamp.
+                        // If the countersignature shouldn't be check and the primary signature was expired, add this log.
+                        issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3011, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_SignatureNotTimeValid, signature.FriendlyName)));
+                    }
                 }
             }
 
@@ -81,26 +85,18 @@ namespace NuGet.Packaging.Signing
 
         private SignatureVerificationSummary VerifyValidityAndTrust(
             Signature signature,
-            SignedPackageVerifierSettings timestampSettings,
+            SignedPackageVerifierSettings verifierSettings,
             SignatureVerifySettings settings,
             X509Certificate2Collection certificateExtraStore,
             List<SignatureLog> issues)
         {
             var timestampIssues = new List<SignatureLog>();
 
-            Timestamp validTimestamp;
-            try
-            {
-                validTimestamp = signature.GetValidTimestamp(
-                    timestampSettings,
-                    _fingerprintAlgorithm,
-                    timestampIssues);
-            }
-            catch (TimestampException)
+            if (!signature.TryGetValidTimestamp(verifierSettings, _fingerprintAlgorithm, timestampIssues, out var verificationFlags, out var validTimestamp) && !verifierSettings.AllowIgnoreTimestamp)
             {
                 issues.AddRange(timestampIssues);
 
-                return new SignatureVerificationSummary(signature.Type, SignatureVerificationStatus.Illegal, SignatureVerificationStatusFlags.InvalidTimestamp);
+                return null;
             }
 
             var status = signature.Verify(
@@ -115,13 +111,13 @@ namespace NuGet.Packaging.Signing
             return status;
         }
 
-        private bool ShouldFallbackToRepositoryCountersignature(SignatureVerificationSummary primarySignatureVerificationSummary)
+        private bool ShouldFallbackToRepositoryCountersignature(SignatureVerificationSummary primarySummary)
         {
-            return primarySignatureVerificationSummary.SignatureType == SignatureType.Author &&
-                ((primarySignatureVerificationSummary.Status == SignatureVerificationStatus.Illegal &&
-                primarySignatureVerificationSummary.Flags == SignatureVerificationStatusFlags.CertificateExpired) ||
-                (primarySignatureVerificationSummary.Status == SignatureVerificationStatus.Valid &&
-                primarySignatureVerificationSummary.Flags.HasFlag(SignatureVerificationStatusFlags.UntrustedRoot)));
+            return primarySummary.SignatureType == SignatureType.Author &&
+                ((primarySummary.Status == SignatureVerificationStatus.Illegal &&
+                primarySummary.Flags == SignatureVerificationStatusFlags.CertificateExpired) ||
+                (primarySummary.Status == SignatureVerificationStatus.Valid &&
+                primarySummary.Flags.HasFlag(SignatureVerificationStatusFlags.UntrustedRoot)));
         }
 
 #else

@@ -24,6 +24,8 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public SignatureContent SignatureContent { get; }
 
+        public override string FriendlyName => "primary signature";
+
         /// <summary>
         /// Save the signed cms signature to a stream.
         /// </summary>

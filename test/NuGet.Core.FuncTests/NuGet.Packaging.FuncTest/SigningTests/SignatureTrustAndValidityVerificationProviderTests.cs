@@ -479,14 +479,11 @@ namespace NuGet.Packaging.FuncTest
                 alwaysVerifyCountersignature: true,
                 allowNoClientCertificateList: true,
                 allowNoRepositoryCertificateList: true);
-            var certExpiry = new Stopwatch();
 
             using (var dir = TestDirectory.Create())
             using (var willExpireCert = new X509Certificate2(_testFixture.TrustedTestCertificateWillExpireIn5Seconds.Source.Cert))
             using (var repoTestCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                certExpiry.Start();
-
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                     willExpireCert,
                     nupkg,
@@ -495,11 +492,10 @@ namespace NuGet.Packaging.FuncTest
                 var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoTestCertificate, signedPackagePath, dir, new Uri("https://v3serviceIndex.test/api/index.json"), timestampService.Url);
 
                 // Wait for cert to expire
-                while (certExpiry.ElapsedMilliseconds < 5000)
+                while (willExpireCert.NotAfter < DateTime.Now)
                 {
                     Thread.Sleep(100);
                 }
-                certExpiry.Stop();
 
                 var verifier = new PackageSignatureVerifier(_trustProviders);
                 using (var packageReader = new PackageArchiveReader(countersignedPackagePath))
@@ -532,13 +528,11 @@ namespace NuGet.Packaging.FuncTest
                 alwaysVerifyCountersignature: true,
                 allowNoClientCertificateList: true,
                 allowNoRepositoryCertificateList: true);
-            var certExpiry = new Stopwatch();
 
             using (var dir = TestDirectory.Create())
             using (var willExpireCert = new X509Certificate2(_testFixture.TrustedTestCertificateWillExpireIn5Seconds.Source.Cert))
             using (var repoTestCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                certExpiry.Start();
 
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                     willExpireCert,
@@ -546,11 +540,10 @@ namespace NuGet.Packaging.FuncTest
                     dir);
 
                 // Wait for cert to expire
-                while (certExpiry.ElapsedMilliseconds < 5000)
+                while (willExpireCert.NotAfter < DateTime.Now)
                 {
                     Thread.Sleep(100);
                 }
-                certExpiry.Stop();
 
                 var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoTestCertificate, signedPackagePath, dir, new Uri("https://v3serviceIndex.test/api/index.json"), timestampService.Url);
 

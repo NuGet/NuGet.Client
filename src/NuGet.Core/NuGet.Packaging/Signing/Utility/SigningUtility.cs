@@ -33,27 +33,24 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            // This method is intended to be a generic verification before signing, therefore we need to use a generic signature type.
-            var signatureType = "signature";
-
             if (!CertificateUtility.IsSignatureAlgorithmSupported(request.Certificate))
             {
-                throw new SignatureException(NuGetLogCode.NU3013, string.Format(CultureInfo.CurrentCulture, Strings.SigningCertificateHasUnsupportedSignatureAlgorithm, signatureType));
+                throw new SignatureException(NuGetLogCode.NU3013, Strings.SigningError_CertificateHasUnsupportedSignatureAlgorithm);
             }
 
             if (!CertificateUtility.IsCertificatePublicKeyValid(request.Certificate))
             {
-                throw new SignatureException(NuGetLogCode.NU3014, string.Format(CultureInfo.CurrentCulture, Strings.SigningCertificateFailsPublicKeyLengthRequirement, signatureType));
+                throw new SignatureException(NuGetLogCode.NU3014, Strings.SigningError_CertificateFailsPublicKeyLengthRequirement);
             }
 
             if (CertificateUtility.HasExtendedKeyUsage(request.Certificate, Oids.LifetimeSigningEku))
             {
-                throw new SignatureException(NuGetLogCode.NU3015, string.Format(CultureInfo.CurrentCulture, Strings.VerifyErrorCertificateHasLifetimeSigningEKU, signatureType));
+                throw new SignatureException(NuGetLogCode.NU3015, Strings.SigningError_CertificateHasLifetimeSigningEKU);
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(request.Certificate))
             {
-                throw new SignatureException(NuGetLogCode.NU3017, string.Format(CultureInfo.CurrentCulture, Strings.SignatureNotYetValid, signatureType));
+                throw new SignatureException(NuGetLogCode.NU3017, Strings.SigningError_NotYetValid);
             }
 
             request.BuildSigningCertificateChainOnce(logger);
