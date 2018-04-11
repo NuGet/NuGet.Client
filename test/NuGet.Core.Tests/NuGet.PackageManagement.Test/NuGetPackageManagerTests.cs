@@ -6272,6 +6272,70 @@ namespace NuGet.Test
             }
         }
 
+        [Fact]
+        public async Task TestPacManPreviewInstallPackage_WithGlobalPackageFolder()
+        {
+            using (
+                var packageSource1 = TestDirectory.Create())
+            {
+                // Arrange
+                var sourceRepositoryProvider1 = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<Configuration.PackageSource>()
+                    {
+                        new Configuration.PackageSource(packageSource1.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager(true))
+                {
+                    var testSettings = NullSettings.Instance;
+                    var token = CancellationToken.None;
+                    var resolutionContext = new ResolutionContext();
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider1,
+                        testSettings,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+                    var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+                    var projectA = testSolutionManager.AddBuildIntegratedProject();
+
+                    var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
+
+                    var packageAContext = new SimpleTestPackageContext()
+                    {
+                        Id = "packageA",
+                        Version = "1.0.0"
+                    };
+
+                    var saveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files | PackageSaveMode.Nupkg;
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3(
+                        packagesFolderPath,
+                        saveMode,
+                        packageAContext);
+
+                    // ACT
+                    var result = await nuGetPackageManager.PreviewInstallPackageAsync(
+                        projectA,
+                        target,
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider1.GetRepositories(),
+                        sourceRepositoryProvider1.GetRepositories(),
+                        token);
+
+                    // Assert
+                    var resulting = result.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
+
+                    var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
+                    Expected(expected, target.Id, target.Version);
+
+                    Assert.True(Compare(resulting, expected));
+                }
+            }
+        }
+
         private void VerifyPreviewActionsTelemetryEvents_PackagesConfig(string operationId, IEnumerable<string> actual)
         {
             var key = string.Format(TelemetryConstants.GatherDependencyStepName, operationId);

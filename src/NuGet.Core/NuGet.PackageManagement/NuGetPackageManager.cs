@@ -1553,18 +1553,7 @@ namespace NuGet.PackageManagement
 
             if (nuGetProject is INuGetIntegratedProject)
             {
-                SourceRepository sourceRepository;
-                if (primarySources.Count() > 1)
-                {
-                    var logger = new ProjectContextLogger(nuGetProjectContext);
-                    sourceRepository = await GetSourceRepository(packageIdentity, primarySources, resolutionContext.SourceCacheContext, logger);
-                }
-                else
-                {
-                    sourceRepository = primarySources.First();
-                }
-
-                var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, sourceRepository, nuGetProject);
+                var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First(), nuGetProject);
                 var actions = new[] { action };
 
                 var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
