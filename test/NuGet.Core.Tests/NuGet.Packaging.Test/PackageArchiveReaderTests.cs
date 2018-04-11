@@ -5,11 +5,13 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -29,7 +31,7 @@ namespace NuGet.Packaging.Test
                 // Act & Assert
                 Assert.Throws<InvalidDataException>(() =>
                     new PackageArchiveReader(path).Dispose());
-                
+
                 File.Delete(path);
                 Assert.False(File.Exists(path), "The invalid .zip archive should not exist.");
             }
@@ -1422,6 +1424,135 @@ namespace NuGet.Packaging.Test
             }
         }
 
+#if IS_DESKTOP
+        [Fact]
+        public async Task ValidateIntegrityAsync_WhenSignatureContentNull_Throws()
+        {
+            using (var stream = new MemoryStream(SignTestUtility.GetResourceBytes("SignedPackage.1.0.0.nupkg")))
+            using (var reader = new PackageArchiveReader(stream))
+            {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => reader.ValidateIntegrityAsync(signatureContent: null, token: CancellationToken.None));
+
+                Assert.Equal("signatureContent", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public async Task ValidateIntegrityAsync_WhenCancellationTokenCancelled_Throws()
+        {
+            using (var stream = new MemoryStream(SignTestUtility.GetResourceBytes("SignedPackage.1.0.0.nupkg")))
+            using (var reader = new PackageArchiveReader(stream))
+            {
+                var content = new SignatureContent(SigningSpecifications.V1, HashAlgorithmName.SHA256, "hash");
+
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => reader.ValidateIntegrityAsync(content, new CancellationToken(canceled: true)));
+            }
+        }
+
+        [Fact]
+        public async Task ValidateIntegrityAsync_WhenPackageNotSigned_Throws()
+        {
+            using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
+            {
+                var content = new SignatureContent(SigningSpecifications.V1, HashAlgorithmName.SHA256, "hash");
+
+                var exception = await Assert.ThrowsAsync<SignatureException>(
+                    () => test.Reader.ValidateIntegrityAsync(content, CancellationToken.None));
+
+                Assert.Equal("The package is not signed. Unable to verify signature from an unsigned package.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task ValidateIntegrityAsync_WithNestedZipFiles_Succeeds()
+        {
+            var zip = CreateZipWithNestedStoredZipArchives();
+            var zipHash = HashAlgorithmName.SHA256.ComputeHash(zip.ToByteArray());
+            var signatureContent = new SignatureContent(
+                SigningSpecifications.V1,
+                HashAlgorithmName.SHA256,
+                Convert.ToBase64String(zipHash));
+
+            // Now mock sign the ZIP.
+            zip.LocalFileHeaders.Add(zip.SignatureLocalFileHeader);
+            zip.CentralDirectoryHeaders.Add(zip.SignatureCentralDirectoryHeader);
+
+            using (var stream = new MemoryStream(zip.ToByteArray()))
+            using (var reader = new PackageArchiveReader(stream))
+            {
+                await reader.ValidateIntegrityAsync(signatureContent, CancellationToken.None);
+            }
+        }
+
+        private static Zip CreateZipWithNestedStoredZipArchives()
+        {
+            var zip = new Zip();
+            var nonEmptyZipArchive = CreateNonEmptyZipArchive();
+
+            var localFileHeader1 = new LocalFileHeader()
+            {
+                VersionNeededToExtract = 0x14,
+                LastModFileTime = 0x3811,
+                LastModFileDate = 0x4c58,
+                FileName = Encoding.UTF8.GetBytes("1"),
+                FileData = nonEmptyZipArchive
+            };
+            var localFileHeader2 = new LocalFileHeader()
+            {
+                VersionNeededToExtract = 0x14,
+                LastModFileTime = 0x36a0,
+                LastModFileDate = 0x4c58,
+                FileName = Encoding.UTF8.GetBytes("2"),
+                FileData = nonEmptyZipArchive
+            };
+            var centralDirectoryHeader1 = new CentralDirectoryHeader()
+            {
+                VersionMadeBy = 0x14,
+                VersionNeededToExtract = 0x14,
+                FileName = localFileHeader1.FileName,
+                LocalFileHeader = localFileHeader1
+            };
+            var centralDirectoryHeader2 = new CentralDirectoryHeader()
+            {
+                VersionMadeBy = 0x14,
+                VersionNeededToExtract = 0x14,
+                FileName = localFileHeader2.FileName,
+                LocalFileHeader = localFileHeader2
+            };
+
+            zip.LocalFileHeaders.Add(localFileHeader1);
+            zip.LocalFileHeaders.Add(localFileHeader2);
+            zip.LocalFileHeaders.Add(zip.NuspecLocalFileHeader);
+            zip.CentralDirectoryHeaders.Add(centralDirectoryHeader1);
+            zip.CentralDirectoryHeaders.Add(centralDirectoryHeader2);
+            zip.CentralDirectoryHeaders.Add(zip.NuspecCentralDirectoryHeader);
+
+            return zip;
+        }
+
+        private static byte[] CreateNonEmptyZipArchive()
+        {
+            using (var stream = new MemoryStream())
+            {
+                using (var zipArchive = new ZipArchive(stream, ZipArchiveMode.Create))
+                {
+                    var entry = zipArchive.CreateEntry("entry");
+
+                    using (var entryStream = entry.Open())
+                    {
+                        var data = Encoding.UTF8.GetBytes("data");
+
+                        entryStream.Write(data, offset: 0, count: data.Length);
+                    }
+                }
+
+                return stream.ToArray();
+            }
+        }
+#endif
+
         private static string ExtractFile(string sourcePath, string targetPath, Stream sourceStream)
         {
             using (var targetStream = File.OpenWrite(targetPath))
@@ -1452,8 +1583,8 @@ namespace NuGet.Packaging.Test
 
             internal static PackageReaderTest Create(TestPackagesCore.TempFile tempFile)
             {
-                var zip = TestPackagesCore.GetZip(tempFile);
-                var reader = new PackageArchiveReader(zip);
+                var stream = File.OpenRead(tempFile);
+                var reader = new PackageArchiveReader(stream);
 
                 return new PackageReaderTest(reader, tempFile);
             }
