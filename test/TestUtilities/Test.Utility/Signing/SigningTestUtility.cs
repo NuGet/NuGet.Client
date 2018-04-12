@@ -582,7 +582,7 @@ namespace Test.Utility.Signing
 
                 return x.Target == y.Target &&
                     x.FingerprintAlgorithm == y.FingerprintAlgorithm &&
-                    string.Equals(x.Fingerprint, y.Fingerprint, StringComparison.Ordinal);
+                    string.Equals(x.Fingerprint, y.Fingerprint, StringComparison.OrdinalIgnoreCase);
             }
 
             public int GetHashCode(CertificateHashAllowListEntry obj)

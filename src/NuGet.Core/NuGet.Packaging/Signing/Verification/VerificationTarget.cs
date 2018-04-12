@@ -10,7 +10,7 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     /// <remarks>This target makes no assumption about the placement of the signature.
     /// It only refers to author or repository type of signature.
-    /// If a specific placement is needed use the SignaturePlacement class.</remarks>
+    /// If a specific placement is needed use the <see cref="SignaturePlacement" /> enum.</remarks>
     [Flags]
     public enum VerificationTarget
     {

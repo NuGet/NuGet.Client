@@ -188,7 +188,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The client allow list is required and was empty or not found..
+        ///   Looks up a localized string similar to A list of trusted signers is required by the client but none was found..
         /// </summary>
         internal static string Error_NoClientAllowList {
             get {
@@ -215,7 +215,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The repository allow list is required and was empty or not found..
+        ///   Looks up a localized string similar to A repository announced that their packages should be signed but an empty list of trusted certificates was found..
         /// </summary>
         internal static string Error_NoRepoAllowList {
             get {

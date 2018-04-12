@@ -49,6 +49,12 @@ namespace NuGet.Packaging.Signing
             return new SignedPackageVerificationResult(GetValidity(allowListResults), signature, allowListResults.SelectMany(r => r.Issues));
         }
 
+        /// <summary>
+        /// Verify an allow list with a given request
+        /// </summary>
+        /// <param name="request">Information about the allow list verification to perform</param>
+        /// <remarks>This method should never return a status unknown. Min is used to take the most severe status in <see cref="GetValidity"/>
+        /// therefore, if unknown is returned the verification process will return an unknown status for the whole operation</remarks>
         private Task<SignedPackageVerificationResult> VerifyAllowList(CertificateListVerificationRequest request)
         {
             var status = SignatureVerificationStatus.Valid;
