@@ -768,6 +768,10 @@ namespace NuGet.Commands
                 {
                     return packageArchiveReader;
                 }
+                else
+                {
+                    packageArchiveReader?.Dispose();
+                }
             }
 
             if (_packArgs.Symbols)
@@ -940,7 +944,7 @@ namespace NuGet.Commands
             string outputPath = GetOutputPath(symbolsBuilder, _packArgs, symbols: true);
 
             InitCommonPackageBuilderProperties(symbolsBuilder);
-            BuildPackage(symbolsBuilder, outputPath);
+            BuildPackage(symbolsBuilder, outputPath)?.Dispose();
         }
 
         internal void AnalyzePackage(PackageArchiveReader package)
