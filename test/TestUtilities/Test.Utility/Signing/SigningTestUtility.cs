@@ -580,9 +580,9 @@ namespace Test.Utility.Signing
                     return false;
                 }
 
-                return x.VerificationTarget == y.VerificationTarget &&
+                return x.Target == y.Target &&
                     x.FingerprintAlgorithm == y.FingerprintAlgorithm &&
-                    string.Equals(x.Fingerprint, y.Fingerprint, StringComparison.Ordinal);
+                    string.Equals(x.Fingerprint, y.Fingerprint, StringComparison.OrdinalIgnoreCase);
             }
 
             public int GetHashCode(CertificateHashAllowListEntry obj)
@@ -594,7 +594,7 @@ namespace Test.Utility.Signing
 
                 var combiner = new HashCodeCombiner();
 
-                combiner.AddObject(obj.VerificationTarget);
+                combiner.AddObject(obj.Target);
                 combiner.AddObject(obj.Fingerprint);
                 combiner.AddObject(obj.FingerprintAlgorithm);
 

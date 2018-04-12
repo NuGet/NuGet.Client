@@ -66,10 +66,12 @@ namespace NuGet.Packaging.Signing
                 foreach (var certInfo in repositoryCertificateInfos)
                 {
                     var verificationTarget = VerificationTarget.Repository;
+                    var signaturePlacement = SignaturePlacement.PrimarySignature | SignaturePlacement.Countersignature;
 
-                    AddCertificateFingerprintIntoAllowList(verificationTarget, HashAlgorithmName.SHA256, certInfo, repositoryAllowList);
-                    AddCertificateFingerprintIntoAllowList(verificationTarget, HashAlgorithmName.SHA384, certInfo, repositoryAllowList);
-                    AddCertificateFingerprintIntoAllowList(verificationTarget, HashAlgorithmName.SHA512, certInfo, repositoryAllowList);
+                    foreach (var hashAlgorithm in SigningSpecifications.V1.AllowedHashAlgorithms)
+                    {
+                        AddCertificateFingerprintIntoAllowList(verificationTarget, signaturePlacement, hashAlgorithm, certInfo, repositoryAllowList);
+                    }
                 }
             }
 
@@ -78,6 +80,7 @@ namespace NuGet.Packaging.Signing
 
         private static void AddCertificateFingerprintIntoAllowList(
             VerificationTarget target,
+            SignaturePlacement placement,
             HashAlgorithmName algorithm,
             IRepositoryCertificateInfo certInfo,
             List<CertificateHashAllowListEntry> allowList)
@@ -86,7 +89,7 @@ namespace NuGet.Packaging.Signing
 
             if (!string.IsNullOrEmpty(fingerprint))
             {
-                allowList.Add(new CertificateHashAllowListEntry(target, fingerprint, algorithm));
+                allowList.Add(new CertificateHashAllowListEntry(target, placement, fingerprint, algorithm));
             }
         }
     }

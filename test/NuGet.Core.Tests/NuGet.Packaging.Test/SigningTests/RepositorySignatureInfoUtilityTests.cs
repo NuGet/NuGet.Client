@@ -113,6 +113,8 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             var target = VerificationTarget.Repository;
+            var placement = SignaturePlacement.PrimarySignature | SignaturePlacement.Countersignature;
+
             var allSigned = true;
             var certFingerprints = new Dictionary<string, string>()
             {
@@ -139,9 +141,9 @@ namespace NuGet.Packaging.Test
 
             var expectedAllowList = new List<CertificateHashAllowListEntry>()
             {
-                new CertificateHashAllowListEntry(target, HashAlgorithmName.SHA256.ToString(), HashAlgorithmName.SHA256),
-                new CertificateHashAllowListEntry(target, HashAlgorithmName.SHA384.ToString(), HashAlgorithmName.SHA384),
-                new CertificateHashAllowListEntry(target, HashAlgorithmName.SHA512.ToString(), HashAlgorithmName.SHA512)
+                new CertificateHashAllowListEntry(target, placement, HashAlgorithmName.SHA256.ToString(), HashAlgorithmName.SHA256),
+                new CertificateHashAllowListEntry(target, placement, HashAlgorithmName.SHA384.ToString(), HashAlgorithmName.SHA384),
+                new CertificateHashAllowListEntry(target, placement, HashAlgorithmName.SHA512.ToString(), HashAlgorithmName.SHA512)
             };
 
             var repoSignatureInfo = new RepositorySignatureInfo(allSigned, repoCertificateInfo);
@@ -162,6 +164,7 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             var target = VerificationTarget.Repository;
+            var placement = SignaturePlacement.PrimarySignature | SignaturePlacement.Countersignature;
             var allSigned = true;
             var firstCertFingerprints = new Dictionary<string, string>()
             {
@@ -199,10 +202,10 @@ namespace NuGet.Packaging.Test
 
             var expectedAllowList = new List<CertificateHashAllowListEntry>()
             {
-                new CertificateHashAllowListEntry(target, $"{HashAlgorithmName.SHA256.ToString()}_first", HashAlgorithmName.SHA256),
-                new CertificateHashAllowListEntry(target, $"{HashAlgorithmName.SHA384.ToString()}_first", HashAlgorithmName.SHA384),
-                new CertificateHashAllowListEntry(target, $"{HashAlgorithmName.SHA512.ToString()}_first", HashAlgorithmName.SHA512),
-                new CertificateHashAllowListEntry(target, $"{HashAlgorithmName.SHA256.ToString()}_second", HashAlgorithmName.SHA256)
+                new CertificateHashAllowListEntry(target, placement, $"{HashAlgorithmName.SHA256.ToString()}_first", HashAlgorithmName.SHA256),
+                new CertificateHashAllowListEntry(target, placement, $"{HashAlgorithmName.SHA384.ToString()}_first", HashAlgorithmName.SHA384),
+                new CertificateHashAllowListEntry(target, placement, $"{HashAlgorithmName.SHA512.ToString()}_first", HashAlgorithmName.SHA512),
+                new CertificateHashAllowListEntry(target, placement, $"{HashAlgorithmName.SHA256.ToString()}_second", HashAlgorithmName.SHA256)
             };
 
             var repoSignatureInfo = new RepositorySignatureInfo(allSigned, repoCertificateInfo);
@@ -223,6 +226,7 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             var target = VerificationTarget.Repository;
+            var placement = SignaturePlacement.PrimarySignature | SignaturePlacement.Countersignature;
             var allSigned = true;
             var certFingerprints = new Dictionary<string, string>()
             {
@@ -249,15 +253,15 @@ namespace NuGet.Packaging.Test
 
             var expectedClientAllowList = new List<CertificateHashAllowListEntry>()
             {
-                new CertificateHashAllowListEntry(target, HashAlgorithmName.SHA256.ToString(), HashAlgorithmName.SHA256)
+                new CertificateHashAllowListEntry(target, placement, HashAlgorithmName.SHA256.ToString(), HashAlgorithmName.SHA256)
             };
 
 
             var expectedRepoAllowList = new List<CertificateHashAllowListEntry>()
             {
-                new CertificateHashAllowListEntry(target, HashAlgorithmName.SHA256.ToString(), HashAlgorithmName.SHA256),
-                new CertificateHashAllowListEntry(target, HashAlgorithmName.SHA384.ToString(), HashAlgorithmName.SHA384),
-                new CertificateHashAllowListEntry(target, HashAlgorithmName.SHA512.ToString(), HashAlgorithmName.SHA512)
+                new CertificateHashAllowListEntry(target, placement, HashAlgorithmName.SHA256.ToString(), HashAlgorithmName.SHA256),
+                new CertificateHashAllowListEntry(target, placement, HashAlgorithmName.SHA384.ToString(), HashAlgorithmName.SHA384),
+                new CertificateHashAllowListEntry(target, placement, HashAlgorithmName.SHA512.ToString(), HashAlgorithmName.SHA512)
             };
 
             var repoSignatureInfo = new RepositorySignatureInfo(allSigned, repoCertificateInfo);

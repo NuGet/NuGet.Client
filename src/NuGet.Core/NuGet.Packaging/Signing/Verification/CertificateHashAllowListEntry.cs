@@ -11,8 +11,8 @@ namespace NuGet.Packaging.Signing
 
         public HashAlgorithmName FingerprintAlgorithm { get; }
 
-        public CertificateHashAllowListEntry(VerificationTarget target, string fingerprint, HashAlgorithmName algorithm)
-            : base(target)
+        public CertificateHashAllowListEntry(VerificationTarget target, SignaturePlacement placement, string fingerprint, HashAlgorithmName algorithm)
+            : base(target, placement)
         {
             Fingerprint = fingerprint;
             FingerprintAlgorithm = algorithm;
