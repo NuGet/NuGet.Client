@@ -9,10 +9,12 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -28,14 +30,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly IProjectSystemCache _projectSystemCache;
 
-        private readonly Lazy<IComponentModel> _componentModel;
+        private readonly AsyncLazy<IComponentModel> _componentModel;
 
         public RuntimeTypeHandle ProjectType => typeof(NetCorePackageReferenceProject).TypeHandle;
 
         [ImportingConstructor]
+        public NetCorePackageReferenceProjectProvider(IProjectSystemCache projectSystemCache)
+            : this(AsyncServiceProvider.GlobalProvider, projectSystemCache)
+        { }
+
         public NetCorePackageReferenceProjectProvider(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider vsServiceProvider,
+            IAsyncServiceProvider vsServiceProvider,
             IProjectSystemCache projectSystemCache)
         {
             Assumes.Present(vsServiceProvider);
@@ -43,8 +48,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _projectSystemCache = projectSystemCache;
 
-            _componentModel = new Lazy<IComponentModel>(
-                () => vsServiceProvider.GetService<SComponentModel, IComponentModel>());
+            _componentModel = new AsyncLazy<IComponentModel>(
+                async () =>
+                {
+                    return await vsServiceProvider.GetServiceAsync<SComponentModel, IComponentModel>();
+                },
+                NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public async Task<NuGetProject> TryCreateNuGetProjectAsync(
@@ -94,7 +103,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var fullProjectPath = vsProject.FullProjectPath;
             var unconfiguredProject = GetUnconfiguredProject(vsProject.Project);
 
-            var projectServices = new NetCoreProjectSystemServices(vsProject, _componentModel.Value);
+            var projectServices = new NetCoreProjectSystemServices(vsProject, await _componentModel.GetValueAsync());
 
             return new NetCorePackageReferenceProject(
                 vsProject.ProjectName,

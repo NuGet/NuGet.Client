@@ -15,6 +15,8 @@ using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using VSLangProj150;
 using ProjectSystem = Microsoft.VisualStudio.ProjectSystem;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -33,8 +35,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         [ImportingConstructor]
         public LegacyPackageReferenceProjectProvider(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider vsServiceProvider,
+            Lazy<IDeferredProjectWorkspaceService> workspaceService,
+            IVsProjectThreadingService threadingService)
+            : this(AsyncServiceProvider.GlobalProvider,
+                   workspaceService,
+                   threadingService)
+        { }
+
+        public LegacyPackageReferenceProjectProvider(
+            IAsyncServiceProvider vsServiceProvider,
             Lazy<IDeferredProjectWorkspaceService> workspaceService,
             IVsProjectThreadingService threadingService)
         {
@@ -48,8 +57,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _componentModel = new AsyncLazy<IComponentModel>(
                 async () =>
                 {
-                    await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return vsServiceProvider.GetService<SComponentModel, IComponentModel>();
+                    return await vsServiceProvider.GetServiceAsync<SComponentModel, IComponentModel>();
                 },
                 _threadingService.JoinableTaskFactory);
         }

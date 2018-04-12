@@ -164,8 +164,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return _credentialServiceProvider.GetCredentialService();
+                    return await _credentialServiceProvider.GetCredentialServiceAsync();
                 });
             });
 
