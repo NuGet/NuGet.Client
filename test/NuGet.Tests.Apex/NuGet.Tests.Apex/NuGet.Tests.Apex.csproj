@@ -84,7 +84,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <PlatformTarget>x86</PlatformTarget>
+    <Platform>x86</Platform>
     <RuntimeIdentifier>x86</RuntimeIdentifier>
   </PropertyGroup>
   
