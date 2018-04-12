@@ -47,13 +47,6 @@ namespace NuGet.Packaging.Signing
             public CRYPTOAPI_BLOB Parameters;
         }
 
-        internal struct CRYPT_TIMESTAMP_ACCURACY
-        {
-            public int dwSeconds;
-            public int dwMillis;
-            public int dwMicros;
-        }
-
         [StructLayout(LayoutKind.Sequential)]
         internal struct CRYPT_TIMESTAMP_INFO
         {
