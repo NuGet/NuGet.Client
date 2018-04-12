@@ -30,8 +30,6 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets" />
-
   <Target Name="ILMergeNuGetMssignExe" AfterTargets="Build" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
