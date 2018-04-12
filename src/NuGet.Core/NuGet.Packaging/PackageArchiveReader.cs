@@ -286,6 +286,11 @@ namespace NuGet.Packaging
         {
             token.ThrowIfCancellationRequested();
 
+            if (signatureContent == null)
+            {
+                throw new ArgumentNullException(nameof(signatureContent));
+            }
+
             if (ZipReadStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
