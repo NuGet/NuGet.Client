@@ -904,6 +904,8 @@ namespace NuGet.Test
         [InlineData("xamarinxboxthreesixty")]
         [InlineData("xamarinwatchos")]
         [InlineData("xamarinxboxone")]
+        [InlineData("wasm")]
+        [InlineData("monoue")]
         public void Compatibility_ProjectCanInstallGenerationLibraries(string framework)
         {
             // Arrange

@@ -68,6 +68,8 @@ namespace NuGet.Frameworks
             public const string XamarinXboxOne = "Xamarin.XboxOne";
             public const string UAP = "UAP";
             public const string Tizen = "Tizen";
+            public const string WebAssembly = "WebAssembly";
+            public const string MonoUE = "MonoUE";
         }
 
         /// <summary>

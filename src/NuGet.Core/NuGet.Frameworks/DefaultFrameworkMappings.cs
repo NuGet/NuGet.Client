@@ -93,6 +93,8 @@ namespace NuGet.Frameworks
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.WinRT, "winrt"), // legacy
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.UAP, "uap"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Tizen, "tizen"),
+                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.WebAssembly, "wasm"),
+                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.MonoUE, "monoue"),
                         };
                 }
 
@@ -506,6 +508,16 @@ namespace NuGet.Frameworks
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinWatchOS,
+                                FrameworkConstants.CommonFrameworks.DotNet56,
+                                FrameworkConstants.CommonFrameworks.NetStandard20),
+
+                            CreateGenerationAndStandardMappingForAllVersions(
+                                FrameworkConstants.FrameworkIdentifiers.WebAssembly,
+                                FrameworkConstants.CommonFrameworks.DotNet56,
+                                FrameworkConstants.CommonFrameworks.NetStandard20),
+
+                            CreateGenerationAndStandardMappingForAllVersions(
+                                FrameworkConstants.FrameworkIdentifiers.MonoUE,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
                                 FrameworkConstants.CommonFrameworks.NetStandard20)
                         }.SelectMany(mappings => mappings))
