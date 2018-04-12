@@ -30,6 +30,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -50,7 +51,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private uint _solutionLoadedUICookie;
         private IVsSolution _vsSolution;
 
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IAsyncServiceProvider _asyncServiceProvider;
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly NuGetProjectFactory _projectSystemFactory;
         private readonly ICredentialServiceProvider _credentialServiceProvider;
@@ -121,8 +122,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         [ImportingConstructor]
         internal VSSolutionManager(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
             IProjectSystemCache projectSystemCache,
             NuGetProjectFactory projectSystemFactory,
             ICredentialServiceProvider credentialServiceProvider,
@@ -131,8 +130,28 @@ namespace NuGet.PackageManagement.VisualStudio
             Common.ILogger logger,
             Lazy<ISettings> settings,
             JoinableTaskContext joinableTaskContext)
+            : this(AsyncServiceProvider.GlobalProvider,
+                   projectSystemCache,
+                   projectSystemFactory,
+                   credentialServiceProvider,
+                   vsProjectAdapterProvider,
+                   logger,
+                   settings,
+                   joinableTaskContext)
+        { }
+
+
+        internal VSSolutionManager(
+            IAsyncServiceProvider asyncServiceProvider,
+            IProjectSystemCache projectSystemCache,
+            NuGetProjectFactory projectSystemFactory,
+            ICredentialServiceProvider credentialServiceProvider,
+            IVsProjectAdapterProvider vsProjectAdapterProvider,
+            ILogger logger,
+            Lazy<ISettings> settings,
+            JoinableTaskContext joinableTaskContext)
         {
-            Assumes.Present(serviceProvider);
+            Assumes.Present(asyncServiceProvider);
             Assumes.Present(projectSystemCache);
             Assumes.Present(projectSystemFactory);
             Assumes.Present(credentialServiceProvider);
@@ -141,7 +160,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(settings);
             Assumes.Present(joinableTaskContext);
 
-            _serviceProvider = serviceProvider;
+            _asyncServiceProvider = asyncServiceProvider;
             _projectSystemCache = projectSystemCache;
             _projectSystemFactory = projectSystemFactory;
             _credentialServiceProvider = credentialServiceProvider;
@@ -155,8 +174,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
-            var dte = _serviceProvider.GetDTE();
+            _vsSolution = await _asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>();
+            var dte = await _asyncServiceProvider.GetDTEAsync();
             UserAgent.SetUserAgentString(
                     new UserAgentStringBuilder(VSNuGetClientName).WithVisualStudioSKU(dte.GetFullVsVersionString()));
 
@@ -170,7 +189,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
 
-            _vsMonitorSelection = _serviceProvider.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
+            _vsMonitorSelection = await _asyncServiceProvider.GetServiceAsync<SVsShellMonitorSelection, IVsMonitorSelection>();
 
             var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
             _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _solutionLoadedUICookie);
@@ -297,7 +316,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var dte = _serviceProvider.GetDTE();
+                    var dte = await _asyncServiceProvider.GetDTEAsync();
                     return dte != null &&
                            dte.Solution != null &&
                            dte.Solution.IsOpen;
@@ -348,7 +367,7 @@ namespace NuGet.PackageManagement.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // first check with DTE, and if we find any supported project, then return immediately.
-            var dte = _serviceProvider.GetDTE();
+            var dte = await _asyncServiceProvider.GetDTEAsync();
 
             var isSupported =  EnvDTESolutionUtility.GetAllEnvDTEProjects(dte)
                 .Where(EnvDTEProjectUtility.IsSupported)
@@ -404,7 +423,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // available if the solution is just being created
             string solutionFilePath = null;
 
-            var dte = _serviceProvider.GetDTE();
+            var dte = await _asyncServiceProvider.GetDTEAsync();
             var property = dte.Solution.Properties.Item("Path");
             if (property == null)
             {
@@ -605,7 +624,7 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
-        private void SetDefaultProjectName()
+        private async Task SetDefaultProjectNameAsync()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -614,7 +633,7 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 // when a new solution opens, we set its startup project as the default project in NuGet Console
-                var dte = _serviceProvider.GetDTE();
+                var dte = await _asyncServiceProvider.GetDTEAsync();
                 var solutionBuild = dte.Solution.SolutionBuild as SolutionBuild2;
                 startupProjects = solutionBuild?.StartupProjects as IEnumerable<object>;
             }
@@ -646,7 +665,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     try
                     {
-                        var dte = _serviceProvider.GetDTE();
+                        var dte = await _asyncServiceProvider.GetDTEAsync();
 
                         var supportedProjects = EnvDTESolutionUtility
                             .GetAllEnvDTEProjects(dte)
@@ -670,7 +689,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             _cacheInitialized = true;
                         }
 
-                        SetDefaultProjectName();
+                        await SetDefaultProjectNameAsync();
                     }
                     catch
                     {
@@ -760,7 +779,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     await InitializeAsync();
 
-                    var dte = _serviceProvider.GetDTE();
+                    var dte = await _asyncServiceProvider.GetDTEAsync();
                     if (dte.Solution.IsOpen)
                     {
                         await OnSolutionExistsAndFullyLoadedAsync();
