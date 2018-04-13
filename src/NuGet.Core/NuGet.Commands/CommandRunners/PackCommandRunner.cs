@@ -647,7 +647,7 @@ namespace NuGet.Commands
             }
             else
             {
-                if (_packArgs.Symbols)
+                if (_packArgs.Symbols && packageBuilder.Files.Any())
                 {
                     // remove source related files when building the lib package
                     ExcludeFilesForLibPackage(packageBuilder.Files);
@@ -767,6 +767,10 @@ namespace NuGet.Commands
                 if (!_packArgs.Symbols || _packArgs.InstallPackageToOutputPath)
                 {
                     return packageArchiveReader;
+                }
+                else
+                {
+                    packageArchiveReader?.Dispose();
                 }
             }
 
@@ -940,7 +944,7 @@ namespace NuGet.Commands
             string outputPath = GetOutputPath(symbolsBuilder, _packArgs, symbols: true);
 
             InitCommonPackageBuilderProperties(symbolsBuilder);
-            BuildPackage(symbolsBuilder, outputPath);
+            BuildPackage(symbolsBuilder, outputPath)?.Dispose();
         }
 
         internal void AnalyzePackage(PackageArchiveReader package)
