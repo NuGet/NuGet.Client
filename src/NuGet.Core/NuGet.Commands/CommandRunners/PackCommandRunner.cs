@@ -647,7 +647,7 @@ namespace NuGet.Commands
             }
             else
             {
-                if (_packArgs.Symbols)
+                if (_packArgs.Symbols && packageBuilder.Files.Any())
                 {
                     // remove source related files when building the lib package
                     ExcludeFilesForLibPackage(packageBuilder.Files);
