@@ -52,7 +52,7 @@ namespace NuGet.Commands.Test
                 dgFile.AddProject(spec);
                 dgFile.AddRestore("x");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
 
                 // Act
                 var result = await CommandsTestUtility.RunSingleRestore(dgFile, pathContext, logger);

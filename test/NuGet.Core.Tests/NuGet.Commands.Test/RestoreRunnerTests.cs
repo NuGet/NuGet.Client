@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,7 +22,7 @@ namespace NuGet.Commands.Test
     public class RestoreRunnerTests
     {
         [Fact]
-        public async Task RestoreRunner_BasicRestore()
+        public async Task RestoreRunner_BasicRestoreAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -104,7 +104,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreRunner_BasicRestore_VerifyFailureWritesFiles()
+        public async Task RestoreRunner_BasicRestore_VerifyFailureWritesFilesAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -163,8 +163,8 @@ namespace NuGet.Commands.Test
                 var packageY = new SimpleTestPackageContext("y");
                 packageX.Dependencies.Add(packageY);
 
-                var yPath = SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageY);
-                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageX);
+                var yPath = await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageY);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageX);
 
                 // y does not exist
                 yPath.Delete();
@@ -207,7 +207,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreRunner_BasicRestore_VerifyFailureWritesFiles_NETCore()
+        public async Task RestoreRunner_BasicRestore_VerifyFailureWritesFiles_NETCoreAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -243,11 +243,13 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                spec1.RestoreMetadata = new ProjectRestoreMetadata();
-                spec1.RestoreMetadata.OutputPath = Path.Combine(project1.FullName, "obj");
-                spec1.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
-                spec1.RestoreMetadata.ProjectName = "project1";
-                spec1.RestoreMetadata.ProjectPath = Path.Combine(project1.FullName, "project1.csproj");
+                spec1.RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    OutputPath = Path.Combine(project1.FullName, "obj"),
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    ProjectName = "project1",
+                    ProjectPath = Path.Combine(project1.FullName, "project1.csproj")
+                };
                 spec1.RestoreMetadata.ProjectUniqueName = spec1.RestoreMetadata.ProjectPath;
                 spec1.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
                 spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
@@ -294,7 +296,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreRunner_BasicRestoreWithConfigFile()
+        public async Task RestoreRunner_BasicRestoreWithConfigFileAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -331,7 +333,7 @@ namespace NuGet.Commands.Test
                 project1.Create();
 
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
-                File.WriteAllText(Path.Combine(workingDir, "NuGet.Config"), String.Format(configFile, packageSource.FullName));
+                File.WriteAllText(Path.Combine(workingDir, "NuGet.Config"), string.Format(configFile, packageSource.FullName));
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
@@ -380,32 +382,44 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreRunner_RestoreWithExternalFile()
+        public async Task RestoreRunner_RestoreWithExternalFileAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
 
-            var targetFrameworkInfo1 = new TargetFrameworkInformation();
-            targetFrameworkInfo1.FrameworkName = NuGetFramework.Parse("net45");
+            var targetFrameworkInfo1 = new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net45")
+            };
             var frameworks1 = new[] { targetFrameworkInfo1 };
 
-            var targetFrameworkInfo2 = new TargetFrameworkInformation();
-            targetFrameworkInfo2.FrameworkName = NuGetFramework.Parse("net45");
+            var targetFrameworkInfo2 = new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net45")
+            };
             var frameworks2 = new[] { targetFrameworkInfo2 };
 
             // Create two net45 projects
-            var spec1 = new PackageSpec(frameworks1);
-            spec1.RestoreMetadata = new ProjectRestoreMetadata();
-            spec1.RestoreMetadata.ProjectUniqueName = "project1";
-            spec1.RestoreMetadata.ProjectName = "project1";
-            spec1.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+            var spec1 = new PackageSpec(frameworks1)
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectUniqueName = "project1",
+                    ProjectName = "project1",
+                    ProjectStyle = ProjectStyle.PackageReference
+                }
+            };
             spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
-            var spec2 = new PackageSpec(frameworks2);
-            spec2.RestoreMetadata = new ProjectRestoreMetadata();
-            spec2.RestoreMetadata.ProjectUniqueName = "project2";
-            spec2.RestoreMetadata.ProjectName = "project2";
-            spec2.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+            var spec2 = new PackageSpec(frameworks2)
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectUniqueName = "project2",
+                    ProjectName = "project2",
+                    ProjectStyle = ProjectStyle.PackageReference
+                }
+            };
             spec2.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             var specs = new[] { spec1, spec2 };
@@ -517,32 +531,44 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreRunner_RestoreWithExternalFile_NetCoreOutput()
+        public async Task RestoreRunner_RestoreWithExternalFile_NetCoreOutputAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
 
-            var targetFrameworkInfo1 = new TargetFrameworkInformation();
-            targetFrameworkInfo1.FrameworkName = NuGetFramework.Parse("net45");
+            var targetFrameworkInfo1 = new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net45")
+            };
             var frameworks1 = new[] { targetFrameworkInfo1 };
 
-            var targetFrameworkInfo2 = new TargetFrameworkInformation();
-            targetFrameworkInfo2.FrameworkName = NuGetFramework.Parse("net45");
+            var targetFrameworkInfo2 = new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net45")
+            };
             var frameworks2 = new[] { targetFrameworkInfo2 };
 
             // Create two net45 projects
-            var spec1 = new PackageSpec(frameworks1);
-            spec1.RestoreMetadata = new ProjectRestoreMetadata();
-            spec1.RestoreMetadata.ProjectUniqueName = "project1";
-            spec1.RestoreMetadata.ProjectName = "project1";
-            spec1.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+            var spec1 = new PackageSpec(frameworks1)
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectUniqueName = "project1",
+                    ProjectName = "project1",
+                    ProjectStyle = ProjectStyle.PackageReference
+                }
+            };
             spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
-            var spec2 = new PackageSpec(frameworks2);
-            spec2.RestoreMetadata = new ProjectRestoreMetadata();
-            spec2.RestoreMetadata.ProjectUniqueName = "project2";
-            spec2.RestoreMetadata.ProjectName = "project2";
-            spec2.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+            var spec2 = new PackageSpec(frameworks2)
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectUniqueName = "project2",
+                    ProjectName = "project2",
+                    ProjectStyle = ProjectStyle.PackageReference
+                }
+            };
             spec2.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             var specs = new[] { spec1, spec2 };
@@ -655,7 +681,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreRunner_RestoreWithRuntime()
+        public async Task RestoreRunner_RestoreWithRuntimeAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -736,7 +762,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreRunner_WarnIfNoProject()
+        public async Task RestoreRunner_WarnIfNoProjectAsync()
         {
             // If an input folder is provided to RestoreRunner that doesn't contain a project,
             // it should report an error.

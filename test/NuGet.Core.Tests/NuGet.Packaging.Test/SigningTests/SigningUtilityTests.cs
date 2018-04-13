@@ -509,7 +509,8 @@ namespace NuGet.Packaging.Test
         [Fact]
         public async Task SignAsync_WhenChainBuildingFails_ThrowsAsync()
         {
-            using (var packageStream = new SimpleTestPackageContext().CreateAsStream())
+            var package = new SimpleTestPackageContext();
+            using (var packageStream = await package.CreateAsStreamAsync())
             using (var test = SignTest.Create(
                  _fixture.GetExpiredCertificate(),
                 HashAlgorithmName.SHA256,
@@ -538,7 +539,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public async Task SignAsync_WithUntrustedSelfSignedCertificate_SucceedsAsync()
         {
-            using (var packageStream = new SimpleTestPackageContext().CreateAsStream())
+            var package = new SimpleTestPackageContext();
+
+            using (var packageStream = await package.CreateAsStreamAsync())
             using (var test = SignTest.Create(
                  _fixture.GetDefaultCertificate(),
                 HashAlgorithmName.SHA256,

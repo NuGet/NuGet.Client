@@ -30,9 +30,9 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public async Task GetAllVersionsAsync_ThrowsForNullOrEmptyId(string id)
+        public async Task GetAllVersionsAsync_ThrowsForNullOrEmptyIdAsync(string id)
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentException>(
                     () => test.Resource.GetAllVersionsAsync(
@@ -46,9 +46,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetAllVersionsAsync_ThrowsForNullSourceCacheContext()
+        public async Task GetAllVersionsAsync_ThrowsForNullSourceCacheContextAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetAllVersionsAsync(
@@ -62,9 +62,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetAllVersionsAsync_ThrowsForNullLogger()
+        public async Task GetAllVersionsAsync_ThrowsForNullLoggerAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetAllVersionsAsync(
@@ -78,9 +78,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetAllVersionsAsync_ThrowIfCancelled()
+        public async Task GetAllVersionsAsync_ThrowIfCancelledAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => test.Resource.GetAllVersionsAsync(
@@ -92,9 +92,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetAllVersionsAsync_ReturnsEmptyEnumerableIfPackageIdNotFound()
+        public async Task GetAllVersionsAsync_ReturnsEmptyEnumerableIfPackageIdNotFoundAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create(createFiles: true))
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync(createFiles: true))
             {
                 var versions = await test.Resource.GetAllVersionsAsync(
                     id: "b",
@@ -107,9 +107,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetAllVersionsAsync_ReturnsAllVersions()
+        public async Task GetAllVersionsAsync_ReturnsAllVersionsAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create(createFiles: true))
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync(createFiles: true))
             {
                 var versions = await test.Resource.GetAllVersionsAsync(
                     test.PackageIdentity.Id,
@@ -124,9 +124,9 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public async Task GetDependencyInfoAsync_ThrowsForNullOrEmptyId(string id)
+        public async Task GetDependencyInfoAsync_ThrowsForNullOrEmptyIdAsync(string id)
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentException>(
                     () => test.Resource.GetDependencyInfoAsync(
@@ -141,9 +141,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetDependencyInfoAsync_ThrowsForNullVersion()
+        public async Task GetDependencyInfoAsync_ThrowsForNullVersionAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetDependencyInfoAsync(
@@ -158,9 +158,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetDependencyInfoAsync_ThrowsForNullSourceCacheContext()
+        public async Task GetDependencyInfoAsync_ThrowsForNullSourceCacheContextAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetDependencyInfoAsync(
@@ -175,9 +175,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetDependencyInfoAsync_ThrowsForNullLogger()
+        public async Task GetDependencyInfoAsync_ThrowsForNullLoggerAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetDependencyInfoAsync(
@@ -192,9 +192,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetDependencyInfoAsync_ThrowIfCancelled()
+        public async Task GetDependencyInfoAsync_ThrowIfCancelledAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => test.Resource.GetDependencyInfoAsync(
@@ -207,9 +207,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetDependencyInfoAsync_ReturnsNullIfPackageNotFound()
+        public async Task GetDependencyInfoAsync_ReturnsNullIfPackageNotFoundAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var dependencyInfo = await test.Resource.GetDependencyInfoAsync(
                     id: "b",
@@ -223,9 +223,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetDependencyInfoAsync_GetsOriginalIdentity()
+        public async Task GetDependencyInfoAsync_GetsOriginalIdentityAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create(createFiles: true))
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync(createFiles: true))
             {
                 var info = await test.Resource.GetDependencyInfoAsync(
                     test.PackageIdentity.Id.ToUpper(),
@@ -242,9 +242,9 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public async Task CopyNupkgToStreamAsync_ThrowsForNullId(string id)
+        public async Task CopyNupkgToStreamAsync_ThrowsForNullIdAsync(string id)
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentException>(
                     () => test.Resource.CopyNupkgToStreamAsync(
@@ -260,9 +260,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task CopyNupkgToStreamAsync_ThrowsForNullVersion()
+        public async Task CopyNupkgToStreamAsync_ThrowsForNullVersionAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.CopyNupkgToStreamAsync(
@@ -278,9 +278,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task CopyNupkgToStreamAsync_ThrowsForNullDestination()
+        public async Task CopyNupkgToStreamAsync_ThrowsForNullDestinationAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.CopyNupkgToStreamAsync(
@@ -296,9 +296,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task CopyNupkgToStreamAsync_ThrowsForNullSourceCacheContext()
+        public async Task CopyNupkgToStreamAsync_ThrowsForNullSourceCacheContextAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.CopyNupkgToStreamAsync(
@@ -314,9 +314,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task CopyNupkgToStreamAsync_ThrowsForNullLogger()
+        public async Task CopyNupkgToStreamAsync_ThrowsForNullLoggerAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.CopyNupkgToStreamAsync(
@@ -332,9 +332,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task CopyNupkgToStreamAsync_ThrowsIfCancelled()
+        public async Task CopyNupkgToStreamAsync_ThrowsIfCancelledAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => test.Resource.CopyNupkgToStreamAsync(
@@ -348,9 +348,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task CopyNupkgToStreamAsync_ReturnsFalseIfNotCopied()
+        public async Task CopyNupkgToStreamAsync_ReturnsFalseIfNotCopiedAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create(createFiles: true))
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync(createFiles: true))
             using (var stream = new MemoryStream())
             {
                 var wasCopied = await test.Resource.CopyNupkgToStreamAsync(
@@ -367,9 +367,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task CopyNupkgToStreamAsync_ReturnsTrueIfCopied()
+        public async Task CopyNupkgToStreamAsync_ReturnsTrueIfCopiedAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create(createFiles: true))
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync(createFiles: true))
             using (var stream = new MemoryStream())
             {
                 var wasCopied = await test.Resource.CopyNupkgToStreamAsync(
@@ -386,9 +386,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetPackageDownloaderAsync_ThrowsForNullPackageIdentity()
+        public async Task GetPackageDownloaderAsync_ThrowsForNullPackageIdentityAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetPackageDownloaderAsync(
@@ -402,9 +402,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetPackageDownloaderAsync_ThrowsForNullSourceCacheContext()
+        public async Task GetPackageDownloaderAsync_ThrowsForNullSourceCacheContextAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetPackageDownloaderAsync(
@@ -418,9 +418,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetPackageDownloaderAsync_ThrowsForNullLogger()
+        public async Task GetPackageDownloaderAsync_ThrowsForNullLoggerAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetPackageDownloaderAsync(
@@ -434,9 +434,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetPackageDownloaderAsync_ThrowsIfCancelled()
+        public async Task GetPackageDownloaderAsync_ThrowsIfCancelledAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create())
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync())
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => test.Resource.GetPackageDownloaderAsync(
@@ -448,9 +448,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetPackageDownloaderAsync_ReturnsNullIfPackageNotFound()
+        public async Task GetPackageDownloaderAsync_ReturnsNullIfPackageNotFoundAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create(createFiles: true))
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync(createFiles: true))
             {
                 var downloader = await test.Resource.GetPackageDownloaderAsync(
                     new PackageIdentity(id: "b", version: NuGetVersion.Parse("1.0.0")),
@@ -463,9 +463,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetPackageDownloaderAsync_ReturnsPackageDownloaderIfPackageFound()
+        public async Task GetPackageDownloaderAsync_ReturnsPackageDownloaderIfPackageFoundAsync()
         {
-            using (var test = LocalV3FindPackageByIdResourceTest.Create(createFiles: true))
+            using (var test = await LocalV3FindPackageByIdResourceTest.CreateAsync(createFiles: true))
             {
                 var downloader = await test.Resource.GetPackageDownloaderAsync(
                     test.PackageIdentity,
@@ -507,7 +507,7 @@ namespace NuGet.Protocol.Tests
                 GC.SuppressFinalize(this);
             }
 
-            internal static LocalV3FindPackageByIdResourceTest Create(bool createFiles = false)
+            internal static async Task<LocalV3FindPackageByIdResourceTest> CreateAsync(bool createFiles = false)
             {
                 var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
                 var testDirectory = TestDirectory.Create();
@@ -523,7 +523,7 @@ namespace NuGet.Protocol.Tests
                 // so only create them if necessary.
                 if (createFiles)
                 {
-                    package = SimpleTestPackageUtility.CreateFullPackage(
+                    package = await SimpleTestPackageUtility.CreateFullPackageAsync(
                         packageDirectory.FullName,
                         packageIdentity.Id,
                         packageIdentity.Version.ToNormalizedString());

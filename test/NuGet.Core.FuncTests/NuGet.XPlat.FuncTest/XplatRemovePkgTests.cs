@@ -75,7 +75,7 @@ namespace NuGet.XPlat.FuncTest
             {
                 // Generate Package
                 var packageX = XPlatTestUtils.CreatePackage();
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -139,7 +139,7 @@ namespace NuGet.XPlat.FuncTest
             {
                 // Generate Package
                 var packageX = XPlatTestUtils.CreatePackage(frameworkString: packageframework);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);

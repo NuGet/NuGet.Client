@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -98,7 +98,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesConfigFolderPackages_All()
+        public async Task LocalFolderUtility_GetPackagesConfigFolderPackages_AllAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -131,7 +131,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesConfigFolderPackages_ById()
+        public async Task LocalFolderUtility_GetPackagesConfigFolderPackages_ByIdAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -162,7 +162,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesConfigFolderPackages_ById_NotFound()
+        public async Task LocalFolderUtility_GetPackagesConfigFolderPackages_ById_NotFoundAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -191,7 +191,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage()
+        public async Task LocalFolderUtility_GetPackagesConfigFolderPackageAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -219,7 +219,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage_Missing()
+        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage_MissingAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -241,7 +241,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void LocalFolderUtility_GetPackagesConfigFolderPackage_LongPackageIdDoesNotThrow()
+        public void LocalFolderUtility_GetPackagesConfigFolderPackage_LongPackageIdDoesNotThrowAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -265,7 +265,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage_NonNormalizedInFolder()
+        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage_NonNormalizedInFolderAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -293,7 +293,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage_NonNormalizedInRequest()
+        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage_NonNormalizedInRequestAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -321,7 +321,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage_ConflictAndMissing()
+        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage_ConflictAndMissingAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -346,7 +346,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage_MissingNupkgs()
+        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage_MissingNupkgsAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -374,7 +374,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage_IgnoreNupkgInWrongFolder()
+        public async Task LocalFolderUtility_GetPackagesConfigFolderPackage_IgnoreNupkgInWrongFolderAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -393,8 +393,8 @@ namespace NuGet.Protocol.Tests
                     File.Delete(file);
                 }
 
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, a);
-                SimpleTestPackageUtility.CreateFolderFeedV2(Path.Combine(root, "b.1.0.0"), a);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, a);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(Path.Combine(root, "b.1.0.0"), a);
 
                 // Act
                 var foundA = LocalFolderUtility.GetPackagesConfigFolderPackage(root, a, testLogger);
@@ -589,15 +589,15 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void LocalFolderUtility_GetPackagesV2ValidPackage()
+        public async Task LocalFolderUtility_GetPackagesV2ValidPackageAsync()
         {
             using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, new PackageIdentity("b", NuGetVersion.Parse("1.0.0")));
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, new PackageIdentity("c", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, new PackageIdentity("b", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, new PackageIdentity("c", NuGetVersion.Parse("1.0.0")));
 
                 // Act
                 var packages = LocalFolderUtility.GetPackagesV2(root, testLogger)
@@ -614,15 +614,15 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void LocalFolderUtility_GetPackagesV2ReadWithV3()
+        public async Task LocalFolderUtility_GetPackagesV2ReadWithV3Async()
         {
             using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, new PackageIdentity("b", NuGetVersion.Parse("1.0.0")));
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, new PackageIdentity("c", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, new PackageIdentity("b", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, new PackageIdentity("c", NuGetVersion.Parse("1.0.0")));
 
                 // Act
                 var packages = LocalFolderUtility.GetPackagesV3(root, testLogger);
@@ -634,15 +634,15 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesV3ValidPackage()
+        public async Task LocalFolderUtility_GetPackagesV3ValidPackageAsync()
         {
             using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, new PackageIdentity("b", NuGetVersion.Parse("1.0.0")));
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, new PackageIdentity("c", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, new PackageIdentity("b", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, new PackageIdentity("c", NuGetVersion.Parse("1.0.0")));
 
                 // Act
                 var packages = LocalFolderUtility.GetPackagesV3(root, testLogger)
@@ -659,15 +659,15 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesV3ReadWithV2()
+        public async Task LocalFolderUtility_GetPackagesV3ReadWithV2Async()
         {
             using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, new PackageIdentity("b", NuGetVersion.Parse("1.0.0")));
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, new PackageIdentity("c", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, new PackageIdentity("b", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, new PackageIdentity("c", NuGetVersion.Parse("1.0.0")));
 
                 // Act
                 var packages = LocalFolderUtility.GetPackagesV2(root, testLogger);
@@ -679,7 +679,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void LocalFolderUtility_GetPackageV2()
+        public async Task LocalFolderUtility_GetPackageV2Async()
         {
             using (var root = TestDirectory.Create())
             {
@@ -689,9 +689,9 @@ namespace NuGet.Protocol.Tests
                 var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
                 var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
 
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, a);
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, b);
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, c);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, a);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, b);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, c);
 
                 // Act
                 var foundA = LocalFolderUtility.GetPackageV2(root, a, testLogger);
@@ -706,7 +706,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void LocalFolderUtility_GetPackageV2NotFound()
+        public async Task LocalFolderUtility_GetPackageV2NotFoundAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -716,8 +716,8 @@ namespace NuGet.Protocol.Tests
                 var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
                 var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
 
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, b);
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, c);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, b);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, c);
 
                 // Act
                 var foundA = LocalFolderUtility.GetPackageV2(root, a, testLogger);
@@ -762,7 +762,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void LocalFolderUtility_GetPackageV2NonNormalizedVersions()
+        public async Task LocalFolderUtility_GetPackageV2NonNormalizedVersionsAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -773,10 +773,10 @@ namespace NuGet.Protocol.Tests
                 var a3 = new PackageIdentity("a", NuGetVersion.Parse("1.0.0.0"));
                 var a4 = new PackageIdentity("a", NuGetVersion.Parse("1.0.00"));
 
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, a1);
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, a2);
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, a3);
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, a4);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, a1);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, a2);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, a3);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, a4);
 
                 // Act
                 var foundA1 = LocalFolderUtility.GetPackageV2(root, a1, testLogger);
@@ -861,7 +861,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackageV3()
+        public async Task LocalFolderUtility_GetPackageV3Async()
         {
             using (var root = TestDirectory.Create())
             {
@@ -871,9 +871,9 @@ namespace NuGet.Protocol.Tests
                 var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
                 var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, a);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, b);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, c);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, a);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, b);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, c);
 
                 // Act
                 var foundA = LocalFolderUtility.GetPackageV3(root, a, testLogger);
@@ -888,7 +888,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackageV3NotFound()
+        public async Task LocalFolderUtility_GetPackageV3NotFoundAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -898,8 +898,8 @@ namespace NuGet.Protocol.Tests
                 var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
                 var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, b);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, c);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, b);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, c);
 
                 // Act
                 var foundA = LocalFolderUtility.GetPackageV3(root, a, testLogger);
@@ -1050,7 +1050,7 @@ namespace NuGet.Protocol.Tests
 
         [Theory]
         [MemberData("GetValidVersions")]
-        public void LocalFolderUtility_VerifyPackageCanBeFoundV2_NonNormalizedOnDisk(string versionString)
+        public async Task LocalFolderUtility_VerifyPackageCanBeFoundV2_NonNormalizedOnDiskAsync(string versionString)
         {
             using (var root = TestDirectory.Create())
             {
@@ -1060,7 +1060,7 @@ namespace NuGet.Protocol.Tests
                 var normalizedVersion = NuGetVersion.Parse(NuGetVersion.Parse(versionString).ToNormalizedString());
                 var identity = new PackageIdentity("a", version);
 
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, identity);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, identity);
 
                 // Act
                 var findPackage = LocalFolderUtility.GetPackageV2(root, "a", version, testLogger);
@@ -1078,7 +1078,7 @@ namespace NuGet.Protocol.Tests
 
         [Theory]
         [MemberData("GetValidVersions")]
-        public void LocalFolderUtility_VerifyPackageCanBeFoundV2_NormalizedOnDisk(string versionString)
+        public async Task LocalFolderUtility_VerifyPackageCanBeFoundV2_NormalizedOnDiskAsync(string versionString)
         {
             using (var root = TestDirectory.Create())
             {
@@ -1089,7 +1089,7 @@ namespace NuGet.Protocol.Tests
                 var identity = new PackageIdentity("a", version);
                 var normalizedIdentity = new PackageIdentity("a", normalizedVersion);
 
-                SimpleTestPackageUtility.CreateFolderFeedV2(root, normalizedIdentity);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(root, normalizedIdentity);
 
                 // Act
                 var findPackage = LocalFolderUtility.GetPackageV2(root, "a", version, testLogger);
@@ -1107,7 +1107,7 @@ namespace NuGet.Protocol.Tests
 
         [Theory]
         [MemberData("GetValidVersions")]
-        public async Task LocalFolderUtility_VerifyPackageCanBeFoundV3_NonNormalizedOnDisk(string versionString)
+        public async Task LocalFolderUtility_VerifyPackageCanBeFoundV3_NonNormalizedOnDiskAsync(string versionString)
         {
             using (var root = TestDirectory.Create())
             {
@@ -1117,7 +1117,7 @@ namespace NuGet.Protocol.Tests
                 var normalizedVersion = NuGetVersion.Parse(NuGetVersion.Parse(versionString).ToNormalizedString());
                 var identity = new PackageIdentity("a", version);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, identity);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, identity);
 
                 // Act
                 var findPackage = LocalFolderUtility.GetPackageV3(root, "a", version, testLogger);
@@ -1135,7 +1135,7 @@ namespace NuGet.Protocol.Tests
 
         [Theory]
         [MemberData("GetValidVersions")]
-        public async Task LocalFolderUtility_VerifyPackageCanBeFoundV3_NormalizedOnDisk(string versionString)
+        public async Task LocalFolderUtility_VerifyPackageCanBeFoundV3_NormalizedOnDiskAsync(string versionString)
         {
             using (var root = TestDirectory.Create())
             {
@@ -1146,7 +1146,7 @@ namespace NuGet.Protocol.Tests
                 var identity = new PackageIdentity("a", version);
                 var normalizedIdentity = new PackageIdentity("a", normalizedVersion);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(root, normalizedIdentity);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(root, normalizedIdentity);
 
                 // Act
                 var findPackage = LocalFolderUtility.GetPackageV3(root, "a", version, testLogger);

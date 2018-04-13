@@ -116,7 +116,7 @@ namespace NuGet.PackageManagement.Test
             {
                 var tc = new TestContext(userPackageFolder);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     userPackageFolder,
                     PackageSaveMode.Defaultv3,
                     new[]
@@ -163,7 +163,7 @@ namespace NuGet.PackageManagement.Test
             {
                 var tc = new TestContext(userPackageFolder);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     userPackageFolder,
                     PackageSaveMode.Defaultv3,
                     new[]

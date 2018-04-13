@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,7 +15,7 @@ namespace NuGet.Commands.Test
     public class MinClientVersionTests
     {
         [Fact]
-        public async Task MinClientVersion_DependencyVersionTooHigh()
+        public async Task MinClientVersion_DependencyVersionTooHighAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -53,9 +53,10 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
                 var packageBContext = new SimpleTestPackageContext()
                 {
@@ -72,7 +73,7 @@ namespace NuGet.Commands.Test
                     Dependencies = new List<SimpleTestPackageContext>() { packageBContext }
                 };
 
-                SimpleTestPackageUtility.CreatePackages(packageSource.FullName, packageAContext, packageBContext);
+                await SimpleTestPackageUtility.CreatePackagesAsync(packageSource.FullName, packageAContext, packageBContext);
 
                 Exception ex = null;
 

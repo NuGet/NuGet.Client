@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace NuGet.Protocol.Tests
         };
 
         [Fact]
-        public async Task FindLocalPackagesResource_GetPackagesBasic()
+        public async Task FindLocalPackagesResource_GetPackagesBasicAsync()
         {
             using (var rootPackagesConfig = TestDirectory.Create())
             using (var rootUnzip = TestDirectory.Create())
@@ -46,7 +46,7 @@ namespace NuGet.Protocol.Tests
             {
                 // Arrange
                 var testLogger = new TestLogger();
-                await CreateFeeds(rootV2, rootV3, rootUnzip, rootPackagesConfig, PackageSet1);
+                await CreateFeedsAsync(rootV2, rootV3, rootUnzip, rootPackagesConfig, PackageSet1);
                 var expected = new HashSet<PackageIdentity>(PackageSet1);
 
                 var resources = new FindLocalPackagesResource[]
@@ -116,7 +116,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task FindLocalPackagesResource_FindPackagesByIdBasic()
+        public async Task FindLocalPackagesResource_FindPackagesByIdBasicAsync()
         {
             using (var rootPackagesConfig = TestDirectory.Create())
             using (var rootUnzip = TestDirectory.Create())
@@ -125,7 +125,7 @@ namespace NuGet.Protocol.Tests
             {
                 // Arrange
                 var testLogger = new TestLogger();
-                await CreateFeeds(rootV2, rootV3, rootUnzip, rootPackagesConfig, PackageSet1);
+                await CreateFeedsAsync(rootV2, rootV3, rootUnzip, rootPackagesConfig, PackageSet1);
                 var expected = new HashSet<PackageIdentity>(new[] 
                 {
                     PackageA1,
@@ -162,7 +162,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task FindLocalPackagesResource_GetPackageBasic()
+        public async Task FindLocalPackagesResource_GetPackageBasicAsync()
         {
             using (var rootPackagesConfig = TestDirectory.Create())
             using (var rootUnzip = TestDirectory.Create())
@@ -171,7 +171,7 @@ namespace NuGet.Protocol.Tests
             {
                 // Arrange
                 var testLogger = new TestLogger();
-                await CreateFeeds(rootV2, rootV3, rootUnzip, rootPackagesConfig, PackageSet1);
+                await CreateFeedsAsync(rootV2, rootV3, rootUnzip, rootPackagesConfig, PackageSet1);
                 var expected = new HashSet<PackageIdentity>(new[]
                 {
                     PackageA1,
@@ -206,13 +206,13 @@ namespace NuGet.Protocol.Tests
             }
         }
 
-        private async Task CreateFeeds(string rootV2, string rootV3, string rootUnzip, string rootPackagesConfig, params PackageIdentity[] packages)
+        private async Task CreateFeedsAsync(string rootV2, string rootV3, string rootUnzip, string rootPackagesConfig, params PackageIdentity[] packages)
         {
             foreach (var package in packages)
             {
-                SimpleTestPackageUtility.CreateFolderFeedV2(rootV2, package);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(rootV3, package);
-                SimpleTestPackageUtility.CreateFolderFeedUnzip(rootUnzip, package);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(rootV2, package);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(rootV3, package);
+                await SimpleTestPackageUtility.CreateFolderFeedUnzipAsync(rootUnzip, package);
                 await SimpleTestPackageUtility.CreateFolderFeedPackagesConfigAsync(rootPackagesConfig, package);
             }
         }

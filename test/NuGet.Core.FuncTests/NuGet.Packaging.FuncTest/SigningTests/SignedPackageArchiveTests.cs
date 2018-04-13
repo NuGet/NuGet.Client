@@ -44,7 +44,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task RemoveSignatureAsync_WithCancelledToken_Throws()
+        public async Task RemoveSignatureAsync_WithCancelledToken_ThrowsAsync()
         {
             using (var test = await Test.CreateAsync(_fixture))
             {
@@ -54,9 +54,9 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task RemoveSignatureAsync_WithUnsignedPackage_Throws()
+        public async Task RemoveSignatureAsync_WithUnsignedPackage_ThrowsAsync()
         {
-            using (var test = Test.CreateUnsigned())
+            using (var test = await Test.CreateUnsignedAsync())
             {
                 var isSigned = await SignedArchiveTestUtility.IsSignedAsync(test.InputPackageStream);
 
@@ -96,10 +96,10 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            internal static Test CreateUnsigned()
+            internal static async Task<Test> CreateUnsignedAsync()
             {
                 var packageContext = new SimpleTestPackageContext();
-                var package = packageContext.CreateAsStream();
+                var package = await packageContext.CreateAsStreamAsync();
 
                 return new Test(package);
             }
@@ -125,7 +125,7 @@ namespace NuGet.Packaging.FuncTest
                 if (unsignedPackage == null)
                 {
                     var packageContext = new SimpleTestPackageContext();
-                    unsignedPackage = packageContext.CreateAsStream();
+                    unsignedPackage = await packageContext.CreateAsStreamAsync();
                 }
 
                 var signatureProvider = new X509SignatureProvider(timestampProvider: null);

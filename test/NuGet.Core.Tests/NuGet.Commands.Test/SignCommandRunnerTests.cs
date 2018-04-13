@@ -22,9 +22,9 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task ExecuteCommandAsync_WithCertificateFileNotFound_Throws()
+        public async Task ExecuteCommandAsync_WithCertificateFileNotFound_ThrowsAsync()
         {
-            using (var test = Test.Create(_fixture.GetDefaultCertificate()))
+            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 var certificateFilePath = Path.Combine(test.Directory.Path, "certificate.pfx");
 
@@ -39,9 +39,9 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task ExecuteCommandAsync_WithEmptyPkcs7File_Throws()
+        public async Task ExecuteCommandAsync_WithEmptyPkcs7File_ThrowsAsync()
         {
-            using (var test = Test.Create(_fixture.GetDefaultCertificate()))
+            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 const string fileName = "EmptyCertificateStore.p7b";
                 var certificateFilePath = Path.Combine(test.Directory.Path, fileName);
@@ -64,9 +64,9 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task ExecuteCommandAsync_WithNoCertificateFound_Throws()
+        public async Task ExecuteCommandAsync_WithNoCertificateFound_ThrowsAsync()
         {
-            using (var test = Test.Create(_fixture.GetDefaultCertificate()))
+            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 test.Args.CertificateFingerprint = "invalid fingerprint";
                 test.Args.CertificateStoreLocation = StoreLocation.CurrentUser;
@@ -81,11 +81,11 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task ExecuteCommandAsync_WithIncorrectPassword_Throws()
+        public async Task ExecuteCommandAsync_WithIncorrectPassword_ThrowsAsync()
         {
             const string password = "password";
 
-            using (var test = Test.Create(_fixture.GetCertificateWithPassword(password)))
+            using (var test = await Test.CreateAsync(_fixture.GetCertificateWithPassword(password)))
             {
                 var certificateFilePath = Path.Combine(test.Directory.Path, "certificate.pfx");
 
@@ -103,9 +103,9 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task ExecuteCommandAsync_WithAmbiguousMatch_Throws()
+        public async Task ExecuteCommandAsync_WithAmbiguousMatch_ThrowsAsync()
         {
-            using (var test = Test.Create(_fixture.GetDefaultCertificate()))
+            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 test.Args.CertificateSubjectName = "Root";
                 test.Args.CertificateStoreLocation = StoreLocation.LocalMachine;
@@ -120,11 +120,11 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task ExecuteCommandAsync_WithMultiplePackagesAndInvalidCertificate_RaisesErrorsOnce()
+        public async Task ExecuteCommandAsync_WithMultiplePackagesAndInvalidCertificate_RaisesErrorsOnceAsync()
         {
             const string password = "password";
 
-            using (var test = Test.Create(_fixture.GetCertificateWithPassword(password)))
+            using (var test = await Test.CreateAsync(_fixture.GetCertificateWithPassword(password)))
             {
                 var certificateFilePath = Path.Combine(test.Directory.Path, "certificate.pfx");
 
@@ -133,7 +133,7 @@ namespace NuGet.Commands.Test
                 test.Args.CertificatePath = certificateFilePath;
                 test.Args.CertificatePassword = password;
 
-                Test.CreatePackage(test.Directory, "package2.nupkg");
+                await Test.CreatePackageAsync(test.Directory, "package2.nupkg");
 
                 var packagesFilePath = Path.Combine(test.Directory, "*.nupkg");
 
@@ -186,10 +186,10 @@ namespace NuGet.Commands.Test
                 }
             }
 
-            internal static Test Create(X509Certificate2 certificate)
+            internal static async Task<Test> CreateAsync(X509Certificate2 certificate)
             {
                 var directory = TestDirectory.Create();
-                var packageFilePath = CreatePackage(directory, "package.nupkg");
+                var packageFilePath = await CreatePackageAsync(directory, "package.nupkg");
                 var logger = new TestLogger();
 
                 var args = new SignArgs()
@@ -202,11 +202,12 @@ namespace NuGet.Commands.Test
                 return new Test(args, directory, certificate, logger);
             }
 
-            internal static string CreatePackage(TestDirectory directory, string packageFileName)
+            internal static async Task<string> CreatePackageAsync(TestDirectory directory, string packageFileName)
             {
                 var packageFilePath = Path.Combine(directory.Path, packageFileName);
+                var package = new SimpleTestPackageContext();
 
-                using (var readStream = new SimpleTestPackageContext().CreateAsStream())
+                using (var readStream = await package.CreateAsStreamAsync())
                 using (var writeStream = File.OpenWrite(packageFilePath))
                 {
                     readStream.CopyTo(writeStream);

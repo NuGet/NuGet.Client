@@ -63,7 +63,7 @@ namespace NuGet.Commands.Test
 
                 packageA.Dependencies.Add(packageB);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageA,
@@ -149,7 +149,7 @@ namespace NuGet.Commands.Test
                     NuGetVersion.Parse("1.0.0"),
                     NuGetFramework.Parse("netcoreapp1.0"));
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
 
                 // Act
                 var result = await CommandsTestUtility.RunSingleRestore(dgFile, pathContext, logger);
@@ -203,7 +203,7 @@ namespace NuGet.Commands.Test
                     NuGetVersion.Parse("1.0.0"),
                     NuGetFramework.Parse("netcoreapp1.0"));
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
 
                 // Act
                 var results1 = await CommandsTestUtility.RunRestore(dgFile1, pathContext, logger1);
@@ -260,7 +260,7 @@ namespace NuGet.Commands.Test
                     NuGetVersion.Parse("1.0.0"),
                     NuGetFramework.Parse("netcoreapp1.0"));
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
 
                 // Act
                 var results = await CommandsTestUtility.RunRestore(dgFile, pathContext, logger);
@@ -311,7 +311,7 @@ namespace NuGet.Commands.Test
 
                 foreach (var version in versions)
                 {
-                    await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, new PackageIdentity("a", version.MinVersion));
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new PackageIdentity("a", version.MinVersion));
                 }
 
                 // Act

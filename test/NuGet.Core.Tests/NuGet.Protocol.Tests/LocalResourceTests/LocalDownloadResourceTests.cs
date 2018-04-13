@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace NuGet.Protocol.Tests
     public class LocalDownloadResourceTests
     {
         [Fact]
-        public async Task LocalDownloadResource_PackageIsReturned()
+        public async Task LocalDownloadResource_PackageIsReturnedAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -43,7 +43,7 @@ namespace NuGet.Protocol.Tests
                     packageB
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
                 string packagesFolder = null; // This is unused by the implementation.
 
                 var localResource = new FindLocalPackagesResourceV2(root);
@@ -73,7 +73,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDownloadResource_PackageIsReturnedNonNormalized()
+        public async Task LocalDownloadResource_PackageIsReturnedNonNormalizedAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -105,7 +105,7 @@ namespace NuGet.Protocol.Tests
                     packageA3
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
                 string packagesFolder = null; // This is unused by the implementation.
 
                 var localResource = new FindLocalPackagesResourceV2(root);
@@ -151,7 +151,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDownloadResource_PackageIsReturnedSemVer2()
+        public async Task LocalDownloadResource_PackageIsReturnedSemVer2Async()
         {
             using (var root = TestDirectory.Create())
             {
@@ -177,7 +177,7 @@ namespace NuGet.Protocol.Tests
                     packageB
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
                 string packagesFolder = null; // This is unused by the implementation.
 
                 var localResource = new FindLocalPackagesResourceV2(root);
@@ -207,7 +207,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDownloadResource_PackageNotFound()
+        public async Task LocalDownloadResource_PackageNotFoundAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -233,7 +233,7 @@ namespace NuGet.Protocol.Tests
                     packageB
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
                 string packagesFolder = null; // This is unused by the implementation.
 
                 var localResource = new FindLocalPackagesResourceV2(root);
@@ -256,7 +256,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDownloadResource_PackageNotFoundEmptyFolder()
+        public async Task LocalDownloadResource_PackageNotFoundEmptyFolderAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -284,7 +284,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDownloadResource_PackageNotFoundNoFolder()
+        public async Task LocalDownloadResource_PackageNotFoundNoFolderAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -314,7 +314,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDownloadResource_PackageIsReturnedUnzippedFolder()
+        public async Task LocalDownloadResource_PackageIsReturnedUnzippedFolderAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -322,7 +322,7 @@ namespace NuGet.Protocol.Tests
                 var testLogger = new TestLogger();
 
                 var id = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
-                SimpleTestPackageUtility.CreateFolderFeedUnzip(root, id);
+                await SimpleTestPackageUtility.CreateFolderFeedUnzipAsync(root, id);
                 string packagesFolder = null; // This is unused by the implementation.
 
                 var localResource = new FindLocalPackagesResourceUnzipped(root);

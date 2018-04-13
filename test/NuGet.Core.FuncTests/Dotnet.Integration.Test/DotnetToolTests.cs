@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -81,7 +82,7 @@ namespace Dotnet.Integration.Test
         [InlineData("net461")]
         [InlineData("netcoreapp1.0")]
         [InlineData("netcoreapp2.0")]
-        public void DotnetToolTests_BasicDotnetToolRestore_Succeeds(string tfm)
+        public async Task DotnetToolTests_BasicDotnetToolRestore_SucceedsAsync(string tfm)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -99,7 +100,7 @@ namespace Dotnet.Integration.Test
                 package.PackageType = PackageType.DotnetTool;
                 package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
-                SimpleTestPackageUtility.CreatePackages(source, package);
+                await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
 
                 _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
                     projectName: projectName, targetFramework: tfm, rid: rid,
@@ -126,7 +127,7 @@ namespace Dotnet.Integration.Test
         [InlineData("net461")]
         [InlineData("netcoreapp1.0")]
         [InlineData("netcoreapp2.0")]
-        public void DotnetToolTests_MismatchedRID_Fails(string tfm)
+        public async Task DotnetToolTests_MismatchedRID_FailsAsync(string tfm)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -145,7 +146,7 @@ namespace Dotnet.Integration.Test
                 package.PackageType = PackageType.DotnetTool;
                 package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
-                SimpleTestPackageUtility.CreatePackages(source, package);
+                await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
 
                 _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
                     projectName: projectName, targetFramework: tfm, rid: projectRID,
@@ -163,7 +164,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp2.0")]
-        public void DotnetToolTests_BasicDotnetToolRestore_WithJsonCompatibleAssets_Succeeds(string tfm)
+        public async Task DotnetToolTests_BasicDotnetToolRestore_WithJsonCompatibleAssets_SucceedsAsync(string tfm)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -183,7 +184,7 @@ namespace Dotnet.Integration.Test
                 package.PackageType = PackageType.DotnetTool;
                 package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
-                SimpleTestPackageUtility.CreatePackages(source, package);
+                await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
 
                 _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
                     projectName: projectName, targetFramework: tfm, rid: rid,
@@ -212,7 +213,7 @@ namespace Dotnet.Integration.Test
         [InlineData("netcoreapp2.0", "any", "win-x64")]
         [InlineData("net461", "any", "win-x86")]
         [InlineData("netcoreapp2.0", "any", "win-x86")]
-        public void DotnetToolTests_PackageWithRuntimeJson_RuntimeIdentifierAny_Succeeds(string tfm, string packageRID, string projectRID)
+        public async Task DotnetToolTests_PackageWithRuntimeJson_RuntimeIdentifierAny_SucceedsAsync(string tfm, string packageRID, string projectRID)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -231,7 +232,7 @@ namespace Dotnet.Integration.Test
                 package.PackageType = PackageType.DotnetTool;
                 package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
-                SimpleTestPackageUtility.CreatePackages(source, package);
+                await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
 
                 _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
                     projectName: projectName, targetFramework: tfm, rid: projectRID,
@@ -260,7 +261,7 @@ namespace Dotnet.Integration.Test
         [InlineData("netcoreapp2.0", "any", "win-x64")]
         [InlineData("net461", "any", "win-x86")]
         [InlineData("netcoreapp2.0", "any", "win-x86")]
-        public void DotnetToolTests_PackageWithoutRuntimeJson_RuntimeIdentifierAny_Fails(string tfm, string packageRID, string projectRID)
+        public async Task DotnetToolTests_PackageWithoutRuntimeJson_RuntimeIdentifierAny_FailsAsync(string tfm, string packageRID, string projectRID)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -278,7 +279,7 @@ namespace Dotnet.Integration.Test
                 package.PackageType = PackageType.DotnetTool;
                 package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
-                SimpleTestPackageUtility.CreatePackages(source, package);
+                await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
 
                 _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
                     projectName: projectName, targetFramework: tfm, rid: projectRID,
@@ -298,7 +299,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp1.0")]
-        public void DotnetToolTests_RegularDependencyAndToolPackageWithDependenciesToolRestore_ThrowsError(string tfm)
+        public async Task DotnetToolTests_RegularDependencyAndToolPackageWithDependenciesToolRestore_ThrowsErrorAsync(string tfm)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -318,7 +319,7 @@ namespace Dotnet.Integration.Test
                 package.PackageType = PackageType.DotnetTool;
                 package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
-                SimpleTestPackageUtility.CreatePackages(localSource, package);
+                await SimpleTestPackageUtility.CreatePackagesAsync(localSource, package);
 
                 var packages = new List<PackageIdentity>() {
                     new PackageIdentity(packageName, packageVersion),
@@ -342,7 +343,7 @@ namespace Dotnet.Integration.Test
 
         [PlatformTheory(Platform.Windows)]
         [InlineData("netcoreapp1.0", "any", "win7-x64")]
-        public void DotnetToolTests_ToolWithPlatformPackage_Succeeds(string tfm, string packageRid, string projectRid)
+        public async Task DotnetToolTests_ToolWithPlatformPackage_SucceedsAsync(string tfm, string packageRid, string projectRid)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -370,7 +371,7 @@ namespace Dotnet.Integration.Test
                 toolPackage.PackageTypes.Add(PackageType.DotnetTool);
                 toolPackage.Dependencies.Add(platformsPackage);
 
-                SimpleTestPackageUtility.CreatePackages(localSource, toolPackage, platformsPackage);
+                await SimpleTestPackageUtility.CreatePackagesAsync(localSource, toolPackage, platformsPackage);
 
                 var packages = new List<PackageIdentity>() {
                     new PackageIdentity(packageName, packageVersion),
@@ -398,7 +399,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp2.0")]
-        public void DotnetToolTests_ToolPackageWithIncompatibleToolsAssets_Fails(string tfm)
+        public async Task DotnetToolTests_ToolPackageWithIncompatibleToolsAssets_FailsAsync(string tfm)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -420,7 +421,7 @@ namespace Dotnet.Integration.Test
                 package.PackageType = PackageType.DotnetTool;
                 package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
-                SimpleTestPackageUtility.CreatePackages(source, package);
+                await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
 
                 _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
                     projectName: projectName, targetFramework: tfm, rid: rid,
@@ -437,7 +438,7 @@ namespace Dotnet.Integration.Test
 
         [PlatformTheory(Platform.Windows)]
         [InlineData("netcoreapp2.0")]
-        public void DotnetToolTests_ToolsPackageWithExtraPackageTypes_Fails(string tfm)
+        public async Task DotnetToolTests_ToolsPackageWithExtraPackageTypes_FailsAsync(string tfm)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -455,7 +456,7 @@ namespace Dotnet.Integration.Test
                 package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 package.PackageTypes.Add(PackageType.Dependency);
-                SimpleTestPackageUtility.CreatePackages(source, package);
+                await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
 
                 _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
                     projectName: projectName, targetFramework: tfm, rid: rid,
@@ -473,7 +474,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp2.0")]
-        public void DotnetToolTests_BasicDotnetToolRestoreWithNestedValues_Succeeds(string tfm)
+        public async Task DotnetToolTests_BasicDotnetToolRestoreWithNestedValues_SucceedsAsync(string tfm)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -492,7 +493,7 @@ namespace Dotnet.Integration.Test
                 package.PackageType = PackageType.DotnetTool;
                 package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
-                SimpleTestPackageUtility.CreatePackages(source, package);
+                await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
 
                 _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
                     projectName: projectName, targetFramework: tfm, rid: rid,
@@ -520,7 +521,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp1.0")]
-        public void DotnetToolTests_AutoreferencedDependencyAndToolPackagToolRestore_Succeeds(string tfm)
+        public async Task DotnetToolTests_AutoreferencedDependencyAndToolPackagToolRestore_SucceedsAsync(string tfm)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -541,7 +542,7 @@ namespace Dotnet.Integration.Test
                 package.PackageType = PackageType.DotnetTool;
                 package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
-                SimpleTestPackageUtility.CreatePackages(localSource, package);
+                await SimpleTestPackageUtility.CreatePackagesAsync(localSource, package);
 
                 var packages = new List<PackageIdentity>() {
                     new PackageIdentity(packageName, packageVersion),
@@ -573,7 +574,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp1.0")]
-        public void DotnetToolTests_AutoreferencedDependencyRegularDependencyAndToolPackagToolRestore_Throws(string tfm)
+        public async Task DotnetToolTests_AutoreferencedDependencyRegularDependencyAndToolPackagToolRestore_ThrowsAsync(string tfm)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -594,7 +595,7 @@ namespace Dotnet.Integration.Test
                 package.PackageType = PackageType.DotnetTool;
                 package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
-                SimpleTestPackageUtility.CreatePackages(localSource, package);
+                await SimpleTestPackageUtility.CreatePackagesAsync(localSource, package);
 
                 var packages = new List<PackageIdentity>() {
                     new PackageIdentity(packageName, packageVersion),
@@ -625,7 +626,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp1.0")]
-        public void DotnetToolTests_ToolPackageAndPlatformsPackageAnyRID_Succeeds(string tfm)
+        public async Task DotnetToolTests_ToolPackageAndPlatformsPackageAnyRID_SucceedsAsync(string tfm)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -647,7 +648,7 @@ namespace Dotnet.Integration.Test
                 package.PackageType = PackageType.DotnetTool;
                 package.UseDefaultRuntimeAssemblies = false;
                 package.PackageTypes.Add(PackageType.DotnetTool);
-                SimpleTestPackageUtility.CreatePackages(localSource, package);
+                await SimpleTestPackageUtility.CreatePackagesAsync(localSource, package);
 
                 var packages = new List<PackageIdentity>() {
                     new PackageIdentity(packageName, packageVersion),
@@ -677,7 +678,7 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void DotnetToolTests_IncompatibleAutorefPackageAndToolsPackage()
+        public async Task DotnetToolTests_IncompatibleAutorefPackageAndToolsPackageAsync()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -705,7 +706,7 @@ namespace Dotnet.Integration.Test
                 autorefPackage.AddFile($"lib/{incompatibletfm}/b.dll");
                 autorefPackage.UseDefaultRuntimeAssemblies = false;
 
-                SimpleTestPackageUtility.CreatePackages(localSource, package, autorefPackage);
+                await SimpleTestPackageUtility.CreatePackagesAsync(localSource, package, autorefPackage);
 
                 var packages = new List<PackageIdentity>() {
                     new PackageIdentity(packageName, packageVersion),
