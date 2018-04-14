@@ -264,7 +264,7 @@ namespace NuGet.Commands.Test
 
                 packageX.Dependencies.Add(packageY);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,

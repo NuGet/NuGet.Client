@@ -53,7 +53,7 @@ namespace NuGet.Repositories.Test
                             Assert.Null(result);
 
                                 // Create package
-                                await SimpleTestPackageUtility.CreateFolderFeedV3(workingDir,
+                                await SimpleTestPackageUtility.CreateFolderFeedV3Async(workingDir,
                                         PackageSaveMode.Defaultv3,
                                         identity);
 
@@ -94,7 +94,7 @@ namespace NuGet.Repositories.Test
                     packages.Add(new PackageIdentity(id, NuGetVersion.Parse($"{i + 1}.0.0")));
                 }
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(workingDir, packages.ToArray());
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(workingDir, packages.ToArray());
 
                 var tasks = new List<Task>();
                 var sem = new ManualResetEventSlim(false);
@@ -155,7 +155,7 @@ namespace NuGet.Repositories.Test
             using (var workingDir = TestDirectory.Create())
             {
                 var target = new NuGetv3LocalRepository(workingDir);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     workingDir,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext("foo", "1.0.0"));
@@ -170,7 +170,7 @@ namespace NuGet.Repositories.Test
             using (var workingDir = TestDirectory.Create())
             {
                 var target = new NuGetv3LocalRepository(workingDir);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     workingDir,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext("foo", "1.0.0"));
@@ -188,7 +188,7 @@ namespace NuGet.Repositories.Test
             {
                 var id = "Foo";
                 var target = new NuGetv3LocalRepository(workingDir);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     workingDir,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext("foo", "1.0.0"));
@@ -211,7 +211,7 @@ namespace NuGet.Repositories.Test
             {
                 var id = "Foo";
                 var target = new NuGetv3LocalRepository(workingDir);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     workingDir,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext(id, "1.0.0"),
@@ -254,7 +254,7 @@ namespace NuGet.Repositories.Test
             {
                 var id = "Foo";
                 var target = new NuGetv3LocalRepository(workingDir);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     workingDir,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext(id, "1.0.0"),
@@ -276,7 +276,7 @@ namespace NuGet.Repositories.Test
             {
                 var id = "Foo";
                 var target = new NuGetv3LocalRepository(workingDir);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     workingDir,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext(id, "1.0.0"),
@@ -300,7 +300,7 @@ namespace NuGet.Repositories.Test
             {
                 var id = "Foo";
                 var target = new NuGetv3LocalRepository(workingDir);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     workingDir,
                     PackageSaveMode.Defaultv3,
                     new SimpleTestPackageContext(id, "1.0.0"),
@@ -350,7 +350,7 @@ namespace NuGet.Repositories.Test
                 package.RuntimeJson = runtimeJsonX1;
 
                 var target = new NuGetv3LocalRepository(workingDir);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     workingDir,
                     PackageSaveMode.Defaultv3,
                     package);
@@ -374,7 +374,7 @@ namespace NuGet.Repositories.Test
                 var package = new SimpleTestPackageContext(id, "1.0.0");
 
                 var target = new NuGetv3LocalRepository(workingDir);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     workingDir,
                     PackageSaveMode.Defaultv3,
                     package);

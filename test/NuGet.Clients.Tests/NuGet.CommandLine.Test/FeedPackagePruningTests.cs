@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Protocol;
@@ -16,7 +17,7 @@ namespace NuGet.CommandLine.Test
     public class FeedPackagePruningTests
     {
         [Fact]
-        public void FeedPackagePruning_GivenThatAV3FeedPrunesAPackageDuringRestoreVerifyRestoreRecovers()
+        public async Task FeedPackagePruning_GivenThatAV3FeedPrunesAPackageDuringRestoreVerifyRestoreRecoversAsync()
         {
             // Arrange
             using (var server = new MockServer())
@@ -30,7 +31,7 @@ namespace NuGet.CommandLine.Test
                 var packageX100 = new SimpleTestPackageContext("x", "1.0.0");
                 var packageX200 = new SimpleTestPackageContext("x", "2.0.0");
 
-                SimpleTestPackageUtility.CreatePackages(
+                await SimpleTestPackageUtility.CreatePackagesAsync(
                     serverRepoPath,
                     packageX100,
                     packageX200);

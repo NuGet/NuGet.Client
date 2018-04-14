@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,7 +17,7 @@ namespace NuGet.Commands.Test
     public class RuntimeTargetsTests
     {
         [Fact]
-        public async Task RestoreTargets_RestoreWithNoRuntimes()
+        public async Task RestoreTargets_RestoreWithNoRuntimesAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -72,7 +72,7 @@ namespace NuGet.Commands.Test
                 packageA.AddFile("ref/netstandard1.5/a.dll");
                 packageA.AddFile("contentFiles/any/any/a.dll");
 
-                SimpleTestPackageUtility.CreatePackages(packageSource.FullName, packageA);
+                await SimpleTestPackageUtility.CreatePackagesAsync(packageSource.FullName, packageA);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -90,7 +90,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreTargets_RestoreWithRuntimes()
+        public async Task RestoreTargets_RestoreWithRuntimesAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -128,9 +128,10 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
                 request.RequestedRuntimes.Add("win7-x86");
 
                 var packageA = new SimpleTestPackageContext()
@@ -146,7 +147,7 @@ namespace NuGet.Commands.Test
                 packageA.AddFile("runtimes/win7-x86/lib/netstandard1.5/a.dll");
                 packageA.AddFile("runtimes/win7-x86/lib/netstandard1.5/en-us/a.resources.dll");
 
-                SimpleTestPackageUtility.CreatePackages(packageSource.FullName, packageA);
+                await SimpleTestPackageUtility.CreatePackagesAsync(packageSource.FullName, packageA);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -181,7 +182,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreTargets_RestoreWithRuntimes_ExcludeAll()
+        public async Task RestoreTargets_RestoreWithRuntimes_ExcludeAllAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -222,9 +223,10 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
                 request.RequestedRuntimes.Add("win7-x86");
 
                 var packageA = new SimpleTestPackageContext()
@@ -240,7 +242,7 @@ namespace NuGet.Commands.Test
                 packageA.AddFile("runtimes/win7-x86/lib/netstandard1.5/a.dll");
                 packageA.AddFile("runtimes/win7-x86/lib/netstandard1.5/en-us/a.resources.dll");
 
-                SimpleTestPackageUtility.CreatePackages(packageSource.FullName, packageA);
+                await SimpleTestPackageUtility.CreatePackagesAsync(packageSource.FullName, packageA);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -275,7 +277,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreTargets_RestoreWithRuntimesAndNearestFramework()
+        public async Task RestoreTargets_RestoreWithRuntimesAndNearestFrameworkAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -313,9 +315,10 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
                 request.RequestedRuntimes.Add("win7-x86");
 
                 var packageA = new SimpleTestPackageContext()
@@ -335,7 +338,7 @@ namespace NuGet.Commands.Test
 
                 packageA.AddFile("runtimes/win-any/lib/net45/a.dll");
 
-                SimpleTestPackageUtility.CreatePackages(packageSource.FullName, packageA);
+                await SimpleTestPackageUtility.CreatePackagesAsync(packageSource.FullName, packageA);
 
                 // Act
                 var command = new RestoreCommand(request);

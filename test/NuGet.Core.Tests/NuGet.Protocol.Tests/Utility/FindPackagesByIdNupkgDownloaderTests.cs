@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,7 +24,7 @@ namespace NuGet.Protocol.Tests
         [InlineData(HttpStatusCode.NoContent, 1)]
         [InlineData(HttpStatusCode.NotFound, 1)]
         [InlineData(HttpStatusCode.InternalServerError, 3)]
-        public async Task CopyNupkgToStreamAsync_DoesNothingWithDestinationStreamWhenNupkgIsNotFound(
+        public async Task CopyNupkgToStreamAsync_DoesNothingWithDestinationStreamWhenNupkgIsNotFoundAsync(
             HttpStatusCode statusCode,
             int expectedRequests)
         {
@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Tests
             using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
-                var tc = new TestContext(testDirectory);
+                var tc = await TestContext.CreateAsync(testDirectory);
                 tc.StatusCode = statusCode;
 
                 // Act
@@ -56,7 +56,7 @@ namespace NuGet.Protocol.Tests
         [InlineData(HttpStatusCode.NoContent, 1)]
         [InlineData(HttpStatusCode.NotFound, 1)]
         [InlineData(HttpStatusCode.InternalServerError, 3)]
-        public async Task GetNuspecReaderFromNupkgAsync_ThrowsWhenNupkgIsNotFound(
+        public async Task GetNuspecReaderFromNupkgAsync_ThrowsWhenNupkgIsNotFoundAsync(
             HttpStatusCode statusCode,
             int expectedRequests)
         {
@@ -64,7 +64,7 @@ namespace NuGet.Protocol.Tests
             using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
-                var tc = new TestContext(testDirectory);
+                var tc = await TestContext.CreateAsync(testDirectory);
                 tc.StatusCode = statusCode;
 
                 // Act & Assert
@@ -81,13 +81,13 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetNuspecReaderFromNupkgAsync_GetsNuspecReader()
+        public async Task GetNuspecReaderFromNupkgAsync_GetsNuspecReaderAsync()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
-                var tc = new TestContext(testDirectory);
+                var tc = await TestContext.CreateAsync(testDirectory);
 
                 // Act
                 var nuspecReader = await tc.Target.GetNuspecReaderFromNupkgAsync(
@@ -106,13 +106,13 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetNuspecReaderFromNupkgAsync_DoesNotWriteCacheFileWithDirectDownload()
+        public async Task GetNuspecReaderFromNupkgAsync_DoesNotWriteCacheFileWithDirectDownloadAsync()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
-                var tc = new TestContext(testDirectory);
+                var tc = await TestContext.CreateAsync(testDirectory);
                 cacheContext.DirectDownload = true;
 
                 // Act
@@ -141,13 +141,13 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task CopyNupkgToStreamAsync_CopiesNupkgToDestinationStream()
+        public async Task CopyNupkgToStreamAsync_CopiesNupkgToDestinationStreamAsync()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
-                var tc = new TestContext(testDirectory);
+                var tc = await TestContext.CreateAsync(testDirectory);
 
                 // Act
                 var copied = await tc.Target.CopyNupkgToStreamAsync(
@@ -167,13 +167,13 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task CopyNupkgToStreamAsync_RemembersCacheFileLocationWithoutDirectDownload()
+        public async Task CopyNupkgToStreamAsync_RemembersCacheFileLocationWithoutDirectDownloadAsync()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
-                var tc = new TestContext(testDirectory);
+                var tc = await TestContext.CreateAsync(testDirectory);
 
                 // Act
                 // This should record the cache entry in memory.
@@ -207,13 +207,13 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task CopyNupkgToStreamAsync_DoesNotWriteCacheFileWithDirectDownload()
+        public async Task CopyNupkgToStreamAsync_DoesNotWriteCacheFileWithDirectDownloadAsync()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
-                var tc = new TestContext(testDirectory);
+                var tc = await TestContext.CreateAsync(testDirectory);
                 cacheContext.DirectDownload = true;
 
                 // Act
@@ -249,13 +249,13 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task CopyNupkgToStreamAsync_DirectDownloadPopulatesInMemoryCache()
+        public async Task CopyNupkgToStreamAsync_DirectDownloadPopulatesInMemoryCacheAsync()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
-                var tc = new TestContext(testDirectory);
+                var tc = await TestContext.CreateAsync(testDirectory);
 
                 // Populate the disk cache.
                 await tc.Target.CopyNupkgToStreamAsync(
@@ -305,18 +305,26 @@ namespace NuGet.Protocol.Tests
 
         private class TestContext
         {
-
-            public TestContext(TestDirectory testDirectory)
+            public static async Task<TestContext> CreateAsync(TestDirectory testDirectory)
             {
-                TestDirectory = testDirectory;
-                Identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0-Beta"));
+                var identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0-Beta"));
 
                 var packageDirectory = Path.Combine(testDirectory, "packages");
-                var package = SimpleTestPackageUtility.CreateFullPackage(
+                var package = await SimpleTestPackageUtility.CreateFullPackageAsync(
                     packageDirectory,
-                    Identity.Id,
-                    Identity.Version.ToString());
-                ExpectedContent = File.ReadAllBytes(package.FullName);
+                    identity.Id,
+                    identity.Version.ToString());
+
+                var expectedContent = File.ReadAllBytes(package.FullName);
+
+                return new TestContext(testDirectory, identity, expectedContent);
+            }
+
+            private TestContext(TestDirectory testDirectory, PackageIdentity identity, byte[] expectedContent)
+            {
+                TestDirectory = testDirectory;
+                Identity = identity;
+                ExpectedContent = expectedContent;
 
                 PackageSource = new PackageSource("http://foo/index.json");
                 NupkgUrl = "http://foo/package.nupkg";
@@ -349,10 +357,11 @@ namespace NuGet.Protocol.Tests
                                 });
                             }
                         }
-                    });
-
-                HttpSource.HttpCacheDirectory = HttpCacheDirectory;
-                HttpSource.DisableCaching = false;
+                    })
+                {
+                    HttpCacheDirectory = HttpCacheDirectory,
+                    DisableCaching = false
+                };
 
                 RequestCount = 0;
 

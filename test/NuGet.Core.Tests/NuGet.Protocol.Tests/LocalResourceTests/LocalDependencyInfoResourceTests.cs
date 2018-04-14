@@ -21,7 +21,7 @@ namespace NuGet.Protocol.Tests
     {
 
         [Fact]
-        public async Task LocalDependencyInfoResource_Basic()
+        public async Task LocalDependencyInfoResource_BasicAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -84,7 +84,7 @@ namespace NuGet.Protocol.Tests
                     packageX
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var source = Repository.Factory.GetCoreV3(root);
                 var localResource = new FindLocalPackagesResourceV2(root);
@@ -119,7 +119,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDependencyInfoResource_NoDependencies()
+        public async Task LocalDependencyInfoResource_NoDependenciesAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -145,7 +145,7 @@ namespace NuGet.Protocol.Tests
                     packageX
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var source = Repository.Factory.GetCoreV3(root);
                 var localResource = new FindLocalPackagesResourceV2(root);
@@ -165,7 +165,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDependencyInfoResource_IdNotFound()
+        public async Task LocalDependencyInfoResource_IdNotFoundAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -183,7 +183,7 @@ namespace NuGet.Protocol.Tests
                     packageX
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var source = Repository.Factory.GetCoreV3(root);
                 var localResource = new FindLocalPackagesResourceV2(root);
@@ -198,7 +198,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDependencyInfoResource_EmptyFolder()
+        public async Task LocalDependencyInfoResource_EmptyFolderAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -218,7 +218,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDependencyInfoResource_FolderDoesNotExist()
+        public async Task LocalDependencyInfoResource_FolderDoesNotExistAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -240,7 +240,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDependencyInfoResource_MissingDependency()
+        public async Task LocalDependencyInfoResource_MissingDependencyAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -266,7 +266,7 @@ namespace NuGet.Protocol.Tests
                     packageX
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 foreach (var file in Directory.GetFiles(root))
                 {
@@ -296,7 +296,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDependencyInfoResource_SinglePackage()
+        public async Task LocalDependencyInfoResource_SinglePackageAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -322,7 +322,7 @@ namespace NuGet.Protocol.Tests
                     packageX
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var source = Repository.Factory.GetCoreV3(root);
                 var localResource = new FindLocalPackagesResourceV2(root);
@@ -346,7 +346,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDependencyInfoResource_SinglePackageNotFound()
+        public async Task LocalDependencyInfoResource_SinglePackageNotFoundAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -372,7 +372,7 @@ namespace NuGet.Protocol.Tests
                     packageX
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var source = Repository.Factory.GetCoreV3(root);
                 var localResource = new FindLocalPackagesResourceV2(root);
@@ -392,7 +392,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDependencyInfoResource_SinglePackageNotFoundEmptyFolder()
+        public async Task LocalDependencyInfoResource_SinglePackageNotFoundEmptyFolderAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -417,7 +417,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDependencyInfoResource_SinglePackageNearestDependencyGroup()
+        public async Task LocalDependencyInfoResource_SinglePackageNearestDependencyGroupAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -453,7 +453,7 @@ namespace NuGet.Protocol.Tests
                     packageA
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var source = Repository.Factory.GetCoreV3(root);
                 var localResource = new FindLocalPackagesResourceV2(root);
@@ -494,7 +494,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalDependencyInfoResource_ResolvePackagesNearestDependencyGroup()
+        public async Task LocalDependencyInfoResource_ResolvePackagesNearestDependencyGroupAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -530,7 +530,7 @@ namespace NuGet.Protocol.Tests
                     packageA
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var source = Repository.Factory.GetCoreV3(root);
                 var localResource = new FindLocalPackagesResourceV2(root);

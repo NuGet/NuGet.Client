@@ -26,7 +26,7 @@ namespace NuGet.Commands.Test
     public class InstallPackagesTests
     {
         [Fact]
-        public async Task InstallPackageFromAnotherProcessVerifyCacheIsCleared()
+        public async Task InstallPackageFromAnotherProcessVerifyCacheIsClearedAsync()
         {
             // Arrange
             var logger = new TestLogger();
@@ -51,7 +51,7 @@ namespace NuGet.Commands.Test
                 var project = NETCoreRestoreTestUtility.CreateProjectsFromSpecs(pathContext, spec).Single();
 
                 var packageA = new SimpleTestPackageContext("a");
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA);
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();
@@ -92,7 +92,7 @@ namespace NuGet.Commands.Test
                 }
 
                 // Install the package without updating the cache
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.UserPackagesFolder, PackageSaveMode.Defaultv3, packageA);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.UserPackagesFolder, PackageSaveMode.Defaultv3, packageA);
 
                 // Run restore using an incorrect cache
                 var result = await command.ExecuteAsync();

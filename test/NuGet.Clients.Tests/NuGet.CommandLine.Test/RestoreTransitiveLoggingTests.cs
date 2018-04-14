@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -18,7 +19,7 @@ namespace NuGet.CommandLine.Test
     {
         [Fact]
         // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenAProjectReferenceNoWarnsVerifyNoWarning()
+        public async Task GivenAProjectReferenceNoWarnsVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -51,7 +52,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -76,7 +77,7 @@ namespace NuGet.CommandLine.Test
 
         [Fact]
         // Tests ProjA[AssemblyName=Test] -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenAProjectReferenceNoWarnsAndParentProjectContainsAssemblyNameVerifyNoWarning()
+        public async Task GivenAProjectReferenceNoWarnsAndParentProjectContainsAssemblyNameVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -109,7 +110,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -137,7 +138,7 @@ namespace NuGet.CommandLine.Test
         // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //                                          -> PkgY          -> PkgZ v 1.0.1
         //                                          -> PkgZ v 1.0.0
-        public void GivenAProjectReferenceDoesNotNoWarnForAllWarningsVerifyWarning()
+        public async Task GivenAProjectReferenceDoesNotNoWarnForAllWarningsVerifyWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -193,9 +194,9 @@ namespace NuGet.CommandLine.Test
 
                 packageY.Dependencies.Add(packageZ11);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageZ);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageZ);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageY);
 
                 // B -> X
                 // B -> Y -> Z v1.0.1
@@ -226,7 +227,7 @@ namespace NuGet.CommandLine.Test
         // Tests ProjA[TreatWarningsAsErrors true] -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //                                          -> PkgY          -> PkgZ v 1.0.1
         //                                          -> PkgZ v 1.0.0
-        public void GivenAProjectReferenceDoesNotNoWarnForAllWarningsAndDirectTreatWarningsAsErrorsVerifyError()
+        public async Task GivenAProjectReferenceDoesNotNoWarnForAllWarningsAndDirectTreatWarningsAsErrorsVerifyErrorAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -282,9 +283,9 @@ namespace NuGet.CommandLine.Test
 
                 packageY.Dependencies.Add(packageZ11);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageZ);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageZ);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageY);
 
                 // B -> X
                 // B -> Y -> Z v1.0.1
@@ -316,7 +317,7 @@ namespace NuGet.CommandLine.Test
         // Tests ProjA[WarningsAsErrors NU1605, NU1603] -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //                                              -> PkgY          -> PkgZ v 1.0.1
         //                                              -> PkgZ v 1.0.0
-        public void GivenAProjectReferenceDoesNotNoWarnForAllWarningsAndDirectWarningsAsErrorsVerifyError()
+        public async Task GivenAProjectReferenceDoesNotNoWarnForAllWarningsAndDirectWarningsAsErrorsVerifyErrorAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -372,9 +373,9 @@ namespace NuGet.CommandLine.Test
 
                 packageY.Dependencies.Add(packageZ11);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageZ);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageZ);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageY);
 
                 // B -> X
                 // B -> Y -> Z v1.0.1
@@ -404,7 +405,7 @@ namespace NuGet.CommandLine.Test
 
         [Fact]
         // Tests ProjA[WarnAsError NU1603] -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenAProjectReferenceNoWarnsAndDirectWarnAsErrorVerifyNoWarning()
+        public async Task GivenAProjectReferenceNoWarnsAndDirectWarnAsErrorVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -437,7 +438,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -463,7 +464,7 @@ namespace NuGet.CommandLine.Test
 
         [Fact]
         // Tests ProjA[TreatWarningsAsError true] -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenAProjectReferenceNoWarnsAndDirectTreatWarningsAsErrorVerifyNoWarning()
+        public async Task GivenAProjectReferenceNoWarnsAndDirectTreatWarningsAsErrorVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -496,7 +497,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -522,7 +523,7 @@ namespace NuGet.CommandLine.Test
 
         [Fact]
         // Tests ProjA[WarnAsError NU1603] -> ProjB -> PkgX[NU1603]
-        public void GivenAProjectReferenceDoesNotNoWarnAndDirectWarnAsErrorVerifyError()
+        public async Task GivenAProjectReferenceDoesNotNoWarnAndDirectWarnAsErrorVerifyErrorAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -554,7 +555,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -581,7 +582,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA[TreatWarningsAsError true] -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //                                                                     -> PkgY[NU1603]
-        public void GivenAProjectReferenceDoesNotNoWarnForAllReferencesAndDirectTreatWarningsAsErrorVerifyError()
+        public async Task GivenAProjectReferenceDoesNotNoWarnForAllReferencesAndDirectTreatWarningsAsErrorVerifyErrorAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -628,8 +629,8 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageY11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -657,7 +658,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA[TreatWarningsAsError true] -> ProjB[ProjectWide NoWarn NU1603] -> PkgX[NU1603]
         //                                                                            -> PkgY[NU1603]
-        public void GivenAProjectReferenceNoWarnsForAllReferencesAndDirectTreatWarningsAsErrorVerifyNoWarning()
+        public async Task GivenAProjectReferenceNoWarnsForAllReferencesAndDirectTreatWarningsAsErrorVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -704,8 +705,8 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageY11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -733,7 +734,7 @@ namespace NuGet.CommandLine.Test
 
         [Fact]
         // Tests ProjA[TreatWarningsAsError true] -> ProjB -> PkgX[NU1603]
-        public void GivenAProjectReferenceDoesNotNoWarnAndDirectTreatWarningsAsErrorVerifyError()
+        public async Task GivenAProjectReferenceDoesNotNoWarnAndDirectTreatWarningsAsErrorVerifyErrorAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -765,7 +766,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -792,7 +793,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //             -> PkgY[NU1603]
-        public void GivenAProjectReferenceNoWarnsVerifyWarningForDirectReference()
+        public async Task GivenAProjectReferenceNoWarnsVerifyWarningForDirectReferenceAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -839,8 +840,8 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageY11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -868,7 +869,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA[PkgY NoWarn NU1603] -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //                                 -> PkgY[NU1603]
-        public void GivenAProjectReferenceNoWarnsAndDirectReferenceNoWarnsVerifyNoWarning()
+        public async Task GivenAProjectReferenceNoWarnsAndDirectReferenceNoWarnsVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -916,8 +917,8 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageY11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageY11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -944,7 +945,7 @@ namespace NuGet.CommandLine.Test
 
         [Fact]
         // Tests ProjA[net461] -> ProjB[netstandard2.0][PkgX NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenAProjectReferenceWithFallBackFrameworkNoWarnsVerifyNoWarning()
+        public async Task GivenAProjectReferenceWithFallBackFrameworkNoWarnsVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -977,7 +978,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -1002,7 +1003,7 @@ namespace NuGet.CommandLine.Test
 
         [Fact]
         // Tests ProjA[net45] -> ProjB[net461][PkgX NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenAProjectReferenceWithIncompatibleFrameworkNoWarnsVerifyNoWarning()
+        public async Task GivenAProjectReferenceWithIncompatibleFrameworkNoWarnsVerifyNoWarningAsync()
         {
             // Arrange         
             using (var pathContext = new SimpleTestPathContext())
@@ -1035,7 +1036,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -1061,7 +1062,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //                ToolY
-        public void GivenAProjectReferenceNoWarnsVerifyNoWarningWithTool()
+        public async Task GivenAProjectReferenceNoWarnsVerifyNoWarningWithToolAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1110,8 +1111,8 @@ namespace NuGet.CommandLine.Test
                     PackageType = PackageType.DotnetCliTool
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, toolY101);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, toolY101);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -1138,7 +1139,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA[net461] -> ProjB[netstandard2.0][ProjectWide NoWarn NU1603] -> PkgX[NU1603]
         //                                                                         -> ToolY[NU1603]
-        public void GivenAProjectReferenceWithToolAndProjectWideNoWarnsVerifyNoWarning()
+        public async Task GivenAProjectReferenceWithToolAndProjectWideNoWarnsVerifyNoWarningAsync()
         {
             // Arrange         
             using (var pathContext = new SimpleTestPathContext())
@@ -1186,8 +1187,8 @@ namespace NuGet.CommandLine.Test
                     PackageType = PackageType.DotnetCliTool
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX101);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, toolY101);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX101);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, toolY101);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -1215,7 +1216,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA[net461] -> ProjB[netstandard2.0][PkgX, ToolY NoWarn NU1603] -> PkgX[NU1603]
         //                                                                         -> ToolY[NU1603]
-        public void GivenAProjectReferenceWithToolAndPackageSpecificNoWarnsVerifyNoWarning()
+        public async Task GivenAProjectReferenceWithToolAndPackageSpecificNoWarnsVerifyNoWarningAsync()
         {
             // Arrange         
             using (var pathContext = new SimpleTestPathContext())
@@ -1265,8 +1266,8 @@ namespace NuGet.CommandLine.Test
                     PackageType = PackageType.DotnetCliTool
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX101);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, toolY101);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX101);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, toolY101);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -1293,7 +1294,7 @@ namespace NuGet.CommandLine.Test
 
         [Fact]
         // Tests ProjA[net461] -> ProjB[netstandard2.0][ProjectWide NoWarn NU1603] -> ToolY -> PkgX[NU1603]
-        public void GivenAProjectReferenceWithToolBringingTransitivePackageNoWarnsVerifyNoWarning()
+        public async Task GivenAProjectReferenceWithToolBringingTransitivePackageNoWarnsVerifyNoWarningAsync()
         {
             // Arrange         
             using (var pathContext = new SimpleTestPathContext())
@@ -1334,8 +1335,8 @@ namespace NuGet.CommandLine.Test
                     Dependencies = new List<SimpleTestPackageContext> { packageX }
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX101);
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, toolY);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX101);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, toolY);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(toolY);
@@ -1361,7 +1362,7 @@ namespace NuGet.CommandLine.Test
 
         [Fact]
         // Tests ProjA -> ProjB[ProjectWide NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenAProjectReferenceNoWarnsProjectWideVerifyNoWarning()
+        public async Task GivenAProjectReferenceNoWarnsProjectWideVerifyNoWarningAsync()
         {
 
             // Arrange
@@ -1394,7 +1395,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -1420,7 +1421,7 @@ namespace NuGet.CommandLine.Test
 
         [Fact]
         // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenAProjectReferenceWithDifferentFrameworkNoWarnsVerifyNoWarning()
+        public async Task GivenAProjectReferenceWithDifferentFrameworkNoWarnsVerifyNoWarningAsync()
         {
 
             // Arrange
@@ -1454,7 +1455,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -1479,7 +1480,7 @@ namespace NuGet.CommandLine.Test
 
         [Fact]
         // Tests ProjA -> ProjB -> ProjC[PkgX NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenATransitiveProjectReferenceNoWarnsVerifyNoWarning()
+        public async Task GivenATransitiveProjectReferenceNoWarnsVerifyNoWarningAsync()
         {
 
             // Arrange
@@ -1518,7 +1519,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // C -> X
                 projectC.AddPackageToAllFrameworks(packageX);
@@ -1547,7 +1548,7 @@ namespace NuGet.CommandLine.Test
 
         [Fact]
         // Tests ProjA -> ProjB -> ProjC[ProjectWide NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenATransitiveProjectReferenceNoWarnsProjectWideVerifyNoWarning()
+        public async Task GivenATransitiveProjectReferenceNoWarnsProjectWideVerifyNoWarningAsync()
         {
 
             // Arrange
@@ -1586,7 +1587,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // C -> X
                 projectC.AddPackageToAllFrameworks(packageX);
@@ -1617,7 +1618,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //             -> PkgX[NU1603]
-        public void GivenAProjectReferenceNoWarnsButDirectReferenceGeneratesWarningVerifyWarning()
+        public async Task GivenAProjectReferenceNoWarnsButDirectReferenceGeneratesWarningVerifyWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1657,7 +1658,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageXWithNoWarn);
@@ -1685,7 +1686,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA -> ProjB[ProjectWide NoWarn NU1603] -> PkgX[NU1603]
         //             -> PkgX[NU1603]
-        public void GivenAProjectReferenceNoWarnsProjectWideButDirectReferenceGeneratesWarningVerifyWarning()
+        public async Task GivenAProjectReferenceNoWarnsProjectWideButDirectReferenceGeneratesWarningVerifyWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1717,7 +1718,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -1746,7 +1747,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //             -> ProjC[PkgX NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenMultipleProjectReferencesNoWarnVerifyNoWarning()
+        public async Task GivenMultipleProjectReferencesNoWarnVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1784,7 +1785,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageXWithNoWarn);
@@ -1817,7 +1818,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA -> ProjB[ProjectWide NoWarn NU1603] -> PkgX[NU1603]
         //             -> ProjC[ProjectWide NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenMultipleProjectReferencesNoWarnProjectWideVerifyNoWarning()
+        public async Task GivenMultipleProjectReferencesNoWarnProjectWideVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1854,7 +1855,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -1889,7 +1890,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA -> ProjB[ProjectWide NoWarn NU1603] -> PkgX[NU1603]
         //             -> ProjC[ProjectWide NoWarn NU1605] -> PkgX[NU1603]
-        public void GivenMultipleProjectReferencesNoWarnDifferentWarningsProjectWideVerifyWarning()
+        public async Task GivenMultipleProjectReferencesNoWarnDifferentWarningsProjectWideVerifyWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1926,7 +1927,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -1961,7 +1962,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA -> ProjB[ProjectWide NoWarn NU1603] -> PkgX[NU1603]
         //             -> ProjC[PkgX NoWarn NU1603]        -> PkgX[NU1603]
-        public void GivenMultipleProjectReferencesNoWarnMixedVerifyNoWarning()
+        public async Task GivenMultipleProjectReferencesNoWarnMixedVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2007,7 +2008,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -2041,7 +2042,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //             -> ProjC                     -> PkgX[NU1603]
-        public void GivenMultipleProjectReferencesAndOnePathWarnsVerifyNoWarning()
+        public async Task GivenMultipleProjectReferencesAndOnePathWarnsVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2086,7 +2087,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageXWithNoWarn);
@@ -2120,7 +2121,7 @@ namespace NuGet.CommandLine.Test
         // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //             -> ProjC[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //             -> PkgX[NU1603]
-        public void GivenMultipleProjectReferencesNoWarnButDirectReferenceWarnsVerifyWarning()
+        public async Task GivenMultipleProjectReferencesNoWarnButDirectReferenceWarnsVerifyWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2165,7 +2166,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageXWithNoWarn);
@@ -2201,7 +2202,7 @@ namespace NuGet.CommandLine.Test
         // Tests ProjA[PkgX NoWarn NU1603] -> ProjB -> PkgX[NU1603]
         //                                 -> ProjC -> PkgX[NU1603]
         //                                 -> PkgX[NU1603]
-        public void GivenMultipleProjectReferencesWarnButDirectReferenceNoWarnsVerifyNoWarning()
+        public async Task GivenMultipleProjectReferencesWarnButDirectReferenceNoWarnsVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2246,7 +2247,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageX);
@@ -2281,7 +2282,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //             -> ProjC                     -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
-        public void GivenSinglePointOfReferenceNoWarnsVerifyNoWarning()
+        public async Task GivenSinglePointOfReferenceNoWarnsVerifyNoWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2319,7 +2320,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageXWithNoWarn);
@@ -2354,7 +2355,7 @@ namespace NuGet.CommandLine.Test
         // Tests ProjA -> ProjB[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //             -> ProjC[PkgX NoWarn NU1603] -> PkgX[NU1603]
         //             -> ProjD                     -> ProjE        -> ProjF -> PkgX[NU1603]
-        public void GivenOneLongPathWarnsVerifyWarning()
+        public async Task GivenOneLongPathWarnsVerifyWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2415,7 +2416,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.1"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX11);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX11);
 
                 // B -> X
                 projectB.AddPackageToAllFrameworks(packageXWithNoWarn);
@@ -2468,7 +2469,7 @@ namespace NuGet.CommandLine.Test
         [InlineData(5)]
         [InlineData(10)]
         [InlineData(20)]
-        public void GivenDenseSolutionWithMultiplePathsVerifyNoWarn(int count)
+        public async Task GivenDenseSolutionWithMultiplePathsVerifyNoWarnAsync(int count)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2497,7 +2498,7 @@ namespace NuGet.CommandLine.Test
                         Version = "1.0.1"
                     };
 
-                    SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, package);
+                    await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, package);
 
                     referencedPackages.Add(packagewithNoWarn);
                     createdPackages.Add(package);

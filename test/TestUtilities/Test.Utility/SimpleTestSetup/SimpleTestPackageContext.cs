@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -53,6 +54,9 @@ namespace NuGet.Test.Utility
 
         public bool UseDefaultRuntimeAssemblies { get; set; } = true;
 
+        public ITimestampProvider TimestampProvider { get; set; }
+        public bool IsPrimarySigned { get; set; }
+        public bool IsRepositoryCounterSigned { get; set; }
         public X509Certificate2 PrimarySignatureCertificate { get; set; }
         public X509Certificate2 RepositoryCountersignatureCertificate { get; set; }
         public Uri V3ServiceIndexUrl { get; set; }
@@ -95,26 +99,26 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Creates the package as a ZipArchive.
         /// </summary>
-        public ZipArchive Create()
+        public async Task<ZipArchive> CreateAsync()
         {
-            return Create(ZipArchiveMode.Update);
+            return await CreateAsync(ZipArchiveMode.Update);
         }
 
         /// <summary>
         /// Creates the package as a ZipArchive.
         /// </summary>
-        public ZipArchive Create(ZipArchiveMode mode)
+        public async Task<ZipArchive> CreateAsync(ZipArchiveMode mode)
         {
-            return new ZipArchive(CreateAsStream(), ZipArchiveMode.Update, leaveOpen: false);
+            return new ZipArchive(await CreateAsStreamAsync(), ZipArchiveMode.Update, leaveOpen: false);
         }
 
         /// <summary>
         /// Creates a ZipArchive and writes it to a stream.
         /// </summary>
-        public MemoryStream CreateAsStream()
+        public async Task<MemoryStream> CreateAsStreamAsync()
         {
             var stream = new MemoryStream();
-            SimpleTestPackageUtility.CreatePackage(stream, this);
+            await SimpleTestPackageUtility.CreatePackageAsync(stream, this);
             return stream;
         }
 
@@ -124,11 +128,11 @@ namespace NuGet.Test.Utility
         /// <param name="testDirectory">The directory for the new file.</param>
         /// <param name="fileName">The file name.</param>
         /// <returns>A <see cref="FileInfo" /> object.</returns>
-        public FileInfo CreateAsFile(TestDirectory testDirectory, string fileName)
+        public async Task<FileInfo> CreateAsFileAsync(TestDirectory testDirectory, string fileName)
         {
             var packageFile = new FileInfo(Path.Combine(testDirectory, fileName));
 
-            using (var readStream = CreateAsStream())
+            using (var readStream = await CreateAsStreamAsync())
             using (var writeStream = packageFile.OpenWrite())
             {
                 readStream.CopyTo(writeStream);

@@ -134,7 +134,7 @@ namespace NuGet.Packaging.FuncTest
                 {
                     var directory = TestDirectory.Create();
                     var packageContext = new SimpleTestPackageContext();
-                    var unsignedPackageFile = packageContext.CreateAsFile(directory, "package.nupkg");
+                    var unsignedPackageFile = await packageContext.CreateAsFileAsync(directory, "package.nupkg");
                     var signedPackageFile = await SignedArchiveTestUtility.SignPackageFileWithBasicSignedCmsAsync(
                         directory,
                         unsignedPackageFile,

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,7 +17,7 @@ namespace NuGet.Protocol.Tests
     public class LocalPackageSearchResourceTests
     {
         [Fact]
-        public async Task LocalPackageSearchResource_MatchOnId()
+        public async Task LocalPackageSearchResource_MatchOnIdAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -64,7 +64,7 @@ namespace NuGet.Protocol.Tests
                     packageA2
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
@@ -92,7 +92,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageSearchResource_RelativePathIsRejected()
+        public async Task LocalPackageSearchResource_RelativePathIsRejectedAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -120,7 +120,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageSearchResource_MatchOnTag()
+        public async Task LocalPackageSearchResource_MatchOnTagAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -167,7 +167,7 @@ namespace NuGet.Protocol.Tests
                     packageA2
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
@@ -195,7 +195,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageSearchResource_MatchOnDescription()
+        public async Task LocalPackageSearchResource_MatchOnDescriptionAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -242,7 +242,7 @@ namespace NuGet.Protocol.Tests
                     packageA2
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
@@ -270,7 +270,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageSearchResource_MatchOnPartialId()
+        public async Task LocalPackageSearchResource_MatchOnPartialIdAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -299,7 +299,7 @@ namespace NuGet.Protocol.Tests
                     packageA
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
@@ -327,7 +327,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageSearchResource_MatchNone()
+        public async Task LocalPackageSearchResource_MatchNoneAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -356,7 +356,7 @@ namespace NuGet.Protocol.Tests
                     packageA
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
@@ -380,7 +380,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageSearchResource_SearchStableNoMatch()
+        public async Task LocalPackageSearchResource_SearchStableNoMatchAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -409,7 +409,7 @@ namespace NuGet.Protocol.Tests
                     packageA
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
@@ -433,7 +433,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageSearchResource_SearchStableMatch()
+        public async Task LocalPackageSearchResource_SearchStableMatchAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -480,7 +480,7 @@ namespace NuGet.Protocol.Tests
                     packageA2
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
@@ -508,7 +508,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageSearchResource_FileSource()
+        public async Task LocalPackageSearchResource_FileSourceAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -557,7 +557,7 @@ namespace NuGet.Protocol.Tests
 
                 var fileUrl = "file://" + root.Path.Replace(@"\", @"/");
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(fileUrl);
                 var resource = new LocalPackageSearchResource(localResource);

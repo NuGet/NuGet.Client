@@ -44,14 +44,14 @@ namespace NuGetConsole.Host.PowerShell.Test
                 var userPackageFolder = Path.Combine(testDirectory.Path, "userPackages");
                 Directory.CreateDirectory(userPackageFolder);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     userPackageFolder,
                     new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")));
 
                 var fallbackPackageFolder = Path.Combine(testDirectory.Path, "fallbackPackages");
                 Directory.CreateDirectory(fallbackPackageFolder);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     fallbackPackageFolder,
                     new PackageIdentity("Bar", NuGetVersion.Parse("1.0.2")));
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace NuGet.Protocol.Tests
     public class FindPackageByIdResourceTests
     {
         [Fact]
-        public async Task FindPackageByIdResource_V2V3Compare()
+        public async Task FindPackageByIdResource_V2V3CompareAsync()
         {
             using (var rootV3 = TestDirectory.Create())
             using (var rootV2 = TestDirectory.Create())
@@ -30,8 +30,8 @@ namespace NuGet.Protocol.Tests
                 var a2 = new PackageIdentity("a", NuGetVersion.Parse("1.0.0+server.2"));
                 var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0.0"));
 
-                SimpleTestPackageUtility.CreateFolderFeedV2(rootV2, a1, a2, b);
-                await SimpleTestPackageUtility.CreateFolderFeedV3(rootV3, a1, a2, b);
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(rootV2, a1, a2, b);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(rootV3, a1, a2, b);
 
                 var resourceV2 = new LocalV2FindPackageByIdResource(new PackageSource(rootV2));
                 var resourceV3 = new LocalV3FindPackageByIdResource(new PackageSource(rootV3));

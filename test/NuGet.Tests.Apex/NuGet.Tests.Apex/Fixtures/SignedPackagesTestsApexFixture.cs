@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
@@ -17,77 +18,109 @@ namespace NuGet.Tests.Apex
         private const string _expiredTestPackageName = "ExpiredTestPackage";
         private const string _packageVersion = "1.0.0";
 
-        private TrustedTestCert<TestCertificate> _trustedTestCert;
+        private TrustedTestCert<TestCertificate> _trustedAuthorTestCert;
+        private TrustedTestCert<TestCertificate> _trustedRepositoryTestCert;
         private TrustedTestCert<TestCertificate> _trustedExpiredTestCert;
 
-        private SimpleTestPackageContext _signedTestPackageV1;
-        private SimpleTestPackageContext _expiredSignedTestPackageV1;
+        private SimpleTestPackageContext _authorSignedTestPackageV1;
+        private SimpleTestPackageContext _repoSignedTestPackageV1;
+        private SimpleTestPackageContext _repoCountersignedTestPackageV1;
+
+        private SimpleTestPackageContext _expiredAuthorSignedTestPackageV1;
         private string _expiredSignedTestPackageV1Path;
         private TestDirectory _expiredSignedTestPackageV1Directory;
 
-        public TrustedTestCert<TestCertificate> TrustedTestCertificate
+        public TrustedTestCert<TestCertificate> TrustedAuthorTestCertificate
         {
             get
             {
-                if (_trustedTestCert == null)
+                if (_trustedAuthorTestCert == null)
                 {
-                    _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
+                    _trustedAuthorTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
                 }
 
-                return _trustedTestCert;
+                return _trustedAuthorTestCert;
             }
         }
 
-        public SimpleTestPackageContext SignedTestPackage
+        public TrustedTestCert<TestCertificate> TrustedRepositoryTestCertificate
         {
             get
             {
-                if (_signedTestPackageV1 == null)
+                if (_trustedRepositoryTestCert == null)
                 {
-                    _signedTestPackageV1 = Utils.CreatePackage(_testPackageName, _packageVersion);
-                    _signedTestPackageV1.PrimarySignatureCertificate = TrustedTestCertificate.Source.Cert;
+                    _trustedRepositoryTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
                 }
 
-                return _signedTestPackageV1;
+                return _trustedRepositoryTestCert;
             }
         }
 
-        public string ExpiredCertSignedTestPackagePath
+        public SimpleTestPackageContext AuthorSignedTestPackage
         {
             get
             {
-                if (_expiredSignedTestPackageV1Path == null)
+                if (_authorSignedTestPackageV1 == null)
                 {
-                    CreateSignedPackageWithExpiredCertificate();
+                    _authorSignedTestPackageV1 = Utils.CreateAuthorSignedPackage(
+                        _testPackageName,
+                        _packageVersion,
+                        TrustedAuthorTestCertificate.Source.Cert);
                 }
 
-                return _expiredSignedTestPackageV1Path;
+                return _authorSignedTestPackageV1;
             }
         }
 
-        public SimpleTestPackageContext ExpiredCertSignedTestPackage
+        public SimpleTestPackageContext RepositorySignedTestPackage
         {
             get
             {
-                if (_expiredSignedTestPackageV1 == null)
+                if (_repoSignedTestPackageV1 == null)
                 {
-                    CreateSignedPackageWithExpiredCertificate();
+                    _repoSignedTestPackageV1 = Utils.CreateRepositorySignedPackage(
+                        _testPackageName,
+                        _packageVersion,
+                        TrustedRepositoryTestCertificate.Source.Cert,
+                        new Uri("https://v3serviceIndex.test/api/index.json"));
                 }
 
-                return _expiredSignedTestPackageV1;
+                return _repoSignedTestPackageV1;
             }
         }
 
-        private void CreateSignedPackageWithExpiredCertificate()
+        public SimpleTestPackageContext RepositoryCountersignedTestPackage
+        {
+            get
+            {
+                if (_repoCountersignedTestPackageV1 == null)
+                {
+                    _repoCountersignedTestPackageV1 = Utils.CreateRepositoryCountersignedPackage(
+                        _testPackageName,
+                        _packageVersion,
+                        TrustedAuthorTestCertificate.Source.Cert,
+                        TrustedRepositoryTestCertificate.Source.Cert,
+                        new Uri("https://v3serviceIndex.test/api/index.json"));
+                }
+
+                return _repoCountersignedTestPackageV1;
+            }
+        }
+
+        public string ExpiredCertSignedTestPackagePath => _expiredSignedTestPackageV1Path;
+
+        public SimpleTestPackageContext ExpiredCertSignedTestPackage => _expiredAuthorSignedTestPackageV1;
+
+        public async Task CreateSignedPackageWithExpiredCertificateAsync()
         {
             _expiredSignedTestPackageV1Directory = TestDirectory.Create();
             _trustedExpiredTestCert = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn5Seconds();
 
-            _expiredSignedTestPackageV1 = Utils.CreatePackage(_expiredTestPackageName, _packageVersion);
-            _expiredSignedTestPackageV1.PrimarySignatureCertificate = _trustedExpiredTestCert.Source.Cert;
+            _expiredAuthorSignedTestPackageV1 = Utils.CreatePackage(_expiredTestPackageName, _packageVersion);
+            _expiredAuthorSignedTestPackageV1.PrimarySignatureCertificate = _trustedExpiredTestCert.Source.Cert;
 
-            SimpleTestPackageUtility.CreatePackages(_expiredSignedTestPackageV1Directory, _expiredSignedTestPackageV1);
-            _expiredSignedTestPackageV1Path = Path.Combine(_expiredSignedTestPackageV1Directory, _expiredSignedTestPackageV1.PackageName);
+            await SimpleTestPackageUtility.CreatePackagesAsync(_expiredSignedTestPackageV1Directory, _expiredAuthorSignedTestPackageV1);
+            _expiredSignedTestPackageV1Path = Path.Combine(_expiredSignedTestPackageV1Directory, _expiredAuthorSignedTestPackageV1.PackageName);
 
             // Wait for cert to expire
             Thread.Sleep(5000);
@@ -102,7 +135,7 @@ namespace NuGet.Tests.Apex
 
         public override void Dispose()
         {
-            _trustedTestCert?.Dispose();
+            _trustedAuthorTestCert?.Dispose();
             _trustedExpiredTestCert?.Dispose();
             _expiredSignedTestPackageV1Directory?.Dispose();
 

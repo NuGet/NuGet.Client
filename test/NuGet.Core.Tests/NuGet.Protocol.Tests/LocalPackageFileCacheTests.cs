@@ -25,7 +25,7 @@ namespace NuGet.Protocol.Tests
                 var identity = new PackageIdentity("X", NuGetVersion.Parse("1.0.0"));
                 var path = pathResolver.GetInstallPath(identity.Id, identity.Version);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     identity);
 
@@ -51,7 +51,7 @@ namespace NuGet.Protocol.Tests
 
                 var exists1 = cache.Sha512Exists(shaPath);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     identity);
 
@@ -80,7 +80,7 @@ namespace NuGet.Protocol.Tests
 
                 var identity = new PackageIdentity("X", NuGetVersion.Parse("1.0.0"));
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     identity);
 
@@ -105,7 +105,7 @@ namespace NuGet.Protocol.Tests
 
                 var identity = new PackageIdentity("X", NuGetVersion.Parse("1.0.0"));
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     identity);
 

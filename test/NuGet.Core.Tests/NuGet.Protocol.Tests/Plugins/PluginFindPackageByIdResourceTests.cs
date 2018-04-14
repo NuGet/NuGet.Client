@@ -75,9 +75,9 @@ namespace NuGet.Protocol.Plugins.Tests
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public async Task GetAllVersionsAsync_ThrowsForNullOrEmptyId(string id)
+        public async Task GetAllVersionsAsync_ThrowsForNullOrEmptyIdAsync(string id)
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentException>(
                     () => test.Resource.GetAllVersionsAsync(
@@ -91,9 +91,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetAllVersionsAsync_ThrowsForNullSourceCacheContext()
+        public async Task GetAllVersionsAsync_ThrowsForNullSourceCacheContextAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetAllVersionsAsync(
@@ -107,9 +107,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetAllVersionsAsync_ThrowsForNullLogger()
+        public async Task GetAllVersionsAsync_ThrowsForNullLoggerAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetAllVersionsAsync(
@@ -123,9 +123,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetAllVersionsAsync_ThrowIfCancelled()
+        public async Task GetAllVersionsAsync_ThrowIfCancelledAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => test.Resource.GetAllVersionsAsync(
@@ -137,9 +137,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetAllVersionsAsync_ThrowsForError()
+        public async Task GetAllVersionsAsync_ThrowsForErrorAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create(MessageResponseCode.Error))
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync(MessageResponseCode.Error))
             {
                 await Assert.ThrowsAsync<FatalProtocolException>(
                     () => test.Resource.GetAllVersionsAsync(
@@ -151,9 +151,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetAllVersionsAsync_ReturnsEmptyEnumerableIfPackageIdNotFound()
+        public async Task GetAllVersionsAsync_ReturnsEmptyEnumerableIfPackageIdNotFoundAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create(MessageResponseCode.NotFound))
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync(MessageResponseCode.NotFound))
             {
                 var versions = await test.Resource.GetAllVersionsAsync(
                     test.PackageIdentity.Id,
@@ -166,9 +166,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetAllVersionsAsync_ReturnsAllVersions()
+        public async Task GetAllVersionsAsync_ReturnsAllVersionsAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create(MessageResponseCode.Success))
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync(MessageResponseCode.Success))
             {
                 var versions = await test.Resource.GetAllVersionsAsync(
                     test.PackageIdentity.Id,
@@ -188,9 +188,9 @@ namespace NuGet.Protocol.Plugins.Tests
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public async Task GetDependencyInfoAsync_ThrowsForNullOrEmptyId(string id)
+        public async Task GetDependencyInfoAsync_ThrowsForNullOrEmptyIdAsync(string id)
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentException>(
                     () => test.Resource.GetDependencyInfoAsync(
@@ -205,9 +205,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetDependencyInfoAsync_ThrowsForNullVersion()
+        public async Task GetDependencyInfoAsync_ThrowsForNullVersionAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetDependencyInfoAsync(
@@ -222,9 +222,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetDependencyInfoAsync_ThrowsForNullSourceCacheContext()
+        public async Task GetDependencyInfoAsync_ThrowsForNullSourceCacheContextAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetDependencyInfoAsync(
@@ -239,9 +239,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetDependencyInfoAsync_ThrowsForNullLogger()
+        public async Task GetDependencyInfoAsync_ThrowsForNullLoggerAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetDependencyInfoAsync(
@@ -256,9 +256,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetDependencyInfoAsync_ThrowIfCancelled()
+        public async Task GetDependencyInfoAsync_ThrowIfCancelledAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => test.Resource.GetDependencyInfoAsync(
@@ -271,9 +271,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetDependencyInfoAsync_ReturnsNullIfPackageNotFound()
+        public async Task GetDependencyInfoAsync_ReturnsNullIfPackageNotFoundAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create(MessageResponseCode.NotFound))
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync(MessageResponseCode.NotFound))
             {
                 var dependencyInfo = await test.Resource.GetDependencyInfoAsync(
                     test.PackageIdentity.Id,
@@ -287,9 +287,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetDependencyInfoAsync_GetsOriginalIdentity()
+        public async Task GetDependencyInfoAsync_GetsOriginalIdentityAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create(MessageResponseCode.Success))
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync(MessageResponseCode.Success))
             {
                 test.Connection.Setup(x => x.SendRequestAndReceiveResponseAsync<PrefetchPackageRequest, PrefetchPackageResponse>(
                         It.Is<MessageMethod>(m => m == MessageMethod.PrefetchPackage),
@@ -346,9 +346,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task CopyNupkgToStreamAsync_Throws()
+        public async Task CopyNupkgToStreamAsync_ThrowsAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<NotSupportedException>(
                     () => test.Resource.CopyNupkgToStreamAsync(
@@ -362,9 +362,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetPackageDownloaderAsync_ThrowsForNullPackageIdentity()
+        public async Task GetPackageDownloaderAsync_ThrowsForNullPackageIdentityAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetPackageDownloaderAsync(
@@ -378,9 +378,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetPackageDownloaderAsync_ThrowsForNullSourceCacheContext()
+        public async Task GetPackageDownloaderAsync_ThrowsForNullSourceCacheContextAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetPackageDownloaderAsync(
@@ -394,9 +394,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetPackageDownloaderAsync_ThrowsForNullLogger()
+        public async Task GetPackageDownloaderAsync_ThrowsForNullLoggerAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => test.Resource.GetPackageDownloaderAsync(
@@ -410,9 +410,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetPackageDownloaderAsync_ThrowsIfCancelled()
+        public async Task GetPackageDownloaderAsync_ThrowsIfCancelledAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => test.Resource.GetPackageDownloaderAsync(
@@ -424,9 +424,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetPackageDownloaderAsync_ReturnsNullIfPackageNotFound()
+        public async Task GetPackageDownloaderAsync_ReturnsNullIfPackageNotFoundAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create(MessageResponseCode.NotFound))
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync(MessageResponseCode.NotFound))
             {
                 var downloader = await test.Resource.GetPackageDownloaderAsync(
                     new PackageIdentity(id: "b", version: NuGetVersion.Parse("1.0.0")),
@@ -439,9 +439,9 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task GetPackageDownloaderAsync_ReturnsPackageDownloaderIfPackageFound()
+        public async Task GetPackageDownloaderAsync_ReturnsPackageDownloaderIfPackageFoundAsync()
         {
-            using (var test = PluginFindPackageByIdResourceTest.Create())
+            using (var test = await PluginFindPackageByIdResourceTest.CreateAsync())
             {
                 var downloader = await test.Resource.GetPackageDownloaderAsync(
                     test.PackageIdentity,
@@ -486,13 +486,13 @@ namespace NuGet.Protocol.Plugins.Tests
                 GC.SuppressFinalize(this);
             }
 
-            internal static PluginFindPackageByIdResourceTest Create(
+            internal static async Task<PluginFindPackageByIdResourceTest> CreateAsync(
                 MessageResponseCode responseCode = MessageResponseCode.Error)
             {
                 var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
                 var testDirectory = TestDirectory.Create();
                 var packageSource = new PackageSource("http://unit.test");
-                var package = SimpleTestPackageUtility.CreateFullPackage(
+                var package = await SimpleTestPackageUtility.CreateFullPackageAsync(
                     testDirectory.Path,
                     packageIdentity.Id,
                     packageIdentity.Version.ToNormalizedString());

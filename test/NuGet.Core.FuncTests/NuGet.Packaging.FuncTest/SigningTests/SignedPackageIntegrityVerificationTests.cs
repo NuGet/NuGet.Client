@@ -222,13 +222,13 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchive()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchiveAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var packageStream = nupkg.CreateAsStream())
+            using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signarture = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
@@ -260,13 +260,13 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchiveAssertException()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchiveAssertExceptionAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var packageStream = nupkg.CreateAsStream())
+            using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signarture = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
@@ -286,13 +286,13 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchiveAndCompressed()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchiveAndCompressedAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var packageStream = nupkg.CreateAsStream())
+            using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signarture = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
@@ -324,13 +324,13 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchiveAndCompressedAssertException()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchiveAndCompressedAssertExceptionAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var packageStream = nupkg.CreateAsStream())
+            using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var signarture = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
@@ -350,7 +350,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidExternalFileAttributes()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidExternalFileAttributesAsync()
         {
             var nupkg = new SimpleTestPackageContext();
 
@@ -379,7 +379,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidGeneralPurposeFlagBits()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidGeneralPurposeFlagBitsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -423,7 +423,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidGeneralPurposeFlagBitsAssertException()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidGeneralPurposeFlagBitsAssertExceptionAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -455,7 +455,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidCompressionMethod()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidCompressionMethodAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -487,7 +487,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidCompressedSize()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidCompressedSizeAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -531,7 +531,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidCompressedSizeAssertException()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidCompressedSizeAssertExceptionAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -563,7 +563,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidUncompressedSize()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidUncompressedSizeAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -607,7 +607,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidUncompressedSizeAssertException()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidUncompressedSizeAssertExceptionAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -639,7 +639,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidGeneralPurposeFlagBits()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidGeneralPurposeFlagBitsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -683,7 +683,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidGeneralPurposeFlagBitsAssertException()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidGeneralPurposeFlagBitsAssertExceptionAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -715,7 +715,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidCompressionMethod()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidCompressionMethodAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -759,7 +759,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidCompressionMethodAssertException()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidCompressionMethodAssertExceptionAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -791,7 +791,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidCompressedSize()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidCompressedSizeAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -835,7 +835,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidCompressedSizeAssertException()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidCompressedSizeAssertExceptionAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -867,7 +867,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidUncompressedSize()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidUncompressedSizeAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -914,7 +914,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidUncompressedSizeAssertException()
+        public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidUncompressedSizeAssertExceptionAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
