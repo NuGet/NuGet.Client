@@ -46,7 +46,7 @@ namespace Test.Utility.Signing
             var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
             var tempPath = Path.GetTempFileName();
 
-            using (var packageStream = nupkg.CreateAsStream())
+            using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var fileStream = File.OpenWrite(tempPath))
             {
                 packageStream.CopyTo(fileStream);
@@ -91,7 +91,7 @@ namespace Test.Utility.Signing
             var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
             var tempPath = Path.GetTempFileName();
 
-            using (var packageStream = nupkg.CreateAsStream())
+            using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var fileStream = File.OpenWrite(tempPath))
             {
                 packageStream.CopyTo(fileStream);

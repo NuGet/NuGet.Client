@@ -19,18 +19,20 @@ namespace NuGet.Commands.Test
     public class PushCommandTests
     {
         [Fact]
-        public async Task PushCommand_AbsolutePathSource()
+        public async Task PushCommand_AbsolutePathSourceAsync()
         {
-            using (TestDirectory workingDir = TestDirectory.Create())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange (create a test package)
-                DirectoryInfo packagePushDest = new DirectoryInfo(Path.Combine(workingDir, "packagePushDest"));
+                var packagePushDest = new DirectoryInfo(Path.Combine(workingDir, "packagePushDest"));
                 packagePushDest.Create();
 
-                List<PackageSource> packageSources = new List<PackageSource>();
-                packageSources.Add(new PackageSource(packagePushDest.FullName));
+                var packageSources = new List<PackageSource>
+                {
+                    new PackageSource(packagePushDest.FullName)
+                };
 
-                FileInfo packageInfo = SimpleTestPackageUtility.CreateFullPackage(workingDir, "test", "1.0.0");
+                var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
 
                 // Act
                 await PushRunner.Run(
@@ -48,7 +50,7 @@ namespace NuGet.Commands.Test
                     new TestLogger());
 
                 // Assert
-                string destFile = Path.Combine(packagePushDest.FullName, packageInfo.Name);
+                var destFile = Path.Combine(packagePushDest.FullName, packageInfo.Name);
                 Assert.Equal(true, File.Exists(destFile));
             }
         }

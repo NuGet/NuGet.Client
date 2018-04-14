@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.Test
     public class RestoreNetCoreTest
     {
         [Fact]
-        public void RestoreNetCore_AddExternalTargetVerifyTargetUsed()
+        public async Task RestoreNetCore_AddExternalTargetVerifyTargetUsedAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -42,7 +42,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, pkgX, pkgY);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, pkgX, pkgY);
 
                 // Inject dependency x
                 var doc = XDocument.Load(projectA.ProjectPath);
@@ -145,7 +145,7 @@ namespace NuGet.CommandLine.Test
         /// Solution settings are verified in RestoreProjectJson_RestoreFromSlnUsesNuGetFolderSettings
         /// </summary>
         [Fact]
-        public void RestoreNetCore_VerifyPerProjectConfigSourcesAreUsedForChildProjectsWithoutSolution()
+        public async Task RestoreNetCore_VerifyPerProjectConfigSourcesAreUsedForChildProjectsWithoutSolutionAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -180,7 +180,7 @@ namespace NuGet.CommandLine.Test
 
                     // Source
                     var source = Path.Combine(pathContext.WorkingDirectory, $"source{letter}");
-                    SimpleTestPackageUtility.CreatePackages(source, package);
+                    await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
                     sources.Add(source);
 
                     // Create a nuget.config for the project specific source.
@@ -240,7 +240,7 @@ namespace NuGet.CommandLine.Test
         /// Verify the project level config can override a solution level config's sources.
         /// </summary>
         [Fact]
-        public void RestoreNetCore_VerifyProjectConfigCanOverrideSolutionConfig()
+        public async Task RestoreNetCore_VerifyProjectConfigCanOverrideSolutionConfigAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -283,10 +283,10 @@ namespace NuGet.CommandLine.Test
                 var source = Path.Combine(pathContext.WorkingDirectory, "sourceA");
 
                 // The override source contains an extra dependency
-                SimpleTestPackageUtility.CreatePackages(source, packageGood, packageGoodDep);
+                await SimpleTestPackageUtility.CreatePackagesAsync(source, packageGood, packageGoodDep);
 
                 // The solution level source does not contain B
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageBad);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageBad);
 
                 // Create a nuget.config for the project specific source.
                 var projectDir = Path.GetDirectoryName(project.ProjectPath);
@@ -345,7 +345,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -427,7 +427,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -509,7 +509,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -565,7 +565,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyPackageReference_WithoutRestoreProjectStyle()
+        public async Task RestoreNetCore_VerifyPackageReference_WithoutRestoreProjectStyleAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -590,7 +590,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -611,7 +611,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_SetProjectStyleWithProperty_PackageReference()
+        public async Task RestoreNetCore_SetProjectStyleWithProperty_PackageReferenceAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -650,7 +650,7 @@ namespace NuGet.CommandLine.Test
 
                 File.WriteAllText(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "project.json"), projectJson.ToString());
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -671,7 +671,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_SetProjectStyleWithProperty_ProjectJson()
+        public async Task RestoreNetCore_SetProjectStyleWithProperty_ProjectJsonAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -711,7 +711,7 @@ namespace NuGet.CommandLine.Test
 
                 packageX.AddFile("build/net45/x.targets");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -877,7 +877,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_RestoreWithRID()
+        public async Task RestoreNetCore_RestoreWithRIDAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -903,7 +903,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -925,7 +925,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_RestoreWithRID_ValidateRID_Failure()
+        public async Task RestoreNetCore_RestoreWithRID_ValidateRID_FailureAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -955,7 +955,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -971,7 +971,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_RestoreWithRID_ValidateRID_IgnoreFailure()
+        public async Task RestoreNetCore_RestoreWithRID_ValidateRID_IgnoreFailureAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1000,7 +1000,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -1015,7 +1015,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_RestoreWithRID_ValidateRID_FailureForProjectJson()
+        public async Task RestoreNetCore_RestoreWithRID_ValidateRID_FailureForProjectJsonAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1054,7 +1054,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -1070,7 +1070,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_RestoreWithRIDSingle()
+        public async Task RestoreNetCore_RestoreWithRIDSingleAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1096,7 +1096,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -1118,7 +1118,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_RestoreWithRIDDuplicates()
+        public async Task RestoreNetCore_RestoreWithRIDDuplicatesAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1145,7 +1145,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -1167,7 +1167,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_RestoreWithSupports()
+        public async Task RestoreNetCore_RestoreWithSupportsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1194,7 +1194,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -1210,7 +1210,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_RestoreWithMultipleRIDs()
+        public async Task RestoreNetCore_RestoreWithMultipleRIDsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1236,7 +1236,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -1257,7 +1257,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersionsWithMultipleHits()
+        public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersionsWithMultipleHitsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1301,7 +1301,7 @@ namespace NuGet.CommandLine.Test
 
                     project.DotnetCLIToolReferences.Add(packageZSub);
 
-                    await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                         pathContext.PackageSource,
                         PackageSaveMode.Defaultv3,
                         packageZSub);
@@ -1310,7 +1310,7 @@ namespace NuGet.CommandLine.Test
                     solution.Create(pathContext.SolutionRoot);
                 }
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -1332,7 +1332,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersionsWithMultipleHits_NoOp()
+        public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersionsWithMultipleHits_NoOpAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1376,7 +1376,7 @@ namespace NuGet.CommandLine.Test
 
                     project.DotnetCLIToolReferences.Add(packageZSub);
 
-                    await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                         pathContext.PackageSource,
                         PackageSaveMode.Defaultv3,
                         packageZSub);
@@ -1385,7 +1385,7 @@ namespace NuGet.CommandLine.Test
                     solution.Create(pathContext.SolutionRoot);
                 }
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -1424,7 +1424,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_NoOp_AddingNewPackageRestores()
+        public async Task RestoreNetCore_NoOp_AddingNewPackageRestoresAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1456,7 +1456,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -1482,7 +1482,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_OriginalTargetFrameworkArePreserved()
+        public async Task RestoreNetCore_OriginalTargetFrameworkArePreservedAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1511,7 +1511,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -1530,7 +1530,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_NoOp_AddingANewProjectRestoresOnlyThatProject()
+        public async Task RestoreNetCore_NoOp_AddingANewProjectRestoresOnlyThatProjectAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1562,7 +1562,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -1598,7 +1598,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_NoOp_WarningsAndErrorsDontAffectHash()
+        public async Task RestoreNetCore_NoOp_WarningsAndErrorsDontAffectHashAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1627,7 +1627,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -1653,7 +1653,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersions()
+        public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersionsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1693,7 +1693,7 @@ namespace NuGet.CommandLine.Test
                     solution.Create(pathContext.SolutionRoot);
                 }
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -1712,7 +1712,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersions_NoOp_Fails()
+        public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersions_NoOp_FailsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1752,7 +1752,7 @@ namespace NuGet.CommandLine.Test
                     solution.Create(pathContext.SolutionRoot);
                 }
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -1786,7 +1786,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_MultipleProjects_SameTool()
+        public async Task RestoreNetCore_MultipleProjects_SameToolAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1826,7 +1826,7 @@ namespace NuGet.CommandLine.Test
                     solution.Create(pathContext.SolutionRoot);
                 }
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -1843,7 +1843,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_MultipleProjects_SameTool_DifferentVersionRanges_DoesNotNoOp()
+        public async Task RestoreNetCore_MultipleProjects_SameTool_DifferentVersionRanges_DoesNotNoOpAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1895,7 +1895,7 @@ namespace NuGet.CommandLine.Test
 
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -1924,7 +1924,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_MultipleProjects_SameTool_OverlappingVersionRanges_DoesNoOp()
+        public async Task RestoreNetCore_MultipleProjects_SameTool_OverlappingVersionRanges_DoesNoOpAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1976,7 +1976,7 @@ namespace NuGet.CommandLine.Test
 
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -2003,7 +2003,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_MultipleProjects_SameTool_OverlappingVersionRanges_OnlyOneMatchesPackage_DoesNoOp()
+        public async Task RestoreNetCore_MultipleProjects_SameTool_OverlappingVersionRanges_OnlyOneMatchesPackage_DoesNoOpAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2063,7 +2063,7 @@ namespace NuGet.CommandLine.Test
 
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -2080,7 +2080,7 @@ namespace NuGet.CommandLine.Test
 
 
                 // Setup Again. Add the new package....should not be picked up though
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                    pathContext.PackageSource,
                    PackageSaveMode.Defaultv3,
                    packageZ20);
@@ -2104,7 +2104,7 @@ namespace NuGet.CommandLine.Test
 
 
         [Fact]
-        public async Task RestoreNetCore_MultipleProjects_SameTool_NoOp() 
+        public async Task RestoreNetCore_MultipleProjects_SameTool_NoOpAsync() 
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2144,7 +2144,7 @@ namespace NuGet.CommandLine.Test
                     solution.Create(pathContext.SolutionRoot);
                 }
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -2172,7 +2172,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_SingleToolRestore()
+        public async Task RestoreNetCore_SingleToolRestoreAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2216,7 +2216,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -2234,7 +2234,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_SingleToolRestore_Noop()
+        public async Task RestoreNetCore_SingleToolRestore_NoopAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2278,7 +2278,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -2311,7 +2311,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("[5.0.0]", "5.0.0")]
         [InlineData("[1.5.0]", null)]
         [InlineData("1.1.*", "2.0.0")]
-        public async Task ToolPathResolver_FindsBestMatchingToolVersion(string requestedVersion, string expectedVersion)
+        public async Task ToolPathResolver_FindsBestMatchingToolVersionAsync(string requestedVersion, string expectedVersion)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2339,7 +2339,7 @@ namespace NuGet.CommandLine.Test
                         Version = $"{i}.0.0"
                     });
 
-                    await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                         pathContext.PackageSource,
                         PackageSaveMode.Defaultv3,
                         packageZ);
@@ -2371,7 +2371,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_RestoreToolInChildProjectWithRecursive_NoOp()
+        public async Task RestoreNetCore_RestoreToolInChildProjectWithRecursive_NoOpAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2403,7 +2403,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -2431,7 +2431,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_RestoreToolInChildProjectWithRecursive()
+        public async Task RestoreNetCore_RestoreToolInChildProjectWithRecursiveAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2463,7 +2463,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -2479,7 +2479,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_SkipRestoreToolInChildProjectForNonRecursive()
+        public async Task RestoreNetCore_SkipRestoreToolInChildProjectForNonRecursiveAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2511,7 +2511,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -2526,7 +2526,7 @@ namespace NuGet.CommandLine.Test
             }
         }
         [Fact]
-        public async Task RestoreNetCore_ToolRestoreWithNoVersion()
+        public async Task RestoreNetCore_ToolRestoreWithNoVersionAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2570,7 +2570,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -2588,7 +2588,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportOrder()
+        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportOrderAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2651,7 +2651,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -2700,7 +2700,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportIsAdded()
+        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportIsAddedAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2727,7 +2727,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -2749,7 +2749,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyNoDuplicateImports()
+        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyNoDuplicateImportsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2777,7 +2777,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -2799,7 +2799,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportIsNotAddedForUAP()
+        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportIsNotAddedForUAPAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2837,7 +2837,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -2851,7 +2851,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportRequiresPackageName()
+        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportRequiresPackageNameAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2880,7 +2880,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -2898,7 +2898,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportNotAllowedInSubFolder()
+        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportNotAllowedInSubFolderAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2939,7 +2939,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -2958,7 +2958,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_NETCoreImports_VerifyImportFromPackageIsIgnored()
+        public async Task RestoreNetCore_NETCoreImports_VerifyImportFromPackageIsIgnoredAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2986,7 +2986,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -3018,7 +3018,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_UAPImports_VerifyImportFromPackageIsIgnored()
+        public async Task RestoreNetCore_UAPImports_VerifyImportFromPackageIsIgnoredAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -3055,7 +3055,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -3072,7 +3072,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_ProjectToProject_Interweaving()
+        public async Task RestoreNetCore_ProjectToProject_InterweavingAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -3145,7 +3145,7 @@ namespace NuGet.CommandLine.Test
                 // G -> X
                 projectG.AddPackageToAllFrameworks(packageX);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -3283,7 +3283,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_ProjectToProject_UAPToNetCore()
+        public async Task RestoreNetCore_ProjectToProject_UAPToNetCoreAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -3323,7 +3323,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.0"
                 };
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -3982,7 +3982,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreNetCore_VerifyPropsAndTargetsAreWrittenWhenRestoreFails()
+        public async Task RestoreNetCore_VerifyPropsAndTargetsAreWrittenWhenRestoreFailsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4011,8 +4011,8 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                var yPath = SimpleTestPackageUtility.CreateFullPackage(pathContext.PackageSource, packageY);
-                SimpleTestPackageUtility.CreateFullPackage(pathContext.PackageSource, packageX);
+                var yPath = await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageY);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageX);
 
                 // y does not exist
                 yPath.Delete();
@@ -4033,7 +4033,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_SingleProject()
+        public async Task RestoreNetCore_SingleProjectAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4057,7 +4057,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -4074,7 +4074,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_SingleProjectWithPackageTargetFallback()
+        public async Task RestoreNetCore_SingleProjectWithPackageTargetFallbackAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4103,7 +4103,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -4118,7 +4118,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_SingleProjectWithPackageTargetFallbackAndWhitespace()
+        public async Task RestoreNetCore_SingleProjectWithPackageTargetFallbackAndWhitespaceAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4147,7 +4147,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -4162,7 +4162,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_SingleProject_SingleTFM()
+        public async Task RestoreNetCore_SingleProject_SingleTFMAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4191,7 +4191,7 @@ namespace NuGet.CommandLine.Test
                 xml = xml.Replace("</TargetFrameworks>", "</TargetFramework>");
                 File.WriteAllText(projectA.ProjectPath, xml);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -4368,7 +4368,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_NETCore_ProjectToProject_VerifyTransitivePackage()
+        public async Task RestoreNetCore_NETCore_ProjectToProject_VerifyTransitivePackageAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4402,7 +4402,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectB);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -4418,7 +4418,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_NETCore_ProjectToProjectMultipleTFM_VerifyTransitivePackages()
+        public async Task RestoreNetCore_NETCore_ProjectToProjectMultipleTFM_VerifyTransitivePackagesAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4463,7 +4463,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectB);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -4482,7 +4482,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_NETCoreAndUAP_ProjectToProjectMultipleTFM_VerifyTransitivePackages()
+        public async Task RestoreNetCore_NETCoreAndUAP_ProjectToProjectMultipleTFM_VerifyTransitivePackagesAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4527,7 +4527,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectB);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -4545,7 +4545,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_LegacyPackagesDirectorySettingsIsIsolatedToProject()
+        public async Task RestoreNetCore_LegacyPackagesDirectorySettingsIsIsolatedToProjectAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4592,7 +4592,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectC);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -4611,7 +4611,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_LegacyPackagesDirectoryEnabledInProjectFile()
+        public async Task RestoreNetCore_LegacyPackagesDirectoryEnabledInProjectFileAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4639,7 +4639,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -4654,7 +4654,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_LegacyPackagesDirectoryDisabledInProjectFile()
+        public async Task RestoreNetCore_LegacyPackagesDirectoryDisabledInProjectFileAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4682,7 +4682,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -4697,7 +4697,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_AssetTargetFallbackVerifyFallbackToNet46Assets()
+        public async Task RestoreNetCore_AssetTargetFallbackVerifyFallbackToNet46AssetsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4726,7 +4726,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -4746,7 +4746,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_AssetTargetFallbackVerifyNoFallbackToNet46Assets()
+        public async Task RestoreNetCore_AssetTargetFallbackVerifyNoFallbackToNet46AssetsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4783,7 +4783,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -4811,7 +4811,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_BothAssetTargetFallbackPackageTargetFallbackVerifyError()
+        public async Task RestoreNetCore_BothAssetTargetFallbackPackageTargetFallbackVerifyErrorAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -4839,7 +4839,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -4853,7 +4853,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyAdditionalSourcesApplied()
+        public async Task RestoreNetCore_VerifyAdditionalSourcesAppliedAsync()
         {
             // Arrange
             using (var extraSource = TestDirectory.Create())
@@ -4906,25 +4906,25 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // M is only in the fallback folder
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.FallbackFolder,
                     PackageSaveMode.Defaultv3,
                     packageM);
 
                 // X is only in the source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
                 // Y is only in the extra source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     extraSource,
                     PackageSaveMode.Defaultv3,
                     packageY);
 
                 // Z is only in the extra fallback
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     extraFallback,
                     PackageSaveMode.Defaultv3,
                     packageZ);
@@ -4938,7 +4938,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyAdditionalSourcesConditionalOnFramework()
+        public async Task RestoreNetCore_VerifyAdditionalSourcesConditionalOnFrameworkAsync()
         {
             // Arrange
             using (var extraSourceA = TestDirectory.Create())
@@ -4980,13 +4980,13 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // X is only in the source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     extraSourceA,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
                 // Y is only in the extra source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     extraSourceB,
                     PackageSaveMode.Defaultv3,
                     packageY);
@@ -5000,7 +5000,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyAdditionalFallbackFolderConditionalOnFramework()
+        public async Task RestoreNetCore_VerifyAdditionalFallbackFolderConditionalOnFrameworkAsync()
         {
             // Arrange
             using (var extraSourceA = TestDirectory.Create())
@@ -5042,13 +5042,13 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // X is only in the source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     extraSourceA,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
                 // Y is only in the extra source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     extraSourceB,
                     PackageSaveMode.Defaultv3,
                     packageY);
@@ -5065,7 +5065,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyAdditionalFallbackFolderExclude()
+        public async Task RestoreNetCore_VerifyAdditionalFallbackFolderExcludeAsync()
         {
             // Arrange
             using (var extraSourceA = TestDirectory.Create())
@@ -5107,13 +5107,13 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // X is only in the source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     extraSourceA,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
                 // Y is only in the extra source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     extraSourceA,
                     PackageSaveMode.Defaultv3,
                     packageY);
@@ -5130,7 +5130,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyAdditionalSourcesAppliedWithSingleFramework()
+        public async Task RestoreNetCore_VerifyAdditionalSourcesAppliedWithSingleFrameworkAsync()
         {
             // Arrange
             using (var extraSource = TestDirectory.Create())
@@ -5162,7 +5162,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // X is only in the source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     extraSource.Path,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -5179,7 +5179,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyAdditionalFallbackFolderAppliedWithSingleFramework()
+        public async Task RestoreNetCore_VerifyAdditionalFallbackFolderAppliedWithSingleFrameworkAsync()
         {
             // Arrange
             using (var extraSource = TestDirectory.Create())
@@ -5210,7 +5210,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // X is only in the source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     extraFallback.Path,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -5227,7 +5227,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyPackagesFolderPathResolvedAgainstWorkingDir()
+        public async Task RestoreNetCore_VerifyPackagesFolderPathResolvedAgainstWorkingDirAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -5256,7 +5256,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // X is only in the source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -5275,7 +5275,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyAdditionalSourcesAppliedToTools()
+        public async Task RestoreNetCore_VerifyAdditionalSourcesAppliedToToolsAsync()
         {
             // Arrange
             using (var extraSource = TestDirectory.Create())
@@ -5333,25 +5333,25 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // M is only in the fallback folder
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.FallbackFolder,
                     PackageSaveMode.Defaultv3,
                     packageM);
 
                 // X is only in the source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
                 // Y is only in the extra source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     extraSource,
                     PackageSaveMode.Defaultv3,
                     packageY);
 
                 // Z is only in the extra fallback
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     extraFallback,
                     PackageSaveMode.Defaultv3,
                     packageZ);
@@ -5369,7 +5369,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyPackagesFolderPathResolvedAgainstProjectProperty()
+        public async Task RestoreNetCore_VerifyPackagesFolderPathResolvedAgainstProjectPropertyAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -5398,7 +5398,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // X is only in the source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -5415,7 +5415,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifySourcesResolvedAgainstProjectProperty()
+        public async Task RestoreNetCore_VerifySourcesResolvedAgainstProjectPropertyAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -5445,7 +5445,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // X is only in the source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     source,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -5459,7 +5459,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifySourcesResolvedAgainstWorkingDir()
+        public async Task RestoreNetCore_VerifySourcesResolvedAgainstWorkingDirAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -5490,7 +5490,7 @@ namespace NuGet.CommandLine.Test
                 var source = Path.Combine(pathContext.WorkingDirectory, "valid");
 
                 // X is only in the source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     source,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -5505,7 +5505,7 @@ namespace NuGet.CommandLine.Test
 
 
         [Fact]
-        public async Task RestoreNetCore_VerifyFallbackFoldersResolvedAgainstProjectProperty()
+        public async Task RestoreNetCore_VerifyFallbackFoldersResolvedAgainstProjectPropertyAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -5535,7 +5535,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // X is only in the source
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     fallback,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -5550,7 +5550,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyDisabledSourcesAreNotUsed()
+        public async Task RestoreNetCore_VerifyDisabledSourcesAreNotUsedAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -5573,7 +5573,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -5623,7 +5623,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyConfigFileWithRelativePathIsUsed()
+        public async Task RestoreNetCore_VerifyConfigFileWithRelativePathIsUsedAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -5652,7 +5652,7 @@ namespace NuGet.CommandLine.Test
                 xml = xml.Replace("</TargetFrameworks>", "</TargetFramework>");
                 File.WriteAllText(projectA.ProjectPath, xml);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
@@ -5677,7 +5677,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_WithMultipleProjectToProjectReferences_NoOps()
+        public async Task RestoreNetCore_WithMultipleProjectToProjectReferences_NoOpsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -5710,7 +5710,7 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.0"
                 };
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX
@@ -5748,7 +5748,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_PackageTypesDoNotAffectAssetsFile()
+        public async Task RestoreNetCore_PackageTypesDoNotAffectAssetsFileAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -5769,7 +5769,7 @@ namespace NuGet.CommandLine.Test
                 packageX.PackageTypes.Add(PackageType.Dependency);
                 packageX.PackageTypes.Add(PackageType.DotnetCliTool);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);

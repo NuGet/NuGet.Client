@@ -48,7 +48,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_ValidCertificate_Success()
+        public async Task VerifySignaturesAsync_ValidCertificate_SuccessAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -72,7 +72,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_ValidCertificateAndTimestamp_Success()
+        public async Task VerifySignaturesAsync_ValidCertificateAndTimestamp_SuccessAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -101,7 +101,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_ValidCertificateAndTimestampWithDifferentHashAlgorithms_Success()
+        public async Task VerifySignaturesAsync_ValidCertificateAndTimestampWithDifferentHashAlgorithms_SuccessAsync()
         {
             var packageContext = new SimpleTestPackageContext();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -129,7 +129,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestamp_Success()
+        public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestamp_SuccessAsync()
         {
             var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -181,7 +181,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestampWithTooLargeRange_Fails()
+        public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestampWithTooLargeRange_FailsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -245,7 +245,7 @@ namespace NuGet.Packaging.FuncTest
         // Verify a package meeting minimum signature requirements.
         // This signature is neither an author nor repository signature.
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_WithBasicSignedCms_Succeeds()
+        public async Task VerifySignaturesAsync_WithBasicSignedCms_SucceedsAsync()
         {
             var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
@@ -263,7 +263,7 @@ namespace NuGet.Packaging.FuncTest
             using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 var packageContext = new SimpleTestPackageContext();
-                var unsignedPackageFile = packageContext.CreateAsFile(directory, "Package.nupkg");
+                var unsignedPackageFile = await packageContext.CreateAsFileAsync(directory, "Package.nupkg");
                 var signedPackageFile = await SignedArchiveTestUtility.SignPackageFileWithBasicSignedCmsAsync(
                     directory,
                     unsignedPackageFile,
@@ -292,7 +292,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_SettingsRequireTimestamp_NoTimestamp_Fails()
+        public async Task VerifySignaturesAsync_SettingsRequireTimestamp_NoTimestamp_FailsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -330,7 +330,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_SettingsNotRequireCheckCountersiganture_WithValidPrimarySignatureAndInvalidCountersignature_Succeeds()
+        public async Task VerifySignaturesAsync_SettingsNotRequireCheckCountersiganture_WithValidPrimarySignatureAndInvalidCountersignature_SucceedsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -374,7 +374,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_SettingsRequireCheckCountersiganture_WithValidPrimarySignatureAndInvalidCountersignature_Fails()
+        public async Task VerifySignaturesAsync_SettingsRequireCheckCountersiganture_WithValidPrimarySignatureAndInvalidCountersignature_FailsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -418,7 +418,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_SettingsRequireCheckCountersiganture_WithValidPrimarySignatureAndValidCountersignature_Succeeds()
+        public async Task VerifySignaturesAsync_SettingsRequireCheckCountersiganture_WithValidPrimarySignatureAndValidCountersignature_SucceedsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -462,7 +462,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_WithExpiredPrimarySignature_ValidCountersignature_AndPrimarySignatureValidAtCountersignTime_Succeeds()
+        public async Task VerifySignaturesAsync_WithExpiredPrimarySignature_ValidCountersignature_AndPrimarySignatureValidAtCountersignTime_SucceedsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -513,7 +513,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_WithExpiredPrimarySignature_ValidCountersignature_AndPrimarySignatureExpiredAtCountersignTime_Fails()
+        public async Task VerifySignaturesAsync_WithExpiredPrimarySignature_ValidCountersignature_AndPrimarySignatureExpiredAtCountersignTime_FailsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -564,7 +564,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithInvalidSignature_Throws()
+        public async Task GetTrustResultAsync_WithInvalidSignature_ThrowsAsync()
         {
             var package = new SimpleTestPackageContext();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -599,7 +599,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_SettingsRequireExactlyOneTimestamp_MultipleTimestamps_Fails()
+        public async Task GetTrustResultAsync_SettingsRequireExactlyOneTimestamp_MultipleTimestamps_FailsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -619,7 +619,7 @@ namespace NuGet.Packaging.FuncTest
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
 
-            using (var package = new PackageArchiveReader(nupkg.CreateAsStream(), leaveStreamOpen: false))
+            using (var package = new PackageArchiveReader(await nupkg.CreateAsStreamAsync(), leaveStreamOpen: false))
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             using (var signatureRequest = new AuthorSignPackageRequest(testCertificate, HashAlgorithmName.SHA256))
             {
@@ -642,7 +642,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithSignedAndCountersignedPackage_Succeeds()
+        public async Task GetTrustResultAsync_WithSignedAndCountersignedPackage_SucceedsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -678,7 +678,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithSignedTimestampedCountersignedAndCountersignatureTimestampedPackage_Succeeds()
+        public async Task GetTrustResultAsync_WithSignedTimestampedCountersignedAndCountersignatureTimestampedPackage_SucceedsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -717,13 +717,13 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInAcceptMode_DoesNotWarn()
+        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInAcceptMode_DoesNotWarnAsync()
         {
             // Arrange
             var setting = SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy();
 
             // Act & Assert
-            var matchingIssues = await VerifyUnavailableRevocationInfo(
+            var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
                 setting);
@@ -732,13 +732,13 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInRequireMode_Warns()
+        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInRequireMode_WarnsAsync()
         {
             // Arrange
             var setting = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
 
             // Act & Assert
-            var matchingIssues = await VerifyUnavailableRevocationInfo(
+            var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
                 setting);
@@ -750,13 +750,13 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInVerify_Warns()
+        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInVerify_WarnsAsync()
         {
             // Arrange
             var setting = _verifyCommandSettings;
 
             // Act & Assert
-            var matchingIssues = await VerifyUnavailableRevocationInfo(
+            var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
                 setting);
@@ -768,7 +768,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowIllegal_Warns()
+        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowIllegal_WarnsAsync()
         {
             // Arrange
             var setting = new SignedPackageVerifierSettings(
@@ -784,7 +784,7 @@ namespace NuGet.Packaging.FuncTest
                 allowNoRepositoryCertificateList: true);
 
             // Act & Assert
-            var matchingIssues = await VerifyUnavailableRevocationInfo(
+            var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
                 setting);
@@ -793,7 +793,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowUnknownRevocation_Warns()
+        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WarnsAsync()
         {
             // Arrange
             var setting = new SignedPackageVerifierSettings(
@@ -809,7 +809,7 @@ namespace NuGet.Packaging.FuncTest
                 alwaysVerifyCountersignature: false);
 
             // Act & Assert
-            var matchingIssues = await VerifyUnavailableRevocationInfo(
+            var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
                 setting);
@@ -820,7 +820,7 @@ namespace NuGet.Packaging.FuncTest
             AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning);
         }
 
-        private static async Task<List<SignatureLog>> VerifyUnavailableRevocationInfo(
+        private static async Task<List<SignatureLog>> VerifyUnavailableRevocationInfoAsync(
             SignatureVerificationStatus expectedStatus,
             LogLevel expectedLogLevel,
             SignedPackageVerifierSettings setting)
@@ -925,7 +925,7 @@ namespace NuGet.Packaging.FuncTest
                 {
                     var directory = TestDirectory.Create();
                     var packageContext = new SimpleTestPackageContext();
-                    var unsignedPackageFile = packageContext.CreateAsFile(directory, "package.nupkg");
+                    var unsignedPackageFile = await packageContext.CreateAsFileAsync(directory, "package.nupkg");
                     var signedPackageFile = await SignedArchiveTestUtility.SignPackageFileWithBasicSignedCmsAsync(
                         directory,
                         unsignedPackageFile,

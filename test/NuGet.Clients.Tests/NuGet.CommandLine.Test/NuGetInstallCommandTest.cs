@@ -22,7 +22,7 @@ namespace NuGet.CommandLine.Test
     public class NuGetInstallCommandTest
     {
         [Fact]
-        public void InstallCommand_PackageIdInstalledWithSxSAndExcludeVersion()
+        public async Task InstallCommand_PackageIdInstalledWithSxSAndExcludeVersionAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.Test
 
                 packageA1.Dependencies.Add(packageB2);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA1, packageB1, packageB2, packageB15);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageB1, packageB2, packageB15);
 
                 RunInstall(pathContext, "b", 0, "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
                 RunInstall(pathContext, "b", 0, "-Version", "1.5.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
@@ -55,7 +55,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_PackageInstalledSxSWithOverlapOnDependency()
+        public async Task InstallCommand_PackageInstalledSxSWithOverlapOnDependencyAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -66,7 +66,7 @@ namespace NuGet.CommandLine.Test
 
                 packageA1.Dependencies.Add(packageB2);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA1, packageB1, packageB2);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageB1, packageB2);
 
                 RunInstall(pathContext, "b", 0, "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
                 RunInstall(pathContext, "b", 0, "-Version", "2.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
@@ -86,7 +86,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_UpdatePackageWithExcludeVersionVerifyPackageReplaced()
+        public async Task InstallCommand_UpdatePackageWithExcludeVersionVerifyPackageReplacedAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -94,7 +94,7 @@ namespace NuGet.CommandLine.Test
                 var packageA1 = new SimpleTestPackageContext("a", "1.0.0");
                 var packageA2 = new SimpleTestPackageContext("a", "2.0.0");
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA1, packageA2);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageA2);
 
                 var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
 
@@ -118,7 +118,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_DependencyFailsToInstallVerifyFailure()
+        public async Task InstallCommand_DependencyFailsToInstallVerifyFailureAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -128,7 +128,7 @@ namespace NuGet.CommandLine.Test
                 packageA.Dependencies.Add(packageB);
 
                 // Only create A
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA);
 
                 File.Delete(Directory.GetFiles(pathContext.PackageSource).Single(e => e.EndsWith("b.1.0.0.nupkg")));
 
@@ -158,7 +158,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_UpdatePackageWithExcludeVersionVerifyFilesRemoved()
+        public async Task InstallCommand_UpdatePackageWithExcludeVersionVerifyFilesRemovedAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -169,7 +169,7 @@ namespace NuGet.CommandLine.Test
                 var packageA2 = new SimpleTestPackageContext("a", "2.0.0");
                 packageA2.AddFile("data/2.txt");
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA1, packageA2);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageA2);
 
                 var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
 
@@ -196,7 +196,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_DowngradePackageWithExcludeVersionVerifyPackageReplaced()
+        public async Task InstallCommand_DowngradePackageWithExcludeVersionVerifyPackageReplacedAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -204,7 +204,7 @@ namespace NuGet.CommandLine.Test
                 var packageA1 = new SimpleTestPackageContext("a", "1.0.0");
                 var packageA2 = new SimpleTestPackageContext("a", "2.0.0");
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA1, packageA2);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageA2);
 
                 var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
 
@@ -228,7 +228,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_InstallTwoVersionsOfAPackageVerifySxS()
+        public async Task InstallCommand_InstallTwoVersionsOfAPackageVerifySxSAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -236,7 +236,7 @@ namespace NuGet.CommandLine.Test
                 var packageA1 = new SimpleTestPackageContext("a", "1.0.0");
                 var packageA2 = new SimpleTestPackageContext("a", "2.0.0");
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA1, packageA2);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageA2);
 
                 var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
 
@@ -262,7 +262,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("net451", "f")]
         [InlineData("native", "e")]
         [InlineData("netcoreapp2.0", "d")]
-        public void InstallCommand_InstallWithFrameworkFlagVerifyDependencies(string tfm, string expectedId)
+        public async Task InstallCommand_InstallWithFrameworkFlagVerifyDependenciesAsync(string tfm, string expectedId)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -296,7 +296,7 @@ namespace NuGet.CommandLine.Test
                         </package>")
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource,
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource,
                     packageA,
                     new SimpleTestPackageContext("b"),
                     new SimpleTestPackageContext("c"),
@@ -319,14 +319,14 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_InstallWithUnsupportedFrameworkVerifyFailure()
+        public async Task InstallCommand_InstallWithUnsupportedFrameworkVerifyFailureAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Arrange
                 var packageA = new SimpleTestPackageContext("a", "1.0.0");
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA);
 
                 var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
 
@@ -1269,7 +1269,7 @@ namespace NuGet.CommandLine.Test
         // Tests that nuget will NOT download package from http source if the package on the server
         // has the same hash value as the cached version.
         [Fact]
-        public async Task InstallCommand_WillUseCachedFile()
+        public async Task InstallCommand_WillUseCachedFileAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1283,7 +1283,7 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.UserPackagesFolder, PackageSaveMode.Defaultv3, new PackageIdentity("testPackage1", NuGetVersion.Parse("1.1.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.UserPackagesFolder, PackageSaveMode.Defaultv3, new PackageIdentity("testPackage1", NuGetVersion.Parse("1.1.0")));
 
                 using (var server = new MockServer())
                 {

@@ -8,12 +8,14 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.Common;
 using NuGet.LibraryModel;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -23,22 +25,95 @@ namespace NuGet.Tests.Apex
 {
     public class Utils
     {
-        public static void CreatePackageInSource(string packageSource, string packageName, string packageVersion)
+        public static async Task CreatePackageInSourceAsync(string packageSource, string packageName, string packageVersion)
         {
             var package = CreatePackage(packageName, packageVersion);
-            SimpleTestPackageUtility.CreatePackages(packageSource, package);
+            await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
         }
 
-        public static void CreateSignedPackageInSource(string packageSource, string packageName, string packageVersion, X509Certificate2 testCertificate)
+        public static async Task CreateAuthorSignedPackageInSourceAsync(
+            string packageSource,
+            string packageName,
+            string packageVersion,
+            X509Certificate2 testCertificate,
+            ITimestampProvider timestampProvider = null)
         {
-            var package = CreateSignedPackage(packageName, packageVersion, testCertificate);
-            SimpleTestPackageUtility.CreatePackages(packageSource, package);
+            var package = CreateAuthorSignedPackage(packageName, packageVersion, testCertificate, timestampProvider);
+            await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
         }
 
-        public static SimpleTestPackageContext CreateSignedPackage(string packageName, string packageVersion, X509Certificate2 testCertificate)
+        public static SimpleTestPackageContext CreateAuthorSignedPackage(
+            string packageName,
+            string packageVersion,
+            X509Certificate2 testCertificate,
+            ITimestampProvider timestampProvider = null)
         {
             var package = CreatePackage(packageName, packageVersion);
+            package.IsPrimarySigned = true;
             package.PrimarySignatureCertificate = testCertificate;
+
+            package.TimestampProvider = timestampProvider;
+
+            return package;
+        }
+
+        public static SimpleTestPackageContext CreateRepositorySignedPackage(
+            string packageName,
+            string packageVersion,
+            X509Certificate2 testCertificate,
+            Uri v3ServiceIndexUrl,
+            IReadOnlyList<string>packageOwners = null,
+            ITimestampProvider timestampProvider = null)
+        {
+            var package = CreatePackage(packageName, packageVersion);
+            package.IsPrimarySigned = true;
+            package.PrimarySignatureCertificate = testCertificate;
+            package.V3ServiceIndexUrl = v3ServiceIndexUrl;
+            package.PackageOwners = packageOwners;
+
+            package.TimestampProvider = timestampProvider;
+
+            return package;
+        }
+
+        public static SimpleTestPackageContext CreateRepositoryCountersignedPackage(
+            string packageName,
+            string packageVersion,
+            X509Certificate2 authorCertificate,
+            X509Certificate2 repoCertificate,
+            Uri v3ServiceIndexUrl,
+            IReadOnlyList<string> packageOwners = null,
+            ITimestampProvider timestampProvider = null)
+        {
+            var package = CreatePackage(packageName, packageVersion);
+            package.IsPrimarySigned = true;
+            package.PrimarySignatureCertificate = authorCertificate;
+
+            package.IsRepositoryCounterSigned = true;
+            package.RepositoryCountersignatureCertificate = repoCertificate;
+            package.V3ServiceIndexUrl = v3ServiceIndexUrl;
+            package.PackageOwners = packageOwners;
+
+            package.TimestampProvider = timestampProvider;
+
+            return package;
+        }
+
+        public static SimpleTestPackageContext RepositoryCountersignPackage(
+            SimpleTestPackageContext package,
+            X509Certificate2 repoCertificate,
+            Uri v3ServiceIndexUrl,
+            IReadOnlyList<string> packageOwners = null)
+        {
+            if (!package.IsPrimarySigned)
+            {
+                throw new InvalidOperationException("Package has to be primary signed");
+            }
+
+            package.IsRepositoryCounterSigned = true;
+            package.RepositoryCountersignatureCertificate = repoCertificate;
+            package.V3ServiceIndexUrl = v3ServiceIndexUrl;
+            package.PackageOwners = packageOwners;
 
             return package;
         }

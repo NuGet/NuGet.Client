@@ -29,7 +29,7 @@ namespace NuGet.Packaging.Test
         private static SignedPackageVerifierSettings _defaultVerifyCommandSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
 
         [Fact]
-        public async Task InstallFromSourceAsync_StressTest()
+        public async Task InstallFromSourceAsync_StressTestAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -38,7 +38,7 @@ namespace NuGet.Packaging.Test
 
                 var sourcePath = Path.Combine(root, "source");
                 var packagesPath = Path.Combine(root, "packages");
-                await SimpleTestPackageUtility.CreateFolderFeedV3(sourcePath, identity);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(sourcePath, identity);
                 var sourcePathResolver = new VersionFolderPathResolver(sourcePath);
 
                 var sem = new ManualResetEventSlim(false);
@@ -103,7 +103,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_ReturnsFalseWhenAlreadyInstalled()
+        public async Task InstallFromSourceAsync_ReturnsFalseWhenAlreadyInstalledAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -120,7 +120,7 @@ namespace NuGet.Packaging.Test
                    "lib/net45/A.dll");
 
                 var packagesPath = Path.Combine(root, "packages");
-                await SimpleTestPackageUtility.CreateFolderFeedV3(packagesPath, identity);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(packagesPath, identity);
                 var pathResolver = new VersionFolderPathResolver(packagesPath);
 
                 using (var packageDownloader = new LocalPackageArchiveDownloader(
@@ -149,7 +149,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_ReturnsTrueAfterNewInstall()
+        public async Task InstallFromSourceAsync_ReturnsTrueAfterNewInstallAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -196,7 +196,7 @@ namespace NuGet.Packaging.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task InstallFromSourceAsync_WithLowercaseSpecified_ExtractsToSpecifiedCase(bool isLowercase)
+        public async Task InstallFromSourceAsync_WithLowercaseSpecified_ExtractsToSpecifiedCaseAsync(bool isLowercase)
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -241,7 +241,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_NuspecWithDifferentName_InstallsForV3()
+        public async Task InstallFromSourceAsync_NuspecWithDifferentName_InstallsForV3Async()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -254,7 +254,7 @@ namespace NuGet.Packaging.Test
 
                 packageA.AddFile("lib/net45/a.dll");
 
-                SimpleTestPackageUtility.CreatePackages(root, packageA);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageA);
 
                 var packageFile = Path.Combine(root, "a.1.0.0.nupkg");
 
@@ -303,7 +303,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_NupkgWithDifferentName_InstallsForV3()
+        public async Task InstallFromSourceAsync_NupkgWithDifferentName_InstallsForV3Async()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -317,7 +317,7 @@ namespace NuGet.Packaging.Test
                 packageA.AddFile("lib/net45/a.dll");
                 packageA.AddFile("b.1.0.0.nupkg");
 
-                SimpleTestPackageUtility.CreatePackages(root, packageA);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageA);
 
                 var packageFile = Path.Combine(root, "a.1.0.0.nupkg");
                 var packageIdentity = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
@@ -350,7 +350,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithContentXmlFile()
+        public async Task ExtractPackageAsync_WithContentXmlFileAsync()
         {
             // Arrange
             using (var packageStream = TestPackagesCore.GetTestPackageWithContentXmlFile())
@@ -382,7 +382,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_DuplicateNupkg()
+        public async Task ExtractPackageAsync_DuplicateNupkgAsync()
         {
             using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
             {
@@ -420,7 +420,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_NupkgContent()
+        public async Task ExtractPackageAsync_NupkgContentAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -459,7 +459,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_PackageSaveModeNupkg_FolderReader()
+        public async Task ExtractPackageAsync_PackageSaveModeNupkg_FolderReaderAsync()
         {
             // Arrange
             using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
@@ -495,7 +495,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_PackageSaveModeNuspec_FolderReader()
+        public async Task ExtractPackageAsync_PackageSaveModeNuspec_FolderReaderAsync()
         {
             // Arrange
             using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
@@ -531,7 +531,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_PackageSaveModeNuspecAndNupkg_PackageStream()
+        public async Task ExtractPackageAsync_PackageSaveModeNuspecAndNupkg_PackageStreamAsync()
         {
             // Arrange
             using (var packageFile = TestPackagesCore.GetLegacyTestPackage())
@@ -567,7 +567,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_DefaultPackageExtractionContext()
+        public async Task ExtractPackageAsync_DefaultPackageExtractionContextAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -613,7 +613,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_ExtractsXmlFiles_IfXmlSaveModeIsSetToNone()
+        public async Task ExtractPackageAsync_ExtractsXmlFiles_IfXmlSaveModeIsSetToNoneAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -656,7 +656,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_CompressesXmlFiles_IfXmlSaveModeIsSetToCompress()
+        public async Task ExtractPackageAsync_CompressesXmlFiles_IfXmlSaveModeIsSetToCompressAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -709,7 +709,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_CompressesXmlFilesForLanguageSpecificDirectories()
+        public async Task ExtractPackageAsync_CompressesXmlFilesForLanguageSpecificDirectoriesAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -756,7 +756,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_SkipsXmlFiles_IfXmlSaveModeIsSetToSkip()
+        public async Task ExtractPackageAsync_SkipsXmlFiles_IfXmlSaveModeIsSetToSkipAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -800,7 +800,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_SkipsXmlFiles_ForLanguageSpecificDirectories()
+        public async Task ExtractPackageAsync_SkipsXmlFiles_ForLanguageSpecificDirectoriesAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -851,7 +851,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_SkipsSatelliteXmlFiles()
+        public async Task ExtractPackageAsync_SkipsSatelliteXmlFilesAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -913,7 +913,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithXmlModeCompress_DoesNotThrowIfPackageAlreadyContainsAXmlZipFile()
+        public async Task ExtractPackageAsync_WithXmlModeCompress_DoesNotThrowIfPackageAlreadyContainsAXmlZipFileAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -957,7 +957,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithXmlModeSkip_DoesNotSkipXmlZipFile()
+        public async Task ExtractPackageAsync_WithXmlModeSkip_DoesNotSkipXmlZipFileAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -999,7 +999,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageSaveModeFile_DoesNotExtractFiles()
+        public async Task ExtractPackageAsync_WithoutPackageSaveModeFile_DoesNotExtractFilesAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1042,7 +1042,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageSaveModeNuspec_DoesNotExtractNuspec()
+        public async Task ExtractPackageAsync_WithoutPackageSaveModeNuspec_DoesNotExtractNuspecAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1085,7 +1085,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithPackageSaveModeNuspec_ExtractsInnerNuspec()
+        public async Task ExtractPackageAsync_WithPackageSaveModeNuspec_ExtractsInnerNuspecAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1128,7 +1128,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageSaveModeNuspec_ExtractsInnerNuspec()
+        public async Task ExtractPackageAsync_WithoutPackageSaveModeNuspec_ExtractsInnerNuspecAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1171,7 +1171,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageSaveModeNupkg_DoesNotExtractNupkg()
+        public async Task ExtractPackageAsync_WithoutPackageSaveModeNupkg_DoesNotExtractNupkgAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1214,7 +1214,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_PreservesZipEntryTime()
+        public async Task ExtractPackageAsync_PreservesZipEntryTimeAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1260,7 +1260,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_IgnoresFutureZipEntryTime()
+        public async Task ExtractPackageAsync_IgnoresFutureZipEntryTimeAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1309,7 +1309,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_SetsFilePermissions()
+        public async Task ExtractPackageAsync_SetsFilePermissionsAsync()
         {
             if (RuntimeEnvironmentHelper.IsWindows)
             {
@@ -1353,10 +1353,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_ThrowsForNullPackageReader()
+        public async Task ExtractPackageAsync_WithoutPackageStream_ThrowsForNullPackageReaderAsync()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => PackageExtractor.ExtractPackageAsync(
                         null,
@@ -1370,10 +1372,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_ThrowsForNullPackagePathResolver()
+        public async Task ExtractPackageAsync_WithoutPackageStream_ThrowsForNullPackagePathResolverAsync()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => PackageExtractor.ExtractPackageAsync(
                         null,
@@ -1387,10 +1391,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_ThrowsForNullPackageExtractionContext()
+        public async Task ExtractPackageAsync_WithoutPackageStream_ThrowsForNullPackageExtractionContextAsync()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => PackageExtractor.ExtractPackageAsync(
                         null,
@@ -1404,10 +1410,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_ThrowsIfCancelled()
+        public async Task ExtractPackageAsync_WithoutPackageStream_ThrowsIfCancelledAsync()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => PackageExtractor.ExtractPackageAsync(
                         null,
@@ -1419,10 +1427,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeNone()
+        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeNoneAsync()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 test.Context.PackageSaveMode = PackageSaveMode.None;
 
                 var files = await PackageExtractor.ExtractPackageAsync(
@@ -1455,10 +1465,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeFiles()
+        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeFilesAsync()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 test.Context.PackageSaveMode = PackageSaveMode.Files;
 
                 var files = await PackageExtractor.ExtractPackageAsync(
@@ -1491,10 +1503,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeNuspec()
+        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeNuspecAsync()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 test.Context.PackageSaveMode = PackageSaveMode.Nuspec;
 
                 var files = await PackageExtractor.ExtractPackageAsync(
@@ -1527,10 +1541,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeNupkg()
+        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeNupkgAsync()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 test.Context.PackageSaveMode = PackageSaveMode.Nupkg;
 
                 var files = await PackageExtractor.ExtractPackageAsync(
@@ -1563,10 +1579,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeDefaultV2()
+        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeDefaultV2Async()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 test.Context.PackageSaveMode = PackageSaveMode.Defaultv2;
 
                 var files = await PackageExtractor.ExtractPackageAsync(
@@ -1599,10 +1617,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeDefaultV3()
+        public async Task ExtractPackageAsync_WithoutPackageStream_PackageSaveModeDefaultV3Async()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 test.Context.PackageSaveMode = PackageSaveMode.Defaultv3;
 
                 var files = await PackageExtractor.ExtractPackageAsync(
@@ -1635,10 +1655,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_XmlDocFileSaveModeNone()
+        public async Task ExtractPackageAsync_WithoutPackageStream_XmlDocFileSaveModeNoneAsync()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 test.Context.PackageSaveMode = PackageSaveMode.Files;
                 test.Context.XmlDocFileSaveMode = XmlDocFileSaveMode.None;
 
@@ -1664,10 +1686,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_XmlDocFileSaveModeSkip()
+        public async Task ExtractPackageAsync_WithoutPackageStream_XmlDocFileSaveModeSkipAsync()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 test.Context.PackageSaveMode = PackageSaveMode.Files;
                 test.Context.XmlDocFileSaveMode = XmlDocFileSaveMode.Skip;
 
@@ -1693,10 +1717,12 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsync_WithoutPackageStream_XmlDocFileSaveModeCompress()
+        public async Task ExtractPackageAsync_WithoutPackageStream_XmlDocFileSaveModeCompressAsync()
         {
             using (var test = new ExtractPackageAsyncTest())
             {
+                await test.CreatePackageAsync();
+
                 test.Context.PackageSaveMode = PackageSaveMode.Files;
                 test.Context.XmlDocFileSaveMode = XmlDocFileSaveMode.Compress;
 
@@ -1722,7 +1748,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_WithoutPackageSaveModeNuspec_DoesNotExtractNuspec()
+        public async Task InstallFromSourceAsync_WithoutPackageSaveModeNuspec_DoesNotExtractNuspecAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1766,7 +1792,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_WithoutPackageSaveModeNupkg_DoesNotExtractNupkg()
+        public async Task InstallFromSourceAsync_WithoutPackageSaveModeNupkg_DoesNotExtractNupkgAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1810,7 +1836,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_WithoutPackageSaveModeFiles_DoesNotExtractFiles()
+        public async Task InstallFromSourceAsync_WithoutPackageSaveModeFiles_DoesNotExtractFilesAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -1853,7 +1879,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_DoesNotMoveNuspecFileIfFileNameIsSameAsExpected()
+        public async Task InstallFromSourceAsync_DoesNotMoveNuspecFileIfFileNameIsSameAsExpectedAsync()
         {
             var nuspecFileName = "a.nuspec";
             var packageDownloader = new Mock<IPackageDownloader>(MockBehavior.Strict);
@@ -1925,7 +1951,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsync_MovesNuspecFileIfFileNameIsDifferentThanExpected()
+        public async Task InstallFromSourceAsync_MovesNuspecFileIfFileNameIsDifferentThanExpectedAsync()
         {
             var intendedNuspecFileName = "a.nuspec";
             var actualNuspecFileName = intendedNuspecFileName.ToUpperInvariant();
@@ -1999,7 +2025,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsyncByPackageDownloader_TrustedSignPackage()
+        public async Task InstallFromSourceAsyncByPackageDownloader_TrustedSignPackageAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2018,7 +2044,7 @@ namespace NuGet.Packaging.Test
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
 
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
 
@@ -2050,7 +2076,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsyncByPackageDownloader_InvalidSignPackageWithUnzip()
+        public async Task InstallFromSourceAsyncByPackageDownloader_InvalidSignPackageWithUnzipAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2058,7 +2084,7 @@ namespace NuGet.Packaging.Test
                 var resolver = new VersionFolderPathResolver(root);
 
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
                 var signedPackageVerifierSettings = _defaultSettings;
@@ -2096,7 +2122,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsyncByPackageDownloader_InvalidSignPackageWithoutUnzip()
+        public async Task InstallFromSourceAsyncByPackageDownloader_InvalidSignPackageWithoutUnzipAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2115,7 +2141,7 @@ namespace NuGet.Packaging.Test
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
 
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
 
@@ -2147,7 +2173,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsyncByStream_TrustedSignPackage()
+        public async Task InstallFromSourceAsyncByStream_TrustedSignPackageAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2166,7 +2192,7 @@ namespace NuGet.Packaging.Test
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(true));
 
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
 
@@ -2195,7 +2221,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsyncByStream_InvalidSignPackageWithoutUnzip()
+        public async Task InstallFromSourceAsyncByStream_InvalidSignPackageWithoutUnzipAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2214,7 +2240,7 @@ namespace NuGet.Packaging.Test
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
 
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
 
@@ -2243,7 +2269,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task InstallFromSourceAsyncByStream_InvalidSignPackageWithUnzip()
+        public async Task InstallFromSourceAsyncByStream_InvalidSignPackageWithUnzipAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2262,7 +2288,7 @@ namespace NuGet.Packaging.Test
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(false));
 
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
 
@@ -2287,7 +2313,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsyncByStream_TrustedSignPackage()
+        public async Task ExtractPackageAsyncByStream_TrustedSignPackageAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2307,7 +2333,7 @@ namespace NuGet.Packaging.Test
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
 
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
@@ -2335,7 +2361,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip()
+        public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzipAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2355,7 +2381,7 @@ namespace NuGet.Packaging.Test
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
 
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
@@ -2379,7 +2405,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsyncByPackageReader_TrustedSignPackage()
+        public async Task ExtractPackageAsyncByPackageReader_TrustedSignPackageAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2399,7 +2425,7 @@ namespace NuGet.Packaging.Test
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
 
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 using (var packageReader = new PackageArchiveReader(packageStream))
@@ -2428,7 +2454,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip()
+        public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzipAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2447,7 +2473,7 @@ namespace NuGet.Packaging.Test
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
 
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 using (var packageReader = new PackageArchiveReader(packageStream))
@@ -2472,7 +2498,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsyncByPackageReaderAndStream_TrustedSignPackage()
+        public async Task ExtractPackageAsyncByPackageReaderAndStream_TrustedSignPackageAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2491,7 +2517,7 @@ namespace NuGet.Packaging.Test
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
 
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 using (var packageReader = new PackageArchiveReader(packageStream))
@@ -2521,7 +2547,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzip()
+        public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzipAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2540,7 +2566,7 @@ namespace NuGet.Packaging.Test
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
 
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 using (var packageReader = new PackageArchiveReader(packageStream))
@@ -2566,7 +2592,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo()
+        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfoAsync()
         {
             // Arrange
             using (var root = TestDirectory.Create())
@@ -2576,7 +2602,7 @@ namespace NuGet.Packaging.Test
                 var signedPackageVerifierSettings = _defaultSettings;
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2625,7 +2651,7 @@ namespace NuGet.Packaging.Test
                 var signedPackageVerifierSettings = _defaultSettings;
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2695,7 +2721,7 @@ namespace NuGet.Packaging.Test
                 var signedPackageVerifierSettings = _defaultVerifyCommandSettings;
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-                var packageFileInfo = SimpleTestPackageUtility.CreateFullPackage(root, nupkg);
+                var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
@@ -2789,7 +2815,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task CopySatelliteFilesAsync_ThrowsForNullPackageIdentity()
+        public async Task CopySatelliteFilesAsync_ThrowsForNullPackageIdentityAsync()
         {
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => PackageExtractor.CopySatelliteFilesAsync(
@@ -2808,7 +2834,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task CopySatelliteFilesAsync_ThrowsForNullPackagePathResolver()
+        public async Task CopySatelliteFilesAsync_ThrowsForNullPackagePathResolverAsync()
         {
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => PackageExtractor.CopySatelliteFilesAsync(
@@ -2827,7 +2853,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task CopySatelliteFilesAsync_ThrowsForNullPackageExtractionContext()
+        public async Task CopySatelliteFilesAsync_ThrowsForNullPackageExtractionContextAsync()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -2853,7 +2879,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task CopySatelliteFilesAsync_ReturnsEmptyEnumerableIfSatelliteFileDoesNotExist()
+        public async Task CopySatelliteFilesAsync_ReturnsEmptyEnumerableIfSatelliteFileDoesNotExistAsync()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -2878,7 +2904,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task CopySatelliteFilesAsync_ReturnsDestinationFilePath()
+        public async Task CopySatelliteFilesAsync_ReturnsDestinationFilePathAsync()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -2933,9 +2959,9 @@ namespace NuGet.Packaging.Test
 
             internal PackageExtractionContext Context { get; }
             internal DirectoryInfo DestinationDirectory { get; }
-            internal FileInfo Package { get; }
+            internal FileInfo Package { get; private set; }
             internal PackageIdentity PackageIdentity { get; }
-            internal PackageReader Reader { get; }
+            internal PackageReader Reader { get; private set; }
             internal PackagePathResolver Resolver { get; }
 
             internal string Source { get; }
@@ -2951,14 +2977,12 @@ namespace NuGet.Packaging.Test
                 PackageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
                 _testDirectory = TestDirectory.Create();
 
-                var Source = Path.Combine(_testDirectory.Path, "source");
+                Source = Path.Combine(_testDirectory.Path, "source");
 
                 Directory.CreateDirectory(Source);
 
                 DestinationDirectory = Directory.CreateDirectory(Path.Combine(_testDirectory.Path, "destination"));
 
-                Package = CreatePackage(PackageIdentity, Source);
-                Reader = new PackageReader(File.OpenRead(Package.FullName));
                 Resolver = new PackagePathResolver(DestinationDirectory.FullName);
             }
 
@@ -2970,35 +2994,37 @@ namespace NuGet.Packaging.Test
                 GC.SuppressFinalize(this);
             }
 
-            private static FileInfo CreatePackage(PackageIdentity packageIdentity, string directoryPath)
+            public async Task CreatePackageAsync()
             {
                 var packageContext = new SimpleTestPackageContext()
                 {
-                    Id = packageIdentity.Id,
-                    Version = packageIdentity.Version.ToNormalizedString(),
+                    Id = PackageIdentity.Id,
+                    Version = PackageIdentity.Version.ToNormalizedString(),
                     Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package>
                             <metadata>
-                                <id>{packageIdentity.Id}</id>
-                                <version>{packageIdentity.Version.ToNormalizedString()}</version>
+                                <id>{PackageIdentity.Id}</id>
+                                <version>{PackageIdentity.Version.ToNormalizedString()}</version>
                                 <title />
                                 <language>en-US</language>
                                 <contentFiles>
-                                    <files include=""lib/net45/{packageIdentity.Id}.dll"" copyToOutput=""true"" flatten=""false"" />
+                                    <files include=""lib/net45/{PackageIdentity.Id}.dll"" copyToOutput=""true"" flatten=""false"" />
                                 </contentFiles>
                             </metadata>
                         </package>")
                 };
 
-                packageContext.AddFile($"lib/net45/{packageIdentity.Id}.dll");
-                packageContext.AddFile($"lib/net45/{packageIdentity.Id}.xml");
+                packageContext.AddFile($"lib/net45/{PackageIdentity.Id}.dll");
+                packageContext.AddFile($"lib/net45/{PackageIdentity.Id}.xml");
 
-                SimpleTestPackageUtility.CreatePackages(directoryPath, packageContext);
+                await SimpleTestPackageUtility.CreatePackagesAsync(Source, packageContext);
 
-                return new FileInfo(
+                Package = new FileInfo(
                     Path.Combine(
-                        directoryPath,
-                        $"{packageIdentity.Id}.{packageIdentity.Version.ToNormalizedString()}.nupkg"));
+                        Source,
+                        $"{PackageIdentity.Id}.{PackageIdentity.Version.ToNormalizedString()}.nupkg"));
+
+                Reader = new PackageReader(File.OpenRead(Package.FullName));
             }
         }
 

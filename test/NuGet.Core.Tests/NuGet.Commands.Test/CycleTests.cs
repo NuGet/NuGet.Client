@@ -21,7 +21,7 @@ namespace NuGet.Commands.Test
     public class CycleTests
     {
         [Fact]
-        public async Task Cycle_PackageWithSameNameAsProjectVerifyCycleDetected()
+        public async Task Cycle_PackageWithSameNameAsProjectVerifyCycleDetectedAsync()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
@@ -44,7 +44,7 @@ namespace NuGet.Commands.Test
                 // Create fake projects, the real data is in the specs
                 var projects = NETCoreRestoreTestUtility.CreateProjectsFromSpecs(pathContext, specs);
 
-                SimpleTestPackageUtility.CreateFolderFeedV2(pathContext.PackageSource, new PackageIdentity("projectA", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, new PackageIdentity("projectA", NuGetVersion.Parse("1.0.0")));
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();
@@ -66,7 +66,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task Cycle_ProjectWithSameNameAsProjectVerifyCycleDetected()
+        public async Task Cycle_ProjectWithSameNameAsProjectVerifyCycleDetectedAsync()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
@@ -92,7 +92,7 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
                 });
 
-                SimpleTestPackageUtility.CreateFolderFeedV2(pathContext.PackageSource, new PackageIdentity("projectA", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, new PackageIdentity("projectA", NuGetVersion.Parse("1.0.0")));
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();
@@ -114,7 +114,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task Cycle_PackageWithSameNameAsProjectVerifyCycleDetectedTwoLevelsDown()
+        public async Task Cycle_PackageWithSameNameAsProjectVerifyCycleDetectedTwoLevelsDownAsync()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
@@ -143,7 +143,7 @@ namespace NuGet.Commands.Test
 
                 packageX.Dependencies.Add(projectAPkg);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX, projectAPkg);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX, projectAPkg);
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();
@@ -165,7 +165,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task Cycle_PackageWithSameNameAsProjectVerifyCycleDetectedAtEnd()
+        public async Task Cycle_PackageWithSameNameAsProjectVerifyCycleDetectedAtEndAsync()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
@@ -197,7 +197,7 @@ namespace NuGet.Commands.Test
                 packageY.Dependencies.Add(packageZ);
                 packageZ.Dependencies.Add(packageZ);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX, packageY, packageZ);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX, packageY, packageZ);
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();
@@ -219,7 +219,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task Cycle_PackageCircularDependencyVerifyCycleDetected()
+        public async Task Cycle_PackageCircularDependencyVerifyCycleDetectedAsync()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
@@ -251,7 +251,7 @@ namespace NuGet.Commands.Test
                 packageY.Dependencies.Add(packageZ);
                 packageZ.Dependencies.Add(packageX);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX, packageY, packageZ);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX, packageY, packageZ);
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();
@@ -277,7 +277,7 @@ namespace NuGet.Commands.Test
         [InlineData("projectB")]
         [InlineData("prOJecta")]
         [InlineData("prOJectB")]
-        public async Task Cycle_TransitiveProjectWithSameNameAsPackageVerifyCycleDetected(string packageId)
+        public async Task Cycle_TransitiveProjectWithSameNameAsPackageVerifyCycleDetectedAsync(string packageId)
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
@@ -308,8 +308,8 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
                 });
 
-                SimpleTestPackageUtility.CreateFolderFeedV2(pathContext.PackageSource, new PackageIdentity("projectA", NuGetVersion.Parse("1.0.0")));
-                SimpleTestPackageUtility.CreateFolderFeedV2(pathContext.PackageSource, new PackageIdentity("projectB", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, new PackageIdentity("projectA", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, new PackageIdentity("projectB", NuGetVersion.Parse("1.0.0")));
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();

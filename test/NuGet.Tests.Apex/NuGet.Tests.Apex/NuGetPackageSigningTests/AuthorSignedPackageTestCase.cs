@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.StaFact;
@@ -14,11 +14,11 @@ using Xunit.Abstractions;
 
 namespace NuGet.Tests.Apex
 {
-    public class NuGetPackageSigningTestCase : SharedVisualStudioHostTestClass, IClassFixture<SignedPackagesTestsApexFixture>
+    public class AuthorSignedPackageTestCase : SharedVisualStudioHostTestClass, IClassFixture<SignedPackagesTestsApexFixture>
     {
         private SignedPackagesTestsApexFixture _fixture;
 
-        public NuGetPackageSigningTestCase(SignedPackagesTestsApexFixture apexSigningFixture, ITestOutputHelper output)
+        public AuthorSignedPackageTestCase(SignedPackagesTestsApexFixture apexSigningFixture, ITestOutputHelper output)
             : base(apexSigningFixture, output)
         {
             _fixture = apexSigningFixture;
@@ -26,23 +26,23 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void InstallSignedPackageFromPMCForPR(ProjectTemplate projectTemplate)
+        public async Task AuthorSignedPackage_InstallFromPMCForPR_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.SignedTestPackage;
+            var signedPackage = _fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
 
-                // Build before the install check to ensure that everything is up to date.
                 testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 Utils.AssertPackageReferenceExists(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }
@@ -50,16 +50,16 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public void InstallSignedPackageFromPMCForPC(ProjectTemplate projectTemplate)
+        public async Task AuthorSignedPackage_InstallFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.SignedTestPackage;
+            var signedPackage = _fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -71,16 +71,16 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void UninstallSignedPackageFromPMCForPR(ProjectTemplate projectTemplate)
+        public async Task AuthorSignedPackage_UninstallFromPMCForPR_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.SignedTestPackage;
+            var signedPackage = _fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -90,6 +90,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.UninstallPackageFromPMC(signedPackage.Id);
                 testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 Utils.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }
@@ -97,16 +98,16 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public void UninstallSignedPackageFromPMCForPC(ProjectTemplate projectTemplate)
+        public async Task AuthorSignedPackage_UninstallFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.SignedTestPackage;
+            var signedPackage = _fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -119,18 +120,18 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void UpdateUnsignedPackageToSignedVersionFromPMCForPR(ProjectTemplate projectTemplate)
+        public async Task AuthorSignedPackage_UpdateUnsignedToSignedVersionFromPMCForPR_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
             var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.SignedTestPackage;
+            var signedPackage = _fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-                Utils.CreatePackageInSource(testContext.PackageSource, signedPackage.Id, packageVersion09);
-                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, signedPackage.Id, packageVersion09);
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -140,6 +141,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.UpdatePackageFromPMC(signedPackage.Id, signedPackage.Version);
                 testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 Utils.AssertPackageReferenceExists(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }
@@ -147,24 +149,23 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public void UpdateUnsignedPackageToSignedVersionFromPMCForPC(ProjectTemplate projectTemplate)
+        public async Task AuthorSignedPackage_UpdateUnsignedToSignedVersionFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
             var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.SignedTestPackage;
+            var signedPackage = _fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-                Utils.CreatePackageInSource(testContext.PackageSource, signedPackage.Id, packageVersion09);
-                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, signedPackage.Id, packageVersion09);
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, packageVersion09);
                 nugetConsole.UpdatePackageFromPMC(signedPackage.Id, signedPackage.Version);
-                testContext.Project.Build();
 
                 Utils.AssetPackageInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }
@@ -172,7 +173,7 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void DowngradeSignedPackageToUnsignedVersionFromPMCForPR(ProjectTemplate projectTemplate)
+        public async Task AuthorSignedPackage_DowngradeSignedToUnsignedVersionFromPMCForPR_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -183,12 +184,12 @@ namespace NuGet.Tests.Apex
             // corrected in the product.
 
             var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.SignedTestPackage;
+            var signedPackage = _fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-                Utils.CreatePackageInSource(testContext.PackageSource, signedPackage.Id, packageVersion09);
-                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, signedPackage.Id, packageVersion09);
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -198,6 +199,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.UpdatePackageFromPMC(signedPackage.Id, packageVersion09);
                 testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 Utils.AssertPackageReferenceExists(VisualStudio, testContext.Project, signedPackage.Id, packageVersion09, XunitLogger);
             }
@@ -205,7 +207,7 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public void DowngradeSignedPackageToUnsignedVersionFromPMCForPC(ProjectTemplate projectTemplate)
+        public async Task AuthorSignedPackage_DowngradeSignedToUnsignedVersionFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -216,12 +218,12 @@ namespace NuGet.Tests.Apex
             // corrected in the product.
 
             var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.SignedTestPackage;
+            var signedPackage = _fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-                Utils.CreatePackageInSource(testContext.PackageSource, signedPackage.Id, packageVersion09);
-                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, signedPackage.Id, packageVersion09);
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -234,11 +236,12 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void InstallSignedPackageWithExpiredCertificateFromPMCForPR(ProjectTemplate projectTemplate)
+        public async Task AuthorSignedPackage_WithExpiredCertificate_InstallFromPMCForPR_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
+            await _fixture.CreateSignedPackageWithExpiredCertificateAsync();
             var signedPackagePath = _fixture.ExpiredCertSignedTestPackagePath;
             var signedPackage = _fixture.ExpiredCertSignedTestPackage;
 
@@ -250,6 +253,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
                 testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 // TODO: Fix bug where no warnings are shwon when package is untrusted but still installed
                 //nugetConsole.IsMessageFoundInPMC("expired certificate").Should().BeTrue("expired certificate warning");
@@ -259,11 +263,12 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public void InstallSignedPackageWithExpiredCertificateFromPMCForPC(ProjectTemplate projectTemplate)
+        public async Task AuthorSignedPackage_WithExpiredCertificate_InstallFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
+            await _fixture.CreateSignedPackageWithExpiredCertificateAsync();
             var signedPackagePath = _fixture.ExpiredCertSignedTestPackagePath;
             var signedPackage = _fixture.ExpiredCertSignedTestPackage;
 
@@ -283,16 +288,16 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void InstallSignedTamperedPackageFromPMCAndFailForPR(ProjectTemplate projectTemplate)
+        public async Task AuthorSignedPackage_Tampered_InstallFromPMCForPR_FailAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.SignedTestPackage;
+            var signedPackage = _fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
                 SignedArchiveTestUtility.TamperWithPackage(Path.Combine(testContext.PackageSource, signedPackage.PackageName));
 
                 var nugetConsole = GetConsole(testContext.Project);
@@ -300,6 +305,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
                 nugetConsole.IsMessageFoundInPMC("package integrity check failed").Should().BeTrue("Integrity failed message shown.");
                 testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 Utils.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }
@@ -307,16 +313,16 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public void InstallSignedTamperedPackageFromPMCAndFailForPC(ProjectTemplate projectTemplate)
+        public async Task AuthorSignedPackage_Tampered_InstallFromPMCForPC_FailAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.SignedTestPackage;
+            var signedPackage = _fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-                SimpleTestPackageUtility.CreatePackages(testContext.PackageSource, signedPackage);
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
                 SignedArchiveTestUtility.TamperWithPackage(Path.Combine(testContext.PackageSource, signedPackage.PackageName));
 
                 var nugetConsole = GetConsole(testContext.Project);

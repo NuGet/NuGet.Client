@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
@@ -15,7 +16,7 @@ namespace NuGet.CommandLine.Test
     public class RestoreMessageTest
     {
         [Fact]
-        public void GivenAProjectIsUsedOverAPackageVerifyNoDowngradeWarning()
+        public async Task GivenAProjectIsUsedOverAPackageVerifyNoDowngradeWarningAsync()
         {
 
             // Arrange
@@ -41,7 +42,7 @@ namespace NuGet.CommandLine.Test
                 var packageB = new SimpleTestPackageContext("b", "9.0.0");
                 packageX.Dependencies.Add(packageB);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX, packageB);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX, packageB);
 
                 // PackageB will be overridden by ProjectB
                 projectA.AddPackageToAllFrameworks(packageX);
@@ -64,7 +65,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void GivenAPackageDowngradeVerifyDowngradeWarning()
+        public async Task GivenAPackageDowngradeVerifyDowngradeWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -82,7 +83,7 @@ namespace NuGet.CommandLine.Test
                 var packageI2 = new SimpleTestPackageContext("i", "1.0.0");
                 packageB.Dependencies.Add(packageI1);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageB, packageI1, packageI2);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageB, packageI1, packageI2);
 
                 projectA.AddPackageToAllFrameworks(packageB);
                 projectA.AddPackageToAllFrameworks(packageI2);
@@ -148,7 +149,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void GivenAPackageWithAHigherMinClientVersionVerifyErrorCodeDisplayed()
+        public async Task GivenAPackageWithAHigherMinClientVersionVerifyErrorCodeDisplayedAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -166,7 +167,7 @@ namespace NuGet.CommandLine.Test
                     MinClientVersion = "99.0.0"
                 };
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageB);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageB);
 
                 projectA.AddPackageToAllFrameworks(packageB);
 

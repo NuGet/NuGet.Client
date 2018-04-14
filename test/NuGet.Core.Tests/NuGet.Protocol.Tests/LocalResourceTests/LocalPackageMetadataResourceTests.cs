@@ -19,7 +19,7 @@ namespace NuGet.Protocol.Tests
     public class LocalPackageMetadataResourceTests
     {
         [Fact]
-        public async Task LocalPackageMetadataResourceTests_GetMetadataStable()
+        public async Task LocalPackageMetadataResourceTests_GetMetadataStableAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -53,7 +53,7 @@ namespace NuGet.Protocol.Tests
                     packageX
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageMetadataResource(localResource);
@@ -77,7 +77,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageMetadataResourceTests_GetMetadataPrerelease()
+        public async Task LocalPackageMetadataResourceTests_GetMetadataPrereleaseAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -111,7 +111,7 @@ namespace NuGet.Protocol.Tests
                     packageX
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageMetadataResource(localResource);
@@ -135,7 +135,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageMetadataResourceTests_GetMetadataStableNoVersions()
+        public async Task LocalPackageMetadataResourceTests_GetMetadataStableNoVersionsAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -169,7 +169,7 @@ namespace NuGet.Protocol.Tests
                     packageX
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageMetadataResource(localResource);
@@ -190,7 +190,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageMetadataResourceTests_GetMetadataNoMatch()
+        public async Task LocalPackageMetadataResourceTests_GetMetadataNoMatchAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -201,7 +201,7 @@ namespace NuGet.Protocol.Tests
                 {
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageMetadataResource(localResource);
@@ -222,7 +222,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageMetadataResourceTests_VerifyAllFields()
+        public async Task LocalPackageMetadataResourceTests_VerifyAllFieldsAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -277,7 +277,7 @@ namespace NuGet.Protocol.Tests
                     packageA2
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageMetadataResource(localResource);
@@ -316,7 +316,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageMetadataResourceTests_GetMetadataAsync_PackageIdentity()
+        public async Task LocalPackageMetadataResourceTests_GetMetadataAsync_PackageIdentityAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -342,7 +342,7 @@ namespace NuGet.Protocol.Tests
                     packageX
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageMetadataResource(localResource);
@@ -361,7 +361,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageMetadataResourceTests_GetMetadataAsync_PackageIdentity_NotFound()
+        public async Task LocalPackageMetadataResourceTests_GetMetadataAsync_PackageIdentity_NotFoundAsync()
         {
             using (var root = TestDirectory.Create())
             {
@@ -387,7 +387,7 @@ namespace NuGet.Protocol.Tests
                     packageX
                 };
 
-                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
 
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageMetadataResource(localResource);

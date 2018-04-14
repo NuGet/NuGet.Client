@@ -55,7 +55,7 @@ namespace NuGet.Commands.Test
                 solution.Projects.Add(projectB);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);

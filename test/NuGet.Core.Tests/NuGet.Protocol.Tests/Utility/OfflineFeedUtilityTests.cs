@@ -73,7 +73,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task AddPackageToSource_ThrowsForNullOfflineFeedAddContext()
+        public async Task AddPackageToSource_ThrowsForNullOfflineFeedAddContextAsync()
         {
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => OfflineFeedUtility.AddPackageToSource(
@@ -84,7 +84,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task AddPackageToSource_ThrowsIfCancelled()
+        public async Task AddPackageToSource_ThrowsIfCancelledAsync()
         {
             await Assert.ThrowsAsync<OperationCanceledException>(
                 () => OfflineFeedUtility.AddPackageToSource(
@@ -100,7 +100,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task AddPackageToSource_InstallsPackage()
+        public async Task AddPackageToSource_InstallsPackageAsync()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -132,7 +132,7 @@ namespace NuGet.Protocol.Tests
 
                 Directory.CreateDirectory(destinationDirectoryPath);
 
-                SimpleTestPackageUtility.CreatePackages(sourcePackageDirectoryPath, packageContext);
+                await SimpleTestPackageUtility.CreatePackagesAsync(sourcePackageDirectoryPath, packageContext);
 
                 var sourcePackageFilePath = Path.Combine(
                     sourcePackageDirectoryPath,

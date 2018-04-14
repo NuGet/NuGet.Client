@@ -17,7 +17,7 @@ namespace NuGet.CommandLine.Test
     public class RestoreLoggingTests
     {
         [Fact]
-        public void RestoreLogging_VerifyNU1605DowngradeWarning()
+        public async Task RestoreLogging_VerifyNU1605DowngradeWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -37,7 +37,7 @@ namespace NuGet.CommandLine.Test
                 var packageX = new SimpleTestPackageContext("x", "1.0.0");
                 packageX.Dependencies.Add(packageZ2);
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX, packageZ1, packageZ2, packageZ1);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX, packageZ1, packageZ2, packageZ1);
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
@@ -80,7 +80,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyNU1608Message()
+        public async Task RestoreLogging_VerifyNU1608MessageAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -115,7 +115,7 @@ namespace NuGet.CommandLine.Test
                 var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
                 var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX, packageZ1, packageZ2);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX, packageZ1, packageZ2);
 
                 projectA.AddPackageToAllFrameworks(packageX);
                 projectA.AddPackageToAllFrameworks(packageZ2);
@@ -140,7 +140,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyNU1107DoesNotDisplayNU1608Also()
+        public async Task RestoreLogging_VerifyNU1107DoesNotDisplayNU1608AlsoAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -193,7 +193,7 @@ namespace NuGet.CommandLine.Test
                 var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
                 var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX, packageY, packageZ1, packageZ2);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX, packageY, packageZ1, packageZ2);
 
                 projectA.AddPackageToAllFrameworks(packageX);
                 projectA.AddPackageToAllFrameworks(packageY);
@@ -254,7 +254,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyCompatErrorNU1202Properties()
+        public async Task RestoreLogging_VerifyCompatErrorNU1202PropertiesAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -273,7 +273,7 @@ namespace NuGet.CommandLine.Test
                 packageX.Files.Clear();
                 packageX.AddFile("lib/netcoreapp2.0/a.dll");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
 
                 projectA.AddPackageToAllFrameworks(packageX);
 
@@ -296,7 +296,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyCompatErrorNU1203Properties()
+        public async Task RestoreLogging_VerifyCompatErrorNU1203PropertiesAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -317,7 +317,7 @@ namespace NuGet.CommandLine.Test
                 packageX.Files.Clear();
                 packageX.AddFile("ref/netcoreapp1.0/a.dll"); // ref with a missing runtime
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
 
                 projectA.AddPackageToAllFrameworks(packageX);
 
@@ -340,7 +340,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyCircularDependencyErrorNU1106Properties()
+        public async Task RestoreLogging_VerifyCircularDependencyErrorNU1106PropertiesAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -360,7 +360,7 @@ namespace NuGet.CommandLine.Test
                 packageX.Dependencies.Add(packageY);
                 packageY.Dependencies.Add(packageX);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX, packageY);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX, packageY);
 
                 projectA.AddPackageToAllFrameworks(packageX);
 
@@ -383,7 +383,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyConflictErrorNU1107Properties()
+        public async Task RestoreLogging_VerifyConflictErrorNU1107PropertiesAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -435,7 +435,7 @@ namespace NuGet.CommandLine.Test
                 var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
                 var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX, packageY, packageZ1, packageZ2);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX, packageY, packageZ1, packageZ2);
 
                 projectA.AddPackageToAllFrameworks(packageX);
                 projectA.AddPackageToAllFrameworks(packageY);
@@ -461,7 +461,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyConflictErrorNU1107IsResolvedByTopLevelReference()
+        public async Task RestoreLogging_VerifyConflictErrorNU1107IsResolvedByTopLevelReferenceAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -513,7 +513,7 @@ namespace NuGet.CommandLine.Test
                 var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
                 var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, packageX, packageY, packageZ1, packageZ2);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX, packageY, packageZ1, packageZ2);
 
                 projectA.AddPackageToAllFrameworks(packageX);
                 projectA.AddPackageToAllFrameworks(packageY);
@@ -533,7 +533,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_WarningsContainNuGetLogCodes()
+        public async Task RestoreLogging_WarningsContainNuGetLogCodesAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -567,7 +567,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -581,7 +581,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_NetCore_WarningsAsErrorsFailsRestore()
+        public async Task RestoreLogging_NetCore_WarningsAsErrorsFailsRestoreAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -617,7 +617,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -636,7 +636,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("NU1603;$(NoWarn);")]
         [InlineData("NU1603;NU1701")]
         [InlineData("NU1603,NU1701")]
-        public async Task RestoreLogging_NetCore_NoWarnRemovesWarning(string noWarn)
+        public async Task RestoreLogging_NetCore_NoWarnRemovesWarningAsync(string noWarn)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -672,7 +672,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -691,7 +691,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("NU1603;$(NoWarn);")]
         [InlineData("NU1603;NU1701")]
         [InlineData("NU1603,NU1701")]
-        public async Task RestoreLogging_NetCore_WarningsAsErrorsForSpecificWarningFails(string warnAsError)
+        public async Task RestoreLogging_NetCore_WarningsAsErrorsForSpecificWarningFailsAsync(string warnAsError)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -728,7 +728,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -742,7 +742,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_NetCore_WarningsAsErrorsForSpecificWarningOfAnotherTypeIgnored()
+        public async Task RestoreLogging_NetCore_WarningsAsErrorsForSpecificWarningOfAnotherTypeIgnoredAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -779,7 +779,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -795,7 +795,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_NetCore_NoWarnWithTreatWarningsAsErrorRemovesWarning()
+        public async Task RestoreLogging_NetCore_NoWarnWithTreatWarningsAsErrorRemovesWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -832,7 +832,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -846,7 +846,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_NetCore_DifferentNoWarnWithTreatWarningsAsErrorFailsRestore()
+        public async Task RestoreLogging_NetCore_DifferentNoWarnWithTreatWarningsAsErrorFailsRestoreAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -883,7 +883,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -897,7 +897,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_NetCore_NoWarnWithWarnSpecificAsErrorRemovesWarning()
+        public async Task RestoreLogging_NetCore_NoWarnWithWarnSpecificAsErrorRemovesWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -934,7 +934,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -948,7 +948,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_NetCore_DifferentNoWarnWithWarnSpecificAsErrorFailsRestore()
+        public async Task RestoreLogging_NetCore_DifferentNoWarnWithWarnSpecificAsErrorFailsRestoreAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -985,7 +985,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -999,7 +999,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_NetCore_PackageSpecificNoWarnRemovesWarning()
+        public async Task RestoreLogging_NetCore_PackageSpecificNoWarnRemovesWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1034,7 +1034,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1048,7 +1048,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_NetCore_WithMultiTargeting_AllTfmPackageSpecificNoWarnRemovesWarning()
+        public async Task RestoreLogging_NetCore_WithMultiTargeting_AllTfmPackageSpecificNoWarnRemovesWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1085,7 +1085,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1099,7 +1099,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_NetCore_WithMultiTargeting_PartialTfmPackageSpecificNoWarnRemovesWarning()
+        public async Task RestoreLogging_NetCore_WithMultiTargeting_PartialTfmPackageSpecificNoWarnRemovesWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1136,7 +1136,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1150,7 +1150,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_NetCore_PackageSpecificDifferentNoWarnDoesNotRemoveWarning()
+        public async Task RestoreLogging_NetCore_PackageSpecificDifferentNoWarnDoesNotRemoveWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1185,7 +1185,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1200,7 +1200,7 @@ namespace NuGet.CommandLine.Test
 
 
         [Fact]
-        public async Task RestoreLogging_NetCore_PackageSpecificNoWarnAndTreatWarningsAsErrors()
+        public async Task RestoreLogging_NetCore_PackageSpecificNoWarnAndTreatWarningsAsErrorsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1237,7 +1237,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1251,7 +1251,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_NetCore_PackageSpecificNoWarnAndTreatSpecificWarningsAsErrors()
+        public async Task RestoreLogging_NetCore_PackageSpecificNoWarnAndTreatSpecificWarningsAsErrorsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1288,7 +1288,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1302,7 +1302,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_Legacy_WarningsContainNuGetLogCodes()
+        public async Task RestoreLogging_Legacy_WarningsContainNuGetLogCodesAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1336,7 +1336,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1350,7 +1350,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_Legacy_WarningsAsErrorsFailsRestore()
+        public async Task RestoreLogging_Legacy_WarningsAsErrorsFailsRestoreAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1386,7 +1386,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1405,7 +1405,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("NU1603;$(NoWarn);")]
         [InlineData("NU1603;NU1701")]
         [InlineData("NU1603,NU1701")]
-        public async Task RestoreLogging_Legacy_NoWarnRemovesWarning(string noWarn)
+        public async Task RestoreLogging_Legacy_NoWarnRemovesWarningAsync(string noWarn)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1441,7 +1441,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1460,7 +1460,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("NU1603;$(NoWarn);")]
         [InlineData("NU1603;NU1701")]
         [InlineData("NU1603,NU1701")]
-        public async Task RestoreLogging_Legacy_WarningsAsErrorsForSpecificWarningFails(string warnAsError)
+        public async Task RestoreLogging_Legacy_WarningsAsErrorsForSpecificWarningFailsAsync(string warnAsError)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1497,7 +1497,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1511,7 +1511,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_Legacy_WarningsAsErrorsForSpecificWarningOfAnotherTypeIgnored()
+        public async Task RestoreLogging_Legacy_WarningsAsErrorsForSpecificWarningOfAnotherTypeIgnoredAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1548,7 +1548,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1564,7 +1564,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_Legacy_NoWarnWithTreatWarningsAsErrorRemovesWarning()
+        public async Task RestoreLogging_Legacy_NoWarnWithTreatWarningsAsErrorRemovesWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1601,7 +1601,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1615,7 +1615,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_Legacy_DifferentNoWarnWithTreatWarningsAsErrorFailsRestore()
+        public async Task RestoreLogging_Legacy_DifferentNoWarnWithTreatWarningsAsErrorFailsRestoreAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1652,7 +1652,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1666,7 +1666,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_Legacy_NoWarnWithWarnSpecificAsErrorRemovesWarning()
+        public async Task RestoreLogging_Legacy_NoWarnWithWarnSpecificAsErrorRemovesWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1703,7 +1703,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1717,7 +1717,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_Legacy_DifferentNoWarnWithWarnSpecificAsErrorFailsRestore()
+        public async Task RestoreLogging_Legacy_DifferentNoWarnWithWarnSpecificAsErrorFailsRestoreAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1754,7 +1754,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1768,7 +1768,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_Legacy_PackageSpecificNoWarnRemovesWarning()
+        public async Task RestoreLogging_Legacy_PackageSpecificNoWarnRemovesWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1803,7 +1803,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1817,7 +1817,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_Legacy_PackageSpecificDifferentNoWarnDoesNotRemoveWarning()
+        public async Task RestoreLogging_Legacy_PackageSpecificDifferentNoWarnDoesNotRemoveWarningAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1852,7 +1852,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1867,7 +1867,7 @@ namespace NuGet.CommandLine.Test
 
 
         [Fact]
-        public async Task RestoreLogging_Legacy_PackageSpecificNoWarnAndTreatWarningsAsErrors()
+        public async Task RestoreLogging_Legacy_PackageSpecificNoWarnAndTreatWarningsAsErrorsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1904,7 +1904,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 
@@ -1918,7 +1918,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_Legacy_PackageSpecificNoWarnAndTreatSpecificWarningsAsErrors()
+        public async Task RestoreLogging_Legacy_PackageSpecificNoWarnAndTreatSpecificWarningsAsErrorsAsync()
         {
 
             // Arrange
@@ -1956,7 +1956,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageX9);
 

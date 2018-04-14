@@ -4,6 +4,7 @@
 #if IS_DESKTOP
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -39,7 +40,7 @@ namespace NuGet.Packaging.FuncTest
         [CIOnlyFact]
         public async Task SignAsync_AddsPackageAuthorSignatureAsync()
         {
-            using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
+            using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificate.Source.Cert))
             {
                 await SigningUtility.SignAsync(test.Options, test.AuthorRequest, CancellationToken.None);
 
@@ -55,7 +56,7 @@ namespace NuGet.Packaging.FuncTest
         [CIOnlyFact]
         public async Task SignAsync_AddsPackageRepositorySignatureAsync()
         {
-            using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
+            using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificate.Source.Cert))
             {
                 await SigningUtility.SignAsync(test.Options, test.RepositoryRequest, CancellationToken.None);
 
@@ -69,9 +70,9 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task SignAsync_WhenRepositoryCountersigningPrimarySignature_Succeeds()
+        public async Task SignAsync_WhenRepositoryCountersigningPrimarySignature_SucceedsAsync()
         {
-            using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
+            using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificate.Source.Cert))
             {
                 await SigningUtility.SignAsync(test.Options, test.AuthorRequest, CancellationToken.None);
 
@@ -100,7 +101,7 @@ namespace NuGet.Packaging.FuncTest
         [CIOnlyFact]
         public async Task SignAsync_WithExpiredCertificate_ThrowsAsync()
         {
-            using (var test = new Test(_testFixture.TrustedTestCertificateExpired.Source.Cert))
+            using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificateExpired.Source.Cert))
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
                     () => SigningUtility.SignAsync(test.Options, test.AuthorRequest, CancellationToken.None));
@@ -118,7 +119,7 @@ namespace NuGet.Packaging.FuncTest
         [CIOnlyFact]
         public async Task SignAsync_WithNotYetValidCertificate_ThrowsAsync()
         {
-            using (var test = new Test(_testFixture.TrustedTestCertificateNotYetValid.Source.Cert))
+            using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificateNotYetValid.Source.Cert))
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
                     () => SigningUtility.SignAsync(test.Options, test.AuthorRequest, CancellationToken.None));
@@ -134,9 +135,9 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task SignAsync_WhenRepositoryCountersigningRepositorySignedPackage_Throws()
+        public async Task SignAsync_WhenRepositoryCountersigningRepositorySignedPackage_ThrowsAsync()
         {
-            using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
+            using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificate.Source.Cert))
             {
                 await SigningUtility.SignAsync(test.Options, test.RepositoryRequest, CancellationToken.None);
 
@@ -164,9 +165,9 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task SignAsync_WhenRepositoryCountersigningRepositoryCountersignedPackage_Throws()
+        public async Task SignAsync_WhenRepositoryCountersigningRepositoryCountersignedPackage_ThrowsAsync()
         {
-            using (var test = new Test(_testFixture.TrustedTestCertificate.Source.Cert))
+            using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificate.Source.Cert))
             {
                 await SigningUtility.SignAsync(test.Options, test.AuthorRequest, CancellationToken.None);
 
@@ -220,19 +221,16 @@ namespace NuGet.Packaging.FuncTest
 
             private bool _isDisposed;
 
-            internal Test(X509Certificate2 certificate)
+            private Test(X509Certificate2 certificate, TestDirectory dir, FileInfo package)
             {
-                _directory = TestDirectory.Create();
                 _authorCertificate = new X509Certificate2(certificate);
                 _repositoryCertificate = new X509Certificate2(certificate);
+                _directory = dir;
 
                 var outputPath = GetNewTempFilePath();
 
                 OutputFile = new FileInfo(outputPath);
 
-                var packageContext = new SimpleTestPackageContext();
-                var packageFileName = Guid.NewGuid().ToString();
-                var package = packageContext.CreateAsFile(_directory, packageFileName);
                 var signatureProvider = new X509SignatureProvider(timestampProvider: null);
 
                 AuthorRequest = new AuthorSignPackageRequest(_authorCertificate, HashAlgorithmName.SHA256);
@@ -241,6 +239,17 @@ namespace NuGet.Packaging.FuncTest
                 var overwrite = true;
 
                 Options = SigningOptions.CreateFromFilePaths(package.FullName, outputPath, overwrite, signatureProvider, NullLogger.Instance);
+            }
+
+            internal static async Task<Test> CreateAsync(X509Certificate2 certificate)
+            {
+                var dir = TestDirectory.Create();
+                var packageContext = new SimpleTestPackageContext();
+
+                var packageFileName = Guid.NewGuid().ToString();
+                var package = await packageContext.CreateAsFileAsync(dir, packageFileName);
+
+                return new Test(certificate, dir, package);
             }
 
             internal string GetNewTempFilePath()

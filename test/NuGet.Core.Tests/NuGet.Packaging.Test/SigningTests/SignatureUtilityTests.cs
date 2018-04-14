@@ -57,13 +57,13 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task GetCertificateChain_WithUnknownSignature_ReturnsCertificates()
+        public async Task GetCertificateChain_WithUnknownSignature_ReturnsCertificatesAsync()
         {
             using (var directory = TestDirectory.Create())
             using (var certificate = _fixture.GetDefaultCertificate())
             {
                 var packageContext = new SimpleTestPackageContext();
-                var unsignedPackageFile = packageContext.CreateAsFile(directory, "Package.nupkg");
+                var unsignedPackageFile = await packageContext.CreateAsFileAsync(directory, "Package.nupkg");
                 var signedPackageFile = await SignedArchiveTestUtility.SignPackageFileWithBasicSignedCmsAsync(
                     directory,
                     unsignedPackageFile,
@@ -210,7 +210,7 @@ namespace NuGet.Packaging.Test
             using (var certificate = _fixture.GetDefaultCertificate())
             {
                 var packageContext = new SimpleTestPackageContext();
-                var unsignedPackageStream = packageContext.CreateAsStream();
+                var unsignedPackageStream = await packageContext.CreateAsStreamAsync();
 
                 var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(
                     certificate,
@@ -229,7 +229,7 @@ namespace NuGet.Packaging.Test
             using (var repositoryCertificate = _fixture.GetDefaultCertificate())
             {
                 var packageContext = new SimpleTestPackageContext();
-                var unsignedPackageStream = packageContext.CreateAsStream();
+                var unsignedPackageStream = await packageContext.CreateAsStreamAsync();
 
                 var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(
                     certificate,

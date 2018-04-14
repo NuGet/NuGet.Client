@@ -98,11 +98,11 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 var fallbackPackageFolder = Path.Combine(testDirectory.Path, "packagesB");
                 Directory.CreateDirectory(fallbackPackageFolder);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     userPackageFolder,
                     new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")));
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     fallbackPackageFolder,
                     new PackageIdentity("Bar", NuGetVersion.Parse("1.0.2")));
 

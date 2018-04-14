@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.StaFact;
 using Xunit;
@@ -19,7 +20,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void InstallPackageFromPMCWithNoAutoRestoreVerifyAssetsFile(ProjectTemplate projectTemplate)
+        public async Task InstallPackageFromPMCWithNoAutoRestoreVerifyAssetsFileAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -28,7 +29,7 @@ namespace NuGet.Tests.Apex
             {
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -41,7 +42,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void InstallPackageFromPMCVerifyInstallForPR(ProjectTemplate projectTemplate)
+        public async Task InstallPackageFromPMCVerifyInstallForPRAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -50,7 +51,7 @@ namespace NuGet.Tests.Apex
             {
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -66,7 +67,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public void InstallPackageFromPMCVerifyInstallForPC(ProjectTemplate projectTemplate)
+        public async Task InstallPackageFromPMCVerifyInstallForPCAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -75,7 +76,7 @@ namespace NuGet.Tests.Apex
             {
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -87,7 +88,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void UninstallPackageFromPMCForPR(ProjectTemplate projectTemplate)
+        public async Task UninstallPackageFromPMCForPRAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -96,7 +97,7 @@ namespace NuGet.Tests.Apex
             {
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -114,7 +115,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public void UninstallPackageFromPMCForPC(ProjectTemplate projectTemplate)
+        public async Task UninstallPackageFromPMCForPCAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -123,7 +124,7 @@ namespace NuGet.Tests.Apex
             {
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -136,7 +137,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void UpdatePackageFromPMCForPR(ProjectTemplate projectTemplate)
+        public async Task UpdatePackageFromPMCForPRAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -146,8 +147,8 @@ namespace NuGet.Tests.Apex
                 var packageName = "TestPackage";
                 var packageVersion1 = "1.0.0";
                 var packageVersion2 = "2.0.0";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -165,7 +166,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public void UpdatePackageFromPMCForPC(ProjectTemplate projectTemplate)
+        public async Task UpdatePackageFromPMCForPCAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -175,8 +176,8 @@ namespace NuGet.Tests.Apex
                 var packageName = "TestPackage";
                 var packageVersion1 = "1.0.0";
                 var packageVersion2 = "2.0.0";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -189,7 +190,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void InstallMultiplePackagesFromPMCForPR(ProjectTemplate projectTemplate)
+        public async Task InstallMultiplePackagesFromPMCForPRAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -198,11 +199,11 @@ namespace NuGet.Tests.Apex
             {
                 var packageName1 = "TestPackage1";
                 var packageVersion1 = "1.0.0";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName1, packageVersion1);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName1, packageVersion1);
 
                 var packageName2 = "TestPackage2";
                 var packageVersion2 = "1.2.3";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName2, packageVersion2);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName2, packageVersion2);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -223,7 +224,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public void InstallMultiplePackagesFromPMCForPC(ProjectTemplate projectTemplate)
+        public async Task InstallMultiplePackagesFromPMCForPCAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -232,11 +233,11 @@ namespace NuGet.Tests.Apex
             {
                 var packageName1 = "TestPackage1";
                 var packageVersion1 = "1.0.0";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName1, packageVersion1);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName1, packageVersion1);
 
                 var packageName2 = "TestPackage2";
                 var packageVersion2 = "1.2.3";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName2, packageVersion2);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName2, packageVersion2);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -250,7 +251,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void UninstallMultiplePackagesFromPMCForPR(ProjectTemplate projectTemplate)
+        public async Task UninstallMultiplePackagesFromPMCForPRAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -262,8 +263,8 @@ namespace NuGet.Tests.Apex
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
 
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName1, packageVersion1);
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName2, packageVersion2);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName1, packageVersion1);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName2, packageVersion2);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -289,7 +290,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public void UninstallMultiplePackagesFromPMCForPC(ProjectTemplate projectTemplate)
+        public async Task UninstallMultiplePackagesFromPMCForPCAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -300,9 +301,8 @@ namespace NuGet.Tests.Apex
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName1, packageVersion1);
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName2, packageVersion2);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName1, packageVersion1);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName2, packageVersion2);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -329,7 +329,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public void DowngradePackageFromPMCForPR(ProjectTemplate projectTemplate)
+        public async Task DowngradePackageFromPMCForPRAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -339,8 +339,8 @@ namespace NuGet.Tests.Apex
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -358,7 +358,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public void DowngradePackageFromPMCForPC(ProjectTemplate projectTemplate)
+        public async Task DowngradePackageFromPMCForPCAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -368,8 +368,8 @@ namespace NuGet.Tests.Apex
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -382,7 +382,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetNetCoreTemplates))]
-        public void NetCoreTransitivePackageReferenceLimit(ProjectTemplate projectTemplate)
+        public async Task NetCoreTransitivePackageReferenceLimitAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -407,7 +407,7 @@ namespace NuGet.Tests.Apex
 
                 var packageName = "newtonsoft.json";
                 var packageVersion = "9.0.1";
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
                 testContext.Project.Build();
@@ -427,7 +427,7 @@ namespace NuGet.Tests.Apex
         [InlineData(ProjectTemplate.ClassLibrary, false)]
         [InlineData(ProjectTemplate.NetCoreConsoleApp, true)]
         [InlineData(ProjectTemplate.NetStandardClassLib, true)]
-        public void InstallAndUpdatePackageWithSourceParameterWarns(ProjectTemplate projectTemplate, bool warns)
+        public async Task InstallAndUpdatePackageWithSourceParameterWarnsAsync(ProjectTemplate projectTemplate, bool warns)
         {
             EnsureVisualStudioHost();
             var packageName = "TestPackage";
@@ -441,8 +441,8 @@ namespace NuGet.Tests.Apex
                 var solutionService = VisualStudio.Get<SolutionService>();
                 testContext.Project.Build();
 
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion1);
-                Utils.CreatePackageInSource(testContext.PackageSource, packageName, packageVersion2);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
+                await Utils.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
 
                 var nugetTestService = GetNuGetTestService();
                 var nugetConsole = GetConsole(testContext.Project);

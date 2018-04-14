@@ -38,7 +38,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WithValidInput_ReturnsTimestamp()
+        public async Task GetTimestamp_WithValidInput_ReturnsTimestampAsync()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -71,14 +71,14 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_AssertCompleteChain_Success()
+        public async Task GetTimestamp_AssertCompleteChain_SuccessAsync()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var nupkg = new SimpleTestPackageContext();
 
             using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
-            using (var packageStream = nupkg.CreateAsStream())
+            using (var packageStream = await nupkg.CreateAsStreamAsync())
             {
                 // Act
                 var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(authorCert, packageStream, timestampProvider);
@@ -130,7 +130,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenRequestNull_Throws()
+        public async Task GetTimestamp_WhenRequestNull_ThrowsAsync()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -169,7 +169,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenLoggerNull_Throws()
+        public async Task GetTimestamp_WhenLoggerNull_ThrowsAsync()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
@@ -200,7 +200,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenCancelled_Throws()
+        public async Task GetTimestamp_WhenCancelled_ThrowsAsync()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -232,7 +232,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenRevocationInformationUnavailable_Success()
+        public async Task GetTimestamp_WhenRevocationInformationUnavailable_SuccessAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -262,7 +262,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenTimestampSigningCertificateRevoked_Throws()
+        public async Task GetTimestamp_WhenTimestampSigningCertificateRevoked_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -286,7 +286,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WithFailureReponse_Throws()
+        public async Task GetTimestamp_WithFailureReponse_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -308,7 +308,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenSigningCertificateNotReturned_Throws()
+        public async Task GetTimestamp_WhenSigningCertificateNotReturned_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -328,7 +328,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenSignatureHashAlgorithmIsSha1_Throws()
+        public async Task GetTimestamp_WhenSignatureHashAlgorithmIsSha1_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -350,7 +350,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task TimestampSignatureAsync_TimestampingPrimarySignature_Succeds()
+        public async Task TimestampSignatureAsync_TimestampingPrimarySignature_SuccedsAsync()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -398,7 +398,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task TimestampSignatureAsync_TimestampingCountersignature_Succeeds()
+        public async Task TimestampSignatureAsync_TimestampingCountersignature_SucceedsAsync()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
