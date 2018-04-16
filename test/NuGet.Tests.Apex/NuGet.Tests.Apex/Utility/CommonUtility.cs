@@ -23,7 +23,7 @@ using NuGet.VisualStudio;
 
 namespace NuGet.Tests.Apex
 {
-    public class Utils
+    public class CommonUtility
     {
         public static async Task CreatePackageInSourceAsync(string packageSource, string packageName, string packageVersion)
         {
@@ -36,9 +36,9 @@ namespace NuGet.Tests.Apex
             string packageName,
             string packageVersion,
             X509Certificate2 testCertificate,
-            ITimestampProvider timestampProvider = null)
+            Uri timestampProviderUrl = null)
         {
-            var package = CreateAuthorSignedPackage(packageName, packageVersion, testCertificate, timestampProvider);
+            var package = CreateAuthorSignedPackage(packageName, packageVersion, testCertificate, timestampProviderUrl);
             await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
         }
 
@@ -46,15 +46,10 @@ namespace NuGet.Tests.Apex
             string packageName,
             string packageVersion,
             X509Certificate2 testCertificate,
-            ITimestampProvider timestampProvider = null)
+            Uri timestampProviderUrl = null)
         {
             var package = CreatePackage(packageName, packageVersion);
-            package.IsPrimarySigned = true;
-            package.PrimarySignatureCertificate = testCertificate;
-
-            package.TimestampProvider = timestampProvider;
-
-            return package;
+            return AuthorSignPackage(package, testCertificate, timestampProviderUrl);
         }
 
         public static SimpleTestPackageContext CreateRepositorySignedPackage(
@@ -63,17 +58,10 @@ namespace NuGet.Tests.Apex
             X509Certificate2 testCertificate,
             Uri v3ServiceIndexUrl,
             IReadOnlyList<string>packageOwners = null,
-            ITimestampProvider timestampProvider = null)
+            Uri timestampProviderUrl = null)
         {
             var package = CreatePackage(packageName, packageVersion);
-            package.IsPrimarySigned = true;
-            package.PrimarySignatureCertificate = testCertificate;
-            package.V3ServiceIndexUrl = v3ServiceIndexUrl;
-            package.PackageOwners = packageOwners;
-
-            package.TimestampProvider = timestampProvider;
-
-            return package;
+            return RepositorySignPackage(package, testCertificate, v3ServiceIndexUrl, packageOwners, timestampProviderUrl);
         }
 
         public static SimpleTestPackageContext CreateRepositoryCountersignedPackage(
@@ -83,18 +71,44 @@ namespace NuGet.Tests.Apex
             X509Certificate2 repoCertificate,
             Uri v3ServiceIndexUrl,
             IReadOnlyList<string> packageOwners = null,
-            ITimestampProvider timestampProvider = null)
+            Uri timestampProviderUrl = null)
         {
             var package = CreatePackage(packageName, packageVersion);
+            var authorSignedPackage = AuthorSignPackage(package, authorCertificate, timestampProviderUrl);
+            return RepositoryCountersignPackage(authorSignedPackage, repoCertificate, v3ServiceIndexUrl, packageOwners, timestampProviderUrl);
+        }
+
+        public static SimpleTestPackageContext AuthorSignPackage(
+            SimpleTestPackageContext package,
+            X509Certificate2 authorCertificate,
+            Uri timestampProviderUrl = null)
+        {
             package.IsPrimarySigned = true;
             package.PrimarySignatureCertificate = authorCertificate;
 
-            package.IsRepositoryCounterSigned = true;
-            package.RepositoryCountersignatureCertificate = repoCertificate;
+            if (package.PrimaryTimestampProvider == null && timestampProviderUrl != null) {
+                package.PrimaryTimestampProvider = new Rfc3161TimestampProvider(timestampProviderUrl);
+            }
+
+            return package;
+        }
+
+        public static SimpleTestPackageContext RepositorySignPackage(
+            SimpleTestPackageContext package,
+            X509Certificate2 repoCertificate,
+            Uri v3ServiceIndexUrl,
+            IReadOnlyList<string> packageOwners = null,
+            Uri timestampProviderUrl = null)
+        {
+            package.IsPrimarySigned = true;
+            package.PrimarySignatureCertificate = repoCertificate;
             package.V3ServiceIndexUrl = v3ServiceIndexUrl;
             package.PackageOwners = packageOwners;
 
-            package.TimestampProvider = timestampProvider;
+            if (package.PrimaryTimestampProvider == null && timestampProviderUrl != null)
+            {
+                package.PrimaryTimestampProvider = new Rfc3161TimestampProvider(timestampProviderUrl);
+            }
 
             return package;
         }
@@ -103,7 +117,8 @@ namespace NuGet.Tests.Apex
             SimpleTestPackageContext package,
             X509Certificate2 repoCertificate,
             Uri v3ServiceIndexUrl,
-            IReadOnlyList<string> packageOwners = null)
+            IReadOnlyList<string> packageOwners = null,
+            Uri timestampProviderUrl = null)
         {
             if (!package.IsPrimarySigned)
             {
@@ -114,6 +129,11 @@ namespace NuGet.Tests.Apex
             package.RepositoryCountersignatureCertificate = repoCertificate;
             package.V3ServiceIndexUrl = v3ServiceIndexUrl;
             package.PackageOwners = packageOwners;
+
+            if (package.CounterTimestampProvider == null && timestampProviderUrl != null)
+            {
+                package.CounterTimestampProvider = new Rfc3161TimestampProvider(timestampProviderUrl);
+            }
 
             return package;
         }
@@ -247,7 +267,7 @@ namespace NuGet.Tests.Apex
             inAssetsFile.Should().BeFalse(AppendErrors($"{packageName}/{packageVersion} should be installed in {project.Name}", visualStudio));
         }
 
-        public static void AssetPackageNotInPackagesConfig(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, string packageVersion, ILogger logger)
+        public static void AssertPackageNotInPackagesConfig(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, string packageVersion, ILogger logger)
         {
             logger.LogInformation($"Checking project for {packageName}");
             var testService = visualStudio.Get<NuGetApexTestService>();
@@ -259,7 +279,7 @@ namespace NuGet.Tests.Apex
             exists.Should().BeFalse(AppendErrors($"{packageName}/{packageVersion} should NOT be in {project.Name}", visualStudio));
         }
 
-        public static void AssetPackageNotInPackagesConfig(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, ILogger logger)
+        public static void AssertPackageNotInPackagesConfig(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, ILogger logger)
         {
             logger.LogInformation($"Checking project for {packageName}");
             var testService = visualStudio.Get<NuGetApexTestService>();

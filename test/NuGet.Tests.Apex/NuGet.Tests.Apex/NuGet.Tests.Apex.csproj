@@ -10,6 +10,9 @@
 
   <ItemGroup>
     <None Remove="Apex\ApexTestContext.cs" />
+    <None Remove="NuGetPackageSigningTests\RepositoryCountersignedPackageTestCase.cs" />
+    <None Remove="NuGetPackageSigningTests\RepositorySignedPackageTestCase.cs" />
+    <None Remove="Utility\SigningUtility.cs" />
   </ItemGroup>
   
   <ItemGroup>
@@ -41,15 +44,20 @@
     <Compile Include="NuGetEndToEndTests\NuGetConsoleTestCase.cs" />
     <Compile Include="NuGetEndToEndTests\NetCoreProjectTestCase.cs" />
     <Compile Include="NuGetEndToEndTests\NuGetUITestCase.cs" />
-    <Compile Include="NuGetEndToEndTests\Utils.cs" />
+    <Compile Include="NuGetPackageSigningTests\RepositoryCountersignedPackageTestCase.cs" />
+    <Compile Include="Utility\CommonUtility.cs" />
     <Compile Include="Apex\NuGetTypeConstraint.cs" />
     <Compile Include="Apex\NuGetUIProjectTestExtensionVerifier.cs" />
     <Compile Include="Apex\NuGetUIProjectTestExtension.cs" />
     <Compile Include="Apex\NuGetBaseTestExtension.cs" />
+    <Compile Include="Utility\SigningUtility.cs" />
     <Compile Include="VisualStudioHostExtension.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Apex\NuGetConsoleTestExtensionVerifier.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="NuGetPackageSigningTests\RepositorySignedPackageTestCase.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Test.Apex-d15rel">
@@ -88,6 +96,6 @@
     <RuntimeIdentifier>x86</RuntimeIdentifier>
   </PropertyGroup>
   
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

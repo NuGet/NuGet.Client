@@ -56,7 +56,7 @@ namespace NuGet.Tests.Apex
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
 
             // Assert
-            Utils.AssetPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "9.0.1", XunitLogger);
+            CommonUtility.AssetPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "9.0.1", XunitLogger);
         }
 
         [StaFact]
@@ -84,8 +84,8 @@ namespace NuGet.Tests.Apex
             uiwindow2.InstallPackageFromUI("newtonsoft.json", "9.0.1");
 
             // Assert
-            Utils.AssetPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "9.0.1", XunitLogger);
-            Utils.AssetPackageInPackagesConfig(VisualStudio, nuProject, "newtonsoft.json", "9.0.1", XunitLogger);
+            CommonUtility.AssetPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "9.0.1", XunitLogger);
+            CommonUtility.AssetPackageInPackagesConfig(VisualStudio, nuProject, "newtonsoft.json", "9.0.1", XunitLogger);
         }
 
         [StaFact]
@@ -108,7 +108,7 @@ namespace NuGet.Tests.Apex
             uiwindow.UninstallPackageFromUI("newtonsoft.json");
 
             // Assert
-            Utils.AssetPackageNotInPackagesConfig(VisualStudio, project, "newtonsoft.json", XunitLogger);
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "newtonsoft.json", XunitLogger);
         }
 
         [StaFact]
@@ -134,7 +134,7 @@ namespace NuGet.Tests.Apex
             uiwindow.UpdatePackageFromUI("newtonsoft.json", "10.0.3");
 
             // Assert
-            Utils.AssetPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "10.0.3", XunitLogger);
+            CommonUtility.AssetPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "10.0.3", XunitLogger);
         }
     }
 }
