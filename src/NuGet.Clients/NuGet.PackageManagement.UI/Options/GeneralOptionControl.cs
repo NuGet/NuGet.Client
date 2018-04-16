@@ -62,10 +62,15 @@ namespace NuGet.Options
                 catch (InvalidOperationException)
                 {
                     MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigInvalidOperation, Resources.ErrorDialogBoxTitle);
-               } 
+                } 
                 catch (UnauthorizedAccessException)
                 {
                     MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
+                }
+                catch (Exception ex)
+                {
+                    MessageHelper.ShowErrorMessage(Resources.ShowError_SettingActivatedFailed, Resources.ErrorDialogBoxTitle);
+                    ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
                 }
             }
 
