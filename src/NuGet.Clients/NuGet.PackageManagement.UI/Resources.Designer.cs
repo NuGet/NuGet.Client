@@ -1215,6 +1215,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet setting initialization failed..
+        /// </summary>
+        public static string ShowError_SettingActivatedFailed {
+            get {
+                return ResourceManager.GetString("ShowError_SettingActivatedFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to All packages have been cleared from the cache..
         /// </summary>
         public static string ShowInfo_ClearPackageCache {
