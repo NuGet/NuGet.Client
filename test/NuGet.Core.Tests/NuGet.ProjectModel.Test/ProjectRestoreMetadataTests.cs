@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -35,7 +34,7 @@ namespace NuGet.ProjectModel.Test
             metadata.Equals(null).Should().BeFalse();
         }
 
-        [PlatformFact(Platform.Windows, Platform.Darwin, Platform.Linux)]
+        [Fact]
         public void Equals_WithSameCaseInPaths_ReturnsTrue()
         {
             // Arrange
@@ -75,14 +74,14 @@ namespace NuGet.ProjectModel.Test
             metadata1.Equals(metadata2).Should().BeTrue();
         }
 
-        [PlatformFact(Platform.Windows, Platform.Darwin)]
+        [PlatformFact(Platform.Linux)]
         public void Equals_WithDifferentCaseInPathsOnLinux_ReturnsFalse()
         {
             // Arrange
             var metadata1 = CreateProjectRestoreMetadata();
             var metadata2 = metadata1.Clone();
 
-            metadata2.ProjectPath = "projecpPath";
+            metadata2.ProjectPath = "projectPath";
             metadata2.ProjectJsonPath = "projectJsonPath";
             metadata2.OutputPath = "outputPath";
             metadata2.ProjectName = "projectName";
