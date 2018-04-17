@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -611,6 +611,53 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetFiles("CoreCLR").ToArray();
                     Assert.Equal("CoreCLR/abc.txt", libItems[0]);
+                }
+
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackNewDefaultProject_InstallPackageToOutputPath()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory} /p:OutputFileNamesWithoutVersion=true /p:InstallPackageToOutputPath=true");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.nupkg");
+                var nupkgSha512Path = Path.Combine(workingDirectory, $"{projectName}.nupkg.sha512");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nupkgSha512Path), "The output .sha512 is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the output .nuspec.
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetId());
+                    Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetAuthors());
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetOwners());
+                    Assert.Equal("Package Description", nuspecReader.GetDescription());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+
+                    var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
+                    Assert.Equal(1, dependencyGroups.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, dependencyGroups[0].TargetFramework);
+                    var packages = dependencyGroups[0].Packages.ToList();
+                    Assert.Equal(0, packages.Count);
+
+                    // Validate the assets.
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.dll" }, libItems[0].Items);
                 }
 
             }
