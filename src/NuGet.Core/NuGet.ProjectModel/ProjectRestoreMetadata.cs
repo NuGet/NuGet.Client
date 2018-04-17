@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
 
 namespace NuGet.ProjectModel
@@ -163,10 +162,10 @@ namespace NuGet.ProjectModel
                    PathUtility.GetStringComparerBasedOnOS().Equals(ProjectUniqueName, other.ProjectUniqueName) &&
                    Sources.OrderedEquals(other.Sources.Distinct(), source => source.Source, PathUtility.GetStringComparerBasedOnOS()) &&
                    PathUtility.GetStringComparerBasedOnOS().Equals(PackagesPath, other.PackagesPath) &&
-                   ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, filePath => filePath, PathUtility.GetStringComparerBasedOnOS()) &&
-                   FallbackFolders.OrderedEquals(other.FallbackFolders, fallbackFolder => fallbackFolder, PathUtility.GetStringComparerBasedOnOS()) &&
+                   ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, filePath => filePath, PathUtility.GetStringComparerBasedOnOS(), PathUtility.GetStringComparerBasedOnOS()) &&
+                   FallbackFolders.OrderedEquals(other.FallbackFolders, fallbackFolder => fallbackFolder, PathUtility.GetStringComparerBasedOnOS(), PathUtility.GetStringComparerBasedOnOS()) &&
                    EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
-                   OriginalTargetFrameworks.OrderedEquals(other.OriginalTargetFrameworks, fw => fw, StringComparer.OrdinalIgnoreCase) &&
+                   OriginalTargetFrameworks.OrderedEquals(other.OriginalTargetFrameworks, fw => fw, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase) &&
                    CrossTargeting == other.CrossTargeting &&
                    LegacyPackagesDirectory == other.LegacyPackagesDirectory &&
                    ValidateRuntimeAssets == other.ValidateRuntimeAssets &&
@@ -177,27 +176,28 @@ namespace NuGet.ProjectModel
 
         public ProjectRestoreMetadata Clone()
         {
-            var clonedObject = new ProjectRestoreMetadata();
-            clonedObject.ProjectStyle = ProjectStyle;
-            clonedObject.ProjectPath = ProjectPath;
-            clonedObject.ProjectJsonPath = ProjectJsonPath;
-            clonedObject.OutputPath = OutputPath;
-            clonedObject.ProjectName = ProjectName;
-            clonedObject.ProjectUniqueName = ProjectUniqueName;
-            clonedObject.PackagesPath = PackagesPath;
-            clonedObject.CacheFilePath = CacheFilePath;
-            clonedObject.CrossTargeting = CrossTargeting;
-            clonedObject.LegacyPackagesDirectory = LegacyPackagesDirectory;
-            clonedObject.SkipContentFileWrite = SkipContentFileWrite;
-            clonedObject.ValidateRuntimeAssets = ValidateRuntimeAssets;
-            clonedObject.FallbackFolders = FallbackFolders != null ? new List<string>(FallbackFolders) : null;
-            clonedObject.ConfigFilePaths = ConfigFilePaths != null ? new List<string>(ConfigFilePaths) : null;
-            clonedObject.OriginalTargetFrameworks = OriginalTargetFrameworks != null ? new List<string>(OriginalTargetFrameworks) : null;
-            clonedObject.Sources = Sources?.Select(c => c.Clone()).ToList();
-            clonedObject.TargetFrameworks = TargetFrameworks?.Select( c => c.Clone()).ToList();
-            clonedObject.Files = Files?.Select(c => c.Clone()).ToList();
-            clonedObject.ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone();
-            return clonedObject;
+            return new ProjectRestoreMetadata
+            {
+                ProjectStyle = ProjectStyle,
+                ProjectPath = ProjectPath,
+                ProjectJsonPath = ProjectJsonPath,
+                OutputPath = OutputPath,
+                ProjectName = ProjectName,
+                ProjectUniqueName = ProjectUniqueName,
+                PackagesPath = PackagesPath,
+                CacheFilePath = CacheFilePath,
+                CrossTargeting = CrossTargeting,
+                LegacyPackagesDirectory = LegacyPackagesDirectory,
+                SkipContentFileWrite = SkipContentFileWrite,
+                ValidateRuntimeAssets = ValidateRuntimeAssets,
+                FallbackFolders = FallbackFolders != null ? new List<string>(FallbackFolders) : null,
+                ConfigFilePaths = ConfigFilePaths != null ? new List<string>(ConfigFilePaths) : null,
+                OriginalTargetFrameworks = OriginalTargetFrameworks != null ? new List<string>(OriginalTargetFrameworks) : null,
+                Sources = Sources?.Select(c => c.Clone()).ToList(),
+                TargetFrameworks = TargetFrameworks?.Select(c => c.Clone()).ToList(),
+                Files = Files?.Select(c => c.Clone()).ToList(),
+                ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone()
+            };
+        }
     }
-}
 }
