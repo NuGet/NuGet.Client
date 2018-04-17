@@ -11,6 +11,7 @@
     <ID Name="UninstallIndicator" Value="3" />
     <ID Name="DownloadIndicator" Value="4" />
     <ID Name="InstalledIndicator" Value="5" />
+    <ID Name="MigratorHelpIcon" Value="6" />
   </Symbols>
   <Images>
     <Image Guid="$(PackageIconMonikers)" ID="$(PrefixReservedIndicator)" AllowColorInversion="false">
@@ -27,6 +28,9 @@
     </Image>
     <Image Guid="$(PackageIconMonikers)" ID="$(InstalledIndicator)" AllowColorInversion="false">
       <Source Uri="$(Resources)/Xamls/InstalledIndicator.xaml" />
+    </Image>
+    <Image Guid="$(PackageIconMonikers)" ID="$(MigratorHelpIcon)" AllowColorInversion="false">
+      <Source Uri="$(Resources)/Xamls/MigratorHelpIcon.xaml" />
     </Image>
   </Images>
   <ImageLists />

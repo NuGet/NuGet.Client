@@ -5,6 +5,7 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
   mc:Ignorable="d"
   x:Name="_self"
   Background="{DynamicResource {x:Static nuget:Brushes.BackgroundBrushKey}}"
@@ -23,9 +24,6 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
-      <BitmapImage
-        x:Key="BitmapImageInformation"
-        UriSource="/NuGet.PackageManagement.UI;component/Resources/statusinformation.16.16.png" />
       <ControlTemplate
         x:Key="StandardItemsControlTemplate"
         TargetType="{x:Type ItemsControl}">
@@ -110,6 +108,7 @@
       </ControlTemplate>
       <Style TargetType="DataGridCell" x:Key="UpgraderDataGridCellStyle">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
+        <Setter Property="Focusable" Value="True"/>
         <Style.Triggers>
           <Trigger Property="IsSelected" Value="True">
             <Setter Property="Background" Value="{x:Null}" />
@@ -122,6 +121,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"/>
         <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
         <Setter Property="BorderThickness" Value="1,0,0,1"/>
+        <Setter Property="Focusable" Value="True"/>
         <Setter Property="Padding" Value="3,2,2,4"/>
         <Style.Triggers>
           <Trigger Property="IsMouseOver" Value="True">
@@ -154,11 +154,14 @@
         <RowDefinition />
       </Grid.RowDefinitions>
       <TextBlock
+        x:Name="_directDependenciesLabel"
+        Focusable="True"
+        AutomationProperties.Name="{Binding Text}"
         Grid.Row="0"
         Margin="0,0,0,4"
         Text="{x:Static nuget:Resources.Text_DirectDependencies}" />
       <DataGrid Grid.Row="1" ItemsSource="{Binding DirectDependencies}" AutoGenerateColumns="False" RowHeaderWidth="0" GridLinesVisibility="None" Background="Transparent" RowBackground="Transparent" BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
-                ColumnHeaderStyle="{StaticResource Migrator_DataGridColumnHeaderStyle}" Margin="0,2,0,0">
+                ColumnHeaderStyle="{StaticResource Migrator_DataGridColumnHeaderStyle}" Focusable="True" Margin="0,2,0,0">
         <DataGrid.Columns>
           <DataGridTextColumn x:Name="directDependency_id" Binding="{Binding Id}" Header="{x:Static nuget:Resources.Migrator_PackageIdColumnHeader}" MinWidth="20" Width="4*" IsReadOnly="True" CellStyle="{StaticResource UpgraderDataGridCellStyle}"/>
           <DataGridTextColumn x:Name="directDependency_version" Binding="{Binding Version}" Header="{x:Static nuget:Resources.Migrator_VersionColumnHeader}" Width="*" IsReadOnly="True" CellStyle="{StaticResource UpgraderDataGridCellStyle}"/>
@@ -173,11 +176,15 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock
+        x:Name="_transitiveDependenciesLabel"
+        AutomationProperties.Name="{Binding Text}"
+        Focusable="True"
         Grid.Row="0"
         Margin="0,0,0,4"
         Text="{x:Static nuget:Resources.Text_TransitiveDependencies}" />
       <DataGrid Grid.Row="1" ItemsSource="{Binding TransitiveDependencies}" AutoGenerateColumns="False" RowHeaderWidth="0" GridLinesVisibility="None" Background="Transparent" RowBackground="Transparent"
                 Margin="0,2,0,0"
+                Focusable="True"
                 BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
                 ColumnHeaderStyle="{StaticResource Migrator_DataGridColumnHeaderStyle}">
         <DataGrid.Columns>
@@ -213,7 +220,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
 
-      <TextBlock Margin="0,0,4,8" Grid.Row="0" Text="{x:Static nuget:Resources.Text_NuGetUpgradeIssues}" />
+      <TextBlock x:Name="_packageCompatibilityIssuesLabel" Focusable="True" AutomationProperties.Name="{Binding Text}" Margin="0,0,4,8" Grid.Row="0" Text="{x:Static nuget:Resources.Text_NuGetUpgradeIssues}" />
 
       <Border
         Grid.Row="1"
@@ -223,6 +230,7 @@
         BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
         Background="{DynamicResource {x:Static nuget:Brushes.ContentBrushKey}}">
         <TextBlock
+          Focusable="True"
           Text="{x:Static nuget:Resources.Text_NuGetUpgradeNoIssuesFound}" />
       </Border>
 
@@ -231,25 +239,32 @@
         IsTabStop="True"
         ItemsSource="{Binding UpgradeDependencyItems}"
         Visibility="{Binding HasIssues, Mode=OneTime, Converter={StaticResource BooleanToVisibilityConverter}}"
+        x:Name="_packageIssuesItemControl"
+        AutomationProperties.AutomationId="{Binding Name}"
         Template="{StaticResource StandardItemsControlTemplate}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <Expander
+              x:Name="_packageIssuesExpander"
               Margin="4,4,8,0"
               Template="{StaticResource SimpleExpander}"
               Header="{Binding Path=Id}"
               Visibility="{Binding Path=Issues, Converter={StaticResource EnumerableToVisibilityConverter}}"
               Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+              AutomationProperties.AutomationId="_packageIssuesItemControlExpander"
               IsExpanded="True">
               <ItemsControl
                 Margin="8,4,16,4"
                 Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
                 ItemsSource="{Binding Path=Issues}"
-                IsTabStop="False">
+                x:Name="_packageIssuesExpanderItemControl"
+                AutomationProperties.AutomationId="{Binding Name}"
+                Focusable="True"
+                IsTabStop="True">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
-                    <StackPanel Orientation="Vertical">
-                      <TextBlock Text="{Binding Path=Message}" Margin="0,2,0,2" TextWrapping="Wrap"/>
+                    <StackPanel x:Name="_packageIssuesStackPanel" Orientation="Vertical">
+                      <TextBlock x:Name="_packageIssueDescriptionText" Focusable="True" AutomationProperties.Name="{Binding Text}" AutomationProperties.AutomationId="{Binding Name}" Text="{Binding Path=Message}" Margin="0,2,0,2" TextWrapping="Wrap"/>
                     </StackPanel>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -268,11 +283,11 @@
       </Grid.ColumnDefinitions>
 
       <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="12,12">
-        <Image
+        <imaging:CrispImage
           Margin="0,0,2,0"
-          Source="{StaticResource BitmapImageInformation}"
+          Width="16"
           Height="16"
-          Width="16" />
+          Moniker="{x:Static nuget:PackageIconMonikers.MigratorHelpIcon}" />
         <TextBlock Margin="4,0,0,0">
           <Hyperlink
             NavigateUri="https://aka.ms/nuget-pc2pr-migrator"
