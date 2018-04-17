@@ -692,7 +692,7 @@ namespace Dotnet.Integration.Test
 
                 var nuspecFilePath = Path.Combine(workingDirectory, "PackedFromNuspec.nuspec");
                 var nupackageFilePath = Path.Combine(workingDirectory, "PackedFromNuspec.nupkg");
-                var nupackageSha512FilePath = Path.Combine(workingDirectory, "PackedFromNuspec.sha512");
+                var nupackageSha512FilePath = Path.Combine(workingDirectory, "PackedFromNuspec.nupkg.sha512");
                 Assert.True(File.Exists(nuspecFilePath), "The output .nuspec is not in the expected place: " + nuspecFilePath);
                 Assert.True(File.Exists(nupackageFilePath), "The output .nupkg is not in the expected place: " + nupackageFilePath);
                 Assert.True(File.Exists(nupackageSha512FilePath), "The output .sha512 is not in the expected place: " + nupackageSha512FilePath);
