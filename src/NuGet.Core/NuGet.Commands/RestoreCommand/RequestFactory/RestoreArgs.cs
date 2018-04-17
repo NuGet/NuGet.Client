@@ -12,6 +12,7 @@ using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -122,8 +123,13 @@ namespace NuGet.Commands
             {
                 throw new ArgumentNullException(nameof(settings));
             }
+            var values = settings.Priority.Select(e => e.Root).AsList();
+            if(dgSpecSources != null)
+            {
+                values.AddRange(dgSpecSources.Select(e => e.Source));
+            }
 
-            var cacheKey = string.Join("|", settings.Priority.Select(e => e.Root));
+            var cacheKey = string.Join("|", values);
 
             return _sourcesCache.GetOrAdd(cacheKey, (root) => GetEffectiveSourcesCore(settings, dgSpecSources));
         }
