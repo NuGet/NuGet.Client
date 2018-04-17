@@ -146,7 +146,12 @@ namespace NuGet.PackageManagement.UI
             var progressDialogData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage);
             string backupPath;
 
-            using (var progressDialogSession = context.StartModalProgressDialog(Resources.WindowTitle_NuGetMigrator, progressDialogData, uiService))
+            var windowTitle = string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.WindowTitle_NuGetMigrator,
+                NuGetProject.GetUniqueNameOrName(nuGetProject));
+
+            using (var progressDialogSession = context.StartModalProgressDialog(windowTitle, progressDialogData, uiService))
             {
                 backupPath = await PackagesConfigToPackageReferenceMigrator.DoUpgradeAsync(
                     context,
