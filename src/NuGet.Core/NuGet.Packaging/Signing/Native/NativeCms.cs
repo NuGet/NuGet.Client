@@ -59,25 +59,28 @@ namespace NuGet.Packaging.Signing
 
         internal byte[] GetRepositoryCountersignatureSignatureValue()
         {
-            var repositoryCountersignature = GetRepositoryCountersignature();
-
-            if (repositoryCountersignature == null)
+            using (var retainer = new HeapBlockRetainer())
             {
-                return null;
+                var repositoryCountersignature = GetRepositoryCountersignature(retainer);
+
+                if (repositoryCountersignature == null)
+                {
+                    return null;
+                }
+
+                var countersignatureSignatureValue = new byte[repositoryCountersignature.Value.SignerInfo.EncryptedHash.cbData];
+
+                Marshal.Copy(
+                    repositoryCountersignature.Value.SignerInfo.EncryptedHash.pbData,
+                    countersignatureSignatureValue,
+                    startIndex: 0,
+                    length: countersignatureSignatureValue.Length);
+
+                return countersignatureSignatureValue;
             }
-
-            var countersignatureSignatureValue = new byte[repositoryCountersignature.Value.SignerInfo.EncryptedHash.cbData];
-
-            Marshal.Copy(
-                repositoryCountersignature.Value.SignerInfo.EncryptedHash.pbData,
-                countersignatureSignatureValue,
-                startIndex: 0,
-                length: countersignatureSignatureValue.Length);
-
-            return countersignatureSignatureValue;
         }
 
-        private unsafe RepositoryCounterSignerInfo? GetRepositoryCountersignature()
+        private unsafe RepositoryCounterSignerInfo? GetRepositoryCountersignature(HeapBlockRetainer retainer)
         {
             const uint primarySignerInfoIndex = 0;
             uint unsignedAttributeCount = 0;
@@ -95,71 +98,67 @@ namespace NuGet.Packaging.Signing
                 return null;
             }
 
-            using (var retainer = new HeapBlockRetainer())
+            pointer = retainer.Alloc((int)unsignedAttributeCount);
+
+            NativeUtilities.ThrowIfFailed(NativeMethods.CryptMsgGetParam(
+                _handle,
+                CMSG_GETPARAM_TYPE.CMSG_SIGNER_UNAUTH_ATTR_PARAM,
+                primarySignerInfoIndex,
+                pointer,
+                ref unsignedAttributeCount));
+
+            var unsignedAttributes = Marshal.PtrToStructure<CRYPT_ATTRIBUTES>(pointer);
+            for (uint i = 0; i < unsignedAttributes.cAttr; ++i)
             {
-                pointer = retainer.Alloc((int)unsignedAttributeCount);
+                var attributePointer = new IntPtr(
+                    (long)unsignedAttributes.rgAttr + (i * Marshal.SizeOf<CRYPT_ATTRIBUTE_STRING>()));
+                var attribute = Marshal.PtrToStructure<CRYPT_ATTRIBUTE_STRING>(attributePointer);
 
-                NativeUtilities.ThrowIfFailed(NativeMethods.CryptMsgGetParam(
-                    _handle,
-                    CMSG_GETPARAM_TYPE.CMSG_SIGNER_UNAUTH_ATTR_PARAM,
-                    primarySignerInfoIndex,
-                    pointer,
-                    ref unsignedAttributeCount));
-
-                var unsignedAttributes = Marshal.PtrToStructure<CRYPT_ATTRIBUTES>(pointer);
-
-                for (uint i = 0; i < unsignedAttributes.cAttr; ++i)
+                if (!string.Equals(attribute.pszObjId, Oids.Countersignature, StringComparison.Ordinal))
                 {
-                    var attributePointer = new IntPtr(
-                        (long)unsignedAttributes.rgAttr + (i * Marshal.SizeOf<CRYPT_ATTRIBUTE_STRING>()));
-                    var attribute = Marshal.PtrToStructure<CRYPT_ATTRIBUTE_STRING>(attributePointer);
+                    continue;
+                }
 
-                    if (!string.Equals(attribute.pszObjId, Oids.Countersignature, StringComparison.Ordinal))
+                for (var j = 0; j < attribute.cValue; ++j)
+                {
+                    var attributeValuePointer = new IntPtr(
+                        (long)attribute.rgValue + (j * Marshal.SizeOf<CRYPT_INTEGER_BLOB>()));
+                    var attributeValue = Marshal.PtrToStructure<CRYPT_INTEGER_BLOB>(attributeValuePointer);
+                    uint cbSignerInfo = 0;
+
+                    NativeUtilities.ThrowIfFailed(NativeMethods.CryptDecodeObject(
+                        CMSG_ENCODING.Any,
+                        new IntPtr(NativeMethods.PKCS7_SIGNER_INFO),
+                        attributeValue.pbData,
+                        attributeValue.cbData,
+                        dwFlags: 0,
+                        pvStructInfo: IntPtr.Zero,
+                        pcbStructInfo: new IntPtr(&cbSignerInfo)));
+
+                    var counterSignerInfoPointer = retainer.Alloc((int)cbSignerInfo);
+
+                    NativeUtilities.ThrowIfFailed(NativeMethods.CryptDecodeObject(
+                        CMSG_ENCODING.Any,
+                        new IntPtr(NativeMethods.PKCS7_SIGNER_INFO),
+                        attributeValue.pbData,
+                        attributeValue.cbData,
+                        dwFlags: 0,
+                        pvStructInfo: counterSignerInfoPointer,
+                        pcbStructInfo: new IntPtr(&cbSignerInfo)));
+
+                    var counterSignerInfo = Marshal.PtrToStructure<CMSG_SIGNER_INFO>(counterSignerInfoPointer);
+
+                    if (IsRepositoryCounterSignerInfo(counterSignerInfo))
                     {
-                        continue;
-                    }
-
-                    for (var j = 0; j < attribute.cValue; ++j)
-                    {
-                        var attributeValuePointer = new IntPtr(
-                            (long)attribute.rgValue + (j * Marshal.SizeOf<CRYPT_INTEGER_BLOB>()));
-                        var attributeValue = Marshal.PtrToStructure<CRYPT_INTEGER_BLOB>(attributeValuePointer);
-                        uint cbSignerInfo = 0;
-
-                        NativeUtilities.ThrowIfFailed(NativeMethods.CryptDecodeObject(
-                            CMSG_ENCODING.Any,
-                            new IntPtr(NativeMethods.PKCS7_SIGNER_INFO),
-                            attributeValue.pbData,
-                            attributeValue.cbData,
-                            dwFlags: 0,
-                            pvStructInfo: IntPtr.Zero,
-                            pcbStructInfo: new IntPtr(&cbSignerInfo)));
-
-                        var counterSignerInfoPointer = retainer.Alloc((int)cbSignerInfo);
-
-                        NativeUtilities.ThrowIfFailed(NativeMethods.CryptDecodeObject(
-                            CMSG_ENCODING.Any,
-                            new IntPtr(NativeMethods.PKCS7_SIGNER_INFO),
-                            attributeValue.pbData,
-                            attributeValue.cbData,
-                            dwFlags: 0,
-                            pvStructInfo: counterSignerInfoPointer,
-                            pcbStructInfo: new IntPtr(&cbSignerInfo)));
-
-                        var counterSignerInfo = Marshal.PtrToStructure<CMSG_SIGNER_INFO>(counterSignerInfoPointer);
-
-                        if (IsRepositoryCounterSignerInfo(counterSignerInfo))
+                        return new RepositoryCounterSignerInfo()
                         {
-                            return new RepositoryCounterSignerInfo()
-                            {
-                                dwUnauthAttrIndex = i,
-                                UnauthAttr = attribute,
-                                SignerInfo = counterSignerInfo
-                            };
-                        }
+                            dwUnauthAttrIndex = i,
+                            UnauthAttr = attribute,
+                            SignerInfo = counterSignerInfo
+                        };
                     }
                 }
-            }
+            } 
 
             return null;
         }
@@ -283,7 +282,7 @@ namespace NuGet.Packaging.Signing
         {
             using (var hb = new HeapBlockRetainer())
             {
-                var repositoryCountersignature = GetRepositoryCountersignature();
+                var repositoryCountersignature = GetRepositoryCountersignature(hb);
                 if (repositoryCountersignature == null)
                 {
                     throw new SignatureException(Strings.Error_NotOneRepositoryCounterSignature);
