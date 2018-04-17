@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -14,11 +16,11 @@ using Xunit.Abstractions;
 
 namespace NuGet.Tests.Apex
 {
-    public class AuthorSignedPackageTestCase : SharedVisualStudioHostTestClass, IClassFixture<SignedPackagesTestsApexFixture>
+    public class RepositoryCountersignedPackageTestCase : SharedVisualStudioHostTestClass, IClassFixture<SignedPackagesTestsApexFixture>
     {
         private SignedPackagesTestsApexFixture _fixture;
 
-        public AuthorSignedPackageTestCase(SignedPackagesTestsApexFixture apexSigningFixture, ITestOutputHelper output)
+        public RepositoryCountersignedPackageTestCase(SignedPackagesTestsApexFixture apexSigningFixture, ITestOutputHelper output)
             : base(apexSigningFixture, output)
         {
             _fixture = apexSigningFixture;
@@ -31,7 +33,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositoryCountersignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -55,7 +57,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositoryCountersignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -76,7 +78,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositoryCountersignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -103,7 +105,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositoryCountersignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -126,7 +128,7 @@ namespace NuGet.Tests.Apex
             EnsureVisualStudioHost();
 
             var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositoryCountersignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -155,7 +157,7 @@ namespace NuGet.Tests.Apex
             EnsureVisualStudioHost();
 
             var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositoryCountersignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -173,70 +175,53 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task DowngradeSignedToUnsignedVersionFromPMCForPR_SucceedAsync(ProjectTemplate projectTemplate)
+        public async Task WithExpiredAuthorCertificateAtCountersigning_InstallFromPMCForPR_WarnAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            // This test is not considered an ideal behavior of the product but states the current behavior.
-            // A package that is already installed as signed should be specailly treated and a user should not be
-            // able to downgrade to an unsigned version. This test needs to be updated once this behavior gets
-            // corrected in the product.
-
-            var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            using (var trustedCert = _fixture.TrustedRepositoryTestCertificate)
+            using (var trustedExpiringTestCert = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn5Seconds())
             {
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, signedPackage.Id, packageVersion09);
-                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
+                XunitLogger.LogInformation("Creating package");
+                var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
+
+                XunitLogger.LogInformation("Signing package");
+                var expiredTestPackage = CommonUtility.AuthorSignPackage(package, trustedExpiringTestCert.Source.Cert);
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, expiredTestPackage);
+                var packageFullName = Path.Combine(testContext.PackageSource, expiredTestPackage.PackageName);
+
+                XunitLogger.LogInformation("Waiting for package to expire");
+                SigningUtility.WaitForCertificateToExpire(trustedExpiringTestCert.Source.Cert);
+
+                XunitLogger.LogInformation("Countersigning package");
+                var countersignedPackage = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                    new X509Certificate2(trustedCert.Source.Cert),
+                    packageFullName,
+                    testContext.PackageSource,
+                    new Uri("https://v3serviceIndexUrl.test/api/index.json"),
+                    timestampService.Url);
+                File.Copy(countersignedPackage, packageFullName, overwrite: true);
+                File.Delete(countersignedPackage);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
+                nugetConsole.InstallPackageFromPMC(expiredTestPackage.Id, expiredTestPackage.Version);
                 testContext.Project.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
-                nugetConsole.UpdatePackageFromPMC(signedPackage.Id, packageVersion09);
-                testContext.Project.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, signedPackage.Id, packageVersion09, XunitLogger);
-            }
-        }
-
-        [CIOnlyNuGetWpfTheory]
-        [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task DowngradeSignedToUnsignedVersionFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            // This test is not considered an ideal behavior of the product but states the current behavior.
-            // A package that is already installed as signed should be specailly treated and a user should not be
-            // able to downgrade to an unsigned version. This test needs to be updated once this behavior gets
-            // corrected in the product.
-
-            var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.AuthorSignedTestPackage;
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, signedPackage.Id, packageVersion09);
-                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
-                nugetConsole.UpdatePackageFromPMC(signedPackage.Id, packageVersion09);
-
-                CommonUtility.AssetPackageInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, packageVersion09, XunitLogger);
+                // TODO: Fix bug where no warnings are shown when package is untrusted but still installed
+                //nugetConsole.IsMessageFoundInPMC("expired certificate").Should().BeTrue("expired certificate warning");
+                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, XunitLogger);
             }
         }
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task WithExpiredCertificate_InstallFromPMCForPR_WarnAsync(ProjectTemplate projectTemplate)
+        public async Task WithExpiredAuthorCertificate_ExpiredRepoCertificate_InstallFromPMCForPR_WarnAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -247,8 +232,13 @@ namespace NuGet.Tests.Apex
                 XunitLogger.LogInformation("Creating package");
                 var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
 
-                XunitLogger.LogInformation("Signing package");
+                XunitLogger.LogInformation("Signing and countersigning package");
                 var expiredTestPackage = CommonUtility.AuthorSignPackage(package, trustedExpiringTestCert.Source.Cert);
+                var countersignedPackage = CommonUtility.RepositoryCountersignPackage(
+                    expiredTestPackage,
+                    trustedExpiringTestCert.Source.Cert,
+                    new Uri("https://v3serviceIndexUrl.test/api/index.json"));
+
                 await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, expiredTestPackage);
 
                 XunitLogger.LogInformation("Waiting for package to expire");
@@ -267,13 +257,56 @@ namespace NuGet.Tests.Apex
         }
 
         [CIOnlyNuGetWpfTheory]
-        [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task WithExpiredCertificate_InstallFromPMCForPC_WarnAsync(ProjectTemplate projectTemplate)
+        [MemberData(nameof(GetPackageReferenceTemplates))]
+        public async Task WithExpiredAuthorCertificateAfterCountersigned_InstallFromPMCForPR_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
+            var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
+
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            using (var trustedCert = _fixture.TrustedRepositoryTestCertificate)
+            using (var trustedExpiringTestCert = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn5Seconds())
+            {
+                XunitLogger.LogInformation("Creating package");
+                var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
+
+                XunitLogger.LogInformation("Signing and countersigning package");
+                var expiredTestPackage = CommonUtility.AuthorSignPackage(package, trustedExpiringTestCert.Source.Cert);
+                var countersignedPackage = CommonUtility.RepositoryCountersignPackage(
+                    expiredTestPackage,
+                    trustedCert.Source.Cert,
+                    new Uri("https://v3serviceIndexUrl.test/api/index.json"),
+                    packageOwners: null,
+                    timestampProviderUrl: timestampService.Url);
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, expiredTestPackage);
+
+                XunitLogger.LogInformation("Waiting for package to expire");
+                SigningUtility.WaitForCertificateToExpire(trustedExpiringTestCert.Source.Cert);
+
+                var nugetConsole = GetConsole(testContext.Project);
+
+                nugetConsole.InstallPackageFromPMC(expiredTestPackage.Id, expiredTestPackage.Version);
+                testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
+                
+                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, XunitLogger);
+            }
+        }
+
+        [CIOnlyNuGetWpfTheory]
+        [MemberData(nameof(GetPackagesConfigTemplates))]
+        public async Task WithExpiredAuthorCertificateAtCountersigning_InstallFromPMCForPC_WarnAsync(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+
+            var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            using (var trustedCert = _fixture.TrustedRepositoryTestCertificate)
             using (var trustedExpiringTestCert = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn5Seconds())
             {
                 XunitLogger.LogInformation("Creating package");
@@ -282,9 +315,20 @@ namespace NuGet.Tests.Apex
                 XunitLogger.LogInformation("Signing package");
                 var expiredTestPackage = CommonUtility.AuthorSignPackage(package, trustedExpiringTestCert.Source.Cert);
                 await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, expiredTestPackage);
+                var packageFullName = Path.Combine(testContext.PackageSource, expiredTestPackage.PackageName);
 
                 XunitLogger.LogInformation("Waiting for package to expire");
                 SigningUtility.WaitForCertificateToExpire(trustedExpiringTestCert.Source.Cert);
+
+                XunitLogger.LogInformation("Countersigning package");
+                var countersignedPackage = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                    new X509Certificate2(trustedCert.Source.Cert),
+                    packageFullName,
+                    testContext.PackageSource,
+                    new Uri("https://v3serviceIndexUrl.test/api/index.json"),
+                    timestampService.Url);
+                File.Copy(countersignedPackage, packageFullName, overwrite: true);
+                File.Delete(countersignedPackage);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -296,6 +340,84 @@ namespace NuGet.Tests.Apex
             }
         }
 
+
+        [CIOnlyNuGetWpfTheory]
+        [MemberData(nameof(GetPackageReferenceTemplates))]
+        public async Task WithExpiredAuthorCertificate_ExpiredRepoCertificate_InstallFromPMCForPC_WarnAsync(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            using (var trustedExpiringTestCert = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn5Seconds())
+            {
+                XunitLogger.LogInformation("Creating package");
+                var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
+
+                XunitLogger.LogInformation("Signing and countersigning package");
+                var expiredTestPackage = CommonUtility.AuthorSignPackage(package, trustedExpiringTestCert.Source.Cert);
+                var countersignedPackage = CommonUtility.RepositoryCountersignPackage(
+                    expiredTestPackage,
+                    trustedExpiringTestCert.Source.Cert,
+                    new Uri("https://v3serviceIndexUrl.test/api/index.json"));
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, expiredTestPackage);
+
+                XunitLogger.LogInformation("Waiting for package to expire");
+                SigningUtility.WaitForCertificateToExpire(trustedExpiringTestCert.Source.Cert);
+
+                var nugetConsole = GetConsole(testContext.Project);
+
+                nugetConsole.InstallPackageFromPMC(expiredTestPackage.Id, expiredTestPackage.Version);
+                testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
+
+                // TODO: Fix bug where no warnings are shown when package is untrusted but still installed
+                //nugetConsole.IsMessageFoundInPMC("expired certificate").Should().BeTrue("expired certificate warning");
+                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, XunitLogger);
+            }
+        }
+
+        [CIOnlyNuGetWpfTheory]
+        [MemberData(nameof(GetPackageReferenceTemplates))]
+        public async Task WithExpiredAuthorCertificateAfterCountersigning_InstallFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+
+            var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            using (var trustedCert = _fixture.TrustedRepositoryTestCertificate)
+            using (var trustedExpiringTestCert = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn5Seconds())
+            {
+                XunitLogger.LogInformation("Creating package");
+                var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
+
+                XunitLogger.LogInformation("Signing and countersigning package");
+                var expiredTestPackage = CommonUtility.AuthorSignPackage(package, trustedExpiringTestCert.Source.Cert);
+                var countersignedPackage = CommonUtility.RepositoryCountersignPackage(
+                    expiredTestPackage,
+                    trustedCert.Source.Cert,
+                    new Uri("https://v3serviceIndexUrl.test/api/index.json"),
+                    packageOwners: null,
+                    timestampProviderUrl: timestampService.Url);
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, expiredTestPackage);
+
+                XunitLogger.LogInformation("Waiting for package to expire");
+                SigningUtility.WaitForCertificateToExpire(trustedExpiringTestCert.Source.Cert);
+
+                var nugetConsole = GetConsole(testContext.Project);
+
+                nugetConsole.InstallPackageFromPMC(expiredTestPackage.Id, expiredTestPackage.Version);
+                testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
+
+                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, XunitLogger);
+            }
+        }
+
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
         public async Task Tampered_InstallFromPMCForPR_FailAsync(ProjectTemplate projectTemplate)
@@ -303,7 +425,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositoryCountersignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -328,7 +450,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositoryCountersignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {

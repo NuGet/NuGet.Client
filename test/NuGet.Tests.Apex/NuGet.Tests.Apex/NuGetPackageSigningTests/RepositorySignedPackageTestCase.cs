@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -14,11 +15,11 @@ using Xunit.Abstractions;
 
 namespace NuGet.Tests.Apex
 {
-    public class AuthorSignedPackageTestCase : SharedVisualStudioHostTestClass, IClassFixture<SignedPackagesTestsApexFixture>
+    public class RepositorySignedPackageTestCase : SharedVisualStudioHostTestClass, IClassFixture<SignedPackagesTestsApexFixture>
     {
         private SignedPackagesTestsApexFixture _fixture;
 
-        public AuthorSignedPackageTestCase(SignedPackagesTestsApexFixture apexSigningFixture, ITestOutputHelper output)
+        public RepositorySignedPackageTestCase(SignedPackagesTestsApexFixture apexSigningFixture, ITestOutputHelper output)
             : base(apexSigningFixture, output)
         {
             _fixture = apexSigningFixture;
@@ -31,7 +32,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositorySignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -55,7 +56,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositorySignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -76,7 +77,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositorySignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -103,7 +104,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositorySignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -126,7 +127,7 @@ namespace NuGet.Tests.Apex
             EnsureVisualStudioHost();
 
             var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositorySignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -155,7 +156,7 @@ namespace NuGet.Tests.Apex
             EnsureVisualStudioHost();
 
             var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositorySignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -173,69 +174,6 @@ namespace NuGet.Tests.Apex
 
         [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task DowngradeSignedToUnsignedVersionFromPMCForPR_SucceedAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            // This test is not considered an ideal behavior of the product but states the current behavior.
-            // A package that is already installed as signed should be specailly treated and a user should not be
-            // able to downgrade to an unsigned version. This test needs to be updated once this behavior gets
-            // corrected in the product.
-
-            var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.AuthorSignedTestPackage;
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, signedPackage.Id, packageVersion09);
-                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
-                testContext.Project.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                nugetConsole.UpdatePackageFromPMC(signedPackage.Id, packageVersion09);
-                testContext.Project.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, signedPackage.Id, packageVersion09, XunitLogger);
-            }
-        }
-
-        [CIOnlyNuGetWpfTheory]
-        [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task DowngradeSignedToUnsignedVersionFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            // This test is not considered an ideal behavior of the product but states the current behavior.
-            // A package that is already installed as signed should be specailly treated and a user should not be
-            // able to downgrade to an unsigned version. This test needs to be updated once this behavior gets
-            // corrected in the product.
-
-            var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.AuthorSignedTestPackage;
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, signedPackage.Id, packageVersion09);
-                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
-                nugetConsole.UpdatePackageFromPMC(signedPackage.Id, packageVersion09);
-
-                CommonUtility.AssetPackageInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, packageVersion09, XunitLogger);
-            }
-        }
-
-        [CIOnlyNuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
         public async Task WithExpiredCertificate_InstallFromPMCForPR_WarnAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -248,7 +186,7 @@ namespace NuGet.Tests.Apex
                 var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
 
                 XunitLogger.LogInformation("Signing package");
-                var expiredTestPackage = CommonUtility.AuthorSignPackage(package, trustedExpiringTestCert.Source.Cert);
+                var expiredTestPackage = CommonUtility.RepositorySignPackage(package, trustedExpiringTestCert.Source.Cert, new Uri("https://v3serviceIndexUrl.test/api/index.json"));
                 await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, expiredTestPackage);
 
                 XunitLogger.LogInformation("Waiting for package to expire");
@@ -280,7 +218,7 @@ namespace NuGet.Tests.Apex
                 var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
 
                 XunitLogger.LogInformation("Signing package");
-                var expiredTestPackage = CommonUtility.AuthorSignPackage(package, trustedExpiringTestCert.Source.Cert);
+                var expiredTestPackage = CommonUtility.RepositorySignPackage(package, trustedExpiringTestCert.Source.Cert, new Uri("https://v3serviceIndexUrl.test/api/index.json"));
                 await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, expiredTestPackage);
 
                 XunitLogger.LogInformation("Waiting for package to expire");
@@ -303,7 +241,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositorySignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
@@ -328,7 +266,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            var signedPackage = _fixture.AuthorSignedTestPackage;
+            var signedPackage = _fixture.RepositorySignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {

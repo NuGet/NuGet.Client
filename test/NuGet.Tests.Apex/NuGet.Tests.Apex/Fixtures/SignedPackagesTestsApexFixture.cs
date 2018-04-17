@@ -15,20 +15,28 @@ namespace NuGet.Tests.Apex
     public class SignedPackagesTestsApexFixture : VisualStudioHostFixtureFactory
     {
         private const string _testPackageName = "TestPackage";
-        private const string _expiredTestPackageName = "ExpiredTestPackage";
         private const string _packageVersion = "1.0.0";
 
         private TrustedTestCert<TestCertificate> _trustedAuthorTestCert;
         private TrustedTestCert<TestCertificate> _trustedRepositoryTestCert;
-        private TrustedTestCert<TestCertificate> _trustedExpiredTestCert;
+        private TrustedTestCert<X509Certificate2> _trustedServerRoot;
 
         private SimpleTestPackageContext _authorSignedTestPackageV1;
         private SimpleTestPackageContext _repoSignedTestPackageV1;
         private SimpleTestPackageContext _repoCountersignedTestPackageV1;
 
-        private SimpleTestPackageContext _expiredAuthorSignedTestPackageV1;
-        private string _expiredSignedTestPackageV1Path;
-        private TestDirectory _expiredSignedTestPackageV1Directory;
+        private Lazy<Task<SigningTestServer>> _testServer;
+        private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
+        private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
+        private readonly DisposableList<IDisposable> _responders;
+
+        public SignedPackagesTestsApexFixture()
+        {
+            _testServer = new Lazy<Task<SigningTestServer>>(SigningTestServer.CreateAsync);
+            _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
+            _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
+            _responders = new DisposableList<IDisposable>();
+        }
 
         public TrustedTestCert<TestCertificate> TrustedAuthorTestCertificate
         {
@@ -62,7 +70,7 @@ namespace NuGet.Tests.Apex
             {
                 if (_authorSignedTestPackageV1 == null)
                 {
-                    _authorSignedTestPackageV1 = Utils.CreateAuthorSignedPackage(
+                    _authorSignedTestPackageV1 = CommonUtility.CreateAuthorSignedPackage(
                         _testPackageName,
                         _packageVersion,
                         TrustedAuthorTestCertificate.Source.Cert);
@@ -78,7 +86,7 @@ namespace NuGet.Tests.Apex
             {
                 if (_repoSignedTestPackageV1 == null)
                 {
-                    _repoSignedTestPackageV1 = Utils.CreateRepositorySignedPackage(
+                    _repoSignedTestPackageV1 = CommonUtility.CreateRepositorySignedPackage(
                         _testPackageName,
                         _packageVersion,
                         TrustedRepositoryTestCertificate.Source.Cert,
@@ -95,7 +103,7 @@ namespace NuGet.Tests.Apex
             {
                 if (_repoCountersignedTestPackageV1 == null)
                 {
-                    _repoCountersignedTestPackageV1 = Utils.CreateRepositoryCountersignedPackage(
+                    _repoCountersignedTestPackageV1 = CommonUtility.CreateRepositoryCountersignedPackage(
                         _testPackageName,
                         _packageVersion,
                         TrustedAuthorTestCertificate.Source.Cert,
@@ -107,37 +115,58 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        public string ExpiredCertSignedTestPackagePath => _expiredSignedTestPackageV1Path;
-
-        public SimpleTestPackageContext ExpiredCertSignedTestPackage => _expiredAuthorSignedTestPackageV1;
-
-        public async Task CreateSignedPackageWithExpiredCertificateAsync()
+        public async Task<TimestampService> GetDefaultTrustedTimestampServiceAsync()
         {
-            _expiredSignedTestPackageV1Directory = TestDirectory.Create();
-            _trustedExpiredTestCert = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn5Seconds();
-
-            _expiredAuthorSignedTestPackageV1 = Utils.CreatePackage(_expiredTestPackageName, _packageVersion);
-            _expiredAuthorSignedTestPackageV1.PrimarySignatureCertificate = _trustedExpiredTestCert.Source.Cert;
-
-            await SimpleTestPackageUtility.CreatePackagesAsync(_expiredSignedTestPackageV1Directory, _expiredAuthorSignedTestPackageV1);
-            _expiredSignedTestPackageV1Path = Path.Combine(_expiredSignedTestPackageV1Directory, _expiredAuthorSignedTestPackageV1.PackageName);
-
-            // Wait for cert to expire
-            Thread.Sleep(5000);
-
-            Assert.True(IsCertificateExpired(_trustedExpiredTestCert.Source.Cert));
+            return await _defaultTrustedTimestampService.Value;
         }
 
-        private static bool IsCertificateExpired(X509Certificate2 certificate)
+        private async Task<TimestampService> CreateDefaultTrustedTimestampServiceAsync()
         {
-            return DateTime.Now > certificate.NotAfter;
+            var testServer = await _testServer.Value;
+            var ca = await _defaultTrustedCertificateAuthority.Value;
+            var timestampService = TimestampService.Create(ca);
+
+            _responders.Add(testServer.RegisterResponder(timestampService));
+
+            return timestampService;
+        }
+
+        private async Task<CertificateAuthority> CreateDefaultTrustedCertificateAuthorityAsync()
+        {
+            var testServer = await _testServer.Value;
+            var rootCa = CertificateAuthority.Create(testServer.Url);
+            var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
+            var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
+
+            _trustedServerRoot = TrustedTestCert.Create(
+                rootCertificate,
+                StoreName.Root,
+                StoreLocation.LocalMachine);
+
+            var ca = intermediateCa;
+
+            while (ca != null)
+            {
+                _responders.Add(testServer.RegisterResponder(ca));
+                _responders.Add(testServer.RegisterResponder(ca.OcspResponder));
+
+                ca = ca.Parent;
+            }
+
+            return intermediateCa;
         }
 
         public override void Dispose()
         {
             _trustedAuthorTestCert?.Dispose();
-            _trustedExpiredTestCert?.Dispose();
-            _expiredSignedTestPackageV1Directory?.Dispose();
+            _trustedRepositoryTestCert?.Dispose();
+            _trustedServerRoot?.Dispose();
+            _responders.Dispose();
+
+            if (_testServer.IsValueCreated)
+            {
+                _testServer.Value.Result.Dispose();
+            }
 
             base.Dispose();
         }

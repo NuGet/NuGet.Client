@@ -32,7 +32,7 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, "newtonsoft.json");
 
             // Assert
-            Utils.AssetPackageInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", XunitLogger);
+            CommonUtility.AssetPackageInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", XunitLogger);
         }
 
         [StaFact]
@@ -52,7 +52,7 @@ namespace NuGet.Tests.Apex
             nugetTestService.UninstallPackage(project.UniqueName, "newtonsoft.json");
 
             // Assert
-            Utils.AssetPackageNotInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", XunitLogger);
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", XunitLogger);
         }
     }
 }
