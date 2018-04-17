@@ -27,7 +27,7 @@ namespace NuGet.Tests.Apex
         {
             var errors = new List<string>();
 
-            Utils.UIInvoke(() =>
+            CommonUtility.UIInvoke(() =>
             {
                 errors.AddRange(host.ObjectModel.Shell.ToolWindows.ErrorList.Messages.Select(e => e.Description));
             });
@@ -65,7 +65,7 @@ namespace NuGet.Tests.Apex
             try
             {
 
-                Utils.UIInvoke(() =>
+                CommonUtility.UIInvoke(() =>
                 {
                     var outputPane = host.ObjectModel.Shell.ToolWindows.OutputWindow.GetOutputPane(_nugetOutputWindowGuid);
                     lines.AddRange(outputPane.Text.Split('\n').Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)));
@@ -82,7 +82,7 @@ namespace NuGet.Tests.Apex
 
         public static void SelectProjectInSolutionExplorer(this VisualStudioHost host, string project)
         {
-            Utils.UIInvoke(() =>
+            CommonUtility.UIInvoke(() =>
             {
                 var item = host.ObjectModel.Shell.ToolWindows.SolutionExplorer.FindItemRecursive(project);
                 item.Select();
@@ -93,7 +93,7 @@ namespace NuGet.Tests.Apex
         {
             try
             {
-                Utils.UIInvoke(() =>
+                CommonUtility.UIInvoke(() =>
                 {
                     var outputPane = host.ObjectModel.Shell.ToolWindows.OutputWindow.GetOutputPane(_nugetOutputWindowGuid);
                     outputPane.Clear();
@@ -109,7 +109,7 @@ namespace NuGet.Tests.Apex
         {
             try
             {
-                Utils.UIInvoke(() => host.ObjectModel.Shell.ToolWindows.ErrorList.HideAllItems());
+                CommonUtility.UIInvoke(() => host.ObjectModel.Shell.ToolWindows.ErrorList.HideAllItems());
             }
             catch (ArgumentException)
             {

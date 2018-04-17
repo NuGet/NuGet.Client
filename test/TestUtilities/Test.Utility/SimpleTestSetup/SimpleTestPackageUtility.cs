@@ -284,7 +284,7 @@ namespace NuGet.Test.Utility
 
         private static async Task AddSignatureToPackageAsync(SimpleTestPackageContext packageContext, ISignedPackage package, SignPackageRequest request, ILogger logger)
         {
-            var testSignatureProvider = new X509SignatureProvider(packageContext.TimestampProvider);
+            var testSignatureProvider = new X509SignatureProvider(packageContext.PrimaryTimestampProvider);
 
             var zipArchiveHash = await package.GetArchiveHashAsync(request.SignatureHashAlgorithm, CancellationToken.None);
             var base64ZipArchiveHash = Convert.ToBase64String(zipArchiveHash);
@@ -304,7 +304,7 @@ namespace NuGet.Test.Utility
 
             if (primarySignature != null)
             {
-                var testSignatureProvider = new X509SignatureProvider(packageContext.TimestampProvider);
+                var testSignatureProvider = new X509SignatureProvider(packageContext.CounterTimestampProvider);
 
                 var signature = await testSignatureProvider.CreateRepositoryCountersignatureAsync(request, primarySignature, logger, CancellationToken.None);
 

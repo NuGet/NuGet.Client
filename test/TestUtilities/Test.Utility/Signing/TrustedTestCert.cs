@@ -38,6 +38,8 @@ namespace Test.Utility.Signing
 
         public StoreLocation StoreLocation { get; }
 
+        private bool _isDisposed;
+
         public TrustedTestCert(T source,
             Func<T, X509Certificate2> getCert,
             StoreName storeName = StoreName.TrustedPeople,
@@ -93,12 +95,17 @@ namespace Test.Utility.Signing
 
         public void Dispose()
         {
-            using (_store)
+            if (!_isDisposed)
             {
-                _store.Remove(TrustedCert);
-            }
+                using (_store)
+                {
+                    _store.Remove(TrustedCert);
+                }
 
-            DisposeCrl();
+                DisposeCrl();
+
+                _isDisposed = true;
+            }
         }
     }
 }

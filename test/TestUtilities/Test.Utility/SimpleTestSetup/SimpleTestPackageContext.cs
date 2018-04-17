@@ -54,7 +54,8 @@ namespace NuGet.Test.Utility
 
         public bool UseDefaultRuntimeAssemblies { get; set; } = true;
 
-        public ITimestampProvider TimestampProvider { get; set; }
+        public ITimestampProvider PrimaryTimestampProvider { get; set; }
+        public ITimestampProvider CounterTimestampProvider { get; set; }
         public bool IsPrimarySigned { get; set; }
         public bool IsRepositoryCounterSigned { get; set; }
         public X509Certificate2 PrimarySignatureCertificate { get; set; }

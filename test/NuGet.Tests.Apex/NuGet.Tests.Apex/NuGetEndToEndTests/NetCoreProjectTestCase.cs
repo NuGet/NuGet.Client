@@ -46,7 +46,7 @@ namespace NuGet.Tests.Apex
                 testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
-                Utils.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "TestProject2", "1.0.0", XunitLogger);
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "TestProject2", "1.0.0", XunitLogger);
             }
         }
 
@@ -55,7 +55,7 @@ namespace NuGet.Tests.Apex
 
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
-            for (var i = 0; i < Utils.GetIterations(); i++)
+            for (var i = 0; i < CommonUtility.GetIterations(); i++)
             {
                 //yield return new object[] { ProjectTemplate.NetCoreClassLib };
                 //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
