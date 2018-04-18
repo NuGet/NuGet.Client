@@ -2,18 +2,18 @@
 <Project ToolsVersion="15.0">
   <!-- Version -->
   <PropertyGroup>
-    <IsEscrowMode>true</IsEscrowMode>
+    <IsEscrowMode>false</IsEscrowMode>
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">4</MajorNuGetVersion>
     <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">8</MinorNuGetVersion>
     <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     <VsTargetBranch>lab/d15.$(MinorNuGetVersion)stg</VsTargetBranch>
-    <VsTargetBranch Condition="'$(IsEscrowMode)' == 'false'">rel/d15.$(MinorNuGetVersion)</VsTargetBranch>
-    <SdkTargetBranch>release/2.1.4xx</SdkTargetBranch>
-    <CliTargetBranch>release/2.1.4xx</CliTargetBranch>
+    <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d15.$(MinorNuGetVersion)</VsTargetBranch>
+    <SdkTargetBranch>release/2.1.3xx</SdkTargetBranch>
+    <CliTargetBranch>release/2.1.3xx</CliTargetBranch>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">0</NetCoreAssemblyBuildNumber>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
     <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
   </PropertyGroup>
 
