@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -35,13 +36,23 @@ namespace NuGet.Commands
 
         public Guid ParentId { get; }
 
+        // names for ProjectRestoreInformation and intervals
         private static readonly string ProjectRestoreInformation = nameof(ProjectRestoreInformation);
-        private static readonly string ExecuteRestoreAsyncInformation = $"{ProjectRestoreInformation}/{nameof(ExecuteRestoreAsyncInformation)}";
-        private static readonly string BuildAssetsFileInformation = $"{ProjectRestoreInformation}/{nameof(BuildAssetsFileInformation)}";
-        private static readonly string ValidateRestoreGraphsAsyncInformation = $"{ProjectRestoreInformation}/{nameof(ValidateRestoreGraphsAsyncInformation)}";
-        private static readonly string VerifyCompatibilityAsyncInformation = $"{ProjectRestoreInformation}/{nameof(VerifyCompatibilityAsyncInformation)}";
-        private static readonly string CreateRestoreResultInformation = $"{ProjectRestoreInformation}/{nameof(CreateRestoreResultInformation)}";
-        private static readonly string NoOpInformation = $"{ProjectRestoreInformation}/{nameof(NoOpInformation)}";
+        private static readonly string Errors = nameof(Errors);
+        private static readonly string ErrorMessages = nameof(ErrorMessages);
+        private static readonly string Warnings = nameof(Warnings);
+        private static readonly string WarningMessages = nameof(WarningMessages);
+        private static readonly string Success = nameof(Success);
+
+        // names for child events for ProjectRestoreInformation
+        private static readonly string ExecuteRestoreAsyncInformation = nameof(ExecuteRestoreAsyncInformation);
+        private static readonly string BuildAssetsFileInformation = nameof(BuildAssetsFileInformation);
+        private static readonly string ValidateRestoreGraphsAsyncInformation = nameof(ValidateRestoreGraphsAsyncInformation);
+        private static readonly string VerifyCompatibilityAsyncInformation = nameof(VerifyCompatibilityAsyncInformation);
+        private static readonly string CreateRestoreResultInformation = nameof(CreateRestoreResultInformation);
+        private static readonly string NoOpInformation = nameof(NoOpInformation);
+
+        // names for intervals in NoOpInformation
         private static readonly string NoOpEvaluateCacheFileDuration = nameof(NoOpEvaluateCacheFileDuration);
         private static readonly string NoOpSuccessEvaluationDuration = nameof(NoOpSuccessEvaluationDuration);
         private static readonly string NoOpSuccessEvaluation = nameof(NoOpSuccessEvaluation);
@@ -236,6 +247,25 @@ namespace NuGet.Commands
                     {
                         cacheFile.Success = _success;
                     }
+
+                    var errorCodes = ConcatAsString(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Code));
+                    var errorMessages = ConcatAsString(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Message));
+                    var warningCodes = ConcatAsString(logs.Where(l => l.Level == LogLevel.Warning).Select(l => l.Code));
+                    var warningMessages = ConcatAsString(logs.Where(l => l.Level == LogLevel.Warning).Select(l => l.Message));
+
+                    if (!string.IsNullOrEmpty(errorCodes))
+                    {
+                        telemetry.TelemetryEvent[Errors] = errorCodes;
+                        telemetry.TelemetryEvent.AddPiiData(ErrorMessages, errorMessages);
+                    }
+
+                    if (!string.IsNullOrEmpty(warningCodes))
+                    {
+                        telemetry.TelemetryEvent[Warnings] = warningCodes;
+                        telemetry.TelemetryEvent.AddPiiData(WarningMessages, warningMessages);
+                    }
+
+                    telemetry.TelemetryEvent[Success] = _success;
                 }
 
                 restoreTime.Stop();
@@ -254,6 +284,25 @@ namespace NuGet.Commands
                     _request.ProjectStyle,
                     restoreTime.Elapsed);
             }
+        }
+
+        private string ConcatAsString<T>(IEnumerable<T> enumerable)
+        {
+            string result = null;
+
+            if (enumerable != null && enumerable.Any())
+            {
+                var builder = new StringBuilder();
+                foreach(var entry in enumerable)
+                {
+                    builder.Append(entry.ToString());
+                    builder.Append(";");
+                }
+
+                result = builder.ToString(0, builder.Length - 1);
+            }
+
+            return result;
         }
 
         private KeyValuePair<CacheFile, bool> EvaluateCacheFile()
