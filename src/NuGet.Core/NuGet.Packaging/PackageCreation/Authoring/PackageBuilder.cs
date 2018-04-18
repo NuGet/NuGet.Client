@@ -21,6 +21,7 @@ namespace NuGet.Packaging
 {
     public class PackageBuilder : IPackageMetadata
     {
+        private static readonly DateTime MinZipLastWriteTime = new DateTime(1980, 1, 1, 0, 0, 0);
         private const string DefaultContentType = "application/octet";
         private static readonly Uri DefaultUri = new Uri("http://defaultcontainer/");
         internal const string ManifestRelationType = "manifest";
@@ -731,7 +732,12 @@ namespace NuGet.Packaging
             var entry = package.CreateEntry(entryName, CompressionLevel.Optimal);
             var physicalFile = file as PhysicalPackageFile;
             var lastWriteTime = physicalFile?.GetLastWriteTime();
-            if (lastWriteTime.HasValue) entry.LastWriteTime = lastWriteTime.Value;
+            if (lastWriteTime.HasValue)
+            {
+                // https://github.com/OctopusDeploy/OctopusClients/issues/245
+                // The minimum LastWriteTime for a ZIP entry is 1/1/1980
+                entry.LastWriteTime = new DateTime(Math.Max(lastWriteTime.Value.Ticks, MinZipLastWriteTime.Ticks));
+            }
             using (var stream = entry.Open())
             {
                 sourceStream.CopyTo(stream);
