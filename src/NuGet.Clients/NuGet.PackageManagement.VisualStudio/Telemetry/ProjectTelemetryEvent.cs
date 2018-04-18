@@ -12,11 +12,9 @@ namespace NuGet.PackageManagement.Telemetry
             string nuGetVersion,
             string projectId,
             NuGetProjectType nuGetProjectType,
-            int installedPackageCount,
             bool isPRUpgradable) :
             base(ProjectInformationEventName, new Dictionary<string, object>
                 {
-                    { nameof(InstalledPackageCount), installedPackageCount },
                     { nameof(NuGetProjectType), nuGetProjectType },
                     { nameof(NuGetVersion), nuGetVersion },
                     { nameof(ProjectId), projectId.ToString() },
@@ -42,11 +40,6 @@ namespace NuGet.PackageManagement.Telemetry
         /// The type of NuGet project this project is.
         /// </summary>
         public NuGetProjectType NuGetProjectType => (NuGetProjectType)base[nameof(NuGetProjectType)];
-
-        /// <summary>
-        /// The number of NuGet packages installed to this project.
-        /// </summary>
-        public int InstalledPackageCount => (int)base[nameof(InstalledPackageCount)];
 
         /// <summary>
         /// True, if project can be upgraded to PackageReference.

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.PackageManagement.Telemetry
@@ -42,5 +42,11 @@ namespace NuGet.PackageManagement.Telemetry
         /// It will be used for legacy project system with package references.
         /// </summary>
         LegacyProjectSystemWithPackageRefs = 6,
+
+        /// <summary>
+        /// Used when no NuGet package has been installed into the project yet but it still a supported and known project type.
+        /// and we by default create a <see cref="MSBuildNuGetProject"/>
+        /// </summary>
+        UnconfiguredNuGetType = 7,
     }
 }
