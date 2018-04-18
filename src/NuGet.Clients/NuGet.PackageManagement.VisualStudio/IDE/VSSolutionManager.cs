@@ -160,7 +160,15 @@ namespace NuGet.PackageManagement.VisualStudio
             UserAgent.SetUserAgentString(
                     new UserAgentStringBuilder(VSNuGetClientName).WithVisualStudioSKU(dte.GetFullVsVersionString()));
 
-            HttpHandlerResourceV3.CredentialService = _credentialServiceProvider.GetCredentialService();
+            HttpHandlerResourceV3.CredentialService = new Lazy<ICredentialService>(() =>
+            {
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return _credentialServiceProvider.GetCredentialService();
+                });
+            });
+
             TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
 
             _vsMonitorSelection = _serviceProvider.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();

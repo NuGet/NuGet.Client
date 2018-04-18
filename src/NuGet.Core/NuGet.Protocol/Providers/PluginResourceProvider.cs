@@ -117,7 +117,7 @@ namespace NuGet.Protocol.Core.Types
                         resource = new PluginResource(
                             pluginCreationResults,
                             source.PackageSource,
-                            HttpHandlerResourceV3.CredentialService);
+                            HttpHandlerResourceV3.CredentialService?.Value);
                     }
                 }
             }

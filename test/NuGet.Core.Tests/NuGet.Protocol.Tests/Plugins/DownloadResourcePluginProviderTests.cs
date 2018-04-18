@@ -27,7 +27,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             _provider = new DownloadResourcePluginProvider();
 
-            HttpHandlerResourceV3.CredentialService = Mock.Of<ICredentialService>();
+            HttpHandlerResourceV3.CredentialService = new Lazy<ICredentialService>(() => Mock.Of<ICredentialService>());
         }
 
         [Fact]

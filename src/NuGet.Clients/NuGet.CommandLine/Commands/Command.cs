@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 extern alias CoreV2;
 
@@ -173,7 +173,7 @@ namespace NuGet.CommandLine
 
             CoreV2.NuGet.HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
 
-            HttpHandlerResourceV3.CredentialService = CredentialService;
+            HttpHandlerResourceV3.CredentialService = new Lazy<Configuration.ICredentialService>(() => CredentialService);
 
             HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
