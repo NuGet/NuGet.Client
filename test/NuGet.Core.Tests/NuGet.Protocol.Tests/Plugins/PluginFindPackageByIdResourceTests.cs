@@ -33,7 +33,7 @@ namespace NuGet.Protocol.Plugins.Tests
             _plugin = new Mock<IPlugin>();
             _utilities = new Mock<IPluginMulticlientUtilities>();
 
-            HttpHandlerResourceV3.CredentialService = Mock.Of<ICredentialService>();
+            HttpHandlerResourceV3.CredentialService = new Lazy<ICredentialService>(() => Mock.Of<ICredentialService>());
         }
 
         [Fact]

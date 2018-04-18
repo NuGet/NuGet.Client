@@ -84,7 +84,7 @@ namespace NuGet.Protocol
                 () => new GetCredentialsRequestHandler(
                     plugin,
                     httpHandlerResource.ClientHandler?.Proxy,
-                    HttpHandlerResourceV3.CredentialService),
+                    HttpHandlerResourceV3.CredentialService?.Value),
                 existingHandler =>
                     {
                         var handler = (GetCredentialsRequestHandler)existingHandler;

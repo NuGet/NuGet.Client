@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -37,7 +37,7 @@ namespace NuGet.Protocol
 
         public override HttpMessageHandler MessageHandler => _messageHandler;
 
-        public static ICredentialService CredentialService { get; set; }
+        public static Lazy<ICredentialService> CredentialService { get; set; }
 
         /// <summary>
         /// Gets or sets a delegate that is to be invoked when authenticated feed credentials are successfully
