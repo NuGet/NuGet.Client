@@ -68,6 +68,10 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 - `$(NuGetClientRoot)\Artifacts\VS15` - this folder will contain the Package Manager extension (`NuGet.Tools.vsix`) and NuGet command-line client application (`nuget.exe`)
 - `$(NuGetClientRoot)\Artifacts\nupkgs` - this folder will contain all our projects packages
 
+## Feedback
+
+File bugs on [NuGet Home](https://github.com/nuget/home/issues).
+
 ## License
 
 Unless explicitly stated otherwise all files in this repository are licensed under the License in the root repository
