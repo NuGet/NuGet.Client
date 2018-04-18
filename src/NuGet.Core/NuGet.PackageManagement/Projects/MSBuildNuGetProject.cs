@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -113,6 +113,11 @@ namespace NuGet.ProjectManagement
         public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
             return PackagesConfigNuGetProject.GetInstalledPackagesAsync(token);
+        }
+
+        public bool DoesPackagesConfigExists()
+        {
+            return PackagesConfigNuGetProject.PackagesConfigExists();
         }
 
         public void AddBindingRedirects()
