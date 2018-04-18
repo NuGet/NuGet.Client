@@ -25,7 +25,6 @@ using NuGet.Resolver;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Telemetry;
 using Test.Utility;
 using Xunit;
 
@@ -6065,11 +6064,18 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 // Assert
-                Assert.Equal(3, telemetryEvents.Count);
+                Assert.Equal(15, telemetryEvents.Count);
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ExecuteRestoreAsyncInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "BuildAssetsFileInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ValidateRestoreGraphsAsyncInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "VerifyCompatibilityAsyncInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreResultInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "NoOpInformation").Count());
+                Assert.Equal(1, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
 
                 var projectId = string.Empty;
-                buildIntegratedProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
+                buildIntegratedProject.TryGetMetadata(NuGetProjectMetadataKeys.ProjectId, out projectId);
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
                     Any(p => (string)p["StepName"] == string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId)));
             }
@@ -6259,12 +6265,20 @@ namespace NuGet.Test
 
                 // Assert
                 var projectId = string.Empty;
-                buildIntegratedProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
+                buildIntegratedProject.TryGetMetadata(NuGetProjectMetadataKeys.ProjectId, out projectId);
 
-                Assert.Equal(4, telemetryEvents.Count);
+                Assert.Equal(16, telemetryEvents.Count);
 
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ExecuteRestoreAsyncInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "BuildAssetsFileInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ValidateRestoreGraphsAsyncInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "VerifyCompatibilityAsyncInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreResultInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "NoOpInformation").Count());
+
+
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
                     Any(p => (string)p["StepName"] == string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId)));
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
