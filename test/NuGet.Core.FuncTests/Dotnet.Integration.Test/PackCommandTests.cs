@@ -616,6 +616,102 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackNewDefaultProject_InstallPackageToOutputPath()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory} /p:OutputFileNamesWithoutVersion=true /p:InstallPackageToOutputPath=true");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.nupkg");
+                var nupkgSha512Path = Path.Combine(workingDirectory, $"{projectName}.nupkg.sha512");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nupkgSha512Path), "The output .sha512 is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the output .nuspec.
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetId());
+                    Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetAuthors());
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetOwners());
+                    Assert.Equal("Package Description", nuspecReader.GetDescription());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+
+                    var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
+                    Assert.Equal(1, dependencyGroups.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, dependencyGroups[0].TargetFramework);
+                    var packages = dependencyGroups[0].Packages.ToList();
+                    Assert.Equal(0, packages.Count);
+
+                    // Validate the assets.
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.dll" }, libItems[0].Items);
+                }
+
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackProject_PacksFromNuspec_InstallPackageToOutputPath()
+        {
+            var nuspecFileContent = @"<?xml version=""1.0""?>
+<package>
+  <metadata>
+    <id>PackedFromNuspec</id>
+    <version>1.2.1</version>
+    <authors>Microsoft</authors>
+    <owners>NuGet</owners>
+    <description>This was packed from nuspec</description>
+  </metadata>
+</package>";
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
+
+                msbuildFixture.PackProject(
+                    workingDirectory, 
+                    projectName,
+                    $"-o {workingDirectory} /p:NuspecFile=input.nuspec /p:OutputFileNamesWithoutVersion=true /p:InstallPackageToOutputPath=true");
+
+                var nuspecFilePath = Path.Combine(workingDirectory, "PackedFromNuspec.nuspec");
+                var nupackageFilePath = Path.Combine(workingDirectory, "PackedFromNuspec.nupkg");
+                var nupackageSha512FilePath = Path.Combine(workingDirectory, "PackedFromNuspec.nupkg.sha512");
+                Assert.True(File.Exists(nuspecFilePath), "The output .nuspec is not in the expected place: " + nuspecFilePath);
+                Assert.True(File.Exists(nupackageFilePath), "The output .nupkg is not in the expected place: " + nupackageFilePath);
+                Assert.True(File.Exists(nupackageSha512FilePath), "The output .sha512 is not in the expected place: " + nupackageSha512FilePath);
+
+                using (var nupkgReader = new PackageArchiveReader(nupackageFilePath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the .nuspec.
+                    Assert.Equal("PackedFromNuspec", nuspecReader.GetId());
+                    Assert.Equal("1.2.1", nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal("Microsoft", nuspecReader.GetAuthors());
+                    Assert.Equal("NuGet", nuspecReader.GetOwners());
+                    Assert.Equal("This was packed from nuspec", nuspecReader.GetDescription());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+                }
+            }
+        }
+
         [PlatformTheory(Platform.Windows)]
         // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;description="hello world"\"
         [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;description=\"hello world\"\\\"", "MyPackage",

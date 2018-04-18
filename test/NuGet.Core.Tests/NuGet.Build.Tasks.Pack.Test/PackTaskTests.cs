@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -230,8 +230,10 @@ namespace NuGet.Build.Tasks.Pack.Test
                 IncludeBuildOutput = value,
                 IncludeSource = value,
                 IncludeSymbols = value,
+                InstallPackageToOutputPath = value,
                 IsTool = value,
                 NoPackageAnalysis = value,
+                OutputFileNamesWithoutVersion = value,
                 RequireLicenseAcceptance = value,
                 DevelopmentDependency = value,
                 Serviceable = value
@@ -245,8 +247,10 @@ namespace NuGet.Build.Tasks.Pack.Test
             Assert.Equal(value, actual.IncludeBuildOutput);
             Assert.Equal(value, actual.IncludeSource);
             Assert.Equal(value, actual.IncludeSymbols);
+            Assert.Equal(value, actual.InstallPackageToOutputPath);
             Assert.Equal(value, actual.IsTool);
             Assert.Equal(value, actual.NoPackageAnalysis);
+            Assert.Equal(value, actual.OutputFileNamesWithoutVersion);
             Assert.Equal(value, actual.RequireLicenseAcceptance);
             Assert.Equal(value, actual.DevelopmentDependency);
             Assert.Equal(value, actual.Serviceable);
