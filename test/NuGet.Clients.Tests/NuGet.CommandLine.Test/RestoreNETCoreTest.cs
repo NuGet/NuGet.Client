@@ -5551,6 +5551,51 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        // The scenario here is 
+        [Fact]
+        public async Task RestoreNetCore_VerifySourcesResolvedCorrectlyForMultipleProjects()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                projectA.Properties.Add("RestoreSources", "sub");
+                var source = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "sub");
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // X is only in the source
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    source,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+            }
+        }
+
         [Fact]
         public async Task RestoreNetCore_VerifySourcesResolvedAgainstWorkingDirAsync()
         {
