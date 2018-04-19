@@ -14,6 +14,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
@@ -182,14 +183,21 @@ namespace NuGet.Options
 
                 OnSelectedPackageSourceChanged(null, EventArgs.Empty);
             }
-            catch (InvalidOperationException)
+            // Thrown during creating or saving NuGet.Config.
+            catch (NuGetConfigurationException ex)
             {
-                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigInvalidOperation, Resources.ErrorDialogBoxTitle);
+                MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
+            }
+            // Thrown if no nuget.config found.
+            catch (InvalidOperationException ex)
+            {
+                MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
             }
             catch (UnauthorizedAccessException)
             {
                 MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
             }
+            // Unknown exception.
             catch (Exception ex)
             {
                 MessageHelper.ShowErrorMessage(Resources.ShowError_SettingActivatedFailed, Resources.ErrorDialogBoxTitle);
@@ -245,14 +253,16 @@ namespace NuGet.Options
                     _packageSourceProvider.SavePackageSources(packageSources);
                 }
             }
-            catch (Configuration.NuGetConfigurationException e)
+            // Thrown during creating or saving NuGet.Config.
+            catch (NuGetConfigurationException ex)
             {
-                MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(e), Resources.ErrorDialogBoxTitle);
+                MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
                 return false;
             }
-            catch (InvalidOperationException)
+            // Thrown if no nuget.config found.
+            catch (InvalidOperationException ex)
             {
-                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigInvalidOperation, Resources.ErrorDialogBoxTitle);
+                MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
                 return false;
             }
             catch (UnauthorizedAccessException)
@@ -260,6 +270,7 @@ namespace NuGet.Options
                 MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
                 return false;
             }
+            // Unknown exception.
             catch (Exception ex)
             {
                 MessageHelper.ShowErrorMessage(Resources.ShowError_ApplySettingFailed, Resources.ErrorDialogBoxTitle);
