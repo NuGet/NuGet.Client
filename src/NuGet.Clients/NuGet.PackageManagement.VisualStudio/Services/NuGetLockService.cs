@@ -44,42 +44,47 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public async Task<T> ExecuteNuGetOperationAsync<T>(Func<Task<T>> action, CancellationToken token)
         {
-            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            if (_lockCount.Value == 0)
             {
-                if (_lockCount.Value == 0)
+                return await _joinableTaskFactory.RunAsync(async delegate
                 {
-                    return await _joinableTaskFactory.RunAsync(async delegate
+                    using (_joinableTaskCollection.Join())
                     {
-                        using (_joinableTaskCollection.Join())
-                        {
-                            await _semaphore.WaitAsync(token);
-                        }
+                        await _semaphore.WaitAsync(token);
+                    }
 
-                        // Once this thread acquired the lock then increment lockCount
-                        _lockCount.Value++;
+                    // Once this thread acquired the lock then increment lockCount
+                    _lockCount.Value++;
 
-                        try
+                    try
+                    {
+                        // Run it as part of CPS JTF so that it can be joined in Shell JTF collection
+                        // and allows other tasks to proceed instead of deadlocking them.
+                        return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                         {
                             return await action();
-                        }
-                        finally
+                        });
+                    }
+                    finally
+                    {
+                        try
                         {
-                            try
-                            {
-                                _semaphore.Release();
-                            }
-                            catch (ObjectDisposedException) { }
-
-                            _lockCount.Value--;
+                            _semaphore.Release();
                         }
-                    });
+                        catch (ObjectDisposedException) { }
+
+                        _lockCount.Value--;
+                    }
+                });
                 
-                }
-                else
+            }
+            else
+            {
+                return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     return await action();
-                }
-            });
+                });
+            }
         }
 
         public Task ExecuteNuGetOperationAsync(Func<Task> action, CancellationToken token)
