@@ -6310,7 +6310,7 @@ namespace NuGet.Test
 
                     var saveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files | PackageSaveMode.Nupkg;
 
-                    await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                         packagesFolderPath,
                         saveMode,
                         packageAContext);
