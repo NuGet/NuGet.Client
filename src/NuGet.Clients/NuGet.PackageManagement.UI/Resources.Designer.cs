@@ -1188,20 +1188,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Applying setting failed..
+        ///   Looks up a localized string similar to Failed to apply NuGet Package Manager settings. Please report a problem using Help &gt; Send Feedback &gt; Report a Problem..
         /// </summary>
         public static string ShowError_ApplySettingFailed {
             get {
                 return ResourceManager.GetString("ShowError_ApplySettingFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to NuGet.Config is malformed, Please check NuGet.Config.
-        /// </summary>
-        public static string ShowError_ConfigInvalidOperation {
-            get {
-                return ResourceManager.GetString("ShowError_ConfigInvalidOperation", resourceCulture);
             }
         }
         
@@ -1215,7 +1206,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet setting initialization failed..
+        ///   Looks up a localized string similar to Failed to initialize NuGet Package Manager Settings. Please report a problem using Help &gt; Send Feedback &gt; Report a Problem..
         /// </summary>
         public static string ShowError_SettingActivatedFailed {
             get {

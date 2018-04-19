@@ -615,9 +615,6 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="ErrorDialogBoxTitle" xml:space="preserve">
     <value>Operation failed</value>
   </data>
-  <data name="ShowError_ConfigInvalidOperation" xml:space="preserve">
-    <value>NuGet.Config is malformed, Please check NuGet.Config</value>
-  </data>
   <data name="ShowError_ConfigUnauthorizedAccess" xml:space="preserve">
     <value>Can not access NuGet.Config, Please check NuGet.Config</value>
   </data>
@@ -685,7 +682,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Refresh</value>
   </data>
   <data name="ShowError_ApplySettingFailed" xml:space="preserve">
-    <value>Applying setting failed.</value>
+    <value>Failed to apply NuGet Package Manager settings. Please report a problem using Help &gt; Send Feedback &gt; Report a Problem.</value>
   </data>
   <data name="NuGetUpgrade_Progress_Installing" xml:space="preserve">
     <value>Installing required packages</value>
@@ -800,6 +797,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Don't show again</value>
   </data>
   <data name="ShowError_SettingActivatedFailed" xml:space="preserve">
-    <value>NuGet setting initialization failed.</value>
+    <value>Failed to initialize NuGet Package Manager Settings. Please report a problem using Help &gt; Send Feedback &gt; Report a Problem.</value>
   </data>
 </root>
