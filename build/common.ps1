@@ -213,7 +213,7 @@ Function Install-DotnetCLI {
 
         Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
 
-        & $DotNetInstall -Channel Master -i $cli.Root -Version 2.2.0-preview1-007853
+        & $DotNetInstall -Channel release/2.1.3xx -i $cli.Root
     }
 
     if (-not (Test-Path $cli.DotNetExe)) {
