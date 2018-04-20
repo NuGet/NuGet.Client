@@ -6066,12 +6066,12 @@ namespace NuGet.Test
                 // Assert
                 Assert.Equal(15, telemetryEvents.Count);
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
-                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreGenerateGraph").Count());
-                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreGenerateAssetsFile").Count());
-                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreValidateGraphs").Count());
-                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreCreateResult").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateRestoreGraph").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateAssetsFile").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ValidateRestoreGraphs").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreResult").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreNoOpInformation").Count());
-                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreAttempt").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreTargetGraph").Count());
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
 
                 var projectId = string.Empty;
@@ -6270,12 +6270,12 @@ namespace NuGet.Test
                 Assert.Equal(16, telemetryEvents.Count);
 
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
-                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreGenerateGraph").Count());
-                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreGenerateAssetsFile").Count());
-                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreValidateGraphs").Count());
-                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreCreateResult").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateRestoreGraph").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateAssetsFile").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ValidateRestoreGraphs").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreResult").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreNoOpInformation").Count());
-                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreAttempt").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreTargetGraph").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
 
 

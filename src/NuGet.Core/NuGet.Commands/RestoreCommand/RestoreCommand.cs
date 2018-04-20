@@ -45,10 +45,10 @@ namespace NuGet.Commands
         private const string RestoreSuccess = "RestoreSuccess";
 
         // names for child events for ProjectRestoreInformation
-        private const string RestoreGenerateGraph = "RestoreGenerateGraph";
-        private const string RestoreGenerateAssetsFile = "RestoreGenerateAssetsFile";
-        private const string RestoreValidateGraphs = "RestoreValidateGraphs";
-        private const string RestoreCreateResult = "RestoreCreateResult";
+        private const string GenerateRestoreGraph = "GenerateRestoreGraph";
+        private const string GenerateAssetsFile = "GenerateAssetsFile";
+        private const string ValidateRestoreGraphs = "ValidateRestoreGraphs";
+        private const string CreateRestoreResult = "CreateRestoreResult";
         private const string RestoreNoOpInformation = "RestoreNoOpInformation";
 
         // names for intervals in RestoreNoOpInformation
@@ -58,8 +58,8 @@ namespace NuGet.Commands
         private const string ReplayLogsDuration = "ReplayLogsDuration";
 
         //names for child events for GenerateRestoreGraph
-        private const string RestoreAttempt = "RestoreAttempt";
-        private const string RestoreRuntimeCompatCheck = "RestoreRuntimeCompatCheck";
+        private const string CreateRestoreTargetGraph = "CreateRestoreTargetGraph";
+        private const string RestoreAdditionalCompatCheck = "RestoreAdditionalCompatCheck";
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -152,7 +152,7 @@ namespace NuGet.Commands
                 }
 
                 IEnumerable<RestoreTargetGraph> graphs = null;
-                using (var restoreGraphTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: RestoreGenerateGraph))
+                using (var restoreGraphTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: GenerateRestoreGraph))
                 {
                     // Restore
                     graphs = await ExecuteRestoreAsync(
@@ -164,7 +164,7 @@ namespace NuGet.Commands
                 }
 
                 LockFile assetsFile = null;
-                using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: RestoreGenerateAssetsFile))
+                using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: GenerateAssetsFile))
                 {
                     // Create assets file
                     assetsFile = BuildAssetsFile(
@@ -176,7 +176,7 @@ namespace NuGet.Commands
                 }
 
                 IList<CompatibilityCheckResult> checkResults = null;
-                using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: RestoreValidateGraphs))
+                using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: ValidateRestoreGraphs))
                 {
                     _success &= await ValidateRestoreGraphsAsync(graphs, _logger);
 
@@ -201,7 +201,7 @@ namespace NuGet.Commands
                 var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
                 string assetsFilePath = null;
                 string cacheFilePath = null;
-                using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: RestoreCreateResult))
+                using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: CreateRestoreResult))
                 {
                     // Determine the lock file output path
                     assetsFilePath = GetAssetsFilePath(assetsFile);
@@ -682,7 +682,7 @@ namespace NuGet.Commands
             var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
 
             Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> result = null;
-            using (var tryRestoreTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(telemetryActivity.OperationId, RestoreAttempt))
+            using (var tryRestoreTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(telemetryActivity.OperationId, CreateRestoreTargetGraph))
             {
                 result = await projectRestoreCommand.TryRestoreAsync(
                     projectRange,
@@ -731,7 +731,7 @@ namespace NuGet.Commands
             if (_success && _request.CompatibilityProfiles.Any())
             {
                 Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> compatibilityResult = null;
-                using (var runtimeTryRestoreTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(telemetryActivity.OperationId, RestoreRuntimeCompatCheck))
+                using (var runtimeTryRestoreTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(telemetryActivity.OperationId, RestoreAdditionalCompatCheck))
                 {
                     compatibilityResult = await projectRestoreCommand.TryRestoreAsync(
                     projectRange,
