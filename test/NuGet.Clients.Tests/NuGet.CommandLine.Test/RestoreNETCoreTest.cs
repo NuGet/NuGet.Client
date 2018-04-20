@@ -5515,16 +5515,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
                 var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
-
-                var projectA = SimpleTestProjectContext.CreateNETCore(
-                    "a",
-                    pathContext.SolutionRoot,
-                    netcoreapp2);
-
-                projectA.Properties.Add("RestoreSources", "sub");
-                var source = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "sub");
 
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -5532,16 +5523,47 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.0"
                 };
 
-                projectA.AddPackageToAllFrameworks(packageX);
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
 
-                solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
+                var source1 = Path.Combine(pathContext.SolutionRoot, "source1");
+                var source2 = Path.Combine(pathContext.SolutionRoot, "source2");
 
-                // X is only in the source
+                // X is only in source1
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    source,
+                    source1,
                     PackageSaveMode.Defaultv3,
                     packageX);
+
+                // Y is only in source2
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    source2,
+                    PackageSaveMode.Defaultv3,
+                    packageY);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                projectA.Properties.Add("RestoreSources", source1);
+                projectB.Properties.Add("RestoreSources", source2);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectB.AddPackageToAllFrameworks(packageY);
+
+
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -5551,7 +5573,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        // The scenario here is 
+        // The scenario here is 2 different projects are setting RestoreSources, and the caching of the sources takes this into consideration
         [Fact]
         public async Task RestoreNetCore_VerifySourcesResolvedCorrectlyForMultipleProjects()
         {
