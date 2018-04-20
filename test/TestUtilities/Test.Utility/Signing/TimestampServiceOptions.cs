@@ -18,7 +18,7 @@ namespace Test.Utility.Signing
         public Oid SignatureHashAlgorithm { get; set; }
         public DateTimeOffset? IssuedCertificateNotBefore { get; set; }
         public DateTimeOffset? IssuedCertificateNotAfter { get; set; }
-        public DateTime? GeneralizedTime { get; set; }
+        public DateTimeOffset? GeneralizedTime { get; set; }
 
         public TimestampServiceOptions()
         {

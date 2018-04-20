@@ -359,7 +359,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 IssuedCertificateNotBefore = DateTimeOffset.UtcNow.AddHours(-1),
                 IssuedCertificateNotAfter = DateTimeOffset.UtcNow.AddHours(1),
-                GeneralizedTime = DateTime.UtcNow.AddHours(3)
+                GeneralizedTime = DateTimeOffset.UtcNow.AddHours(3)
             };
 
             var timestampService = TimestampService.Create(certificateAuthority, options);

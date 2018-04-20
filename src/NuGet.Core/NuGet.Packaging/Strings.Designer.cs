@@ -980,7 +980,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp&apos;s generalized time is outside the timestamping certificate validity..
+        ///   Looks up a localized string similar to The timestamp&apos;s generalized time is outside the timestamping certificate&apos;s validity period..
         /// </summary>
         internal static string SignError_TimestampGeneralizedTimeInvalid {
             get {
@@ -1403,7 +1403,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0}&apos;s timestamp&apos;s generalized time is outside the timestamping certificate validity..
+        ///   Looks up a localized string similar to The {0}&apos;s timestamp&apos;s generalized time is outside the timestamping certificate&apos;s validity period..
         /// </summary>
         internal static string VerifyError_TimestampGeneralizedTimeInvalid {
             get {

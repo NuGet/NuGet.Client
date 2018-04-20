@@ -178,7 +178,7 @@ namespace Test.Utility.Signing
 
                 if (_options.GeneralizedTime.HasValue)
                 {
-                    generalizedTime = _options.GeneralizedTime.Value;
+                    generalizedTime = _options.GeneralizedTime.Value.UtcDateTime;
                 }
                 response = responseGenerator.Generate(request, _nextSerialNumber, generalizedTime);
             }
