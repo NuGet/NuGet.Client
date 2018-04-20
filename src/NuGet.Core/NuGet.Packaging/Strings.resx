@@ -659,4 +659,11 @@ Valid from:</comment>
   <data name="ErrorAuthorTargetCannotBeACountersignature" xml:space="preserve">
     <value>Cannot target author signatures that are countersignatures.</value>
   </data>
+  <data name="VerifyError_TimestampGeneralizedTimeInvalid" xml:space="preserve">
+    <value>The {0}'s timestamp's generalized time is outside the timestamping certificate validity.</value>
+    <comment>0 - Signature friendly name</comment>
+  </data>
+  <data name="SignError_TimestampGeneralizedTimeInvalid" xml:space="preserve">
+    <value>The timestamp's generalized time is outside the timestamping certificate validity.</value>
+  </data>
 </root>

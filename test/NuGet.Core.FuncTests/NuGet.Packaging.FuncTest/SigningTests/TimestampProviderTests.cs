@@ -350,6 +350,36 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
+        public async Task GetTimestamp_TimestampGeneralizedTimeOutsideCertificateValidityPeriod_FailAsync()
+        {
+            // Arrange
+            var testServer = await _testFixture.GetSigningTestServerAsync();
+            var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
+            var options = new TimestampServiceOptions()
+            {
+                IssuedCertificateNotBefore = DateTimeOffset.UtcNow.AddHours(-1),
+                IssuedCertificateNotAfter = DateTimeOffset.UtcNow.AddHours(1),
+                GeneralizedTime = DateTime.UtcNow.AddHours(3)
+            };
+
+            var timestampService = TimestampService.Create(certificateAuthority, options);
+
+            VerifyTimestampData(
+                testServer,
+                timestampService,
+                (timestampProvider, request) =>
+                {
+                    var exception = Assert.Throws<TimestampException>(
+                          () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
+
+                    Assert.Equal(NuGetLogCode.NU3036, exception.Code);
+                    Assert.Contains(
+                        "The timestamp's generalized time is outside the timestamping certificate validity.",
+                        exception.Message);
+                });
+        }
+
+        [CIOnlyFact]
         public async Task TimestampSignatureAsync_TimestampingPrimarySignature_SuccedsAsync()
         {
             var logger = new TestLogger();
@@ -445,7 +475,6 @@ namespace NuGet.Packaging.FuncTest
                 timestampCms.CheckSignature(verifySignatureOnly: true);
             }
         }
-
 
         private void VerifyTimestampData(
             ISigningTestServer testServer,

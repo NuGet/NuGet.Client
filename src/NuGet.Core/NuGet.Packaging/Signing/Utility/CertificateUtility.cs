@@ -224,6 +224,14 @@ namespace NuGet.Packaging.Signing
             return DateTime.Now < certificate.NotBefore;
         }
 
+        public static bool IsDateInsideValidityPeriod(X509Certificate2 certificate, DateTimeOffset date)
+        {
+            DateTimeOffset signerCertExpiry = DateTime.SpecifyKind(certificate.NotAfter, DateTimeKind.Local);
+            DateTimeOffset signerCertBegin = DateTime.SpecifyKind(certificate.NotBefore, DateTimeKind.Local);
+
+            return signerCertBegin < date && date < signerCertExpiry;
+        }
+
         /// <summary>
         /// Gets the certificate fingerprint with the given hashing algorithm
         /// </summary>

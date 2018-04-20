@@ -73,7 +73,7 @@ namespace Test.Utility.Signing
             var id = Guid.NewGuid().ToString();
             var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Timestamp Service ({id})");
 
-            Action<X509V3CertificateGenerator> customizeCertificate = generator =>
+            void customizeCertificate(X509V3CertificateGenerator generator)
             {
                 generator.AddExtension(
                     X509Extensions.AuthorityInfoAccess,
@@ -103,14 +103,25 @@ namespace Test.Utility.Signing
                     X509Extensions.ExtendedKeyUsage,
                     critical: true,
                     extensionValue: ExtendedKeyUsage.GetInstance(new DerSequence(KeyPurposeID.IdKPTimeStamping)));
-            };
+            }
 
             var issueOptions = new IssueCertificateOptions()
-                {
-                    KeyPair = keyPair,
-                    SubjectName = subjectName,
-                    CustomizeCertificate = customizeCertificate
-                };
+            {
+                KeyPair = keyPair,
+                SubjectName = subjectName,
+                CustomizeCertificate = customizeCertificate
+            };
+
+            if (serviceOptions.IssuedCertificateNotBefore.HasValue)
+            {
+                issueOptions.NotBefore = serviceOptions.IssuedCertificateNotBefore.Value;
+            }
+
+            if (serviceOptions.IssuedCertificateNotAfter.HasValue)
+            {
+                issueOptions.NotAfter = serviceOptions.IssuedCertificateNotAfter.Value;
+            }
+
             var certificate = certificateAuthority.IssueCertificate(issueOptions);
             var uri = certificateAuthority.GenerateRandomUri();
 
@@ -163,7 +174,13 @@ namespace Test.Utility.Signing
             }
             else
             {
-                response = responseGenerator.Generate(request, _nextSerialNumber, DateTime.UtcNow);
+                var generalizedTime = DateTime.UtcNow;
+
+                if (_options.GeneralizedTime.HasValue)
+                {
+                    generalizedTime = _options.GeneralizedTime.Value;
+                }
+                response = responseGenerator.Generate(request, _nextSerialNumber, generalizedTime);
             }
 
             _serialNumbers.Add(_nextSerialNumber);

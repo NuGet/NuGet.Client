@@ -396,6 +396,11 @@ namespace NuGet.Common
         NU3035 = 3035,
 
         /// <summary>
+        /// Timestamp Generalized time is outside certificate's valdity period
+        /// </summary>
+        NU3036 = 3036,
+
+        /// <summary>
         /// Undefined Package Error.
         /// </summary>
         NU5000 = 5000,

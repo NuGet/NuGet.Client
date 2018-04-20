@@ -980,6 +980,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The timestamp&apos;s generalized time is outside the timestamping certificate validity..
+        /// </summary>
+        internal static string SignError_TimestampGeneralizedTimeInvalid {
+            get {
+                return ResourceManager.GetString("SignError_TimestampGeneralizedTimeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The timestamp integrity check failed..
         /// </summary>
         internal static string SignError_TimestampIntegrityCheckFailed {
@@ -1390,6 +1399,15 @@ namespace NuGet.Packaging {
         internal static string VerifyError_TimestampCertificateFailsPublicKeyLengthRequirement {
             get {
                 return ResourceManager.GetString("VerifyError_TimestampCertificateFailsPublicKeyLengthRequirement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s timestamp&apos;s generalized time is outside the timestamping certificate validity..
+        /// </summary>
+        internal static string VerifyError_TimestampGeneralizedTimeInvalid {
+            get {
+                return ResourceManager.GetString("VerifyError_TimestampGeneralizedTimeInvalid", resourceCulture);
             }
         }
         

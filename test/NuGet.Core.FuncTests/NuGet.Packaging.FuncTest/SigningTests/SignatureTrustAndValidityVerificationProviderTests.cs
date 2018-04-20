@@ -842,6 +842,28 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithNoIgnoringTimestamp_TimestampWithGeneralizedTimeOutsideCertificateValidity_FailAsync()
+        {
+            var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
+
+            using (var nupkgStream = new MemoryStream(GetResource("TimestampInvalidGenTimePackage.nupkg")))
+            using (var package = new PackageArchiveReader(nupkgStream, leaveStreamOpen: false))
+            {
+                var signature = await package.GetPrimarySignatureAsync(CancellationToken.None);
+
+                // Act
+                var result = await verificationProvider.GetTrustResultAsync(package, signature, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(), CancellationToken.None);
+                var errorIssues = result.Issues.Where(r => r.Level >= LogLevel.Error);
+
+                // Assert
+                result.Trust.Should().Be(SignatureVerificationStatus.Illegal);
+                errorIssues.Count().Should().Be(1);
+                errorIssues.First().Code.Should().Be(NuGetLogCode.NU3036);
+                errorIssues.First().Message.Should().Contain("generalized time is outside the timestamping certificate validity.");
+            }
+        }
+
         private static async Task<List<SignatureLog>> VerifyUnavailableRevocationInfoAsync(
             SignatureVerificationStatus expectedStatus,
             LogLevel expectedLogLevel,

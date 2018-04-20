@@ -103,7 +103,7 @@ namespace NuGet.Packaging.Signing
             ValidateTimestampResponse(nonce, request.HashedMessage, timestampToken);
 
             var timestampCms = timestampToken.AsSignedCms();
-            ValidateTimestampCms(request.SigningSpecifications, timestampCms);
+            ValidateTimestampCms(request.SigningSpecifications, timestampCms, timestampToken);
 
             // If the timestamp signed CMS already has a complete chain for the signing certificate,
             // it's ready to be added to the signature to be timestamped.
@@ -142,7 +142,7 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private static void ValidateTimestampCms(SigningSpecifications spec, SignedCms timestampCms)
+        private static void ValidateTimestampCms(SigningSpecifications spec, SignedCms timestampCms, Rfc3161TimestampToken timestampToken)
         {
             var signerInfo = timestampCms.SignerInfos[0];
             try
@@ -178,6 +178,11 @@ namespace NuGet.Packaging.Signing
             {
                 throw new TimestampException(NuGetLogCode.NU3025, Strings.SignError_TimestampNotYetValid);
             }
+
+            if (!CertificateUtility.IsDateInsideValidityPeriod(signerInfo.Certificate, timestampToken.TokenInfo.Timestamp))
+            {
+                throw new TimestampException(NuGetLogCode.NU3036, Strings.SignError_TimestampGeneralizedTimeInvalid);
+            }
         }
 
         private static void ValidateTimestampResponse(byte[] nonce, byte[] messageHash, Rfc3161TimestampToken timestampToken)
@@ -191,6 +196,7 @@ namespace NuGet.Packaging.Signing
             {
                 throw new TimestampException(NuGetLogCode.NU3019, Strings.SignError_TimestampIntegrityCheckFailed);
             }
+
         }
 
         private static byte[] GenerateNonce()

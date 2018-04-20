@@ -93,6 +93,11 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Signing certificate chains to a certificate untrusted by the computer performing the verification
         /// </summary>
-        UntrustedRoot                       = 32768
+        UntrustedRoot                       = 32768,
+
+        /// <summary>
+        /// The Timestamp's generalized time was outside certificate's validity period
+        /// </summary>
+        GeneralizedTimeOutsideValidity      = 65536
     }
 }
