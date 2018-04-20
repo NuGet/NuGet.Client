@@ -29,7 +29,7 @@ namespace NuGet.Protocol.Tests
         public async Task RepositorySignatureResource_BasicAsync()
         {
             // Arrange
-            var source = $"https://unit.test-{Guid.NewGuid()}/v3-with-flat-container/index.json";
+            var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
             var responses = new Dictionary<string, string>
             {
                 { source, JsonData.RepoSignIndexJsonData },
@@ -54,7 +54,7 @@ namespace NuGet.Protocol.Tests
         public async Task RepositorySignatureResource_WithoutReposignEndpointAsync()
         {
             // Arrange
-            var source = $"https://unit.test-{Guid.NewGuid()}/v3-with-flat-container/index.json";
+            var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
             var responses = new Dictionary<string, string>
             {
                 { source, JsonData.IndexWithFlatContainer }
@@ -73,7 +73,7 @@ namespace NuGet.Protocol.Tests
         public void RepositorySignatureResource_NoAllRepositorySigned()
         {
             // Arrange
-            var source = $"https://unit.test-{Guid.NewGuid()}/v3-with-flat-container/index.json";
+            var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
             var responses = new Dictionary<string, string>();
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
             var jobject = JObject.Parse(JsonData.RepoSignDataNoAllRepositorySigned);
@@ -87,7 +87,7 @@ namespace NuGet.Protocol.Tests
         public void RepositorySignatureResource_NoCertInfo()
         {
             // Arrange
-            var source = $"https://unit.test-{Guid.NewGuid()}/v3-with-flat-container/index.json";
+            var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
             var responses = new Dictionary<string, string>();
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
             var jobject = JObject.Parse(JsonData.RepoSignDataNoCertInfo);
@@ -97,23 +97,27 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void RepositorySignatureResource_WithNonHttpsSource()
+        public async Task RepositorySignatureResource_WithNonHttpsSourceAsync()
         {
             // Arrange
-            var source = $"http://unit.test-{Guid.NewGuid()}/v3-with-flat-container/index.json";
-            var responses = new Dictionary<string, string>();
+            var source = $"http://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
+            var responses = new Dictionary<string, string>
+            {
+                { source, JsonData.RepoSignIndexJsonData },
+                { "https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignData }
+            };
+
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
-            var jobject = JObject.Parse(JsonData.RepoSignDataNoCertInfo);
 
             // Act & Assert
-            Assert.Throws<FatalProtocolException>(() => new RepositorySignatureResource(jobject, repo));
+            await Assert.ThrowsAsync<FatalProtocolException>(async () => await repo.GetResourceAsync<RepositorySignatureResource>());
         }
 
         [Fact]
         public async Task RepositorySignatureResource_RepositorySignatureInfoAsync()
         {
             // Arrange
-            var source = $"https://unit.test-{Guid.NewGuid()}/v3-with-flat-container/index.json";
+            var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
             var responses = new Dictionary<string, string>
             {
                 { source, JsonData.RepoSignIndexJsonData },
@@ -142,9 +146,9 @@ namespace NuGet.Protocol.Tests
         public async Task RepositorySignatureResource_RepositorySignatureInfoConcurrencyAsync()
         {
             // Arrange
-            var source1 = $"https://unit.test-{Guid.NewGuid()}-1/v3-with-flat-container/index.json";
-            var source2 = $"https://unit.test-{Guid.NewGuid()}-2/v3-with-flat-container/index.json";
-            var source3 = $"https://unit.test-{Guid.NewGuid()}-3/v3-with-flat-container/index.json";
+            var source1 = $"https://1.{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
+            var source2 = $"https://2.{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
+            var source3 = $"https://3.{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
 
             var sources = new List<string>() { source1, source2, source3 };
 

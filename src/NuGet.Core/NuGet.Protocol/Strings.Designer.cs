@@ -953,7 +953,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Repository content URL for repository sigantures must be HTTPS..
+        ///   Looks up a localized string similar to Repository content URL for repository signatures must be HTTPS..
         /// </summary>
         internal static string RepositoryContentUrlMustBeHttps {
             get {
