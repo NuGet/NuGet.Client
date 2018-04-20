@@ -953,6 +953,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Repository content URL for repository sigantures must be HTTPS..
+        /// </summary>
+        internal static string RepositoryContentUrlMustBeHttps {
+            get {
+                return ResourceManager.GetString("RepositoryContentUrlMustBeHttps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The &apos;{0}&apos; installation feature was required by a package but is not supported on the current host..
         /// </summary>
         internal static string RequiredFeatureUnsupportedException_DefaultMessageWithFeature {
