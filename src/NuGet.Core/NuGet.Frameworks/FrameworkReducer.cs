@@ -52,13 +52,31 @@ namespace NuGet.Frameworks
         {
             var nearest = GetNearestInternal(framework, possibleFrameworks);
 
-            var fallbackFramework = framework as FallbackFramework;
-
-            if (fallbackFramework != null)
+            if (nearest == null || nearest.IsAny)
             {
-                if (nearest == null || nearest.IsAny)
+                // Try PTF
+                var fallbackFramework = framework as FallbackFramework;
+                if (fallbackFramework != null)
                 {
                     foreach (var supportFramework in fallbackFramework.Fallback)
+                    {
+                        nearest = GetNearestInternal(supportFramework, possibleFrameworks);
+                        if (nearest != null)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+
+
+            if (nearest == null || nearest.IsAny)
+            {
+                // Try ATF
+                var atfFallbackFramework = framework as AssetTargetFallbackFramework;
+                if (atfFallbackFramework != null)
+                {
+                    foreach (var supportFramework in atfFallbackFramework.Fallback)
                     {
                         nearest = GetNearestInternal(supportFramework, possibleFrameworks);
                         if (nearest != null)

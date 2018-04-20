@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using FluentAssertions;
 using NuGet.Frameworks;
 using Xunit;
 
@@ -122,7 +122,7 @@ namespace NuGet.Test
 
             var expectedFramework = expected == null ? null : NuGetFramework.Parse(expected);
 
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             // Act
             var nearest = reducer.GetNearest(project, frameworks);
@@ -146,11 +146,11 @@ namespace NuGet.Test
             // Arrange
 
             // Get nearest lib group for newtonsoft.json 7.0.1-beta2
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var project = NuGetFramework.Parse(projectFramework);
 
-            List<NuGetFramework> frameworks = new List<NuGetFramework>()
+            var frameworks = new List<NuGetFramework>()
             {
                 NuGetFramework.Parse("net20"),
                 NuGetFramework.Parse("net35"),
@@ -170,7 +170,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestUAPTie()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var project = NuGetFramework.Parse("UAP10.0");
 
@@ -190,7 +190,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestUAPTie2()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var project = NuGetFramework.Parse("UAP10.0");
 
@@ -210,7 +210,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestUAP()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var project = NuGetFramework.Parse("UAP10.0");
 
@@ -230,7 +230,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestUAPCore()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var project = NuGetFramework.Parse("UAP10.0");
 
@@ -250,7 +250,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestUAPCore50()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var project = NuGetFramework.Parse("UAP10.0");
 
@@ -269,7 +269,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestNetCore()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var win81 = NuGetFramework.Parse("win81");
             var native = NuGetFramework.Parse("native");
@@ -300,11 +300,11 @@ namespace NuGet.Test
             // Arrange
 
             // Get nearest lib group for AutoMapper 4.0.0-ci1026
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var project = NuGetFramework.Parse(projectFramework);
 
-            List<NuGetFramework> frameworks = new List<NuGetFramework>()
+            var frameworks = new List<NuGetFramework>()
                 {
                     NuGetFramework.Parse("aspnet50"),
                     NuGetFramework.Parse("aspnetcore50"),
@@ -330,7 +330,7 @@ namespace NuGet.Test
         public void FrameworkReducer_GetNearestDuplicatePCL()
         {
             // Verify duplicate PCLs in a folder are reduced correctly
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var project = NuGetFramework.Parse("wp8");
 
@@ -348,7 +348,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestProfile()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var project = NuGetFramework.Parse("net45-client");
 
@@ -365,7 +365,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestWinRT()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var win81 = NuGetFramework.Parse("win81");
             var native = NuGetFramework.Parse("native");
@@ -383,7 +383,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestWin()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var win81 = NuGetFramework.Parse("win81");
             var win8 = NuGetFramework.Parse("win8");
@@ -405,7 +405,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestAny()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var dnxcore50 = NuGetFramework.Parse("dnxcore50");
             var dotnet = NuGetFramework.Parse("dotnet");
@@ -430,7 +430,7 @@ namespace NuGet.Test
                     fw2
                 };
 
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             // the non-zero version should win in both cases
             var upwards = reducer.ReduceUpwards(packageFrameworks).Single();
@@ -452,7 +452,7 @@ namespace NuGet.Test
                     NuGetFramework.Parse("dotnet"),
                 };
 
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             // Act
             var nearest = reducer.GetNearest(project, packageFrameworks);
@@ -473,7 +473,7 @@ namespace NuGet.Test
                     NuGetFramework.Parse("dotnet5.3"),
                 };
 
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             // Act
             var nearest = reducer.GetNearest(project, packageFrameworks);
@@ -495,7 +495,7 @@ namespace NuGet.Test
                     NuGetFramework.Parse("portable-net40+sl4+monotouch+monoandroid+wp71"),
                 };
 
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var nearest = reducer.GetNearest(project, packageFrameworks);
 
@@ -515,7 +515,7 @@ namespace NuGet.Test
                     NuGetFramework.Parse("portable-net40+win81"),
                 };
 
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             // Act
             var nearest = reducer.GetNearest(project, packageFrameworks);
@@ -537,7 +537,7 @@ namespace NuGet.Test
                     NuGetFramework.Parse("portable-net45+win81+wpa81+monotouch+monoandroid"),
                 };
 
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var nearest = reducer.GetNearest(project, packageFrameworks);
 
@@ -558,7 +558,7 @@ namespace NuGet.Test
                     NuGetFramework.Parse("portable-net45+win91"),
                 };
 
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var nearest = reducer.GetNearest(project, packageFrameworks);
 
@@ -581,7 +581,7 @@ namespace NuGet.Test
                     NuGetFramework.Parse("portable-net45+win8+wpa11.0+sl5")
                 };
 
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             // Act
             var nearest = reducer.GetNearest(project, packageFrameworks);
@@ -605,7 +605,7 @@ namespace NuGet.Test
                     NuGetFramework.Parse("portable-net45+win8+native"),
                 };
 
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             // Act
             var nearest = reducer.GetNearest(project, packageFrameworks);
@@ -619,7 +619,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestChooseFrameworkName()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var framework1 = NuGetFramework.Parse("net40");
             var framework2 = NuGetFramework.Parse("nfcore45");
@@ -636,7 +636,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestEqual()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var framework1 = NuGetFramework.Parse("net40");
             var framework2 = NuGetFramework.Parse("net40-client");
@@ -653,7 +653,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestEquivalent()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var framework1 = NuGetFramework.Parse("net40");
             var framework2 = NuGetFramework.Parse("net40-client");
@@ -670,7 +670,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReduceUpEquivalent()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var framework1 = NuGetFramework.Parse("net40");
             var framework2 = NuGetFramework.Parse("net40-client");
@@ -687,7 +687,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReduceUpEqual()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var framework1 = NuGetFramework.Parse("net40");
             var framework2 = NuGetFramework.Parse("net40");
@@ -702,7 +702,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReduceDownPCL2()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var framework1 = NuGetFramework.Parse("portable-net45+win8");
             var framework2 = NuGetFramework.Parse("portable-net45+win8+wp8");
@@ -717,7 +717,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReduceDownPCL()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var framework1 = NuGetFramework.Parse("portable-net45+win8");
             var framework2 = NuGetFramework.Parse("portable-net451+win81");
@@ -732,7 +732,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReduceUpPCL2()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var framework1 = NuGetFramework.Parse("portable-net45+win8");
             var framework2 = NuGetFramework.Parse("portable-net45+win8+wp8");
@@ -747,7 +747,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReduceUpPCL()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var framework1 = NuGetFramework.Parse("portable-net45+win8");
             var framework2 = NuGetFramework.Parse("portable-net451+win81");
@@ -762,7 +762,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReducePCL()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var framework1 = NuGetFramework.Parse("portable-net45+win8");
             var framework2 = NuGetFramework.Parse("portable-win+net45");
@@ -777,7 +777,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReduceNonSingle()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var sl3wp = NuGetFramework.Parse("sl3-wp");
             var wp7 = NuGetFramework.Parse("wp7");
@@ -795,7 +795,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReducePrecedence()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var win = NuGetFramework.Parse("win");
             var win8 = NuGetFramework.Parse("win8");
@@ -816,7 +816,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReduceSingle()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var sl3wp = NuGetFramework.Parse("sl3-wp");
             var wp7 = NuGetFramework.Parse("wp7");
@@ -831,7 +831,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReduceUpwardsNonSingle()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var net35 = NuGetFramework.Parse("net35");
             var net40 = NuGetFramework.Parse("net40");
@@ -852,7 +852,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReduceUpwardsBasic()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var net35 = NuGetFramework.Parse("net35");
             var net40 = NuGetFramework.Parse("net40");
@@ -870,7 +870,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_ReduceDownwardsBasic()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var net35 = NuGetFramework.Parse("net35");
             var net40 = NuGetFramework.Parse("net40");
@@ -888,7 +888,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearest()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var net35 = NuGetFramework.Parse("net35");
             var net40 = NuGetFramework.Parse("net40");
@@ -906,7 +906,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearest2()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var net35 = NuGetFramework.Parse("net35");
             var net40 = NuGetFramework.Parse("net40");
@@ -925,7 +925,7 @@ namespace NuGet.Test
         public void FrameworkReducer_GetNearestWithEmptyList()
         {
             // Arrange
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             // Act
             var result = reducer.GetNearest(NuGetFramework.Parse("net35"), new NuGetFramework[0]);
@@ -937,7 +937,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestWithAny()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var net40 = NuGetFramework.Parse("net40");
             var net45 = NuGetFramework.Parse("net45");
@@ -952,7 +952,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestWithUnsupported()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var net45 = NuGetFramework.Parse("net45");
 
@@ -966,7 +966,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestWithUnsupported2()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var all = new NuGetFramework[] { NuGetFramework.AnyFramework, NuGetFramework.UnsupportedFramework };
 
@@ -978,7 +978,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestWithUnsupported3()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var all = new NuGetFramework[] { NuGetFramework.UnsupportedFramework };
 
@@ -990,7 +990,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestWithAnyOnly()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
             var net45 = NuGetFramework.Parse("net45");
 
@@ -1004,16 +1004,16 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestAzureRepro()
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
-            List<NuGetFramework> frameworks = new List<NuGetFramework>()
+            var frameworks = new List<NuGetFramework>()
                 {
                     NuGetFramework.Parse("net40"),
                     NuGetFramework.Parse("portable-net45+wp8+win8+wpa"),
                     NuGetFramework.Parse("sl4")
                 };
 
-            NuGetFramework projectFramework = NuGetFramework.Parse("net45");
+            var projectFramework = NuGetFramework.Parse("net45");
 
             var result = reducer.GetNearest(projectFramework, frameworks);
 
@@ -1034,14 +1034,14 @@ namespace NuGet.Test
         [InlineData("dnx50", "dnx")]
         public void FrameworkReducer_GetNearestDnx(string project, string framework)
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
-            List<NuGetFramework> frameworks = new List<NuGetFramework>()
+            var frameworks = new List<NuGetFramework>()
                 {
                     NuGetFramework.Parse(framework),
                 };
 
-            NuGetFramework projectFramework = NuGetFramework.Parse(project);
+            var projectFramework = NuGetFramework.Parse(project);
 
             var result = reducer.GetNearest(projectFramework, frameworks);
 
@@ -1052,20 +1052,122 @@ namespace NuGet.Test
         [InlineData("aspnet", "aspnetcore")]
         [InlineData("aspnetcore", "net45")]
         [InlineData("aspnetcore", "portable-net403+win8")]
-        public void FrameworkReducer_GetNearestAspNeg(string project, string framework)
+        public void FrameworkReducer_GetNearestAspNet(string project, string framework)
         {
-            FrameworkReducer reducer = new FrameworkReducer();
+            var reducer = new FrameworkReducer();
 
-            List<NuGetFramework> frameworks = new List<NuGetFramework>()
+            var frameworks = new List<NuGetFramework>()
                 {
                     NuGetFramework.Parse(framework),
                 };
 
-            NuGetFramework projectFramework = NuGetFramework.Parse(project);
+            var projectFramework = NuGetFramework.Parse(project);
 
             var result = reducer.GetNearest(projectFramework, frameworks);
 
             Assert.Null(result);
+        }
+
+        [Fact]
+        public void GetNearest_ProjectFrameworkWithMatchInPTF_Success()
+        {
+            // Arrange
+            var reducer = new FrameworkReducer();
+            var expectedFramework = NuGetFramework.Parse("net46");
+            var primaryFramework = NuGetFramework.Parse("netcoreapp2.0");
+            var fallbackFrameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net46")
+            };
+
+            var frameworksToMatch = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net46")
+            };
+
+            var projectFramework = new FallbackFramework(primaryFramework, fallbackFrameworks.AsReadOnly());
+
+            // Act
+            var result = reducer.GetNearest(projectFramework, frameworksToMatch);
+
+            // Assert
+            result.Should().Be(expectedFramework);
+        }
+
+        [Fact]
+        public void GetNearest_ProjectFrameworkWithMatchNotInPTF_ReturnsNull()
+        {
+            // Arrange
+            var reducer = new FrameworkReducer();
+            var primaryFramework = NuGetFramework.Parse("netcoreapp2.0");
+            var fallbackFrameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net45")
+            };
+
+            var frameworksToMatch = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net46")
+            };
+
+            var projectFramework = new FallbackFramework(primaryFramework, fallbackFrameworks.AsReadOnly());
+
+            // Act
+            var result = reducer.GetNearest(projectFramework, frameworksToMatch);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public void GetNearest_ProjectFrameworkWithMatchInATF_Success()
+        {
+            // Arrange
+            var reducer = new FrameworkReducer();
+            var expectedFramework = NuGetFramework.Parse("net46");
+            var primaryFramework = NuGetFramework.Parse("netcoreapp2.0");
+            var fallbackFrameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net46")
+            };
+
+            var frameworksToMatch = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net46")
+            };
+
+            var projectFramework = new AssetTargetFallbackFramework(primaryFramework, fallbackFrameworks.AsReadOnly());
+
+            // Act
+            var result = reducer.GetNearest(projectFramework, frameworksToMatch);
+
+            // Assert
+            result.Should().Be(expectedFramework);
+        }
+
+        [Fact]
+        public void GetNearest_ProjectFrameworkWithMatchNotInATF_ReturnsNull()
+        {
+            // Arrange
+            var reducer = new FrameworkReducer();
+            var primaryFramework = NuGetFramework.Parse("netcoreapp2.0");
+            var fallbackFrameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net45")
+            };
+
+            var frameworksToMatch = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net46")
+            };
+
+            var projectFramework = new AssetTargetFallbackFramework(primaryFramework, fallbackFrameworks.AsReadOnly());
+
+            // Act
+            var result = reducer.GetNearest(projectFramework, frameworksToMatch);
+
+            // Assert
+            result.Should().BeNull();
         }
     }
 }
