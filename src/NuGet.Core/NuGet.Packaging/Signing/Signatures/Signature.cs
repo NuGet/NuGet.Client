@@ -105,7 +105,8 @@ namespace NuGet.Packaging.Signing
             {
                 verificationFlags |= timestamp.Verify(this, settings, fingerprintAlgorithm, issues);
 
-                if (verificationFlags != SignatureVerificationStatusFlags.NoErrors)
+                if (verificationFlags != SignatureVerificationStatusFlags.NoErrors &&
+                    verificationFlags != SignatureVerificationStatusFlags.UnknownRevocation)
                 {
                     return false;
                 }

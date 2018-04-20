@@ -158,8 +158,7 @@ namespace NuGet.Packaging.Signing
                     var chainBuildingHasIssues = false;
                     IEnumerable<string> messages;
 
-                    var timestampInvalidCertificateFlags = CertificateChainUtility.DefaultObservedStatusFlags |
-                        (X509ChainStatusFlags.NotTimeValid);
+                    var timestampInvalidCertificateFlags = CertificateChainUtility.DefaultObservedStatusFlags;
 
                     if (CertificateChainUtility.TryGetStatusMessage(chainStatusList, timestampInvalidCertificateFlags, out messages))
                     {
