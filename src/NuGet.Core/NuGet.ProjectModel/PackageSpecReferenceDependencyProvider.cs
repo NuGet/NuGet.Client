@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using NuGet.Common;
 using NuGet.DependencyResolver;
@@ -186,6 +184,14 @@ namespace NuGet.ProjectModel
                 library[KnownLibraryProperties.ProjectFrameworks] = frameworks;
 
                 var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
+
+                // FrameworkReducer.GetNearest does not consider ATF since it is used for more than just compat
+                if (targetFrameworkInfo.FrameworkName == null && targetFramework is AssetTargetFallbackFramework)
+                {
+                    var atfFramework = targetFramework as AssetTargetFallbackFramework;
+                    targetFrameworkInfo = packageSpec.GetTargetFramework(atfFramework.AsFallbackFramework());
+                }
+
                 library[KnownLibraryProperties.TargetFrameworkInformation] = targetFrameworkInfo;
 
                 // Add framework references

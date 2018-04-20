@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -52,31 +52,13 @@ namespace NuGet.Frameworks
         {
             var nearest = GetNearestInternal(framework, possibleFrameworks);
 
-            if (nearest == null || nearest.IsAny)
+            var fallbackFramework = framework as FallbackFramework;
+
+            if (fallbackFramework != null)
             {
-                // Try PTF
-                var fallbackFramework = framework as FallbackFramework;
-                if (fallbackFramework != null)
+                if (nearest == null || nearest.IsAny)
                 {
                     foreach (var supportFramework in fallbackFramework.Fallback)
-                    {
-                        nearest = GetNearestInternal(supportFramework, possibleFrameworks);
-                        if (nearest != null)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-
-
-            if (nearest == null || nearest.IsAny)
-            {
-                // Try ATF
-                var atfFallbackFramework = framework as AssetTargetFallbackFramework;
-                if (atfFallbackFramework != null)
-                {
-                    foreach (var supportFramework in atfFallbackFramework.Fallback)
                     {
                         nearest = GetNearestInternal(supportFramework, possibleFrameworks);
                         if (nearest != null)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -8,6 +9,7 @@ using System.Xml.Linq;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -4807,6 +4809,97 @@ namespace NuGet.CommandLine.Test
                     lib.ResourceAssemblies.Should().BeEmpty();
                     // Native will contain a.dll for RID targets
                 }
+            }
+        }
+
+        [Fact]
+        public void RestoreNetCore_AssetTargetFallbackWithProjectReference_VerifyFallbackToNet46Assets()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+                var ne461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+                projectA.Properties.Add("AssetTargetFallback", "net461");
+                projectA.Properties.Add("RuntimeIdentifiers", "win10");
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    ne461);
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                foreach (var graph in projectA.AssetsFile.Targets)
+                {
+                    var lib = graph.GetTargetLibrary("b");
+
+                    lib.CompileTimeAssemblies.Select(e => e.Path)
+                        .ShouldBeEquivalentTo(new[] { "bin/placeholder/b.dll" });
+
+                    lib.RuntimeAssemblies.Select(e => e.Path)
+                        .ShouldBeEquivalentTo(new[] { "bin/placeholder/b.dll" });
+
+                    lib.BuildMultiTargeting.Should().BeEmpty();
+                    lib.Build.Should().BeEmpty();
+                    lib.ContentFiles.Should().BeEmpty();
+                    lib.ResourceAssemblies.Should().BeEmpty();
+                    // Native will contain a.dll for RID targets
+                }
+            }
+        }
+
+        [Fact]
+        public void RestoreNetCore_AssetTargetFallbackWithProjectReference_VerifyNoFallbackToNet46Assets()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+                var ne461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+                projectA.Properties.Add("AssetTargetFallback", "net45");
+                projectA.Properties.Add("RuntimeIdentifiers", "win10");
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    ne461);
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1201");
             }
         }
 
