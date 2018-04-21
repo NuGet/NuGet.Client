@@ -278,6 +278,17 @@ namespace NuGet.Commands.Test
             UnresolvedMessages.GetBestMatch(versions, range).ShouldBeEquivalentTo(NuGetVersion.Parse(expected));
         }
 
+        [Theory]
+        [InlineData("1.*", "1.1.0", "0.1.0,1.0.0,1.0.1,1.1.0")]
+        [InlineData("[1.*,2.0.0-0)", "1.1.0", "0.1.0,1.0.0,1.0.1,1.1.0")]
+        public void GivenVersionRangeVerifyBestMatch(string versionRange, string expectedVersion, string versionStrings)
+        {
+            var range = VersionRange.Parse(versionRange);
+            var versions = new SortedSet<NuGetVersion>(versionStrings.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(NuGetVersion.Parse));
+
+            UnresolvedMessages.GetBestMatch(versions, range).ShouldBeEquivalentTo(NuGetVersion.Parse(expectedVersion));
+        }
+
         [Fact]
         public void GivenNoVersionsVerifyBestMatch()
         {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -227,9 +227,12 @@ namespace NuGet.Commands
 
             // Find a pivot point
             var ideal = new NuGetVersion(0, 0, 0);
-
+            NuGetVersion bestMatch = null;
             if (range != null)
             {
+                // There's a caveat with the way we display this for floating versions, as the nearest version is not necesarilly the best selectable version.
+                // We might need to amend the message for floating version
+                // clarify what nearest means for floating versions really....probably easiest to just get the highest one.
                 if (range.HasUpperBound)
                 {
                     ideal = range.MaxVersion;
@@ -238,11 +241,24 @@ namespace NuGet.Commands
                 if (range.HasLowerBound)
                 {
                     ideal = range.MinVersion;
+                    // Take the lowest version higher than the pivot if one exists.
+                    bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
+                }
+
+                if (range.IsFloating)
+                {
+                    if (range.HasUpperBound)
+                    {
+                        // Take the highest version higher than the pivot if one exists.
+                        bestMatch = versions.Where(e => e <= ideal).LastOrDefault();
+                    }
+                    else
+                    {
+                        // If it's floating without an upper bound
+                        bestMatch = versions.Last();
+                    }
                 }
             }
-
-            // Take the lowest version higher than the pivot if one exists.
-            var bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
 
             if (bestMatch == null)
             {
