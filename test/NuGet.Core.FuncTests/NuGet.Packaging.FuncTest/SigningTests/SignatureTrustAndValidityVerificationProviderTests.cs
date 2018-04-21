@@ -820,6 +820,28 @@ namespace NuGet.Packaging.FuncTest
             AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning);
         }
 
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithTimestampChainingToUntrustedRoot_NotAllowIgnoreTimestamp_FailAsync()
+        {
+            using (var nupkgStream = new MemoryStream(GetResource("UntrustedTimestampPackage.nupkg")))
+            using (var package = new PackageArchiveReader(nupkgStream, leaveStreamOpen: false))
+            {
+                var verifier = new PackageSignatureVerifier(_trustProviders);
+
+                // Act
+                var result = await verifier.VerifySignaturesAsync(package, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(), CancellationToken.None);
+                var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues()).ToList();
+
+                // Assert
+                result.Valid.Should().BeFalse();
+                resultsWithErrors.Count().Should().BeGreaterOrEqualTo(1);
+                totalErrorIssues.Count().Should().BeGreaterOrEqualTo(1);
+                totalErrorIssues[1].Code.Should().Be(NuGetLogCode.NU3028);
+                totalErrorIssues[1].Message.Should().Contain("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider");
+            }
+        }
+
         private static async Task<List<SignatureLog>> VerifyUnavailableRevocationInfoAsync(
             SignatureVerificationStatus expectedStatus,
             LogLevel expectedLogLevel,
