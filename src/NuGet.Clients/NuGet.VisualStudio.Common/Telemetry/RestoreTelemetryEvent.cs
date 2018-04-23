@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio
             double duration) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(OperationSource)] = source;
-            base[(nameof(NoOpProjectsCount))] = noOpProjectsCount;
+            base[nameof(NoOpProjectsCount)] = noOpProjectsCount;
         }
 
         public const string RestoreActionEventName = "RestoreInformation";
