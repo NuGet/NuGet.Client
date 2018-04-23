@@ -341,6 +341,7 @@ phases:
   dependsOn: Initialize_Build
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+  condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "  	
   queue:
     name: VSEng-MicroBuildSxS
     timeoutInMinutes: 120
@@ -426,6 +427,7 @@ phases:
   dependsOn: Initialize_Build
   variables:
     BUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+  condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "  	
   queue:
     name: DDNuGet-Linux
     timeoutInMinutes: 45
@@ -476,7 +478,7 @@ phases:
   - Initialize_Build
   variables:
     BUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-  condition: "succeeded()"
+  condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "  	
   queue:
     name: VSEng-MicroBuildMacSierra
     timeoutInMinutes: 60
@@ -533,6 +535,7 @@ phases:
   - Initialize_Build
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+  condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "  	
   queue:
     name: DDNuGet-Windows
     demands: DotNetFramework
@@ -628,6 +631,7 @@ phases:
   - Initialize_Build
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+  condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "  	
   queue:
     name: DDNuGet-Windows
     demands: DotNetFramework
