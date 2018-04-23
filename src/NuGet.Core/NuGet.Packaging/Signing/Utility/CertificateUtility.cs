@@ -229,7 +229,7 @@ namespace NuGet.Packaging.Signing
             DateTimeOffset signerCertExpiry = DateTime.SpecifyKind(certificate.NotAfter, DateTimeKind.Local);
             DateTimeOffset signerCertBegin = DateTime.SpecifyKind(certificate.NotBefore, DateTimeKind.Local);
 
-            return signerCertBegin < date && date < signerCertExpiry;
+            return signerCertBegin <= date && date < signerCertExpiry;
         }
 
         /// <summary>

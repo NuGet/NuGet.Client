@@ -111,7 +111,6 @@ namespace Test.Utility.Signing
                 SubjectName = subjectName,
                 CustomizeCertificate = customizeCertificate
             };
-
             if (serviceOptions.IssuedCertificateNotBefore.HasValue)
             {
                 issueOptions.NotBefore = serviceOptions.IssuedCertificateNotBefore.Value;

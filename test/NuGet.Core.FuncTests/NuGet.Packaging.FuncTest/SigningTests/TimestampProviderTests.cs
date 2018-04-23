@@ -374,7 +374,7 @@ namespace NuGet.Packaging.FuncTest
 
                     Assert.Equal(NuGetLogCode.NU3036, exception.Code);
                     Assert.Contains(
-                        "The timestamp's generalized time is outside the timestamping certificate validity.",
+                        "The timestamp's generalized time is outside the timestamping certificate's validity period.",
                         exception.Message);
                 });
         }

@@ -860,7 +860,7 @@ namespace NuGet.Packaging.FuncTest
                 result.Trust.Should().Be(SignatureVerificationStatus.Illegal);
                 errorIssues.Count().Should().Be(1);
                 errorIssues.First().Code.Should().Be(NuGetLogCode.NU3036);
-                errorIssues.First().Message.Should().Contain("generalized time is outside the timestamping certificate validity.");
+                errorIssues.First().Message.Should().Contain("signature's timestamp's generalized time is outside the timestamping certificate's validity period.");
             }
         }
 

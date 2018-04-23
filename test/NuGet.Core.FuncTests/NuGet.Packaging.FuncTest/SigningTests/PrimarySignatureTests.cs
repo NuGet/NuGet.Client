@@ -39,7 +39,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task Signature_HasTimestamp()
+        public async Task Signature_HasTimestampAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -68,7 +68,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task Signature_HasNoTimestamp()
+        public async Task Signature_HasNoTimestampAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -92,7 +92,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task Load_WithPrimarySignatureWithNoCertificates_Throws()
+        public async Task Load_WithPrimarySignatureWithNoCertificates_ThrowsAsync()
         {
             var packageContext = new SimpleTestPackageContext();
 
@@ -140,7 +140,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task Load_WithReissuedSigningCertificate_Throws()
+        public async Task Load_WithReissuedSigningCertificate_ThrowsAsync()
         {
             var certificates = _testFixture.TrustedTestCertificateWithReissuedCertificate;
             var packageContext = new SimpleTestPackageContext();
