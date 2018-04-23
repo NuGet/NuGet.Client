@@ -70,7 +70,7 @@ namespace NuGet.Commands
 
             graphs.AddRange(frameworkGraphs);
 
-            telemetryActivity.EndIntervalMeasure(WalkFrameworkDependencyDuration); // TODO cleanup
+            telemetryActivity.EndIntervalMeasure(WalkFrameworkDependencyDuration);
 
             success &= await InstallPackagesAsync(graphs,
                 userPackageFolder,

@@ -53,8 +53,8 @@ namespace NuGet.Commands
 
         // names for intervals in RestoreNoOpInformation
         private const string CacheFileEvaluateDuration = "CacheFileEvaluateDuration";
-        private const string AssetsVerificationDuration = "AssetVerificationDuration";
-        private const string AssetsVerificationResult = "AssetVerificationResult";
+        private const string MsbuildAssetsVerificationDuration = "MsbuildAssetsVerificationDuration";
+        private const string MsbuildAssetsVerificationResult = "MsbuildAssetsVerificationResult";
         private const string ReplayLogsDuration = "ReplayLogsDuration";
 
         //names for child events for GenerateRestoreGraph
@@ -123,8 +123,8 @@ namespace NuGet.Commands
 
                             var noOpSuccess = NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request);
 
-                            noOpTelemetry.EndIntervalMeasure(AssetsVerificationDuration);
-                            noOpTelemetry.TelemetryEvent[AssetsVerificationResult] = noOpSuccess;
+                            noOpTelemetry.EndIntervalMeasure(MsbuildAssetsVerificationDuration);
+                            noOpTelemetry.TelemetryEvent[MsbuildAssetsVerificationResult] = noOpSuccess;
 
                             if (noOpSuccess)
                             {
