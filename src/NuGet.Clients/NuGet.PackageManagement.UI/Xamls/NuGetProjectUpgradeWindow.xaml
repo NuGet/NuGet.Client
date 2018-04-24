@@ -143,12 +143,21 @@
 
   <Grid>
     <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="*" />
       <RowDefinition Height="1.5*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <Grid x:Name="TopLevelDependenciesGrid" Grid.Row="0" Margin="12,8,12,4">
+    <Grid Grid.Row="0" Margin="12,8,12,4" VerticalAlignment="Center">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Text="Select project to migrate:" Grid.Column="0" Margin="0,0,15,0"/>
+      <ComboBox Grid.Column="1"/>
+    </Grid>
+    <Grid x:Name="TopLevelDependenciesGrid" Grid.Row="1" Margin="12,8,12,4">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition />
@@ -166,7 +175,7 @@
       </DataGrid>
     </Grid>
 
-    <Grid x:Name="TransitiveDependenciesGrid" Grid.Row="1" Margin="12,8,12,4">
+    <Grid x:Name="TransitiveDependenciesGrid" Grid.Row="2" Margin="12,8,12,4">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition />
@@ -206,7 +215,7 @@
       </DataGrid>
     </Grid>
 
-    <Grid x:Name="PackageIssuesGrid" Grid.Row="2" Margin="12,8,12,4">
+    <Grid x:Name="PackageIssuesGrid" Grid.Row="3" Margin="12,8,12,4">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="*" />
@@ -260,7 +269,7 @@
       </ItemsControl>
     </Grid>
 
-    <Grid x:Name="PackageUpgraderFooterGrid" Grid.Row="3">
+    <Grid x:Name="PackageUpgraderFooterGrid" Grid.Row="4">
       <Grid.ColumnDefinitions>
         <ColumnDefinition />
         <ColumnDefinition Width="Auto" />
