@@ -234,7 +234,7 @@ namespace NuGet.MSSigning.Extensions {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; -CertificateFile &lt;p7b_file_path&gt; -CSPName &lt;cryptographic_service _provider_name&gt;  -KeyContianer &lt;key_container_guid&gt;  -CertificateFingerprint &lt;certificate_fingerprint&gt;.
+        ///   Looks up a localized string similar to &lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; -CertificateFile &lt;p7b_file_path&gt; -CSPName &lt;cryptographic_service _provider_name&gt;  -KeyContainer &lt;key_container_guid&gt;  -CertificateFingerprint &lt;certificate_fingerprint&gt;.
         /// </summary>
         internal static string MSSignCommandUsageSummary {
             get {

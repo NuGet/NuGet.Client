@@ -176,7 +176,7 @@ nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p
     <comment>Please don't localize this string</comment>
   </data>
   <data name="MSSignCommandUsageSummary" xml:space="preserve">
-    <value>&lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; -CertificateFile &lt;p7b_file_path&gt; -CSPName &lt;cryptographic_service _provider_name&gt;  -KeyContianer &lt;key_container_guid&gt;  -CertificateFingerprint &lt;certificate_fingerprint&gt;</value>
+    <value>&lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; -CertificateFile &lt;p7b_file_path&gt; -CSPName &lt;cryptographic_service _provider_name&gt;  -KeyContainer &lt;key_container_guid&gt;  -CertificateFingerprint &lt;certificate_fingerprint&gt;</value>
     <comment>Please don't localize this string</comment>
   </data>
   <data name="MSSignCommandOverwriteDescription" xml:space="preserve">
