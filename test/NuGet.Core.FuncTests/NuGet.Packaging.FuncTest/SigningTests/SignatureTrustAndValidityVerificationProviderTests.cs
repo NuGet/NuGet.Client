@@ -717,6 +717,24 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithExpiredTimestamp_NotAllowIgnoreTimestamp_ShouldNotBeAnErrorAsync()
+        {
+            using (var nupkgStream = new MemoryStream(GetResource("UntrustedTimestampPackage.nupkg")))
+            using (var package = new PackageArchiveReader(nupkgStream, leaveStreamOpen: false))
+            {
+                var verifier = new PackageSignatureVerifier(_trustProviders);
+
+                // Act 
+                var result = await verifier.VerifySignaturesAsync(package, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(), CancellationToken.None);
+                var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+                var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
+
+                // Assert 
+                totalErrorIssues.Select(i => i.Message).Should().NotContain("A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.");
+            }
+        }
+
+        [CIOnlyFact]
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInAcceptMode_DoesNotWarnAsync()
         {
             // Arrange
@@ -831,14 +849,14 @@ namespace NuGet.Packaging.FuncTest
                 // Act
                 var result = await verifier.VerifySignaturesAsync(package, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(), CancellationToken.None);
                 var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
-                var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues()).ToList();
+                var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                 // Assert
                 result.Valid.Should().BeFalse();
-                resultsWithErrors.Count().Should().BeGreaterOrEqualTo(1);
-                totalErrorIssues.Count().Should().BeGreaterOrEqualTo(1);
-                totalErrorIssues[1].Code.Should().Be(NuGetLogCode.NU3028);
-                totalErrorIssues[1].Message.Should().Contain("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider");
+                resultsWithErrors.Count().Should().Be(1);
+                totalErrorIssues.Count().Should().Be(1);
+                totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3028);
+                totalErrorIssues.First().Message.Should().Contain("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider");
             }
         }
 
