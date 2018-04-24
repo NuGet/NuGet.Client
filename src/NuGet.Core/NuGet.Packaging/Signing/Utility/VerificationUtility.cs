@@ -130,6 +130,12 @@ namespace NuGet.Packaging.Signing
                     issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3025, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampNotYetValid, signature.FriendlyName)));
                     validationFlags |= SignatureVerificationStatusFlags.CertificateValidityInTheFuture;
                 }
+
+                if (!CertificateUtility.IsDateInsideValidityPeriod(signerInfo.Certificate, timestamp.GeneralizedTime))
+                {
+                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3036, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampGeneralizedTimeInvalid, signature.FriendlyName)));
+                    validationFlags |= SignatureVerificationStatusFlags.GeneralizedTimeOutsideValidity;
+                }
             }
             else
             {
