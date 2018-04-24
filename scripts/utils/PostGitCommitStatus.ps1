@@ -56,11 +56,46 @@ Function InitializeAllTestsToPending {
     )
 
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Unit Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Linux" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+    if($env:RunFunctionalTestsOnWindows -ne "true")
+    {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+    } 
+    else 
+    {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional Tests On Windows" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
+    }
+    if($env:RunTestsOnMac -ne "true")
+    {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+    } 
+    else 
+    {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
+    }
+    if($env:RunTestsOnLinux -ne "true")
+    {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Linux" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+    } 
+    else 
+    {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Linux" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
+    }
+    if($env:RunEndToEndTests -ne "true")
+    {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+    } 
+    else 
+    {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
+    }
+    if($env:RunApexTests -ne "true")
+    {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+    } 
+    else 
+    {
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
+    }
     $rebuildUrl = "$env:VstsAzureRebuildUrl" -f "$env:BUILD_SOURCEBRANCHNAME","$env:BUILD_SOURCEVERSION"
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Rebuild" -Status "success" -CommitSha $CommitSha -TargetUrl $rebuildUrl -Description "Click on details to rebuild"
 }
