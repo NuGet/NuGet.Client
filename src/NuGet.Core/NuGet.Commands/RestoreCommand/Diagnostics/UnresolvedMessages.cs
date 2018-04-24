@@ -236,16 +236,16 @@ namespace NuGet.Commands
                     {
                         ideal = range.MaxVersion;
                         // Take the highest version that falls into the range
-                        bestMatch = versions.Where(e => e <= ideal).LastOrDefault();
-                    }
-                    else
-                    {
-                        // If it's floating without an upper bound
-                        bestMatch = versions.Last();
+                        bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
                     }
                 }
                 else
                 {
+                    if (range.HasUpperBound)
+                    {
+                        ideal = range.MaxVersion;
+                    }
+
                     if (range.HasLowerBound)
                     {
                         ideal = range.MinVersion;
@@ -253,12 +253,12 @@ namespace NuGet.Commands
 
                     // Take the lowest version higher than the pivot if one exists.
                     bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
+                }
 
-                    if (bestMatch == null)
-                    {
-                        // Take the highest possible version.
-                        bestMatch = versions.Last();
-                    }
+                if (bestMatch == null)
+                {
+                    // Take the highest possible version.
+                    bestMatch = versions.Last();
                 }
             }
 
