@@ -26,13 +26,15 @@ namespace NuGet.Protocol.Tests
         private const string _notBefore = "2018-02-26T00:00:00.0000000Z";
 
         [Fact]
-        public async Task RepositorySignatureResource_Basic()
+        public async Task RepositorySignatureResource_BasicAsync()
         {
             // Arrange
-            var source = $"http://unit.test/{Guid.NewGuid()}/v3-with-flat-container/index.json";
-            var responses = new Dictionary<string, string>();
-            responses.Add(source, JsonData.RepoSignIndexJsonData);
-            responses.Add("https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignData);
+            var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
+            var responses = new Dictionary<string, string>
+            {
+                { source, JsonData.RepoSignIndexJsonData },
+                { "https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignData }
+            };
 
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
 
@@ -49,12 +51,14 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task RepositorySignatureResource_WithoutReposignEndpoint()
+        public async Task RepositorySignatureResource_WithoutReposignEndpointAsync()
         {
             // Arrange
-            var source = $"http://unit.test{Guid.NewGuid()}/v3-with-flat-container/index.json";
-            var responses = new Dictionary<string, string>();
-            responses.Add(source, JsonData.IndexWithFlatContainer);
+            var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
+            var responses = new Dictionary<string, string>
+            {
+                { source, JsonData.IndexWithFlatContainer }
+            };
 
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
 
@@ -69,7 +73,7 @@ namespace NuGet.Protocol.Tests
         public void RepositorySignatureResource_NoAllRepositorySigned()
         {
             // Arrange
-            var source = "http://unit.test1/v3-with-flat-container/index.json";
+            var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
             var responses = new Dictionary<string, string>();
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
             var jobject = JObject.Parse(JsonData.RepoSignDataNoAllRepositorySigned);
@@ -83,7 +87,7 @@ namespace NuGet.Protocol.Tests
         public void RepositorySignatureResource_NoCertInfo()
         {
             // Arrange
-            var source = "http://unit.test1/v3-with-flat-container/index.json";
+            var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
             var responses = new Dictionary<string, string>();
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
             var jobject = JObject.Parse(JsonData.RepoSignDataNoCertInfo);
@@ -93,13 +97,32 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task RepositorySignatureResource_RepositorySignatureInfo()
+        public async Task RepositorySignatureResource_WithNonHttpsSourceAsync()
         {
             // Arrange
-            var source = $"http://unit.test/{Guid.NewGuid()}/v3-with-flat-container/index.json";
-            var responses = new Dictionary<string, string>();
-            responses.Add(source, JsonData.RepoSignIndexJsonData);
-            responses.Add("https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignData);
+            var source = $"http://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
+            var responses = new Dictionary<string, string>
+            {
+                { source, JsonData.RepoSignIndexJsonData },
+                { "https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignData }
+            };
+
+            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<FatalProtocolException>(async () => await repo.GetResourceAsync<RepositorySignatureResource>());
+        }
+
+        [Fact]
+        public async Task RepositorySignatureResource_RepositorySignatureInfoAsync()
+        {
+            // Arrange
+            var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
+            var responses = new Dictionary<string, string>
+            {
+                { source, JsonData.RepoSignIndexJsonData },
+                { "https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignData }
+            };
 
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
 
@@ -120,21 +143,23 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task RepositorySignatureResource_RepositorySignatureInfoConcurrency()
+        public async Task RepositorySignatureResource_RepositorySignatureInfoConcurrencyAsync()
         {
             // Arrange
-            var source1 = $"http://unit.test/{Guid.NewGuid()}1/v3-with-flat-container/index.json";
-            var source2 = $"http://unit.test/{Guid.NewGuid()}2/v3-with-flat-container/index.json";
-            var source3 = $"http://unit.test/{Guid.NewGuid()}3/v3-with-flat-container/index.json";
+            var source1 = $"https://1.{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
+            var source2 = $"https://2.{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
+            var source3 = $"https://3.{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
 
             var sources = new List<string>() { source1, source2, source3 };
 
-            var responses = new Dictionary<string, string>();
-            responses.Add(source1, JsonData.RepoSignIndexJsonData);
-            responses.Add(source2, JsonData.RepoSignIndexJsonData);
-            responses.Add(source3, JsonData.RepoSignIndexJsonData);
+            var responses = new Dictionary<string, string>
+            {
+                { source1, JsonData.RepoSignIndexJsonData },
+                { source2, JsonData.RepoSignIndexJsonData },
+                { source3, JsonData.RepoSignIndexJsonData },
 
-            responses.Add("https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignData);
+                { "https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignData }
+            };
 
             var repos = sources.Select(p => StaticHttpHandler.CreateSource(p, Repository.Provider.GetCoreV3(), responses));
 

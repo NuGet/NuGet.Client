@@ -89,6 +89,20 @@ namespace NuGet.Common
             NuGetTelemetryService?.EmitTelemetryEvent(TelemetryEvent);
         }
 
+        /// <summary>
+        /// Creates a TelemetryActivity.
+        /// </summary>
+        /// <param name="parentId">OperationId of the parent event.</param>
+        /// <param name="eventName">Name of the event.</param>
+        /// <returns>TelemetryActivity with a given parentId and new operationId and a TelemetryEvent with eventName</returns>
+        public static TelemetryActivity CreateTelemetryActivityWithNewOperationIdAndEvent(Guid parentId, string eventName)
+        {
+            return new TelemetryActivity(parentId, Guid.NewGuid(), null)
+            {
+                TelemetryEvent = new TelemetryEvent(eventName)
+            };
+        }
+
         public static TelemetryActivity CreateTelemetryActivityWithNewOperationId(Guid parentId)
         {
             return new TelemetryActivity(parentId, Guid.NewGuid(), null);
