@@ -230,26 +230,12 @@ namespace NuGet.Commands
             NuGetVersion bestMatch = null;
             if (range != null)
             {
-                // There's a caveat with the way we display this for floating versions, as the nearest version is not necesarilly the best selectable version.
-                // We might need to amend the message for floating version
-                // clarify what nearest means for floating versions really....probably easiest to just get the highest one.
-                if (range.HasUpperBound)
-                {
-                    ideal = range.MaxVersion;
-                }
-
-                if (range.HasLowerBound)
-                {
-                    ideal = range.MinVersion;
-                    // Take the lowest version higher than the pivot if one exists.
-                    bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
-                }
-
                 if (range.IsFloating)
                 {
                     if (range.HasUpperBound)
                     {
-                        // Take the highest version higher than the pivot if one exists.
+                        ideal = range.MaxVersion;
+                        // Take the highest version that falls into the range
                         bestMatch = versions.Where(e => e <= ideal).LastOrDefault();
                     }
                     else
@@ -258,12 +244,22 @@ namespace NuGet.Commands
                         bestMatch = versions.Last();
                     }
                 }
-            }
+                else
+                {
+                    if (range.HasLowerBound)
+                    {
+                        ideal = range.MinVersion;
+                    }
 
-            if (bestMatch == null)
-            {
-                // Take the highest possible version.
-                bestMatch = versions.Last();
+                    // Take the lowest version higher than the pivot if one exists.
+                    bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
+
+                    if (bestMatch == null)
+                    {
+                        // Take the highest possible version.
+                        bestMatch = versions.Last();
+                    }
+                }
             }
 
             return bestMatch;

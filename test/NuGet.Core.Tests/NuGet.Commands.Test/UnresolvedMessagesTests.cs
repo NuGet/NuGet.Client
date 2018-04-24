@@ -278,14 +278,18 @@ namespace NuGet.Commands.Test
             UnresolvedMessages.GetBestMatch(versions, range).ShouldBeEquivalentTo(NuGetVersion.Parse(expected));
         }
 
+        // ACtually these make no sense. There should be no values in the range specified
         [Theory]
+        [InlineData("[1.*,2.0.0]", "2.0.0", "0.1.0,1.0.0,1.0.1,1.1.0,2.0.0")] // has LowerBound, has UpperBound, floating - inclusivity doesn't matter for this command as it's not selecting assets.
+        [InlineData("(1.0.1,2.0.0]", "1.0.1", "0.1.0,1.0.0,1.0.1,1.1.0,2.0.0")] // has LowerBound, has UpperBound, not floating
+        [InlineData("(,2.0.0]", "0.1.0", "0.1.0,1.0.0,1.0.1,1.1.0,2.0.0")] // no LowerBound, has UpperBound, not floating, TODO NK - is lowest ok? Make sense in production code? => no LowerBound, has UpperBound, floating is not a valid scenario
+        [InlineData("[1.*,)", "2.0.0", "0.1.0,1.0.0,1.0.1,1.1.0,2.0.0")] // lower bound, no upper bound, floating
+        [InlineData("[1.0.0,)", "1.0.0", "0.1.0,1.0.0,1.0.1,1.1.0,2.0.0")] // lower bound, no upper bound, no floating
         [InlineData("1.*", "1.1.0", "0.1.0,1.0.0,1.0.1,1.1.0")]
-        [InlineData("[1.*,2.0.0-0)", "1.1.0", "0.1.0,1.0.0,1.0.1,1.1.0")]
         public void GivenVersionRangeVerifyBestMatch(string versionRange, string expectedVersion, string versionStrings)
         {
             var range = VersionRange.Parse(versionRange);
             var versions = new SortedSet<NuGetVersion>(versionStrings.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(NuGetVersion.Parse));
-
             UnresolvedMessages.GetBestMatch(versions, range).ShouldBeEquivalentTo(NuGetVersion.Parse(expectedVersion));
         }
 
