@@ -56,7 +56,7 @@ Function InitializeAllTestsToPending {
     )
 
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Unit Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
-    if($env:RunFunctionalTestsOnWindows -ne "true")
+    if($env:RunFunctionalTestsOnWindows -eq "true")
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     } 
@@ -64,7 +64,7 @@ Function InitializeAllTestsToPending {
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional Tests On Windows" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
     }
-    if($env:RunTestsOnMac -ne "true")
+    if($env:RunTestsOnMac -eq "true")
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     } 
@@ -72,7 +72,7 @@ Function InitializeAllTestsToPending {
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Mac" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
     }
-    if($env:RunTestsOnLinux -ne "true")
+    if($env:RunTestsOnLinux -eq "true")
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Linux" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     } 
@@ -80,7 +80,7 @@ Function InitializeAllTestsToPending {
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Tests On Linux" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
     }
-    if($env:RunEndToEndTests -ne "true")
+    if($env:RunEndToEndTests -eq "true")
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     } 
@@ -88,7 +88,7 @@ Function InitializeAllTestsToPending {
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "EndToEnd Tests On Windows" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
     }
-    if($env:RunApexTests -ne "true")
+    if($env:RunApexTests -eq "true")
     {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Apex Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     } 
