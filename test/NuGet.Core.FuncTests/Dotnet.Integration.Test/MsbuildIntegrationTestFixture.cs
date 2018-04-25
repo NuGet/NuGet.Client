@@ -34,6 +34,7 @@ namespace Dotnet.Integration.Test
             _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
             _processEnvVars.Add("UseSharedCompilation", "false");
             _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
+            _processEnvVars.Add("MSBUILDDISABLENODEREUSE ", "true");
             // We do this here so that dotnet new will extract all the packages on the first run on the machine.
             InitDotnetNewToExtractPackages();
         }
@@ -148,10 +149,6 @@ namespace Dotnet.Integration.Test
         /// </summary>
         internal CommandRunnerResult RunDotnet(string workingDirectory, string args)
         {
-            var envVar = new Dictionary<string, string>
-            {
-                { "MSBuildSDKsPath", MsBuildSdksPath }
-            };
 
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
@@ -329,6 +326,7 @@ namespace Dotnet.Integration.Test
 
         public void Dispose()
         {
+            RunDotnet(Path.GetDirectoryName(TestDotnetCli), "buildserver shutdown");
             KillDotnetExe(TestDotnetCli);
             DeleteDirectory(Path.GetDirectoryName(TestDotnetCli));
         }
