@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -227,7 +227,7 @@ namespace NuGet.Commands
 
             // Find a pivot point
             var ideal = new NuGetVersion(0, 0, 0);
-
+            NuGetVersion bestMatch = null;
             if (range != null)
             {
                 if (range.HasUpperBound)
@@ -241,8 +241,11 @@ namespace NuGet.Commands
                 }
             }
 
-            // Take the lowest version higher than the pivot if one exists.
-            var bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
+            if (!range.IsFloating || range.HasLowerBound || range.HasUpperBound)
+            {
+                // Take the lowest version higher than the pivot if one exists.
+                bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
+            }
 
             if (bestMatch == null)
             {
