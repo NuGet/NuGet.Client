@@ -239,18 +239,18 @@ namespace NuGet.Commands
                 {
                     ideal = range.MinVersion;
                 }
+            }
 
-                if (!range.IsFloating || range.HasLowerBound || range.HasUpperBound)
-                {
-                    // Take the lowest version higher than the pivot if one exists.
-                    bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
-                }
+            if (!range.IsFloating || range.HasLowerBound || range.HasUpperBound)
+            {
+                // Take the lowest version higher than the pivot if one exists.
+                bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
+            }
 
-                if (bestMatch == null)
-                {
-                    // Take the highest possible version.
-                    bestMatch = versions.Last();
-                }
+            if (bestMatch == null)
+            {
+                // Take the highest possible version.
+                bestMatch = versions.Last();
             }
 
             return bestMatch;
