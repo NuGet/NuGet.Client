@@ -230,27 +230,18 @@ namespace NuGet.Commands
             NuGetVersion bestMatch = null;
             if (range != null)
             {
-                if (range.IsFloating)
+                if (range.HasUpperBound)
                 {
-                    if (range.HasUpperBound)
-                    {
-                        ideal = range.MaxVersion;
-                        // Take the highest version that falls into the range
-                        bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
-                    }
+                    ideal = range.MaxVersion;
                 }
-                else
+
+                if (range.HasLowerBound)
                 {
-                    if (range.HasUpperBound)
-                    {
-                        ideal = range.MaxVersion;
-                    }
+                    ideal = range.MinVersion;
+                }
 
-                    if (range.HasLowerBound)
-                    {
-                        ideal = range.MinVersion;
-                    }
-
+                if (!range.IsFloating || range.HasLowerBound || range.HasUpperBound)
+                {
                     // Take the lowest version higher than the pivot if one exists.
                     bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
                 }
