@@ -145,18 +145,8 @@ namespace Dotnet.Integration.Test
                 {
                     var xml = XDocument.Load(stream);
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "netcoreapp1.0;net45");
-                    ProjectFileUtils.AddProperty(xml, "RuntimeIdentifier", "win7-x64");
 
                     var attributes = new Dictionary<string, string>();
-
-                    attributes["Version"] = "1.0.1";
-                    ProjectFileUtils.AddItem(
-                        xml,
-                        "PackageReference",
-                        "Microsoft.NETCore.App",
-                        "netcoreapp1.0",
-                        new Dictionary<string, string>(),
-                        attributes);
 
                     attributes["Version"] = "9.0.1";
                     ProjectFileUtils.AddItem(
@@ -200,7 +190,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1,
                         packagesA.Count);
                     Assert.Equal("Microsoft.NETCore.App", packagesA[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("1.0.1")), packagesA[0].VersionRange);
+                    Assert.Equal(new VersionRange(new NuGetVersion("1.0.5")), packagesA[0].VersionRange);
                     Assert.Equal(new List<string> {"Analyzers", "Build"}, packagesA[0].Exclude);
                     Assert.Empty(packagesA[0].Include);
 
@@ -2437,20 +2427,25 @@ namespace ClassLibrary
 
                     ProjectFileUtils.AddProperty(xml, "RepositoryType", "git");
 
-                    // mock implementation of InitializeSourceControlInformation common targets:
-                    xml.Root.Add(
-                        new XElement(ns + "Target",
-                            new XAttribute("Name", "InitializeSourceControlInformation"),
-                            new XElement(ns + "PropertyGroup",
-                                new XElement("SourceRevisionId", "e1c65e4524cd70ee6e22abe33e6cb6ec73938cb1"),
-                                new XElement("PrivateRepositoryUrl", "https://github.com/NuGet/NuGet.Client.git"))));
-
                     xml.Root.Add(
                         new XElement(ns + "PropertyGroup",
                             new XElement("SourceControlInformationFeatureSupported", "true")));
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
+
+                // mock implementation of InitializeSourceControlInformation common targets:
+                var mockXml = @"<Project>
+<Target Name=""InitializeSourceControlInformation"">
+    <PropertyGroup>
+      <SourceRevisionId>e1c65e4524cd70ee6e22abe33e6cb6ec73938cb1</SourceRevisionId>
+      <PrivateRepositoryUrl>https://github.com/NuGet/NuGet.Client.git</PrivateRepositoryUrl>
+    </PropertyGroup>
+</Target>
+</Project>";
+
+                File.WriteAllText(Path.Combine(workingDirectory, "Directory.build.targets"), mockXml);
+
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
@@ -2494,20 +2489,24 @@ namespace ClassLibrary
                     ProjectFileUtils.AddProperty(xml, "RepositoryType", "git");
                     ProjectFileUtils.AddProperty(xml, "PublishRepositoryUrl", "true");
 
-                    // mock implementation of InitializeSourceControlInformation common targets:
-                    xml.Root.Add(
-                        new XElement(ns + "Target",
-                            new XAttribute("Name", "InitializeSourceControlInformation"),
-                            new XElement(ns + "PropertyGroup",
-                                new XElement("SourceRevisionId", "e1c65e4524cd70ee6e22abe33e6cb6ec73938cb1"),
-                                new XElement("PrivateRepositoryUrl", "https://github.com/NuGet/NuGet.Client.git"))));
-
                     xml.Root.Add(
                         new XElement(ns + "PropertyGroup",
                             new XElement("SourceControlInformationFeatureSupported", "true")));
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
+
+                // mock implementation of InitializeSourceControlInformation common targets:
+                var mockXml = @"<Project>
+<Target Name=""InitializeSourceControlInformation"">
+    <PropertyGroup>
+      <SourceRevisionId>e1c65e4524cd70ee6e22abe33e6cb6ec73938cb1</SourceRevisionId>
+      <PrivateRepositoryUrl>https://github.com/NuGet/NuGet.Client.git</PrivateRepositoryUrl>
+    </PropertyGroup>
+</Target>
+</Project>";
+
+                File.WriteAllText(Path.Combine(workingDirectory, "Directory.build.targets"), mockXml);
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
