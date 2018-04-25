@@ -713,20 +713,24 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
-        // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;description="hello world"\"
-        [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;description=\"hello world\"\\\"", "MyPackage",
-            "1.2.3", "hello world")]
-        // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;description="hello = world"\"
-        [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;description=\"hello = world\"\\\"", "MyPackage",
-            "1.2.3", "hello = world")]
-        // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;description="hello = world with a %3B"\"
-        [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;description=\"hello = world with a %3B\"\\\"",
-            "MyPackage", "1.2.3", "hello = world with a ;")]
+        // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;tags=tag1;description="hello world"\"
+        [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;tags=tag1;description=\"hello world\"\\\"", "MyPackage",
+            "1.2.3", "hello world", "tag1")]
+        // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;tasg=tag1,tag2;description=""\"
+        [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;tags=tag1,tag2;description=\"hello world\"\\\"", "MyPackage",
+            "1.2.3", "hello world", "tag1,tag2")]
+        // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;tags=;description="hello = world"\"
+        [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;tags=;description=\"hello = world\"\\\"", "MyPackage",
+            "1.2.3", "hello = world","")]
+        // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;tags="";description="hello = world with a %3B"\"
+        [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;tags=\"\";description=\"hello = world with a %3B\"\\\"",
+            "MyPackage", "1.2.3", "hello = world with a ;","")]
         public void PackCommand_PackProject_PacksFromNuspecWithTokenSubstitution(
             string nuspecProperties,
             string expectedId,
             string expectedVersion,
-            string expectedDescription
+            string expectedDescription,
+            string expectedTags
             )
         {
             var nuspecFileContent = @"<?xml version=""1.0""?>
@@ -736,6 +740,7 @@ namespace Dotnet.Integration.Test
     <version>$version$</version>
     <authors>Microsoft</authors>
     <owners>NuGet</owners>
+    <tags>$tags$</tags>
     <description>$description$</description>
   </metadata>
   <files>
@@ -768,6 +773,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal("Microsoft", nuspecReader.GetAuthors());
                     Assert.Equal("NuGet", nuspecReader.GetOwners());
                     Assert.Equal(expectedDescription, nuspecReader.GetDescription());
+                    Assert.Equal(expectedTags, nuspecReader.GetTags());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
 
                     // Validate the assets.
