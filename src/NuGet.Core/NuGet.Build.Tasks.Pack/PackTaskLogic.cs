@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -739,12 +739,19 @@ namespace NuGet.Build.Tasks.Pack
             var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var item in properties)
             {
-                int index = item.IndexOf("=");
+                var index = item.IndexOf("=");
                 // Make sure '=' is not the first or the last character of the string
                 if (index > 0 && index < item.Length - 1)
                 {
                     var key = item.Substring(0, index);
                     var value = item.Substring(index + 1);
+                    dictionary[key] = value;
+                }
+                // if value is empty string, set it to string.Empty instead of erroring out
+                else if (index == item.Length - 1)
+                {
+                    var key = item.Substring(0, index);
+                    var value = string.Empty;
                     dictionary[key] = value;
                 }
                 else
