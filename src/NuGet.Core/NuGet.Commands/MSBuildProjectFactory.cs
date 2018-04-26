@@ -69,7 +69,8 @@ namespace NuGet.Commands
                 MachineWideSettings = packArgs.MachineWideSettings,
                 Build = false,
                 PackTargetArgs = packArgs.PackTargetArgs,
-                Files = new HashSet<ManifestFile>()
+                Files = new HashSet<ManifestFile>(),
+                ProjectProperties = new Dictionary<string, string>()
             };
         }
 
