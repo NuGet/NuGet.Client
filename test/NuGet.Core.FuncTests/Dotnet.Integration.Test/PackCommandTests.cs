@@ -637,6 +637,68 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
+        // This test is asserting that nuspec can be packed via dotnet.exe
+        // without having to specify IncludeBuildOutput=false when using the
+        // --no-build switch.
+        public void PackCommand_PackProject_PackNuspecWithoutBuild()
+        {
+            var nuspecFileContent = @"<?xml version=""1.0""?>
+<package>
+  <metadata>
+    <id>PackedFromNuspec</id>
+    <version>1.2.1</version>
+    <authors>Microsoft</authors>
+    <owners>NuGet</owners>
+    <description>This was packed from nuspec</description>
+  </metadata>
+  <files>
+    <file src=""abc.txt"" target=""CoreCLR/"" />
+  </files>
+</package>";
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.nuspec"), nuspecFileContent);
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "sample text");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "NuspecFile", "abc.nuspec");
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.PackProject(workingDirectory, projectName,
+                    $"-o {workingDirectory} --no-build");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"PackedFromNuspec.1.2.1.nupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the .nuspec.
+                    Assert.Equal("PackedFromNuspec", nuspecReader.GetId());
+                    Assert.Equal("1.2.1", nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal("Microsoft", nuspecReader.GetAuthors());
+                    Assert.Equal("NuGet", nuspecReader.GetOwners());
+                    Assert.Equal("This was packed from nuspec", nuspecReader.GetDescription());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+
+                    // Validate the assets.
+                    var libItems = nupkgReader.GetFiles("CoreCLR").ToArray();
+                    Assert.Equal("CoreCLR/abc.txt", libItems[0]);
+                }
+
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_InstallPackageToOutputPath()
         {
             using (var testDirectory = TestDirectory.Create())
