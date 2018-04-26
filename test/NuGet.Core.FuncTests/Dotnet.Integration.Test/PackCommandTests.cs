@@ -607,6 +607,36 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackProject_EmptyNuspecFilePropertyWithNuspecProperties()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "NuspecProperties", "token1=value1");
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                
+                msbuildFixture.PackProject(workingDirectory, projectName,
+                    $"-o {workingDirectory} /p:NuspecFile=");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"ClassLibrary1.1.0.0.nupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_InstallPackageToOutputPath()
         {
             using (var testDirectory = TestDirectory.Create())

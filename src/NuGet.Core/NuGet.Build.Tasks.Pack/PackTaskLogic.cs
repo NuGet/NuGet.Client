@@ -33,17 +33,7 @@ namespace NuGet.Build.Tasks.Pack
                 BasePath = request.NuspecBasePath,
                 NoPackageAnalysis = request.NoPackageAnalysis,
                 WarningProperties = WarningProperties.GetWarningProperties(request.TreatWarningsAsErrors, request.WarningsAsErrors, request.NoWarn),
-                PackTargetArgs = new MSBuildPackTargetArgs
-                {
-                    AllowedOutputExtensionsInPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInPackageBuildOutputFolder),
-                    AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder),
-                    TargetPathsToAssemblies = InitLibFiles(request.BuildOutputInPackage),
-                    TargetPathsToSymbols = InitLibFiles(request.TargetPathsToSymbols),
-                    AssemblyName = request.AssemblyName,
-                    IncludeBuildOutput = request.IncludeBuildOutput,
-                    BuildOutputFolder = request.BuildOutputFolder,
-                    TargetFrameworks = ParseFrameworks(request)
-                }
+                PackTargetArgs = new MSBuildPackTargetArgs()
             };
 
             packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties);
@@ -62,28 +52,43 @@ namespace NuGet.Build.Tasks.Pack
                 packArgs.MinClientVersion = version;
             }
 
-            if (request.NuspecProperties != null && request.NuspecProperties.Any())
-            {
-                packArgs.Properties.AddRange(ParsePropertiesAsDictionary(request.NuspecProperties));
-                if (packArgs.Properties.ContainsKey("version"))
-                {
-                    packArgs.Version = packArgs.Properties["version"];
-                }
-            }
 
             InitCurrentDirectoryAndFileName(request, packArgs);
             InitNuspecOutputPath(request, packArgs);
-
-            if (request.IncludeSource)
-            {
-                packArgs.PackTargetArgs.SourceFiles = GetSourceFiles(request, packArgs.CurrentDirectory);
-                packArgs.Symbols = request.IncludeSource;
-            }
-
             PackCommandRunner.SetupCurrentDirectory(packArgs);
 
-            var contentFiles = ProcessContentToIncludeInPackage(request, packArgs);
-            packArgs.PackTargetArgs.ContentFiles = contentFiles;
+            if (!string.IsNullOrEmpty(request.NuspecFile))
+            {
+                if (request.NuspecProperties != null && request.NuspecProperties.Any())
+                {
+                    packArgs.Properties.AddRange(ParsePropertiesAsDictionary(request.NuspecProperties));
+                    if (packArgs.Properties.ContainsKey("version"))
+                    {
+                        packArgs.Version = packArgs.Properties["version"];
+                    }
+                }
+            }
+            else
+            {
+                // This only needs to happen when packing via csproj, not nuspec.
+                packArgs.PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInPackageBuildOutputFolder);
+                packArgs.PackTargetArgs.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder);
+                packArgs.PackTargetArgs.TargetPathsToAssemblies = InitLibFiles(request.BuildOutputInPackage);
+                packArgs.PackTargetArgs.TargetPathsToSymbols = InitLibFiles(request.TargetPathsToSymbols);
+                packArgs.PackTargetArgs.AssemblyName = request.AssemblyName;
+                packArgs.PackTargetArgs.IncludeBuildOutput = request.IncludeBuildOutput;
+                packArgs.PackTargetArgs.BuildOutputFolder = request.BuildOutputFolder;
+                packArgs.PackTargetArgs.TargetFrameworks = ParseFrameworks(request);
+
+                if (request.IncludeSource)
+                {
+                    packArgs.PackTargetArgs.SourceFiles = GetSourceFiles(request, packArgs.CurrentDirectory);
+                    packArgs.Symbols = request.IncludeSource;
+                }
+
+                var contentFiles = ProcessContentToIncludeInPackage(request, packArgs);
+                packArgs.PackTargetArgs.ContentFiles = contentFiles;
+            }
 
             return packArgs;
         }
