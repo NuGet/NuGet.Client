@@ -59,20 +59,27 @@ namespace NuGet.MSSigning.Extensions
                 return rsakey.Key;
             }
 
-            var provider = new CngProvider(CSPName);
-            var cngkey = CngKey.Open(KeyContainer, provider, CngKeyOpenOptions.MachineKey);
+            try
+            {
+                var provider = new CngProvider(CSPName);
+                var cngkey = CngKey.Open(KeyContainer, provider, CngKeyOpenOptions.MachineKey);
 
-            if (cngkey == null)
+                if (cngkey == null)
+                {
+                    throw new InvalidOperationException(NuGetMSSignCommand.MSSignCommandNoCngKeyException);
+                }
+            
+                if (cngkey.AlgorithmGroup != CngAlgorithmGroup.Rsa)
+                {
+                    throw new InvalidOperationException(NuGetMSSignCommand.MSSignCommandInvalidCngKeyException);
+                }
+
+                return cngkey;
+            }
+            catch (CryptographicException)
             {
                 throw new InvalidOperationException(NuGetMSSignCommand.MSSignCommandNoCngKeyException);
             }
-
-            if (cngkey.AlgorithmGroup != CngAlgorithmGroup.Rsa)
-            {
-                throw new InvalidOperationException(NuGetMSSignCommand.MSSignCommandInvalidCngKeyException);
-            }
-
-            return cngkey;
         }
 
         protected X509Certificate2 GetCertificate(X509Certificate2Collection certCollection)

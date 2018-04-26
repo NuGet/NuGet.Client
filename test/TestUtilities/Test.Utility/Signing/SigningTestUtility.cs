@@ -210,7 +210,7 @@ namespace Test.Utility.Signing
             var keyUsage = KeyUsage.DigitalSignature;
             var issuerDN = chainCertificateRequest?.IssuerDN ?? subjectDN;
             certGen.SetIssuerDN(new X509Name(issuerDN));
-
+            
 #if IS_DESKTOP
             if (chainCertificateRequest != null)
             {
@@ -492,7 +492,8 @@ namespace Test.Utility.Signing
         /// </summary>
         public static X509Certificate2 GetPublicCert(X509Certificate2 cert)
         {
-            return new X509Certificate2(cert.Export(X509ContentType.Cert));
+            var pass = new Guid().ToString();
+            return new X509Certificate2(cert.Export(X509ContentType.Cert), pass, X509KeyStorageFlags.Exportable);
         }
 
         /// <summary>
@@ -501,7 +502,7 @@ namespace Test.Utility.Signing
         public static X509Certificate2 GetPublicCertWithPrivateKey(X509Certificate2 cert)
         {
             var pass = new Guid().ToString();
-            return new X509Certificate2(cert.Export(X509ContentType.Pfx, pass), pass, X509KeyStorageFlags.PersistKeySet);
+            return new X509Certificate2(cert.Export(X509ContentType.Pfx, pass), pass, X509KeyStorageFlags.PersistKeySet|X509KeyStorageFlags.Exportable);
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificate()

@@ -36,7 +36,7 @@ namespace NuGet.MSSigning.Extensions
             }
         }
 
-        private AuthorSignPackageRequest GetAuthorSignRequest()
+        public AuthorSignPackageRequest GetAuthorSignRequest()
         {
             ValidatePackagePath();
             WarnIfNoTimestamper(Console);
@@ -46,6 +46,7 @@ namespace NuGet.MSSigning.Extensions
             var signingSpec = SigningSpecifications.V1;
             var signatureHashAlgorithm = ValidateAndParseHashAlgorithm(HashAlgorithm, nameof(HashAlgorithm), signingSpec);
             var timestampHashAlgorithm = ValidateAndParseHashAlgorithm(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm), signingSpec);
+
             var certCollection = GetCertificateCollection();
             var certificate = GetCertificate(certCollection);
             var privateKey = GetPrivateKey(certificate);

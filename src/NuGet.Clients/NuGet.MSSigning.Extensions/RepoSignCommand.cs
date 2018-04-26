@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine;
 using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Packaging.Signing;
 
 namespace NuGet.MSSigning.Extensions
@@ -23,13 +22,16 @@ namespace NuGet.MSSigning.Extensions
        UsageDescriptionResourceName = "RepoSignCommandUsageDescription")]
     public class RepoSignCommand : MSSignAbstract
     {
-        private readonly List<string> _packageOwners = new List<string>();
-
         [Option(typeof(NuGetMSSignCommand), "RepoSignCommandPackageOwnersDescription")]
-        public IList<string> PackageOwners => _packageOwners;
+        public IList<string> PackageOwners { get; set; }
 
         [Option(typeof(NuGetMSSignCommand), "RepoSignCommandV3ServiceIndexUrlDescription")]
         public string V3ServiceIndexUrl { get; set; }
+
+        public RepoSignCommand() : base()
+        {
+            PackageOwners = new List<string>();
+        }
 
         public override async Task ExecuteCommandAsync()
         {
@@ -47,7 +49,7 @@ namespace NuGet.MSSigning.Extensions
             }
         }
 
-        private RepositorySignPackageRequest GetRepositorySignRequest()
+        public RepositorySignPackageRequest GetRepositorySignRequest()
         {
             ValidatePackagePath();
             WarnIfNoTimestamper(Console);
@@ -58,10 +60,11 @@ namespace NuGet.MSSigning.Extensions
             var signingSpec = SigningSpecifications.V1;
             var signatureHashAlgorithm = ValidateAndParseHashAlgorithm(HashAlgorithm, nameof(HashAlgorithm), signingSpec);
             var timestampHashAlgorithm = ValidateAndParseHashAlgorithm(TimestampHashAlgorithm, nameof(TimestampHashAlgorithm), signingSpec);
+            var v3ServiceIndexUri = ValidateAndParseV3ServiceIndexUrl();
+
             var certCollection = GetCertificateCollection();
             var certificate = GetCertificate(certCollection);
             var privateKey = GetPrivateKey(certificate);
-            var v3ServiceIndexUri = ValidateAndParseV3ServiceIndexUrl();
 
             var request = new RepositorySignPackageRequest(
                 certificate,
