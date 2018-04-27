@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -119,10 +120,10 @@ namespace NuGet.Packaging
                 ZipReadStream = stream;
                 _zipArchive = new ZipArchive(stream, ZipArchiveMode.Read);
             }
-            catch
+            catch (Exception ex)
             {
                 stream?.Dispose();
-                throw;
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidPackageNupkg, filePath), ex);
             }
         }
 
