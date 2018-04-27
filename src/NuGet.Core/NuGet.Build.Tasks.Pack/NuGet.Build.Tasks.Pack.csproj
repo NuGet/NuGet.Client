@@ -113,6 +113,9 @@
         <StrongName>MsSharedLib72</StrongName>
         <Authenticode>Microsoft</Authenticode>
       </DllsInOutputDir>
+      <DllsInOutputDir Include="$(OutputPath)ilmerge\*.xml" KeepDuplicates="false">
+        <Authenticode>XML94</Authenticode>
+      </DllsInOutputDir>
     </ItemGroup>
   </Target>
 
