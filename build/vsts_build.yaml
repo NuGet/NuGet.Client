@@ -212,6 +212,10 @@ phases:
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:AfterBuild /p:SignPackages=true"
 
+  - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
+    inputs:
+      TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
+
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
     inputs:
