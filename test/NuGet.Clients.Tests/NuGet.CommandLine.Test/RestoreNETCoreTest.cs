@@ -5506,9 +5506,9 @@ namespace NuGet.CommandLine.Test
                 Directory.GetDirectories(pathContext.UserPackagesFolder).Should().BeEmpty();
             }
         }
-
+        // The scenario here is 2 different projects are setting RestoreSources, and the caching of the sources takes this into consideration
         [Fact]
-        public async Task RestoreNetCore_VerifySourcesResolvedAgainstProjectPropertyAsync()
+        public async Task RestoreNetCore_VerifySourcesResolvedCorrectlyForMultipleProjectsAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -5573,9 +5573,8 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        // The scenario here is 2 different projects are setting RestoreSources, and the caching of the sources takes this into consideration
         [Fact]
-        public async Task RestoreNetCore_VerifySourcesResolvedCorrectlyForMultipleProjects()
+        public async Task RestoreNetCore_VerifySourcesResolvedAgainstProjectPropertyAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
