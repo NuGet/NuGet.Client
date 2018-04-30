@@ -155,7 +155,7 @@ namespace Dotnet.Integration.Test
                 args,
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
-
+            Assert.True(result.Item1 == 0, $"dotnet.exe {args} command failed with following log information :\n {result.AllOutput}");                
             return result;
         }
 
