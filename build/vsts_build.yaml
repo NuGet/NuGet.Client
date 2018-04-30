@@ -28,8 +28,13 @@ phases:
         $newBuildCounter = [System.Decimal]::Parse($revision)
         $newBuildCounter++
         Set-Content $env:BUILDCOUNTERFILE $newBuildCounter
-        Write-Host "##vso[build.updatebuildnumber]$newBuildCounter"
+        $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
+        $productVersion = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
+        $productVersion = $productVersion.Trim()
+        $FullBuildNumber = "$productVersion.$newBuildCounter"
+        Write-Host "##vso[build.updatebuildnumber]$FullBuildNumber"
         Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
+        Write-Host "##vso[task.setvariable variable=FullVstsBuildNumber;isOutput=true]$FullBuildNumber"
 
   - task: PowerShell@1
     displayName: "Add Build Tags"
@@ -43,6 +48,7 @@ phases:
   dependsOn: Initialize_Build
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   queue:
     name: VSEng-MicroBuildVS2017
     timeoutInMinutes: 90
@@ -62,7 +68,7 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Write-Host "##vso[build.updatebuildnumber]$env:BuildNumber"
+        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
         gci env:* | sort-object name
 
   - task: PowerShell@1
@@ -341,6 +347,7 @@ phases:
   dependsOn: Initialize_Build
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "  	
   queue:
     name: VSEng-MicroBuildSxS
@@ -355,7 +362,7 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Write-Host "##vso[build.updatebuildnumber]$env:BuildNumber"
+        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
         gci env:* | sort-object name
 
   - task: CopyFiles@2
@@ -426,7 +433,7 @@ phases:
 - phase: Tests_On_Linux
   dependsOn: Initialize_Build
   variables:
-    BUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "  	
   queue:
     name: DDNuGet-Linux
@@ -439,7 +446,7 @@ phases:
     inputs:
       targetType: "inline"
       script: |
-        Write-Host "##vso[build.updatebuildnumber]$env:BUILDNUMBER"
+        Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
       failOnStderr: "true"
     condition: "always()"
 
@@ -477,7 +484,7 @@ phases:
   - Build_and_UnitTest
   - Initialize_Build
   variables:
-    BUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "  	
   queue:
     name: VSEng-MicroBuildMacSierra
@@ -490,7 +497,7 @@ phases:
     inputs:
       targetType: "inline"
       script: |
-        Write-Host "##vso[build.updatebuildnumber]$env:BUILDNUMBER"
+        Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
       failOnStderr: "true"
     condition: "always()"
 
@@ -534,7 +541,7 @@ phases:
   - Build_and_UnitTest
   - Initialize_Build
   variables:
-    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "  	
   queue:
     name: DDNuGet-Windows
@@ -546,7 +553,7 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Write-Host "##vso[build.updatebuildnumber]$env:BuildNumber"
+        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
         gci env:* | sort-object name      
 
   - task: PowerShell@1
@@ -631,6 +638,7 @@ phases:
   - Initialize_Build
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FulLVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FulLVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "  	
   queue:
     name: DDNuGet-Windows
@@ -642,7 +650,7 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Write-Host "##vso[build.updatebuildnumber]$env:BuildNumber"
+        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
         gci env:* | sort-object name
         
   - task: NuGetToolInstaller@0
@@ -712,7 +720,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(Build.BuildNumber)"
+      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(BuildNumber)"
       
   - task: NuGetCommand@2
     displayName: "Add Apex Feed Source"
@@ -726,7 +734,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(Build.BuildNumber)"
+      msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(BuildNumber)"
 
   - task: MSBuild@1
     displayName: "Run Apex Tests"
@@ -736,7 +744,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml  /p:NUGET_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\35MSSharedLib1024.snk /p:BuildNumber=$(Build.BuildNumber)"
+      msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml  /p:NUGET_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\35MSSharedLib1024.snk /p:BuildNumber=$(BuildNumber)"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
