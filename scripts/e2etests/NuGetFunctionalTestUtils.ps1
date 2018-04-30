@@ -201,7 +201,7 @@ function CopyResultsToCI
     [Parameter(Mandatory=$true)]
     [string]$NuGetDropPath,
     [Parameter(Mandatory=$true)]
-    [int]$RunCounter,
+    [string]$RunCounter,
     [Parameter(Mandatory=$true)]
     [string]$resultsFile)
 
@@ -252,7 +252,7 @@ function OutputResultsForCI
     [Parameter(Mandatory=$true)]
     [string]$NuGetDropPath,
     [Parameter(Mandatory=$true)]
-    [int]$RunCounter,
+    [string]$RunCounter,
     [Parameter(Mandatory=$true)]
     [string]$RealTimeResultsFilePath)
 
