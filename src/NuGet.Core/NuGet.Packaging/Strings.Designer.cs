@@ -512,7 +512,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} cannot be read. File is not a valid nupkg..
+        ///   Looks up a localized string similar to The file is not a valid nupkg. File path: {0}.
         /// </summary>
         internal static string InvalidPackageNupkg {
             get {

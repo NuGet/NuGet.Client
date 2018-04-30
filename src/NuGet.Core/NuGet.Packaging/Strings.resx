@@ -667,7 +667,7 @@ Valid from:</comment>
     <value>The timestamp's generalized time is outside the timestamping certificate's validity period.</value>
   </data>
   <data name="InvalidPackageNupkg" xml:space="preserve">
-    <value>{0} cannot be read. File is not a valid nupkg.</value>
+    <value>The file is not a valid nupkg. File path: {0}</value>
     <comment>0 - Nupkg file path</comment>
   </data>
 </root>
