@@ -801,6 +801,13 @@ namespace NuGet.PackageManagement
         {
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
 
+            NuGetFramework framework;
+            if (!nuGetProject.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out framework))
+            {
+                // Default to the any framework if the project does not specify a framework.
+                framework = NuGetFramework.AnyFramework;
+            }
+
             var log = new LoggerAdapter(nuGetProjectContext);
 
             var actions = new List<NuGetProjectAction>();
@@ -821,8 +828,8 @@ namespace NuGet.PackageManagement
                     if (!autoReferenced)
                     {
                         var resolvedPackage = await GetLatestVersionAsync(
-                            installedPackage.PackageIdentity.Id,
-                            nuGetProject,
+                            installedPackage,
+                            framework,
                             resolutionContext,
                             primarySources,
                             log,
@@ -876,8 +883,8 @@ namespace NuGet.PackageManagement
                     if (installedPackageReference != null && !autoReferenced)
                     {
                         var resolvedPackage = await GetLatestVersionAsync(
-                            packageId,
-                            nuGetProject,
+                            installedPackageReference,
+                            framework,
                             resolutionContext,
                             primarySources,
                             log,
@@ -3229,6 +3236,31 @@ namespace NuGet.PackageManagement
 
             var resolvedPackages = await Task.WhenAll(tasks);
             var latestVersion = resolvedPackages.Select(v => v.LatestVersion).Where(v => v != null).Max();
+
+            return new ResolvedPackage(latestVersion, resolvedPackages.Any(p => p.Exists));
+        }
+
+        public static async Task<ResolvedPackage> GetLatestVersionAsync(
+            PackageReference package,
+            NuGetFramework framework,
+            ResolutionContext resolutionContext,
+            IEnumerable<SourceRepository> sources,
+            Common.ILogger log,
+            CancellationToken token)
+        {
+            var tasks = new List<Task<ResolvedPackage>>();
+
+            foreach (var source in sources)
+            {
+                tasks.Add(Task.Run(async ()
+                    => await GetLatestVersionCoreAsync(package.PackageIdentity.Id, framework, resolutionContext, source, log, token)));
+            }
+
+            var resolvedPackages = await Task.WhenAll(tasks);
+
+            var latestVersion = resolvedPackages
+                .Select(v => v.LatestVersion)
+                .Where(v => v != null && package.AllowedVersions.Satisfies(v)).Max();
 
             return new ResolvedPackage(latestVersion, resolvedPackages.Any(p => p.Exists));
         }

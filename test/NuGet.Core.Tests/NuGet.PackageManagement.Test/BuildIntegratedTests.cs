@@ -1769,6 +1769,91 @@ namespace NuGet.Test
             }
         }
 
+        [Fact]
+        public async void TestPacMan_BuildIntegrated_PreviewUpdatesAsync_WithStrictVersionRange()
+        {
+            // Set up Package Source
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo("packageA", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("packageA", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
+            };
+
+            // Arrange
+            var sourceRepositoryProvider = CreateSource(packages);
+
+            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var randomProjectFolderPath = TestDirectory.Create())
+            {
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                var token = CancellationToken.None;
+                var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+                var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+                var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+
+                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+
+                BasicConfigWithPackage(randomConfig);
+
+                var projectTargetFramework = NuGetFramework.Parse("net46");
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+                var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+                var packageIdentity = new PackageIdentity("packageA", new NuGetVersion(1, 0, 0));
+                var testLogger = new TestLogger();
+                var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+                var providersCache = new RestoreCommandProvidersCache();
+                var dgSpec1 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+
+                await DependencyGraphRestoreUtility.RestoreAsync(
+                    testSolutionManager,
+                    restoreContext,
+                    providersCache,
+                    (c) => { },
+                    sourceRepositoryProvider.GetRepositories(),
+                    Guid.Empty,
+                    false,
+                    dgSpec1,
+                    testLogger,
+                    CancellationToken.None);
+
+                var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+                Assert.Equal(packageIdentity, installedPackages.First().PackageIdentity);
+
+                // Main Act
+                var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                    "packageA",
+                    new List<NuGetProject> { buildIntegratedProject },
+                    new ResolutionContext(),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.False(actions.Any());
+            }
+        }
+
+        private SourceRepositoryProvider CreateSource(List<SourcePackageDependencyInfo> packages)
+        {
+            var resourceProviders = new List<Lazy<INuGetResourceProvider>>();
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages)));
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestMetadataProvider(packages)));
+
+            var packageSource = new Configuration.PackageSource("http://temp");
+            var packageSourceProvider = new TestPackageSourceProvider(new[] { packageSource });
+
+            return new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
+        }
+
         private static void CreateConfigJson(string path)
         {
             using (var writer = new StreamWriter(path))
@@ -1804,6 +1889,14 @@ namespace NuGet.Test
             }
         }
 
+        private static void BasicConfigWithPackage(string path)
+        {
+            using (var writer = new StreamWriter(path))
+            {
+                writer.Write(ConfigWithPackage.ToString());
+            }
+        }
+
         private static JObject BasicConfigNet460
         {
             get
@@ -1814,6 +1907,27 @@ namespace NuGet.Test
                 frameworks["net46"] = new JObject();
 
                 json["dependencies"] = new JObject();
+
+                json["frameworks"] = frameworks;
+
+                return json;
+            }
+        }
+
+        private static JObject ConfigWithPackage
+        {
+            get
+            {
+                var json = new JObject();
+
+                var frameworks = new JObject();
+                frameworks["net46"] = new JObject();
+
+                var deps = new JObject();
+                var prop = new JProperty("packageA", "[1.0.0]");
+                deps.Add(prop);
+
+                json["dependencies"] = deps;
 
                 json["frameworks"] = frameworks;
 
