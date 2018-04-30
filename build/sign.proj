@@ -45,7 +45,7 @@
   <Target Name="GetOutputVsix">
     <ItemGroup>
       <FilesToSign Include="$(VsixPublishDestination)**\*.vsix">
-        <Authenticode>100040160</Authenticode>
+        <Authenticode>VsixSHA2</Authenticode>
       </FilesToSign>
     </ItemGroup>
   </Target>
