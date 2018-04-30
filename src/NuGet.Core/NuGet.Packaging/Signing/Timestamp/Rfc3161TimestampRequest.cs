@@ -186,8 +186,8 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(timestampUri));
             if (!timestampUri.IsAbsoluteUri)
                 throw new ArgumentException("Absolute URI required", nameof(timestampUri));
-            if (timestampUri.Scheme != Uri.UriSchemeHttp)
-                throw new ArgumentException("HTTP required", nameof(timestampUri));
+            if (timestampUri.Scheme != Uri.UriSchemeHttp && timestampUri.Scheme != Uri.UriSchemeHttps)
+                throw new ArgumentException("HTTP/HTTPS required", nameof(timestampUri));
 
             IntPtr requestedPolicyPtr = IntPtr.Zero;
             IntPtr pTsContext = IntPtr.Zero;
