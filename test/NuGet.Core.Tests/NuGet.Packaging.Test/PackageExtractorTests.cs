@@ -2670,7 +2670,7 @@ namespace NuGet.Packaging.Test
                 var expectedVerifierSettings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
                     allowIllegal: true,
-                    allowUntrusted: true,
+                    allowUntrusted: false,
                     allowIgnoreTimestamp: true,
                     allowMultipleTimestamps: true,
                     allowNoTimestamp: true,
