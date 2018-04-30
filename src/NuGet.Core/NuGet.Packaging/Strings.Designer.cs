@@ -512,6 +512,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The file is not a valid nupkg. File path: {0}.
+        /// </summary>
+        internal static string InvalidPackageNupkg {
+            get {
+                return ResourceManager.GetString("InvalidPackageNupkg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package {0} signature is invalid..
         /// </summary>
         internal static string InvalidPackageSignature {
