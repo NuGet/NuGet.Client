@@ -35,15 +35,17 @@
 
   <!-- Nuspec defaults -->
   <PropertyGroup>
-    <Authors>NuGet</Authors>
-    <ProjectUrl>https://github.com/NuGet/NuGet.Client</ProjectUrl>
+    <Authors>Microsoft</Authors>
+    <ProjectUrl>https://aka.ms/nugetprj</ProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NuGet/NuGet.Client</RepositoryUrl>
     <PackageTags>nuget</PackageTags>
     <Description>NuGet client library.</Description>
-    <Copyright>Copyright .NET Foundation. All rights reserved.</Copyright>
+    <Copyright>&#169; .NET Foundation. All rights reserved.</Copyright>
     <Serviceable>true</Serviceable>
+    <PackageIconUrl>https://raw.githubusercontent.com/NuGet/Media/master/Images/MainLogo/256x256/nuget_256.png</PackageIconUrl>
   </PropertyGroup>
 
   <Target Name="GetSemanticVersion">

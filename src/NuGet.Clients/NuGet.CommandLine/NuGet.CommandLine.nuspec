@@ -6,7 +6,8 @@
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</licenseUrl>
-    <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+    <projectUrl>https://aka.ms/nugetprj</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/NuGet/Media/master/Images/MainLogo/256x256/nuget_256.png</iconUrl>
     <copyright>&#169; .NET Foundation. All rights reserved.</copyright>
     <description>NuGet Command Line Tool</description>
     <developmentDependency>true</developmentDependency>
