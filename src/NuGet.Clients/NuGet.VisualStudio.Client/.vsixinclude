@@ -12,6 +12,7 @@ NuGet.VisualStudio.Interop.dll
 NuGet.VisualStudio.Implementation.dll
 
 # MS delay signed assemblies
+Microsoft.Build.NuGetSdkResolver.dll
 NuGet.Build.Tasks.dll
 NuGet.Commands.dll
 NuGet.Common.dll
