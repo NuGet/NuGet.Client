@@ -69,7 +69,7 @@ EndGlobal";
                 File.Delete(projPath);
                 File.WriteAllText(projPath, doc.ToString());
 
-                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, "msbuild proj.sln /t:restore /p:DisableImplicitFrameworkReferences=true");
+                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, "msbuild proj.sln /t:restore /p:DisableImplicitFrameworkReferences=true", ignoreExitCode: true);
 
                 result.ExitCode.Should().Be(1, "error text should be displayed");
                 result.AllOutput.Should().Contain($"|SOLUTION {PathUtility.EnsureTrailingSlash(pathContext.SolutionRoot)} proj|");
