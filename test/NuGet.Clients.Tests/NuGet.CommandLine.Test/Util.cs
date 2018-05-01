@@ -28,7 +28,7 @@ namespace NuGet.CommandLine.Test
         {
             return GetResource("NuGet.CommandLine.Test.compiler.resources.mockserver.xml");
         }
-
+        
         public static string GetResource(string name)
         {
             using (var reader = new StreamReader(typeof(Util).GetTypeInfo().Assembly.GetManifestResourceStream(name)))
@@ -233,7 +233,7 @@ namespace NuGet.CommandLine.Test
 
             if (contentFiles == null || contentFiles.Length == 0)
             {
-                packageBuilder.Files.Add(CreatePackageFile(Path.Combine("content", "test1.txt")));
+                packageBuilder.Files.Add(CreatePackageFile(Path.Combine("content","test1.txt")));
             }
             else
             {
@@ -503,43 +503,12 @@ namespace NuGet.CommandLine.Test
 }");
         }
 
-        public static JObject CreateRepoSignJson()
-        {
-            return JObject.Parse(@"{
-  ""allRepositorySigned"": false,
-  ""signingCertificates"": [
-    {
-      ""fingerprints"": {
-        ""2.16.840.1.101.3.4.2.1"": ""3f9001ea83c560d712c24cf213c3d312cb3bff51ee89435d3430bd06b5d0eece""
-      },
-      ""subject"": ""CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"",
-      ""issuer"": ""CN=DigiCert SHA2 Assured ID Code Signing CA, OU=www.digicert.com, O=DigiCert Inc, C=US"",
-      ""notBefore"": ""2018-02-26T00:00:00.0000000Z"",
-      ""notAfter"": ""2021-01-27T12:00:00.0000000Z"",
-      ""contentUrl"": ""https://apidev.nugettest.org/v3-index/repository-signatures/certificates/3f9001ea83c560d712c24cf213c3d312cb3bff51ee89435d3430bd06b5d0eece.crt""
-    }
-  ]
-}");
-        }
-
         public static void AddFlatContainerResource(JObject index, MockServer server)
         {
             var resource = new JObject
             {
                 { "@id", $"{server.Uri}flat" },
                 { "@type", "PackageBaseAddress/3.0.0" }
-            };
-
-            var array = index["resources"] as JArray;
-            array.Add(resource);
-        }
-
-        public static void AddRepositorySignatureResource(JObject index, MockServer server)
-        {
-            var resource = new JObject
-            {
-                { "@id", $"{server.Uri}v3-index/repository-signatures/index.json" },
-                { "@type", "RepositorySignatures/4.7.0" }
             };
 
             var array = index["resources"] as JArray;
