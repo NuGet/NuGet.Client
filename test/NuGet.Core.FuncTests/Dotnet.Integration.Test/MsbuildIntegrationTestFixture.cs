@@ -155,7 +155,7 @@ namespace Dotnet.Integration.Test
                 args,
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
-
+            Assert.True(result.Item1 == 0, $"dotnet.exe {args} command failed with following log information :\n {result.AllOutput}");                
             return result;
         }
 
@@ -326,7 +326,7 @@ namespace Dotnet.Integration.Test
 
         public void Dispose()
         {
-            RunDotnet(Path.GetDirectoryName(TestDotnetCli), "buildserver shutdown");
+            RunDotnet(Path.GetDirectoryName(TestDotnetCli), "build-server shutdown");
             KillDotnetExe(TestDotnetCli);
             DeleteDirectory(Path.GetDirectoryName(TestDotnetCli));
         }
