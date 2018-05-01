@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
@@ -103,6 +103,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NuGet.Core\Microsoft.Build.NuGetSdkResolver\Microsoft.Build.NuGetSdkResolver.csproj">
+      <Project>{299b3e44-5372-4d6b-a4e9-3dbea4705701}</Project>
+      <Name>Microsoft.Build.NuGetSdkResolver</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.Build.Tasks.csproj">
       <Project>{e09441b8-8d74-4a96-8431-480e2065f844}</Project>
       <Name>NuGet.Build.Tasks</Name>
