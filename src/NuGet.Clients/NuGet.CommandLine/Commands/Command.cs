@@ -169,7 +169,7 @@ namespace NuGet.CommandLine
         /// </summary>
         protected void SetDefaultCredentialProvider()
         {
-            CredentialService = new CredentialService(GetCredentialProviders(), NonInteractive);
+            CredentialService = new CredentialService(new Common.AsyncLazy<IEnumerable<ICredentialProvider>>(() => GetCredentialProviders()), NonInteractive);
 
             CoreV2.NuGet.HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
 
@@ -182,14 +182,14 @@ namespace NuGet.CommandLine
             };
         }
 
-        private IEnumerable<NuGet.Credentials.ICredentialProvider> GetCredentialProviders()
+        private async Task<IEnumerable<ICredentialProvider>> GetCredentialProviders()
         {
             var extensionLocator = new ExtensionLocator();
             var providers = new List<Credentials.ICredentialProvider>();
             var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings, Console)
                 .BuildAll(Verbosity.ToString())
                 .ToList();
-            var securePluginProviders =  (new SecureCredentialProviderBuilder(PluginManager.Instance, Console)).BuildAll().Result;
+            var securePluginProviders =  await (new SecureCredentialProviderBuilder(PluginManager.Instance, Console)).BuildAll();
 
             providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
             providers.AddRange(securePluginProviders);

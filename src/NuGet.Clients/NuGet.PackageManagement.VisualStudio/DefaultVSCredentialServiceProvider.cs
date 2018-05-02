@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
-        public async Task<NuGet.Configuration.ICredentialService> GetCredentialServiceAsync()
+        public async Task<Configuration.ICredentialService> GetCredentialServiceAsync()
         {
             // Initialize the credential providers.
             var credentialProviders = new List<ICredentialProvider>();
@@ -85,7 +85,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Initialize the credential service.
-            var credentialService = new CredentialService(credentialProviders, nonInteractive: false);
+            var credentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => System.Threading.Tasks.Task.FromResult((IEnumerable<ICredentialProvider>)credentialProviders)), nonInteractive: false);
 
             return credentialService;
         }
