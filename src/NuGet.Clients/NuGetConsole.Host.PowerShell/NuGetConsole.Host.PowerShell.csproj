@@ -157,7 +157,7 @@
   <Target Name="GetScriptsForSigning" Returns="@(ScriptsToSign)">
     <ItemGroup>
       <ScriptsToSign Include="$(MSBuildProjectDirectory)\Scripts\*.ps*">
-        <Authenticode>402</Authenticode>
+        <Authenticode>Microsoft402</Authenticode>
       </ScriptsToSign>
     </ItemGroup>
   </Target>

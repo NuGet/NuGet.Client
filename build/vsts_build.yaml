@@ -71,6 +71,11 @@ phases:
         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
         gci env:* | sort-object name
 
+  - task: NuGetToolInstaller@0
+    displayName: "Use NuGet 4.6.2"
+    inputs:
+      versionSpec: "4.6.2"
+
   - task: PowerShell@1
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
@@ -217,6 +222,17 @@ phases:
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:AfterBuild /p:SignPackages=true"
+
+  - task: NuGetCommand@2
+    displayName: "Verify Nupkg Signatures"
+    inputs:
+      command: "custom"
+      arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
+
+  - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
+    displayName: Verify Assembly Signatures and StrongName
+    inputs:
+      TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
 
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
