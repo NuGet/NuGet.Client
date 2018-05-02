@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
   x:Class="NuGet.PackageManagement.UI.PackageMetadataControl"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -15,6 +15,7 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
+      <nuget:DateFormatter x:Key="DateFormatConverter" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
@@ -163,9 +164,10 @@
         Margin="0,8,0,0"
         Text="{x:Static nuget:Resources.Label_DatePublished}" />
       <TextBox
+        Name="datePublished"
         Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=Published,Converter={StaticResource NullToVisibilityConverter}}"
-        Text="{Binding Path=Published,StringFormat={}{0:dddd}\, {0:MMMM} {0:dd}\, {0:yyyy} ({0:d})}"
+        Text="{Binding Path=Published,Converter={StaticResource DateFormatConverter}}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
         Grid.Row="5"
