@@ -492,8 +492,7 @@ namespace Test.Utility.Signing
         /// </summary>
         public static X509Certificate2 GetPublicCert(X509Certificate2 cert)
         {
-            var pass = new Guid().ToString();
-            return new X509Certificate2(cert.Export(X509ContentType.Cert), pass, X509KeyStorageFlags.Exportable);
+            return new X509Certificate2(cert.Export(X509ContentType.Cert));
         }
 
         /// <summary>
@@ -501,8 +500,8 @@ namespace Test.Utility.Signing
         /// </summary>
         public static X509Certificate2 GetPublicCertWithPrivateKey(X509Certificate2 cert)
         {
-            var pass = new Guid().ToString();
-            return new X509Certificate2(cert.Export(X509ContentType.Pfx, pass), pass, X509KeyStorageFlags.PersistKeySet|X509KeyStorageFlags.Exportable);
+            var password = new Guid().ToString();
+            return new X509Certificate2(cert.Export(X509ContentType.Pfx, password), password, X509KeyStorageFlags.PersistKeySet|X509KeyStorageFlags.Exportable);
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificate()

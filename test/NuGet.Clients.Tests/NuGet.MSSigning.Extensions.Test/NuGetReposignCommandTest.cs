@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using Moq;
 using NuGet.MSSigning.Extensions;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.MSSigning.Extensions.Test
@@ -19,268 +21,295 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
         [Fact]
         public void ReposignCommandArgParsing_NoPackagePath()
         {
-            // Arrange
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var v3serviceIndexUrl = "https://v3serviceIndex.test/api/index.json";
-
-            var mockConsole = new Mock<IConsole>();
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CSPName = cspName,
-                KeyContainer = keyContainer,
-                CertificateFingerprint = certificateFingerprint,
-                V3ServiceIndexUrl = v3serviceIndexUrl,
-            };
+                // Arrange
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var v3serviceIndexUrl = "https://v3serviceIndex.test/api/index.json";
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.Equal(_noPackageException, ex.Message);
+                var mockConsole = new Mock<IConsole>();
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CSPName = cspName,
+                    KeyContainer = keyContainer,
+                    CertificateFingerprint = certificateFingerprint,
+                    V3ServiceIndexUrl = v3serviceIndexUrl,
+                };
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.Equal(_noPackageException, ex.Message);
+            }
         }
 
         [Fact]
         public void ReposignCommandArgParsing_NoCertificateFile()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var v3serviceIndexUrl = "https://v3serviceIndex.test/api/index.json";
-
-            var mockConsole = new Mock<IConsole>();
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CSPName = cspName,
-                KeyContainer = keyContainer,
-                CertificateFingerprint = certificateFingerprint,
-                V3ServiceIndexUrl = v3serviceIndexUrl,
-            };
-            reposignCommand.Arguments.Add(packagePath);
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var v3serviceIndexUrl = "https://v3serviceIndex.test/api/index.json";
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.Equal(string.Format(_noCertificateException, nameof(reposignCommand.CertificateFile)), ex.Message);
+                var mockConsole = new Mock<IConsole>();
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CSPName = cspName,
+                    KeyContainer = keyContainer,
+                    CertificateFingerprint = certificateFingerprint,
+                    V3ServiceIndexUrl = v3serviceIndexUrl,
+                };
+                reposignCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.Equal(string.Format(_noCertificateException, nameof(reposignCommand.CertificateFile)), ex.Message);
+            }
         }
 
         [Fact]
         public void ReposignCommandArgParsing_NoCSPName()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var v3serviceIndexUrl = "https://v3serviceIndex.test/api/index.json";
-
-            var mockConsole = new Mock<IConsole>();
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                KeyContainer = keyContainer,
-                CertificateFingerprint = certificateFingerprint,
-                V3ServiceIndexUrl = v3serviceIndexUrl,
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var v3serviceIndexUrl = "https://v3serviceIndex.test/api/index.json";
 
-            reposignCommand.Arguments.Add(packagePath);
+                var mockConsole = new Mock<IConsole>();
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    KeyContainer = keyContainer,
+                    CertificateFingerprint = certificateFingerprint,
+                    V3ServiceIndexUrl = v3serviceIndexUrl,
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.CSPName)), ex.Message);
+                reposignCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.CSPName)), ex.Message);
+            }
         }
 
         [Fact]
         public void ReposignCommandArgParsing_NoKeyContainer()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var cspName = "cert provider";
-            var v3serviceIndexUrl = "https://v3serviceIndex.test/api/index.json";
-
-            var mockConsole = new Mock<IConsole>();
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CSPName = cspName,
-                CertificateFingerprint = certificateFingerprint,
-                V3ServiceIndexUrl = v3serviceIndexUrl,
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var cspName = "cert provider";
+                var v3serviceIndexUrl = "https://v3serviceIndex.test/api/index.json";
 
-            reposignCommand.Arguments.Add(packagePath);
+                var mockConsole = new Mock<IConsole>();
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CSPName = cspName,
+                    CertificateFingerprint = certificateFingerprint,
+                    V3ServiceIndexUrl = v3serviceIndexUrl,
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.KeyContainer)), ex.Message);
+                reposignCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.KeyContainer)), ex.Message);
+            }
         }
 
         [Fact]
         public void ReposignCommandArgParsing_NoCertificateFingerprint()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var v3serviceIndexUrl = "https://v3serviceIndex.test/api/index.json";
-
-            var mockConsole = new Mock<IConsole>();
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CSPName = cspName,
-                KeyContainer = keyContainer,
-                V3ServiceIndexUrl = v3serviceIndexUrl,
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var v3serviceIndexUrl = "https://v3serviceIndex.test/api/index.json";
 
-            reposignCommand.Arguments.Add(packagePath);
+                var mockConsole = new Mock<IConsole>();
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CSPName = cspName,
+                    KeyContainer = keyContainer,
+                    V3ServiceIndexUrl = v3serviceIndexUrl,
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.CertificateFingerprint)), ex.Message);
+                reposignCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.CertificateFingerprint)), ex.Message);
+            }
         }
 
         [Fact]
         public void ReposignCommandArgParsing_NoV3ServiceIndex()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-
-            var mockConsole = new Mock<IConsole>();
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CSPName = cspName,
-                KeyContainer = keyContainer,
-                CertificateFingerprint = certificateFingerprint,
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
 
-            reposignCommand.Arguments.Add(packagePath);
+                var mockConsole = new Mock<IConsole>();
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CSPName = cspName,
+                    KeyContainer = keyContainer,
+                    CertificateFingerprint = certificateFingerprint,
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.V3ServiceIndexUrl)), ex.Message);
+                reposignCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.V3ServiceIndexUrl)), ex.Message);
+            }
         }
 
         [Fact]
         public void ReposignCommandArgParsing_InvalidV3ServiceIndex_NotValidURI()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var serviceIndex = "not-valid-uri";
-
-            var mockConsole = new Mock<IConsole>();
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CSPName = cspName,
-                KeyContainer = keyContainer,
-                CertificateFingerprint = certificateFingerprint,
-                V3ServiceIndexUrl = serviceIndex,
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var serviceIndex = "not-valid-uri";
 
-            reposignCommand.Arguments.Add(packagePath);
+                var mockConsole = new Mock<IConsole>();
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CSPName = cspName,
+                    KeyContainer = keyContainer,
+                    CertificateFingerprint = certificateFingerprint,
+                    V3ServiceIndexUrl = serviceIndex,
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.V3ServiceIndexUrl)), ex.Message);
+                reposignCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.V3ServiceIndexUrl)), ex.Message);
+            }
         }
 
         [Fact]
         public void ReposignCommandArgParsing_InvalidV3ServiceIndex_NotHTTPS()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var serviceIndex = "http://validv3NonhttpsUri.test/api/index.json";
-
-            var mockConsole = new Mock<IConsole>();
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CSPName = cspName,
-                KeyContainer = keyContainer,
-                CertificateFingerprint = certificateFingerprint,
-                V3ServiceIndexUrl = serviceIndex,
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var serviceIndex = "http://validv3NonhttpsUri.test/api/index.json";
 
-            reposignCommand.Arguments.Add(packagePath);
+                var mockConsole = new Mock<IConsole>();
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CSPName = cspName,
+                    KeyContainer = keyContainer,
+                    CertificateFingerprint = certificateFingerprint,
+                    V3ServiceIndexUrl = serviceIndex,
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.V3ServiceIndexUrl)), ex.Message);
+                reposignCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.V3ServiceIndexUrl)), ex.Message);
+            }
         }
 
         [Fact]
         public void ReposignCommandArgParsing_InvalidPackageOwners()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var serviceIndex = "https://v3serviceindex.test/api/index.json";
-            var packageOwners = new List<string>() { "owner", "", "anotherOwner", null };
-
-            var mockConsole = new Mock<IConsole>();
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CSPName = cspName,
-                KeyContainer = keyContainer,
-                CertificateFingerprint = certificateFingerprint,
-                V3ServiceIndexUrl = serviceIndex,
-                PackageOwners = packageOwners,
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var serviceIndex = "https://v3serviceindex.test/api/index.json";
+                var packageOwners = new List<string>() { "owner", "", "anotherOwner", null };
 
-            reposignCommand.Arguments.Add(packagePath);
+                var mockConsole = new Mock<IConsole>();
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CSPName = cspName,
+                    KeyContainer = keyContainer,
+                    CertificateFingerprint = certificateFingerprint,
+                    V3ServiceIndexUrl = serviceIndex,
+                    PackageOwners = packageOwners,
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.PackageOwners)), ex.Message);
+                reposignCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.PackageOwners)), ex.Message);
+            }
         }
 
         [Theory]
@@ -293,67 +322,73 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
         [InlineData("SHA512")]
         public void ReposignCommandArgParsing_ValidHashAlgorithm(string hashAlgorithm)
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var serviceIndex = "https://v3serviceindex.test/api/index.json";
-            var parsable = Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out Common.HashAlgorithmName parsedHashAlgorithm);
-            var mockConsole = new Mock<IConsole>();
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CertificateFingerprint = certificateFingerprint,
-                KeyContainer = keyContainer,
-                CSPName = cspName,
-                V3ServiceIndexUrl = serviceIndex,
-                HashAlgorithm = hashAlgorithm
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var serviceIndex = "https://v3serviceindex.test/api/index.json";
+                var parsable = Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out Common.HashAlgorithmName parsedHashAlgorithm);
+                var mockConsole = new Mock<IConsole>();
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CertificateFingerprint = certificateFingerprint,
+                    KeyContainer = keyContainer,
+                    CSPName = cspName,
+                    V3ServiceIndexUrl = serviceIndex,
+                    HashAlgorithm = hashAlgorithm
+                };
 
-            reposignCommand.Arguments.Add(packagePath);
+                reposignCommand.Arguments.Add(packagePath);
 
-            // Act & Assert
-            Assert.True(parsable);
-            var ex = Assert.Throws<CryptographicException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.NotEqual(string.Format(_invalidArgException, nameof(reposignCommand.HashAlgorithm)), ex.Message);
+                // Act & Assert
+                Assert.True(parsable);
+                var ex = Assert.Throws<CryptographicException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.NotEqual(string.Format(_invalidArgException, nameof(reposignCommand.HashAlgorithm)), ex.Message);
+            }
         }
 
         [Fact]
         public void ReposignCommandArgParsing_InvalidHashAlgorithm()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var serviceIndex = "https://v3serviceindex.test/api/index.json";
-            var hashAlgorithm = "MD5";
-            var mockConsole = new Mock<IConsole>();
-
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CertificateFingerprint = certificateFingerprint,
-                KeyContainer = keyContainer,
-                CSPName = cspName,
-                V3ServiceIndexUrl = serviceIndex,
-                HashAlgorithm = hashAlgorithm
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var serviceIndex = "https://v3serviceindex.test/api/index.json";
+                var hashAlgorithm = "MD5";
+                var mockConsole = new Mock<IConsole>();
 
-            reposignCommand.Arguments.Add(packagePath);
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CertificateFingerprint = certificateFingerprint,
+                    KeyContainer = keyContainer,
+                    CSPName = cspName,
+                    V3ServiceIndexUrl = serviceIndex,
+                    HashAlgorithm = hashAlgorithm
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.HashAlgorithm)), ex.Message);
+                reposignCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.HashAlgorithm)), ex.Message);
+            }
         }
 
         [Theory]
@@ -366,67 +401,73 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
         [InlineData("SHA512")]
         public void ReposignCommandArgParsing_ValidTimestampHashAlgorithm(string timestampHashAlgorithm)
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var serviceIndex = "https://v3serviceindex.test/api/index.json";
-            var parsable = Enum.TryParse(timestampHashAlgorithm, ignoreCase: true, result: out Common.HashAlgorithmName parsedHashAlgorithm);
-            var mockConsole = new Mock<IConsole>();
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CertificateFingerprint = certificateFingerprint,
-                KeyContainer = keyContainer,
-                CSPName = cspName,
-                V3ServiceIndexUrl = serviceIndex,
-                TimestampHashAlgorithm = timestampHashAlgorithm
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var serviceIndex = "https://v3serviceindex.test/api/index.json";
+                var parsable = Enum.TryParse(timestampHashAlgorithm, ignoreCase: true, result: out Common.HashAlgorithmName parsedHashAlgorithm);
+                var mockConsole = new Mock<IConsole>();
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CertificateFingerprint = certificateFingerprint,
+                    KeyContainer = keyContainer,
+                    CSPName = cspName,
+                    V3ServiceIndexUrl = serviceIndex,
+                    TimestampHashAlgorithm = timestampHashAlgorithm
+                };
 
-            reposignCommand.Arguments.Add(packagePath);
+                reposignCommand.Arguments.Add(packagePath);
 
-            // Act & Assert
-            Assert.True(parsable);
-            var ex = Assert.Throws<CryptographicException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.NotEqual(string.Format(_invalidArgException, nameof(reposignCommand.TimestampHashAlgorithm)), ex.Message);
+                // Act & Assert
+                Assert.True(parsable);
+                var ex = Assert.Throws<CryptographicException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.NotEqual(string.Format(_invalidArgException, nameof(reposignCommand.TimestampHashAlgorithm)), ex.Message);
+            }
         }
 
         [Fact]
         public void ReposignCommandArgParsing_InvalidTimestampHashAlgorithm()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var serviceIndex = "https://v3serviceindex.test/api/index.json";
-            var timestampHashAlgorithm = "MD5";
-            var mockConsole = new Mock<IConsole>();
-
-            var reposignCommand = new RepoSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CertificateFingerprint = certificateFingerprint,
-                KeyContainer = keyContainer,
-                CSPName = cspName,
-                V3ServiceIndexUrl = serviceIndex,
-                TimestampHashAlgorithm = timestampHashAlgorithm
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var serviceIndex = "https://v3serviceindex.test/api/index.json";
+                var timestampHashAlgorithm = "MD5";
+                var mockConsole = new Mock<IConsole>();
 
-            reposignCommand.Arguments.Add(packagePath);
+                var reposignCommand = new RepoSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CertificateFingerprint = certificateFingerprint,
+                    KeyContainer = keyContainer,
+                    CSPName = cspName,
+                    V3ServiceIndexUrl = serviceIndex,
+                    TimestampHashAlgorithm = timestampHashAlgorithm
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.TimestampHashAlgorithm)), ex.Message);
+                reposignCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.TimestampHashAlgorithm)), ex.Message);
+            }
         }
     }
 }

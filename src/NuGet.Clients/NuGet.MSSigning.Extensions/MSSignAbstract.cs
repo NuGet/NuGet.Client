@@ -59,10 +59,12 @@ namespace NuGet.MSSigning.Extensions
                 return rsakey.Key;
             }
 
+            CngKey cngkey = null;
+
             try
             {
                 var provider = new CngProvider(CSPName);
-                var cngkey = CngKey.Open(KeyContainer, provider, CngKeyOpenOptions.MachineKey);
+                cngkey = CngKey.Open(KeyContainer, provider, CngKeyOpenOptions.MachineKey);
 
                 if (cngkey == null)
                 {
@@ -71,6 +73,7 @@ namespace NuGet.MSSigning.Extensions
             
                 if (cngkey.AlgorithmGroup != CngAlgorithmGroup.Rsa)
                 {
+                    cngkey.Dispose();
                     throw new InvalidOperationException(NuGetMSSignCommand.MSSignCommandInvalidCngKeyException);
                 }
 
@@ -78,6 +81,7 @@ namespace NuGet.MSSigning.Extensions
             }
             catch (CryptographicException)
             {
+                cngkey?.Dispose();
                 throw new InvalidOperationException(NuGetMSSignCommand.MSSignCommandNoCngKeyException);
             }
         }

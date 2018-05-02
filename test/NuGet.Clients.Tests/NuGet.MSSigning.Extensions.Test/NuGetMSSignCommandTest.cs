@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using Moq;
 using NuGet.CommandLine;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.MSSigning.Extensions.Test
@@ -17,133 +19,149 @@ namespace NuGet.MSSigning.Extensions.Test
         public void MSSignCommandArgParsing_NoPackagePath()
         {
             // Arrange
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
 
-            var mockConsole = new Mock<IConsole>();
-            var signCommand = new MSSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CSPName = cspName,
-                KeyContainer = keyContainer,
-                CertificateFingerprint = certificateFingerprint,
-            };
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
-            Assert.Equal(_noPackageException, ex.Message);
+                var mockConsole = new Mock<IConsole>();
+                var signCommand = new MSSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CSPName = cspName,
+                    KeyContainer = keyContainer,
+                    CertificateFingerprint = certificateFingerprint,
+                };
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
+                Assert.Equal(_noPackageException, ex.Message);
+            }
         }
 
         [Fact]
         public void MSSignCommandArgParsing_NoCertificateFile()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-
-            var mockConsole = new Mock<IConsole>();
-            var signCommand = new MSSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CSPName = cspName,
-                KeyContainer = keyContainer,
-                CertificateFingerprint = certificateFingerprint,
-            };
-            signCommand.Arguments.Add(packagePath);
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
-            Assert.Equal(string.Format(_noCertificateException, nameof(signCommand.CertificateFile)), ex.Message);
+                var mockConsole = new Mock<IConsole>();
+                var signCommand = new MSSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CSPName = cspName,
+                    KeyContainer = keyContainer,
+                    CertificateFingerprint = certificateFingerprint,
+                };
+                signCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
+                Assert.Equal(string.Format(_noCertificateException, nameof(signCommand.CertificateFile)), ex.Message);
+            }
         }
 
         [Fact]
         public void MSSignCommandArgParsing_NoCSPName()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-
-            var mockConsole = new Mock<IConsole>();
-            var signCommand = new MSSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                KeyContainer = keyContainer,
-                CertificateFingerprint = certificateFingerprint,
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
 
-            signCommand.Arguments.Add(packagePath);
+                var mockConsole = new Mock<IConsole>();
+                var signCommand = new MSSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    KeyContainer = keyContainer,
+                    CertificateFingerprint = certificateFingerprint,
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.CSPName)), ex.Message);
+                signCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.CSPName)), ex.Message);
+            }
         }
 
         [Fact]
         public void MSSignCommandArgParsing_NoKeyContainer()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var cspName = "cert provider";
-
-            var mockConsole = new Mock<IConsole>();
-            var signCommand = new MSSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CSPName = cspName,
-                CertificateFingerprint = certificateFingerprint,
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var cspName = "cert provider";
 
-            signCommand.Arguments.Add(packagePath);
+                var mockConsole = new Mock<IConsole>();
+                var signCommand = new MSSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CSPName = cspName,
+                    CertificateFingerprint = certificateFingerprint,
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.KeyContainer)), ex.Message);
+                signCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.KeyContainer)), ex.Message);
+            }
         }
 
         [Fact]
         public void MSSignCommandArgParsing_NoCertificateFingerprint()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-
-            var mockConsole = new Mock<IConsole>();
-            var signCommand = new MSSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CSPName = cspName,
-                KeyContainer = keyContainer,
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
 
-            signCommand.Arguments.Add(packagePath);
+                var mockConsole = new Mock<IConsole>();
+                var signCommand = new MSSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CSPName = cspName,
+                    KeyContainer = keyContainer,
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.CertificateFingerprint)), ex.Message);
+                signCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.CertificateFingerprint)), ex.Message);
+            }
         }
 
         [Theory]
@@ -156,63 +174,69 @@ namespace NuGet.MSSigning.Extensions.Test
         [InlineData("SHA512")]
         public void MSSignCommandArgParsing_ValidHashAlgorithm(string hashAlgorithm)
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var parsable = Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out Common.HashAlgorithmName parsedHashAlgorithm);
-            var mockConsole = new Mock<IConsole>();
-            var signCommand = new MSSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CertificateFingerprint = certificateFingerprint,
-                KeyContainer = keyContainer,
-                CSPName = cspName,
-                HashAlgorithm = hashAlgorithm
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var parsable = Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out Common.HashAlgorithmName parsedHashAlgorithm);
+                var mockConsole = new Mock<IConsole>();
+                var signCommand = new MSSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CertificateFingerprint = certificateFingerprint,
+                    KeyContainer = keyContainer,
+                    CSPName = cspName,
+                    HashAlgorithm = hashAlgorithm
+                };
 
-            signCommand.Arguments.Add(packagePath);
+                signCommand.Arguments.Add(packagePath);
 
-            // Act & Assert
-            Assert.True(parsable);
-            var ex = Assert.Throws<CryptographicException>(() => signCommand.GetAuthorSignRequest());
-            Assert.NotEqual(string.Format(_invalidArgException, nameof(signCommand.HashAlgorithm)), ex.Message);
+                // Act & Assert
+                Assert.True(parsable);
+                var ex = Assert.Throws<CryptographicException>(() => signCommand.GetAuthorSignRequest());
+                Assert.NotEqual(string.Format(_invalidArgException, nameof(signCommand.HashAlgorithm)), ex.Message);
+            }
         }
 
         [Fact]
         public void MSSignCommandArgParsing_InvalidHashAlgorithm()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var hashAlgorithm = "MD5";
-            var mockConsole = new Mock<IConsole>();
-
-            var signCommand = new MSSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CertificateFingerprint = certificateFingerprint,
-                KeyContainer = keyContainer,
-                CSPName = cspName,
-                HashAlgorithm = hashAlgorithm
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var hashAlgorithm = "MD5";
+                var mockConsole = new Mock<IConsole>();
 
-            signCommand.Arguments.Add(packagePath);
+                var signCommand = new MSSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CertificateFingerprint = certificateFingerprint,
+                    KeyContainer = keyContainer,
+                    CSPName = cspName,
+                    HashAlgorithm = hashAlgorithm
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.HashAlgorithm)), ex.Message);
+                signCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.HashAlgorithm)), ex.Message);
+            }
         }
 
         [Theory]
@@ -225,63 +249,69 @@ namespace NuGet.MSSigning.Extensions.Test
         [InlineData("SHA512")]
         public void MSSignCommandArgParsing_ValidTimestampHashAlgorithm(string timestampHashAlgorithm)
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var parsable = Enum.TryParse(timestampHashAlgorithm, ignoreCase: true, result: out Common.HashAlgorithmName parsedHashAlgorithm);
-            var mockConsole = new Mock<IConsole>();
-            var signCommand = new MSSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CertificateFingerprint = certificateFingerprint,
-                KeyContainer = keyContainer,
-                CSPName = cspName,
-                TimestampHashAlgorithm = timestampHashAlgorithm
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var parsable = Enum.TryParse(timestampHashAlgorithm, ignoreCase: true, result: out Common.HashAlgorithmName parsedHashAlgorithm);
+                var mockConsole = new Mock<IConsole>();
+                var signCommand = new MSSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CertificateFingerprint = certificateFingerprint,
+                    KeyContainer = keyContainer,
+                    CSPName = cspName,
+                    TimestampHashAlgorithm = timestampHashAlgorithm
+                };
 
-            signCommand.Arguments.Add(packagePath);
+                signCommand.Arguments.Add(packagePath);
 
-            // Act & Assert
-            Assert.True(parsable);
-            var ex = Assert.Throws<CryptographicException>(() => signCommand.GetAuthorSignRequest());
-            Assert.NotEqual(string.Format(_invalidArgException, nameof(signCommand.TimestampHashAlgorithm)), ex.Message);
+                // Act & Assert
+                Assert.True(parsable);
+                var ex = Assert.Throws<CryptographicException>(() => signCommand.GetAuthorSignRequest());
+                Assert.NotEqual(string.Format(_invalidArgException, nameof(signCommand.TimestampHashAlgorithm)), ex.Message);
+            }
         }
 
         [Fact]
         public void MSSignCommandArgParsing_InvalidTimestampHashAlgorithm()
         {
-            // Arrange
-            var packagePath = @"\\path\package.nupkg";
-            var timestamper = "https://timestamper.test";
-            var certFile = @"\\path\certificate.p7b";
-            var certificateFingerprint = new Guid().ToString();
-            var keyContainer = new Guid().ToString();
-            var cspName = "cert provider";
-            var timestampHashAlgorithm = "MD5";
-            var mockConsole = new Mock<IConsole>();
-
-            var signCommand = new MSSignCommand
+            using (var dir = TestDirectory.Create())
             {
-                Console = mockConsole.Object,
-                Timestamper = timestamper,
-                CertificateFile = certFile,
-                CertificateFingerprint = certificateFingerprint,
-                KeyContainer = keyContainer,
-                CSPName = cspName,
-                TimestampHashAlgorithm = timestampHashAlgorithm
-            };
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var certificateFingerprint = new Guid().ToString();
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+                var timestampHashAlgorithm = "MD5";
+                var mockConsole = new Mock<IConsole>();
 
-            signCommand.Arguments.Add(packagePath);
+                var signCommand = new MSSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CertificateFingerprint = certificateFingerprint,
+                    KeyContainer = keyContainer,
+                    CSPName = cspName,
+                    TimestampHashAlgorithm = timestampHashAlgorithm
+                };
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
-            Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.TimestampHashAlgorithm)), ex.Message);
+                signCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
+                Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.TimestampHashAlgorithm)), ex.Message);
+            }
         }
     }
 }

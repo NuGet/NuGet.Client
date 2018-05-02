@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -45,22 +46,23 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             var timestampUri = "http://timestamp.test/url";
 
             // Arrange
+            using (var dir = TestDirectory.Create())
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
                 var signCommand = new MSSignCommand
                 {
                     Console = mockConsole.Object,
                     Timestamper = timestampUri,
-                    CertificateFile = @"\\wrong\cert\path.pfx",
+                    CertificateFile = Path.Combine(dir, "non-existant-cert.pfx"),
                     CSPName = test.CertificateCSPName,
                     KeyContainer = test.CertificateKeyContainer,
                     CertificateFingerprint = test.Cert.Thumbprint,
                 };
-                signCommand.Arguments.Add(@"\\path\to\package.nupkg");
+                signCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
                 // Act & Assert
                 var ex = Assert.Throws<CryptographicException>(() => signCommand.GetAuthorSignRequest());
-                Assert.Contains("The network path was not found.", ex.Message);
+                Assert.Contains("The system cannot find the file specified.", ex.Message);
             }
         }
 
@@ -71,6 +73,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             var timestampUri = "http://timestamp.test/url";
 
             // Arrange
+            using (var dir = TestDirectory.Create())
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithoutPrivateKey.TrustedCert, exportPfx: false))
             {
                 var signCommand = new MSSignCommand
@@ -82,7 +85,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     KeyContainer = test.CertificateKeyContainer,
                     CertificateFingerprint = test.Cert.Thumbprint,
                 };
-                signCommand.Arguments.Add(@"\\path\to\package.nupkg");
+                signCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
                 // Act & Assert
                 var ex = Assert.Throws<InvalidOperationException>(() => signCommand.GetAuthorSignRequest());
@@ -97,6 +100,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             var timestampUri = "http://timestamp.test/url";
 
             // Arrange
+            using (var dir = TestDirectory.Create())
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithoutPrivateKey.TrustedCert, exportPfx: false))
             {
                 var signCommand = new MSSignCommand
@@ -108,7 +112,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     KeyContainer = "invalid-key-container",
                     CertificateFingerprint = test.Cert.Thumbprint,
                 };
-                signCommand.Arguments.Add(@"\\path\to\package.nupkg");
+                signCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
                 // Act & Assert
                 var ex = Assert.Throws<InvalidOperationException>(() => signCommand.GetAuthorSignRequest());
@@ -123,6 +127,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             var timestampUri = "http://timestamp.test/url";
 
             // Arrange
+            using (var dir = TestDirectory.Create())
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
                 var signCommand = new MSSignCommand
@@ -134,7 +139,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     KeyContainer = test.CertificateKeyContainer,
                     CertificateFingerprint = "invalid-fingerprint",
                 };
-                signCommand.Arguments.Add(@"\\path\to\package.nupkg");
+                signCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
                 // Act & Assert
                 var ex = Assert.Throws<InvalidOperationException>(() => signCommand.GetAuthorSignRequest());
@@ -149,6 +154,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             var timestampUri = "http://timestamp.test/url";
 
             // Arrange
+            using (var dir = TestDirectory.Create())
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
                 var signCommand = new MSSignCommand
@@ -160,7 +166,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     KeyContainer = test.CertificateKeyContainer,
                     CertificateFingerprint = test.Cert.Thumbprint,
                 };
-                signCommand.Arguments.Add(@"\\path\to\package.nupkg");
+                signCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
                 // Act
                 var signRequest = signCommand.GetAuthorSignRequest();

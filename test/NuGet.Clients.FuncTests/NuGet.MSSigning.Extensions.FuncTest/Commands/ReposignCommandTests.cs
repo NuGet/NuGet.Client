@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -46,23 +47,24 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             var timestampUri = "http://timestamp.test/url";
 
             // Arrange
+            using (var dir = TestDirectory.Create())
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
                 var reposignCommand = new RepoSignCommand
                 {
                     Console = mockConsole.Object,
                     Timestamper = timestampUri,
-                    CertificateFile = @"\\wrong\cert\path.pfx",
+                    CertificateFile = Path.Combine(dir, "non-existant-cert.pfx"),
                     CSPName = test.CertificateCSPName,
                     KeyContainer = test.CertificateKeyContainer,
                     CertificateFingerprint = test.Cert.Thumbprint,
                     V3ServiceIndexUrl = v3serviceIndex,
                 };
-                reposignCommand.Arguments.Add(@"\\path\to\package.nupkg");
+                reposignCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
                 // Act & Assert
                 var ex = Assert.Throws<CryptographicException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Contains("The network path was not found.", ex.Message);
+                Assert.Contains("The system cannot find the file specified.", ex.Message);
             }
         }
 
@@ -74,6 +76,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             var timestampUri = "http://timestamp.test/url";
 
             // Arrange
+            using (var dir = TestDirectory.Create())
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithoutPrivateKey.TrustedCert, exportPfx: false))
             {
                 var reposignCommand = new RepoSignCommand
@@ -86,7 +89,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFingerprint = test.Cert.Thumbprint,
                     V3ServiceIndexUrl = v3serviceIndex,
                 };
-                reposignCommand.Arguments.Add(@"\\path\to\package.nupkg");
+                reposignCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
                 // Act & Assert
                 var ex = Assert.Throws<InvalidOperationException>(() => reposignCommand.GetRepositorySignRequest());
@@ -102,6 +105,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             var timestampUri = "http://timestamp.test/url";
 
             // Arrange
+            using (var dir = TestDirectory.Create())
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithoutPrivateKey.TrustedCert, exportPfx: false))
             {
                 var reposignCommand = new RepoSignCommand
@@ -114,7 +118,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFingerprint = test.Cert.Thumbprint,
                     V3ServiceIndexUrl = v3serviceIndex,
                 };
-                reposignCommand.Arguments.Add(@"\\path\to\package.nupkg");
+                reposignCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
                 // Act & Assert
                 var ex = Assert.Throws<InvalidOperationException>(() => reposignCommand.GetRepositorySignRequest());
@@ -130,6 +134,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             var timestampUri = "http://timestamp.test/url";
 
             // Arrange
+            using (var dir = TestDirectory.Create())
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
                 var reposignCommand = new RepoSignCommand
@@ -142,7 +147,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFingerprint = "invalid-fingerprint",
                     V3ServiceIndexUrl = v3serviceIndex,
                 };
-                reposignCommand.Arguments.Add(@"\\path\to\package.nupkg");
+                reposignCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
                 // Act & Assert
                 var ex = Assert.Throws<InvalidOperationException>(() => reposignCommand.GetRepositorySignRequest());
@@ -158,6 +163,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             var timestampUri = "http://timestamp.test/url";
 
             // Arrange
+            using (var dir = TestDirectory.Create())
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
                 var reposignCommand = new RepoSignCommand
@@ -170,7 +176,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFingerprint = test.Cert.Thumbprint,
                     V3ServiceIndexUrl = v3serviceIndex,
                 };
-                reposignCommand.Arguments.Add(@"\\path\to\package.nupkg");
+                reposignCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
                 // Act
                 var signRequest = reposignCommand.GetRepositorySignRequest();
