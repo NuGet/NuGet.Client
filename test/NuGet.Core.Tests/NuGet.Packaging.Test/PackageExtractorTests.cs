@@ -2640,15 +2640,15 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
-        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultSettingsAsync()
+        [CIOnlyTheory]
+        [MemberData(nameof(KnownSettingsList))]
+        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultSettingsAsync(SignedPackageVerifierSettings signedPackageVerifierSettings)
         {
             // Arrange
             using (var root = TestDirectory.Create())
             {
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>();
-                var signedPackageVerifierSettings = _defaultSettings;
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
@@ -2669,17 +2669,17 @@ namespace NuGet.Packaging.Test
 
                 var expectedVerifierSettings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
-                    allowIllegal: true,
-                    allowUntrusted: true,
-                    allowIgnoreTimestamp: true,
-                    allowMultipleTimestamps: true,
-                    allowNoTimestamp: true,
-                    allowUnknownRevocation: true,
-                    allowNoClientCertificateList: true,
+                    allowIllegal: signedPackageVerifierSettings.AllowIllegal,
+                    allowUntrusted: false,
+                    allowIgnoreTimestamp: signedPackageVerifierSettings.AllowIgnoreTimestamp,
+                    allowMultipleTimestamps: signedPackageVerifierSettings.AllowMultipleTimestamps,
+                    allowNoTimestamp: signedPackageVerifierSettings.AllowNoTimestamp,
+                    allowUnknownRevocation: signedPackageVerifierSettings.AllowUnknownRevocation,
+                    allowNoClientCertificateList: signedPackageVerifierSettings.AllowNoClientCertificateList,
                     allowNoRepositoryCertificateList: false,
-                    alwaysVerifyCountersignature: true,
+                    alwaysVerifyCountersignature: signedPackageVerifierSettings.AlwaysVerifyCountersignature,
                     repoAllowListEntries: expectedAllowList,
-                    clientAllowListEntries: null);
+                    clientAllowListEntries: signedPackageVerifierSettings.ClientCertificateList);
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 using (var packageReader = new PackageArchiveReader(packageStream))
@@ -2710,15 +2710,15 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
-        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultVerifyCommandSettingsAsync()
+        [CIOnlyTheory]
+        [MemberData(nameof(KnownSettingsList))]
+        public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultVerifyCommandSettingsAsync(SignedPackageVerifierSettings signedPackageVerifierSettings)
         {
             // Arrange
             using (var root = TestDirectory.Create())
             {
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
                 var signedPackageVerifier = new Mock<IPackageSignatureVerifier>();
-                var signedPackageVerifierSettings = _defaultVerifyCommandSettings;
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
@@ -2739,17 +2739,17 @@ namespace NuGet.Packaging.Test
 
                 var expectedVerifierSettings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
-                    allowIllegal: false,
+                    allowIllegal: signedPackageVerifierSettings.AllowIllegal,
                     allowUntrusted: false,
-                    allowIgnoreTimestamp: false,
-                    allowMultipleTimestamps: true,
-                    allowNoTimestamp: true,
-                    allowUnknownRevocation: true,
-                    allowNoClientCertificateList: true,
+                    allowIgnoreTimestamp: signedPackageVerifierSettings.AllowIgnoreTimestamp,
+                    allowMultipleTimestamps: signedPackageVerifierSettings.AllowMultipleTimestamps,
+                    allowNoTimestamp: signedPackageVerifierSettings.AllowNoTimestamp,
+                    allowUnknownRevocation: signedPackageVerifierSettings.AllowUnknownRevocation,
+                    allowNoClientCertificateList: signedPackageVerifierSettings.AllowNoClientCertificateList,
                     allowNoRepositoryCertificateList: false,
-                    alwaysVerifyCountersignature: true,
+                    alwaysVerifyCountersignature: signedPackageVerifierSettings.AlwaysVerifyCountersignature,
                     repoAllowListEntries: expectedAllowList,
-                    clientAllowListEntries: null);
+                    clientAllowListEntries: signedPackageVerifierSettings.ClientCertificateList);
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 using (var packageReader = new PackageArchiveReader(packageStream))
@@ -3101,6 +3101,14 @@ namespace NuGet.Packaging.Test
             };
 
             return Tuple.Create(repositorySignatureInfo, expectedAllowList);
+        }
+
+        public static IEnumerable<object[]> KnownSettingsList()
+        {
+            yield return new object[] { SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy() };
+            yield return new object[] { SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy() };
+            yield return new object[] { SignedPackageVerifierSettings.GetRequireModeDefaultPolicy() };
+            yield return new object[] { SignedPackageVerifierSettings.GetDefault() };
         }
     }
 }
