@@ -28,12 +28,16 @@ namespace Test.Utility.Signing
         public AsymmetricKeyParameter IssuerPrivateKey { get; set; }
 
         public AsymmetricCipherKeyPair KeyPair { get; set; }
+
         public X509Name SubjectName { get; set; }
+
+        public string SignatureAlgorithmName { get; set; }
 
         public IssueCertificateOptions()
         {
             NotBefore = DateTimeOffset.UtcNow;
             NotAfter = NotBefore.AddHours(2);
+            SignatureAlgorithmName = "SHA256WITHRSA";
         }
 
         public static IssueCertificateOptions CreateDefaultForRootCertificateAuthority()
@@ -46,7 +50,8 @@ namespace Test.Utility.Signing
             {
                 KeyPair = keyPair,
                 IssuerPrivateKey = keyPair.Private,
-                SubjectName = subjectName
+                SubjectName = subjectName,
+                SignatureAlgorithmName = "SHA256WITHRSA"
             };
         }
 
@@ -59,7 +64,8 @@ namespace Test.Utility.Signing
             return new IssueCertificateOptions()
             {
                 KeyPair = keyPair,
-                SubjectName = subjectName
+                SubjectName = subjectName,
+                SignatureAlgorithmName = "SHA256WITHRSA"
             };
         }
 
@@ -72,7 +78,8 @@ namespace Test.Utility.Signing
             return new IssueCertificateOptions()
             {
                 KeyPair = keyPair,
-                SubjectName = subjectName
+                SubjectName = subjectName,
+                SignatureAlgorithmName = "SHA256WITHRSA"
             };
         }
     }

@@ -60,7 +60,8 @@ namespace Test.Utility.Signing
 
         public static TimestampService Create(
             CertificateAuthority certificateAuthority,
-            TimestampServiceOptions serviceOptions = null)
+            TimestampServiceOptions serviceOptions = null,
+            IssueCertificateOptions issueCertificateOptions = null)
         {
             if (certificateAuthority == null)
             {
@@ -69,9 +70,19 @@ namespace Test.Utility.Signing
 
             serviceOptions = serviceOptions ?? new TimestampServiceOptions();
 
-            var keyPair = CertificateUtilities.CreateKeyPair();
-            var id = Guid.NewGuid().ToString();
-            var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Timestamp Service ({id})");
+            if (issueCertificateOptions == null)
+            {
+                var keyPair = CertificateUtilities.CreateKeyPair();
+                var id = Guid.NewGuid().ToString();
+                var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Timestamp Service ({id})");
+
+                issueCertificateOptions = new IssueCertificateOptions()
+                {
+                    KeyPair = keyPair,
+                    SubjectName = subjectName,
+                    CustomizeCertificate = customizeCertificate
+                };
+            }
 
             void customizeCertificate(X509V3CertificateGenerator generator)
             {
@@ -90,7 +101,7 @@ namespace Test.Utility.Signing
                 generator.AddExtension(
                     X509Extensions.SubjectKeyIdentifier,
                     critical: false,
-                    extensionValue: new SubjectKeyIdentifierStructure(keyPair.Public));
+                    extensionValue: new SubjectKeyIdentifierStructure(issueCertificateOptions.KeyPair.Public));
                 generator.AddExtension(
                     X509Extensions.BasicConstraints,
                     critical: true,
@@ -105,26 +116,20 @@ namespace Test.Utility.Signing
                     extensionValue: ExtendedKeyUsage.GetInstance(new DerSequence(KeyPurposeID.IdKPTimeStamping)));
             }
 
-            var issueOptions = new IssueCertificateOptions()
-            {
-                KeyPair = keyPair,
-                SubjectName = subjectName,
-                CustomizeCertificate = customizeCertificate
-            };
             if (serviceOptions.IssuedCertificateNotBefore.HasValue)
             {
-                issueOptions.NotBefore = serviceOptions.IssuedCertificateNotBefore.Value;
+                issueCertificateOptions.NotBefore = serviceOptions.IssuedCertificateNotBefore.Value;
             }
 
             if (serviceOptions.IssuedCertificateNotAfter.HasValue)
             {
-                issueOptions.NotAfter = serviceOptions.IssuedCertificateNotAfter.Value;
+                issueCertificateOptions.NotAfter = serviceOptions.IssuedCertificateNotAfter.Value;
             }
 
-            var certificate = certificateAuthority.IssueCertificate(issueOptions);
+            var certificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
             var uri = certificateAuthority.GenerateRandomUri();
 
-            return new TimestampService(certificateAuthority, certificate, keyPair, uri, serviceOptions);
+            return new TimestampService(certificateAuthority, certificate, issueCertificateOptions.KeyPair, uri, serviceOptions);
         }
 
 #if IS_DESKTOP

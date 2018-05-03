@@ -202,9 +202,11 @@ namespace Test.Utility.Signing
                         extensionValue: new KeyUsage(KeyUsage.DigitalSignature | KeyUsage.KeyCertSign | KeyUsage.CrlSign));
                 };
 
+            var signatureFactory = new Asn1SignatureFactory(options.SignatureAlgorithmName, options.IssuerPrivateKey);
+
             var certificate = CreateCertificate(
                 options.KeyPair.Public,
-                options.IssuerPrivateKey,
+                signatureFactory,
                 BigInteger.One,
                 options.SubjectName,
                 options.SubjectName,
@@ -274,9 +276,11 @@ namespace Test.Utility.Signing
                 notAfter = Certificate.NotAfter;
             }
 
+            var signatureFactory = new Asn1SignatureFactory(options.SignatureAlgorithmName, options.IssuerPrivateKey ?? KeyPair.Private);
+
             var certificate = CreateCertificate(
                 options.KeyPair.Public,
-                options.IssuerPrivateKey ?? KeyPair.Private,
+                signatureFactory,
                 serialNumber,
                 issuerName,
                 options.SubjectName,
@@ -292,7 +296,7 @@ namespace Test.Utility.Signing
 
         private static X509Certificate CreateCertificate(
             AsymmetricKeyParameter certificatePublicKey,
-            AsymmetricKeyParameter signingPrivateKey,
+            Asn1SignatureFactory signatureFactory,
             BigInteger serialNumber,
             X509Name issuerName,
             X509Name subjectName,
@@ -310,8 +314,6 @@ namespace Test.Utility.Signing
             generator.SetPublicKey(certificatePublicKey);
 
             customizeCertificate(generator);
-
-            var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", signingPrivateKey);
 
             return generator.Generate(signatureFactory);
         }
