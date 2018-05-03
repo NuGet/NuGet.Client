@@ -89,6 +89,15 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The file &apos;{0}&apos; path, name, or both are too long. Your package might not work without long file path support. Please shorten the file path or file name..
+        /// </summary>
+        public static string FilePathTooLongWarning {
+            get {
+                return ResourceManager.GetString("FilePathTooLongWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The folder &apos;{0}&apos; under &apos;lib&apos; is not recognized as a valid framework name or a supported culture identifier. Rename it to a valid framework name or culture identifier..
         /// </summary>
         public static string InvalidFrameworkWarning {

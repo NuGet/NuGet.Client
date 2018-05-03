@@ -666,6 +666,11 @@ namespace NuGet.Common
         NU5122 = 5122,
 
         /// <summary>
+        /// Warning_FilePathTooLong
+        /// </summary>
+        NU5123 = 5123,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500
