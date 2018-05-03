@@ -39,10 +39,13 @@ namespace NuGet.Packaging.Signing
                 // Allow an empty repository certificate list only if the repository does not have all packages signed
                 var allowNoRepositoryCertificateList = !repoSignatureInfo.AllRepositorySigned;
 
+                // Allow untrusted only if the common settings allow it and repository does not have all packages signed
+                var allowUntrusted = fallbackSettings.AllowUntrusted && !repoSignatureInfo.AllRepositorySigned;
+
                 return new SignedPackageVerifierSettings(
                     allowUnsigned,
                     fallbackSettings.AllowIllegal,
-                    fallbackSettings.AllowUntrusted,
+                    allowUntrusted,
                     fallbackSettings.AllowIgnoreTimestamp,
                     fallbackSettings.AllowMultipleTimestamps,
                     fallbackSettings.AllowNoTimestamp,

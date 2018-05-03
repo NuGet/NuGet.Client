@@ -38,7 +38,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetSignedPackageVerifierSettings_RepoSignatureInfoTrueAllSignedClearsAllowUnsignedIfSet()
+        public void GetSignedPackageVerifierSettings_RepoSignatureInfoAllSignedTrue_ClearsAllowUnsignedIfSet()
         {
             // Arrange
             var allSigned = true;
@@ -50,7 +50,7 @@ namespace NuGet.Packaging.Test
             // Assert
             settings.AllowUnsigned.Should().BeFalse();
             settings.AllowIllegal.Should().BeTrue();
-            settings.AllowUntrusted.Should().BeTrue();
+            settings.AllowUntrusted.Should().BeFalse();
             settings.AllowIgnoreTimestamp.Should().BeTrue();
             settings.AllowNoTimestamp.Should().BeTrue();
             settings.AllowMultipleTimestamps.Should().BeTrue();
