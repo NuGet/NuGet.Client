@@ -144,6 +144,7 @@ namespace NuGet.Packaging.Signing
 
         private static void ValidateTimestampCms(SigningSpecifications spec, SignedCms timestampCms, Rfc3161TimestampToken timestampToken)
         {
+
             var signerInfo = timestampCms.SignerInfos[0];
             try
             {
@@ -161,7 +162,17 @@ namespace NuGet.Packaging.Signing
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(signerInfo.Certificate))
             {
-                throw new TimestampException(NuGetLogCode.NU3022, Strings.SignError_TimestampUnsupportedSignatureAlgorithm);
+                var certificateSignatureAlgorithm = signerInfo.Certificate.SignatureAlgorithm.FriendlyName?.ToUpper() ??
+                    signerInfo.Certificate.SignatureAlgorithm.Value;
+
+                var supportedSignatureAlgorithms = string.Join(", ", spec.AllowedCertificateSignatureAlgorithms);
+
+                var errorMessage = string.Format(CultureInfo.CurrentCulture,
+                    Strings.SignError_TimestampCertificateUnsupportedSignatureAlgorithm,
+                    certificateSignatureAlgorithm,
+                    supportedSignatureAlgorithms);
+
+                throw new TimestampException(NuGetLogCode.NU3022, errorMessage);
             }
 
             if (!CertificateUtility.IsCertificatePublicKeyValid(signerInfo.Certificate))
@@ -171,7 +182,17 @@ namespace NuGet.Packaging.Signing
 
             if (!spec.AllowedHashAlgorithmOids.Contains(signerInfo.DigestAlgorithm.Value))
             {
-                throw new TimestampException(NuGetLogCode.NU3024, Strings.SignError_TimestampUnsupportedSignatureAlgorithm);
+                var digestAlgorithm = signerInfo.DigestAlgorithm.FriendlyName?.ToUpper() ??
+                    signerInfo.DigestAlgorithm.Value;
+
+                var supportedSignatureAlgorithms = string.Join(", ", spec.AllowedHashAlgorithms);
+
+                var errorMessage = string.Format(CultureInfo.CurrentCulture,
+                    Strings.SignError_TimestampResponseUnsupportedDigestAlgorithm,
+                    digestAlgorithm,
+                    supportedSignatureAlgorithms);
+
+                throw new TimestampException(NuGetLogCode.NU3024, errorMessage);
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(signerInfo.Certificate))
@@ -225,6 +246,7 @@ namespace NuGet.Packaging.Signing
 
             return nonce;
         }
+
 #else
 
         /// <summary>

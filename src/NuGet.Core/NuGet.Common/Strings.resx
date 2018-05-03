@@ -146,10 +146,11 @@
     <comment>{0} and {1} are both file paths.</comment>
   </data>
   <data name="UnsupportedHashAlgorithm" xml:space="preserve">
-    <value>Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.</value>
+    <value>Hash algorithm '{0}' is unsupported.</value>
+    <comment>0 - hash algorithm name/oid</comment>
   </data>
-  <data name="UnsupportedHashAlgorithmName" xml:space="preserve">
-    <value>The hash algorithm '{0}' is unsupported.</value>
-    <comment>{0} is an algorithm identifier</comment>
+  <data name="UnsupportedSignatureAlgorithm" xml:space="preserve">
+    <value>Signature algorithm '{0}' is unsupported.</value>
+    <comment>0 - Signature Algorithma name/oid</comment>
   </data>
 </root>

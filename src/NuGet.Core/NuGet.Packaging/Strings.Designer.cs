@@ -989,6 +989,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The timestamp certificate has an unsupported signature algorithm - &apos;{0}&apos;. The following algorithms are supported - &apos;{1}&apos;..
+        /// </summary>
+        internal static string SignError_TimestampCertificateUnsupportedSignatureAlgorithm {
+            get {
+                return ResourceManager.GetString("SignError_TimestampCertificateUnsupportedSignatureAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The timestamp&apos;s generalized time is outside the timestamping certificate&apos;s validity period..
         /// </summary>
         internal static string SignError_TimestampGeneralizedTimeInvalid {
@@ -1025,20 +1034,20 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The timestamp response has an unsupported digest algorithm - &apos;{0}&apos;. The following algorithms are supported - &apos;{1}&apos;..
+        /// </summary>
+        internal static string SignError_TimestampResponseUnsupportedDigestAlgorithm {
+            get {
+                return ResourceManager.GetString("SignError_TimestampResponseUnsupportedDigestAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The timestamp signature validation failed..
         /// </summary>
         internal static string SignError_TimestampSignatureValidationFailed {
             get {
                 return ResourceManager.GetString("SignError_TimestampSignatureValidationFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The timestamp certificate has an unsupported signature algorithm..
-        /// </summary>
-        internal static string SignError_TimestampUnsupportedSignatureAlgorithm {
-            get {
-                return ResourceManager.GetString("SignError_TimestampUnsupportedSignatureAlgorithm", resourceCulture);
             }
         }
         
