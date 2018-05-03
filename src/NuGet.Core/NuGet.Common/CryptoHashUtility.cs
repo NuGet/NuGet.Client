@@ -199,7 +199,7 @@ namespace NuGet.Common
 #endif
 
             throw new ArgumentException(
-                string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithm, hashAlgorithmName),
+                string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithmName, hashAlgorithmName),
                 nameof(hashAlgorithmName));
         }
 
@@ -266,7 +266,7 @@ namespace NuGet.Common
                     return System.Security.Cryptography.HashAlgorithmName.SHA512;
                 default:
                     throw new ArgumentException(
-                        string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithm, hashAlgorithmName),
+                        string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithmName, hashAlgorithmName),
                         nameof(hashAlgorithmName));
             }
         }
@@ -287,7 +287,7 @@ namespace NuGet.Common
                     return SHA512_OID;
                 default:
                     throw new ArgumentException(
-                        string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithm, hashAlgorithmName),
+                        string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithmName, hashAlgorithmName),
                         nameof(hashAlgorithmName));
             }
         }
@@ -320,7 +320,7 @@ namespace NuGet.Common
                     return HashAlgorithmName.SHA512;
                 default:
                     throw new ArgumentException(
-                        string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithm, oid),
+                        string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithmName, oid),
                         nameof(oid));
             }
         }
@@ -341,41 +341,8 @@ namespace NuGet.Common
                     return SHA512_RSA_OID;
                 default:
                     throw new ArgumentException(
-                        string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedSignatureAlgorithm, signatureAlgorithmName),
+                        string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedSignatureAlgorithmName, signatureAlgorithmName),
                         nameof(signatureAlgorithmName));
-            }
-        }
-
-        /// <summary>
-        /// Extension method to convert NuGet.Common.SignatureAlgorithmName to an Oid.
-        /// </summary>
-        /// <returns>Oid equivalent of the NuGet.Common.SignatureAlgorithmName</returns>
-        public static Oid ConvertToOid(this SignatureAlgorithmName signatureAlgorithmName)
-        {
-            var oidString = signatureAlgorithmName.ConvertToOidString();
-
-            return new Oid(oidString);
-        }
-
-        /// <summary>
-        /// Helper method to convert an Oid string to NuGet.Common.SignatureAlgorithmName
-        /// </summary>
-        /// <param name="oid">An Oid string.</param>
-        /// <returns>NuGet.Common.SignatureAlgorithmName equivalent of the Oid string</returns>
-        public static SignatureAlgorithmName OidToSignatureAlgorithmName(string oid)
-        {
-            switch (oid)
-            {
-                case SHA256_RSA_OID:
-                    return SignatureAlgorithmName.SHA256RSA;
-                case SHA384_RSA_OID:
-                    return SignatureAlgorithmName.SHA384RSA;
-                case SHA512_RSA_OID:
-                    return SignatureAlgorithmName.SHA512RSA;
-                default:
-                    throw new ArgumentException(
-                        string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedSignatureAlgorithm, oid),
-                        nameof(oid));
             }
         }
 

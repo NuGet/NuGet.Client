@@ -42,7 +42,7 @@ namespace NuGet.Common.Test
                 () => HashAlgorithmName.Unknown.ConvertToSystemSecurityHashAlgorithmName());
 
             Assert.Equal("hashAlgorithmName", exception.ParamName);
-            Assert.StartsWith("The hash algorithm 'Unknown' is unsupported.", exception.Message);
+            Assert.StartsWith("Hash algorithm 'Unknown' is unsupported.", exception.Message);
         }
 
         [Theory]
@@ -63,7 +63,7 @@ namespace NuGet.Common.Test
                 () => HashAlgorithmName.Unknown.ConvertToOidString());
 
             Assert.Equal("hashAlgorithmName", exception.ParamName);
-            Assert.StartsWith("The hash algorithm 'Unknown' is unsupported.", exception.Message);
+            Assert.StartsWith("Hash algorithm 'Unknown' is unsupported.", exception.Message);
         }
 
         [Theory]
@@ -84,7 +84,7 @@ namespace NuGet.Common.Test
                 () => CryptoHashUtility.OidToHashAlgorithmName(Oids.Sha1));
 
             Assert.Equal("oid", exception.ParamName);
-            Assert.StartsWith($"The hash algorithm '{Oids.Sha1}' is unsupported.", exception.Message);
+            Assert.StartsWith($"Hash algorithm '{Oids.Sha1}' is unsupported.", exception.Message);
         }
 
         [Fact]

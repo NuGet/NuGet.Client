@@ -143,7 +143,7 @@ namespace NuGet.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hash algorithm &apos;{0}&apos; is unsupported..
+        ///   Looks up a localized string similar to Hash algorithm &apos;{0}&apos; is unsupported. Supported algorithms include: SHA512 and SHA256..
         /// </summary>
         internal static string UnsupportedHashAlgorithm {
             get {
@@ -152,11 +152,20 @@ namespace NuGet.Common {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Hash algorithm &apos;{0}&apos; is unsupported..
+        /// </summary>
+        internal static string UnsupportedHashAlgorithmName {
+            get {
+                return ResourceManager.GetString("UnsupportedHashAlgorithmName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Signature algorithm &apos;{0}&apos; is unsupported..
         /// </summary>
-        internal static string UnsupportedSignatureAlgorithm {
+        internal static string UnsupportedSignatureAlgorithmName {
             get {
-                return ResourceManager.GetString("UnsupportedSignatureAlgorithm", resourceCulture);
+                return ResourceManager.GetString("UnsupportedSignatureAlgorithmName", resourceCulture);
             }
         }
     }

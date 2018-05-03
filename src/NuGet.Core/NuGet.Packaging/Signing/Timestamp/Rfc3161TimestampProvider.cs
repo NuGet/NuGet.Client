@@ -144,7 +144,6 @@ namespace NuGet.Packaging.Signing
 
         private static void ValidateTimestampCms(SigningSpecifications spec, SignedCms timestampCms, Rfc3161TimestampToken timestampToken)
         {
-
             var signerInfo = timestampCms.SignerInfos[0];
             try
             {
