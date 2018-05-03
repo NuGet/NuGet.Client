@@ -218,7 +218,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.MSSigning.Extensions"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.StaFact", "test\TestExtensions\NuGet.StaFact\NuGet.StaFact.csproj", "{5704AFAE-94ED-4AC9-979F-28A6DF8DF4DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Shared.Tests", "test\NuGet.Core.Tests\NuGet.Shared.Tests\NuGet.Shared.Tests.csproj", "{21522CF8-12F2-4A30-94D5-6C794D4B043F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Shared.Tests", "test\NuGet.Core.Tests\NuGet.Shared.Tests\NuGet.Shared.Tests.csproj", "{21522CF8-12F2-4A30-94D5-6C794D4B043F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.MSSigning.Extensions.FuncTest", "test\NuGet.Clients.FuncTests\NuGet.MSSigning.Extensions.FuncTest\NuGet.MSSigning.Extensions.FuncTest.csproj", "{BA7F681E-FDC7-42B6-8BF1-74DA6421BA1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.MSSigning.Extensions.Test", "test\NuGet.Clients.Tests\NuGet.MSSigning.Extensions.Test\NuGet.MSSigning.Extensions.Test.csproj", "{2A604A43-C72A-4A03-B68B-66AF4B6F430E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.NuGetSdkResolver", "src\NuGet.Core\Microsoft.Build.NuGetSdkResolver\Microsoft.Build.NuGetSdkResolver.csproj", "{299B3E44-5372-4D6B-A4E9-3DBEA4705701}"
 EndProject
@@ -538,6 +542,14 @@ Global
 		{ADCF5BF7-5A77-4F0E-AE76-96C611A079D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADCF5BF7-5A77-4F0E-AE76-96C611A079D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADCF5BF7-5A77-4F0E-AE76-96C611A079D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA7F681E-FDC7-42B6-8BF1-74DA6421BA1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA7F681E-FDC7-42B6-8BF1-74DA6421BA1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA7F681E-FDC7-42B6-8BF1-74DA6421BA1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA7F681E-FDC7-42B6-8BF1-74DA6421BA1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A604A43-C72A-4A03-B68B-66AF4B6F430E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A604A43-C72A-4A03-B68B-66AF4B6F430E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A604A43-C72A-4A03-B68B-66AF4B6F430E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A604A43-C72A-4A03-B68B-66AF4B6F430E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -630,6 +642,8 @@ Global
 		{21522CF8-12F2-4A30-94D5-6C794D4B043F} = {7323F93B-D141-4001-BB9E-7AF14031143E}
 		{299B3E44-5372-4D6B-A4E9-3DBEA4705701} = {506AF844-92E0-4404-BBFC-0AB073890A72}
 		{ADCF5BF7-5A77-4F0E-AE76-96C611A079D8} = {7323F93B-D141-4001-BB9E-7AF14031143E}
+		{BA7F681E-FDC7-42B6-8BF1-74DA6421BA1A} = {00CE0FBE-DA5A-4AD8-B0D6-04ECE6B04F0D}
+		{2A604A43-C72A-4A03-B68B-66AF4B6F430E} = {01BC4531-1E25-48D7-A8FD-A47D6FEC47FB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3747A66A-00D1-41B8-A9C5-ED0D7BEA9D25}
