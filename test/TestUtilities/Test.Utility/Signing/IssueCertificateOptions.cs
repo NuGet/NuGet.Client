@@ -82,5 +82,18 @@ namespace Test.Utility.Signing
                 SignatureAlgorithmName = "SHA256WITHRSA"
             };
         }
+
+        public static IssueCertificateOptions CreateDefaultForTimestampService()
+        {
+            var keyPair = CertificateUtilities.CreateKeyPair();
+            var id = Guid.NewGuid().ToString();
+            var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Timestamp Service ({id})");
+
+            return new IssueCertificateOptions()
+            {
+                KeyPair = keyPair,
+                SubjectName = subjectName
+            };
+        }
     }
 }

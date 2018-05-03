@@ -72,16 +72,7 @@ namespace Test.Utility.Signing
 
             if (issueCertificateOptions == null)
             {
-                var keyPair = CertificateUtilities.CreateKeyPair();
-                var id = Guid.NewGuid().ToString();
-                var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Timestamp Service ({id})");
-
-                issueCertificateOptions = new IssueCertificateOptions()
-                {
-                    KeyPair = keyPair,
-                    SubjectName = subjectName,
-                    CustomizeCertificate = customizeCertificate
-                };
+                issueCertificateOptions = IssueCertificateOptions.CreateDefaultForTimestampService();
             }
 
             void customizeCertificate(X509V3CertificateGenerator generator)
@@ -114,6 +105,11 @@ namespace Test.Utility.Signing
                     X509Extensions.ExtendedKeyUsage,
                     critical: true,
                     extensionValue: ExtendedKeyUsage.GetInstance(new DerSequence(KeyPurposeID.IdKPTimeStamping)));
+            }
+
+            if (issueCertificateOptions.CustomizeCertificate == null)
+            {
+                issueCertificateOptions.CustomizeCertificate = customizeCertificate;
             }
 
             if (serviceOptions.IssuedCertificateNotBefore.HasValue)

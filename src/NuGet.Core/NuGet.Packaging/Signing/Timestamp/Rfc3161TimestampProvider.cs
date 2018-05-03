@@ -26,7 +26,7 @@ namespace NuGet.Packaging.Signing
     {
         // Url to an RFC 3161 timestamp server
         private readonly Uri _timestamperUrl;
-        private const int _rfc3161RequestTimeoutSeconds = 20;
+        private const int _rfc3161RequestTimeoutSeconds = 10;
 
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
         {

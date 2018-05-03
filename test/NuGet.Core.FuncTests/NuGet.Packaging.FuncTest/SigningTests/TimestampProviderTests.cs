@@ -353,13 +353,11 @@ namespace NuGet.Packaging.FuncTest
         [CIOnlyFact]
         public async Task GetTimestamp_WhenCertificateSignatureAlgorithmIsSha1_ThrowsAsync()
         {
-            Debugger.Launch();
-
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
             var timestampServiceOptions = new TimestampServiceOptions() { SignatureHashAlgorithm = new Oid(Oids.Sha1) };
-            var issueCertificateOptions = IssueCertificateOptions.CreateDefaultForRootCertificateAuthority();
-            issueCertificateOptions.SignatureAlgorithmName = "MD5WITHRSA";
+            var issueCertificateOptions = IssueCertificateOptions.CreateDefaultForTimestampService();
+            issueCertificateOptions.SignatureAlgorithmName = "SHA1WITHRSA";
 
             var timestampService = TimestampService.Create(certificateAuthority, timestampServiceOptions, issueCertificateOptions);
 
@@ -372,7 +370,7 @@ namespace NuGet.Packaging.FuncTest
                         () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal(
-                        "The timestamp response has an unsupported digest algorithm - 'SHA1'. The following algorithms are supported - 'SHA256, SHA384, SHA512'.",
+                        "The timestamp certificate has an unsupported signature algorithm - 'SHA1RSA'. The following algorithms are supported - 'SHA256RSA, SHA384RSA, SHA512RSA'.",
                         exception.Message);
                 });
         }
