@@ -161,8 +161,7 @@ namespace NuGet.Packaging.Signing
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(signerInfo.Certificate))
             {
-                var certificateSignatureAlgorithm = signerInfo.Certificate.SignatureAlgorithm.FriendlyName?.ToUpper() ??
-                    signerInfo.Certificate.SignatureAlgorithm.Value;
+                var certificateSignatureAlgorithm = GetNameOrOidString(signerInfo.Certificate.SignatureAlgorithm);
 
                 var supportedSignatureAlgorithms = string.Join(", ", spec.AllowedCertificateSignatureAlgorithms);
 
@@ -181,8 +180,7 @@ namespace NuGet.Packaging.Signing
 
             if (!spec.AllowedHashAlgorithmOids.Contains(signerInfo.DigestAlgorithm.Value))
             {
-                var digestAlgorithm = signerInfo.DigestAlgorithm.FriendlyName?.ToUpper() ??
-                    signerInfo.DigestAlgorithm.Value;
+                var digestAlgorithm = GetNameOrOidString(signerInfo.DigestAlgorithm);
 
                 var supportedSignatureAlgorithms = string.Join(", ", spec.AllowedHashAlgorithms);
 
@@ -216,7 +214,14 @@ namespace NuGet.Packaging.Signing
             {
                 throw new TimestampException(NuGetLogCode.NU3019, Strings.SignError_TimestampIntegrityCheckFailed);
             }
+        }
 
+        /// <summary>
+        /// Returns the FriendlyName of an Oid. If FriendlyName is null, then the Oid string is returned.
+        /// </summary>
+        private static string GetNameOrOidString(Oid oid)
+        {
+            return oid.FriendlyName?.ToUpper() ?? oid.Value;
         }
 
         private static byte[] GenerateNonce()
