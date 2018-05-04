@@ -16,6 +16,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -2338,6 +2339,24 @@ namespace NuGet.PackageManagement
 
                     // Open readme file
                     await OpenReadmeFile(nuGetProject, nuGetProjectContext, token);
+                }
+                catch (SignatureException ex)
+                {
+                    var errors = ex.Results.SelectMany(r => r.GetErrorIssues());
+                    SignatureException unwrappedException = null;
+
+                    if (errors.Count() == 1)
+                    {
+                        var error = errors.First();
+                        unwrappedException = new SignatureException(error.Code, error.Message, ex.PackageIdentity);
+                    }
+                    else
+                    {
+                        var message = string.Join(Environment.NewLine, errors.Select(e => e.FormatWithCode()));
+                        unwrappedException = new SignatureException(NuGetLogCode.NU3000, message, ex.PackageIdentity);
+                    }
+
+                    exceptionInfo = ExceptionDispatchInfo.Capture(unwrappedException);
                 }
                 catch (Exception ex)
                 {
