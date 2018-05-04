@@ -39,12 +39,12 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Returns the set of allowed signature algorithms.
         /// </summary>
-        public abstract SignatureAlgorithmName[] AllowedCertificateSignatureAlgorithms { get; }
+        public abstract SignatureAlgorithmName[] AllowedSignatureAlgorithms { get; }
 
         /// <summary>
         /// Returns the set of allowed signature algorithm Oids.
         /// </summary>
-        public abstract string[] AllowedCertificateSignatureAlgorithmOids { get; }
+        public abstract string[] AllowedSignatureAlgorithmOids { get; }
 
         /// <summary>
         /// Returns minumum length required for RSA public keys.

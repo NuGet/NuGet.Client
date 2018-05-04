@@ -163,10 +163,10 @@ namespace NuGet.Packaging.Signing
             {
                 var certificateSignatureAlgorithm = GetNameOrOidString(signerInfo.Certificate.SignatureAlgorithm);
 
-                var supportedSignatureAlgorithms = string.Join(", ", spec.AllowedCertificateSignatureAlgorithms);
+                var supportedSignatureAlgorithms = string.Join(", ", spec.AllowedSignatureAlgorithms);
 
                 var errorMessage = string.Format(CultureInfo.CurrentCulture,
-                    Strings.SignError_TimestampCertificateUnsupportedSignatureAlgorithm,
+                    Strings.TimestampCertificateUnsupportedSignatureAlgorithm,
                     certificateSignatureAlgorithm,
                     supportedSignatureAlgorithms);
 
@@ -185,7 +185,7 @@ namespace NuGet.Packaging.Signing
                 var supportedSignatureAlgorithms = string.Join(", ", spec.AllowedHashAlgorithms);
 
                 var errorMessage = string.Format(CultureInfo.CurrentCulture,
-                    Strings.SignError_TimestampResponseUnsupportedDigestAlgorithm,
+                    Strings.TimestampResponseUnsupportedDigestAlgorithm,
                     digestAlgorithm,
                     supportedSignatureAlgorithms);
 

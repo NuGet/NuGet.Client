@@ -345,7 +345,7 @@ namespace NuGet.Packaging.FuncTest
                         () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal(
-                        "The timestamp response has an unsupported digest algorithm - 'SHA1'. The following algorithms are supported - 'SHA256, SHA384, SHA512'.",
+                        "The timestamp response has an unsupported digest algorithm (SHA1). The following algorithms are supported: SHA256, SHA384, SHA512.",
                         exception.Message);
                 });
         }
@@ -370,7 +370,7 @@ namespace NuGet.Packaging.FuncTest
                         () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal(
-                        "The timestamp certificate has an unsupported signature algorithm - 'SHA1RSA'. The following algorithms are supported - 'SHA256RSA, SHA384RSA, SHA512RSA'.",
+                        "The timestamp certificate has an unsupported signature algorithm (SHA1RSA). The following algorithms are supported: SHA256RSA, SHA384RSA, SHA512RSA.",
                         exception.Message);
                 });
         }

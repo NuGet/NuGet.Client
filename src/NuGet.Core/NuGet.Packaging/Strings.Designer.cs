@@ -989,15 +989,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp certificate has an unsupported signature algorithm - &apos;{0}&apos;. The following algorithms are supported - &apos;{1}&apos;..
-        /// </summary>
-        internal static string SignError_TimestampCertificateUnsupportedSignatureAlgorithm {
-            get {
-                return ResourceManager.GetString("SignError_TimestampCertificateUnsupportedSignatureAlgorithm", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The timestamp&apos;s generalized time is outside the timestamping certificate&apos;s validity period..
         /// </summary>
         internal static string SignError_TimestampGeneralizedTimeInvalid {
@@ -1030,15 +1021,6 @@ namespace NuGet.Packaging {
         internal static string SignError_TimestampNotYetValid {
             get {
                 return ResourceManager.GetString("SignError_TimestampNotYetValid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The timestamp response has an unsupported digest algorithm - &apos;{0}&apos;. The following algorithms are supported - &apos;{1}&apos;..
-        /// </summary>
-        internal static string SignError_TimestampResponseUnsupportedDigestAlgorithm {
-            get {
-                return ResourceManager.GetString("SignError_TimestampResponseUnsupportedDigestAlgorithm", resourceCulture);
             }
         }
         
@@ -1214,6 +1196,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The timestamp certificate has an unsupported signature algorithm ({0}). The following algorithms are supported: {1}..
+        /// </summary>
+        internal static string TimestampCertificateUnsupportedSignatureAlgorithm {
+            get {
+                return ResourceManager.GetString("TimestampCertificateUnsupportedSignatureAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The timestamper URL &apos;{0}&apos; has an invalid URI scheme. The supported schemes are &apos;{1}&apos; and &apos;{2}&apos;..
         /// </summary>
         internal static string TimestampFailureInvalidHttpScheme {
@@ -1237,6 +1228,15 @@ namespace NuGet.Packaging {
         internal static string TimestampResponseExceptionGeneral {
             get {
                 return ResourceManager.GetString("TimestampResponseExceptionGeneral", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp response has an unsupported digest algorithm ({0}). The following algorithms are supported: {1}..
+        /// </summary>
+        internal static string TimestampResponseUnsupportedDigestAlgorithm {
+            get {
+                return ResourceManager.GetString("TimestampResponseUnsupportedDigestAlgorithm", resourceCulture);
             }
         }
         

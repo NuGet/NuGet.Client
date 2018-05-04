@@ -29,9 +29,9 @@ namespace NuGet.Packaging.Signing
         private static readonly string[] _allowedHashAlgorithmOids = _allowedHashAlgorithms.Select(hash => hash.ConvertToOidString()).ToArray();
 
         /// <summary>
-        /// Allowed certifiacte signature algorithms.
+        /// Allowed signature algorithms.
         /// </summary>
-        private static readonly SignatureAlgorithmName[] _allowedCertSignatureAlgorithms = new[]
+        private static readonly SignatureAlgorithmName[] _allowedSignatureAlgorithms = new[]
         {
             SignatureAlgorithmName.SHA256RSA,
             SignatureAlgorithmName.SHA384RSA,
@@ -39,9 +39,9 @@ namespace NuGet.Packaging.Signing
         };
 
         /// <summary>
-        /// Allowed certificate signature algorithm Oids.
+        /// Allowed signature algorithm Oids.
         /// </summary>
-        private static readonly string[] _allowedCertSignatureAlgorithmOids = _allowedCertSignatureAlgorithms.Select(algorithm => algorithm.ConvertToOidString()).ToArray();
+        private static readonly string[] _allowedSignatureAlgorithmOids = _allowedSignatureAlgorithms.Select(algorithm => algorithm.ConvertToOidString()).ToArray();
 
         /// <summary>
         /// Gets the signature format version.
@@ -54,9 +54,9 @@ namespace NuGet.Packaging.Signing
 
         public override string[] AllowedHashAlgorithmOids => _allowedHashAlgorithmOids;
 
-        public override SignatureAlgorithmName[] AllowedCertificateSignatureAlgorithms => _allowedCertSignatureAlgorithms;
+        public override SignatureAlgorithmName[] AllowedSignatureAlgorithms => _allowedSignatureAlgorithms;
 
-        public override string[] AllowedCertificateSignatureAlgorithmOids => _allowedCertSignatureAlgorithmOids;
+        public override string[] AllowedSignatureAlgorithmOids => _allowedSignatureAlgorithmOids;
 
         public override int RSAPublicKeyMinLength => _rsaPublicKeyMinLength;
 

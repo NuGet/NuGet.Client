@@ -50,8 +50,7 @@ namespace Test.Utility.Signing
             {
                 KeyPair = keyPair,
                 IssuerPrivateKey = keyPair.Private,
-                SubjectName = subjectName,
-                SignatureAlgorithmName = "SHA256WITHRSA"
+                SubjectName = subjectName
             };
         }
 
@@ -64,8 +63,7 @@ namespace Test.Utility.Signing
             return new IssueCertificateOptions()
             {
                 KeyPair = keyPair,
-                SubjectName = subjectName,
-                SignatureAlgorithmName = "SHA256WITHRSA"
+                SubjectName = subjectName
             };
         }
 
@@ -78,8 +76,7 @@ namespace Test.Utility.Signing
             return new IssueCertificateOptions()
             {
                 KeyPair = keyPair,
-                SubjectName = subjectName,
-                SignatureAlgorithmName = "SHA256WITHRSA"
+                SubjectName = subjectName
             };
         }
 

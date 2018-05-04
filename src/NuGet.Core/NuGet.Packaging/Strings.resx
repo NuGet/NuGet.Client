@@ -650,8 +650,8 @@ Valid from:</comment>
   <data name="SignError_TimestampSignatureValidationFailed" xml:space="preserve">
     <value>The timestamp signature validation failed.</value>
   </data>
-  <data name="SignError_TimestampCertificateUnsupportedSignatureAlgorithm" xml:space="preserve">
-    <value>The timestamp certificate has an unsupported signature algorithm - '{0}'. The following algorithms are supported - '{1}'.</value>
+  <data name="TimestampCertificateUnsupportedSignatureAlgorithm" xml:space="preserve">
+    <value>The timestamp certificate has an unsupported signature algorithm ({0}). The following algorithms are supported: {1}.</value>
     <comment>0 - certificate signature algorithm name/oid
 1 - supported signature algorithm names</comment>
   </data>
@@ -672,8 +672,8 @@ Valid from:</comment>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>The argument cannot be null or empty.</value>
   </data>
-  <data name="SignError_TimestampResponseUnsupportedDigestAlgorithm" xml:space="preserve">
-    <value>The timestamp response has an unsupported digest algorithm - '{0}'. The following algorithms are supported - '{1}'.</value>
+  <data name="TimestampResponseUnsupportedDigestAlgorithm" xml:space="preserve">
+    <value>The timestamp response has an unsupported digest algorithm ({0}). The following algorithms are supported: {1}.</value>
     <comment>0 - signature algorithm name/oid
 1 - supported signature algorithm names</comment>
   </data>
