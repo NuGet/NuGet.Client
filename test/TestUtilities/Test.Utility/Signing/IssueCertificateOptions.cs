@@ -28,12 +28,16 @@ namespace Test.Utility.Signing
         public AsymmetricKeyParameter IssuerPrivateKey { get; set; }
 
         public AsymmetricCipherKeyPair KeyPair { get; set; }
+
         public X509Name SubjectName { get; set; }
+
+        public string SignatureAlgorithmName { get; set; }
 
         public IssueCertificateOptions()
         {
             NotBefore = DateTimeOffset.UtcNow;
             NotAfter = NotBefore.AddHours(2);
+            SignatureAlgorithmName = "SHA256WITHRSA";
         }
 
         public static IssueCertificateOptions CreateDefaultForRootCertificateAuthority()
@@ -68,6 +72,19 @@ namespace Test.Utility.Signing
             var keyPair = CertificateUtilities.CreateKeyPair();
             var id = CertificateUtilities.GenerateRandomId();
             var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Certificate ({id})");
+
+            return new IssueCertificateOptions()
+            {
+                KeyPair = keyPair,
+                SubjectName = subjectName
+            };
+        }
+
+        public static IssueCertificateOptions CreateDefaultForTimestampService()
+        {
+            var keyPair = CertificateUtilities.CreateKeyPair();
+            var id = Guid.NewGuid().ToString();
+            var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Timestamp Service ({id})");
 
             return new IssueCertificateOptions()
             {

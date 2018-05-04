@@ -1034,15 +1034,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp certificate has an unsupported signature algorithm..
-        /// </summary>
-        internal static string SignError_TimestampUnsupportedSignatureAlgorithm {
-            get {
-                return ResourceManager.GetString("SignError_TimestampUnsupportedSignatureAlgorithm", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The following certificate cannot be used for package signing as the private key provider is unsupported:.
         /// </summary>
         internal static string SignFailureCertificateInvalidProviderType {
@@ -1205,6 +1196,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The timestamp certificate has an unsupported signature algorithm ({0}). The following algorithms are supported: {1}..
+        /// </summary>
+        internal static string TimestampCertificateUnsupportedSignatureAlgorithm {
+            get {
+                return ResourceManager.GetString("TimestampCertificateUnsupportedSignatureAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The timestamper URL &apos;{0}&apos; has an invalid URI scheme. The supported schemes are &apos;{1}&apos; and &apos;{2}&apos;..
         /// </summary>
         internal static string TimestampFailureInvalidHttpScheme {
@@ -1228,6 +1228,15 @@ namespace NuGet.Packaging {
         internal static string TimestampResponseExceptionGeneral {
             get {
                 return ResourceManager.GetString("TimestampResponseExceptionGeneral", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp response has an unsupported digest algorithm ({0}). The following algorithms are supported: {1}..
+        /// </summary>
+        internal static string TimestampResponseUnsupportedDigestAlgorithm {
+            get {
+                return ResourceManager.GetString("TimestampResponseUnsupportedDigestAlgorithm", resourceCulture);
             }
         }
         

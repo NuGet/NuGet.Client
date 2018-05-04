@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
@@ -332,8 +333,8 @@ namespace NuGet.Packaging.FuncTest
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
-            var options = new TimestampServiceOptions() { SignatureHashAlgorithm = new Oid(Oids.Sha1) };
-            var timestampService = TimestampService.Create(certificateAuthority, options);
+            var timestampServiceOptions = new TimestampServiceOptions() { SignatureHashAlgorithm = new Oid(Oids.Sha1) };
+            var timestampService = TimestampService.Create(certificateAuthority, timestampServiceOptions);
 
             VerifyTimestampData(
                 testServer,
@@ -344,7 +345,32 @@ namespace NuGet.Packaging.FuncTest
                         () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal(
-                        "The timestamp certificate has an unsupported signature algorithm.",
+                        "The timestamp response has an unsupported digest algorithm (SHA1). The following algorithms are supported: SHA256, SHA384, SHA512.",
+                        exception.Message);
+                });
+        }
+
+        [CIOnlyFact]
+        public async Task GetTimestamp_WhenCertificateSignatureAlgorithmIsSha1_ThrowsAsync()
+        {
+            var testServer = await _testFixture.GetSigningTestServerAsync();
+            var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
+            var timestampServiceOptions = new TimestampServiceOptions() { SignatureHashAlgorithm = new Oid(Oids.Sha1) };
+            var issueCertificateOptions = IssueCertificateOptions.CreateDefaultForTimestampService();
+            issueCertificateOptions.SignatureAlgorithmName = "SHA1WITHRSA";
+
+            var timestampService = TimestampService.Create(certificateAuthority, timestampServiceOptions, issueCertificateOptions);
+
+            VerifyTimestampData(
+                testServer,
+                timestampService,
+                (timestampProvider, request) =>
+                {
+                    var exception = Assert.Throws<TimestampException>(
+                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
+
+                    Assert.Equal(
+                        "The timestamp certificate has an unsupported signature algorithm (SHA1RSA). The following algorithms are supported: SHA256RSA, SHA384RSA, SHA512RSA.",
                         exception.Message);
                 });
         }

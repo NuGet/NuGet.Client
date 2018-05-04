@@ -161,7 +161,16 @@ namespace NuGet.Packaging.Signing
 
             if (!CertificateUtility.IsSignatureAlgorithmSupported(signerInfo.Certificate))
             {
-                throw new TimestampException(NuGetLogCode.NU3022, Strings.SignError_TimestampUnsupportedSignatureAlgorithm);
+                var certificateSignatureAlgorithm = GetNameOrOidString(signerInfo.Certificate.SignatureAlgorithm);
+
+                var supportedSignatureAlgorithms = string.Join(", ", spec.AllowedSignatureAlgorithms);
+
+                var errorMessage = string.Format(CultureInfo.CurrentCulture,
+                    Strings.TimestampCertificateUnsupportedSignatureAlgorithm,
+                    certificateSignatureAlgorithm,
+                    supportedSignatureAlgorithms);
+
+                throw new TimestampException(NuGetLogCode.NU3022, errorMessage);
             }
 
             if (!CertificateUtility.IsCertificatePublicKeyValid(signerInfo.Certificate))
@@ -171,7 +180,16 @@ namespace NuGet.Packaging.Signing
 
             if (!spec.AllowedHashAlgorithmOids.Contains(signerInfo.DigestAlgorithm.Value))
             {
-                throw new TimestampException(NuGetLogCode.NU3024, Strings.SignError_TimestampUnsupportedSignatureAlgorithm);
+                var digestAlgorithm = GetNameOrOidString(signerInfo.DigestAlgorithm);
+
+                var supportedSignatureAlgorithms = string.Join(", ", spec.AllowedHashAlgorithms);
+
+                var errorMessage = string.Format(CultureInfo.CurrentCulture,
+                    Strings.TimestampResponseUnsupportedDigestAlgorithm,
+                    digestAlgorithm,
+                    supportedSignatureAlgorithms);
+
+                throw new TimestampException(NuGetLogCode.NU3024, errorMessage);
             }
 
             if (CertificateUtility.IsCertificateValidityPeriodInTheFuture(signerInfo.Certificate))
@@ -196,7 +214,14 @@ namespace NuGet.Packaging.Signing
             {
                 throw new TimestampException(NuGetLogCode.NU3019, Strings.SignError_TimestampIntegrityCheckFailed);
             }
+        }
 
+        /// <summary>
+        /// Returns the FriendlyName of an Oid. If FriendlyName is null, then the Oid string is returned.
+        /// </summary>
+        private static string GetNameOrOidString(Oid oid)
+        {
+            return oid.FriendlyName?.ToUpper() ?? oid.Value;
         }
 
         private static byte[] GenerateNonce()
@@ -225,6 +250,7 @@ namespace NuGet.Packaging.Signing
 
             return nonce;
         }
+
 #else
 
         /// <summary>

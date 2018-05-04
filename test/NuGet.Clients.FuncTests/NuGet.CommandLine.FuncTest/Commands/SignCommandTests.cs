@@ -705,7 +705,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         waitForExit: true);
 
                     Assert.False(result.Success);
-                    Assert.Contains("The timestamp certificate has an unsupported signature algorithm.", result.AllOutput);
+                    Assert.Contains("The timestamp response has an unsupported digest algorithm (SHA1). The following algorithms are supported: SHA256, SHA384, SHA512.", result.AllOutput);
 
                     var resultingFile = File.ReadAllBytes(packageFile.FullName);
                     Assert.Equal(resultingFile, originalFile);

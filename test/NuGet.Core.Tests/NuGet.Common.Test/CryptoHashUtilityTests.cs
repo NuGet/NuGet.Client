@@ -42,14 +42,14 @@ namespace NuGet.Common.Test
                 () => HashAlgorithmName.Unknown.ConvertToSystemSecurityHashAlgorithmName());
 
             Assert.Equal("hashAlgorithmName", exception.ParamName);
-            Assert.StartsWith("The hash algorithm 'Unknown' is unsupported.", exception.Message);
+            Assert.StartsWith("Hash algorithm 'Unknown' is unsupported.", exception.Message);
         }
 
         [Theory]
         [InlineData(HashAlgorithmName.SHA256, Oids.Sha256)]
         [InlineData(HashAlgorithmName.SHA384, Oids.Sha384)]
         [InlineData(HashAlgorithmName.SHA512, Oids.Sha512)]
-        public void ConvertToOidString_WithValidInput_Succeeds(HashAlgorithmName hashAlgorithmName, string expectedOid)
+        public void ConvertToOidString_HashAlgorithmName_WithValidInput_Succeeds(HashAlgorithmName hashAlgorithmName, string expectedOid)
         {
             var actualOid = hashAlgorithmName.ConvertToOidString();
 
@@ -57,13 +57,34 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void ConvertToOidString_WithUnknown_Succeeds()
+        public void ConvertToOidString_HashAlgorithmName_WithUnknown_Throws()
         {
             var exception = Assert.Throws<ArgumentException>(
                 () => HashAlgorithmName.Unknown.ConvertToOidString());
 
             Assert.Equal("hashAlgorithmName", exception.ParamName);
-            Assert.StartsWith("The hash algorithm 'Unknown' is unsupported.", exception.Message);
+            Assert.StartsWith("Hash algorithm 'Unknown' is unsupported.", exception.Message);
+        }
+
+        [Theory]
+        [InlineData(SignatureAlgorithmName.SHA256RSA, Oids.Sha256WithRSAEncryption)]
+        [InlineData(SignatureAlgorithmName.SHA384RSA, Oids.Sha384WithRSAEncryption)]
+        [InlineData(SignatureAlgorithmName.SHA512RSA, Oids.Sha512WithRSAEncryption)]
+        public void ConvertToOidString_SignatureAlgorithmName_WithValidInput_Succeeds(SignatureAlgorithmName signatureAlgorithmName, string expectedOid)
+        {
+            var actualOid = signatureAlgorithmName.ConvertToOidString();
+
+            Assert.Equal(expectedOid, actualOid);
+        }
+
+        [Fact]
+        public void ConvertToOidString_SignatureAlgorithmName_WithUnknown_Throws()
+        {
+            var exception = Assert.Throws<ArgumentException>(
+                () => SignatureAlgorithmName.Unknown.ConvertToOidString());
+
+            Assert.Equal("signatureAlgorithmName", exception.ParamName);
+            Assert.StartsWith("Signature algorithm 'Unknown' is unsupported.", exception.Message);
         }
 
         [Theory]
@@ -84,7 +105,7 @@ namespace NuGet.Common.Test
                 () => CryptoHashUtility.OidToHashAlgorithmName(Oids.Sha1));
 
             Assert.Equal("oid", exception.ParamName);
-            Assert.StartsWith($"The hash algorithm '{Oids.Sha1}' is unsupported.", exception.Message);
+            Assert.StartsWith($"Hash algorithm '{Oids.Sha1}' is unsupported.", exception.Message);
         }
 
         [Fact]
