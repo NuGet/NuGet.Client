@@ -898,6 +898,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Multiple signature verification errors {0}.
+        /// </summary>
+        internal static string SignatureVerificationMultiple {
+            get {
+                return ResourceManager.GetString("SignatureVerificationMultiple", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Solution directory &apos;{0}&apos; must be a rooted path..
         /// </summary>
         internal static string SolutionDirectoryMustBeRooted {

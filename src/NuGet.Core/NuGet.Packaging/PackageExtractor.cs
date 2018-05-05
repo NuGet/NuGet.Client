@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -996,7 +995,19 @@ namespace NuGet.Packaging
                        token,
                        parentId);
 
-                if (!verifyResult.Valid)
+                if (verifyResult.Valid)
+                {
+                    // log any warnings
+                    var warnings = verifyResult.Results.SelectMany(r => r.GetWarningIssues());
+                    if (warnings.Any())
+                    {
+                        foreach (var warning in warnings)
+                        {
+                            packageExtractionContext.Logger.Log(warning);
+                        }
+                    }
+                }
+                else
                 {
                     throw new SignatureException(verifyResult.Results, package);
                 }
