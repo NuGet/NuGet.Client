@@ -999,12 +999,10 @@ namespace NuGet.Packaging
                 {
                     // log any warnings
                     var warnings = verifyResult.Results.SelectMany(r => r.GetWarningIssues());
-                    if (warnings.Any())
+
+                    foreach (var warning in warnings)
                     {
-                        foreach (var warning in warnings)
-                        {
-                            packageExtractionContext.Logger.Log(warning);
-                        }
+                        packageExtractionContext.Logger.Log(warning);
                     }
                 }
                 else

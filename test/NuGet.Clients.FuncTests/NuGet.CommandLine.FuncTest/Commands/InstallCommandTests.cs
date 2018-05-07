@@ -246,7 +246,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 environmentVariables: envVars);
 
             // Assert
-            Assert.True(expectedExitCode == r.Item1, r.Item3 + "\n\n" + r.Item2);
+            Assert.True(expectedExitCode == r.ExitCode, r.AllOutput);
 
             return r;
         }

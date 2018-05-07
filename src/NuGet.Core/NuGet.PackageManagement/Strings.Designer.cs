@@ -898,7 +898,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple signature verification errors {0}.
+        ///   Looks up a localized string similar to Signed package validation failed with multiple errors:{0}.
         /// </summary>
         internal static string SignatureVerificationMultiple {
             get {

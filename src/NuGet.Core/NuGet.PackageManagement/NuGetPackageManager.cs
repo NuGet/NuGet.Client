@@ -2362,12 +2362,9 @@ namespace NuGet.PackageManagement
                         unwrappedException = new SignatureException(NuGetLogCode.NU3000, errorMessage, ex.PackageIdentity);
                     }
 
-                    if (warnings.Any())
+                    foreach (var warning in warnings)
                     {
-                        foreach (var warning in warnings)
-                        {
-                            nuGetProjectContext.Log(MessageLevel.Warning, warning.FormatWithCode());
-                        }
+                        nuGetProjectContext.Log(MessageLevel.Warning, warning.FormatWithCode());
                     }
 
                     exceptionInfo = ExceptionDispatchInfo.Capture(unwrappedException);
