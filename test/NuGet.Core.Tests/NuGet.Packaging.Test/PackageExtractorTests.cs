@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using FluentAssertions;
 using Moq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
@@ -2104,6 +2105,9 @@ namespace NuGet.Packaging.Test
                     identity,
                     NullLogger.Instance))
                 {
+                    var packageInstallPath = resolver.GetInstallPath(identity.Id, identity.Version);
+                    var packageInstallDirectory = Directory.GetParent(packageInstallPath);
+
                     // Act & Assert
                     await Assert.ThrowsAsync<SignatureException>(
                      () => PackageExtractor.InstallFromSourceAsync(
@@ -2117,6 +2121,11 @@ namespace NuGet.Packaging.Test
                             signedPackageVerifier: signedPackageVerifier.Object,
                             signedPackageVerifierSettings: signedPackageVerifierSettings),
                         CancellationToken.None));
+
+                    // Assert that no footprint is left
+                    Directory.Exists(packageInstallPath).Should().BeFalse();
+                    Directory.Exists(packageInstallDirectory.FullName).Should().BeFalse();
+                    File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "a.dll")).Should().BeFalse();
                 }
             }
         }
@@ -2294,6 +2303,9 @@ namespace NuGet.Packaging.Test
 
                 using (var fileStream = File.OpenRead(packageFileInfo.FullName))
                 {
+                    var packageInstallPath = resolver.GetInstallPath(identity.Id, identity.Version);
+                    var packageInstallDirectory = Directory.GetParent(packageInstallPath);
+
                     // Act & Assert
                     await Assert.ThrowsAsync<SignatureException>(
                      () => PackageExtractor.InstallFromSourceAsync(
@@ -2308,6 +2320,12 @@ namespace NuGet.Packaging.Test
                             signedPackageVerifier: signedPackageVerifier.Object,
                             signedPackageVerifierSettings: signedPackageVerifierSettings),
                         CancellationToken.None));
+
+                    // Assert that no footprint is left
+                    Directory.Exists(packageInstallPath).Should().BeFalse();
+                    Directory.Exists(packageInstallDirectory.FullName).Should().BeFalse();
+                    File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "a.dll")).Should().BeFalse();
+
                 }
             }
         }
