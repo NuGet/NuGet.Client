@@ -677,4 +677,7 @@ Valid from:</comment>
     <comment>0 - signature algorithm name/oid
 1 - supported signature algorithm names</comment>
   </data>
+  <data name="NoRepositorySignature" xml:space="preserve">
+    <value>The package does not have a repository signature (primary or countersignature).</value>
+  </data>
 </root>

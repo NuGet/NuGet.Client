@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Ocsp;
 using Org.BouncyCastle.Asn1.X509;
@@ -19,6 +21,7 @@ namespace Test.Utility.Signing
         private const string ResponseContentType = "application/ocsp-response";
 
         private readonly OcspResponderOptions _options;
+        private readonly ConcurrentDictionary<string, DateTimeOffset> _responses;
 
         public override Uri Url { get; }
 
@@ -29,6 +32,7 @@ namespace Test.Utility.Signing
             CertificateAuthority = certificateAuthority;
             Url = certificateAuthority.OcspResponderUri;
             _options = options;
+            _responses = new ConcurrentDictionary<string, DateTimeOffset>(StringComparer.OrdinalIgnoreCase);
         }
 
         public static OcspResponder Create(
@@ -78,20 +82,30 @@ namespace Test.Utility.Signing
                 basicOcspRespGenerator.SetResponseExtensions(extensions);
             }
 
-            var now = DateTime.UtcNow;
+            var now = DateTimeOffset.UtcNow;
 
             foreach (var request in requests)
             {
                 var certificateId = request.GetCertID();
                 var certificateStatus = CertificateAuthority.GetStatus(certificateId);
-                var thisUpdate = _options.ThisUpdate?.UtcDateTime ?? now;
-                var nextUpdate = _options.NextUpdate?.UtcDateTime ?? now.AddSeconds(1);
+                var thisUpdate = _options.ThisUpdate ?? now;
+                var nextUpdate = _options.NextUpdate ?? now.AddSeconds(1);
 
-                basicOcspRespGenerator.AddResponse(certificateId, certificateStatus, thisUpdate, nextUpdate, singleExtensions: null);
+                _responses.AddOrUpdate(certificateId.SerialNumber.ToString(), nextUpdate, (key, currentNextUpdate) =>
+                {
+                    if (nextUpdate > currentNextUpdate)
+                    {
+                        return nextUpdate;
+                    }
+
+                    return currentNextUpdate;
+                });
+
+                basicOcspRespGenerator.AddResponse(certificateId, certificateStatus, thisUpdate.UtcDateTime, nextUpdate.UtcDateTime, singleExtensions: null);
             }
 
             var certificateChain = GetCertificateChain();
-            var basicOcspResp = basicOcspRespGenerator.Generate("SHA256WITHRSA", CertificateAuthority.KeyPair.Private, certificateChain, now);
+            var basicOcspResp = basicOcspRespGenerator.Generate("SHA256WITHRSA", CertificateAuthority.KeyPair.Private, certificateChain, now.UtcDateTime);
             var ocspRespGenerator = new OCSPRespGenerator();
             var ocspResp = ocspRespGenerator.Generate(OCSPRespGenerator.Successful, basicOcspResp);
 
@@ -123,6 +137,27 @@ namespace Test.Utility.Signing
             return null;
         }
 #endif
+
+        public Task WaitForResponseExpirationAsync(X509Certificate certificate)
+        {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+
+            if (_responses.TryGetValue(certificate.SerialNumber.ToString(), out var nextUpdate))
+            {
+                // Ensure expiration
+                var delay = nextUpdate.AddSeconds(1) - DateTimeOffset.UtcNow;
+
+                if (delay > TimeSpan.Zero)
+                {
+                    return Task.Delay(delay);
+                }
+            }
+
+            return Task.CompletedTask;
+        }
 
         private X509Certificate[] GetCertificateChain()
         {

@@ -10,7 +10,6 @@ using System.Linq;
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -23,6 +22,7 @@ namespace Test.Utility.Signing
 {
     public static class SignedArchiveTestUtility
     {
+#if IS_DESKTOP
         /// <summary>
         /// Generates an author signed copy of a package and returns the path to that package
         /// This method can timestamp a package and should only be used with tests marked with [CIOnlyFact]
@@ -54,7 +54,10 @@ namespace Test.Utility.Signing
 
             using (var originalPackage = File.OpenRead(tempPath))
             using (var signedPackage = File.Open(signedPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            using (var request = new AuthorSignPackageRequest(certificate, signatureHashAlgorithm, timestampHashAlgorithm))
+            using (var request = new AuthorSignPackageRequest(
+                new X509Certificate2(certificate),
+                signatureHashAlgorithm,
+                timestampHashAlgorithm))
             {
                 await CreateSignedPackageAsync(request, originalPackage, signedPackage, timestampService);
             }
@@ -99,7 +102,12 @@ namespace Test.Utility.Signing
 
             using (var originalPackage = File.OpenRead(tempPath))
             using (var signedPackage = File.Open(signedPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            using (var request = new RepositorySignPackageRequest(certificate, signatureHashAlgorithm, timestampHashAlgorithm, v3ServiceIndex, packageOwners))
+            using (var request = new RepositorySignPackageRequest(
+                new X509Certificate2(certificate),
+                signatureHashAlgorithm,
+                timestampHashAlgorithm,
+                v3ServiceIndex,
+                packageOwners))
             {
                 await CreateSignedPackageAsync(request, originalPackage, signedPackage, timestampService);
             }
@@ -138,13 +146,19 @@ namespace Test.Utility.Signing
 
             using (var originalPackage = File.OpenRead(packagePath))
             using (var signedPackage = File.Open(outputPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            using (var request = new RepositorySignPackageRequest(certificate, signatureHashAlgorithm, timestampHashAlgorithm, v3ServiceIndex, packageOwners))
+            using (var request = new RepositorySignPackageRequest(
+                new X509Certificate2(certificate),
+                signatureHashAlgorithm,
+                timestampHashAlgorithm,
+                v3ServiceIndex,
+                packageOwners))
             {
                 await CreateSignedPackageAsync(request, originalPackage, signedPackage, timestampService);
             }
 
             return outputPackagePath;
         }
+#endif
 
         public static async Task CreateSignedPackageAsync(
             SignPackageRequest request,
@@ -270,7 +284,6 @@ namespace Test.Utility.Signing
 
             return signedPackageFile;
         }
-
 
         public static Task<PrimarySignature> TimestampSignature(ITimestampProvider timestampProvider, PrimarySignature primarySignature, HashAlgorithmName hashAlgorithm, SignaturePlacement target, ILogger logger)
         {

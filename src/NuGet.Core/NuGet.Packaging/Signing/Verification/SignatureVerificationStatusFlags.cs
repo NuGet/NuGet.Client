@@ -26,7 +26,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Multiple signatures where found
         /// </summary>
-        MultupleSignatures                  = 1 << 2,
+        MultipleSignatures                  = 1 << 2,
 
         /// <summary>
         /// A call to SignedCms.CheckSignature failed
@@ -98,6 +98,35 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// The Timestamp's generalized time was outside certificate's validity period
         /// </summary>
-        GeneralizedTimeOutsideValidity      = 1 << 16
+        GeneralizedTimeOutsideValidity      = 1 << 16,
+
+        /// <summary>
+        /// Flags which indicate that the signed package is suspect.
+        /// </summary>
+        Suspect = IntegrityCheckFailed |
+            CertificateRevoked,
+
+        /// <summary>
+        /// Flags which indicate that the signed package is illegal.
+        /// </summary>
+        Illegal = NoCertificate |
+            MultipleSignatures |
+            SignatureCheckFailed |
+            SignatureAlgorithmUnsupported |
+            CertificatePublicKeyInvalid |
+            HasLifetimeSigningEku |
+            CertificateValidityInTheFuture |
+            HashAlgorithmUnsupported |
+            MessageImprintUnsupportedAlgorithm |
+            GeneralizedTimeOutsideValidity,
+
+        /// <summary>
+        /// Flags which indicate that the signed package is untrusted.
+        /// </summary>
+        Untrusted = NoSignature |
+            CertificateExpired |
+            ChainBuildingFailure |
+            UnknownRevocation |
+            UntrustedRoot
     }
 }
