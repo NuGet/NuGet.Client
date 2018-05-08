@@ -964,6 +964,31 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task TestPacManInstallLatestVersionForPackageReference()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            var testSettings = NullSettings.Instance;
+            var token = CancellationToken.None;
+            var resolutionContext = new ResolutionContext();
+
+            var packageIdentity0 = PackageWithDependents[0];
+
+            // Act
+            var resolvedPackage = await NuGetPackageManager.GetLatestVersionAsync(
+                new PackageReference(packageIdentity0, NuGetFramework.AnyFramework),
+                NuGetFramework.AnyFramework,
+                resolutionContext,
+                sourceRepositoryProvider.GetRepositories(),
+                NullLogger.Instance,
+                token);
+
+            // Assert
+            Assert.NotNull(resolvedPackage.LatestVersion);
+        }
+
+        [Fact]
         public async Task TestPacManInstallLatestVersionOfDependencyPackage()
         {
             // Arrange
@@ -4656,7 +4681,7 @@ namespace NuGet.Test
 
                 var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
                     nuGetProject,
-                    new PackageIdentity(target,new NuGetVersion(3,17,5)),
+                    new PackageIdentity(target, new NuGetVersion(3, 17, 5)),
                     new ResolutionContext(DependencyBehavior.Lowest, false, false, VersionConstraints.None),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories().First(),
@@ -5724,7 +5749,7 @@ namespace NuGet.Test
                 }
 
                 packages.Add(new SourcePackageDependencyInfo($"Package{next}", new NuGetVersion(i, 0, 0),
-                    new PackageDependency[] {},
+                    new PackageDependency[] { },
                     true,
                     null));
             }
@@ -5767,7 +5792,7 @@ namespace NuGet.Test
 
                 var result = await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     targets,
-                    new [] { nuGetProject },
+                    new[] { nuGetProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -5825,7 +5850,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                    new List<NuGetProject>() {buildIntegratedProjectA, buildIntegratedProjectB },
+                    new List<NuGetProject>() { buildIntegratedProjectA, buildIntegratedProjectB },
                     projectActions,
                     new TestNuGetProjectContext(),
                     NullSourceCacheContext.Instance,
@@ -5944,7 +5969,7 @@ namespace NuGet.Test
                     new TestDeleteOnRestartManager());
 
                 // Main Act
-                var targetPackage = new PackageIdentity("a", new NuGetVersion(2, 0, 0));                
+                var targetPackage = new PackageIdentity("a", new NuGetVersion(2, 0, 0));
 
                 var result = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     new List<PackageIdentity> { targetPackage },
@@ -5981,7 +6006,7 @@ namespace NuGet.Test
             // set up telemetry service
             var telemetrySession = new Mock<ITelemetrySession>();
 
-            var telemetryEvents= new List<TelemetryEvent>();
+            var telemetryEvents = new List<TelemetryEvent>();
             telemetrySession
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
@@ -6148,7 +6173,7 @@ namespace NuGet.Test
                 nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
                 VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents.Select(p => (string)p["StepName"]));
             }
-        }        
+        }
 
         [Fact]
         public async Task TestPacMan_ExecuteNuGetProjectActions_PackagesConfig_RaiseTelemetryEvents()
