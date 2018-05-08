@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
@@ -10,7 +11,7 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public class DisplayVersion
     {
-        private readonly string _additionalInfo;
+        public readonly string AdditionalInfo;
 
         private readonly string _toString;
 
@@ -40,7 +41,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             Range = range;
-            _additionalInfo = additionalInfo;
+            AdditionalInfo = additionalInfo;
 
             IsValidVersion = isValidVersion;
 
@@ -53,16 +54,16 @@ namespace NuGet.PackageManagement.UI
             {
                 var formattedVersionString = Version.ToString(versionFormat, VersionFormatter.Instance);
 
-                _toString = string.IsNullOrEmpty(_additionalInfo) ?
+                _toString = string.IsNullOrEmpty(AdditionalInfo) ?
                     formattedVersionString :
-                    _additionalInfo + " " + formattedVersionString;
+                    AdditionalInfo + " " + formattedVersionString;
             }
             else
             {
                 // Display the range, use the original value for floating ranges
-                _toString = string.IsNullOrEmpty(_additionalInfo) ?
+                _toString = string.IsNullOrEmpty(AdditionalInfo) ?
                     Range.OriginalString :
-                    _additionalInfo + " " + Range.OriginalString;
+                    AdditionalInfo + " " + Range.OriginalString;
             }
         }
 
@@ -84,7 +85,7 @@ namespace NuGet.PackageManagement.UI
         public override bool Equals(object obj)
         {
             var other = obj as DisplayVersion;
-            return other != null && other.Version == Version;
+            return other != null && other.Version == Version && string.Equals(other.AdditionalInfo, AdditionalInfo, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()
