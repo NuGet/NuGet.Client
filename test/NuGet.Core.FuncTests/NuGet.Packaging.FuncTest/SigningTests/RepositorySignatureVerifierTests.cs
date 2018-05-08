@@ -73,7 +73,7 @@ namespace NuGet.Packaging.FuncTest
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
-                    _fixture.TrustedTestCertificate.Source.Cert,
+                    _fixture.TrustedRepositoryCertificate.Source.Cert,
                     timestampService.Url))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
@@ -87,7 +87,7 @@ namespace NuGet.Packaging.FuncTest
             public async Task VerifyAsync_WithValidSignatureButNoTimestamp_ReturnsUntrusted()
             {
                 using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
-                    _fixture.TrustedTestCertificate.Source.Cert))
+                    _fixture.TrustedRepositoryCertificate.Source.Cert))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
                     var status = await _verifier.VerifyAsync(packageReader, CancellationToken.None);
@@ -153,7 +153,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (testServer.RegisterResponder(timestampService))
                 using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
-                    _fixture.TrustedTestCertificate.Source.Cert,
+                    _fixture.TrustedRepositoryCertificate.Source.Cert,
                     timestampService.Url))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
@@ -176,7 +176,7 @@ namespace NuGet.Packaging.FuncTest
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
-                    _fixture.TrustedTestCertificate.Source.Cert,
+                    _fixture.TrustedRepositoryCertificate.Source.Cert,
                     timestampService.Url))
                 {
                     using (var stream = test.PackageFile.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None))
@@ -220,7 +220,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                     _fixture.TrustedTestCertificate.Source.Cert,
-                    _fixture.TrustedTestCertificate2.Source.Cert,
+                    _fixture.TrustedRepositoryCertificate.Source.Cert,
                     timestampService.Url,
                     timestampService.Url))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
@@ -238,7 +238,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                     _fixture.UntrustedTestCertificate.Cert,
-                    _fixture.TrustedTestCertificate2.Source.Cert,
+                    _fixture.TrustedRepositoryCertificate.Source.Cert,
                     timestampService.Url,
                     timestampService.Url))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
@@ -256,7 +256,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                     _fixture.TrustedTestCertificate.Source.Cert,
-                    _fixture.TrustedTestCertificate2.Source.Cert,
+                    _fixture.TrustedRepositoryCertificate.Source.Cert,
                     timestampService.Url))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
@@ -329,7 +329,7 @@ namespace NuGet.Packaging.FuncTest
                 using (testServer.RegisterResponder(revokedTimestampService))
                 using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                     _fixture.TrustedTestCertificate.Source.Cert,
-                    _fixture.TrustedTestCertificate2.Source.Cert,
+                    _fixture.TrustedRepositoryCertificate.Source.Cert,
                     timestampService.Url,
                     revokedTimestampService.Url))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
@@ -354,7 +354,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                     _fixture.TrustedTestCertificate.Source.Cert,
-                    _fixture.TrustedTestCertificate2.Source.Cert,
+                    _fixture.TrustedRepositoryCertificate.Source.Cert,
                     timestampService.Url,
                     timestampService.Url))
                 {

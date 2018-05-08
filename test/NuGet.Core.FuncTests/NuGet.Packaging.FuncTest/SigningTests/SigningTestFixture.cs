@@ -16,7 +16,7 @@ namespace NuGet.Packaging.FuncTest
     public class SigningTestFixture : IDisposable
     {
         private TrustedTestCert<TestCertificate> _trustedTestCert;
-        private TrustedTestCert<TestCertificate> _trustedTestCert2;
+        private TrustedTestCert<TestCertificate> _trustedRepositoryCertificate;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
         private TrustedTestCert<X509Certificate2> _trustedServerRoot;
@@ -50,16 +50,18 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        public TrustedTestCert<TestCertificate> TrustedTestCertificate2
+        // This certificate is interchangeable with TrustedTestCertificate and exists only
+        // to provide certificate independence in author + repository signing scenarios.
+        public TrustedTestCert<TestCertificate> TrustedRepositoryCertificate
         {
             get
             {
-                if (_trustedTestCert2 == null)
+                if (_trustedRepositoryCertificate == null)
                 {
-                    _trustedTestCert2 = SigningTestUtility.GenerateTrustedTestCertificate();
+                    _trustedRepositoryCertificate = SigningTestUtility.GenerateTrustedTestCertificate();
                 }
 
-                return _trustedTestCert2;
+                return _trustedRepositoryCertificate;
             }
         }
 
@@ -214,7 +216,7 @@ namespace NuGet.Packaging.FuncTest
         public void Dispose()
         {
             _trustedTestCert?.Dispose();
-            _trustedTestCert2?.Dispose();
+            _trustedRepositoryCertificate?.Dispose();
             _trustedTestCertExpired?.Dispose();
             _trustedTestCertNotYetValid?.Dispose();
             _trustedServerRoot?.Dispose();

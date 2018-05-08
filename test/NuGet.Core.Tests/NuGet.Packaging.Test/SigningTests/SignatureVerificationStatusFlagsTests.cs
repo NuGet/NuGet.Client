@@ -11,8 +11,14 @@ namespace NuGet.Packaging.Test
 {
     public class SignatureVerificationStatusFlagsTests
     {
+        // This test helps ensure that changes to the SignatureVerificationStatusFlags enum are
+        // implemented as expected.  All simple enum members (like NoSignature, NoCertificate,
+        // and IntegrityCheckFailed) are included in compound enum members (like Suspect, Illegal,
+        // and Untrusted).  Except for simple member NoErrors, no simple enum member should be
+        // defined without also being in one of these compound enum members.  This is because
+        // SignatureVerificationStatus is derived from SignatureVerificationStatusFlags values.
         [Fact]
-        public void EnumDefintion_HasNotChangedWithoutUpdatingTests()
+        public void EnumDefintion_HasNotChangedUnexpectedly()
         {
             var expectedMembers = new Dictionary<string, int>()
             {

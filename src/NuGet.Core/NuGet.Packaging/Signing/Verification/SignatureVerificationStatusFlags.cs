@@ -14,7 +14,7 @@ namespace NuGet.Packaging.Signing
         NoErrors                            = 0,
 
         /// <summary>
-        /// A siganture was not found
+        /// A signature was not found
         /// </summary>
         NoSignature                         = 1 << 0,
 
@@ -24,7 +24,7 @@ namespace NuGet.Packaging.Signing
         NoCertificate                       = 1 << 1,
 
         /// <summary>
-        /// Multiple signatures where found
+        /// Multiple signatures were found
         /// </summary>
         MultipleSignatures                  = 1 << 2,
 
@@ -34,7 +34,7 @@ namespace NuGet.Packaging.Signing
         SignatureCheckFailed                = 1 << 3,
 
         /// <summary>
-        /// Signature Algorithm is not supported
+        /// Signature algorithm is not supported
         /// </summary>
         SignatureAlgorithmUnsupported       = 1 << 4,
 
