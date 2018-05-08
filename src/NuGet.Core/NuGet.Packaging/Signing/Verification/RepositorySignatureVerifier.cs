@@ -10,6 +10,9 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
+    /// <remarks>
+    /// This is used by NuGetGallery to determine repository signature validity.
+    /// </remarks>
     public sealed class RepositorySignatureVerifier
     {
         private readonly HashAlgorithmName _fingerprintAlgorithm;
@@ -87,7 +90,7 @@ namespace NuGet.Packaging.Signing
             var result = await integrityVerificationProvider.GetTrustResultAsync(
                 reader,
                 primarySignature,
-                SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(),
+                _settings,
                 cancellationToken);
 
             if (result.Trust != SignatureVerificationStatus.Valid)
