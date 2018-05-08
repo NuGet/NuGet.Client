@@ -650,7 +650,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private void WriteErrorLine(string message)
         {
-            ActiveConsole?.Write(message + Environment.NewLine, Colors.DarkRed, null);
+            ActiveConsole?.Write(message + Environment.NewLine, Colors.White, Colors.DarkRed);
         }
 
         private void WriteLine(string message = "")
