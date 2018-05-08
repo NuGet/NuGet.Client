@@ -43,7 +43,7 @@ namespace Test.Utility.Signing
             HashAlgorithmName timestampHashAlgorithm = HashAlgorithmName.SHA256)
         {
             var testLogger = new TestLogger();
-            var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+            var signedPackagePath = Path.Combine(dir, $"{nupkg.Id}.{nupkg.Version}.nupkg");
             var tempPath = Path.GetTempFileName();
 
             using (var packageStream = await nupkg.CreateAsStreamAsync())
@@ -91,7 +91,7 @@ namespace Test.Utility.Signing
             HashAlgorithmName timestampHashAlgorithm = HashAlgorithmName.SHA256)
         {
             var testLogger = new TestLogger();
-            var signedPackagePath = Path.Combine(dir, Guid.NewGuid().ToString());
+            var signedPackagePath = Path.Combine(dir, $"{nupkg.Id}.{nupkg.Version}.nupkg");
             var tempPath = Path.GetTempFileName();
 
             using (var packageStream = await nupkg.CreateAsStreamAsync())

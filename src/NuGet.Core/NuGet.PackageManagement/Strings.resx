@@ -487,4 +487,8 @@
   <data name="XdtError" xml:space="preserve">
     <value>An error occurred while applying transformation to '{0}' in project '{1}'</value>
   </data>
+  <data name="SignatureVerificationMultiple" xml:space="preserve">
+    <value>Signed package validation failed with multiple errors:{0}</value>
+    <comment>0 - new line separated list of errors</comment>
+  </data>
 </root>

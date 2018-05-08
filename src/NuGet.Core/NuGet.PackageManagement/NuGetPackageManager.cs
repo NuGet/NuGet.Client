@@ -16,6 +16,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -1578,7 +1579,7 @@ namespace NuGet.PackageManagement
             var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             var projectId = string.Empty;
             nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
- 
+
             var stopWatch = Stopwatch.StartNew();
 
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
@@ -2339,6 +2340,35 @@ namespace NuGet.PackageManagement
                     // Open readme file
                     await OpenReadmeFile(nuGetProject, nuGetProjectContext, token);
                 }
+                catch (SignatureException ex)
+                {
+                    var errors = ex.Results.SelectMany(r => r.GetErrorIssues());
+                    var warnings = ex.Results.SelectMany(r => r.GetWarningIssues());
+                    SignatureException unwrappedException = null;
+
+                    if (errors.Count() == 1)
+                    {
+                        // In case of one error, throw it as the exception
+                        var error = errors.First();
+                        unwrappedException = new SignatureException(error.Code, error.Message, ex.PackageIdentity);
+                    }
+                    else
+                    {
+                        // In case of multiple errors, wrap them in a general NU3000 error
+                        var errorMessage = string.Format(CultureInfo.CurrentCulture,
+                            Strings.SignatureVerificationMultiple,
+                            $"{Environment.NewLine}{string.Join(Environment.NewLine, errors.Select(e => e.FormatWithCode()))}");
+
+                        unwrappedException = new SignatureException(NuGetLogCode.NU3000, errorMessage, ex.PackageIdentity);
+                    }
+
+                    foreach (var warning in warnings)
+                    {
+                        nuGetProjectContext.Log(MessageLevel.Warning, warning.FormatWithCode());
+                    }
+
+                    exceptionInfo = ExceptionDispatchInfo.Capture(unwrappedException);
+                }
                 catch (Exception ex)
                 {
                     exceptionInfo = ExceptionDispatchInfo.Capture(ex);
@@ -2491,7 +2521,7 @@ namespace NuGet.PackageManagement
             }
 
             var logger = new ProjectContextLogger(nuGetProjectContext);
-            var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings );
+            var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);
 
             // Get Package Spec as json object
             var originalPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(buildIntegratedProject, dependencyGraphContext);
@@ -3089,7 +3119,7 @@ namespace NuGet.PackageManagement
         /// project <paramref name="nuGetProject" /> is also installed in any
         /// other projects in the solution.
         /// </summary>
-        public static async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity, ISolutionManager solutionManager, CancellationToken token, bool excludeIntegrated= false)
+        public static async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity, ISolutionManager solutionManager, CancellationToken token, bool excludeIntegrated = false)
         {
             if (nuGetProject == null)
             {
