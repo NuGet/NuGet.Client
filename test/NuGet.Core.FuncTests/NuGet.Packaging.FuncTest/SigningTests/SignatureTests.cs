@@ -54,7 +54,7 @@ namespace NuGet.Packaging.FuncTest
                     certificateExtraStore: test.PrimarySignature.SignedCms.Certificates,
                     issues: issues);
 
-                Assert.Equal(SignatureVerificationStatus.Illegal, result.Status);
+                Assert.Equal(SignatureVerificationStatus.Untrusted, result.Status);
                 Assert.Equal(1, issues.Count(issue => issue.Level == LogLevel.Error));
 
                 AssertUntrustedRoot(issues, LogLevel.Error);

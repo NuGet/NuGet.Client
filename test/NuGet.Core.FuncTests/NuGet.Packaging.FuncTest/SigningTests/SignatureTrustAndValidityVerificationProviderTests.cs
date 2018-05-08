@@ -230,7 +230,7 @@ namespace NuGet.Packaging.FuncTest
                     var result = results.Results.Single();
 
                     Assert.False(results.Valid);
-                    Assert.Equal(SignatureVerificationStatus.Illegal, result.Trust);
+                    Assert.Equal(SignatureVerificationStatus.Untrusted, result.Trust);
                     Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Error));
                     Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
 

@@ -166,7 +166,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var directory = TestDirectory.Create())
                 {
                     var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
-                         new X509Certificate2(certificate),
+                        certificate,
                         packageContext,
                         directory);
 

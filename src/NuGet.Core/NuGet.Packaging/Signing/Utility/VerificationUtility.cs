@@ -12,6 +12,31 @@ namespace NuGet.Packaging.Signing
 {
     public static class VerificationUtility
     {
+        public static SignatureVerificationStatus GetSignatureVerificationStatus(SignatureVerificationStatusFlags flags)
+        {
+            if ((flags & SignatureVerificationStatusFlags.Suspect) != 0)
+            {
+                return SignatureVerificationStatus.Suspect;
+            }
+
+            if ((flags & SignatureVerificationStatusFlags.Illegal) != 0)
+            {
+                return SignatureVerificationStatus.Illegal;
+            }
+
+            if ((flags & SignatureVerificationStatusFlags.Untrusted) != 0)
+            {
+                return SignatureVerificationStatus.Untrusted;
+            }
+
+            if (flags == SignatureVerificationStatusFlags.NoErrors)
+            {
+                return SignatureVerificationStatus.Valid;
+            }
+
+            return SignatureVerificationStatus.Unknown;
+        }
+
         internal static SignatureVerificationStatusFlags ValidateSigningCertificate(X509Certificate2 certificate, bool treatIssuesAsErrors, string signatureFriendlyName, List<SignatureLog> issues)
         {
             if (certificate == null)

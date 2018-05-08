@@ -683,6 +683,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package does not have a repository signature (primary or countersignature)..
+        /// </summary>
+        internal static string NoRepositorySignature {
+            get {
+                return ResourceManager.GetString("NoRepositorySignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to nuget-package-owners: {0}.
         /// </summary>
         internal static string NuGetPackageOwners {
