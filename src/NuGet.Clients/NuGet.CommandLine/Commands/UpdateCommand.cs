@@ -268,7 +268,7 @@ namespace NuGet.CommandLine
             using (var sourceCacheContext = new SourceCacheContext())
             {
                 var resolutionContext = new ResolutionContext(
-                               Resolver.DependencyBehavior.Highest,
+                               Resolver.DependencyBehavior.Lowest,
                                Prerelease,
                                includeUnlisted: false,
                                versionConstraints: versionConstraints,
