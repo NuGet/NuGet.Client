@@ -3260,7 +3260,7 @@ namespace NuGet.PackageManagement
 
             var latestVersion = resolvedPackages
                 .Select(v => v.LatestVersion)
-                .Where(v => v != null && package.AllowedVersions.Satisfies(v)).Max();
+                .Where(v => v != null && (package.AllowedVersions == null || package.AllowedVersions.Satisfies(v))).Max();
 
             return new ResolvedPackage(latestVersion, resolvedPackages.Any(p => p.Exists));
         }
