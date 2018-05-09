@@ -2340,35 +2340,6 @@ namespace NuGet.PackageManagement
                     // Open readme file
                     await OpenReadmeFile(nuGetProject, nuGetProjectContext, token);
                 }
-                catch (SignatureException ex)
-                {
-                    var errors = ex.Results.SelectMany(r => r.GetErrorIssues());
-                    var warnings = ex.Results.SelectMany(r => r.GetWarningIssues());
-                    SignatureException unwrappedException = null;
-
-                    if (errors.Count() == 1)
-                    {
-                        // In case of one error, throw it as the exception
-                        var error = errors.First();
-                        unwrappedException = new SignatureException(error.Code, error.Message, ex.PackageIdentity);
-                    }
-                    else
-                    {
-                        // In case of multiple errors, wrap them in a general NU3000 error
-                        var errorMessage = string.Format(CultureInfo.CurrentCulture,
-                            Strings.SignatureVerificationMultiple,
-                            $"{Environment.NewLine}{string.Join(Environment.NewLine, errors.Select(e => e.FormatWithCode()))}");
-
-                        unwrappedException = new SignatureException(NuGetLogCode.NU3000, errorMessage, ex.PackageIdentity);
-                    }
-
-                    foreach (var warning in warnings)
-                    {
-                        nuGetProjectContext.Log(MessageLevel.Warning, warning.FormatWithCode());
-                    }
-
-                    exceptionInfo = ExceptionDispatchInfo.Capture(unwrappedException);
-                }
                 catch (Exception ex)
                 {
                     exceptionInfo = ExceptionDispatchInfo.Capture(ex);
