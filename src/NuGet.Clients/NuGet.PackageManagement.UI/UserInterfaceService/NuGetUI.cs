@@ -319,11 +319,7 @@ namespace NuGet.PackageManagement.UI
 
             if (signException != null)
             {
-<<<<<<< HEAD
                 ProcessSignatureIssues(signException);
-=======
-                ProcessSignatureIssues(signException, signException.PackageIdentity);
->>>>>>> Fixing packages.config install logging
             }
             else
             {
