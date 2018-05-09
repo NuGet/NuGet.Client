@@ -26,7 +26,7 @@ namespace NuGet.Protocol.Tests
             var clientHandler = new HttpClientHandler();
             var credentialService = Mock.Of<ICredentialService>();
 
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService, false);
 
             Assert.NotNull(clientHandler.Credentials);
 
@@ -43,9 +43,10 @@ namespace NuGet.Protocol.Tests
             var clientHandler = new HttpClientHandler();
 
             var credentialService = new Mock<ICredentialService>(MockBehavior.Strict);
-            credentialService.SetupGet(x => x.HandlesDefaultCredentials)
-                .Returns(false);
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService.Object)
+            credentialService.Setup(x => x.HandlesDefaultCredentialsAsync())
+                .Returns(Task.FromResult(false));
+
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService.Object, await credentialService.Object.HandlesDefaultCredentialsAsync())
             {
                 InnerHandler = GetLambdaMessageHandler(HttpStatusCode.OK)
             };
@@ -73,7 +74,7 @@ namespace NuGet.Protocol.Tests
                         It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
 
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService, false)
             {
                 InnerHandler = GetLambdaMessageHandler(
                     HttpStatusCode.Unauthorized, HttpStatusCode.OK)
@@ -113,7 +114,7 @@ namespace NuGet.Protocol.Tests
                         It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
 
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService, false)
             {
                 InnerHandler = GetLambdaMessageHandler(
                     HttpStatusCode.Forbidden, HttpStatusCode.OK)
@@ -145,9 +146,9 @@ namespace NuGet.Protocol.Tests
             var clientHandler = new HttpClientHandler();
 
             var credentialService = new Mock<ICredentialService>(MockBehavior.Strict);
-            credentialService.SetupGet(x => x.HandlesDefaultCredentials)
-                .Returns(false);
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService.Object)
+            credentialService.Setup(x => x.HandlesDefaultCredentialsAsync())
+                .Returns(Task.FromResult(false));
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService.Object, await credentialService.Object.HandlesDefaultCredentialsAsync())
             {
                 InnerHandler = GetLambdaMessageHandler(HttpStatusCode.Forbidden)
             };
@@ -181,7 +182,7 @@ namespace NuGet.Protocol.Tests
                         It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new TaskCanceledException());
 
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService, false);
 
             int retryCount = 0;
             var innerHandler = new LambdaMessageHandler(
@@ -230,7 +231,7 @@ namespace NuGet.Protocol.Tests
                 .ThrowsAsync(new OperationCanceledException())
                 .Callback(() => cts.Cancel());
 
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService, false);
 
             int retryCount = 0;
             var innerHandler = new LambdaMessageHandler(
@@ -276,7 +277,7 @@ namespace NuGet.Protocol.Tests
                         It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
 
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService, false);
 
             int retryCount = 0;
             var innerHandler = new LambdaMessageHandler(
@@ -316,7 +317,7 @@ namespace NuGet.Protocol.Tests
 
             var credentialService = Mock.Of<ICredentialService>();
 
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService, false);
 
             int retryCount = 0;
             var innerHandler = new LambdaMessageHandler(
@@ -365,7 +366,7 @@ namespace NuGet.Protocol.Tests
                        It.IsAny<CancellationToken>()))
                .Throws(new InvalidOperationException("Credential service failed acquring user credentials"));
 
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService, false);
 
             int retryCount = 0;
             var innerHandler = new LambdaMessageHandler(
