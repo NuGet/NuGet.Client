@@ -21,7 +21,7 @@ namespace NuGet.Protocol
         {
         }
 
-        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             Debug.Assert(source.PackageSource.IsHttp, "HTTP handler requested for a non-http source.");
 
@@ -29,13 +29,13 @@ namespace NuGet.Protocol
 
             if (source.PackageSource.IsHttp)
             {
-                curResource = CreateResource(source.PackageSource);
+                curResource = await CreateResource(source.PackageSource);
             }
 
-            return Task.FromResult(new Tuple<bool, INuGetResource>(curResource != null, curResource));
+            return new Tuple<bool, INuGetResource>(curResource != null, curResource);
         }
 
-        private static HttpHandlerResourceV3 CreateResource(PackageSource packageSource)
+        private static async Task<HttpHandlerResourceV3> CreateResource(PackageSource packageSource)
         {
             var sourceUri = packageSource.SourceUri;
             var proxy = ProxyCache.Instance.GetProxy(sourceUri);
@@ -67,8 +67,9 @@ namespace NuGet.Protocol
 #endif
             {
                 var innerHandler = messageHandler;
-
-                messageHandler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, HttpHandlerResourceV3.CredentialService?.Value)
+                // This evaluation is done here due to perf considerations. The HandlesDefaultCredentialsAsync method is async, so it can't be called in the constructor
+                var useDefaultNetworkCredentials = HttpHandlerResourceV3.CredentialService?.Value == null || !(await HttpHandlerResourceV3.CredentialService.Value.HandlesDefaultCredentialsAsync());
+                messageHandler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, HttpHandlerResourceV3.CredentialService?.Value, useDefaultNetworkCredentials)
                 {
                     InnerHandler = innerHandler
                 };

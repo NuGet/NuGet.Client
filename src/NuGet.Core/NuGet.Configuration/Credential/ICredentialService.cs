@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -55,6 +55,6 @@ namespace NuGet.Configuration
         /// Gets a value indicating whether this credential service wants to handle "default credentials" specially,
         /// instead of relying on DefaultNetworkCredentials
         /// </summary>
-        bool HandlesDefaultCredentials { get; }
+        Task<bool> HandlesDefaultCredentialsAsync();
     }
 }
