@@ -55,6 +55,6 @@ namespace NuGet.Configuration
         /// Gets a value indicating whether this credential service wants to handle "default credentials" specially,
         /// instead of relying on DefaultNetworkCredentials
         /// </summary>
-        bool HandlesDefaultCredentials { get; }
+        Task<bool> HandlesDefaultCredentialsAsync();
     }
 }
