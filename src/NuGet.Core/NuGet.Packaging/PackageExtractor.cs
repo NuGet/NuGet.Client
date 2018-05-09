@@ -518,15 +518,7 @@ namespace NuGet.Packaging
                             {
                                 try
                                 {
-                                    if (File.Exists(targetTempNupkg))
-                                    {
-                                        File.Delete(targetTempNupkg);
-                                    }
-
-                                    if (Directory.Exists(targetPath))
-                                    {
-                                        Directory.Delete(targetPath);
-                                    }
+                                    DeleteTargetAndTempPaths(targetPath, targetTempNupkg);
                                 }
                                 catch (IOException ex)
                                 {
@@ -595,6 +587,31 @@ namespace NuGet.Packaging
                         }
                     },
                     token: token);
+            }
+        }
+
+        /// <summary>
+        /// Delete the target directory path and the temp nupkg path in case of a failed extraction.
+        /// </summary>
+        private static void DeleteTargetAndTempPaths(string targetPath, string targetTempNupkg)
+        {
+            if (File.Exists(targetTempNupkg))
+            {
+                File.Delete(targetTempNupkg);
+            }
+
+            if (Directory.Exists(targetPath))
+            {
+                var parent = Directory.GetParent(targetPath);
+                Directory.Delete(targetPath);
+
+                // delete the parent directory if it is empty
+                if (Directory.Exists(parent.FullName) &&
+                parent.GetFiles().Count() == 0 &&
+                parent.GetDirectories().Count() == 0)
+                {
+                    Directory.Delete(parent.FullName);
+                }
             }
         }
 
@@ -702,15 +719,7 @@ namespace NuGet.Packaging
                                         // Dispose of it now because it is holding a lock on the temporary .nupkg file.
                                         packageDownloader.Dispose();
 
-                                        if (File.Exists(targetTempNupkg))
-                                        {
-                                            File.Delete(targetTempNupkg);
-                                        }
-
-                                        if (Directory.Exists(targetPath))
-                                        {
-                                            Directory.Delete(targetPath);
-                                        }
+                                        DeleteTargetAndTempPaths(targetPath, targetTempNupkg);
                                     }
                                     catch (IOException ex)
                                     {
