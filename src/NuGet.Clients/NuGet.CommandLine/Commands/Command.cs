@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Credentials;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -106,7 +107,7 @@ namespace NuGet.CommandLine
                 {
                     string configFileName = null;
 
-                    PackCommand packCommand = this as PackCommand;
+                    var packCommand = this as PackCommand;
                     if (packCommand != null && !string.IsNullOrEmpty(packCommand.ConfigFile))
                     {
                         configFileName = packCommand.ConfigFile;
@@ -169,7 +170,7 @@ namespace NuGet.CommandLine
         /// </summary>
         protected void SetDefaultCredentialProvider()
         {
-            CredentialService = new CredentialService(new Common.AsyncLazy<IEnumerable<ICredentialProvider>>(() => GetCredentialProviders()), NonInteractive);
+            CredentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => GetCredentialProvidersAsync()), NonInteractive);
 
             CoreV2.NuGet.HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
 
@@ -182,7 +183,7 @@ namespace NuGet.CommandLine
             };
         }
 
-        private async Task<IEnumerable<ICredentialProvider>> GetCredentialProviders()
+        private async Task<IEnumerable<ICredentialProvider>> GetCredentialProvidersAsync()
         {
             var extensionLocator = new ExtensionLocator();
             var providers = new List<Credentials.ICredentialProvider>();

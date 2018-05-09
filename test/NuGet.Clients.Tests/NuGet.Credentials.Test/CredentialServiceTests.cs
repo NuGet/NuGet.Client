@@ -49,7 +49,7 @@ namespace NuGet.Credentials.Test
         [Fact]
         public async Task GetCredentialsAsync_ThrowsForNullUri()
         {
-            var service = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>> ( () => Task.FromResult(Enumerable.Empty<ICredentialProvider>())), nonInteractive: true);
+            var service = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(Enumerable.Empty<ICredentialProvider>())), nonInteractive: true);
 
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => service.GetCredentialsAsync(

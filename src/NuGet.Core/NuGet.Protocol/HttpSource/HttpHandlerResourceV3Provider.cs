@@ -67,10 +67,9 @@ namespace NuGet.Protocol
 #endif
             {
                 var innerHandler = messageHandler;
-                // This evaluation is done here due to perf considerations. The handles default credentials method is async, so it can't be called in the constructor
+                // This evaluation is done here due to perf considerations. The HandlesDefaultCredentials method is async, so it can't be called in the constructor
                 var useDefaultNetworkCredentials = HttpHandlerResourceV3.CredentialService?.Value == null || !(await HttpHandlerResourceV3.CredentialService.Value.HandlesDefaultCredentials());
                 messageHandler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, HttpHandlerResourceV3.CredentialService?.Value, useDefaultNetworkCredentials)
-                
                 {
                     InnerHandler = innerHandler
                 };
