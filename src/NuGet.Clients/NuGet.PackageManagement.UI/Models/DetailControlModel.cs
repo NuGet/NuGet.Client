@@ -141,7 +141,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Add Current package version to package versions list.
-            _allPackageVersions = new List<NuGetVersion>() { searchResultPackage.LatestVersion };
+            _allPackageVersions = new List<NuGetVersion>() { searchResultPackage.Version };
             CreateVersions();
             OnCurrentPackageChanged();
 
