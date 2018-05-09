@@ -583,8 +583,8 @@ namespace NuGet.Credentials.Test
                 type: CredentialRequestType.Unauthorized,
                 message: null,
                 cancellationToken: CancellationToken.None);
-            await service.HandlesDefaultCredentials();
-            await service.HandlesDefaultCredentials();
+            await service.HandlesDefaultCredentialsAsync();
+            await service.HandlesDefaultCredentialsAsync();
 
             Assert.Equal(1, counter.CallCount);
         }

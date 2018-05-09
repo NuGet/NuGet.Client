@@ -34,7 +34,7 @@ namespace NuGet.Credentials
 
         private Action<string> ErrorDelegate { get; }
 
-        public async Task<bool> HandlesDefaultCredentials() {
+        public async Task<bool> HandlesDefaultCredentialsAsync() {
             return (await _providers).Any(provider => provider is DefaultCredentialsCredentialProvider);
         }
 

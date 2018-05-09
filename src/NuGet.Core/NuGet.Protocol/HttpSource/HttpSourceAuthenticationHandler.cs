@@ -36,7 +36,7 @@ namespace NuGet.Protocol
         /// <param name="clientHandler"></param>
         /// <param name="credentialService"></param>
         /// <param name="useDefaultNetworkCredentials"></param>
-        /// <remarks>The useDefaultNetworkCredentials value needs to be evaluated by calling the CredentialService.HandlesDefaultCredentials() method. For performance considerations tha tmethod was made async, and can't be executed in the constructor</remarks>
+        /// <remarks>The useDefaultNetworkCredentials value needs to be evaluated by calling the CredentialService.HandlesDefaultCredentialsAsync() method. For performance considerations that method was made async, and can't be executed in the constructor</remarks>
         public HttpSourceAuthenticationHandler(
             PackageSource packageSource,
             HttpClientHandler clientHandler,
