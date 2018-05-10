@@ -196,7 +196,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 var logMessages = ex.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()).ToList();
 
-                logMessages.ForEach(p => Log(LogUtility.LogLevelToMessageLevel(p.Level), p.Message));
+                logMessages.ForEach(p => Log(LogUtility.LogLevelToMessageLevel(p.Level), p.FormatWithCode()));
             }
             catch (Exception ex)
             {
