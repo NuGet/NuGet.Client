@@ -319,7 +319,10 @@ namespace NuGet.PackageManagement.UI
 
             if (signException != null)
             {
-                ProcessSignatureIssues(signException);
+                foreach (var result in signException.Results)
+                {
+                    ProcessSignatureIssues(result, signException.PackageIdentity);
+                }
             }
             else
             {
@@ -362,21 +365,15 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void ProcessSignatureIssues(SignatureException ex)
+        private void ProcessSignatureIssues(PackageVerificationResult result, PackageIdentity packageIdentity)
         {
-            UILogger.ReportError(ex.AsLogMessage().FormatWithCode());
-            ProjectContext.Log(MessageLevel.Error, ex.AsLogMessage().FormatWithCode());
+            var errorList = result.GetErrorIssues().ToList();
+            var warningList = result.GetWarningIssues().ToList();
 
-            foreach (var result in ex.Results)
-            {
-                var errorList = result.GetErrorIssues().ToList();
-                var warningList = result.GetWarningIssues().ToList();
+            errorList.ForEach(p => UILogger.ReportError(p.Message));
 
-                errorList.ForEach(p => UILogger.ReportError(p.FormatWithCode()));
-
-                errorList.ForEach(p => ProjectContext.Log(MessageLevel.Error, p.FormatWithCode()));
-                warningList.ForEach(p => ProjectContext.Log(MessageLevel.Warning, p.FormatWithCode()));
-            }            
+            errorList.ForEach(p => ProjectContext.Log(MessageLevel.Error, p.FormatWithCode()));
+            warningList.ForEach(p => ProjectContext.Log(MessageLevel.Warning,p.FormatWithCode()));
         }
     }
 }
