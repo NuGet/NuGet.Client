@@ -32,7 +32,6 @@
           BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
           <ScrollViewer
             Padding="3"
-            Background="{DynamicResource {x:Static nuget:Brushes.ContentBrushKey}}"
             CanContentScroll="False"
             VerticalScrollBarVisibility="Auto"
             HorizontalScrollBarVisibility="Disabled">
@@ -117,7 +116,6 @@
         </Style.Triggers>
       </Style>
       <Style x:Key="Migrator_DataGridColumnHeaderStyle" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}" TargetType="DataGridColumnHeader">
-        <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.ContentBrushKey}}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"/>
         <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
         <Setter Property="BorderThickness" Value="1,0,0,1"/>
@@ -227,8 +225,7 @@
         Visibility="{Binding HasIssues, Mode=OneTime, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
         BorderThickness="1"
         Padding="3"
-        BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
-        Background="{DynamicResource {x:Static nuget:Brushes.ContentBrushKey}}">
+        BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
         <TextBlock
           Focusable="True"
           Text="{x:Static nuget:Resources.Text_NuGetUpgradeNoIssuesFound}" />
