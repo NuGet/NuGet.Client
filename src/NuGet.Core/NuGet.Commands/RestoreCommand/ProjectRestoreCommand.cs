@@ -305,6 +305,11 @@ namespace NuGet.Commands
                 }
                 catch (SignatureException e)
                 {
+                    if (!string.IsNullOrEmpty(e.Message))
+                    {
+                        await _logger.LogAsync(e.AsLogMessage());
+                    }
+
                     await _logger.LogMessagesAsync(e.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()));
                     return false;
                 }
