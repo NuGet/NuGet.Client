@@ -35,7 +35,7 @@
   <UserControl.InputBindings>
     <KeyBinding
       Command="{x:Static nuget:Commands.FocusOnSearchBox}"
-      Gesture="CTRL+E" />
+      Gesture="CTRL+L" />
   </UserControl.InputBindings>
   <DockPanel
     x:Name="_root"
