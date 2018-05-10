@@ -15,7 +15,7 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
-      <nuget:DateFormatter x:Key="DateFormatConverter" />
+      <nuget:DateTimeConverter x:Key="DateFormatConverter" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
