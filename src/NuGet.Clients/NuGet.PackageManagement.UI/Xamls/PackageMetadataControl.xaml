@@ -165,7 +165,7 @@
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=Published,Converter={StaticResource NullToVisibilityConverter}}"
-        Text="{Binding Path=Published,StringFormat={}{0:D} ({0:d})}"
+        Text="{Binding Path=Published,StringFormat={}{0:dddd}\, {0:MMMM} {0:dd}\, {0:yyyy} ({0:d})}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
         Grid.Row="5"
