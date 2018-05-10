@@ -348,7 +348,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [Fact]
-            public async Task VerifyAsync_WithTamperedRepositoryCountersignedPackage_ReturnsValid()
+            public async Task VerifyAsync_WithTamperedRepositoryCountersignedPackage_ReturnsSuspect()
             {
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
@@ -369,7 +369,7 @@ namespace NuGet.Packaging.FuncTest
                     {
                         var status = await _verifier.VerifyAsync(packageReader, CancellationToken.None);
 
-                        Assert.Equal(SignatureVerificationStatus.Valid, status);
+                        Assert.Equal(SignatureVerificationStatus.Suspect, status);
                     }
                 }
             }
