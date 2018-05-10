@@ -59,9 +59,22 @@ namespace NuGet.Packaging.Signing
 
             var primarySignature = await reader.GetPrimarySignatureAsync(cancellationToken);
 
+            var integrityVerificationProvider = new IntegrityVerificationProvider();
+
+            var result = await integrityVerificationProvider.GetTrustResultAsync(
+                reader,
+                primarySignature,
+                _settings,
+                cancellationToken);
+
+            if (result.Trust != SignatureVerificationStatus.Valid)
+            {
+                return result.Trust;
+            }
+
             if (primarySignature is RepositoryPrimarySignature)
             {
-                return await VerifyAsync(reader, (RepositoryPrimarySignature)primarySignature, cancellationToken);
+                return VerifyRepositorySignature(primarySignature, primarySignature.SignedCms.Certificates);
             }
 
             var countersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
@@ -78,31 +91,6 @@ namespace NuGet.Packaging.Signing
         }
 
 #if IS_DESKTOP
-        private async Task<SignatureVerificationStatus> VerifyAsync(
-            ISignedPackageReader reader,
-            RepositoryPrimarySignature primarySignature,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var integrityVerificationProvider = new IntegrityVerificationProvider();
-
-            var result = await integrityVerificationProvider.GetTrustResultAsync(
-                reader,
-                primarySignature,
-                _settings,
-                cancellationToken);
-
-            if (result.Trust != SignatureVerificationStatus.Valid)
-            {
-                return result.Trust;
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return VerifyRepositorySignature(primarySignature, primarySignature.SignedCms.Certificates);
-        }
-
         private SignatureVerificationStatus VerifyRepositorySignature(
             Signature signature,
             X509Certificate2Collection certificates)
