@@ -6158,4 +6158,8 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="ConsolePasswordProvider_PromptForPassword" xml:space="preserve">
     <value>Password: </value>
   </data>
+  <data name="SignatureVerificationMultipleErrors" xml:space="preserve">
+    <value>Signed package validation failed with multiple errors:{0}</value>
+    <comment>0 - new line separated list of errors</comment>
+  </data>
 </root>

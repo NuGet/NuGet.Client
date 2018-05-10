@@ -11171,6 +11171,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Signed package validation failed with multiple errors:{0}.
+        /// </summary>
+        public static string SignatureVerificationMultipleErrors {
+            get {
+                return ResourceManager.GetString("SignatureVerificationMultipleErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Nothing to do. None of the projects in this solution specify any packages for NuGet to restore..
         /// </summary>
         public static string SolutionRestoreCommandNoPackagesConfigOrProjectJson {

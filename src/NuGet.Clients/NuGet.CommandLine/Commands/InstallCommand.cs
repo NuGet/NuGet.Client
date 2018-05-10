@@ -381,15 +381,55 @@ namespace NuGet.CommandLine
 
                     var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload);
 
-                    await packageManager.InstallPackageAsync(
-                        project,
-                        packageIdentity,
-                        resolutionContext,
-                        projectContext,
-                        downloadContext,
-                        primaryRepositories,
-                        Enumerable.Empty<SourceRepository>(),
-                        CancellationToken.None);
+                    try
+                    {
+                        await packageManager.InstallPackageAsync(
+                            project,
+                            packageIdentity,
+                            resolutionContext,
+                            projectContext,
+                            downloadContext,
+                            primaryRepositories,
+                            Enumerable.Empty<SourceRepository>(),
+                            CancellationToken.None);
+                    }
+                    catch (SignatureException ex)
+                    {
+                        if (ex is SignatureException)
+                        {
+                            var signatureException = ex as SignatureException;
+                            var errors = signatureException.Results.SelectMany(r => r.GetErrorIssues());
+                            var warnings = signatureException.Results.SelectMany(r => r.GetWarningIssues());
+                            SignatureException unwrappedException = null;
+
+                            if (errors.Count() == 1)
+                            {
+                                // In case of one error, throw it as the exception
+                                var error = errors.First();
+                                unwrappedException = new SignatureException(error.Code, error.Message, signatureException.PackageIdentity);
+                            }
+                            else
+                            {
+                                // In case of multiple errors, wrap them in a general NU3000 error
+                                var errorMessage = string.Format(CultureInfo.CurrentCulture,
+                                    NuGetResources.SignatureVerificationMultipleErrors,
+                                    $"{Environment.NewLine}{string.Join(Environment.NewLine, errors.Select(e => e.FormatWithCode()))}");
+
+                                unwrappedException = new SignatureException(NuGetLogCode.NU3000, errorMessage, signatureException.PackageIdentity);
+                            }
+
+                            foreach (var warning in warnings)
+                            {
+                                Console.LogWarning(warning.FormatWithCode());
+                            }
+
+                            throw unwrappedException;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
 
                     if (downloadContext.DirectDownload)
                     {
