@@ -364,8 +364,11 @@ namespace NuGet.PackageManagement.UI
 
         private void ProcessSignatureIssues(SignatureException ex)
         {
-            UILogger.ReportError(ex.AsLogMessage().FormatWithCode());
-            ProjectContext.Log(MessageLevel.Error, ex.AsLogMessage().FormatWithCode());
+            if (!string.IsNullOrEmpty(ex.Message))
+            {
+                UILogger.ReportError(ex.AsLogMessage().FormatWithCode());
+                ProjectContext.Log(MessageLevel.Error, ex.AsLogMessage().FormatWithCode());
+            }
 
             foreach (var result in ex.Results)
             {
