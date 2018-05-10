@@ -209,6 +209,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // set nuget operation status to failed when an exception is thrown
                 _status = NuGetOperationStatus.Failed;
 
+                if (!string.IsNullOrEmpty(ex.Message))
+                {
+                    Log(LogUtility.LogLevelToMessageLevel(LogLevel.Error), ex.AsLogMessage().FormatWithCode());
+                }
+
                 var logMessages = ex.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()).ToList();
 
                 logMessages.ForEach(p => Log(LogUtility.LogLevelToMessageLevel(p.Level), p.Message));
@@ -250,6 +255,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 // set nuget operation status to failed when an exception is thrown
                 _status = NuGetOperationStatus.Failed;
+
+                if (!string.IsNullOrEmpty(ex.Message))
+                {
+                    Log(LogUtility.LogLevelToMessageLevel(LogLevel.Error), ex.AsLogMessage().FormatWithCode());
+                }
 
                 var logMessages = ex.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()).ToList();
 
