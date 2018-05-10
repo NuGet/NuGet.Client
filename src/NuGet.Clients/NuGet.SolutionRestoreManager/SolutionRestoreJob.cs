@@ -393,6 +393,11 @@ namespace NuGet.SolutionRestoreManager
 
                 var ex = args.Exception as SignatureException;
 
+                if (!string.IsNullOrEmpty(ex.Message))
+                {
+                    _logger.Log(ex.AsLogMessage());
+                }
+
                 ex.Results.SelectMany(p => p.Issues).ToList().ForEach(p => _logger.Log(p.ToLogMessage()));
 
                 return;
