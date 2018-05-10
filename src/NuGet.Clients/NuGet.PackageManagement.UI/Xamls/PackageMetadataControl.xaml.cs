@@ -48,6 +48,11 @@ namespace NuGet.PackageManagement.UI
 
             var name = culture.Name;
 
+            if (string.Equals(culture.Name, "jp-JP"))
+            {
+                format = "{0:D} {0:dddd} ({0:d})";
+            }
+
             var dateTime = DateTime.Parse(value.ToString());
             return dateTime.ToString(format, culture);
         }
