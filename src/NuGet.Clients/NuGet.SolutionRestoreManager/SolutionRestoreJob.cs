@@ -148,17 +148,6 @@ namespace NuGet.SolutionRestoreManager
                 var solutionDirectory = _solutionManager.SolutionDirectory;
                 var isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
 
-                if (solutionDirectory == null)
-                {
-                    await _logger.DoAsync((l, _) =>
-                    {
-                        _status = NuGetOperationStatus.Failed;
-                        l.ShowError(Resources.SolutionIsNotSaved);
-                        l.WriteLine(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
-                    });
-                    return;
-                }
-
                 // Get the projects from the SolutionManager
                 // Note that projects that are not supported by NuGet, will not show up in this list
                 projects = await _solutionManager.GetNuGetProjectsAsync();
@@ -179,12 +168,28 @@ namespace NuGet.SolutionRestoreManager
                     .OfType<IDependencyGraphProject>()
                     .ToList();
 
-                await RestorePackageSpecProjectsAsync(
-                    dependencyGraphProjects,
-                    forceRestore,
-                    isSolutionAvailable,
-                    restoreSource,
-                    token);
+                // Only continue if there are some build integrated type projects.
+                if (projects.Any(project => project is BuildIntegratedNuGetProject))
+                {
+                    if (solutionDirectory == null)
+                    {
+                        await _logger.DoAsync((l, _) =>
+                        {
+                            _status = NuGetOperationStatus.Failed;
+                            l.ShowError(Resources.SolutionIsNotSaved);
+                            l.WriteLine(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
+                        });
+                        return;
+                    }
+
+                    await RestorePackageSpecProjectsAsync(
+                        dependencyGraphProjects,
+                        forceRestore,
+                        isSolutionAvailable,
+                        restoreSource,
+                        token);
+
+                }
 
 #if !VS14
                 // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
@@ -259,12 +264,6 @@ namespace NuGet.SolutionRestoreManager
             RestoreOperationSource restoreSource,
             CancellationToken token)
         {
-            // Only continue if there are some build integrated type projects.
-            if (!(projects.Any(project => project is BuildIntegratedNuGetProject)))
-            {
-                return;
-            }
-
             if (_packageRestoreConsent.IsGranted)
             {
                 if (!isSolutionAvailable)
