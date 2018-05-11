@@ -1,4 +1,4 @@
-﻿<nuget:VsDialogWindow
+<nuget:VsDialogWindow
   x:Class="NuGet.PackageManagement.UI.LicenseAcceptanceWindow"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -94,7 +94,6 @@
             BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
             <ScrollViewer
               Padding="3"
-              Background="{DynamicResource {x:Static nuget:Brushes.ContentBrushKey}}"
               CanContentScroll="True"
               VerticalScrollBarVisibility="Visible"
               HorizontalScrollBarVisibility="Disabled">

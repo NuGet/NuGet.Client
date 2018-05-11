@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,8 +20,6 @@ namespace NuGet.PackageManagement.UI
         public static object BorderBrush { get; private set; } = SystemColors.InactiveBorderBrushKey;
 
         public static object ComboBoxBorderKey { get; private set; } = SystemColors.InactiveBorderBrushKey;
-
-        public static object ContentBrushKey { get; private set; } = SystemColors.WindowBrushKey;
 
         public static object ContentInactiveSelectedBrushKey { get; private set; } = SystemColors.ControlTextBrushKey;
 
@@ -185,6 +183,7 @@ namespace NuGet.PackageManagement.UI
             HeaderColorsSeparatorLineBrushKey = HeaderColors.SeparatorLineBrushKey;
 
             IndicatorFillBrushKey = ProgressBarColors.IndicatorFillBrushKey;
+
             ButtonTextStyleBrushKey = CommonControlsColors.ButtonTextBrushKey; 
             ButtonBorderBrushKey = CommonControlsColors.ButtonBorderBrushKey; 
             ButtonBackgroundStyleBrushKey = CommonControlsColors.ButtonBrushKey; 
@@ -215,31 +214,16 @@ namespace NuGet.PackageManagement.UI
             CheckBoxTextHoverBrushKey = CommonControlsColors.CheckBoxTextHoverBrushKey; 
             CheckBoxTextPressedBrushKey = CommonControlsColors.CheckBoxTextPressedBrushKey; 
             CheckBoxBorderHoverBrushKey = CommonControlsColors.CheckBoxBorderHoverBrushKey; 
-            CheckBoxBorderPressedBrushKey = CommonControlsColors.CheckBoxBorderPressedBrushKey; 
+            CheckBoxBorderPressedBrushKey = CommonControlsColors.CheckBoxBorderPressedBrushKey;
 
-            var colorResources = GetColorResources();
-            BackgroundBrushKey = colorResources["BackgroundBrushKey"];
-            ContentMouseOverBrushKey = colorResources["ContentMouseOverBrushKey"];
-            ContentMouseOverTextBrushKey = colorResources["ContentMouseOverTextBrushKey"];
-            ContentInactiveSelectedBrushKey = colorResources["ContentInactiveSelectedBrushKey"];
-            ContentInactiveSelectedTextBrushKey = colorResources["ContentInactiveSelectedTextBrushKey"];
-            ContentSelectedBrushKey = colorResources["ContentSelectedBrushKey"];
-            ContentSelectedTextBrushKey = colorResources["ContentSelectedTextBrushKey"];
-            ContentBrushKey = colorResources["ContentBrushKey"];
-        }
+            BackgroundBrushKey = EnvironmentColors.ToolWindowBackgroundBrushKey;
+            ContentMouseOverBrushKey = EnvironmentColors.ToolboxContentMouseOverBrushKey;
+            ContentMouseOverTextBrushKey = EnvironmentColors.ToolboxContentMouseOverTextBrushKey;
 
-        private static IDictionary<string, ThemeResourceKey> GetColorResources()
-        {
-            // use colors of VisualStudio UI.
-            var assembly = AppDomain.CurrentDomain.Load(
-                "Microsoft.VisualStudio.ExtensionsExplorer.UI");
-            var colorResources = assembly.GetType(
-                "Microsoft.VisualStudio.ExtensionsExplorer.UI.ColorResources");
-
-            var properties = colorResources.GetProperties(BindingFlags.Public | BindingFlags.Static);
-            return properties
-                .Where(p => p.PropertyType == typeof(ThemeResourceKey))
-                .ToDictionary(p => p.Name, p => (ThemeResourceKey)p.GetValue(null));
+            ContentInactiveSelectedBrushKey = TreeViewColors.SelectedItemInactiveBrushKey;
+            ContentInactiveSelectedTextBrushKey = TreeViewColors.SelectedItemInactiveTextBrushKey;
+            ContentSelectedBrushKey = TreeViewColors.SelectedItemActiveBrushKey;
+            ContentSelectedTextBrushKey = TreeViewColors.SelectedItemActiveTextBrushKey;
         }
     }
 }
