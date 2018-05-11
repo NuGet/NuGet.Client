@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.UI
 
             InitializeComponent();
 
-            BindingOperations.EnableCollectionSynchronization(Items, _itemsLock);
+            BindingOperations.EnableCollectionSynchronization(Items, _list.ItemsLock);
 
             DataContext = Items;
             CheckBoxesEnabled = false;
@@ -96,8 +96,6 @@ namespace NuGet.PackageManagement.UI
         }
 
         public bool IsSolution { get; set; }
-
-        private readonly SemaphoreSlim _itemsLock = new SemaphoreSlim(1, 1);
 
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
 
@@ -138,7 +136,7 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusBar.Reset(loadingMessage, loader.IsMultiSource);
 
             var selectedPackageItem = SelectedPackageItem;
-            _itemsLock.Wait();
+            _list.ItemsLock.Wait();
 
             try
             {
@@ -146,7 +144,7 @@ namespace NuGet.PackageManagement.UI
             }
             finally
             {
-                _itemsLock.Release();
+                _list.ItemsLock.Release();
             }
 
             _selectedCount = 0;
@@ -359,7 +357,7 @@ namespace NuGet.PackageManagement.UI
 
                     if (!Items.Contains(_loadingStatusIndicator))
                     {
-                        await _itemsLock.WaitAsync();
+                        await _list.ItemsLock.WaitAsync();
 
                         try
                         {
@@ -367,7 +365,7 @@ namespace NuGet.PackageManagement.UI
                         }
                         finally
                         {
-                            _itemsLock.Release();
+                            _list.ItemsLock.Release();
                         }
                     }
                 }
@@ -406,7 +404,7 @@ namespace NuGet.PackageManagement.UI
             _joinableTaskFactory.Value.Run(async () =>
             {
                 // Synchronize updating Items list
-                await _itemsLock.WaitAsync();
+                await _list.ItemsLock.WaitAsync();
 
                 try
                 {
@@ -430,7 +428,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 finally
                 {
-                    _itemsLock.Release();
+                    _list.ItemsLock.Release();
                 }
             });
         }
