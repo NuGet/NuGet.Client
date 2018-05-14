@@ -1,4 +1,4 @@
-﻿namespace NuGet.Options
+namespace NuGet.Options
 {
     partial class GeneralOptionControl
     {
@@ -36,14 +36,12 @@
             this.BindingRedirectsHeader = new System.Windows.Forms.Label();
             this.localsCommandButton = new System.Windows.Forms.Button();
             this.localsCommandStatusText = new System.Windows.Forms.RichTextBox();
-#if !VS14
             this.PackageManagementHeader = new System.Windows.Forms.Label();
             this.defaultPackageManagementFormatLabel = new System.Windows.Forms.Label();
             this.showPackageManagementChooser = new System.Windows.Forms.CheckBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.defaultPackageManagementFormatItems = new System.Windows.Forms.ComboBox();
             this.tableLayoutPanel1.SuspendLayout();
-#endif
             this.SuspendLayout();
             // 
             // skipBindingRedirects
@@ -91,7 +89,6 @@
             this.localsCommandStatusText.ReadOnly = true;
             this.localsCommandStatusText.ContentsResized += new System.Windows.Forms.ContentsResizedEventHandler(this.localsCommandStatusText_ContentChanged);
             this.localsCommandStatusText.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.localsCommandStatusText_LinkClicked);
-#if !VS14
             // 
             // PackageManagementHeader
             // 
@@ -125,13 +122,6 @@
             resources.GetString("defaultPackageManagementFormatItems.Items"),
             resources.GetString("defaultPackageManagementFormatItems.Items1")});
             this.defaultPackageManagementFormatItems.Name = "defaultPackageManagementFormatItems";
-
-            this.Size = new System.Drawing.Size(463, 365);
-            this.skipBindingRedirects.Location = new System.Drawing.Point(19, 118);
-            this.BindingRedirectsHeader.Location = new System.Drawing.Point(2, 92);
-            this.localsCommandButton.Location = new System.Drawing.Point(5, 247);
-            this.localsCommandStatusText.Location = new System.Drawing.Point(5, 276);
-#endif
             // 
             // GeneralOptionControl
             // 
@@ -142,18 +132,17 @@
             this.Controls.Add(this.packageRestoreConsentCheckBox);
             this.Controls.Add(this.packageRestoreAutomaticCheckBox);
             this.Controls.Add(this.skipBindingRedirects);
-#if !VS14
             this.Controls.Add(this.PackageManagementHeader);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.showPackageManagementChooser);
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
-#endif
             this.Controls.Add(this.localsCommandButton);
             this.Controls.Add(this.localsCommandStatusText);
             this.Name = "GeneralOptionControl";
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         #endregion

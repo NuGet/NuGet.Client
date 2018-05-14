@@ -35,6 +35,7 @@ namespace NuGet.Options
             _serviceprovider = serviceProvider;
             _outputConsoleLogger = ServiceLocator.GetInstance<INuGetUILogger>();
             _localsCommandRunner = new LocalsCommandRunner();
+            AutoScroll = true;
             Debug.Assert(_settings != null);
         }
 
@@ -185,6 +186,7 @@ namespace NuGet.Options
             localsCommandStatusText.AccessibleName = statusText;
             localsCommandStatusText.Visible = visibility;
             localsCommandStatusText.Text = statusText;
+            localsCommandStatusText.Anchor = AnchorStyles.Top|AnchorStyles.Left;
             localsCommandStatusText.Refresh();
         }
 
@@ -206,8 +208,6 @@ namespace NuGet.Options
         private void localsCommandStatusText_ContentChanged(object sender, ContentsResizedEventArgs e)
         {
             localsCommandStatusText.Height = e.NewRectangle.Height + localsCommandStatusText.Margin.Top + localsCommandStatusText.Margin.Bottom;
-            localsCommandStatusText.Width = e.NewRectangle.Width + localsCommandStatusText.Margin.Left + localsCommandStatusText.Margin.Right;
         }
-
     }
 }
