@@ -227,6 +227,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               RepositoryCommit="$(RepositoryCommit)"
               SourceFiles="@(_SourceFiles->Distinct())"
               NoPackageAnalysis="$(NoPackageAnalysis)"
+              NoDefaultExcludes="$(NoDefaultExcludes)"
               MinClientVersion="$(MinClientVersion)"
               Serviceable="$(Serviceable)"
               FrameworkAssemblyReferences="@(_FrameworkAssemblyReferences)"
