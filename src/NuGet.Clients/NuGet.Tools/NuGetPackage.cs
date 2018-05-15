@@ -1027,12 +1027,12 @@ namespace NuGetVSExtension
         // know which options keys it will use in the suo file.
         public int SaveUserOptions(IVsSolutionPersistence pPersistence)
         {
-            if (ShouldMEFBeInitialized())
+            if (SolutionUserOptions != null && SolutionUserOptions.IsValueCreated)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(InitializeMEFAsync);
+                return SolutionUserOptions.Value.SaveUserOptions(pPersistence);
             }
 
-            return SolutionUserOptions.Value.SaveUserOptions(pPersistence);
+            return VSConstants.S_OK;
         }
 
         public int WriteUserOptions(IStream _, string __)
