@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Default MaxDegreeOfParallelism to use for restores and other threaded operations.
         /// </summary>
-        public static readonly int DefaultMaxDegreeOfParallelism = 16;
+        public static readonly int DefaultMaxDegreeOfParallelism = Environment.ProcessorCount;
 
         /// <summary>
         /// Default amount of time a source request can take before timing out. This includes both UNC shares
