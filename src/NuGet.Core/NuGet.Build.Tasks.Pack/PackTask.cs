@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -55,6 +55,7 @@ namespace NuGet.Build.Tasks.Pack
         public bool Serviceable { get; set; }
         public ITaskItem[] FrameworkAssemblyReferences { get; set; }
         public bool ContinuePackingAfterGeneratingNuspec { get; set; }
+        public bool NoDefaultExcludes { get; set; }
         public string NuspecOutputPath { get; set; }
         public bool IncludeBuildOutput { get; set; }
         public string BuildOutputFolder { get; set; }
@@ -169,6 +170,7 @@ namespace NuGet.Build.Tasks.Pack
                 LicenseUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(LicenseUrl),
                 Logger = Logger,
                 MinClientVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(MinClientVersion),
+                NoDefaultExcludes = NoDefaultExcludes,
                 NoPackageAnalysis = NoPackageAnalysis,
                 NuspecBasePath = MSBuildStringUtility.TrimAndGetNullForEmpty(NuspecBasePath),
                 NuspecFile = MSBuildStringUtility.TrimAndGetNullForEmpty(NuspecFile),
