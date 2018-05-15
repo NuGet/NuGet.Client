@@ -62,7 +62,6 @@ namespace NuGet.Build.Tasks.Pack
         public string NoWarn { get; set; }
         public string TreatWarningsAsErrors { get; set; }
         public string WarningsAsErrors { get; set; }
-        public IMSBuildItem[] FrameworksWithSuppressedAssemblyReferences { get; set; }
         public IMSBuildItem[] FrameworksWithSuppressedDependencies { get; set; }
     }
 }

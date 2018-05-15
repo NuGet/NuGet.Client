@@ -2740,5 +2740,78 @@ namespace ClassLibrary
                 }
             }
         }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("net45", "netstandard1.3")]
+        [InlineData("netstandard1.3", "net45")]
+        [InlineData("", "")]
+        public void PackCommand_SuppressDependencies_DoesNotContainAnyDependency(string frameworkToSuppress, string expectedInFramework)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net45;netstandard1.3");
+                    if(!string.IsNullOrEmpty(frameworkToSuppress))
+                    {
+                        ProjectFileUtils.AddProperty(xml, "SuppressDependenciesOnPacking", "true", $"'$(TargetFramework)'=='{frameworkToSuppress}'");
+                    }
+                    else
+                    {
+                        ProjectFileUtils.AddProperty(xml, "SuppressDependenciesOnPacking", "true");
+                    }
+                    
+                    var attributes = new Dictionary<string, string>();
+
+                    attributes["Version"] = "9.0.1";
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "Newtonsoft.json",
+                        "",
+                        new Dictionary<string, string>(),
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+                    var expectedFrameworks = expectedInFramework.Split(';');
+                    var dependencyGroups = nuspecReader
+                        .GetDependencyGroups()
+                        .OrderBy(x => x.TargetFramework,
+                            new NuGetFrameworkSorter())
+                        .ToList();
+
+                    Assert.Equal(expectedFrameworks.Where(t=> !string.IsNullOrEmpty(t)).Count(),
+                        dependencyGroups.Count);
+
+                    if(dependencyGroups.Count > 0)
+                    {
+                        Assert.Equal(dependencyGroups[0].TargetFramework, NuGetFramework.Parse(expectedFrameworks[0]));
+                    }
+                }
+            }
+        }
     }
 }

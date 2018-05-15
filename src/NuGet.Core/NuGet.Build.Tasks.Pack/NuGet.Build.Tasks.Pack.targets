@@ -216,7 +216,6 @@ Copyright (c) .NET Foundation. All rights reserved.
               ProjectReferencesWithVersions="@(_ProjectReferencesWithVersions)"
               TargetPathsToSymbols="@(_TargetPathsToSymbols)"
               TargetFrameworks="@(_TargetFrameworks)"
-              FrameworksWithSuppressedAssemblyReferences="@(_FrameworksWithSuppressedAssemblyReferences)"
               FrameworksWithSuppressedDependencies="@(_FrameworksWithSuppressedDependencies)"
               AssemblyName="$(AssemblyName)"
               PackageOutputPath="$(PackageOutputAbsolutePath)"

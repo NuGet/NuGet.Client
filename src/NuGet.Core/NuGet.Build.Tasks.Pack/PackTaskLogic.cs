@@ -208,7 +208,6 @@ namespace NuGet.Build.Tasks.Pack
             }
             var nuGetFrameworkComparer = new NuGetFrameworkFullComparer();
             var frameworksWithSuppressedDependencies = new HashSet<NuGetFramework>(nuGetFrameworkComparer);
-            var frameworksWithSuppressedAssemblyReferences = new HashSet<NuGetFramework>(nuGetFrameworkComparer);
             if (request.FrameworksWithSuppressedDependencies != null && request.FrameworksWithSuppressedDependencies.Any())
             {
                 frameworksWithSuppressedDependencies =
