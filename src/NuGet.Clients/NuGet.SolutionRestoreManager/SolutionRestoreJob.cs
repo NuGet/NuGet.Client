@@ -157,6 +157,18 @@ namespace NuGet.SolutionRestoreManager
                 // any of the deferred project is type of packages.config, If so, perform package restore on them
                 if (projects.Any(project => !(project is INuGetIntegratedProject)))
                 {
+                    if (solutionDirectory == null)
+                    {
+                        await _logger.DoAsync((l, _) =>
+                        {
+                            _status = NuGetOperationStatus.Failed;
+                            l.ShowError(Resources.SolutionIsNotSaved);
+                            l.WriteLine(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
+                        });
+                        
+                        return;
+                    }
+
                     await RestorePackagesOrCheckForMissingPackagesAsync(
                         solutionDirectory,
                         isSolutionAvailable,
@@ -179,6 +191,7 @@ namespace NuGet.SolutionRestoreManager
                             l.ShowError(Resources.SolutionIsNotSaved);
                             l.WriteLine(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
                         });
+
                         return;
                     }
 
