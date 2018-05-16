@@ -6018,7 +6018,7 @@ namespace NuGet.Test
                 Assert.Equal(3, telemetryEvents.Count);
                 var projectId = string.Empty;
                 nugetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
-                VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents.Select(p => (string)p["StepName"]));
+                VerifyPreviewActionsTelemetryEvents_PackagesConfig(telemetryEvents.Select(p => (string)p["SubStepName"]));
             }
         }
 
@@ -6068,10 +6068,8 @@ namespace NuGet.Test
                 Assert.Equal(3, telemetryEvents.Count);
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
 
-                var projectId = string.Empty;
-                buildIntegratedProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
-                    Any(p => (string)p["StepName"] == string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId)));
+                    Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
             }
         }
 
@@ -6140,7 +6138,7 @@ namespace NuGet.Test
                 Assert.Equal(3, telemetryEvents.Count);
                 var projectId = string.Empty;
                 nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
-                VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents.Select(p => (string)p["StepName"]));
+                VerifyPreviewActionsTelemetryEvents_PackagesConfig(telemetryEvents.Select(p => (string)p["SubStepName"]));
             }
         }        
 
@@ -6198,7 +6196,7 @@ namespace NuGet.Test
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == "PackageExtractionInformation").Count());
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
-                     Any(p => (string)p["StepName"] == string.Format(TelemetryConstants.ExecuteActionStepName, projectId)));
+                     Any(p => (string)p["SubStepName"] == TelemetryConstants.ExecuteActionStepName));
             }
         }
 
@@ -6258,30 +6256,23 @@ namespace NuGet.Test
                     token);
 
                 // Assert
-                var projectId = string.Empty;
-                buildIntegratedProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
 
                 Assert.Equal(4, telemetryEvents.Count);
 
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
-                    Any(p => (string)p["StepName"] == string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId)));
+                    Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
-                    Any(p => (string)p["StepName"] == string.Format(TelemetryConstants.ExecuteActionStepName, projectId)));
+                    Any(p => (string)p["SubStepName"] == TelemetryConstants. ));
             }
         }
 
-        private void VerifyPreviewActionsTelemetryEvents_PackagesConfig(string operationId, IEnumerable<string> actual)
+        private void VerifyPreviewActionsTelemetryEvents_PackagesConfig(IEnumerable<string> actual)
         {
-            var key = string.Format(TelemetryConstants.GatherDependencyStepName, operationId);
-            Assert.True(actual.Contains(key));
-
-            key = string.Format(TelemetryConstants.ResolveDependencyStepName, operationId);
-            Assert.True(actual.Contains(key));
-
-            key = string.Format(TelemetryConstants.ResolvedActionsStepName, operationId);
-            Assert.True(actual.Contains(key));
+            Assert.True(actual.Contains(TelemetryConstants.GatherDependencyStepName));
+            Assert.True(actual.Contains(TelemetryConstants.ResolveDependencyStepName));
+            Assert.True(actual.Contains(TelemetryConstants.ResolvedActionsStepName));
         }
 
         private static void AddToPackagesFolder(PackageIdentity package, string root)
