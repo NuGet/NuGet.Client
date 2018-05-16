@@ -6264,7 +6264,7 @@ namespace NuGet.Test
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
                     Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
-                    Any(p => (string)p["SubStepName"] == TelemetryConstants. ));
+                    Any(p => (string)p["SubStepName"] == TelemetryConstants.ExecuteActionStepName));
             }
         }
 
