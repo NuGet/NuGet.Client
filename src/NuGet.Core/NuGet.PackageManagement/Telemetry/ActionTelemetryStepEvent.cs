@@ -12,7 +12,7 @@ namespace NuGet.PackageManagement
             base(NugetActionStepsEventName, new Dictionary<string, object>
                 {
                     { nameof(OperationId), operationId },
-                    { nameof(StepName), string.Join(",", stepName) },
+                    { nameof(SubStepName), string.Join(",", stepName) },
                     { nameof(Duration), duration }
                 })
         {
@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement
 
         public const string NugetActionStepsEventName = "NugetActionSteps";
 
-        public string StepName => (string)base[nameof(StepName)];
+        public string SubStepName => (string)base[nameof(SubStepName)];
         public double Duration => (double)base[nameof(Duration)];
         public string OperationId => (string)base[nameof(OperationId)];
     }
