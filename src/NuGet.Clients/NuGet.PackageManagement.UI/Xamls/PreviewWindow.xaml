@@ -11,7 +11,8 @@
   WindowStartupLocation="CenterOwner"
   Title="{Binding Title}"
   Height="500"
-  Width="500">
+  Width="500"
+  FocusManager.FocusedElement="{Binding ElementName=_okButton}">
   <Window.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -122,6 +123,7 @@
         Checked="DoNotShowCheckBox_Checked"
         Unchecked="DoNotShowCheckBox_Unchecked" />
       <Button
+        Name="_okButton"
         Grid.Column="2"
         MinWidth="86"
         MinHeight="24"

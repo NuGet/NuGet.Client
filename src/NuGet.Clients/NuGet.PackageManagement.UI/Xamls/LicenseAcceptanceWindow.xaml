@@ -18,7 +18,8 @@
   KeyDown="OnButtonKeyDown"
   Title="{x:Static nuget:Resources.WindowTitle_LicenseAcceptance}"
   d:DesignHeight="300"
-  d:DesignWidth="300">
+  d:DesignWidth="300"
+  FocusManager.FocusedElement="{Binding ElementName=_acceptButton}">
   <Window.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -120,6 +121,7 @@
       </Grid.ColumnDefinitions>
 
       <Button
+        Name="_acceptButton"
         Grid.Column="1"
         MinWidth="86"
         MinHeight="24"
