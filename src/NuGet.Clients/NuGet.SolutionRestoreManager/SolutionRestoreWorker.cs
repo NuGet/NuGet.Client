@@ -288,11 +288,11 @@ namespace NuGet.SolutionRestoreManager
                     {
                         shouldStartNewBGJobRunner = false;
                     }
-                    else if (_lockService.Value.IsLockHeld)
+                    else if (_lockService.Value.IsLockHeld && _lockService.Value.LockCount > 0)
                     {
-                        // when restore is not running but NuGet lock is still held, then it means other
-                        // NuGet operation like Install or Update are in progress which will take care of running
-                        // restore for appropriate projects so skipping auto restore in that case.
+                        // when restore is not running but NuGet lock is still held for the current async operation,
+                        // then it means other NuGet operation like Install or Update are in progress which will
+                        // take care of running restore for appropriate projects so skipping auto restore in that case.
                         return true;
                     }
 
