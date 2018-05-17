@@ -61,43 +61,46 @@ namespace NuGet.SolutionRestoreManager
                     }
 
                     return result;
+                case StandardTableColumnDefinitions.Line:
+
+                    if (Message is RestoreLogMessage)
+                    {
+                        content = (Message as RestoreLogMessage).StartLineNumber;
+                        return true;
+                    }
+
+                    return false;
+                case StandardTableColumnDefinitions.Column:
+
+                    if (Message is RestoreLogMessage)
+                    {
+                        content = (Message as RestoreLogMessage).StartColumnNumber;
+                        return true;
+                    }
+
+                    return false;
                 case StandardTableColumnDefinitions.DocumentName:
 
-                    if (Message.ProjectPath != null)
+                    var documentName = GetProjectFile(Message);
+
+                    if (!string.IsNullOrEmpty(documentName))
                     {
-                        content = Message.ProjectPath;
+                        content = documentName;
                         return true;
-                    }
-                    else if (Message is RestoreLogMessage)
-                    {
-                        content = (Message as RestoreLogMessage).FilePath;
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                case StandardTableColumnDefinitions.ProjectName:
-                    
-                    string path = null;
-                    if (Message.ProjectPath != null)
-                    {
-                        path = Message.ProjectPath;
-                    }
-                    else if (Message is RestoreLogMessage)
-                    {
-                        path = (Message as RestoreLogMessage).FilePath;
                     }
 
-                    if (path != null)
+                    return false;
+                case StandardTableColumnDefinitions.ProjectName:
+
+                    var projectName = GetProjectFile(Message);
+
+                    if (!string.IsNullOrEmpty(projectName))
                     {
-                        content = Path.GetFileNameWithoutExtension(path);
+                        content = Path.GetFileNameWithoutExtension(projectName);
                         return true;
                     }
-                    else
-                    {
-                        return false;
-                    }
+
+                    return false;
             }
 
             return false;
@@ -120,6 +123,21 @@ namespace NuGet.SolutionRestoreManager
                 default:
                     return __VSERRORCATEGORY.EC_MESSAGE;
             }
+        }
+
+        private static string GetProjectFile(ILogMessage logMessage)
+        {
+            string file = null;
+            if (!string.IsNullOrEmpty(logMessage.ProjectPath))
+            {
+                file = logMessage.ProjectPath;
+            }
+            else if (logMessage is RestoreLogMessage)
+            {
+                file = (logMessage as RestoreLogMessage).FilePath;
+            }
+
+            return file;
         }
     }
 }
