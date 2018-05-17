@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.IO;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.TableControl;
 using Microsoft.VisualStudio.Shell.TableManager;
@@ -61,9 +62,36 @@ namespace NuGet.SolutionRestoreManager
 
                     return result;
                 case StandardTableColumnDefinitions.DocumentName:
+
                     if (Message.ProjectPath != null)
                     {
                         content = Message.ProjectPath;
+                        return true;
+                    }
+                    else if (Message is RestoreLogMessage)
+                    {
+                        content = (Message as RestoreLogMessage).FilePath;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                case StandardTableColumnDefinitions.ProjectName:
+                    
+                    string path = null;
+                    if (Message.ProjectPath != null)
+                    {
+                        path = Message.ProjectPath;
+                    }
+                    else if (Message is RestoreLogMessage)
+                    {
+                        path = (Message as RestoreLogMessage).FilePath;
+                    }
+
+                    if (path != null)
+                    {
+                        content = Path.GetFileNameWithoutExtension(path);
                         return true;
                     }
                     else
