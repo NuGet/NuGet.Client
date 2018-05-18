@@ -577,20 +577,23 @@ namespace NuGet.PackageManagement.UI
             SourceCacheContext sourceCacheContext,
             CancellationToken token)
         {
-            var processedDirectInstalls = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
-            foreach (var projectActions in actions.GroupBy(e => e.Project))
+            var nuGetProjects = actions.Select(action => action.Project);
+            var nuGetActions = actions.Select(action => action.Action);
+
+            var directInstall = GetDirectInstall(nuGetActions, userAction, commonOperations);
+            if (directInstall != null)
             {
-                var nuGetProjectActions = projectActions.Select(e => e.Action);
-                var directInstall = GetDirectInstall(nuGetProjectActions, userAction, commonOperations);
-                if (directInstall != null
-                    && !processedDirectInstalls.Contains(directInstall))
-                {
-                    NuGetPackageManager.SetDirectInstall(directInstall, projectContext);
-                    processedDirectInstalls.Add(directInstall);
-                }
-                await _packageManager.ExecuteNuGetProjectActionsAsync(projectActions.Key, nuGetProjectActions, projectContext, sourceCacheContext, token);
-                NuGetPackageManager.ClearDirectInstall(projectContext);
+                NuGetPackageManager.SetDirectInstall(directInstall, projectContext);
             }
+
+            await _packageManager.ExecuteNuGetProjectActionsAsync(
+                nuGetProjects,
+                nuGetActions,
+                projectContext,
+                sourceCacheContext,
+                token);
+
+            NuGetPackageManager.ClearDirectInstall(projectContext);
         }
 
         private static PackageIdentity GetDirectInstall(IEnumerable<NuGetProjectAction> nuGetProjectActions,

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,6 +16,11 @@ namespace NuGet.VisualStudio
         /// Gets a value indicating whether any kind of lock is held.
         /// </summary>
         bool IsLockHeld { get; }
+
+        /// <summary>
+        /// Returns the total lock count for current async NuGet operation.
+        /// </summary>
+        int LockCount { get; }
 
         /// <summary>
         /// Obtains NuGet specific lock and execute action.
