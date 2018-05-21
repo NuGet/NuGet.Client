@@ -91,7 +91,7 @@ namespace NuGet.Credentials
 
             if (_isAnAuthenticationPlugin)
             {
-                AddOrUpdateLogger(plugin.Plugin, _logger);
+                AddOrUpdateLogger(plugin.Plugin);
                 var request = new GetAuthenticationCredentialsRequest(uri, isRetry, nonInteractive);
 
                 var credentialResponse = await plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
@@ -108,14 +108,14 @@ namespace NuGet.Credentials
             return taskResponse;
         }
 
-        private void AddOrUpdateLogger(IPlugin plugin, ILogger logger)
+        private void AddOrUpdateLogger(IPlugin plugin)
         {
             plugin.Connection.MessageDispatcher.RequestHandlers.AddOrUpdate(
                 MessageMethod.Log,
-                () => new LogRequestHandler(logger),
+                () => new LogRequestHandler(_logger),
                 existingHandler =>
                 {
-                    ((LogRequestHandler)existingHandler).SetLogger(logger);
+                    ((LogRequestHandler)existingHandler).SetLogger(_logger);
 
                     return existingHandler;
                 });
