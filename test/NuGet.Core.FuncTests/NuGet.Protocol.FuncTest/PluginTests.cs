@@ -38,7 +38,7 @@ namespace NuGet.Protocol.FuncTest
         {
             logger.WriteLine($"Plugin file path:  {_pluginFile.FullName}");
         }
-
+#if !IS_CORECLR
         [PlatformFact(Platform.Windows)]
         public async Task GetOrCreateAsync_SuccessfullyHandshakes()
         {
@@ -178,7 +178,7 @@ namespace NuGet.Protocol.FuncTest
                     consoleOutput);
             }
         }
-
+#endif
         private static int GetCurrentProcessId()
         {
             using (var process = Process.GetCurrentProcess())
