@@ -6,8 +6,8 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Plugins;
 
 namespace NuGet.Credentials
@@ -42,7 +42,7 @@ namespace NuGet.Credentials
         /// <exception cref="ArgumentNullException">if <paramref name="logger"/> is null</exception>
         /// <exception cref="ArgumentNullException">if <paramref name="pluginManager"/> is null</exception>
         /// <exception cref="ArgumentException">if plugin file is not valid</exception>
-        public SecurePluginCredentialProvider(IPluginManager pluginManager, PluginDiscoveryResult pluginDiscoveryResult, Common.ILogger logger)
+        public SecurePluginCredentialProvider(IPluginManager pluginManager, PluginDiscoveryResult pluginDiscoveryResult, ILogger logger)
         {
             if (pluginDiscoveryResult == null)
             {
@@ -91,6 +91,7 @@ namespace NuGet.Credentials
 
             if (_isAnAuthenticationPlugin)
             {
+                AddOrUpdateLogger(plugin.Plugin);
                 var request = new GetAuthenticationCredentialsRequest(uri, isRetry, nonInteractive);
 
                 var credentialResponse = await plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
@@ -105,6 +106,19 @@ namespace NuGet.Credentials
             }
 
             return taskResponse;
+        }
+
+        private void AddOrUpdateLogger(IPlugin plugin)
+        {
+            plugin.Connection.MessageDispatcher.RequestHandlers.AddOrUpdate(
+                MessageMethod.Log,
+                () => new LogRequestHandler(_logger),
+                existingHandler =>
+                {
+                    ((LogRequestHandler)existingHandler).SetLogger(_logger);
+
+                    return existingHandler;
+                });
         }
 
         /// <summary>
