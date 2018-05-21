@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.IO;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.TableControl;
 using Microsoft.VisualStudio.Shell.TableManager;
@@ -60,16 +61,46 @@ namespace NuGet.SolutionRestoreManager
                     }
 
                     return result;
-                case StandardTableColumnDefinitions.DocumentName:
-                    if (Message.ProjectPath != null)
+                case StandardTableColumnDefinitions.Line:
+
+                    if (Message is RestoreLogMessage)
                     {
-                        content = Message.ProjectPath;
+                        content = (Message as RestoreLogMessage).StartLineNumber;
                         return true;
                     }
-                    else
+
+                    return false;
+                case StandardTableColumnDefinitions.Column:
+
+                    if (Message is RestoreLogMessage)
                     {
-                        return false;
+                        content = (Message as RestoreLogMessage).StartColumnNumber;
+                        return true;
                     }
+
+                    return false;
+                case StandardTableColumnDefinitions.DocumentName:
+
+                    var documentName = GetProjectFile(Message);
+
+                    if (!string.IsNullOrEmpty(documentName))
+                    {
+                        content = documentName;
+                        return true;
+                    }
+
+                    return false;
+                case StandardTableColumnDefinitions.ProjectName:
+
+                    var projectName = GetProjectFile(Message);
+
+                    if (!string.IsNullOrEmpty(projectName))
+                    {
+                        content = Path.GetFileNameWithoutExtension(projectName);
+                        return true;
+                    }
+
+                    return false;
             }
 
             return false;
@@ -92,6 +123,21 @@ namespace NuGet.SolutionRestoreManager
                 default:
                     return __VSERRORCATEGORY.EC_MESSAGE;
             }
+        }
+
+        private static string GetProjectFile(ILogMessage logMessage)
+        {
+            string file = null;
+            if (!string.IsNullOrEmpty(logMessage.ProjectPath))
+            {
+                file = logMessage.ProjectPath;
+            }
+            else if (logMessage is RestoreLogMessage)
+            {
+                file = (logMessage as RestoreLogMessage).FilePath;
+            }
+
+            return file;
         }
     }
 }
