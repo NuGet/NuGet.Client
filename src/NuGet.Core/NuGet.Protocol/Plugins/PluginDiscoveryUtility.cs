@@ -45,9 +45,7 @@ namespace NuGet.Protocol.Plugins
 #else
                     var expectedPluginName = Path.Combine(pluginDirectory, Path.GetFileName(pluginDirectory) + ".dll");
 #endif
-
-                    var filesInDirectory = Directory.EnumerateFiles(pluginDirectory);
-                    if (filesInDirectory.Contains(expectedPluginName, PathUtility.GetStringComparerBasedOnOS()))
+                    if (File.Exists(expectedPluginName))
                     {
                         paths.Add(expectedPluginName);
                     }

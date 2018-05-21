@@ -18,17 +18,14 @@ namespace NuGet.Protocol.Plugins.Tests
 #endif
 
         [Theory]
-        [InlineData("VSTSCredProv", "VSTSCredProv", true, true)]
-        [InlineData("VSTSCredProv", "vstscredprov", true, false)]
-        [InlineData("vstscredprov", "VSTSCredProv", true, false)]
-        [InlineData("VSTSCredProv", "MyGetProv", false, false)]
-        public void PluginDiscoveryUtilitySimpleTest(string pluginFolderName, string pluginFileName, bool success, bool matchesCase)
+        [InlineData("VSTSCredProv", "VSTSCredProv", true)]
+        [InlineData("VSTSCredProv", "vstscredprov", true)]
+        [InlineData("vstscredprov", "VSTSCredProv", true )]
+        [InlineData("VSTSCredProv", "MyGetProv", false)]
+        public void PluginDiscoveryUtilitySimpleTest(string pluginFolderName, string pluginFileName, bool success)
         {
             using (var test = TestDirectory.Create())
             {
-                // Determine what the expected result is based on the case sensitivity of the system.
-                var expectedSuccess = (matchesCase || Common.PathUtility.IsFileSystemCaseInsensitive) && success;
-
                 // Setup
                 var pluginDirectoryPath = Path.Combine(test, pluginFolderName);
                 var fullPluginFilePath = Path.Combine(pluginDirectoryPath, pluginFileName + PluginExtension);
@@ -39,41 +36,11 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 // Act
                 var results = PluginDiscoveryUtility.GetConventionBasedPlugins(new string[] { test.Path });
-                //Assert
-                Assert.Equal(expectedSuccess ? 1 : 0, results.Count());
-                if (expectedSuccess)
-                {
-                    Assert.Equal(fullPluginFilePath, results.Single(), PathUtility.GetStringComparerBasedOnOS());
-                }
-            }
-        }
-
-        [PlatformTheory(Platform.Linux)]
-        [InlineData("VSTSCredProv", "VSTSCredProv", "vstscredprov", true)] // first matching
-        [InlineData("VSTSCredProv", "vstscredProv", "vstscredprov", false)] // none matching
-        [InlineData("VSTSCredProv", "vstscredProv", "VSTSCredProv", true)] // second matching
-        public void PluginDiscoveryUtilityPluginsWithDifferentCasing(string pluginFolderName, string pluginFileName, string secondPluginName, bool success)
-        {
-            using (var test = TestDirectory.Create())
-            {
-                // Setup
-                var pluginDirectoryPath = Path.Combine(test, pluginFolderName);
-                var fullPluginFilePath = Path.Combine(pluginDirectoryPath, pluginFileName + PluginExtension);
-                var secondFullPluginFilePath = Path.Combine(pluginDirectoryPath, secondPluginName + PluginExtension);
-                var expectedPluginPath = Path.Combine(pluginDirectoryPath, pluginFolderName + PluginExtension);
-
-                // Create plugin Directory and name
-                Directory.CreateDirectory(pluginDirectoryPath);
-                File.Create(fullPluginFilePath);
-                File.Create(secondFullPluginFilePath);
-                // Act
-                var results = PluginDiscoveryUtility.GetConventionBasedPlugins(new string[] { test.Path });
-
                 //Assert
                 Assert.Equal(success ? 1 : 0, results.Count());
                 if (success)
                 {
-                    Assert.Equal(expectedPluginPath, results.Single());
+                    Assert.Equal(fullPluginFilePath, results.Single(), StringComparer.OrdinalIgnoreCase);
                 }
             }
         }
