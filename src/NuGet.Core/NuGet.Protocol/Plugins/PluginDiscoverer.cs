@@ -178,7 +178,8 @@ namespace NuGet.Protocol.Plugins
         {
             if (string.IsNullOrEmpty(_rawPluginPaths))
             {
-                return Enumerable.Empty<string>();
+                var directories = new List<string> { PluginDiscoveryUtility.GetNuGetHomePluginsPath(), PluginDiscoveryUtility.GetInternalPlugins() };
+                return PluginDiscoveryUtility.GetConventionBasedPlugins(directories);
             }
 
             return _rawPluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);

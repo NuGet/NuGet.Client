@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -179,7 +179,7 @@ namespace NuGet.CommandLine.Test
                 var expectedValue = Path.Combine(Path.GetDirectoryName(configFile), "Value1")
                     + Environment.NewLine;
 
-                Assert.Equal(expectedValue, output);
+                Assert.Equal(expectedValue, Util.TrimMSBuildDiscoveryAutoDetectionMessage(output));
             }
         }
 
@@ -246,7 +246,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, result.Item1);
-                Assert.Equal(expectedValue, output);
+                Assert.Equal(expectedValue, Util.TrimMSBuildDiscoveryAutoDetectionMessage(output));
             }
         }
 
