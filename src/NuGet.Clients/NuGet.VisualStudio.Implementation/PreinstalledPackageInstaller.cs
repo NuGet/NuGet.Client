@@ -17,6 +17,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -160,18 +161,24 @@ namespace NuGet.VisualStudio
             IVsPackageInstaller packageInstaller,
             EnvDTE.Project project,
             PreinstalledPackageConfiguration configuration,
+            bool preferPackageReferenceFormat,
             Action<string> warningHandler,
             Action<string> errorHandler)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string repositoryPath = configuration.RepositoryPath;
+            var repositoryPath = configuration.RepositoryPath;
             var repositorySource = new Configuration.PackageSource(repositoryPath);
             var failedPackageErrors = new List<string>();
 
             // find the project
             var defaultProjectContext = new VSAPIProjectContext();
+
             var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, defaultProjectContext);
+            if (preferPackageReferenceFormat && await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject, project, false))
+            {
+                nuGetProject = await _solutionManager.UpgradeProjectToPackageReferenceAsync(nuGetProject);
+            }
 
             // For BuildIntegratedNuGetProject, nuget will ignore preunzipped configuration.
             var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
