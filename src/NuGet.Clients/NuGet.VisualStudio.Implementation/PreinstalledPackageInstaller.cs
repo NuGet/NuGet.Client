@@ -149,6 +149,7 @@ namespace NuGet.VisualStudio
         /// their installation.
         /// </param>
         /// <param name="repositorySettings">The repository settings for the packages being installed.</param>
+        /// <param name="preferPackageReferenceFormat">Install packages to the project as PackageReference if the project type supports it</param>
         /// <param name="warningHandler">
         /// An action that accepts a warning message and presents it to the user, allowing
         /// execution to continue.
@@ -173,9 +174,8 @@ namespace NuGet.VisualStudio
 
             // find the project
             var defaultProjectContext = new VSAPIProjectContext();
-
             var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, defaultProjectContext);
-            if (preferPackageReferenceFormat && await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject, project, false))
+            if (preferPackageReferenceFormat && await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject, project, needsAPackagesConfig: false))
             {
                 nuGetProject = await _solutionManager.UpgradeProjectToPackageReferenceAsync(nuGetProject);
             }
