@@ -4,11 +4,11 @@
 
   <PropertyGroup>
     <Description>Complete commands common to command-line and GUI NuGet clients</Description>
-    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard2.0</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1584;CS1658</NoWarn>
-    <NoWarn Condition="'$(TargetFramework)' == 'netstandard1.6'">$(NoWarn);CS1998</NoWarn>
+    <NoWarn Condition="'$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CS1998</NoWarn>
     <PackProject>true</PackProject>
     <IncludeInVSIX>true</IncludeInVSIX>
     <Shipping>true</Shipping>
