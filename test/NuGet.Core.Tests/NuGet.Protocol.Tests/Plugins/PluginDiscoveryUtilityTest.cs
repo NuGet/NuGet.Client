@@ -19,8 +19,6 @@ namespace NuGet.Protocol.Plugins.Tests
 
         [Theory]
         [InlineData("VSTSCredProv", "VSTSCredProv", true)]
-        [InlineData("VSTSCredProv", "vstscredprov", true)]
-        [InlineData("vstscredprov", "VSTSCredProv", true )]
         [InlineData("VSTSCredProv", "MyGetProv", false)]
         public void PluginDiscoveryUtilitySimpleTest(string pluginFolderName, string pluginFileName, bool success)
         {
