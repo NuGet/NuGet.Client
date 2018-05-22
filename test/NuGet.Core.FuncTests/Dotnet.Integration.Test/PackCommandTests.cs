@@ -2761,11 +2761,11 @@ namespace ClassLibrary
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net45;netstandard1.3");
                     if(!string.IsNullOrEmpty(frameworkToSuppress))
                     {
-                        ProjectFileUtils.AddProperty(xml, "SuppressDependenciesOnPacking", "true", $"'$(TargetFramework)'=='{frameworkToSuppress}'");
+                        ProjectFileUtils.AddProperty(xml, "SuppressDependenciesWhenPacking", "true", $"'$(TargetFramework)'=='{frameworkToSuppress}'");
                     }
                     else
                     {
-                        ProjectFileUtils.AddProperty(xml, "SuppressDependenciesOnPacking", "true");
+                        ProjectFileUtils.AddProperty(xml, "SuppressDependenciesWhenPacking", "true");
                     }
                     
                     var attributes = new Dictionary<string, string>();

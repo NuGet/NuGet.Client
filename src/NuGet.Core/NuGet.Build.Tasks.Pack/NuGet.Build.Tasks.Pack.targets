@@ -45,7 +45,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ImportNuGetBuildTasksPackTargetsFromSdk Condition="'$(ImportNuGetBuildTasksPackTargetsFromSdk)' == ''">false</ImportNuGetBuildTasksPackTargetsFromSdk>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>.dll; .exe; .winmd; .json; .pri; .xml; $(AllowedOutputExtensionsInPackageBuildOutputFolder)</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>.pdb; .mdb; $(AllowedOutputExtensionsInPackageBuildOutputFolder); $(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder)</AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>
-    <SuppressDependenciesOnPacking Condition="'$(SuppressDependenciesOnPacking)' == ''">false</SuppressDependenciesOnPacking>
+    <SuppressDependenciesWhenPacking Condition="'$(SuppressDependenciesWhenPacking)' == ''">false</SuppressDependenciesWhenPacking>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' == 'true' ">
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
@@ -389,7 +389,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name ="_GetFrameworksWithSuppressedDependencies" Returns="@(_TfmWithDependenciesSuppressed)">
     <ItemGroup>
-      <_TfmWithDependenciesSuppressed Include="$(TargetFramework)" Condition="'$(SuppressDependenciesOnPacking)' == 'true'"/>
+      <_TfmWithDependenciesSuppressed Include="$(TargetFramework)" Condition="'$(SuppressDependenciesWhenPacking)' == 'true'"/>
     </ItemGroup>
   </Target>
 
