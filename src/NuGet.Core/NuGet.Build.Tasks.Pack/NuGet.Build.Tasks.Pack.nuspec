@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>NuGet.Build.Tasks.Pack</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <description>NuGet pack for dotnet CLI</description>
+    <copyright>&#169; .NET Foundation. All rights reserved.</copyright>
+  </metadata>
+  <files>
+    <file src="net46\ilmerge\NuGet.Build.Tasks.Pack.dll" target="Desktop\" />
+    <file src="net46\ilmerge\NuGet.Build.Tasks.Pack.xml" target="Desktop\" />
+    <file src="netstandard2.0\ilmerge\NuGet.Build.Tasks.Pack.dll" target="CoreCLR\" />
+    <file src="netstandard2.0\ilmerge\NuGet.Build.Tasks.Pack.xml" target="CoreCLR\" />
+    <file src="netstandard2.0\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll" target="CoreCLR\" />
+    <file src="net46\ilmerge\**\NuGet.Build.Tasks.Pack.resources.dll" target="Desktop\" />
+    <file src="net46\NuGet.Build.Tasks.Pack.targets" target="buildCrossTargeting\NuGet.Build.Tasks.Pack.targets" />
+    <file src="net46\NuGet.Build.Tasks.Pack.targets" target="build\NuGet.Build.Tasks.Pack.targets" />
+  </files>
+</package>

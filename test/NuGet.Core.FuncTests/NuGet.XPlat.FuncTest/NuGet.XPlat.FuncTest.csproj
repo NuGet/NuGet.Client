@@ -36,10 +36,11 @@
       <Version>2.0.0-rc4</Version>
     </PackageReference>
   </ItemGroup>
-  <Import Project="$(BuildCommonDirectory)common.targets" />
   <Target Name="CopyTargets" AfterTargets="AfterBuild">
     <Copy SourceFiles="$(MSBuildProjectDirectory)\$(OutputPath)\Microsoft.CSharp.Core.targets" DestinationFolder="$(MSBuildProjectDirectory)\$(OutputPath)\Roslyn\" />
   </Target>
-
+  
+  <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
+

@@ -8,7 +8,6 @@
     <RuntimeIdentifier Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">win7-x86</RuntimeIdentifier>
     <NoWarn>$(NoWarn);CS1591;CS1701</NoWarn>
     <OutputType>Exe</OutputType>
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">1.0.3</RuntimeFrameworkVersion>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <XPLATProject>true</XPLATProject>
@@ -20,7 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
-    <PackageReference Include="Microsoft.Build.Runtime" Version="15.3.409" />
+    <PackageReference Include="Microsoft.Build.Runtime" Version="15.6.82" />
     <PackageReference Include="System.Collections.Immutable" Version="1.3.1" />
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
   </ItemGroup>

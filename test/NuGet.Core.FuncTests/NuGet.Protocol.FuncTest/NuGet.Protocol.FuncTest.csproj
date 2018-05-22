@@ -1,7 +1,6 @@
 ﻿<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework)</TargetFrameworks>
