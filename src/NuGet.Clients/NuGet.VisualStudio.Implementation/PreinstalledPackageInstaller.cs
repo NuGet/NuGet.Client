@@ -17,6 +17,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -148,6 +149,7 @@ namespace NuGet.VisualStudio
         /// their installation.
         /// </param>
         /// <param name="repositorySettings">The repository settings for the packages being installed.</param>
+        /// <param name="preferPackageReferenceFormat">Install packages to the project as PackageReference if the project type supports it</param>
         /// <param name="warningHandler">
         /// An action that accepts a warning message and presents it to the user, allowing
         /// execution to continue.
@@ -160,18 +162,23 @@ namespace NuGet.VisualStudio
             IVsPackageInstaller packageInstaller,
             EnvDTE.Project project,
             PreinstalledPackageConfiguration configuration,
+            bool preferPackageReferenceFormat,
             Action<string> warningHandler,
             Action<string> errorHandler)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string repositoryPath = configuration.RepositoryPath;
+            var repositoryPath = configuration.RepositoryPath;
             var repositorySource = new Configuration.PackageSource(repositoryPath);
             var failedPackageErrors = new List<string>();
 
             // find the project
             var defaultProjectContext = new VSAPIProjectContext();
             var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, defaultProjectContext);
+            if (preferPackageReferenceFormat && await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject, project, needsAPackagesConfig: false))
+            {
+                nuGetProject = await _solutionManager.UpgradeProjectToPackageReferenceAsync(nuGetProject);
+            }
 
             // For BuildIntegratedNuGetProject, nuget will ignore preunzipped configuration.
             var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;

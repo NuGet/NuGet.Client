@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -266,9 +266,13 @@ namespace NuGet.VisualStudio
             {
                 if (configuration.Packages.Any())
                 {
+                    var packageManagementFormat = new PackageManagementFormat(_settings);
+                    // 1 means PackageReference
+                    var preferPackageReference = packageManagementFormat.SelectedPackageManagementFormat == 1;
                     await _preinstalledPackageInstaller.PerformPackageInstallAsync(_installer,
                         project,
                         configuration,
+                        preferPackageReference,
                         ShowWarningMessage,
                         ShowErrorMessage);
                 }
