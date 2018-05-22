@@ -5,6 +5,10 @@
   <PropertyGroup>
     <Description>NuGet's dependency resolver within the NuGet.Packaging package</Description>
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+<<<<<<< HEAD
+=======
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard2.0</TargetFrameworks>
+>>>>>>> move xplat libraries to ns2.0
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
     <PackProject>true</PackProject>

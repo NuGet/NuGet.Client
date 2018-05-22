@@ -5,6 +5,10 @@
   <PropertyGroup>
     <Description>NuGet wrapper for dotnet.exe</Description>
     <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
+<<<<<<< HEAD
+=======
+    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netcoreapp2.0</TargetFrameworks>
+>>>>>>> move xplat libraries to ns2.0
     <RuntimeIdentifier Condition=" '$(TargetFramework)' == 'net46' ">win7-x86</RuntimeIdentifier>
     <NoWarn>$(NoWarn);CS1591;CS1701</NoWarn>
     <OutputType>Exe</OutputType>
