@@ -14,6 +14,8 @@ namespace NuGet.Credentials
 {
     public sealed class SecurePluginCredentialProvider : ICredentialProvider
     {
+        private const string _basicAuthenticationType = "Basic";
+
         /// <summary>
         /// Plugin that this provider will use to acquire credentials
         /// </summary>
@@ -92,6 +94,12 @@ namespace NuGet.Credentials
             if (_isAnAuthenticationPlugin)
             {
                 AddOrUpdateLogger(plugin.Plugin);
+
+                if (proxy != null)
+                {
+                    await SetProxyCredentialsToPlugin(uri, proxy, plugin, cancellationToken);
+                }
+
                 var request = new GetAuthenticationCredentialsRequest(uri, isRetry, nonInteractive);
 
                 var credentialResponse = await plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
@@ -119,6 +127,29 @@ namespace NuGet.Credentials
 
                     return existingHandler;
                 });
+        }
+
+        private async Task SetProxyCredentialsToPlugin(Uri uri, IWebProxy proxy, PluginCreationResult plugin, CancellationToken cancellationToken)
+        {
+            var proxyCredential = proxy.Credentials.GetCredential(uri, _basicAuthenticationType);
+
+            var key = $"{MessageMethod.SetCredentials}.{Id}";
+
+            var proxyCredRequest = new SetCredentialsRequest(
+                uri.AbsolutePath,
+                proxyCredential?.UserName,
+                proxyCredential?.Password,
+                username: null,
+                password: null);
+
+            await plugin.PluginMulticlientUtilities.DoOncePerPluginLifetimeAsync(
+                 key,
+                 () =>
+                     plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<SetCredentialsRequest, SetCredentialsResponse>(
+                     MessageMethod.SetCredentials,
+                     proxyCredRequest,
+                     cancellationToken),
+                 cancellationToken);
         }
 
         /// <summary>
