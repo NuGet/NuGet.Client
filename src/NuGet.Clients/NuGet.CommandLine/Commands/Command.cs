@@ -190,8 +190,8 @@ namespace NuGet.CommandLine
         /// </summary>
         protected void SetDefaultCredentialProvider(Lazy<string> msbuildDirectory)
         {
-            Protocol.Plugins.PluginDiscoveryUtility.InternalPluginDiscoveryRoot = msbuildDirectory.Value; // TODO NK - this needs addressed
-            CredentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => GetCredentialProvidersAsync()), NonInteractive);
+            Protocol.Plugins.PluginDiscoveryUtility.InternalPluginDiscoveryRoot = msbuildDirectory.Value; // TODO NK - handle this
+            CredentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => GetCredentialProvidersAsync()), NonInteractive, handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
 
             CoreV2.NuGet.HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
 
@@ -207,7 +207,7 @@ namespace NuGet.CommandLine
         private async Task<IEnumerable<ICredentialProvider>> GetCredentialProvidersAsync()
         {
             var extensionLocator = new ExtensionLocator();
-            var providers = new List<Credentials.ICredentialProvider>();
+            var providers = new List<ICredentialProvider>();
             var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings, Console)
                 .BuildAll(Verbosity.ToString())
                 .ToList();
