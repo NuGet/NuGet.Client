@@ -8,6 +8,7 @@ phases:
     demands: 
       - DotNetFramework
       - msbuild
+      - USERNAME -equals dlab
   
   steps:
   - task: PowerShell@1
@@ -61,6 +62,7 @@ phases:
     demands: 
       - DotNetFramework
       - msbuild
+      - USERNAME -equals dlab
 
   steps:  
   - task: PowerShell@1
@@ -371,6 +373,7 @@ phases:
     demands: 
         - DotNetFramework
         - msbuild
+        - USERNAME -equals dlab
 
   steps:
   - task: PowerShell@1
