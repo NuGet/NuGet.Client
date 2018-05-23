@@ -78,6 +78,20 @@ namespace NuGet.CommandLine
 
         protected internal CoreV2.NuGet.IPackageRepositoryFactory RepositoryFactory { get; set; }
 
+        private Lazy<string> MsBuildDirectory {
+            get
+            {
+                if (_defaultMsBuildDirectory == null)
+                {
+                    _defaultMsBuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(null, null, Console);
+
+                }
+                return _defaultMsBuildDirectory;
+            }
+        }
+
+        private Lazy<string> _defaultMsBuildDirectory;
+
         public CommandAttribute CommandAttribute
         {
             get
@@ -130,6 +144,7 @@ namespace NuGet.CommandLine
                 }
 
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
+
                 SetDefaultCredentialProvider();
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
 
@@ -164,12 +179,18 @@ namespace NuGet.CommandLine
             get { return Console.Verbosity == Verbosity.Detailed; }
         }
 
+        protected virtual void SetDefaultCredentialProvider()
+        {
+            SetDefaultCredentialProvider(MsBuildDirectory);
+        }
+
         /// <summary>
         /// Set default credential provider for the HttpClient, which is used by V2 sources.
         /// Also set up authenticated proxy handling for V3 sources.
         /// </summary>
-        protected void SetDefaultCredentialProvider()
+        protected void SetDefaultCredentialProvider(Lazy<string> msbuildDirectory)
         {
+            Protocol.Plugins.PluginDiscoveryUtility.InternalPluginDiscoveryRoot = msbuildDirectory.Value; // TODO NK - this needs addressed
             CredentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => GetCredentialProvidersAsync()), NonInteractive);
 
             CoreV2.NuGet.HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
