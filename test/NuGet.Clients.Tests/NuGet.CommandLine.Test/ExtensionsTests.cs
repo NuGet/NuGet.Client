@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.Test
                     "hello",
                     true);
 
-                Assert.Equal("Hello!" + Environment.NewLine, result.Item2);
+                Assert.Equal("Hello!" + Environment.NewLine, Util.TrimMSBuildDiscoveryAutoDetectionMessage(result.Item2));
             }
         }
     }

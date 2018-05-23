@@ -60,6 +60,19 @@ namespace NuGet.CommandLine
         // The directory that contains msbuild
         private Lazy<string> _msbuildDirectory;
 
+        private Lazy<string> MsBuildDirectory
+        {
+            get
+            {
+                if (_msbuildDirectory == null)
+                {
+                    _msbuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console);
+
+                }
+                return _msbuildDirectory;
+            }
+        }
+
         public override async Task ExecuteCommandAsync()
         {
             if (DisableParallelProcessing)
@@ -70,8 +83,6 @@ namespace NuGet.CommandLine
             CalculateEffectivePackageSaveMode();
 
             var restoreSummaries = new List<RestoreSummary>();
-
-            _msbuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console);
 
             if (!string.IsNullOrEmpty(SolutionDirectory))
             {
@@ -210,6 +221,11 @@ namespace NuGet.CommandLine
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
                 SetDefaultCredentialProvider();
             }
+        }
+
+        protected override void SetDefaultCredentialProvider()
+        {
+            SetDefaultCredentialProvider(MsBuildDirectory);
         }
 
         private async Task<RestoreSummary> PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
@@ -573,7 +589,7 @@ namespace NuGet.CommandLine
 
             // Call MSBuild to resolve P2P references.
             return await MsBuildUtility.GetProjectReferencesAsync(
-                _msbuildDirectory.Value,
+                MsBuildDirectory.Value,
                 projectsWithPotentialP2PReferences,
                 scaleTimeout,
                 Console,
@@ -785,7 +801,7 @@ namespace NuGet.CommandLine
                 restoreInputs.PackagesConfigFiles.Add(solutionLevelPackagesConfig);
             }
 
-            var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, _msbuildDirectory.Value);
+            var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, MsBuildDirectory.Value);
 
             foreach (var projectFile in projectFiles)
             {
