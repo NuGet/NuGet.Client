@@ -1163,5 +1163,14 @@ EndProject");
             // Simply test the extension as that is all we care about
             return string.Equals(Path.GetExtension(configFileName), ".json", StringComparison.OrdinalIgnoreCase);
         }
+
+        public static string TrimMSBuildDiscoveryAutoDetectionMessage(string message)
+        {
+            if (message != null && message.StartsWith("MSBuild auto-detection"))
+            {
+                return message.Substring(message.IndexOf("\n") + 1);
+            }
+            return message;
+        }
     }
 }

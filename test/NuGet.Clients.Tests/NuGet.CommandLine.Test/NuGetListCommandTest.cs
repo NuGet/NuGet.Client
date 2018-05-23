@@ -94,7 +94,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, result.Item1);
-                var output = result.Item2;
+                var output = Util.TrimMSBuildDiscoveryAutoDetectionMessage(result.Item2);
                 Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
             }
         }
@@ -123,11 +123,11 @@ namespace NuGet.CommandLine.Test
                 var output = r.Item2;
                 string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-                Assert.Equal(5, lines.Length);
-                Assert.Equal("testPackage1", lines[1]);
-                Assert.Equal(" 1.1.0", lines[2]);
-                Assert.Equal(" desc of testPackage1 1.1.0", lines[3]);
-                Assert.Equal(" License url: http://kaka", lines[4]);
+                Assert.Equal(6, lines.Length);
+                Assert.Equal("testPackage1", lines[2]);
+                Assert.Equal(" 1.1.0", lines[3]);
+                Assert.Equal(" desc of testPackage1 1.1.0", lines[4]);
+                Assert.Equal(" License url: http://kaka", lines[5]);
             }
         }
 
@@ -171,7 +171,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, result.Item1);
-                var output = result.Item2;
+                var output = Util.TrimMSBuildDiscoveryAutoDetectionMessage(result.Item2);
                 Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
             }
         }
@@ -224,7 +224,7 @@ namespace NuGet.CommandLine.Test
                     // verify that only package id & version is displayed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, result.Item2);
+                    Assert.Equal(expectedOutput, Util.TrimMSBuildDiscoveryAutoDetectionMessage(result.Item2));
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -283,7 +283,7 @@ namespace NuGet.CommandLine.Test
                     // verify that only testPackage2 is listed since the package testPackage1
                     // is not listed.
                     var expectedOutput = "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    Assert.Equal(expectedOutput, Util.TrimMSBuildDiscoveryAutoDetectionMessage(r1.Item2));
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -346,7 +346,7 @@ namespace NuGet.CommandLine.Test
                     var expectedOutput =
                         "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    Assert.Equal(expectedOutput, Util.TrimMSBuildDiscoveryAutoDetectionMessage(r1.Item2));
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -460,7 +460,7 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    Assert.Equal(expectedOutput, Util.TrimMSBuildDiscoveryAutoDetectionMessage(r1.Item2));
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -518,7 +518,7 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    Assert.Equal(expectedOutput, Util.TrimMSBuildDiscoveryAutoDetectionMessage(r1.Item2));
 
                     Assert.Contains("$filter=IsAbsoluteLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -576,7 +576,7 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    Assert.Equal(expectedOutput, Util.TrimMSBuildDiscoveryAutoDetectionMessage(r1.Item2));
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -675,7 +675,7 @@ namespace NuGet.CommandLine.Test
                         // verify that only package id & version is displayed
                         var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                             "testPackage2 2.1.0" + Environment.NewLine;
-                        Assert.Equal(expectedOutput, result.Item2);
+                        Assert.Equal(expectedOutput, Util.TrimMSBuildDiscoveryAutoDetectionMessage(result.Item2));
 
                         Assert.Contains("$filter=IsLatestVersion", searchRequest);
                         Assert.Contains("searchTerm='test", searchRequest);
