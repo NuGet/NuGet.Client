@@ -692,7 +692,7 @@ namespace NuGetVSExtension
             var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
             var caption = Resx.Label_SolutionNuGetWindowCaption;
-            var documentName = _dte.Solution.FullName;
+            var documentName = await SolutionManager.Value.GetSolutionFilePathAsync();
 
             var ppunkDocView = IntPtr.Zero;
             var ppunkDocData = IntPtr.Zero;

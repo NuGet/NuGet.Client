@@ -415,7 +415,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private async Task<string> GetSolutionFilePathAsync()
+        public async Task<string> GetSolutionFilePathAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
