@@ -4,6 +4,13 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.props" Condition="'$(IsXplat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' " />
   <!-- No bootstrapping on XPLAT, this project is not expect to work correctly-->
+  <ItemDefinitionGroup>
+    <ProjectReference>
+      <Ngen>True</Ngen>
+      <NgenArchitecture>x86</NgenArchitecture>
+      <NgenPriority>2</NgenPriority>
+    </ProjectReference>
+  </ItemDefinitionGroup>
   <PropertyGroup>
     <Shipping>true</Shipping>
     <ProjectGuid>{3B96F91B-3B58-40ED-B06E-5CD133A79A63}</ProjectGuid>
