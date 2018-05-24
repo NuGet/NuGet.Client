@@ -60,7 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.Present(dteProject);
 
-            _threadingService.ThrowIfNotOnUIThread();
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var vsHierarchyItem = VsHierarchyItem.FromDteProject(dteProject);
             Func<IVsHierarchy, EnvDTE.Project> loadDteProject = _ => dteProject;
