@@ -99,7 +99,7 @@ namespace NuGet.CommandLine.Test
         }
 
 
-        [Fact(Skip="Expected to fail until plugins loaded as extensions fix is in")]
+        [Fact(Skip = "Expected to fail until plugins loaded as extensions fix is in")]
         public void ConfigCommand_MisconfiguredPluginCredentialProviderDoesNotBlockConfigCommand()
         {
             using (var testFolder = TestDirectory.Create())
@@ -179,7 +179,7 @@ namespace NuGet.CommandLine.Test
                 var expectedValue = Path.Combine(Path.GetDirectoryName(configFile), "Value1")
                     + Environment.NewLine;
 
-                Assert.Equal(expectedValue, Util.TrimMSBuildDiscoveryAutoDetectionMessage(output));
+                Assert.Equal(expectedValue, output);
             }
         }
 
@@ -246,7 +246,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, result.Item1);
-                Assert.Equal(expectedValue, Util.TrimMSBuildDiscoveryAutoDetectionMessage(output));
+                Assert.Equal(expectedValue, output);
             }
         }
 
