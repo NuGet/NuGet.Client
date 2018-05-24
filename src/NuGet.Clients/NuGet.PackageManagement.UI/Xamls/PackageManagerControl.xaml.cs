@@ -742,7 +742,6 @@ namespace NuGet.PackageManagement.UI
             if (selectedPackage == null)
             {
                 _packageDetail.Visibility = Visibility.Hidden;
-                _packageDetail.DataContext = null;
             }
             else
             {
