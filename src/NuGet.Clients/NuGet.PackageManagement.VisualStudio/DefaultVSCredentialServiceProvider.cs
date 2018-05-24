@@ -38,13 +38,12 @@ namespace NuGet.PackageManagement.VisualStudio
             _outputConsoleLogger = outputConsoleLogger ?? throw new ArgumentNullException(nameof(outputConsoleLogger));
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public async Task<NuGet.Configuration.ICredentialService> GetCredentialServiceAsync()
         {
             // Initialize the credential providers.
             var credentialProviders = new List<ICredentialProvider>();
             var dte = await _asyncServiceProvider.GetDTEAsync();
-            var webProxy = (IVsWebProxy)await _asyncServiceProvider.GetServiceAsync(typeof(SVsWebProxy));
+            var webProxy = await _asyncServiceProvider.GetServiceAsync<SVsWebProxy, IVsWebProxy>();
 
             TryAddCredentialProviders(
                 credentialProviders,
