@@ -34,20 +34,21 @@ namespace NuGet.Credentials
 
         private Action<string> ErrorDelegate { get; }
 
-        public async Task<bool> HandlesDefaultCredentialsAsync() {
-            return (await _providers).Any(provider => provider is DefaultCredentialsCredentialProvider);
-        }
+        public bool HandlesDefaultCredentials { get; }
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="providers">All available credential providers.</param>
         /// <param name="nonInteractive">If true, the nonInteractive flag will be passed to providers.
+        /// <param name="handlesDefaultCredentials"> If true, specifies that this credential service handles default credentials as well.
+        /// That means that DefaultCredentialsCredentialProvider instance is in the list of providers. It's set explicitly as a perfomance optimization.</param>
         /// NonInteractive requests must not promt the user for credentials.</param>
-        public CredentialService(AsyncLazy<IEnumerable<ICredentialProvider>> providers, bool nonInteractive)
+        public CredentialService(AsyncLazy<IEnumerable<ICredentialProvider>> providers, bool nonInteractive, bool handlesDefaultCredentials)
         {
             _providers = providers ?? throw new ArgumentNullException(nameof(providers));
             _nonInteractive = nonInteractive;
+            HandlesDefaultCredentials = handlesDefaultCredentials;
         }
 
 

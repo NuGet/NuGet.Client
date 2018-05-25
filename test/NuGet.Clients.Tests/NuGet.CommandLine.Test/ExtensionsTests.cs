@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.Test
                     "hello",
                     true);
 
-                Assert.Equal("Hello!" + Environment.NewLine, Util.TrimMSBuildDiscoveryAutoDetectionMessage(result.Item2));
+                Assert.Equal("Hello!" + Environment.NewLine, result.Item2);
             }
         }
     }
