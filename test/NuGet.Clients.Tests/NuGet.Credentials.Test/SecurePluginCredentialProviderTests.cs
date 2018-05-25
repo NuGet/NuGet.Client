@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Threading;
 using Moq;
 using NuGet.Common;
@@ -65,7 +66,7 @@ namespace NuGet.Credentials.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void TryCreate_ReturnsValidCredentials()
+        public void GetCredentialsAsync_ReturnsValidCredentials()
         {
             var uri = new Uri("https://api.nuget.org/v3/index.json");
             var authUsername = "username";
@@ -118,7 +119,7 @@ namespace NuGet.Credentials.Test
                 sourceUri: null,
                 operationClaims: new[] { OperationClaim.DownloadPackage },
                 connectionOptions: ConnectionOptions.CreateDefault(),
-                pluginVersion: Protocol.Plugins.ProtocolConstants.CurrentVersion,
+                pluginVersion: ProtocolConstants.CurrentVersion,
                 uri: uri,
                 authenticationUsername: authUsername,
                 authenticationPassword: authPassword,
@@ -151,7 +152,7 @@ namespace NuGet.Credentials.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void TryCreate_DoesntDisposeOfMultiOperationPlugin()
+        public void GetCredentialsAsync_ReturnsValidCredentialsFromMultiOperationClaim()
         {
             var uri = new Uri("https://api.nuget.org/v3/index.json");
             var authUsername = "username";
@@ -161,7 +162,7 @@ namespace NuGet.Credentials.Test
                 sourceUri: null,
                 operationClaims: new[] { OperationClaim.Authentication, OperationClaim.DownloadPackage },
                 connectionOptions: ConnectionOptions.CreateDefault(),
-                pluginVersion: Protocol.Plugins.ProtocolConstants.CurrentVersion,
+                pluginVersion: ProtocolConstants.CurrentVersion,
                 uri: uri,
                 authenticationUsername: authUsername,
                 authenticationPassword: authPassword,
@@ -190,6 +191,55 @@ namespace NuGet.Credentials.Test
                 Assert.Equal(authPassword, credentialResponse.Credentials.GetCredential(uri, null).Password);
             }
         }
+
+        [PlatformFact(Platform.Windows)]
+        public void TryCreate_SetsProxyCredentials()
+        {
+            var uri = new Uri("https://api.nuget.org/v3/index.json");
+            var authUsername = "username";
+            var authPassword = "password";
+            var proxyUsername = "proxyUsername";
+            var proxyPassword = "proxyPassword";
+
+            var expectation = new TestExpectation(
+                serviceIndexJson: null,
+                sourceUri: null,
+                operationClaims: new[] { OperationClaim.Authentication },
+                connectionOptions: ConnectionOptions.CreateDefault(),
+                pluginVersion: ProtocolConstants.CurrentVersion,
+                uri: uri,
+                authenticationUsername: authUsername,
+                authenticationPassword: authPassword,
+                success: true,
+                proxyUsername: proxyUsername,
+                proxyPassword: proxyPassword
+                );
+
+            using (var test = new PluginManagerMock(
+                pluginFilePath: "a",
+                pluginFileState: PluginFileState.Valid,
+                expectations: expectation))
+            {
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", PluginFileState.Valid));
+                var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, NullLogger.Instance);
+                var proxy = new System.Net.WebProxy()
+                {
+                    Credentials = new NetworkCredential(proxyUsername, proxyPassword)
+                };
+                var credType = CredentialRequestType.Unauthorized;
+                var message = "nothing";
+                var isRetry = false;
+                var isInteractive = false;
+                var token = CancellationToken.None;
+                var credentialResponse = provider.GetAsync(uri, proxy, credType, message, isRetry, isInteractive, token).Result;
+
+                Assert.True(credentialResponse.Status == CredentialStatus.Success);
+                Assert.NotNull(credentialResponse.Credentials);
+                Assert.Equal(authUsername, credentialResponse.Credentials.GetCredential(uri, null).UserName);
+                Assert.Equal(authPassword, credentialResponse.Credentials.GetCredential(uri, null).Password);
+            }
+        }
+
 
         private static PluginDiscoveryResult CreatePluginDiscoveryResult(PluginFileState pluginState = PluginFileState.Valid)
         {

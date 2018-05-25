@@ -27,6 +27,8 @@ namespace NuGet.Credentials.Test
         public string AuthenticationUsername { get; }
         public string AuthenticationPassword { get; }
         public bool Success { get; }
+        public string ProxyUsername { get; }
+        public string ProxyPassword { get; }
 
         internal TestExpectation(
             string serviceIndexJson,
@@ -37,7 +39,9 @@ namespace NuGet.Credentials.Test
             Uri uri,
             string authenticationUsername,
             string authenticationPassword,
-            bool success
+            bool success,
+            string proxyUsername = null,
+            string proxyPassword = null
             )
         {
             var serviceIndex = string.IsNullOrEmpty(serviceIndexJson)
@@ -51,6 +55,8 @@ namespace NuGet.Credentials.Test
             AuthenticationUsername = authenticationUsername;
             AuthenticationPassword = authenticationPassword;
             Success = success;
+            ProxyPassword = proxyPassword;
+            ProxyUsername = proxyUsername;
         }
     }
 
@@ -102,6 +108,15 @@ namespace NuGet.Credentials.Test
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new GetOperationClaimsResponse(expectations.OperationClaims.ToArray()));
 
+            if (expectations.ProxyUsername != null && expectations.ProxyPassword != null)
+            {
+                _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<SetCredentialsRequest, SetCredentialsResponse>(
+                    It.Is<MessageMethod>(m => m == MessageMethod.SetCredentials),
+                    It.Is<SetCredentialsRequest>(e => e.PackageSourceRepository.Equals(expectations.Uri.AbsolutePath) && e.Password == null && e.Username == null && e.ProxyPassword.Equals(expectations.ProxyPassword) && e.ProxyUsername.Equals(expectations.ProxyUsername)),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new SetCredentialsResponse(MessageResponseCode.Success));
+            }
+
             if (_expectations.Success)
             {
                 _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
@@ -137,6 +152,15 @@ namespace NuGet.Credentials.Test
                         It.Is<MessageMethod>(m => m == MessageMethod.GetAuthenticationCredentials),
                         It.IsAny<GetAuthenticationCredentialsRequest>(),
                         It.IsAny<CancellationToken>()), Times.Once());
+            }
+
+            if (_expectations.ProxyUsername != null && _expectations.ProxyPassword != null)
+            {
+                _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<SetCredentialsRequest, SetCredentialsResponse>(
+                    It.Is<MessageMethod>(m => m == MessageMethod.SetCredentials),
+                    It.Is<SetCredentialsRequest>(e => e.PackageSourceRepository.Equals(_expectations.Uri.AbsolutePath) && e.Password == null && e.Username == null && e.ProxyPassword.Equals(_expectations.ProxyPassword) && e.ProxyUsername.Equals(_expectations.ProxyUsername)),
+                    It.IsAny<CancellationToken>()),
+                Times.Once());
             }
 
             _connection.Verify();
@@ -188,6 +212,11 @@ namespace NuGet.Credentials.Test
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new InitializeResponse(MessageResponseCode.Success));
 
+            _connection.Setup(x => x.MessageDispatcher.RequestHandlers.AddOrUpdate(
+                    It.Is<MessageMethod>(m => m == MessageMethod.Log),
+                    It.IsAny<Func<IRequestHandler>>(),
+                    It.IsAny<Func<IRequestHandler, IRequestHandler>>()));
+
         }
 
         private void EnsurePluginSetupCalls()
@@ -198,6 +227,7 @@ namespace NuGet.Credentials.Test
             _plugin.SetupGet(x => x.Id)
                                 .Returns("id");
         }
+
         private void EnsureFactorySetupCalls(string pluginFilePath)
         {
             _factory.Setup(x => x.Dispose());
