@@ -122,22 +122,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-#if VS14
                 return false;
-#else
-                _threadingService.ThrowIfNotOnUIThread();
-
-                object isDeferred;
-                if (ErrorHandler.Failed(VsHierarchy.GetProperty(
-                    (uint)VSConstants.VSITEMID.Root,
-                    (int)__VSHPROPID9.VSHPROPID_IsDeferred,
-                    out isDeferred)))
-                {
-                    return false;
-                }
-
-                return object.Equals(true, isDeferred);
-#endif
             }
         }
 
