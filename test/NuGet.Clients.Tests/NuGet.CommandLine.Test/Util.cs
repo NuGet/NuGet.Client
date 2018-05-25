@@ -28,7 +28,7 @@ namespace NuGet.CommandLine.Test
         {
             return GetResource("NuGet.CommandLine.Test.compiler.resources.mockserver.xml");
         }
-        
+
         public static string GetResource(string name)
         {
             using (var reader = new StreamReader(typeof(Util).GetTypeInfo().Assembly.GetManifestResourceStream(name)))
@@ -233,7 +233,7 @@ namespace NuGet.CommandLine.Test
 
             if (contentFiles == null || contentFiles.Length == 0)
             {
-                packageBuilder.Files.Add(CreatePackageFile(Path.Combine("content","test1.txt")));
+                packageBuilder.Files.Add(CreatePackageFile(Path.Combine("content", "test1.txt")));
             }
             else
             {
@@ -1162,15 +1162,6 @@ EndProject");
         {
             // Simply test the extension as that is all we care about
             return string.Equals(Path.GetExtension(configFileName), ".json", StringComparison.OrdinalIgnoreCase);
-        }
-
-        public static string TrimMSBuildDiscoveryAutoDetectionMessage(string message)
-        {
-            if (message != null && message.StartsWith("MSBuild auto-detection"))
-            {
-                return message.Substring(message.IndexOf("\n") + 1);
-            }
-            return message;
         }
     }
 }

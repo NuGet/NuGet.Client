@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
@@ -29,19 +28,10 @@ namespace NuGet.Protocol
         private Dictionary<string, AmbientAuthenticationState> _authStates = new Dictionary<string, AmbientAuthenticationState>();
         private HttpSourceCredentials _credentials;
 
-        /// <summary>
-        /// Creates a http source authentication hnadler
-        /// </summary>
-        /// <param name="packageSource"></param>
-        /// <param name="clientHandler"></param>
-        /// <param name="credentialService"></param>
-        /// <param name="useDefaultNetworkCredentials"></param>
-        /// <remarks>The useDefaultNetworkCredentials value needs to be evaluated by calling the CredentialService.HandlesDefaultCredentialsAsync() method. For performance considerations that method was made async, and can't be executed in the constructor</remarks>
         public HttpSourceAuthenticationHandler(
             PackageSource packageSource,
             HttpClientHandler clientHandler,
-            ICredentialService credentialService,
-            bool useDefaultNetworkCredentials)
+            ICredentialService credentialService)
             : base(clientHandler)
         {
             _packageSource = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
@@ -51,7 +41,8 @@ namespace NuGet.Protocol
             _credentialService = credentialService;
 
             // Create a new wrapper for ICredentials that can be modified
-            if (useDefaultNetworkCredentials)
+
+            if (_credentialService == null || !_credentialService.HandlesDefaultCredentials)
             {
                 // This is used to match the value of HttpClientHandler.UseDefaultCredentials = true
                 _credentials = new HttpSourceCredentials(CredentialCache.DefaultNetworkCredentials);
@@ -61,10 +52,11 @@ namespace NuGet.Protocol
                 _credentials = new HttpSourceCredentials();
             }
 
-            if (packageSource.Credentials != null && packageSource.Credentials.IsValid())
+            if (packageSource.Credentials != null &&
+                packageSource.Credentials.IsValid())
             {
-                var networkCredential = new NetworkCredential(packageSource.Credentials.Username, packageSource.Credentials.Password);
-                _credentials.Credentials = networkCredential;
+                var credentials = new NetworkCredential(packageSource.Credentials.Username, packageSource.Credentials.Password);
+                _credentials.Credentials = credentials;
             }
 
             _clientHandler.Credentials = _credentials;
@@ -167,7 +159,7 @@ namespace NuGet.Protocol
                         Strings.Http_CredentialsForForbidden,
                         _packageSource.Source);
                 }
-                
+
                 var promptCredentials = await PromptForCredentialsAsync(
                     type,
                     message,
@@ -225,7 +217,7 @@ namespace NuGet.Protocol
 
                 promptCredentials = await _credentialService
                     .GetCredentialsAsync(_packageSource.SourceUri, proxy, type, message, token);
-                
+
                 if (promptCredentials == null)
                 {
                     // If this is the case, this means none of the credential providers were able to
@@ -248,8 +240,8 @@ namespace NuGet.Protocol
                 // If this is the case, this means there was a fatal exception when interacting
                 // with the credential service (or its underlying credential providers). Either way,
                 // block asking for credentials for the live of this operation.
-                log.LogError(ExceptionUtilities.DisplayMessage(e));                
-                promptCredentials = null;                
+                log.LogError(ExceptionUtilities.DisplayMessage(e));
+                promptCredentials = null;
                 authState.Block();
             }
             finally

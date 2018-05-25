@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,11 +8,11 @@ namespace NuGet.Protocol.Plugins
 {
     public static class PluginDiscoveryUtility
     {
-        public static string InternalPluginDiscoveryRoot { get; set; }
+        public static Lazy<string> InternalPluginDiscoveryRoot { get; set; }
 
         public static string GetInternalPlugins()
         {
-            var rootDirectory = InternalPluginDiscoveryRoot ?? System.Reflection.Assembly.GetEntryAssembly()?.Location;;
+            var rootDirectory = InternalPluginDiscoveryRoot.Value ?? System.Reflection.Assembly.GetEntryAssembly()?.Location;
 
             return rootDirectory ?? Path.GetDirectoryName(rootDirectory);
         }

@@ -49,7 +49,7 @@ namespace NuGet.Commands
             if (HttpHandlerResourceV3.CredentialService == null)
             {
                 var providers = new AsyncLazy<IEnumerable<ICredentialProvider>>( async () =>  await GetCredentialProvidersAsync(logger));
-                HttpHandlerResourceV3.CredentialService = new Lazy<ICredentialService>(() => new CredentialService(providers, nonInteractive: false));
+                HttpHandlerResourceV3.CredentialService = new Lazy<ICredentialService>(() => new CredentialService(providers, nonInteractive: false, handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders));
             }
         }
 
