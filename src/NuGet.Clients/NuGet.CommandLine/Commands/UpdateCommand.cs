@@ -1,4 +1,4 @@
-extern alias CoreV2;
+﻿extern alias CoreV2;
 
 using System;
 using System.Collections.Generic;
@@ -217,12 +217,18 @@ namespace NuGet.CommandLine
 
         private static string GetPackagesConfigPath(string path)
         {
-            if (path.EndsWith(Constants.PackageReferenceFile, StringComparison.OrdinalIgnoreCase))
+            if (IsValidConfigFileName(Path.GetFileName(path)))
             {
                 return Path.GetFullPath(path);
             }
 
             return null;
+        }
+
+        private static bool IsValidConfigFileName(string configName)
+        {
+            return configName.StartsWith(Constants.PackageReferenceFileStart, StringComparison.OrdinalIgnoreCase)
+                    && configName.EndsWith(Constants.PackageReferenceFileEnd, StringComparison.OrdinalIgnoreCase);
         }
 
         private IReadOnlyCollection<Configuration.PackageSource> GetPackageSources()

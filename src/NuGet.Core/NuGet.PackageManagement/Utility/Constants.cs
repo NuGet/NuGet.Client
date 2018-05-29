@@ -14,6 +14,8 @@ namespace NuGet.ProjectManagement
     {
         public static readonly string BinDirectory = "bin";
         public static readonly string PackageReferenceFile = "packages.config";
+        public static readonly string PackageReferenceFileStart = "packages.";
+        public static readonly string PackageReferenceFileEnd = ".config";
         public static readonly string MirroringReferenceFile = "mirroring.config";
         public static readonly string ReadmeFileName = "readme.txt";
 
