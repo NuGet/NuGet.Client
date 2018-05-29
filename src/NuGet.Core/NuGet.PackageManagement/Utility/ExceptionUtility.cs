@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,21 @@ namespace NuGet.PackageManagement
 {
     public static class ExceptionUtility
     {
+        public static Exception GetRootException(Exception exception)
+        {
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
+            while (exception.InnerException != null)
+            {
+                exception = exception.InnerException;
+            }
+
+            return exception;
+        }
+
         public static Exception Unwrap(Exception exception)
         {
             if (exception == null)
@@ -30,5 +45,6 @@ namespace NuGet.PackageManagement
 
             return exception;
         }
+
     }
 }

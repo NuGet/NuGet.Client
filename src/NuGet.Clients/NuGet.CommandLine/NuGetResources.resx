@@ -6158,4 +6158,13 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="ConsolePasswordProvider_PromptForPassword" xml:space="preserve">
     <value>Password: </value>
   </data>
+  <data name="Warning_LongPath_DisabledPolicy" xml:space="preserve">
+    <value>Please enbale long file path support in local group policy. Fore more details, please refer to https://aka.ms/nuget-long-path.</value>
+  </data>
+  <data name="Warning_LongPath_UnsupportedNetFramework" xml:space="preserve">
+    <value>Please install .NET Framework 4.6.2 or above that supports long file paths. Fore more details, please refer to https://aka.ms/nuget-long-path.</value>
+  </data>
+  <data name="Warning_LongPath_UnsupportedOS" xml:space="preserve">
+    <value>Long file path is currently only supported on Windows 10. Fore more details, please refer to https://aka.ms/nuget-long-path.</value>
+  </data>
 </root>

@@ -1657,6 +1657,31 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public async Task InstallCommand_LongPathPackage()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageA = new SimpleTestPackageContext("a", "1.0.0");
+                packageA.AddFile(@"content/2.5.6/core/store/x64/netcoreapp2.0/microsoft.extensions.configuration.environmentvariables/2.0.0/lib/netstandard2.0/Microsoft.Extensions.Configuration.EnvironmentVariables.dll ");
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA);
+
+                var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
+
+
+                // Act
+                var r1 = RunInstall(pathContext, "a", 0, "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot);
+
+                var nupkgPath = pathResolver.GetInstalledPackageFilePath(new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+
+                // Assert
+                r1.Success.Should().BeTrue();
+                File.Exists(nupkgPath).Should().BeTrue();
+            }
+        }
+
         public static CommandRunnerResult RunInstall(SimpleTestPathContext pathContext, string input, int expectedExitCode = 0, params string[] additionalArgs)
         {
             var nugetexe = Util.GetNuGetExePath();

@@ -86,6 +86,8 @@ $regKeyNuGet = "HKLM:SOFTWARE\Microsoft\StrongName\Verification\*,31bf3856ad364e
 $regKeyNuGet32 = "HKLM:SOFTWARE\Wow6432Node\Microsoft\StrongName\Verification\*,31bf3856ad364e35"
 
 $has32bitNode = Test-Path "HKLM:SOFTWARE\Wow6432Node"
+$regKeyFileSystem = "HKLM:SYSTEM\CurrentControlSet\Control\FileSystem"
+$enableLongPathSupport = "LongPathsEnabled"
 
 # update submodule NuGet.Build.Localization
 $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
@@ -120,6 +122,12 @@ if (-not (Test-Path $regKeyNuGet) -or ($has32bitNode -and -not (Test-Path $regKe
     {
         New-Item -Path (Split-Path $regKeyNuGet32) -Name (Split-Path -Leaf $regKeyNuGet32) -Force | Out-Null
     }
+}
+
+if (-not (Test-Path $regKeyFileSystem)) 
+{
+	Write-Host "Enabling long path support on the build machine"
+	Set-ItemProperty -Path $regKeyFileSystem -Name $enableLongPathSupport -Value 1
 }
 
 

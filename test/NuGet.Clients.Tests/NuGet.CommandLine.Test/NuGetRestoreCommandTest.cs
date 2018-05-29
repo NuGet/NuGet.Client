@@ -20,6 +20,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Protocol;
 using NuGet.Common;
 using Test.Utility;
+using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.Test
 {
@@ -2296,6 +2297,44 @@ EndProject";
                 Assert.True(_successCode == result.ExitCode, result.AllOutput);
                 Assert.True(result.Success);
                 Assert.True(File.Exists(expectedFilePath));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_LongPathPackage()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                Directory.CreateDirectory(repositoryPath);
+                var aPackage = Util.CreateTestPackage(
+                    "packageA",
+                    "1.0.0",
+                    repositoryPath,
+                    new List<NuGetFramework> { NuGetFramework.Parse("net45") },
+                    @"2.5.6/core/store/x64/netcoreapp2.0/microsoft.extensions.configuration.environmentvariables/2.0.0/lib/netstandard2.0/Microsoft.Extensions.Configuration.EnvironmentVariables.dll"
+                    );
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""packageA"" version=""1.0.0"" targetFramework=""net45"" />
+</packages>");
+
+                var args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_successCode, r.Item1);
+                var packageFileA = Path.Combine(workingPath, @"outputDir", "packageA.1.0.0", "packageA.1.0.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
             }
         }
 
