@@ -162,6 +162,8 @@ namespace NuGet.VisualStudio
 
             try
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 // get the VSProjectAdapter instance which will be used to retrieve MSBuild properties
                 var projectAdapter = await _vsProjectAdapterProvider.Value.CreateAdapterForFullyLoadedProjectAsync(dteProject);
 
