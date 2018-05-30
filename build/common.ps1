@@ -410,14 +410,14 @@ Function Set-DelaySigning {
 }
 
 Function Get-BuildNumber() {
-    $SemanticVersionDate = '2017-10-12'
+    $SemanticVersionDate = '2018-05-30' # Date format - yyyy-mm-dd
     try {
         [uint16](((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5)
     }
     catch {
         # Build number is a 16-bit integer. The limitation is imposed by VERSIONINFO.
         # https://msdn.microsoft.com/en-gb/library/aa381058.aspx
-        Error-Log "Build number is out of range! Consider advancing SemanticVersionDate." -Fatal
+        Error-Log "Build number is out of range! Consider advancing SemanticVersionDate in common.ps1." -Fatal
     }
 }
 
