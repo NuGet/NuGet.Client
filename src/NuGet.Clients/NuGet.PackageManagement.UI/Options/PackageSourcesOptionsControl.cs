@@ -332,6 +332,7 @@ namespace NuGet.Options
 
             // auto-select the newly-added item
             PackageSourcesListBox.SelectedIndex = PackageSourcesListBox.Items.Count - 1;
+            UpdateUI();
         }
 
         private Configuration.PackageSource CreateNewPackageSource()
