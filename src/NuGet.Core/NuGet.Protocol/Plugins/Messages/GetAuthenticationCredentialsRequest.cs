@@ -34,14 +34,14 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         /// <param name="uri"></param>
         /// <param name="isRetry"></param>
-        /// <param name="nonInteractive"></param>
+        /// <param name="isNonInteractive"></param>
         /// <exception cref="ArgumentNullException"> if <paramref name="uri"/> is null</exception>
         [JsonConstructor]
-        public GetAuthenticationCredentialsRequest(Uri uri, bool isRetry, bool nonInteractive)
+        public GetAuthenticationCredentialsRequest(Uri uri, bool isRetry, bool isNonInteractive)
         {
             Uri = uri ?? throw new ArgumentNullException(nameof(uri));
             IsRetry = isRetry;
-            IsNonInteractive = nonInteractive;
+            IsNonInteractive = isNonInteractive;
         }
     }
 }

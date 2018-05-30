@@ -77,7 +77,7 @@ namespace NuGet.Protocol.Plugins
         /// Either Username or Password (or both) must be set, and AuthTypes must either be null or contain at least
         /// one element
         /// </remarks>
-        public bool IsValid => ResponseCode == MessageResponseCode.Success && (!string.IsNullOrWhiteSpace(Username) || !string.IsNullOrWhiteSpace(Password))
+        public bool IsValid() => ResponseCode == MessageResponseCode.Success && (!string.IsNullOrWhiteSpace(Username) || !string.IsNullOrWhiteSpace(Password))
                                && (AuthenticationTypes == null || AuthenticationTypes.Any());
     }
 }
