@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,14 +26,7 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageSolutionDetailControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (DataContext is DetailControlModel)
-            {
-                _root.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                _root.Visibility = Visibility.Collapsed;
-            }
+            _root.Visibility = DataContext is DetailControlModel ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void ExecuteOpenLicenseLink(object sender, ExecutedRoutedEventArgs e)
@@ -67,50 +60,52 @@ namespace NuGet.PackageManagement.UI
 
         private void ProjectInstallButtonClicked(object sender, EventArgs e)
         {
-            var model = (DetailControlModel)DataContext;
+            var model = (PackageDetailControlModel)DataContext;
 
-            if (model.SelectedVersion == null)
+            if (model != null && model.SelectedVersion != null)
             {
-                return;
-            }
-
-            var userAction = UserAction.CreateInstallAction(
+                var userAction = UserAction.CreateInstallAction(
                 model.Id,
                 model.SelectedVersion.Version);
-            ExecuteUserAction(userAction, NuGetActionType.Install);
+
+                ExecuteUserAction(userAction, NuGetActionType.Install);
+            }
         }
 
         private void ProjectUninstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageDetailControlModel)DataContext;
-            var userAction = UserAction.CreateUnInstallAction(model.Id);
-            ExecuteUserAction(userAction, NuGetActionType.Uninstall);
-        }
 
+            if (model != null)
+            {
+                var userAction = UserAction.CreateUnInstallAction(model.Id);
+                ExecuteUserAction(userAction, NuGetActionType.Uninstall);
+            }
+        }
 
         private void SolutionInstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageSolutionDetailControlModel)DataContext;
 
-            if (model.SelectedVersion == null)
+            if (model != null && model.SelectedVersion != null)
             {
-                return;
+                var userAction = UserAction.CreateInstallAction(
+                    model.Id,
+                    model.SelectedVersion.Version);
+
+                ExecuteUserAction(userAction, NuGetActionType.Install);
             }
-
-            var userAction = UserAction.CreateInstallAction(
-                model.Id,
-                model.SelectedVersion.Version);
-
-            ExecuteUserAction(userAction, NuGetActionType.Install);
         }
 
         private void SolutionUninstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageSolutionDetailControlModel)DataContext;
 
-            var userAction = UserAction.CreateUnInstallAction(model.Id);
-
-            ExecuteUserAction(userAction, NuGetActionType.Uninstall);
+            if (model != null)
+            {
+                var userAction = UserAction.CreateUnInstallAction(model.Id);
+                ExecuteUserAction(userAction, NuGetActionType.Uninstall);
+            }
         }
 
         private void ExecuteUserAction(UserAction action, NuGetActionType actionType)
@@ -141,7 +136,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerControl Control
         {
-            get { return _control; }
+            get => _control;
 
             set
             {
