@@ -160,7 +160,7 @@ namespace NuGet.Credentials
         private static CredentialResponse GetAuthenticationCredentialsResponseToCredentialResponse(GetAuthenticationCredentialsResponse credentialResponse)
         {
             CredentialResponse taskResponse;
-            if (credentialResponse.IsValid)
+            if (credentialResponse.IsValid())
             {
                 ICredentials result = new NetworkCredential(credentialResponse.Username, credentialResponse.Password);
                 if (credentialResponse.AuthenticationTypes != null)
