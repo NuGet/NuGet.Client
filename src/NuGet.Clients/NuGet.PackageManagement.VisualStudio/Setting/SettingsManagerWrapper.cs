@@ -1,52 +1,70 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     internal class SettingsManagerWrapper : ISettingsManager
     {
-        private readonly IVsSettingsManager _settingsManager;
+        private readonly AsyncLazy<IVsSettingsManager> _settingsManager;
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
-        public SettingsManagerWrapper(IServiceProvider serviceProvider)
+        public SettingsManagerWrapper(Microsoft.VisualStudio.Shell.IAsyncServiceProvider serviceProvider)
         {
-            _settingsManager = (IVsSettingsManager)serviceProvider.GetService(typeof(SVsSettingsManager));
-            Debug.Assert(_settingsManager != null);
+            _settingsManager = new AsyncLazy<IVsSettingsManager>(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var settingsManager =  await serviceProvider.GetServiceAsync<SVsSettingsManager, IVsSettingsManager>();
+                Assumes.Present(settingsManager);
+
+                return settingsManager;
+
+            }, NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public ISettingsStore GetReadOnlySettingsStore()
         {
-            IVsSettingsStore settingsStore;
-            int hr = _settingsManager.GetReadOnlySettingsStore((uint)__VsSettingsScope.SettingsScope_UserSettings, out settingsStore);
-            if (ErrorHandler.Succeeded(hr)
-                && settingsStore != null)
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                return new SettingsStoreWrapper(settingsStore);
-            }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            return null;
+                var settingsManager = await _settingsManager.GetValueAsync();
+
+                IVsSettingsStore settingsStore;
+                var hr = settingsManager.GetReadOnlySettingsStore((uint)__VsSettingsScope.SettingsScope_UserSettings, out settingsStore);
+                if (ErrorHandler.Succeeded(hr)
+                    && settingsStore != null)
+                {
+                    return new SettingsStoreWrapper(settingsStore);
+                }
+
+                return null;
+            });
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public IWritableSettingsStore GetWritableSettingsStore()
         {
-            IVsWritableSettingsStore settingsStore;
-
-            int hr = _settingsManager.GetWritableSettingsStore((uint)__VsSettingsScope.SettingsScope_UserSettings, out settingsStore);
-            if (ErrorHandler.Succeeded(hr)
-                && settingsStore != null)
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                return new WritableSettingsStoreWrapper(settingsStore);
-            }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            return null;
+                var settingsManager = await _settingsManager.GetValueAsync();
+
+                IVsWritableSettingsStore settingsStore;
+                var hr = settingsManager.GetWritableSettingsStore((uint)__VsSettingsScope.SettingsScope_UserSettings, out settingsStore);
+                if (ErrorHandler.Succeeded(hr)
+                    && settingsStore != null)
+                {
+                    return new WritableSettingsStoreWrapper(settingsStore);
+                }
+
+                return null;
+            });
         }
     }
 }

@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.UI
                 Resources.WindowTitle_NuGetMigrator,
                 NuGetProject.GetUniqueNameOrName(nuGetProject));
 
-            using (var progressDialogSession = context.StartModalProgressDialog(windowTitle, progressDialogData, uiService))
+            using (var progressDialogSession = await context.StartModalProgressDialogAsync(windowTitle, progressDialogData, uiService))
             {
                 backupPath = await PackagesConfigToPackageReferenceMigrator.DoUpgradeAsync(
                     context,

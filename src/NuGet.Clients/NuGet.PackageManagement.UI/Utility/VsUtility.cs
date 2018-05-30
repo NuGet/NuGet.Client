@@ -1,16 +1,16 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.UI
 {
     public static class VsUtility
     {
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public static IEnumerable<IVsWindowFrame> GetDocumentWindows(IVsUIShell uiShell)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             IEnumWindowFrames documentWindowEnumerator;
             var hr = uiShell.GetDocumentWindowEnum(out documentWindowEnumerator);
             if (documentWindowEnumerator == null)
@@ -28,9 +28,10 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Gets the package manager control hosted in the window frame.
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public static PackageManagerControl GetPackageManagerControl(IVsWindowFrame windowFrame)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             object property;
             var hr = windowFrame.GetProperty(
                 (int)__VSFPROPID.VSFPROPID_DocView,
