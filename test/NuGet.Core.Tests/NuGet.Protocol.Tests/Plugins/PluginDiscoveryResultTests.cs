@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,7 @@ namespace NuGet.Protocol.Plugins.Tests
         public void Constructor_ThrowsForNullPluginFile()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PluginDiscoveryResult(pluginFile: null, message: "a"));
+                () => new PluginDiscoveryResult(pluginFile: null));
 
             Assert.Equal("pluginFile", exception.ParamName);
         }
@@ -20,12 +20,12 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void Constructor_InitializesProperties()
         {
-            var pluginFile = new PluginFile(filePath: "a", state: PluginFileState.InvalidEmbeddedSignature);
+            var pluginFile = new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.InvalidEmbeddedSignature));
 
-            var result = new PluginDiscoveryResult(pluginFile, message: "b");
+            var result = new PluginDiscoveryResult(pluginFile);
 
             Assert.Same(pluginFile, result.PluginFile);
-            Assert.Equal("b", result.Message);
         }
+        // TODO NK - Add message tests
     }
 }

@@ -92,39 +92,8 @@ namespace NuGet.Protocol.Plugins
                 for (var i = 0; i < _pluginFiles.Count; ++i)
                 {
                     var pluginFile = _pluginFiles[i];
-                    string message = null;
 
-                    switch (pluginFile.State)
-                    {
-                        case PluginFileState.Valid:
-                            break;
-
-                        case PluginFileState.NotFound:
-                            message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Plugin_FileNotFound,
-                                pluginFile.Path);
-                            break;
-
-                        case PluginFileState.InvalidFilePath:
-                            message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Plugin_InvalidPluginFilePath,
-                                pluginFile.Path);
-                            break;
-
-                        case PluginFileState.InvalidEmbeddedSignature:
-                            message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Plugin_InvalidEmbeddedSignature,
-                                pluginFile.Path);
-                            break;
-
-                        default:
-                            throw new NotImplementedException();
-                    }
-
-                    var result = new PluginDiscoveryResult(pluginFile, message);
+                    var result = new PluginDiscoveryResult(pluginFile);
 
                     results.Add(result);
                 }
@@ -155,19 +124,18 @@ namespace NuGet.Protocol.Plugins
                 {
                     if (File.Exists(filePath))
                     {
-                        var isValid = _verifier.IsValid(filePath);
-                        var state = isValid ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature;
+                        var state = new Lazy<PluginFileState> (() => _verifier.IsValid(filePath) ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature);
 
                         files.Add(new PluginFile(filePath, state));
                     }
                     else
                     {
-                        files.Add(new PluginFile(filePath, PluginFileState.NotFound));
+                        files.Add(new PluginFile(filePath, new Lazy<PluginFileState> ( () => PluginFileState.NotFound)));
                     }
                 }
                 else
                 {
-                    files.Add(new PluginFile(filePath, PluginFileState.InvalidFilePath));
+                    files.Add(new PluginFile(filePath, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath)));
                 }
             }
 

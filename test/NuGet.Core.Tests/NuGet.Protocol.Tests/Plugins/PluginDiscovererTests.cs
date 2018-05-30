@@ -137,23 +137,23 @@ namespace NuGet.Protocol.Plugins.Tests
                     Assert.Equal(5, results.Length);
 
                     Assert.Equal(pluginPaths[0], results[0].PluginFile.Path);
-                    Assert.Equal(PluginFileState.NotFound, results[0].PluginFile.State);
+                    Assert.Equal(PluginFileState.NotFound, results[0].PluginFile.State.Value);
                     Assert.Equal($"A plugin was not found at path '{pluginPaths[0]}'.", results[0].Message);
 
                     Assert.Equal(pluginPaths[1], results[1].PluginFile.Path);
-                    Assert.Equal(PluginFileState.InvalidEmbeddedSignature, results[1].PluginFile.State);
+                    Assert.Equal(PluginFileState.InvalidEmbeddedSignature, results[1].PluginFile.State.Value);
                     Assert.Equal($"The plugin at '{pluginPaths[1]}' did not have a valid embedded signature.", results[1].Message);
 
                     Assert.Equal(pluginPaths[2], results[2].PluginFile.Path);
-                    Assert.Equal(PluginFileState.Valid, results[2].PluginFile.State);
+                    Assert.Equal(PluginFileState.Valid, results[2].PluginFile.State.Value);
                     Assert.Null(results[2].Message);
 
                     Assert.Equal(pluginPaths[3], results[3].PluginFile.Path);
-                    Assert.Equal(PluginFileState.NotFound, results[3].PluginFile.State);
+                    Assert.Equal(PluginFileState.NotFound, results[3].PluginFile.State.Value);
                     Assert.Equal($"A plugin was not found at path '{pluginPaths[3]}'.", results[3].Message);
 
                     Assert.Equal("e", results[4].PluginFile.Path);
-                    Assert.Equal(PluginFileState.InvalidFilePath, results[4].PluginFile.State);
+                    Assert.Equal(PluginFileState.InvalidFilePath, results[4].PluginFile.State.Value);
                     Assert.Equal($"The plugin file path 'e' is invalid.", results[4].Message);
                 }
             }
@@ -175,7 +175,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 Assert.Equal(1, results.Length);
                 Assert.Equal(pluginPath, results[0].PluginFile.Path);
-                Assert.Equal(PluginFileState.InvalidFilePath, results[0].PluginFile.State);
+                Assert.Equal(PluginFileState.InvalidFilePath, results[0].PluginFile.State.Value);
             }
         }
 

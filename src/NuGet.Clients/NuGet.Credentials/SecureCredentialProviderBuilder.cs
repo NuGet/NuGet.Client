@@ -42,15 +42,8 @@ namespace NuGet.Credentials
             var plugins = new List<ICredentialProvider>();
             foreach (var pluginDiscoveryResult in availablePlugins)
             {
-                if (pluginDiscoveryResult.PluginFile.State == PluginFileState.Valid)
-                {
-                    _logger.LogDebug($"Will attempt to use {pluginDiscoveryResult.PluginFile.Path} as a credential provider");
-                    plugins.Add(new SecurePluginCredentialProvider(_pluginManager, pluginDiscoveryResult, _logger));
-                }
-                else
-                {
-                    _logger.LogDebug($"Skipping {pluginDiscoveryResult.PluginFile.Path} as a credential provider.\n{pluginDiscoveryResult.Message}");
-                }
+                _logger.LogDebug($"Will attempt to use {pluginDiscoveryResult.PluginFile.Path} as a credential provider");
+                plugins.Add(new SecurePluginCredentialProvider(_pluginManager, pluginDiscoveryResult, _logger));
             }
 
             return plugins;

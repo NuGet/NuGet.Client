@@ -46,16 +46,8 @@ namespace NuGet.Credentials
         /// <exception cref="ArgumentException">if plugin file is not valid</exception>
         public SecurePluginCredentialProvider(IPluginManager pluginManager, PluginDiscoveryResult pluginDiscoveryResult, ILogger logger)
         {
-            if (pluginDiscoveryResult == null)
-            {
-                throw new ArgumentNullException(nameof(pluginDiscoveryResult));
-            }
-            if (pluginDiscoveryResult.PluginFile.State != PluginFileState.Valid)
-            {
-                throw new ArgumentException(string.Format(Resources.SecureCredentialProvider_InvalidPluginFile, pluginDiscoveryResult.PluginFile.State, pluginDiscoveryResult.Message), nameof(pluginDiscoveryResult));
-            }
             _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
-            _discoveredPlugin = pluginDiscoveryResult;
+            _discoveredPlugin = pluginDiscoveryResult ?? throw new ArgumentNullException(nameof(pluginDiscoveryResult));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             Id = $"{nameof(SecurePluginCredentialProvider)}_{pluginDiscoveryResult.PluginFile.Path}";
         }

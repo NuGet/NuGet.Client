@@ -117,7 +117,7 @@ namespace NuGet.Credentials.Test
                 var results = new List<PluginDiscoveryResult>();
                 foreach (var plugin in plugins)
                 {
-                    var file = new PluginFile(plugin.Key, plugin.Value);
+                    var file = new PluginFile(plugin.Key, new Lazy<PluginFileState>(() => plugin.Value));
                     results.Add(new PluginDiscoveryResult(file));
                 }
 
