@@ -87,13 +87,21 @@ namespace NuGet.ProjectModel
         /// </summary>
         public static WarningProperties GetWarningProperties(string treatWarningsAsErrors, string warningsAsErrors, string noWarn)
         {
+            return GetWarningProperties(treatWarningsAsErrors, MSBuildStringUtility.GetNuGetLogCodes(warningsAsErrors), (MSBuildStringUtility.GetNuGetLogCodes(noWarn)));
+        }
+
+        /// <summary>
+        /// Create warning properties from NuGetLogCode collection.
+        /// </summary>
+        public static WarningProperties GetWarningProperties(string treatWarningsAsErrors, IEnumerable<NuGetLogCode> warningsAsErrors, IEnumerable<NuGetLogCode> noWarn)
+        {
             var props = new WarningProperties()
             {
                 AllWarningsAsErrors = MSBuildStringUtility.IsTrue(treatWarningsAsErrors)
             };
 
-            props.WarningsAsErrors.UnionWith(MSBuildStringUtility.GetNuGetLogCodes(warningsAsErrors));
-            props.NoWarn.UnionWith(MSBuildStringUtility.GetNuGetLogCodes(noWarn));
+            props.WarningsAsErrors.UnionWith(warningsAsErrors);
+            props.NoWarn.UnionWith(noWarn);
 
             return props;
         }
