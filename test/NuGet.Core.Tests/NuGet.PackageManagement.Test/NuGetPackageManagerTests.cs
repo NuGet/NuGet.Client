@@ -6370,6 +6370,58 @@ namespace NuGet.Test
             }
         }
 
+        [Fact]
+        public async Task TestPacMan_PreviewUpdatePackage_UnlistedPackage()
+        {
+            // Arrange
+
+            // Set up Package Source
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, false, null)
+            };
+
+            var sourceRepositoryProvider = CreateSource(packages);
+
+            // Set up NuGetProject
+            var fwk45 = NuGetFramework.Parse("net45");
+
+            var installedPackage1 = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+
+            var installedPackages = new List<NuGet.Packaging.PackageReference>
+            {
+                new NuGet.Packaging.PackageReference(installedPackage1, fwk45, true)
+            };
+
+            var nuGetProject = new TestNuGetProject(installedPackages);
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager(true))
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                // Main Act
+                var targetPackageId = "a";
+
+                var result = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                    targetPackageId,
+                    new List<NuGetProject> { nuGetProject },
+                    new ResolutionContext(DependencyBehavior.Lowest, false, false, VersionConstraints.None),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None)).ToList();
+
+                // Assert
+                Assert.Equal(0, result.Count);
+            }
+        }
+
         private void VerifyPreviewActionsTelemetryEvents_PackagesConfig(IEnumerable<string> actual)
         {
             Assert.True(actual.Contains(TelemetryConstants.GatherDependencyStepName));
