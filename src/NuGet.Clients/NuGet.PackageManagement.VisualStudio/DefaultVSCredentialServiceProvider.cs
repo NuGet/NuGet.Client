@@ -84,11 +84,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Initialize the credential service.
-<<<<<<< HEAD
             var credentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => System.Threading.Tasks.Task.FromResult((IEnumerable<ICredentialProvider>)credentialProviders)), nonInteractive: false, handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
-=======
-            var credentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => System.Threading.Tasks.Task.FromResult((IEnumerable<ICredentialProvider>)credentialProviders)), nonInteractive: false);
->>>>>>> Optimize the credential provider discovery by making it lazy. Avoid plugin discovery/signature verification unless a 401 happens (#2208)
 
             return credentialService;
         }
