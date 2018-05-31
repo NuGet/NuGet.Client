@@ -1178,6 +1178,12 @@ namespace NuGet.PackageManagement
                         isUpdateAll);
                 }
 
+                // Prune unlisted versions if IncludeUnlisted flag is not set.
+                if (!resolutionContext.IncludeUnlisted)
+                {
+                    prunedAvailablePackages = prunedAvailablePackages.Where(p => p.Listed);
+                }
+
                 // Remove packages that do not meet the constraints specified in the UpdateConstrainst
                 prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);
 
