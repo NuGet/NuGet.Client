@@ -1,17 +1,11 @@
 ﻿<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <!--
-    Import the SDK props manually _after_ we've imported the build customizations that
-    set things like IntermediateOutputPath, OutputPath, etc. This is required due to
-    https://github.com/Microsoft/msbuild/issues/2245. Without applying this fix,
-    a reference to netstandard.dll is never brought in, and the build fails.
-  -->
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <Description>NuGet Package Management</Description>
     <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard2.0</TargetFrameworks>
+    <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1580;CS1574;CS1573</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
@@ -43,9 +37,6 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-  </ItemGroup>
-
   <ItemGroup>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -53,7 +44,6 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -62,9 +52,5 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <!--
-    See comment at the top of the project file about the SDK props.
-    The same logic applies here: we bring in SDK targets after customizing.
-  -->
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
