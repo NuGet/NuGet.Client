@@ -232,11 +232,13 @@ namespace NuGet.Options
         {
             // if user presses Enter after filling in Name/Source but doesn't click Update
             // the options will be closed without adding the source, try adding before closing
-            // Only apply if nothing was added
+            // Only apply if nothing was updated or the update was successfull
             var result = TryUpdateSource();
             if (result != TryUpdateSourceResults.NotUpdated
                 &&
-                result != TryUpdateSourceResults.Unchanged)
+                result != TryUpdateSourceResults.Unchanged
+                &&
+                result != TryUpdateSourceResults.Successful)
             {
                 return false;
             }
