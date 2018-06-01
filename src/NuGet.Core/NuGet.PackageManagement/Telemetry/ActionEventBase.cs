@@ -25,7 +25,6 @@ namespace NuGet.PackageManagement
             base(eventName, new Dictionary<string, object>
                 {
                     { nameof(OperationId), operationId },
-                    { nameof(ProjectIds), string.Join(",", projectIds) },
                     { nameof(PackagesCount), packageCount },
                     { nameof(Status), status },
                     { nameof(StartTime), startTime.ToString() },
@@ -34,11 +33,18 @@ namespace NuGet.PackageManagement
                     { nameof(ProjectsCount), projectIds.Length }
                 })
         {
+            ProjectIds = projectIds;
+
+            // log each project id separately so that it can be joined with ProjectInformation telemetry event
+            for (var i=0; i< projectIds.Length; i++)
+            {
+                this[$"ProjectId{i+1}"] = projectIds[i];
+            }
         }
 
         public string OperationId => (string)base[nameof(OperationId)];
 
-        public string ProjectIds => (string)base[nameof(ProjectIds)];
+        public string[] ProjectIds;
 
         public int PackagesCount => (int)base[nameof(PackagesCount)];
 
