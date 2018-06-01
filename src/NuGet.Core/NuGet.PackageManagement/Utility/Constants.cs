@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,8 +14,6 @@ namespace NuGet.ProjectManagement
     {
         public static readonly string BinDirectory = "bin";
         public static readonly string PackageReferenceFile = "packages.config";
-        public static readonly string PackageReferenceFileStart = "packages.";
-        public static readonly string PackageReferenceFileEnd = ".config";
         public static readonly string MirroringReferenceFile = "mirroring.config";
         public static readonly string ReadmeFileName = "readme.txt";
 
