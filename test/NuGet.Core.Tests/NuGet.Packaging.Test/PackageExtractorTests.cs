@@ -2693,9 +2693,12 @@ namespace NuGet.Packaging.Test
                     allowMultipleTimestamps: signedPackageVerifierSettings.AllowMultipleTimestamps,
                     allowNoTimestamp: signedPackageVerifierSettings.AllowNoTimestamp,
                     allowUnknownRevocation: signedPackageVerifierSettings.AllowUnknownRevocation,
+                    reportUnknownRevocation: signedPackageVerifierSettings.ReportUnknownRevocation,
                     allowNoClientCertificateList: signedPackageVerifierSettings.AllowNoClientCertificateList,
                     allowNoRepositoryCertificateList: false,
-                    alwaysVerifyCountersignature: signedPackageVerifierSettings.AlwaysVerifyCountersignature,
+                    verificationTarget: signedPackageVerifierSettings.VerificationTarget,
+                    signaturePlacement: signedPackageVerifierSettings.SignaturePlacement,
+                    repositoryCountersignatureVerificationBehavior: signedPackageVerifierSettings.RepositoryCountersignatureVerificationBehavior,
                     repoAllowListEntries: expectedAllowList,
                     clientAllowListEntries: signedPackageVerifierSettings.ClientCertificateList);
 
@@ -2763,9 +2766,12 @@ namespace NuGet.Packaging.Test
                     allowMultipleTimestamps: signedPackageVerifierSettings.AllowMultipleTimestamps,
                     allowNoTimestamp: signedPackageVerifierSettings.AllowNoTimestamp,
                     allowUnknownRevocation: signedPackageVerifierSettings.AllowUnknownRevocation,
+                    reportUnknownRevocation: signedPackageVerifierSettings.ReportUnknownRevocation,
                     allowNoClientCertificateList: signedPackageVerifierSettings.AllowNoClientCertificateList,
                     allowNoRepositoryCertificateList: false,
-                    alwaysVerifyCountersignature: signedPackageVerifierSettings.AlwaysVerifyCountersignature,
+                    verificationTarget: signedPackageVerifierSettings.VerificationTarget,
+                    signaturePlacement: signedPackageVerifierSettings.SignaturePlacement,
+                    repositoryCountersignatureVerificationBehavior: signedPackageVerifierSettings.RepositoryCountersignatureVerificationBehavior,
                     repoAllowListEntries: expectedAllowList,
                     clientAllowListEntries: signedPackageVerifierSettings.ClientCertificateList);
 

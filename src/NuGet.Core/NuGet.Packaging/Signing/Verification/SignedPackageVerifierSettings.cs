@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace NuGet.Packaging.Signing
 {
@@ -41,14 +43,14 @@ namespace NuGet.Packaging.Signing
         public bool AllowNoTimestamp { get; }
 
         /// <summary>
-        /// Always verify the countersignature if present
-        /// </summary>
-        public bool AlwaysVerifyCountersignature { get; }
-
-        /// <summary>
         /// Treat unknown revocation status as a warning instead of an error during verification.
         /// </summary>
         public bool AllowUnknownRevocation { get; }
+
+        /// <summary>
+        /// Report unknown revocation status.
+        /// </summary>
+        public bool ReportUnknownRevocation { get; }
 
         /// <summary>
         /// Allow an empty or null RepositoryCertificateList.
@@ -59,6 +61,21 @@ namespace NuGet.Packaging.Signing
         /// Allow an empty or null ClientCertificateList.
         /// </summary>
         public bool AllowNoClientCertificateList { get; }
+
+        /// <summary>
+        /// Gets the verification target(s).
+        /// </summary>
+        public VerificationTarget VerificationTarget { get; }
+
+        /// <summary>
+        /// Gets the placement of verification target(s).
+        /// </summary>
+        public SignaturePlacement SignaturePlacement { get; }
+
+        /// <summary>
+        /// Gets the repository countersignature verification behavior.
+        /// </summary>
+        public SignatureVerificationBehavior RepositoryCountersignatureVerificationBehavior { get; }
 
         /// <summary>
         /// Allowlist of repository certificates hashes.
@@ -78,10 +95,13 @@ namespace NuGet.Packaging.Signing
             bool allowMultipleTimestamps,
             bool allowNoTimestamp,
             bool allowUnknownRevocation,
+            bool reportUnknownRevocation,
             bool allowNoRepositoryCertificateList,
             bool allowNoClientCertificateList,
-            bool alwaysVerifyCountersignature)
-            : this (
+            VerificationTarget verificationTarget,
+            SignaturePlacement signaturePlacement,
+            SignatureVerificationBehavior repositoryCountersignatureVerificationBehavior)
+            : this(
                   allowUnsigned,
                   allowIllegal,
                   allowUntrusted,
@@ -89,9 +109,12 @@ namespace NuGet.Packaging.Signing
                   allowMultipleTimestamps,
                   allowNoTimestamp,
                   allowUnknownRevocation,
+                  reportUnknownRevocation,
                   allowNoRepositoryCertificateList,
                   allowNoClientCertificateList,
-                  alwaysVerifyCountersignature,
+                  verificationTarget,
+                  signaturePlacement,
+                  repositoryCountersignatureVerificationBehavior,
                   repoAllowListEntries: null,
                   clientAllowListEntries: null)
         {
@@ -105,12 +128,69 @@ namespace NuGet.Packaging.Signing
             bool allowMultipleTimestamps,
             bool allowNoTimestamp,
             bool allowUnknownRevocation,
+            bool reportUnknownRevocation,
             bool allowNoRepositoryCertificateList,
             bool allowNoClientCertificateList,
-            bool alwaysVerifyCountersignature,
+            VerificationTarget verificationTarget,
+            SignaturePlacement signaturePlacement,
+            SignatureVerificationBehavior repositoryCountersignatureVerificationBehavior,
             IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries)
         {
+            if (!Enum.IsDefined(typeof(VerificationTarget), verificationTarget))
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.UnrecognizedEnumValue,
+                        verificationTarget),
+                    nameof(verificationTarget));
+            }
+
+            if (!Enum.IsDefined(typeof(SignaturePlacement), signaturePlacement))
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.UnrecognizedEnumValue,
+                        signaturePlacement),
+                    nameof(signaturePlacement));
+            }
+
+            if (!Enum.IsDefined(typeof(SignatureVerificationBehavior), repositoryCountersignatureVerificationBehavior))
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.UnrecognizedEnumValue,
+                        repositoryCountersignatureVerificationBehavior),
+                    nameof(repositoryCountersignatureVerificationBehavior));
+            }
+
+            if ((signaturePlacement.HasFlag(SignaturePlacement.Countersignature) && !verificationTarget.HasFlag(VerificationTarget.Repository)) ||
+                (signaturePlacement == SignaturePlacement.Countersignature && verificationTarget != VerificationTarget.Repository))
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidArgumentCombination,
+                        nameof(verificationTarget),
+                        nameof(signaturePlacement)),
+                    nameof(signaturePlacement));
+            }
+
+            if ((repositoryCountersignatureVerificationBehavior == SignatureVerificationBehavior.Never) ==
+                signaturePlacement.HasFlag(SignaturePlacement.Countersignature))
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidArgumentCombination,
+                        nameof(signaturePlacement),
+                        nameof(repositoryCountersignatureVerificationBehavior)),
+                    nameof(repositoryCountersignatureVerificationBehavior));
+            }
+
             AllowUnsigned = allowUnsigned;
             AllowIllegal = allowIllegal;
             AllowUntrusted = allowUntrusted;
@@ -118,9 +198,12 @@ namespace NuGet.Packaging.Signing
             AllowMultipleTimestamps = allowMultipleTimestamps;
             AllowNoTimestamp = allowNoTimestamp;
             AllowUnknownRevocation = allowUnknownRevocation;
+            ReportUnknownRevocation = reportUnknownRevocation;
             AllowNoRepositoryCertificateList = allowNoRepositoryCertificateList;
             AllowNoClientCertificateList = allowNoClientCertificateList;
-            AlwaysVerifyCountersignature = alwaysVerifyCountersignature;
+            VerificationTarget = verificationTarget;
+            SignaturePlacement = signaturePlacement;
+            RepositoryCountersignatureVerificationBehavior = repositoryCountersignatureVerificationBehavior;
             RepositoryCertificateList = repoAllowListEntries;
             ClientCertificateList = clientAllowListEntries;
         }
@@ -140,9 +223,12 @@ namespace NuGet.Packaging.Signing
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
+                reportUnknownRevocation: false,
                 allowNoRepositoryCertificateList: true,
                 allowNoClientCertificateList: true,
-                alwaysVerifyCountersignature: true,
+                verificationTarget: VerificationTarget.All,
+                signaturePlacement: SignaturePlacement.Any,
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
@@ -162,9 +248,12 @@ namespace NuGet.Packaging.Signing
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
+                reportUnknownRevocation: false,
                 allowNoRepositoryCertificateList: true,
                 allowNoClientCertificateList: true,
-                alwaysVerifyCountersignature: false,
+                verificationTarget: VerificationTarget.All,
+                signaturePlacement: SignaturePlacement.Any,
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
@@ -184,9 +273,12 @@ namespace NuGet.Packaging.Signing
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
+                reportUnknownRevocation: true,
                 allowNoRepositoryCertificateList: false,
                 allowNoClientCertificateList: false,
-                alwaysVerifyCountersignature: false,
+                verificationTarget: VerificationTarget.All,
+                signaturePlacement: SignaturePlacement.Any,
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
@@ -206,9 +298,12 @@ namespace NuGet.Packaging.Signing
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
+                reportUnknownRevocation: true,
                 allowNoRepositoryCertificateList: true,
                 allowNoClientCertificateList: true,
-                alwaysVerifyCountersignature: true,
+                verificationTarget: VerificationTarget.All,
+                signaturePlacement: SignaturePlacement.Any,
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }

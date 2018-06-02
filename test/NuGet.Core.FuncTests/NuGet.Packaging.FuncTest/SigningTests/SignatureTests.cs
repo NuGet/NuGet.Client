@@ -21,11 +21,10 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class SignatureTests
     {
-        private SigningSpecifications _specification => SigningSpecifications.V1;
-
-        private SigningTestFixture _testFixture;
-        private TrustedTestCert<TestCertificate> _trustedTestCert;
-        private TestCertificate _untrustedTestCertificate;
+        private readonly SigningSpecifications _specification = SigningSpecifications.V1;
+        private readonly SigningTestFixture _testFixture;
+        private readonly TrustedTestCert<TestCertificate> _trustedTestCert;
+        private readonly TestCertificate _untrustedTestCertificate;
 
         public SignatureTests(SigningTestFixture fixture)
         {
@@ -34,15 +33,15 @@ namespace NuGet.Packaging.FuncTest
             _untrustedTestCertificate = _testFixture.UntrustedTestCertificate;
         }
 
-
         [CIOnlyFact]
-        public async Task Verify_WithUntrustedSelfSignedCertificateAndNotAllowUntrustedRoot_FailsAsync()
+        public async Task Verify_WithUntrustedSelfSignedCertificateAndNotAllowUntrusted_FailsAsync()
         {
             var settings = new SignatureVerifySettings(
-                treatIssuesAsErrors: true,
-                allowUntrustedRoot: false,
+                allowIllegal: false,
+                allowUntrusted: false,
+                reportUntrusted: true,
                 allowUnknownRevocation: false,
-                logOnSignatureExpired: true);
+                reportUnknownRevocation: true);
 
             using (var test = await VerifyTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
@@ -54,7 +53,7 @@ namespace NuGet.Packaging.FuncTest
                     certificateExtraStore: test.PrimarySignature.SignedCms.Certificates,
                     issues: issues);
 
-                Assert.Equal(SignatureVerificationStatus.Untrusted, result.Status);
+                Assert.Equal(SignatureVerificationStatus.Disallowed, result.Status);
                 Assert.Equal(1, issues.Count(issue => issue.Level == LogLevel.Error));
 
                 AssertUntrustedRoot(issues, LogLevel.Error);
@@ -62,13 +61,14 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task Verify_WithUntrustedSelfSignedCertificateAndAllowUntrustedRoot_SucceedsAsync()
+        public async Task Verify_WithUntrustedSelfSignedCertificateAndAllowUntrusted_SucceedsAsync()
         {
             var settings = new SignatureVerifySettings(
-                treatIssuesAsErrors: true,
-                allowUntrustedRoot: true,
+                allowIllegal: false,
+                allowUntrusted: true,
+                reportUntrusted: true,
                 allowUnknownRevocation: false,
-                logOnSignatureExpired: true);
+                reportUnknownRevocation: true);
 
             using (var test = await VerifyTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
@@ -148,5 +148,4 @@ namespace NuGet.Packaging.FuncTest
         }
     }
 }
-
 #endif

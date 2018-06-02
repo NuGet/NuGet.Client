@@ -551,11 +551,14 @@ namespace Test.Utility.Signing
                 first.AllowMultipleTimestamps == second.AllowMultipleTimestamps &&
                 first.AllowNoTimestamp == second.AllowNoTimestamp &&
                 first.AllowUnknownRevocation == second.AllowUnknownRevocation &&
+                first.ReportUnknownRevocation == second.ReportUnknownRevocation &&
                 first.AllowUnsigned == second.AllowUnsigned &&
                 first.AllowUntrusted == second.AllowUntrusted &&
                 first.AllowNoRepositoryCertificateList == second.AllowNoRepositoryCertificateList &&
                 first.AllowNoClientCertificateList == second.AllowNoClientCertificateList &&
-                first.AlwaysVerifyCountersignature == second.AlwaysVerifyCountersignature &&
+                first.VerificationTarget == second.VerificationTarget &&
+                first.SignaturePlacement == second.SignaturePlacement &&
+                first.RepositoryCountersignatureVerificationBehavior == second.RepositoryCountersignatureVerificationBehavior &&
                 AreCertificateHashAllowListEqual(first.ClientCertificateList, second.ClientCertificateList) &&
                 AreCertificateHashAllowListEqual(first.RepositoryCertificateList, second.RepositoryCertificateList);
         }

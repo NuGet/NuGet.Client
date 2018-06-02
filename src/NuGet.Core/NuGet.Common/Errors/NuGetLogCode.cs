@@ -401,6 +401,11 @@ namespace NuGet.Common
         NU3036 = 3036,
 
         /// <summary>
+        /// The signature has expired.
+        /// </summary>
+        NU3037 = 3037,
+
+        /// <summary>
         /// Undefined Package Error.
         /// </summary>
         NU5000 = 5000,

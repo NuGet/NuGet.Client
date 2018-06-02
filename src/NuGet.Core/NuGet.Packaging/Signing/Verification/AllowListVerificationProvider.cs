@@ -44,7 +44,7 @@ namespace NuGet.Packaging.Signing
                 }
             };
 
-            var allowListResults = await Task.WhenAll(certificateListVertificationRequests.Select(r => VerifyAllowList(r)));
+            var allowListResults = await Task.WhenAll(certificateListVertificationRequests.Select(r => VerifyAllowList(r, settings.AllowUntrusted)));
 
             return new SignedPackageVerificationResult(GetValidity(allowListResults), signature, allowListResults.SelectMany(r => r.Issues));
         }
@@ -55,7 +55,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="request">Information about the allow list verification to perform</param>
         /// <remarks>This method should never return a status unknown. Min is used to take the most severe status in <see cref="GetValidity"/>
         /// therefore, if unknown is returned the verification process will return an unknown status for the whole operation</remarks>
-        private Task<SignedPackageVerificationResult> VerifyAllowList(CertificateListVerificationRequest request)
+        private Task<SignedPackageVerificationResult> VerifyAllowList(CertificateListVerificationRequest request, bool allowUntrusted)
         {
             var status = SignatureVerificationStatus.Valid;
             var issues = new List<SignatureLog>();
@@ -64,13 +64,17 @@ namespace NuGet.Packaging.Signing
             {
                 if (request.RequireCertificateList)
                 {
-                    status = SignatureVerificationStatus.Suspect;
+                    status = SignatureVerificationStatus.Disallowed;
                     issues.Add(SignatureLog.Error(code: NuGetLogCode.NU3034, message: request.NoListErrorMessage));
                 }
             }
             else if (!IsSignatureAllowed(request.Signature, request.CertificateList))
             {
-                status = SignatureVerificationStatus.Untrusted;
+                if (!allowUntrusted)
+                {
+                    status = SignatureVerificationStatus.Disallowed;
+                }
+
                 issues.Add(SignatureLog.Issue(fatal: request.TreatIssuesAsErrors, code: NuGetLogCode.NU3034, message: request.NoMatchErrorMessage));
             }
 
@@ -152,11 +156,6 @@ namespace NuGet.Packaging.Signing
 
         private static SignatureVerificationStatus GetValidity(IEnumerable<PackageVerificationResult> verificationResults)
         {
-            if (!verificationResults.Any())
-            {
-                return SignatureVerificationStatus.Untrusted;
-            }
-
             return verificationResults.Min(e => e.Trust);
         }
 

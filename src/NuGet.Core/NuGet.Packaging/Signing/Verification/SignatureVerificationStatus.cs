@@ -24,18 +24,13 @@ namespace NuGet.Packaging.Signing
         Suspect = 1,
 
         /// <summary>
-        /// Signature does not conform with NuGet signing specification.
+        /// The signature is disallowed based on verification settings.
         /// </summary>
-        Illegal = 2,
-
-        /// <summary>
-        /// Signature certificate does not match known allowlists.
-        /// </summary>
-        Untrusted = 3,
+        Disallowed = 2,
 
         /// <summary>
         /// Signature is valid for the verification step.
         /// </summary>
-        Valid = 4
+        Valid = 3
     }
 }

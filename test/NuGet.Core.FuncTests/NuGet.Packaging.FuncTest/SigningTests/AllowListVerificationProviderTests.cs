@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -826,7 +825,6 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-
         [CIOnlyFact]
         public async Task GetTrustResultAsync_RepositoryCountersignedPackage_ClientAllowListWithRepositoryTarget_AndPrimaryPlacementOnly_ErrorAsync()
         {
@@ -879,7 +877,6 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
         }
-
 
         [CIOnlyFact]
         public async Task GetTrustResultAsync_RepositoryCountersignedPackage_RepoAllowListWithRepositoryTarget_AndCounterPlacement_SuccessAsync()
@@ -984,8 +981,8 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyTheory]
-        [MemberData(nameof(KnownSettingsList))]
-        public async Task GetTrustResultAsync_RepositoryCountersignedPackage_PackageSignedWithCertFromRepositoryCertificateList_SuccessAsync(SignedPackageVerifierSettings signedPackageVerifierSettings)
+        [MemberData(nameof(KnownSettingsThatDoNotRequireAllowLists))]
+        public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertFromRepositoryCertificateList_SuccessAsync(SignedPackageVerifierSettings signedPackageVerifierSettings)
         {
             // Arrange
             using (var dir = TestDirectory.Create())
@@ -1015,24 +1012,69 @@ namespace NuGet.Packaging.FuncTest
                         signedPackageVerifier,
                         signedPackageVerifierSettings);
 
-                    // Act
-                    Action action = async () => await PackageExtractor.ExtractPackageAsync(
+                    await PackageExtractor.ExtractPackageAsync(
                         dir,
                         packageReader,
                         packageStream,
                         resolver,
                         packageExtractionContext,
                         CancellationToken.None);
+                }
+            }
+        }
 
-                    // Assert
-                    action.ShouldNotThrow();
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertFromRepositoryCertificateList_RequireMode_SuccessAsync()
+        {
+            // Arrange
+            using (var dir = TestDirectory.Create())
+            using (var repoCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
+            {
+                var hashAlgorithmName = HashAlgorithmName.SHA256;
+                var fingerprint = SignatureTestUtility.GetFingerprint(repoCertificate, hashAlgorithmName);
+                var clientAllowList = new List<CertificateHashAllowListEntry>()
+                {
+                    new CertificateHashAllowListEntry(VerificationTarget.Repository, SignaturePlacement.PrimarySignature, fingerprint, hashAlgorithmName)
+                };
+                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(clientAllowListEntries: clientAllowList);
+                var nupkg = new SimpleTestPackageContext();
+                var signedPackageVerifier = new PackageSignatureVerifier(new ISignatureVerificationProvider[]
+                {
+                    new AllowListVerificationProvider()
+                });
+
+                var resolver = new PackagePathResolver(dir);
+                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2> { repoCertificate }, allSigned: true);
+                var repositorySignatureInfoContentUrl = repositorySignatureInfo.RepositoryCertificateInfos.Select(c => c.ContentUrl).First();
+                var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(new X509Certificate2(repoCertificate), nupkg, dir, new Uri(repositorySignatureInfoContentUrl));
+
+                repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(dir, repositorySignatureInfo);
+
+                using (var packageStream = File.OpenRead(repoSignedPackagePath))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier,
+                        signedPackageVerifierSettings);
+
+                    await PackageExtractor.ExtractPackageAsync(
+                        dir,
+                        packageReader,
+                        packageStream,
+                        resolver,
+                        packageExtractionContext,
+                        CancellationToken.None);
                 }
             }
         }
 
         [CIOnlyTheory]
         [MemberData(nameof(KnownSettingsList))]
-        public async Task GetTrustResultAsync_RepositoryCountersignedPackage_PackageSignedWithCertNotFromRepositoryCertificateList_ThrowsAsync(SignedPackageVerifierSettings signedPackageVerifierSettings)
+        public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertNotFromRepositoryCertificateList_ThrowsAsync(SignedPackageVerifierSettings signedPackageVerifierSettings)
         {
             // Arrange
             using (var dir = TestDirectory.Create())
@@ -1129,9 +1171,12 @@ namespace NuGet.Packaging.FuncTest
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
+                reportUnknownRevocation: false,
                 allowNoClientCertificateList: allowNoClientCertificateList,
                 allowNoRepositoryCertificateList: allowNoRepositoryCertificateList,
-                alwaysVerifyCountersignature: true,
+                verificationTarget: VerificationTarget.All,
+                signaturePlacement: SignaturePlacement.Any,
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
                 repoAllowListEntries: repoAllowList,
                 clientAllowListEntries: clientAllowList);
         }
@@ -1141,6 +1186,13 @@ namespace NuGet.Packaging.FuncTest
             yield return new object[] { SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy() };
             yield return new object[] { SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy() };
             yield return new object[] { SignedPackageVerifierSettings.GetRequireModeDefaultPolicy() };
+            yield return new object[] { SignedPackageVerifierSettings.GetDefault() };
+        }
+
+        public static IEnumerable<object[]> KnownSettingsThatDoNotRequireAllowLists()
+        {
+            yield return new object[] { SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy() };
+            yield return new object[] { SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy() };
             yield return new object[] { SignedPackageVerifierSettings.GetDefault() };
         }
 

@@ -21,7 +21,7 @@ namespace NuGet.Packaging.Signing
 #if IS_DESKTOP
         private async Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
-            var status = SignatureVerificationStatus.Illegal;
+            var status = SignatureVerificationStatus.Unknown;
             var issues = new List<SignatureLog>();
 
             var validHashOids = SigningSpecifications.V1.AllowedHashAlgorithmOids;

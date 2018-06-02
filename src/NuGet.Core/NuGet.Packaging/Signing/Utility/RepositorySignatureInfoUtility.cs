@@ -50,9 +50,12 @@ namespace NuGet.Packaging.Signing
                     fallbackSettings.AllowMultipleTimestamps,
                     fallbackSettings.AllowNoTimestamp,
                     fallbackSettings.AllowUnknownRevocation,
+                    fallbackSettings.ReportUnknownRevocation,
                     allowNoRepositoryCertificateList,
                     fallbackSettings.AllowNoClientCertificateList,
-                    fallbackSettings.AlwaysVerifyCountersignature,
+                    fallbackSettings.VerificationTarget,
+                    fallbackSettings.SignaturePlacement,
+                    fallbackSettings.RepositoryCountersignatureVerificationBehavior,
                     repositoryAllowList?.AsReadOnly(),
                     fallbackSettings.ClientCertificateList);
             }
