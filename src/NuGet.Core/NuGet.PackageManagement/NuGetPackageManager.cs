@@ -134,8 +134,8 @@ namespace NuGet.PackageManagement
 
                     // Read package folders from settings
                     var pathContext = NuGetPathContext.Create(Settings);
-
-                    var folders = new List<string>(new string[pathContext.FallbackPackageFolders.Count() + 1])
+                    var count = (pathContext.FallbackPackageFolders?.Count() ?? 0) + 1;
+                    var folders = new List<string>(count)
                     {
                         pathContext.UserPackageFolder
                     };
@@ -3315,7 +3315,11 @@ namespace NuGet.PackageManagement
         {
             // Always have to add the packages folder as the primary repository so that
             // dependency info for an installed package that is unlisted from the server is still available :(
-            var effectiveSources = new List<SourceRepository>(new SourceRepository[primarySources.Count() + secondarySources.Count() + 1])
+            var count = (primarySources?.Count() ?? 0) +
+                (secondarySources?.Count() ?? 0)
+                + 1;
+
+            var effectiveSources = new List<SourceRepository>(count)
             {
                 PackagesFolderSourceRepository
             };
