@@ -8,12 +8,13 @@ namespace NuGet.PackageManagement
 {
     public class ActionTelemetryStepEvent : TelemetryEvent
     {
-        public ActionTelemetryStepEvent(string operationId, string stepName, double duration) :
+        public ActionTelemetryStepEvent(string operationId, string projectId, string stepName, double duration) :
             base(NugetActionStepsEventName, new Dictionary<string, object>
                 {
                     { nameof(OperationId), operationId },
                     { nameof(SubStepName), string.Join(",", stepName) },
-                    { nameof(Duration), duration }
+                    { nameof(Duration), duration },
+                    { nameof(ProjectId), projectId}
                 })
         {
         }
@@ -21,7 +22,11 @@ namespace NuGet.PackageManagement
         public const string NugetActionStepsEventName = "NugetActionSteps";
 
         public string SubStepName => (string)base[nameof(SubStepName)];
+
         public double Duration => (double)base[nameof(Duration)];
+
         public string OperationId => (string)base[nameof(OperationId)];
+
+        public string ProjectId => (string)base[nameof(ProjectId)];
     }
 }
