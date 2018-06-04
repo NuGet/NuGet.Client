@@ -954,10 +954,6 @@ namespace NuGet.PackageManagement
                 CancellationToken token)
         {
             var log = new LoggerAdapter(nuGetProjectContext);
-
-            var projectId = string.Empty;
-            nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.ProjectId, out projectId);
-
             var stopWatch = Stopwatch.StartNew();
 
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
@@ -1112,7 +1108,6 @@ namespace NuGet.PackageManagement
 
                 var gatherTelemetryEvent = new ActionTelemetryStepEvent(
                     nuGetProjectContext.OperationId.ToString(),
-                    projectId,
                     TelemetryConstants.GatherDependencyStepName,
                     stopWatch.Elapsed.TotalSeconds);
 
@@ -1206,7 +1201,6 @@ namespace NuGet.PackageManagement
 
                 var resolveTelemetryEvent = new ActionTelemetryStepEvent(
                     nuGetProjectContext.OperationId.ToString(),
-                    projectId,
                     TelemetryConstants.ResolveDependencyStepName,
                     stopWatch.Elapsed.TotalSeconds);
 
@@ -1246,7 +1240,6 @@ namespace NuGet.PackageManagement
 
                 var actionTelemetryEvent = new ActionTelemetryStepEvent(
                     nuGetProjectContext.OperationId.ToString(),
-                    projectId,
                     TelemetryConstants.ResolvedActionsStepName,
                     stopWatch.Elapsed.TotalSeconds);
 
@@ -1564,9 +1557,6 @@ namespace NuGet.PackageManagement
             }
 
             var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
-            var projectId = string.Empty;
-            nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.ProjectId, out projectId);
-
             var stopWatch = Stopwatch.StartNew();
 
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
@@ -1628,7 +1618,6 @@ namespace NuGet.PackageManagement
                     stopWatch.Stop();
                     var gatherTelemetryEvent = new ActionTelemetryStepEvent(
                         nuGetProjectContext.OperationId.ToString(),
-                        projectId,
                         TelemetryConstants.GatherDependencyStepName,
                         stopWatch.Elapsed.TotalSeconds);
 
@@ -1698,7 +1687,6 @@ namespace NuGet.PackageManagement
 
                     var resolveTelemetryEvent = new ActionTelemetryStepEvent(
                         nuGetProjectContext.OperationId.ToString(),
-                        projectId,
                         TelemetryConstants.ResolveDependencyStepName,
                         stopWatch.Elapsed.TotalSeconds);
 
@@ -1793,7 +1781,6 @@ namespace NuGet.PackageManagement
 
             var actionTelemetryEvent = new ActionTelemetryStepEvent(
                 nuGetProjectContext.OperationId.ToString(),
-                projectId,
                 TelemetryConstants.ResolvedActionsStepName,
                 stopWatch.Elapsed.TotalSeconds);
 
@@ -2160,9 +2147,6 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
-            var projectId = string.Empty;
-            nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.ProjectId, out projectId);
-
             var stopWatch = Stopwatch.StartNew();
 
             ExceptionDispatchInfo exceptionInfo = null;
@@ -2452,7 +2436,6 @@ namespace NuGet.PackageManagement
             // emit resolve actions telemetry event
             var actionTelemetryEvent = new ActionTelemetryStepEvent(
                 nuGetProjectContext.OperationId.ToString(),
-                projectId,
                 TelemetryConstants.ExecuteActionStepName, stopWatch.Elapsed.TotalSeconds);
 
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
@@ -2495,8 +2478,6 @@ namespace NuGet.PackageManagement
             }
 
             var stopWatch = Stopwatch.StartNew();
-            var projectId = string.Empty;
-            buildIntegratedProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
 
             // Find all sources used in the project actions
             var sources = new HashSet<SourceRepository>(
@@ -2682,7 +2663,6 @@ namespace NuGet.PackageManagement
 
             var actionTelemetryEvent = new ActionTelemetryStepEvent(
                 nuGetProjectContext.OperationId.ToString(),
-                projectId,
                 TelemetryConstants.PreviewBuildIntegratedStepName, stopWatch.Elapsed.TotalSeconds);
 
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);

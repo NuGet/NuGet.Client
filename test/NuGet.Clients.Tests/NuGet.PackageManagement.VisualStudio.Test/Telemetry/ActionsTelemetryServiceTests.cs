@@ -135,10 +135,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             var operationId = Guid.NewGuid().ToString();
-            var projectId = Guid.NewGuid().ToString();
 
             // Act
-            service.EmitTelemetryEvent(new ActionTelemetryStepEvent(operationId, projectId, stepName, duration));
+            service.EmitTelemetryEvent(new ActionTelemetryStepEvent(operationId, stepName, duration));
 
             // Assert
             Assert.NotNull(lastTelemetryEvent);
@@ -146,7 +145,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(3, lastTelemetryEvent.Count);
 
             Assert.Equal(operationId, lastTelemetryEvent["OperationId"].ToString());
-            Assert.Equal(projectId, lastTelemetryEvent["ProjectId"].ToString());
             Assert.Equal(stepName, lastTelemetryEvent["SubStepName"].ToString());
             Assert.Equal(duration, (double)lastTelemetryEvent["Duration"]);
         }
