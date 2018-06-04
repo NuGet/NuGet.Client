@@ -134,7 +134,8 @@ namespace NuGet.PackageManagement
 
                     // Read package folders from settings
                     var pathContext = NuGetPathContext.Create(Settings);
-                    var folders = new List<string>
+
+                    var folders = new List<string>(new string[pathContext.FallbackPackageFolders.Count() + 1])
                     {
                         pathContext.UserPackageFolder
                     };
@@ -774,8 +775,7 @@ namespace NuGet.PackageManagement
         {
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
 
-            NuGetFramework framework;
-            if (!nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.TargetFramework, out framework))
+            if (!nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.TargetFramework, out NuGetFramework framework))
             {
                 // Default to the any framework if the project does not specify a framework.
                 framework = NuGetFramework.AnyFramework;
@@ -3315,11 +3315,12 @@ namespace NuGet.PackageManagement
         {
             // Always have to add the packages folder as the primary repository so that
             // dependency info for an installed package that is unlisted from the server is still available :(
-            var effectiveSources = new List<SourceRepository>(primarySources)
+            var effectiveSources = new List<SourceRepository>(new SourceRepository[primarySources.Count() + secondarySources.Count() + 1])
             {
                 PackagesFolderSourceRepository
             };
 
+            effectiveSources.AddRange(primarySources);
             effectiveSources.AddRange(secondarySources);
 
             return new HashSet<SourceRepository>(effectiveSources, new SourceRepositoryComparer());
