@@ -80,6 +80,7 @@ namespace NuGet.PackageManagement.UI
                     else
                     {
                         project.InstalledVersion = null;
+                        project.AutoReferenced = false;
                     }
                 }
                 catch(Exception ex)
