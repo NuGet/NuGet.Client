@@ -8,21 +8,36 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio.ProjectSystem.Interop;
+using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
+using Test.Utility.Threading;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
+    [Collection(DispatcherThreadCollection.CollectionName)]
     public class ProjectKNuGetProjectTests
     {
+        private readonly JoinableTaskFactory _jtf;
+
+        public ProjectKNuGetProjectTests(DispatcherThreadFixture fixture)
+        {
+            Assumes.Present(fixture);
+
+            _jtf = fixture.JoinableTaskFactory;
+
+            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_jtf);
+        }
+
         [Fact]
         public async Task ProjectKNuGetProject_WithVersionRange_GetInstalledPackagesAsync()
         {
