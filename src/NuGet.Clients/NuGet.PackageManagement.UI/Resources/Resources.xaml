@@ -56,6 +56,10 @@
     x:Key="IconUrlToImageCacheConverter"/>
   <nuget:RadioBoolToIntConverter
     x:Key="RadioBoolToIntConverter" />
+  <nuget:PercentageConverter
+    x:Key="PercentageConverter" />
+  <nuget:PackageManagerControlLeftSideMaxWidthConverter
+    x:Key="PackageManagerControlLeftSideMaxWidthConverter" />
 
   <!-- Default styles -->
   <Style x:Key="ControlsFocusVisualStyle" TargetType="{x:Type Control}">
@@ -606,6 +610,7 @@
                              FontFamily="{TemplateBinding FontFamily}"
                              FontWeight="{TemplateBinding FontWeight}"
                              TextWrapping="{TemplateBinding TextWrapping}"
+                             TextTrimming="CharacterEllipsis"
                              Padding="0,0,0,0"
                              Focusable="{TemplateBinding Focusable}"
                              AutomationProperties.Name="{TemplateBinding Text}" />

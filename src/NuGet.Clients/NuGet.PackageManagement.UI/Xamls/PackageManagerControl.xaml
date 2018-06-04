@@ -37,9 +37,15 @@
       Command="{x:Static nuget:Commands.FocusOnSearchBox}"
       Gesture="CTRL+L" />
   </UserControl.InputBindings>
-  <DockPanel
-    x:Name="_root"
-    LastChildFill="True" >
+
+  <ScrollViewer
+    VerticalScrollBarVisibility="Disabled"
+    HorizontalScrollBarVisibility="Auto">
+    <DockPanel
+      x:Name="_root"
+      LastChildFill="True"
+      Width="{Binding ActualWidth, ElementName=_self}"
+      MinWidth="634">
 
     <nuget:PackageManagerTopPanel
       DockPanel.Dock="Top"
@@ -55,74 +61,85 @@
       BorderThickness="0,1,0,0"
       BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" 
       VerticalAlignment="Stretch">
-      <Grid Margin="0,-0.333,0,0">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition
-            Width="65*"
-            MinWidth="300" />
-          <ColumnDefinition
-            Width="auto" />
-          <ColumnDefinition
-            Width="35*"
-            MinWidth="320" />
-        </Grid.ColumnDefinitions>
-
-        <!-- left side -->
         <Grid
-          Grid.Column="0">
-          <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-          </Grid.RowDefinitions>
+          Margin="0,-0.333,0,0"
+          Width="{Binding ActualWidth, ElementName=_root}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition
+              Width="{Binding Converter={StaticResource PercentageConverter}, ElementName=_self, Path=ActualWidth, ConverterParameter=0.65}"
+              MinWidth="300"
+              MaxWidth="{Binding Converter={StaticResource PackageManagerControlLeftSideMaxWidthConverter}, ElementName=_root, Path=ActualWidth, ConverterParameter=334}"/>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition
+              Width="*"
+              MinWidth="330" />
+          </Grid.ColumnDefinitions>
 
-          <nuget:InfiniteScrollList
-            Grid.Row="0"
-            x:Name="_packageList"
-            SelectionChanged="PackageList_SelectionChanged"
-            UpdateButtonClicked="PackageList_UpdateButtonClicked" />
+          <!-- left side -->
+          <Grid
+            Name="_leftSide"
+            Grid.Column="0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-          <Border
-            Grid.Row="2"
-            BorderThickness="0,1,0,0"
-            x:Name="_legalDisclaimer"
+            <nuget:InfiniteScrollList
+              Grid.Row="0"
+              x:Name="_packageList"
+              SelectionChanged="PackageList_SelectionChanged"
+              UpdateButtonClicked="PackageList_UpdateButtonClicked"
+              Width="{Binding ActualWidth, ElementName=_left_side}"/>
+
+            <Border
+              Grid.Row="2"
+              BorderThickness="0,1,0,0"
+              x:Name="_legalDisclaimer"
+              BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+              Background="{DynamicResource {x:Static nuget:Brushes.LegalMessageBackground}}"
+              Width="{Binding ActualWidth, ElementName=_leftSide}">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                  Grid.Row="0"
+                  Margin="24,12,24,12"
+                  TextWrapping="Wrap"
+                  x:Name="_legalDisclaimerText"
+                  Focusable="True"
+                  AutomationProperties.Name="{Binding Text}"
+                  FocusVisualStyle="{x:Null}"
+                  Text="{x:Static nuget:Resources.Text_LegalDisclaimer}" />
+                <CheckBox
+                  Grid.Row="1"
+                  Margin="24,0,24,12"
+                  Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+                  Content="{x:Static nuget:Resources.DoNotShowThisAgain}"
+                  Checked="SuppressDisclaimerChecked" />
+              </Grid>
+            </Border>
+          </Grid>
+
+          <GridSplitter
+            Grid.Column="1"
+            Width="4"
+            Grid.RowSpan="2"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Stretch"
+            Background="{DynamicResource {x:Static nuget:Brushes.SplitterBackgroundKey}}"
             BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-            Background="{DynamicResource {x:Static nuget:Brushes.LegalMessageBackground}}">
-            <StackPanel
-              Orientation="Vertical">
-              <TextBlock
-                Margin="24,12,24,12"
-                TextWrapping="Wrap"
-                x:Name="_legalDisclaimerText"
-                Focusable="True"
-                AutomationProperties.Name="{Binding Text}"
-                FocusVisualStyle="{x:Null}"
-                Text="{x:Static nuget:Resources.Text_LegalDisclaimer}" />
-              <CheckBox
-                Margin="24,0,24,12"
-                Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
-                Content="{x:Static nuget:Resources.DoNotShowThisAgain}"
-                Checked="SuppressDisclaimerChecked" />
-            </StackPanel>
-          </Border>
+            BorderThickness="1,0" />
+
+          <!-- right side -->
+          <nuget:DetailControl
+            x:Name="_packageDetail"
+            Grid.Column="2"
+            Grid.RowSpan="2" />
         </Grid>
-
-        <GridSplitter
-          Grid.Column="1"
-          Width="4"
-          Grid.RowSpan="2"
-          HorizontalAlignment="Center"
-          VerticalAlignment="Stretch"
-          Background="{DynamicResource {x:Static nuget:Brushes.SplitterBackgroundKey}}"
-          BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-          BorderThickness="1,0" />
-
-        <!-- right side -->
-        <nuget:DetailControl
-          x:Name="_packageDetail"
-          Grid.Column="2"
-          Grid.RowSpan="2" />
-      </Grid>
-    </Border>
-  </DockPanel>
+      </Border>
+    </DockPanel>
+  </ScrollViewer>
 </UserControl>
