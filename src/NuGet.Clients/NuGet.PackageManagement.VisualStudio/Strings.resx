@@ -286,4 +286,7 @@
 {3} is the project full path
 {4} is the reference assembly full path</comment>
   </data>
+  <data name="CredentialProviderFailed_PluginCredentialProvider" xml:space="preserve">
+    <value>The plugin credential providers could not be loaded.</value>
+  </data>
 </root>

@@ -12,11 +12,13 @@ namespace NuGet.Protocol.Plugins
 
         public static string GetInternalPlugins()
         {
-            var rootDirectory = InternalPluginDiscoveryRoot?.Value ?? System.Reflection.Assembly.GetEntryAssembly()?.Location;
-
+#if IS_DESKTOP
+            var rootDirectory = InternalPluginDiscoveryRoot?.Value ?? System.Reflection.Assembly.GetExecutingAssembly()?.Location; // This is NuGet.Protocol.dll
+#else
+            var rootDirectory = InternalPluginDiscoveryRoot?.Value ?? System.Reflection.Assembly.GetEntryAssembly()?.Location; // This is msbuild.dll
+#endif
             return rootDirectory ?? Path.GetDirectoryName(rootDirectory);
         }
-
         public static string GetNuGetHomePluginsPath()
         {
             var nuGetHome = NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetHome);
