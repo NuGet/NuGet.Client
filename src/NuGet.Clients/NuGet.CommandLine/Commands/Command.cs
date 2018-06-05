@@ -190,7 +190,7 @@ namespace NuGet.CommandLine
         /// </summary>
         protected void SetDefaultCredentialProvider(Lazy<string> msbuildDirectory)
         {
-            Protocol.Plugins.PluginDiscoveryUtility.InternalPluginDiscoveryRoot = msbuildDirectory;
+            Protocol.Plugins.PluginDiscoveryUtility.InternalPluginDiscoveryRoot = new Lazy<string>(() => Protocol.Plugins.PluginDiscoveryUtility.GetInternalPluginRelativeToMSBuildExe(msbuildDirectory.Value));
             CredentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => GetCredentialProvidersAsync()), NonInteractive, handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
 
             CoreV2.NuGet.HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);

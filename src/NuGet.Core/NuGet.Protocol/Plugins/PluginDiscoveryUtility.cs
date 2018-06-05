@@ -8,35 +8,65 @@ namespace NuGet.Protocol.Plugins
 {
     public static class PluginDiscoveryUtility
     {
-        private static readonly string NuGetPluginsDirectory = "NuGetPlugins";
+        private static string NuGetPluginsDirectory = "NuGetPlugins";
+        private static string ParentDirectory = "..";
 
         public static Lazy<string> InternalPluginDiscoveryRoot { get; set; }
 
         public static string GetInternalPlugins()
         {
 #if IS_DESKTOP
-            return InternalPluginDiscoveryRoot?.Value ?? GetDesktopInternalPlugin();
+            return InternalPluginDiscoveryRoot?.Value ??
+                GetDesktopInternalPlugin(System.Reflection.Assembly.GetExecutingAssembly()?.Location); // NuGet.Protocol.dll would return null if called from unmanaged code
 #else
-            return InternalPluginDiscoveryRoot?.Value ?? GetNetCoreInternalPlugin();
+            return InternalPluginDiscoveryRoot?.Value ??
+                GetDotnetExeInternalPlugin(System.Reflection.Assembly.GetEntryAssembly()?.Location); // msbuild.dll - would return null if called from unmanaged code
 #endif
         }
 
 #if IS_DESKTOP
-        private static string GetDesktopInternalPlugin()
+        /// <summary>
+        /// Given Visual Studio 2017 MSBuild.exe path, return the NuGet plugins directory which is in CommonExtensions/NuGetPluginsDirectory
+        /// </summary>
+        /// <param name="msbuildExePath">The MsBuildExe path. Needs to be a valid path. file:// not supported.</param>
+        /// <returns>The NuGet plugins directory, null if <paramref name="msbuildExePath"/> is null</returns>
+        /// <remarks>The MSBuild.exe is in MSBuild\15.0\Bin\MsBuild.exe, the NuGetPlugins directory is in Common7\IDE\CommonExtensions\Microsoft\NuGetPlugins</remarks>
+        public static string GetInternalPluginRelativeToMSBuildExe(string msbuildExePath)
         {
-            return System.Reflection.Assembly.GetExecutingAssembly()?.Location != null ? // nuget.protocol.dll - would return null if called from unmanaged code
-                    PathUtility.GetAbsolutePath( // else build the absolute path
-                        Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly()?.Location),
-                        Path.Combine("..", NuGetPluginsDirectory)
+            return msbuildExePath != null ?
+                PathUtility.GetAbsolutePath(
+                    Path.GetDirectoryName(msbuildExePath),
+                    Path.Combine(ParentDirectory, ParentDirectory, ParentDirectory, "Common7", "CommonExtensions", "Microsoft", NuGetPluginsDirectory)
+                    ) :
+                null;
+        }
+
+        /// <summary>
+        /// Given the NuGet assemblies directory, returns the NuGet plugins directory
+        /// </summary>
+        /// <param name="nuGetAssembliesDirectory">The NuGet assemblies directory in CommonExtensions\NuGet</param>
+        /// <returns>The NuGet plugins directory in CommonExtensions\NuGetPlugins, null if the <paramref name="nuGetAssembliesDirectory"/> is null</returns>
+        private static string GetDesktopInternalPlugin(string nuGetAssembliesDirectory)
+        {
+            return nuGetAssembliesDirectory != null ?
+                    PathUtility.GetAbsolutePath(
+                        Path.GetDirectoryName(nuGetAssembliesDirectory),
+                        Path.Combine(ParentDirectory, NuGetPluginsDirectory)
                         ) :
                      null;
         }
 #else
-        private static string GetNetCoreInternalPlugin()
+        /// <summary>
+        /// Given the MsBuildDll directory, return the NuGetPlugins directory in dotnetexe
+        /// MSBuild.dll and NuGet*.dlls are in the same directory in the SDK.
+        /// </summary>
+        /// <param name="msbuildAssemblyDirectory"></param>
+        /// <returns></returns>
+        private static string GetDotnetExeInternalPlugin(string msbuildAssemblyDirectory)
         {
-            return System.Reflection.Assembly.GetEntryAssembly()?.Location != null ? // msbuild.dll - would return null if called from unmanaged code
+            return msbuildAssemblyDirectory != null ?
                     Path.Combine( // else build the absolute path
-                        Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly()?.Location),
+                        Path.GetDirectoryName(msbuildAssemblyDirectory),
                         NuGetPluginsDirectory
                         ) :
                     null;
