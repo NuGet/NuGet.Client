@@ -91,6 +91,8 @@ namespace NuGet.ProjectModel
 
         public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; } = new List<TargetFrameworkInformation>();
 
+        public string ProjectId { get; set; }
+
         public RuntimeGraph RuntimeGraph { get; set; } = new RuntimeGraph();
 
         /// <summary>
@@ -220,6 +222,7 @@ namespace NuGet.ProjectModel
             spec.RuntimeGraph = RuntimeGraph?.Clone();
             spec.RestoreSettings = RestoreSettings?.Clone();
             spec.RestoreMetadata = RestoreMetadata?.Clone();
+            spec.ProjectId = ProjectId;
             return spec;
         }
 

@@ -36,8 +36,9 @@ namespace NuGet.Commands
 
         public Guid ParentId { get; }
 
-        // names for ProjectRestoreInformation and intervals
+        // names for ProjectRestoreInformation, intervals and properties
         private const string ProjectRestoreInformation = "ProjectRestoreInformation";
+        private const string ProjectId = "ProjectId";
         private const string ErrorCodes = "ErrorCodes";
         private const string ErrorMessages = "ErrorMessages";
         private const string WarningCodes = "WarningCodes";
@@ -92,6 +93,7 @@ namespace NuGet.Commands
         {
             using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
+                telemetry.TelemetryEvent[ProjectId] = _request.Project.ProjectId;
                 _operationId = telemetry.OperationId;
                 var restoreTime = Stopwatch.StartNew();
 

@@ -168,6 +168,9 @@ namespace NuGet.ProjectManagement.Projects
                     throw new InvalidOperationException(
                         string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
                 }
+
+                packageSpec.ProjectId = InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.ProjectId, out var projectId) ? projectId as string : string.Empty;
+
                 var metadata = new ProjectRestoreMetadata();
                 packageSpec.RestoreMetadata = metadata;
 
