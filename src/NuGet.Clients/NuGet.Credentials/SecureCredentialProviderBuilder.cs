@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
@@ -42,7 +43,7 @@ namespace NuGet.Credentials
             var plugins = new List<ICredentialProvider>();
             foreach (var pluginDiscoveryResult in availablePlugins)
             {
-                _logger.LogDebug($"Will attempt to use {pluginDiscoveryResult.PluginFile.Path} as a credential provider");
+                _logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Resources.SecurePluginNotice_UsingPluginAsProvider, pluginDiscoveryResult.PluginFile.Path));
                 plugins.Add(new SecurePluginCredentialProvider(_pluginManager, pluginDiscoveryResult, _logger));
             }
 
