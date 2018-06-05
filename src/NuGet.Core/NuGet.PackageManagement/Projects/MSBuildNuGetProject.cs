@@ -651,7 +651,7 @@ namespace NuGet.ProjectManagement
                 {
                     Name = ProjectSystem.ProjectName,
                     FilePath = ProjectSystem.ProjectFileFullPath,
-                    ProjectId = InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.ProjectId, out var projectId) ? projectId as string : string.Empty
+                    ProjectId = GetProjectId()
                 };
 
                 // A packages.config project does not follow the typical restore flow so there is no need to add package

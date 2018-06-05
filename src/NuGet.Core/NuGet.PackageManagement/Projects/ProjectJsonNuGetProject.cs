@@ -169,7 +169,7 @@ namespace NuGet.ProjectManagement.Projects
                         string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
                 }
 
-                packageSpec.ProjectId = InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.ProjectId, out var projectId) ? projectId as string : string.Empty;
+                packageSpec.ProjectId = GetProjectId();
 
                 var metadata = new ProjectRestoreMetadata();
                 packageSpec.RestoreMetadata = metadata;
