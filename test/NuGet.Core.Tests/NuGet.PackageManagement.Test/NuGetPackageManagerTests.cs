@@ -6040,8 +6040,6 @@ namespace NuGet.Test
 
                 // Assert
                 Assert.Equal(3, telemetryEvents.Count);
-                var projectId = string.Empty;
-                nugetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
                 VerifyPreviewActionsTelemetryEvents_PackagesConfig(telemetryEvents.Select(p => (string)p["SubStepName"]));
             }
         }
@@ -6167,8 +6165,6 @@ namespace NuGet.Test
 
                 // Assert
                 Assert.Equal(3, telemetryEvents.Count);
-                var projectId = string.Empty;
-                nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
                 VerifyPreviewActionsTelemetryEvents_PackagesConfig(telemetryEvents.Select(p => (string)p["SubStepName"]));
             }
         }
@@ -6219,9 +6215,6 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 // Assert
-                var projectId = string.Empty;
-                nugetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
-
                 Assert.Equal(3, telemetryEvents.Count);
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == "PackagePreFetcherInformation").Count());
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == "PackageExtractionInformation").Count());
