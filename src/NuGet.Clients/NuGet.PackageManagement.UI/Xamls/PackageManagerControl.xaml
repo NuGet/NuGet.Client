@@ -45,7 +45,7 @@
       x:Name="_root"
       LastChildFill="True"
       Width="{Binding ActualWidth, ElementName=_self}"
-      MinWidth="634">
+      MinWidth="{Binding ContentMinWidth, ElementName=_self}">
 
     <nuget:PackageManagerTopPanel
       DockPanel.Dock="Top"
@@ -67,12 +67,18 @@
           <Grid.ColumnDefinitions>
             <ColumnDefinition
               Width="{Binding Converter={StaticResource PercentageConverter}, ElementName=_self, Path=ActualWidth, ConverterParameter=0.65}"
-              MinWidth="300"
-              MaxWidth="{Binding Converter={StaticResource PackageManagerControlLeftSideMaxWidthConverter}, ElementName=_root, Path=ActualWidth, ConverterParameter=334}"/>
+              MinWidth="{Binding LeftSideMinWidth, ElementName=_self}">
+              <ColumnDefinition.MaxWidth>
+                <MultiBinding Converter="{StaticResource PackageManagerControlLeftSideMaxWidthConverter}">
+                  <Binding Path="ActualWidth" ElementName="_self" />
+                  <Binding Path="LeftSideExcludedWidth" ElementName="_self" />
+                </MultiBinding>
+              </ColumnDefinition.MaxWidth>
+            </ColumnDefinition>
             <ColumnDefinition Width="auto" />
             <ColumnDefinition
               Width="*"
-              MinWidth="330" />
+              MinWidth="{Binding RightSideMinWidth, ElementName=_self}" />
           </Grid.ColumnDefinitions>
 
           <!-- left side -->
@@ -125,7 +131,7 @@
 
           <GridSplitter
             Grid.Column="1"
-            Width="4"
+            Width="{Binding GridSplitterWidth, ElementName=_self}"
             Grid.RowSpan="2"
             HorizontalAlignment="Center"
             VerticalAlignment="Stretch"
