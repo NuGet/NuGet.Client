@@ -161,11 +161,11 @@ namespace NuGet.Credentials {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot create a provider from an invalid plugin. Plugin state: {0} Reason: {1}.
+        ///   Looks up a localized string similar to Using {0} as a credential provider plugin..
         /// </summary>
-        internal static string SecureCredentialProvider_InvalidPluginFile {
+        internal static string SecurePluginNotice_UsingPluginAsProvider {
             get {
-                return ResourceManager.GetString("SecureCredentialProvider_InvalidPluginFile", resourceCulture);
+                return ResourceManager.GetString("SecurePluginNotice_UsingPluginAsProvider", resourceCulture);
             }
         }
     }

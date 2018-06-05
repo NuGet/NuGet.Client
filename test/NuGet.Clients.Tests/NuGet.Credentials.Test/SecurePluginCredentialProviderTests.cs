@@ -43,14 +43,6 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public void Create_ThrowsForInvalidPlugin()
-        {
-            var exception = Assert.Throws<ArgumentException>(
-                () => new SecurePluginCredentialProvider(null, CreatePluginDiscoveryResult(PluginFileState.InvalidFilePath), NullLogger.Instance));
-            Assert.Equal("pluginDiscoveryResult", exception.ParamName);
-        }
-
-        [Fact]
         public void Type_IsICredentialProvider()
         {
             var provider = new SecurePluginCredentialProvider(CreateDefaultPluginManager(), CreatePluginDiscoveryResult(), NullLogger.Instance);
@@ -88,7 +80,7 @@ namespace NuGet.Credentials.Test
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectation))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", PluginFileState.Valid));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState> ( () => PluginFileState.Valid)));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, NullLogger.Instance);
 
                 System.Net.IWebProxy proxy = null;
@@ -131,7 +123,7 @@ namespace NuGet.Credentials.Test
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectation))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", PluginFileState.Valid));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid)));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, NullLogger.Instance);
 
                 System.Net.IWebProxy proxy = null;
@@ -174,7 +166,7 @@ namespace NuGet.Credentials.Test
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectation))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", PluginFileState.Valid));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid)));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, NullLogger.Instance);
 
                 System.Net.IWebProxy proxy = null;
@@ -220,7 +212,7 @@ namespace NuGet.Credentials.Test
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectation))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", PluginFileState.Valid));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid)));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, NullLogger.Instance);
                 var proxy = new System.Net.WebProxy()
                 {
@@ -243,7 +235,7 @@ namespace NuGet.Credentials.Test
 
         private static PluginDiscoveryResult CreatePluginDiscoveryResult(PluginFileState pluginState = PluginFileState.Valid)
         {
-            return new PluginDiscoveryResult(new PluginFile(@"C:\random\path\plugin.exe", pluginState));
+            return new PluginDiscoveryResult(new PluginFile(@"C:\random\path\plugin.exe", new Lazy<PluginFileState>(() => pluginState)));
         }
 
         private static PluginManager CreateDefaultPluginManager()

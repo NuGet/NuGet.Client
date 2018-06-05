@@ -168,7 +168,7 @@ namespace NuGet.Protocol.Core.Types
         {
             PluginCreationResult pluginCreationResult = null;
 
-            if (result.PluginFile.State == PluginFileState.Valid)
+            if (result.PluginFile.State.Value == PluginFileState.Valid)
             {
                 var plugin = await _pluginFactory.GetOrCreateAsync(
                     result.PluginFile.Path,

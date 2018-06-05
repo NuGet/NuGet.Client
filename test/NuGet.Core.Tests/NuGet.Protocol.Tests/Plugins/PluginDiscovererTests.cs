@@ -58,8 +58,9 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 using (var discoverer = new PluginDiscoverer(pluginPath, new FallbackEmbeddedSignatureVerifier()))
                 {
-                    await Assert.ThrowsAsync<PlatformNotSupportedException>(
-                        () => discoverer.DiscoverAsync(CancellationToken.None));
+                    var plugins = await discoverer.DiscoverAsync(CancellationToken.None);
+                    Assert.Throws<PlatformNotSupportedException>(
+                        () => plugins.SingleOrDefault().PluginFile.State.Value);
                 }
             }
         }
@@ -96,12 +97,46 @@ namespace NuGet.Protocol.Plugins.Tests
                 {
                     var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
 
+                    foreach (var result in results)
+                    {
+                        var pluginState = result.PluginFile.State.Value;
+                    }
+
                     Assert.Equal(1, results.Length);
                     Assert.Equal(1, verifierStub.IsValidCallCount);
 
                     results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
 
                     Assert.Equal(1, results.Length);
+                    Assert.Equal(1, verifierStub.IsValidCallCount);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task DiscoverAsync_SignatureIsVerifiedLazily()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var pluginPath = Path.Combine(testDirectory.Path, "a");
+
+                File.WriteAllText(pluginPath, string.Empty);
+
+                var responses = new Dictionary<string, bool>()
+                {
+                    { pluginPath, true }
+                };
+                var verifierStub = new EmbeddedSignatureVerifierStub(responses);
+
+                using (var discoverer = new PluginDiscoverer(pluginPath, verifierStub))
+                {
+                    var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
+
+                    Assert.Equal(1, results.Length);
+                    Assert.Equal(0, verifierStub.IsValidCallCount);
+
+                    var pluginState = results.SingleOrDefault().PluginFile.State.Value;
+
                     Assert.Equal(1, verifierStub.IsValidCallCount);
                 }
             }
@@ -137,23 +172,23 @@ namespace NuGet.Protocol.Plugins.Tests
                     Assert.Equal(5, results.Length);
 
                     Assert.Equal(pluginPaths[0], results[0].PluginFile.Path);
-                    Assert.Equal(PluginFileState.NotFound, results[0].PluginFile.State);
+                    Assert.Equal(PluginFileState.NotFound, results[0].PluginFile.State.Value);
                     Assert.Equal($"A plugin was not found at path '{pluginPaths[0]}'.", results[0].Message);
 
                     Assert.Equal(pluginPaths[1], results[1].PluginFile.Path);
-                    Assert.Equal(PluginFileState.InvalidEmbeddedSignature, results[1].PluginFile.State);
+                    Assert.Equal(PluginFileState.InvalidEmbeddedSignature, results[1].PluginFile.State.Value);
                     Assert.Equal($"The plugin at '{pluginPaths[1]}' did not have a valid embedded signature.", results[1].Message);
 
                     Assert.Equal(pluginPaths[2], results[2].PluginFile.Path);
-                    Assert.Equal(PluginFileState.Valid, results[2].PluginFile.State);
+                    Assert.Equal(PluginFileState.Valid, results[2].PluginFile.State.Value);
                     Assert.Null(results[2].Message);
 
                     Assert.Equal(pluginPaths[3], results[3].PluginFile.Path);
-                    Assert.Equal(PluginFileState.NotFound, results[3].PluginFile.State);
+                    Assert.Equal(PluginFileState.NotFound, results[3].PluginFile.State.Value);
                     Assert.Equal($"A plugin was not found at path '{pluginPaths[3]}'.", results[3].Message);
 
                     Assert.Equal("e", results[4].PluginFile.Path);
-                    Assert.Equal(PluginFileState.InvalidFilePath, results[4].PluginFile.State);
+                    Assert.Equal(PluginFileState.InvalidFilePath, results[4].PluginFile.State.Value);
                     Assert.Equal($"The plugin file path 'e' is invalid.", results[4].Message);
                 }
             }
@@ -175,7 +210,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 Assert.Equal(1, results.Length);
                 Assert.Equal(pluginPath, results[0].PluginFile.Path);
-                Assert.Equal(PluginFileState.InvalidFilePath, results[0].PluginFile.State);
+                Assert.Equal(PluginFileState.InvalidFilePath, results[0].PluginFile.State.Value);
             }
         }
 
@@ -196,11 +231,13 @@ namespace NuGet.Protocol.Plugins.Tests
                 using (var discoverer = new PluginDiscoverer(pluginPath, verifierSpy.Object))
                 {
                     var firstResult = await discoverer.DiscoverAsync(CancellationToken.None);
+                    var firstState = firstResult.SingleOrDefault().PluginFile.State.Value;
 
                     verifierSpy.Verify(spy => spy.IsValid(It.IsAny<string>()),
                         Times.Once);
 
                     var secondResult = await discoverer.DiscoverAsync(CancellationToken.None);
+                    var secondState = secondResult.SingleOrDefault().PluginFile.State.Value;
 
                     verifierSpy.Verify(spy => spy.IsValid(It.IsAny<string>()),
                         Times.Once);
