@@ -1179,6 +1179,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Type words to search.
+        /// </summary>
+        public static string Search_ToolTipProperty {
+            get {
+                return ResourceManager.GetString("Search_ToolTipProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show Details.
         /// </summary>
         public static string ShowDetails {
