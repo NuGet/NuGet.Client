@@ -43,14 +43,6 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public void Create_ThrowsForInvalidPlugin()
-        {
-            var exception = Assert.Throws<ArgumentException>(
-                () => new SecurePluginCredentialProvider(null, CreatePluginDiscoveryResult(PluginFileState.InvalidFilePath), NullLogger.Instance));
-            Assert.Equal("pluginDiscoveryResult", exception.ParamName);
-        }
-
-        [Fact]
         public void Type_IsICredentialProvider()
         {
             var provider = new SecurePluginCredentialProvider(CreateDefaultPluginManager(), CreatePluginDiscoveryResult(), NullLogger.Instance);

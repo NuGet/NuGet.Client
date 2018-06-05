@@ -62,7 +62,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async Task BuildAll_BuildsOnlyValidPlugins()
+        public async Task BuildAll_BuildsAllPlugins()
         {
             var plugins = new List<KeyValuePair<string, PluginFileState>>();
             plugins.Add(new KeyValuePair<string, PluginFileState>("a", PluginFileState.Valid));
@@ -75,8 +75,7 @@ namespace NuGet.Credentials.Test
             var builder = new SecureCredentialProviderBuilder(pluginManager.PluginManager, NullLogger.Instance);
 
             var credentialProviders = (await builder.BuildAll()).ToArray();
-            Assert.Equal(1, credentialProviders.Count());
-            Assert.StartsWith(nameof(SecurePluginCredentialProvider) + "_a", credentialProviders[0].Id);
+            Assert.Equal(4, credentialProviders.Count());
         }
 
         private sealed class PluginManagerBuilderMock
