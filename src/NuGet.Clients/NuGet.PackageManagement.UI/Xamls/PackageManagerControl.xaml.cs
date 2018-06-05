@@ -944,6 +944,7 @@ namespace NuGet.PackageManagement.UI
             settings.ControlMinWidth = (uint)_topPanel.SearchControlParent.MinWidth;
             settings.ControlMaxWidth = uint.MaxValue;
             settings.SearchWatermark = GetSearchText();
+            settings.SearchTooltip = Resx.Resources.Search_ToolTipProperty;
         }
 
         // Returns the text to be displayed in the search box.
