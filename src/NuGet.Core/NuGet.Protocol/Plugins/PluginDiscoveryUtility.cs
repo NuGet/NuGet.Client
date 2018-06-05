@@ -8,17 +8,40 @@ namespace NuGet.Protocol.Plugins
 {
     public static class PluginDiscoveryUtility
     {
+        private static readonly string NuGetPluginsDirectory = "NuGetPlugins";
+
         public static Lazy<string> InternalPluginDiscoveryRoot { get; set; }
 
         public static string GetInternalPlugins()
         {
 #if IS_DESKTOP
-            var rootDirectory = InternalPluginDiscoveryRoot?.Value ?? System.Reflection.Assembly.GetExecutingAssembly()?.Location; // This is NuGet.Protocol.dll
+            return InternalPluginDiscoveryRoot?.Value ?? GetDesktopInternalPlugin();
 #else
-            var rootDirectory = InternalPluginDiscoveryRoot?.Value ?? System.Reflection.Assembly.GetEntryAssembly()?.Location; // This is msbuild.dll
+            return InternalPluginDiscoveryRoot?.Value ?? GetNetCoreInternalPlugin();
 #endif
-            return rootDirectory ?? Path.GetDirectoryName(rootDirectory);
         }
+
+#if IS_DESKTOP
+        private static string GetDesktopInternalPlugin()
+        {
+            return System.Reflection.Assembly.GetExecutingAssembly()?.Location != null ? // nuget.protocol.dll - would return null if called from unmanaged code
+                    PathUtility.GetAbsolutePath( // else build the absolute path
+                        Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly()?.Location),
+                        Path.Combine("..", NuGetPluginsDirectory)
+                        ) :
+                     null;
+        }
+#else
+        private static string GetNetCoreInternalPlugin()
+        {
+            return System.Reflection.Assembly.GetEntryAssembly()?.Location != null ? // msbuild.dll - would return null if called from unmanaged code
+                    Path.Combine( // else build the absolute path
+                        Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly()?.Location),
+                        NuGetPluginsDirectory
+                        ) :
+                    null;
+        }
+#endif
         public static string GetNuGetHomePluginsPath()
         {
             var nuGetHome = NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetHome);
