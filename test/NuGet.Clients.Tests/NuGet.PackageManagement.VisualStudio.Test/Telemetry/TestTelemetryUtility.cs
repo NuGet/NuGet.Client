@@ -15,12 +15,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.Equal(operationId, actual["OperationId"].ToString());
             Assert.Equal(expected.ProjectsCount, (int)actual["ProjectsCount"]);
-            Assert.Equal(string.Join(",", expected.ProjectIds), actual["ProjectIds"].ToString());
             Assert.Equal(expected.PackagesCount, (int)actual["PackagesCount"]);
             Assert.Equal(expected.Status.ToString(), actual["Status"].ToString());
             Assert.Equal(expected.StartTime, actual["StartTime"]);
             Assert.Equal(expected.EndTime, actual["EndTime"]);
             Assert.Equal(expected.Duration, (double)actual["Duration"]);
+
+            for (var i = 0; i < expected.ProjectsCount; i++)
+            {
+                Assert.Equal(expected.ProjectIds[i], actual["ProjectId" + (i + 1)].ToString());
+            }
         }
     }
 }
