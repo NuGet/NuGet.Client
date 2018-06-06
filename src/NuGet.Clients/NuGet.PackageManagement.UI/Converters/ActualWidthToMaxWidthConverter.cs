@@ -8,7 +8,18 @@ using System.Windows.Data;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class PackageManagerControlLeftSideMaxWidthConverter : IMultiValueConverter
+    /// <summary>
+    /// This converter is taking the first value and substracting the second value to it.
+    /// This was the way I was able to get the MaxWidth of the left side of the UI by
+    /// substracting the RightSideMinWidth + GridSplittlerWidth from the current
+    /// ActualWidth of the UI.
+    /// 
+    /// `values[0]` is supposed to be the actual width of `_root` which has a minWidth
+    /// of `LeftSideMinWidth + GridSplitterWidth + RightSideMinWidth` and `values[0]`
+    /// is constant to `GridSplitterWidth + RightSideMinWidth`,
+    /// therefore this converter should return `LeftSideMinWidth` as the smallest value.
+    /// </summary>
+    public class ActualWidthToMaxWidthConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {

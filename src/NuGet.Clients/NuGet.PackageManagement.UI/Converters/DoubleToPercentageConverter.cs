@@ -6,7 +6,7 @@ using System.Windows.Data;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class PercentageConverter : IValueConverter
+    public class DoubleToPercentageConverter : IValueConverter
     {
         public object Convert(object value,
         Type targetType,

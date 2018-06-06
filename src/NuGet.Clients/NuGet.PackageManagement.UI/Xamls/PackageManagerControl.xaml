@@ -66,11 +66,11 @@
           Width="{Binding ActualWidth, ElementName=_root}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition
-              Width="{Binding Converter={StaticResource PercentageConverter}, ElementName=_self, Path=ActualWidth, ConverterParameter=0.65}"
+              Width="{Binding Converter={StaticResource DoubleToPercentageConverter}, ElementName=_self, Path=ActualWidth, ConverterParameter=0.65}"
               MinWidth="{Binding LeftSideMinWidth, ElementName=_self}">
               <ColumnDefinition.MaxWidth>
-                <MultiBinding Converter="{StaticResource PackageManagerControlLeftSideMaxWidthConverter}">
-                  <Binding Path="ActualWidth" ElementName="_self" />
+                <MultiBinding Converter="{StaticResource ActualWidthToMaxWidthConverter}">
+                  <Binding Path="ActualWidth" ElementName="_root" />
                   <Binding Path="LeftSideExcludedWidth" ElementName="_self" />
                 </MultiBinding>
               </ColumnDefinition.MaxWidth>

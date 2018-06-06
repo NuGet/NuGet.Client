@@ -56,10 +56,10 @@
     x:Key="IconUrlToImageCacheConverter"/>
   <nuget:RadioBoolToIntConverter
     x:Key="RadioBoolToIntConverter" />
-  <nuget:PercentageConverter
-    x:Key="PercentageConverter" />
-  <nuget:PackageManagerControlLeftSideMaxWidthConverter
-    x:Key="PackageManagerControlLeftSideMaxWidthConverter" />
+  <nuget:DoubleToPercentageConverter
+    x:Key="DoubleToPercentageConverter" />
+  <nuget:ActualWidthToMaxWidthConverter
+    x:Key="ActualWidthToMaxWidthConverter" />
 
   <!-- Default styles -->
   <Style x:Key="ControlsFocusVisualStyle" TargetType="{x:Type Control}">
