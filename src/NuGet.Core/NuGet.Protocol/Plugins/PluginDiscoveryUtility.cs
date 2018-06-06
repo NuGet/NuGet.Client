@@ -2,26 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using NuGet.Common;
 
 namespace NuGet.Protocol.Plugins
 {
     public static class PluginDiscoveryUtility
     {
-        private static string NuGetPluginsDirectory = "NuGetPlugins";
-        private static string ParentDirectory = "..";
-
         public static Lazy<string> InternalPluginDiscoveryRoot { get; set; }
+
+        private static string NuGetPluginsDirectory = "NuGetPlugins";
 
         public static string GetInternalPlugins()
         {
-#if IS_DESKTOP
             return InternalPluginDiscoveryRoot?.Value ??
-                GetDesktopInternalPlugin(System.Reflection.Assembly.GetExecutingAssembly()?.Location); // NuGet.Protocol.dll would return null if called from unmanaged code
-#else
-            return InternalPluginDiscoveryRoot?.Value ??
-                GetDotnetExeInternalPlugin(System.Reflection.Assembly.GetEntryAssembly()?.Location); // msbuild.dll - would return null if called from unmanaged code
-#endif
+                GetNuGetPluginsDirectory(typeof(PluginDiscoveryUtility).GetTypeInfo().Assembly.Location); // NuGet.*.dll would return null if called from unmanaged code
         }
 
 #if IS_DESKTOP
@@ -33,45 +28,31 @@ namespace NuGet.Protocol.Plugins
         /// <remarks>The MSBuild.exe is in MSBuild\15.0\Bin\MsBuild.exe, the NuGetPlugins directory is in Common7\IDE\CommonExtensions\Microsoft\NuGetPlugins</remarks>
         public static string GetInternalPluginRelativeToMSBuildExe(string msbuildExePath)
         {
-            return msbuildExePath != null ?
+            var parentDirectory = "..";
+            return !string.IsNullOrEmpty(msbuildExePath) ?
                 PathUtility.GetAbsolutePath(
                     Path.GetDirectoryName(msbuildExePath),
-                    Path.Combine(ParentDirectory, ParentDirectory, ParentDirectory, "Common7", "CommonExtensions", "Microsoft", NuGetPluginsDirectory)
+                    Path.Combine(parentDirectory, parentDirectory, parentDirectory, "Common7", "CommonExtensions", "Microsoft", NuGetPluginsDirectory)
                     ) :
                 null;
         }
+#endif
 
         /// <summary>
         /// Given the NuGet assemblies directory, returns the NuGet plugins directory
         /// </summary>
         /// <param name="nuGetAssembliesDirectory">The NuGet assemblies directory in CommonExtensions\NuGet</param>
         /// <returns>The NuGet plugins directory in CommonExtensions\NuGetPlugins, null if the <paramref name="nuGetAssembliesDirectory"/> is null</returns>
-        private static string GetDesktopInternalPlugin(string nuGetAssembliesDirectory)
+        private static string GetNuGetPluginsDirectory(string nuGetAssembliesDirectory)
         {
-            return nuGetAssembliesDirectory != null ?
-                    PathUtility.GetAbsolutePath(
+            return !string.IsNullOrEmpty(nuGetAssembliesDirectory) ?
+                    Path.Combine(
                         Path.GetDirectoryName(nuGetAssembliesDirectory),
-                        Path.Combine(ParentDirectory, NuGetPluginsDirectory)
-                        ) :
-                     null;
-        }
-#else
-        /// <summary>
-        /// Given the MsBuildDll directory, return the NuGetPlugins directory in dotnetexe
-        /// MSBuild.dll and NuGet*.dlls are in the same directory in the SDK.
-        /// </summary>
-        /// <param name="msbuildAssemblyDirectory"></param>
-        /// <returns></returns>
-        private static string GetDotnetExeInternalPlugin(string msbuildAssemblyDirectory)
-        {
-            return msbuildAssemblyDirectory != null ?
-                    Path.Combine( // else build the absolute path
-                        Path.GetDirectoryName(msbuildAssemblyDirectory),
                         NuGetPluginsDirectory
                         ) :
                     null;
         }
-#endif
+
         public static string GetNuGetHomePluginsPath()
         {
             var nuGetHome = NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetHome);
@@ -107,7 +88,6 @@ namespace NuGet.Protocol.Plugins
                     }
                 }
             }
-
             return paths;
         }
     }
