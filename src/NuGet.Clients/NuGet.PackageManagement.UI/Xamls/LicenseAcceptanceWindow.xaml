@@ -30,7 +30,11 @@
         <StackPanel
           Margin="2,0,2,5">
           <TextBlock
-            TextWrapping="Wrap">
+            TextWrapping="Wrap"
+            x:Name="_packageLicenseText"
+            Focusable="True"
+            AutomationProperties.Name="{Binding Text}"
+            FocusVisualStyle="{x:Null}">
                     <Run
               Text="{Binding Id, Mode=OneTime}"
               FontWeight="Bold" />
@@ -71,12 +75,20 @@
     <TextBlock
       Grid.Row="0"
       Margin="12,8,12,0"
+      x:Name="_licenseAcceptanceText"
+      Focusable="True"
+      AutomationProperties.Name="{Binding Text}"
+      FocusVisualStyle="{x:Null}"
       Text="{x:Static nuget:Resources.Text_LicenseAcceptance}"
       FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}" />
 
     <TextBlock
       Grid.Row="1"
       Margin="12,4,12,0"
+      x:Name="_licenseHeaderText"
+      Focusable="True"
+      AutomationProperties.Name="{Binding Text}"
+      FocusVisualStyle="{x:Null}"
       Text="{x:Static nuget:Resources.Text_LicenseHeaderText}"
       TextWrapping="Wrap" />
 
@@ -107,6 +119,10 @@
     <TextBlock
       Grid.Row="3"
       Margin="12,0,12,12"
+      x:Name="_licenseText"
+      Focusable="True"
+      AutomationProperties.Name="{Binding Text}"
+      FocusVisualStyle="{x:Null}"
       Text="{x:Static nuget:Resources.Text_LicenseText}"
       TextWrapping="Wrap"></TextBlock>
 
